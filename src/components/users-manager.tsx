@@ -1,0 +1,124 @@
+"use client";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { roles } from "@/auth/roles";
+type UserRow = { id: string; username: string; role: string };
+export function UsersManager({ users }: { users: UserRow[] }) {
+  const t = useTranslations();
+  const router = useRouter();
+  const [message, setMessage] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>(
+    {},
+  );
+  const [passwords, setPasswords] = useState<Record<string, string>>({});
+  async function create(formData: FormData) {
+    const response = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(formData)),
+    });
+    setMessage(response.ok ? t("Users.created") : t("Users.error"));
+    if (response.ok) router.refresh();
+  }
+  async function remove(id: string) {
+    const response = await fetch(`/api/admin/users/${id}`, {
+      method: "DELETE",
+    });
+    setMessage(response.ok ? "" : t("Users.error"));
+    if (response.ok) router.refresh();
+  }
+  async function update(user: UserRow) {
+    const password = passwords[user.id];
+    const response = await fetch(`/api/admin/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        role: selectedRoles[user.id] ?? user.role,
+        ...(password ? { password } : {}),
+      }),
+    });
+    setMessage(response.ok ? "" : t("Users.error"));
+    if (response.ok) router.refresh();
+  }
+  return (
+    <>
+      <form action={create}>
+        <label>
+          {t("Users.username")}
+          <input name="username" required />
+        </label>
+        <label>
+          {t("Users.password")}
+          <input name="password" type="password" minLength={12} required />
+        </label>
+        <label>
+          {t("Users.role")}
+          <select name="role">
+            {roles.map((role) => (
+              <option key={role} value={role}>
+                {t(`Roles.${role}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button>{t("Users.create")}</button>
+      </form>
+      {message && <p role="status">{message}</p>}
+      <table>
+        <thead>
+          <tr>
+            <th>{t("Users.username")}</th>
+            <th>{t("Users.role")}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id}>
+              <td>{user.username}</td>
+              <td>
+                <select
+                  aria-label={`${t("Users.role")} ${user.username}`}
+                  value={selectedRoles[user.id] ?? user.role}
+                  onChange={(event) =>
+                    setSelectedRoles({
+                      ...selectedRoles,
+                      [user.id]: event.target.value,
+                    })
+                  }
+                >
+                  {roles.map((role) => (
+                    <option key={role} value={role}>
+                      {t(`Roles.${role}`)}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td>
+                <input
+                  aria-label={`${t("Users.password")} ${user.username}`}
+                  type="password"
+                  minLength={12}
+                  value={passwords[user.id] ?? ""}
+                  onChange={(event) =>
+                    setPasswords({
+                      ...passwords,
+                      [user.id]: event.target.value,
+                    })
+                  }
+                />
+                <button type="button" onClick={() => update(user)}>
+                  {t("Users.save")}
+                </button>
+                <button type="button" onClick={() => remove(user.id)}>
+                  {t("Users.delete")}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}

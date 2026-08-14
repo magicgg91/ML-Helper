@@ -1,6 +1,45 @@
 {
-  "Home": {
-    "title": "ML-Helper",
-    "status": "La fondation technique est prête."
+  "Login": {
+    "title": "Connexion administration",
+    "username": "Identifiant",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Identifiant ou mot de passe invalide"
+  },
+  "Admin": {
+    "title": "Administration",
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "logs": "Historique",
+    "empty": "Fondations de l’administration — Phase 1"
+  },
+  "Users": {
+    "title": "Utilisateurs administrateurs",
+    "create": "Créer l’utilisateur",
+    "username": "Identifiant",
+    "password": "Mot de passe",
+    "role": "Rôle",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "created": "Utilisateur créé",
+    "error": "Impossible d’effectuer l’action"
+  },
+  "Logs": {
+    "title": "Historique des actions",
+    "actor": "Auteur",
+    "action": "Action",
+    "entity": "Élément",
+    "date": "Date",
+    "start": "Date de début",
+    "end": "Date de fin",
+    "purge": "Purger la plage",
+    "purged": "Historique purgé",
+    "error": "Impossible de purger l’historique"
+  },
+  "Roles": {
+    "super_admin": "Super Admin",
+    "admin": "Admin",
+    "guides_manager": "Gestion Guides",
+    "calculators_manager": "Gestion Calculateurs"
   }
 }
