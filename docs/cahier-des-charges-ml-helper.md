@@ -187,7 +187,9 @@ Le projet se compose de deux univers distincts :
 
 Bascule au palier supérieur dès que la valeur atteint l'équivalent de 999,99 dans l'unité courante (ex: 999,99k → passe en M).
 
-- **✅ Sélecteur d'unité en saisie (pas seulement en affichage)** — pour les champs numériques représentant de grandes quantités (VP du joueur, or/budget disponible dans les calculateurs...), le champ de saisie est accompagné d'un **sélecteur d'unité** (×1 / k / M / G / T) à côté du nombre. Le joueur tape "2" et choisit "G" plutôt que de taper "2000000000" — évite les erreurs de saisie et accélère l'usage. Prototypé dans le prototype unifié (champs VP joueur, Or disponible, Budget gemmes).
+- **✅ Sélecteur d'unité en saisie (pas seulement en affichage)** — pour les champs numériques représentant de grandes quantités issues de la production/progression du jeu (VP du joueur, or disponible dans les calculateurs...), le champ de saisie est accompagné d'un **sélecteur d'unité** (×1 / k / M / G / T) à côté du nombre. Le joueur tape "2" et choisit "G" plutôt que de taper "2000000000". **Exception explicite : le budget en saphirs (calculateur Gemmes, mode Budget disponible) n'a pas de sélecteur d'unité** — les saphirs s'achètent avec de l'argent réel, les montants réalistes restent petits, la saisie directe suffit.
+
+- **✅ Stepper −/+ personnalisé sur tous les champs numériques** — les flèches natives du navigateur (haut/bas, minuscules, peu lisibles) sont masquées et remplacées par deux boutons **−** (gauche) et **+** (droite) encadrant chaque champ, respectant `min`/`max`/`step`. S'applique uniformément, y compris aux champs générés dynamiquement (lignes de gemmes, gemmes du Simulateur de Stuff...) via un `MutationObserver` qui enveloppe automatiquement tout nouveau champ nombre ajouté au DOM. Seuls les champs à sélecteur d'unité (ci-dessus) en sont exemptés, pour ne pas surcharger la ligne avec un 3e élément.
 
 - **Cohérence linguistique** — chaque texte visible dans l'UI (labels de champs, noms de calculateurs, noms de stats/unités) doit passer par le système de traduction (next-intl), jamais de terme codé en dur dans une langue différente de celle affichée. *(Le prototype exploratoire de la section 7 a depuis été nettoyé de tout mélange FR/EN — sert de référence de cohérence pour le développement réel, pas juste d'exception tolérée.)*
 
@@ -308,7 +310,7 @@ Un calculateur peut contenir **plusieurs formules** (ex: Fight = formule pertes 
 
 **Conséquence :** les entités `lookup_table` (tables de référence brutes, ex: coût Templiers) restent inchangées et complémentaires — utilisées quand aucune formule mathématique propre n'est identifiable, sans rapport avec la question de l'édition de formule libre.
 
-**✅ Résolu :** pas besoin d'un type de calculateur "composite" séparé — le champ `outputs` (JSON, déjà défini comme flexible dans l'entité Calculateur) supporte nativement des résultats multi-lignes ou à double sens, sans changement de modèle. Confirmé en pratique par le prototype : Ranking (tableau multi-lignes par seuil), Gemmes (3 modes de résultat différents) et Templiers fonctionnent déjà avec le modèle actuel, sans notion de type "composite".
+**✅ Résolu :** pas besoin d'un type de calculateur "composite" séparé — le champ `outputs` (JSON, déjà défini comme flexible dans l'entité Calculateur) supporte nativement des résultats multi-lignes ou à double sens, sans changement de modèle. Confirmé en pratique par le prototype : Ranking (tableau multi-lignes par seuil), Gemmes (2 modes de résultat différents, dont un multi-lignes) et Templiers fonctionnent déjà avec le modèle actuel, sans notion de type "composite".
 
 ### Principe transverse — formules avec paramètres par ligue (révisé)
 
@@ -706,19 +708,13 @@ Rang_au_seuil(P) = Total_joueurs × P/100
 
 *(Regroupées en une seule catégorie de calculateurs : gemmes socketées dans les équipements, les deux alimentant les mêmes stats de combat que les compétences — cohérent de les traiter ensemble.)*
 
-#### 💡 Idée majeure — Configuration du "stuff" du joueur, réutilisable partout
+#### 💡 Idée d'origine — Configuration du "stuff" du joueur (état final : résultat plus modeste que la vision initiale)
 
-**Vision proposée par le joueur :** permettre au joueur de configurer entièrement son équipement (les 9 pièces, leurs gemmes assignées par emplacement) une seule fois, et que cette configuration soit **automatiquement réutilisée dans tous les calculateurs qui en ont besoin** — pas besoin de ressaisir ses gemmes à chaque calculateur.
+**Vision proposée initialement :** permettre au joueur de configurer entièrement son équipement une seule fois, et que cette configuration soit automatiquement réutilisée dans tous les calculateurs qui en ont besoin.
 
-**Éléments déjà tranchés qui s'appliquent :**
-- Stockage en **localStorage** (cohérent avec la décision déjà prise pour les paramètres du joueur — section 3.3), pas de compte joueur nécessaire
-- Concerne à la fois les **Paramètres du joueur** (niveau, ligue, stats) et potentiellement une nouvelle section dédiée **"Mon stuff"** (équipements + gemmes assignées)
+**✅ Ce qui a été réellement implémenté (voir "Simulateur de Stuff" plus bas pour le détail complet) :** un calculateur **dédié et autonome** (Simulateur de Stuff), pas un mécanisme transverse à tous les calculateurs. Il reste dans sa propre catégorie (Compétences), stocké en localStorage, mais **n'alimente pas automatiquement** les autres calculateurs (Production, City Cost...) — ceux-ci continuent de lire les valeurs saisies manuellement dans "Compétences avec équipement" (Paramètres du joueur), qui reste indépendant. Le joueur reporte manuellement s'il le souhaite.
 
-**Cas d'usage concrets qui en découlent :**
-- Le calculateur Gemmes pourrait **visualiser les gemmes déjà possédées** par le joueur sur la grille d'emplacements (pas juste simuler un objectif dans le vide)
-- D'autres calculateurs (Villes, Combat plus tard) pourraient lire directement les bonus de compétences du joueur (déjà amplifiés par ses gemmes) sans qu'il ait à ressaisir ses stats à chaque fois
-
-**⏳ À détailler plus précisément quand on traitera Équipements** (structure des 4 types fonctionnels, quelles gemmes vont sur quel type) — pour l'instant, c'est une **décision de principe actée**, pas encore une spec technique complète.
+**Raison de cet écart avec la vision initiale :** au fil des itérations, le Simulateur de Stuff est devenu un outil substantiel avec sa propre complexité (4 blocs, catalogues mixtes, liste blanche de compétences par famille) — le relier automatiquement à "Compétences avec équipement" aurait ajouté une couche de synchronisation complexe non demandée explicitement. Le lien reste possible comme évolution future si besoin.
 
 #### Templiers — Calculateur (déplacé depuis Production, concerne les stats du joueur)
 
@@ -880,17 +876,56 @@ Points_disponibles = (niveau − 1) × points_par_niveau(ligue)
 3. L'uniformité suspecte des sets Légendaires — est-ce bien le cas en jeu ?
 4. Les 30 lignes manquantes (tableau ci-dessus), si tu croises ces équipements
 
-#### 💡 Vision du joueur — Configurateur de "stuff" complet
+#### ✅ Simulateur de Stuff — implémenté, structure finale
 
-**Objectif :** le joueur configure ce qu'il possède réellement (par emplacement physique), et le site calcule automatiquement ses stats totales, résumées dans un tableau récapitulatif par famille de compétence.
+**4 blocs affichés côte à côte sur PC / empilés sur mobile**, dans l'ordre : **Attaque, Défense, Or, Vitesse.** Chaque bloc a 3 colonnes toujours visibles (pas de repli/dépli) : grille 3×3 d'emplacements à gauche, panneau de configuration au centre (se remplit au clic sur un emplacement, un 2e clic sur le même emplacement le referme), résumé de stats à droite (encarts empilés, 2 colonnes).
 
-**Structure d'interface suggérée, maintenant que les 9 emplacements sont identifiés :**
-- Une grille de 9 emplacements nommés (Arme, Bouclier, Ceinture, Anneau, Bracelet, Amulette, Casque, Gantelet, Bottes) — même principe visuel que la grille de gemmes déjà prototypée
-- Pour chaque emplacement : sélecteur "Famille" (Or/Troupes-Vitesse/Défense/Attaque) + "Rareté" (Commun→Légendaire)
-- Un tableau récapitulatif en dessous, une ligne par compétence (les 10), montrant le total cumulé donné par le stuff configuré
-- Sauvegarde en localStorage (cohérent avec l'architecture déjà actée), réutilisable dans tous les calculateurs
+**Grille 3×3, ordre des emplacements :**
+```
+Amulette   Casque    Bracelet
+Anneau     Ceinture  Gantelet
+Arme       Bottes    Bouclier
+```
 
-**Reste à confirmer :** un emplacement est-il libre de recevoir n'importe quelle famille (ex: mettre un objet "Attaque" dans l'emplacement Bottes), ou chaque emplacement est-il contraint à une famille précise ?
+**Catalogues d'équipement mixtes par bloc (confirmé par le joueur) :**
+
+| Bloc | Familles d'équipement sélectionnables |
+|---|---|
+| Attaque | Attaque uniquement |
+| Défense | **Défense + Or** (mixte) |
+| Or | **Or + Troupes/Vitesse** (mixte) |
+| Vitesse | Troupes/Vitesse uniquement |
+
+Les équipements du sélecteur sont triés par rareté décroissante (Légendaire → Commun), libellé `Rareté — Nom du set (Famille)` pour lever toute ambiguïté sur les catalogues mixtes.
+
+**🚨 Liste blanche des compétences réellement comptabilisées — la question ouverte "un emplacement est-il libre de recevoir n'importe quelle famille" est résolue : non, seules certaines compétences comptent selon le bloc ET la famille réelle de l'objet équipé, même pour les objets de la famille "native" du bloc :**
+
+| Bloc | Compétences comptabilisées, par famille d'origine de l'objet |
+|---|---|
+| Attaque | Attaque (natif) : Attaque, Charognard, Intrépide — tout compte |
+| Défense | Défense (natif) : Bravoure, Défense, Recycleur — tout compte · Or (secondaire) : **seulement** Recycleur, Récupération |
+| **Or** | Or (natif) : **seulement Prospérité** · Troupes/Vitesse (secondaire) : **seulement Recruteur** |
+| Vitesse | Troupes/Vitesse (natif, seule famille du bloc) : **seulement Vitesse** |
+
+Cette liste blanche s'applique de façon identique à 3 endroits : le calcul des totaux par bloc, le calcul des stats d'un emplacement individuel, et les options proposées dans le sélecteur de compétence des gemmes (pas d'option pour une compétence qui ne compterait pas de toute façon).
+
+**Résumé par bloc :** encarts empilés (grille 2 colonnes), un par compétence avec valeur > 0, format `+1400%`. Si un emplacement est sélectionné, la contribution de cet emplacement seul s'affiche entre parenthèses en violet à côté du total : `+1400% (60%)`.
+
+**Récapitulatif global** en haut de page, au-dessus des 4 blocs : agrège les contributions des 4 familles combinées (une compétence qui reçoit des contributions de plusieurs blocs — via les catalogues mixtes — voit ses valeurs s'additionner).
+
+**Gemmes par emplacement :** nombre d'emplacements = selon la rareté de l'équipement choisi (0/1/2/3), chaque gemme avec sa propre compétence (restreinte à la liste blanche du bloc), son niveau d'étoile, et **sa propre ligue** (Bronze incluse ici — gemmes déjà possédées, pas un achat simulé, donc pas de restriction Bronze contrairement au calculateur Gemmes).
+
+**Sauvegarde en localStorage**, cohérent avec l'architecture déjà actée pour les paramètres du joueur.
+
+#### ✅ Comparateur de stuff — implémenté, même structure que le Simulateur
+
+Compare 2 équipements (A et B) côte à côte : même famille/bloc et même emplacement obligatoires pour les deux, **catalogue mixte identique au Simulateur de Stuff** (mêmes 4 blocs, même liste blanche de compétences).
+
+**Sélection d'un équipement précis, pas juste une rareté :** puisque plusieurs sets peuvent partager le même (bloc, emplacement, rareté) dans un catalogue mixte (ex: Casque Épique = "Shopkeeper" en Or OU "Royal Archer" en Troupes/Vitesse), chaque côté a un sélecteur explicite **"Rareté — Nom du set (Famille)"**, pas juste un sélecteur de rareté — lève toute ambiguïté sur quel set exact est comparé.
+
+**Par côté (A et B) :** sélecteur d'équipement (set exact), niveau d'étoile, gemmes selon la rareté de l'objet choisi (compétence restreinte à la liste blanche du bloc, niveau d'étoile, ligue par gemme).
+
+**Résultat :** tableau compétence par compétence (uniquement celles de la liste blanche du bloc), valeur A, valeur B, différence colorée (vert si B > A, rouge si B < A).
 
 #### ✅ Système de fusion des équipements — confirmé par le joueur
 
@@ -1066,46 +1101,35 @@ où `rang_ligue` = 2 pour Argent (première ligue où l'achat est possible, pas 
 
 **⚠️ Nuance à retenir :** "pas d'achat possible en Bronze" concerne uniquement le calculateur Gemmes (simulation d'un **achat**). Dans le Simulateur de Stuff, la ligue Bronze **reste sélectionnable** pour les gemmes déjà **possédées** par le joueur (héritées d'une ligue passée, obtenues autrement qu'à l'achat) — les valeurs `y` de Bronze existent bel et bien (voir tableau plus bas), seul l'achat direct est bloqué.
 
-**✅ Décidé — trois modes de calcul, au choix de l'utilisateur :**
-1. **Répartition égale** — l'utilisateur choisit un nombre d'emplacements à utiliser, la stat cible est divisée équitablement entre eux
-2. **Optimisation coût** — le calculateur cherche automatiquement la répartition la moins chère pour atteindre la cible, dans la limite du nombre d'emplacements disponibles (jusqu'à 27)
-3. **Budget disponible** — à partir d'un budget en saphirs et d'un nombre d'emplacements disponibles, détermine combien de gemmes acheter et comment les fusionner pour **maximiser la stat obtenue** (problème inverse du mode 2 : au lieu de partir d'une cible, on part d'un budget et on maximise le résultat). Affiche aussi le budget restant non dépensé.
+**✅ Décidé — deux modes de calcul, au choix de l'utilisateur (le mode "Répartition égale" initialement envisagé a été abandonné — l'Optimisation le rend redondant) :**
+1. **Optimisation** — le joueur choisit une famille (Attaque / Défense / Or / Vitesse — mêmes 4 regroupements que le Simulateur de Stuff, voir plus bas), peut **mixer plusieurs compétences sur les mêmes emplacements** (ex: répartir 27 emplacements entre Attaque et Charognard), avec pour chaque compétence : nombre d'emplacements alloués (saisi manuellement par le joueur, plafonné automatiquement pour que le total ne dépasse jamais le total disponible), stat cible (%), et **sa propre ligue** (chaque compétence peut avoir une ligue différente, gemmes accumulées au fil du temps)
+2. **Budget disponible** — à partir d'un budget en **saphirs** (monnaie réelle, pas de sélecteur d'unité k/M/G) et d'un nombre d'emplacements disponibles, détermine combien de gemmes acheter et comment les fusionner pour **maximiser la stat obtenue**. Une seule compétence à la fois dans ce mode (pas de mix multi-stat), avec sa propre ligue. Affiche aussi le budget restant non dépensé, en gros et bien visible.
 
-**Logique de calcul complète du calculateur (mode Répartition égale) :**
-```
-1. Bonus nécessaire par emplacement : bonus_par_gemme = stat_cible / nb_emplacements
-2. Étoile minimale par gemme : n = plafond_supérieur(bonus_par_gemme / y(compétence, ligue))
-3. Gemmes de base requises TOTAL : nb_emplacements × 2^(n−1)
-4. Coût total = GemmesRequisesTotal × Prix(ligue)
-5. Stat réellement obtenue = nb_emplacements × n × y(compétence, ligue)
-```
+**Regroupement par famille (mode Optimisation) — identique au Simulateur de Stuff :**
 
-**Logique de calcul complète du calculateur (mode Optimisation coût) :**
-```
-1. Nombre de gemmes 1★ nécessaires si emplacements illimités : base_needed = plafond_supérieur(stat_cible / y)
-2. Si base_needed ≤ emplacements_max : utiliser base_needed emplacements à 1★ chacun (solution la moins chère possible)
-3. Sinon (cible trop élevée pour le nombre d'emplacements) : répartir sur emplacements_max emplacements avec le niveau d'étoile minimal commun n tel que emplacements_max × n × y ≥ stat_cible
-4. Coût total = (nb emplacements utilisés) × 2^(n−1) × Prix(ligue)
-```
-*(Justification mathématique : le coût croît de façon convexe/exponentielle par étoile alors que le bonus croît linéairement — utiliser un maximum d'emplacements à faible niveau est donc toujours plus économique que peu d'emplacements à haut niveau, tant que le nombre d'emplacements disponibles le permet.)*
+| Bouton famille | Compétences disponibles pour le mix |
+|---|---|
+| Attaque | Attaque, Charognard, Intrépide |
+| Défense | Bravoure, Défense, Recycleur, Récupération |
+| Or | Prospérité, Recruteur |
+| Vitesse | Vitesse |
 
-**✅ Précision confirmée par le joueur — objectif révisé et algorithme d'optimisation final :**
-- L'objectif est de **se rapprocher au maximum de la stat cible, sans besoin de la dépasser** (résultat le plus proche possible, au-dessus ou en dessous)
-- La solution optimale peut **mixer plusieurs niveaux d'étoiles différents** (ex: 10 gemmes 3★ + 10 gemmes 2★), pas uniquement un seul niveau uniforme
+*(Ce regroupement correspond aux compétences réellement comptabilisables par famille — voir la liste blanche `SKILL_ALLOWLIST_BY_BLOCK` documentée dans la section Simulateur de Stuff, réutilisée à l'identique ici pour rester cohérent.)*
 
-**Algorithme d'optimisation coût — version finale :**
+**Algorithme d'optimisation par compétence — identique pour chaque ligne du mix (mode Optimisation) :**
 ```
 1. Nombre d'unités de bonus nécessaires (arrondi au plus proche) : U = arrondi(stat_cible / y)
-2. Si U ≤ emplacements_disponibles :
+2. Si U ≤ emplacements_alloués_à_cette_compétence :
    → U gemmes à 1★ chacune (solution la plus simple et la moins chère, aucun besoin de fusionner)
-3. Sinon (U > emplacements_disponibles) :
-   → Répartir U unités le plus uniformément possible sur emplacements_disponibles gemmes :
-      base = partie_entière(U / emplacements_disponibles)
-      reste = U modulo emplacements_disponibles
-   → "reste" gemmes au niveau (base+1)★, et (emplacements_disponibles − reste) gemmes au niveau base★
-   → Cette répartition est mathématiquement optimale (le coût par étoile étant convexe/exponentiel, répartir le plus uniformément possible entre tous les emplacements disponibles minimise toujours le coût total)
+3. Sinon (U > emplacements_alloués) :
+   → Répartir U unités le plus uniformément possible sur les emplacements alloués à cette compétence :
+      base = partie_entière(U / emplacements_alloués)
+      reste = U modulo emplacements_alloués
+   → "reste" gemmes au niveau (base+1)★, et (emplacements_alloués − reste) gemmes au niveau base★
 ```
-*(C'est la solution rigoureusement optimale : pour un nombre d'emplacements donné, répartir la charge le plus également possible entre eux minimise toujours le coût total, quitte à mélanger deux niveaux d'étoiles adjacents quand la division n'est pas exacte.)*
+*(Solution mathématiquement optimale : le coût par étoile étant convexe/exponentiel, répartir le plus uniformément possible entre les emplacements alloués à une compétence minimise toujours le coût total pour cette compétence — chaque ligne du mix est optimisée indépendamment sur son propre sous-budget d'emplacements.)*
+
+**Résultat affiché (mode Optimisation) :** un tableau avec une ligne par compétence active (compétence, ligue, emplacements, répartition en étoiles, stat obtenue, coût), plus un **coût total** cumulé sur toutes les lignes.
 
 **Logique de calcul complète du calculateur (mode Budget disponible) :**
 ```
@@ -1113,16 +1137,12 @@ où `rang_ligue` = 2 pour Argent (première ligue où l'achat est possible, pas 
 2. Si G ≤ emplacements_disponibles : utiliser G emplacements à 1★ chacun (pas de fusion nécessaire)
 3. Sinon : répartir les G gemmes le plus uniformément possible sur emplacements_disponibles emplacements —
    chaque emplacement doit recevoir un compte de gemmes en puissance de 2 (1, 2, 4, 8...), correspondant à un niveau d'étoile entier,
-   ce qui donne un mix de deux niveaux d'étoiles adjacents (comme pour le mode Optimisation coût)
+   ce qui donne un mix de deux niveaux d'étoiles adjacents (comme pour le mode Optimisation)
 4. Coût réel = gemmes effectivement utilisées × Prix(ligue) ; budget restant = budget − coût réel
 ```
-*(Approche jumelle du mode Optimisation coût : au lieu de partir d'une stat cible et calculer le coût minimal, on part d'un budget fixe et on cherche la répartition qui maximise la stat obtenue avec ce budget.)*
 
-**Inputs (mode Budget) :** compétence, ligue, emplacements disponibles, budget en saphirs
-**Outputs (mode Budget) :** nombre de gemmes de base à acheter, détail de fusion (combien à chaque niveau d'étoile), stat obtenue, budget restant non dépensé
-
-**Inputs :** compétence, ligue, stat cible (%)
-**Outputs :** niveau d'étoile minimal nécessaire, nombre de gemmes de base requises, coût total en saphirs, stat réellement obtenue (peut légèrement dépasser la cible si le palier d'étoile ne tombe pas exactement dessus)
+**Inputs (mode Budget) :** compétence, ligue, emplacements disponibles, budget en saphirs (sans sélecteur d'unité)
+**Outputs (mode Budget) :** nombre de gemmes de base à acheter, détail de fusion (combien à chaque niveau d'étoile — **affiché en grand et en gras**, c'est le résultat principal attendu par le joueur), stat obtenue, budget restant non dépensé
 
 **Valeurs de base `y` par ligue et par type de gemme — confirmées par le joueur :**
 
@@ -1189,6 +1209,10 @@ Pattern confirmé sur l'ensemble : progression linéaire de +1 palier fixe par l
 - **Reskill full-prod** — implémenté comme case dédiée dans le calculateur Production
 - **Système de répartition des points de compétence** — implémenté (2 blocs séparés : "Compétences avec équipement" et "Distribution des points", avec plafond global et auto-remplissage des prérequis)
 - **Nom de domaine** — `ml-helper.com` décidé (option `.gg` encore à l'étude par le joueur)
+- **Gemmes** — refonte complète : mode "Répartition égale" abandonné, mode Optimisation devenu multi-stat (mix de plusieurs compétences sur les mêmes emplacements, ligue indépendante par ligne), boutons de famille au lieu d'une liste déroulante
+- **Simulateur de Stuff** — liste blanche stricte des compétences comptabilisées par (bloc, famille d'objet), y compris pour les objets "natifs" du bloc — ex: le bloc Or ne compte que Prospérité + Recruteur, pas les 4 autres compétences que les objets Or possèdent réellement. Récap global ajouté en haut de page, contribution de l'emplacement sélectionné affichée entre parenthèses dans le total du bloc
+- **Comparateur de stuff** — restructuré pour utiliser les mêmes 4 blocs et catalogues mixtes que le Simulateur, avec sélecteur de set explicite pour lever l'ambiguïté (au lieu d'un sélecteur de rareté seul)
+- **Environnement Codex démarré** — repo créé, `AGENTS.md`/cahier des charges/brief de démarrage committés, socle technique (section 0 du brief) écrit et validé par Codex (tests passants), poussée bloquée en cours de résolution (accès GitHub de l'environnement)
 
 **Changements structurels récents à retenir :**
 - La catégorie **"Production" a été retirée** — tout fusionné dans **Villes**, qui a maintenant 3 calculateurs : Coût de Ville, Niveau Max Atteignable, et **Production** (qui regroupe elle-même Production de Ville + Production totale + Récompenses, auparavant 3 calculateurs séparés)
@@ -1196,5 +1220,7 @@ Pattern confirmé sur l'ensemble : progression linéaire de +1 palier fixe par l
 - Les **Templiers personnels ne contribuent plus automatiquement à la production du joueur** — ils alimentent un pool de clan séparé ("Bonus de Temple du Clan"), saisi directement par le joueur
 - Les **Paramètres du joueur** distinguent maintenant "Compétences avec équipement" (valeur réellement utilisée par les calculateurs) et "Distribution des points" (outil de planification indépendant)
 - **Ergonomie transverse** : tous les champs numériques ont un stepper −/+ personnalisé (au lieu des flèches natives du navigateur), y compris les champs générés dynamiquement
+- **Décision admin** : plus de formule libre éditable, uniquement des paramètres numériques nommés (voir section 6)
+- **`prototype-ml-helper-unifie.html` fait désormais référence** pour la Phase 2 du développement — en cas de divergence avec le texte de ce document, le comportement réel du prototype prime (voir `AGENTS.md`)
 
 **Rappel de méthode (acté suite à plusieurs corrections) :** ne jamais présenter une valeur extrapolée/devinée comme confirmée — marquer explicitement "non vérifié" et demander confirmation plutôt que d'assumer un pattern à partir d'exemples partiels.
