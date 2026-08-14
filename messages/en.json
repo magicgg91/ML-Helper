@@ -1,6 +1,45 @@
 {
-  "Home": {
-    "title": "ML-Helper",
-    "status": "The technical foundation is ready."
+  "Login": {
+    "title": "Admin sign in",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "error": "Invalid username or password"
+  },
+  "Admin": {
+    "title": "Administration",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "logs": "Logs",
+    "empty": "Phase 1 administration foundation"
+  },
+  "Users": {
+    "title": "Admin users",
+    "create": "Create user",
+    "username": "Username",
+    "password": "Password",
+    "role": "Role",
+    "delete": "Delete",
+    "save": "Save",
+    "created": "User created",
+    "error": "Unable to complete the action"
+  },
+  "Logs": {
+    "title": "Audit logs",
+    "actor": "Actor",
+    "action": "Action",
+    "entity": "Entity",
+    "date": "Date",
+    "start": "Start date",
+    "end": "End date",
+    "purge": "Purge range",
+    "purged": "Logs purged",
+    "error": "Unable to purge logs"
+  },
+  "Roles": {
+    "super_admin": "Super Admin",
+    "admin": "Admin",
+    "guides_manager": "Guides Manager",
+    "calculators_manager": "Calculators Manager"
   }
 }

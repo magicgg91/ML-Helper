@@ -7,3 +7,98 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Guide {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  category    String
+  status      String    @default("draft")
+  title       Json
+  content     Json
+  excerpt     Json
+  coverImage  String?   @map("cover_image")
+  author      String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  @@map("guides")
+}
+
+model Calculator {
+  id              String           @id @default(uuid())
+  slug            String           @unique
+  category        String
+  name            Json
+  description     Json
+  active          Boolean          @default(false)
+  inputs          Json
+  outputs         Json
+  tips            Json
+  formulas        Formula[]
+  referenceTables ReferenceTable[]
+
+  @@map("calculators")
+}
+
+model Formula {
+  id            String     @id @default(uuid())
+  calculatorId  String     @map("calculator_id")
+  key           String
+  label         Json
+  formulaParams Json       @map("formula_params")
+  calculator    Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+
+  @@unique([calculatorId, key])
+  @@map("formulas")
+}
+
+model ReferenceTable {
+  id           String      @id @default(uuid())
+  key          String      @unique
+  label        Json
+  columns      Json
+  rows         Json
+  calculatorId String?     @map("calculator_id")
+  calculator   Calculator? @relation(fields: [calculatorId], references: [id], onDelete: SetNull)
+
+  @@map("reference_tables")
+}
+
+model User {
+  id                   String          @id @default(uuid())
+  username             String          @unique
+  passwordHash         String          @map("password_hash")
+  role                 String
+  createdAt            DateTime        @default(now()) @map("created_at")
+  lastLoginAt          DateTime?       @map("last_login_at")
+  logs                 AuditLog[]
+  staticContentUpdates StaticContent[]
+
+  @@map("users")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  diff       Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model StaticContent {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  content   Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String   @map("updated_by")
+  updater   User     @relation(fields: [updatedBy], references: [id], onDelete: Restrict)
+
+  @@map("static_content")
+}
