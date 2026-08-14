@@ -1,0 +1,42 @@
+{
+  "name": "ml-helper",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "prisma:generate": "prisma generate",
+    "check": "pnpm lint && pnpm format:check && pnpm test"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "next": "16.3.0",
+    "next-auth": "^4.24.15",
+    "next-intl": "^4.13.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint-config-prettier": "^10.1.0",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.6.0",
+    "prisma": "^6.19.0",
+    "typescript": "^5",
+    "vitest": "^3.2.0"
+  },
+  "packageManager": "pnpm@11.19.0"
+}
