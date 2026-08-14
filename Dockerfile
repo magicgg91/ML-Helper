@@ -7,7 +7,6 @@ RUN pnpm install --frozen-lockfile
 FROM dependencies AS builder
 COPY . .
 RUN pnpm prisma:generate \
-    && pnpm exec esbuild prisma/bootstrap-superadmin.ts --bundle --platform=node --format=esm --packages=external --outfile=bootstrap-superadmin.mjs \
     && pnpm build
 
 FROM node:22-alpine AS runner
@@ -18,7 +17,6 @@ RUN apk add --no-cache su-exec \
     && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/bootstrap-superadmin.mjs ./bootstrap-superadmin.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

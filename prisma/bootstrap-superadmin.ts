@@ -3,7 +3,7 @@ import { bootstrapSuperAdmin } from "../src/services/bootstrap-superadmin";
 
 const prisma = new PrismaClient();
 
-try {
+async function main() {
   const created = await bootstrapSuperAdmin(prisma, {
     username: process.env.SUPERADMIN_USERNAME,
     password: process.env.SUPERADMIN_PASSWORD,
@@ -13,6 +13,8 @@ try {
       ? "Bootstrap Super Admin created."
       : "Bootstrap Super Admin already exists.",
   );
-} finally {
-  await prisma.$disconnect();
 }
+
+main().finally(async () => {
+  await prisma.$disconnect();
+});
