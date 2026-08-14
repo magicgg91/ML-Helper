@@ -11,8 +11,8 @@ Domaine cible : `ml-helper.com`.
 ### Repo & branches
 1. Créer le repo GitHub **privé**, aucune licence pour l'instant
 2. Créer la branche `dev` (branche de travail active — tout le développement s'y passe)
-3. Créer la branche `prod`, la **protéger** : PR obligatoire pour merger, même en solo (le garde-fou est la CI, pas la review humaine)
-4. Ne jamais pousser directement sur `prod`
+3. `main` — branche par défaut du repo, joue le rôle de `prod` : **protégée**, PR obligatoire pour merger, même en solo (le garde-fou est la CI, pas la review humaine)
+4. Ne jamais pousser directement sur `main`
 
 ### Scaffold technique
 - Next.js (React + TypeScript)
@@ -31,8 +31,8 @@ Domaine cible : `ml-helper.com`.
 | Déclencheur | Actions |
 |---|---|
 | Push/PR vers `dev` | Lint + tests unitaires + composants + e2e, **puis build + push de l'image Docker taguée `:dev`** sur ghcr.io |
-| PR vers `prod` (ouverture/mise à jour) | Suite de tests complète, obligatoire avant d'autoriser le merge |
-| Merge vers `prod` | Build + push de l'image Docker taguée `:latest` sur ghcr.io |
+| PR vers `main` (ouverture/mise à jour) | Suite de tests complète, obligatoire avant d'autoriser le merge |
+| Merge vers `main` | Build + push de l'image Docker taguée `:latest` sur ghcr.io |
 
 Déploiement réel (pull + relance du conteneur sur le serveur) reste **manuel**, pas d'outil d'auto-déploiement à mettre en place.
 

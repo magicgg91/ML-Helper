@@ -93,7 +93,7 @@ Contenu du dossier :
 
 **Branches :**
 - `dev` — branche de travail active de Codex, tout le développement s'y passe
-- `prod` — branche protégée, **PR obligatoire pour merger** (garde-fou CI avant mise en prod), même en solo (toi seul review/merge)
+- `main` — branche par défaut du repo (créée automatiquement par GitHub), joue le rôle de branche de production : **protégée, PR obligatoire pour merger** (garde-fou CI avant mise en prod), même en solo (toi seul review/merge)
 
 **Tests automatisés (écrits par Codex dès le départ, pas ajoutés après coup) :**
 - **Unitaires** : Vitest
@@ -104,8 +104,8 @@ Contenu du dossier :
 | Déclencheur | Actions |
 |---|---|
 | Push/PR vers `dev` | Lint + tests unitaires + composants + e2e, **puis build + push de l'image Docker taguée `:dev`** sur ghcr.io — permet de tirer et tester l'image avant de décider de merger |
-| PR vers `prod` (ouverture/mise à jour) | Suite de tests complète en garde-fou obligatoire avant que le merge soit autorisé |
-| Merge vers `prod` | Build + push de l'image Docker taguée `:latest` (ou `:prod`) sur ghcr.io — c'est cette image que tu déploies réellement |
+| PR vers `main` (ouverture/mise à jour) | Suite de tests complète en garde-fou obligatoire avant que le merge soit autorisé |
+| Merge vers `main` | Build + push de l'image Docker taguée `:latest` sur ghcr.io — c'est cette image que tu déploies réellement |
 
 **Déploiement** : reste **manuel** — le lancement/redémarrage du conteneur sur le serveur (pull de l'image `:latest` + relance) est fait par toi, pas d'outil d'auto-déploiement (Watchtower/SSH/webhook) à mettre en place pour l'instant.
 
