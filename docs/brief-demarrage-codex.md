@@ -4,6 +4,8 @@ Ce document est le point d'entrée pour démarrer le développement. Il résume 
 
 Domaine cible : `ml-helper.com`.
 
+**📍 État d'avancement (à mettre à jour au fil des tâches) :** Section 0 (setup) écrite et validée par Codex — install/lint/tests/build passent réellement. Poussée sur `dev` en attente de résolution d'un problème d'accès GitHub côté environnement. Phase 1 pas encore commencée.
+
 ---
 
 ## 0. Setup à faire avant tout développement fonctionnel
@@ -56,6 +58,8 @@ Multi-stage : une étape dépendances + build, image finale minimale avec le bui
 
 C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifié** dans le cahier des charges (section 7) — pas de zone d'ombre fonctionnelle, uniquement de l'implémentation.
 
+**⚠️ Avant de commencer cette phase, lire `AGENTS.md` section "Référence UI/logique — le prototype fait foi".** `prototype-ml-helper-unifie.html` est l'implémentation de référence à porter — plus fiable que le texte seul sur les détails fins (formules, restrictions, comportements d'UI).
+
 ### Pages publiques
 `/`, `/tools`, `/tools/[slug]`, `/guides`, `/guides/[slug]` (contenu réel pas encore rédigé, structure suffit), `/contact`, `/legal`, `/login`
 
@@ -64,9 +68,9 @@ C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifi�
 - **"Compétences avec équipement"** : 10 % éditables directement (stuff seul, sans les points — voir note ci-dessous)
 - **"Distribution des points"** : outil de planification séparé, calcule le % à partir de points investis (base par ligue + taux par point, plafonds, prérequis avec auto-remplissage et blocage si budget insuffisant)
 - Templiers personnels (5 types, 0-20 chacun)
-- Bonus de Temple du Clan (5 champs, saisie directe, minimums = base du temple)
-- Sélecteur d'unité (k/M/G/T/P) sur les grands champs numériques
-- Stepper −/+ sur tous les champs nombre (pas les flèches natives du navigateur)
+- Bonus de Temple du Clan (5 champs, saisie directe, minimums = base du temple, pas aligné sur le taux Templier de chaque stat)
+- Sélecteur d'unité (×1/k/M/G) sur les grands champs numériques issus de la progression du jeu (VP, or disponible...) — **exception : le budget en saphirs (Gemmes, mode Budget disponible) n'en a pas**, saisie directe
+- Stepper −/+ sur tous les champs nombre (pas les flèches natives du navigateur), y compris les champs générés dynamiquement
 
 **⚠️ Point de modélisation à garder en tête :** "Compétences avec équipement" et "Distribution des points" sont volontairement **indépendants** — le premier est la valeur réellement utilisée par tous les calculateurs, le second est un outil de simulation qui n'écrit pas dans le premier automatiquement.
 
@@ -79,9 +83,9 @@ C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifi�
 - **Ranking** — convertisseur position ↔ pourcentage, seuils et récompenses par ligue (Légende/Diamant/Argent complets, Bronze/Or/Platine partiels — à compléter en admin une fois les données confirmées)
 
 ### Catégorie Compétences
-- **Simulateur de Stuff** — 4 blocs (Attaque/Défense/Or/Vitesse), grille 3×3 par bloc, catalogues mixtes pour Or (Or+Troupes-Vitesse) et Défense (Défense+Or)
-- **Comparaison de stuff** — 2 équipements côte à côte
-- **Gemmes** — 3 modes (répartition égale / optimisation coût / budget disponible), formule et algorithmes entièrement spécifiés section 7.1
+- **Simulateur de Stuff** — 4 blocs (Attaque/Défense/Or/Vitesse), grille 3×3 par bloc, catalogues mixtes pour Or (Or+Troupes-Vitesse) et Défense (Défense+Or), **liste blanche stricte des compétences comptabilisées par bloc et par famille d'objet** (ex: bloc Or = Prospérité + Recruteur uniquement, pas les autres compétences que les objets Or possèdent réellement — voir section 7.1)
+- **Comparaison de stuff** — mêmes 4 blocs et catalogues mixtes que le Simulateur, sélecteur de set explicite (rareté + nom + famille) pour lever l'ambiguïté d'un catalogue mixte
+- **Gemmes** — 2 modes : Optimisation (multi-stat, mix de plusieurs compétences sur les mêmes emplacements avec ligue indépendante par ligne) et Budget disponible (saphirs, une seule compétence à la fois) — formule et algorithmes entièrement spécifiés section 7.1
 - **Templiers** — table de coût exacte (pas une formule), 5 types indépendants
 
 ### Catégorie Référentiels
