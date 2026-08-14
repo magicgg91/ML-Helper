@@ -2,7 +2,7 @@
 
 Instructions permanentes pour tout agent (Codex ou autre) travaillant sur ce repo. Lu automatiquement à chaque tâche — pas besoin de les rappeler dans chaque prompt.
 
-**Contexte :** ML-Helper est un site communautaire d'outils (simulateurs) et de guides pour le jeu mobile *Million Lords*. Stack : Next.js/TypeScript, Prisma + SQLite, NextAuth, next-intl (EN/FR). Le détail fonctionnel complet est dans `cahier-des-charges-ml-helper.md` à la racine du repo — à consulter avant d'implémenter toute fonctionnalité qui n'est pas déjà en cours.
+**Contexte :** ML-Helper est un site communautaire d'outils (simulateurs) et de guides pour le jeu mobile *Million Lords*. Stack : Next.js/TypeScript, Prisma + SQLite, NextAuth, next-intl (EN/FR). Le détail fonctionnel complet est dans `docs/cahier-des-charges-ml-helper.md` — à consulter avant d'implémenter toute fonctionnalité qui n'est pas déjà en cours.
 
 **Le code produit ici est relu par une autre IA après chaque livraison**, indépendamment de l'agent qui l'a écrit. Il doit donc être compréhensible par un tiers sans connaître l'historique des échanges qui ont produit les specs — pas seulement fonctionnel.
 
@@ -10,7 +10,7 @@ Instructions permanentes pour tout agent (Codex ou autre) travaillant sur ce rep
 
 ## Référence UI/logique — le prototype fait foi
 
-Un **prototype HTML/JS autonome** (`prototype-ml-helper-unifie.html`, committé à la racine du repo) implémente déjà l'intégralité des calculateurs de la Phase 2, avec toute la logique, les formules, les restrictions et les comportements d'UI validés au fil de nombreuses itérations avec le porteur de projet.
+Un **prototype HTML/JS autonome** (`docs/prototype-ml-helper-unifie.html`) implémente déjà l'intégralité des calculateurs de la Phase 2, avec toute la logique, les formules, les restrictions et les comportements d'UI validés au fil de nombreuses itérations avec le porteur de projet.
 
 **Consigne pour tout agent travaillant sur la Phase 2 : porter la logique du prototype, pas la redéduire à partir du seul texte du cahier des charges.** Le prototype est plus précis et plus à jour que le texte sur de nombreux détails fins (ex: les listes blanches de compétences par bloc/famille d'équipement, la formule additive de progression par étoile, le système de distribution de points avec prérequis, l'algorithme d'optimisation des gemmes). En cas de divergence entre le texte du cahier des charges et le comportement réel du prototype, **le prototype prime** — c'est le dernier état validé par le porteur de projet.
 
