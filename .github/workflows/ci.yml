@@ -19,6 +19,16 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm lint
       - run: pnpm test
+      - name: Verify migrations and idempotent bootstrap
+        run: |
+          pnpm prisma migrate deploy
+          pnpm prisma db seed
+          pnpm prisma db seed
+          pnpm exec tsx prisma/verify-bootstrap.ts
+        env:
+          DATABASE_URL: file:./startup-test.db
+          SUPERADMIN_USERNAME: rootadmin
+          SUPERADMIN_PASSWORD: correct-horse-battery-staple
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
