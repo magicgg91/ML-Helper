@@ -8,6 +8,20 @@ Instructions permanentes pour tout agent (Codex ou autre) travaillant sur ce rep
 
 ---
 
+## Référence UI/logique — le prototype fait foi
+
+Un **prototype HTML/JS autonome** (`prototype-ml-helper-unifie.html`, committé à la racine du repo) implémente déjà l'intégralité des calculateurs de la Phase 2, avec toute la logique, les formules, les restrictions et les comportements d'UI validés au fil de nombreuses itérations avec le porteur de projet.
+
+**Consigne pour tout agent travaillant sur la Phase 2 : porter la logique du prototype, pas la redéduire à partir du seul texte du cahier des charges.** Le prototype est plus précis et plus à jour que le texte sur de nombreux détails fins (ex: les listes blanches de compétences par bloc/famille d'équipement, la formule additive de progression par étoile, le système de distribution de points avec prérequis, l'algorithme d'optimisation des gemmes). En cas de divergence entre le texte du cahier des charges et le comportement réel du prototype, **le prototype prime** — c'est le dernier état validé par le porteur de projet.
+
+Ce que ça veut dire concrètement :
+- Reprendre les noms de variables/constantes/fonctions du prototype comme base (déjà en anglais pour la plupart, cohérent avec les conventions de nommage ci-dessous)
+- Porter les structures de données telles quelles (ex: `SKILL_ALLOWLIST_BY_BLOCK`, `EQUIP_STAR_INCREMENT`, `GEM_VALUES_FR`, `STUFF_BLOCK_DEFS`) en les adaptant au schéma Prisma / `formula_params` plutôt que de les recréer de zéro
+- Reproduire le comportement d'UI (mise en page, interactions, messages d'erreur, styles) sauf si le cahier des charges précise explicitement une évolution prévue non encore intégrée au prototype (ex: Combat, guides — absents du prototype, à construire à partir du texte uniquement)
+- Le prototype n'a pas de tests — les tests réels sont à écrire pour la vraie implémentation, mais leurs cas doivent couvrir le comportement déjà observable dans le prototype
+
+---
+
 ## Convention de nommage — cohérence stricte, sans exception
 
 - **Code (variables, fonctions, champs DB, clés techniques) toujours en anglais**, même quand le libellé public est en français. Exemple déjà établi : le calculateur affiché "Coût de Ville" a pour clé technique `city-cost`.
