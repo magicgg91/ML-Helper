@@ -1,6 +1,6 @@
 # Brief de démarrage — ML-Helper (pour Codex)
 
-Ce document est le point d'entrée pour démarrer le développement. Il résume le plan de travail phasé et le setup technique à mettre en place en tout premier. **Le détail complet des spécifications (formules, modèles de données, décisions produit) est dans `cahier-des-charges-ml-helper.md`, à consulter systématiquement avant d'implémenter chaque brique.**
+Ce document est le point d'entrée pour démarrer le développement. Il résume le plan de travail phasé et le setup technique à mettre en place en tout premier. **Le détail complet des spécifications (formules, modèles de données, décisions produit) est dans `docs/cahier-des-charges-ml-helper.md`, à consulter systématiquement avant d'implémenter chaque brique.**
 
 Domaine cible : `ml-helper.com`.
 
@@ -58,7 +58,7 @@ Multi-stage : une étape dépendances + build, image finale minimale avec le bui
 
 C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifié** dans le cahier des charges (section 7) — pas de zone d'ombre fonctionnelle, uniquement de l'implémentation.
 
-**⚠️ Avant de commencer cette phase, lire `AGENTS.md` section "Référence UI/logique — le prototype fait foi".** `prototype-ml-helper-unifie.html` est l'implémentation de référence à porter — plus fiable que le texte seul sur les détails fins (formules, restrictions, comportements d'UI).
+**⚠️ Avant de commencer cette phase, lire `AGENTS.md` section "Référence UI/logique — le prototype fait foi".** `docs/prototype-ml-helper-unifie.html` est l'implémentation de référence à porter — plus fiable que le texte seul sur les détails fins (formules, restrictions, comportements d'UI).
 
 ### Pages publiques
 `/`, `/tools`, `/tools/[slug]`, `/guides`, `/guides/[slug]` (contenu réel pas encore rédigé, structure suffit), `/contact`, `/legal`, `/login`
