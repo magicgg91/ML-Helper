@@ -46,5 +46,5 @@ Instructions permanentes pour tout agent (Codex ou autre) travaillant sur ce rep
 ## Git
 
 - Travail exclusivement sur la branche `dev`
-- Ne jamais pousser directement sur `prod` — PR obligatoire, avec suite de tests complète comme garde-fou avant merge
+- Ne jamais pousser directement sur `main` — PR obligatoire, avec suite de tests complète comme garde-fou avant merge
 - Tests écrits en même temps que le code, jamais ajoutés après coup : Vitest (unitaires), React Testing Library (composants), Playwright (e2e)
