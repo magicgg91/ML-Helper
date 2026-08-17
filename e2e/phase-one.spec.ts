@@ -1,11 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test("public routes expose persistent player settings", async ({ page }) => {
+test("tool routes alone expose persistent player settings", async ({
+  page,
+}) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
+  await expect(
+    page.getByText("Paramètres du joueur", { exact: true }),
+  ).toHaveCount(0);
 
+  await page.goto("/tools");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
@@ -17,7 +23,7 @@ test("public routes expose persistent player settings", async ({ page }) => {
       exact: true,
     })
     .fill("12.5");
-  await page.goto("/tools");
+  await page.goto("/tools/villes");
 
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await expect(
@@ -35,6 +41,9 @@ test("public routes expose persistent player settings", async ({ page }) => {
   ).toHaveValue("12.5");
   await page.goto("/guides/apercu");
   await expect(page.getByRole("heading", { name: "apercu" })).toBeVisible();
+  await expect(
+    page.getByText("Paramètres du joueur", { exact: true }),
+  ).toHaveCount(0);
 });
 
 test("the Cities category exposes its three working calculators", async ({
