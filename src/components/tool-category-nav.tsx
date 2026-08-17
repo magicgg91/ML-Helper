@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const categories = [
-  { label: "Villes", slug: "villes" },
-  { label: "Classement", slug: "classement" },
-  { label: "Compétences", slug: "competences" },
-  { label: "Référentiels", slug: "referentiels" },
+  { label: "cities", slug: "villes" },
+  { label: "ranking", slug: "classement" },
+  { label: "skills", slug: "competences" },
+  { label: "references", slug: "referentiels" },
 ] as const;
 
 export function ToolCategoryNav({
@@ -16,6 +17,7 @@ export function ToolCategoryNav({
   availability: Record<string, boolean>;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("Tools");
   return (
     <nav className="category-nav" aria-label="Catégories de simulateurs">
       {categories.map((category) =>
@@ -28,11 +30,11 @@ export function ToolCategoryNav({
             href={`/tools/${category.slug}`}
             key={category.slug}
           >
-            {category.label}
+            {t(category.label)}
           </Link>
         ) : (
           <button className="category-btn" disabled key={category.slug}>
-            {category.label}
+            {t(category.label)}
           </button>
         ),
       )}
