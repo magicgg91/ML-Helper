@@ -417,8 +417,15 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
   );
 }
 
-export function CityCalculators() {
-  const [active, setActive] = useState<Calculator>("cost");
+export function CityCalculators({
+  availability = { cost: true, "max-level": true, production: true },
+}: {
+  availability?: Record<Calculator, boolean>;
+}) {
+  const firstAvailable = (
+    ["cost", "max-level", "production"] as Calculator[]
+  ).find((key) => availability[key]);
+  const [active, setActive] = useState<Calculator | undefined>(firstAvailable);
   const settings = usePlayerSettings();
   return (
     <div className="city-calculators">
@@ -431,6 +438,7 @@ export function CityCalculators() {
           type="button"
           role="tab"
           aria-selected={active === "cost"}
+          disabled={!availability.cost}
           onClick={() => setActive("cost")}
         >
           Coût de Ville
@@ -439,6 +447,7 @@ export function CityCalculators() {
           type="button"
           role="tab"
           aria-selected={active === "max-level"}
+          disabled={!availability["max-level"]}
           onClick={() => setActive("max-level")}
         >
           Niveau Max Atteignable
@@ -447,6 +456,7 @@ export function CityCalculators() {
           type="button"
           role="tab"
           aria-selected={active === "production"}
+          disabled={!availability.production}
           onClick={() => setActive("production")}
         >
           Production
@@ -455,6 +465,11 @@ export function CityCalculators() {
       {active === "cost" && <CostCalculator settings={settings} />}
       {active === "max-level" && <MaxLevelCalculator settings={settings} />}
       {active === "production" && <ProductionCalculator settings={settings} />}
+      {!active && (
+        <p className="empty-state">
+          Ces calculateurs sont temporairement indisponibles.
+        </p>
+      )}
     </div>
   );
 }
