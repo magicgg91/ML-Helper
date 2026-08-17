@@ -1,4 +1,24 @@
 {
+  "Public": {
+    "tools": "Simulators",
+    "guides": "Guides",
+    "contact": "Contact",
+    "admin": "Administration",
+    "legal": "Legal notice"
+  },
+  "Home": {
+    "eyebrow": "Million Lords · Community tools",
+    "title": "Plan your next progression.",
+    "description": "Simulate your progression, compare equipment and browse useful game data. Your player settings remain in this browser only.",
+    "tools": "View simulators",
+    "guides": "Browse guides"
+  },
+  "Tools": {
+    "cities": "Cities",
+    "ranking": "Ranking",
+    "skills": "Skills",
+    "references": "Reference tables"
+  },
   "Login": {
     "title": "Admin sign in",
     "username": "Username",
@@ -9,6 +29,10 @@
   "Admin": {
     "title": "Administration",
     "dashboard": "Dashboard",
+    "calculators": "Calculators",
+    "references": "Reference tables",
+    "guides": "Guides",
+    "content": "Static content",
     "users": "Users",
     "logs": "Logs",
     "empty": "Phase 1 administration foundation"
