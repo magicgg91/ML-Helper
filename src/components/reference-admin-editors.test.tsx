@@ -50,4 +50,20 @@ describe("complete lookup table administration", () => {
       screen.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
     ).toHaveValue(21929);
   });
+  it("blocks invalid cells with a visible message", () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    render(<TemplarReferenceAdmin initialCosts={[...templarCosts]} />);
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Coût Templier niveau 1" }),
+      { target: { value: "-1" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la table" }),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Corrige les champs signalés",
+    );
+    expect(screen.getByText("La valeur minimale est 0.")).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

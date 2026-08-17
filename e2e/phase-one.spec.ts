@@ -171,8 +171,15 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.getByLabel("Password").fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByText("Calculateurs actifs")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Dernières actions" }),
+  ).toBeVisible();
+  const adminNav = page.getByRole("navigation", {
+    name: "Navigation administration",
+  });
 
-  await page.getByRole("link", { name: "Users" }).click();
+  await adminNav.getByRole("link", { name: "Utilisateurs" }).click();
   const createForm = page.locator("form").first();
   await createForm.locator('input[name="username"]').fill("phase1admin");
   await createForm.locator('input[name="password"]').fill("phase-one-password");
@@ -181,11 +188,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByRole("status")).toHaveText("User created");
   await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
 
-  await page.getByRole("link", { name: "Logs" }).click();
+  await adminNav.getByRole("link", { name: "Logs" }).click();
   await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
   await expect(page.getByText(/user:/)).toBeVisible();
 
-  await page.getByRole("link", { name: "Référentiel combat" }).click();
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
+  await page.getByRole("link", { name: "Équipements de Combat" }).click();
   await expect(
     page.getByRole("heading", {
       name: "Référentiel — Équipements de Combat",
@@ -194,10 +202,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.locator("tbody tr")).toHaveCount(180);
   await expect(page.getByLabel("Ligne 1 set")).not.toHaveValue("");
 
-  await page.getByRole("link", { name: "Référentiel expédition" }).click();
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
+  await page.getByRole("link", { name: "Équipement d’Expédition" }).click();
   await expect(page.locator("tbody tr")).toHaveCount(120);
   await expect(page.getByLabel("Expédition ligne 1 set")).not.toHaveValue("");
 
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page.getByRole("link", { name: "Templiers" }).click();
   await expect(page.locator("tbody tr")).toHaveCount(20);
   await expect(

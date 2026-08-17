@@ -12,14 +12,26 @@ export function UsersManager({ users }: { users: UserRow[] }) {
     {},
   );
   const [passwords, setPasswords] = useState<Record<string, string>>({});
+  async function failure(response: Response) {
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    return payload?.error
+      ? `${t("Users.error")} : ${payload.error}`
+      : `${t("Users.error")} (HTTP ${response.status})`;
+  }
   async function create(formData: FormData) {
-    const response = await fetch("/api/admin/users", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(formData)),
-    });
-    setMessage(response.ok ? t("Users.created") : t("Users.error"));
-    if (response.ok) router.refresh();
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(formData)),
+      });
+      setMessage(response.ok ? t("Users.created") : await failure(response));
+      if (response.ok) router.refresh();
+    } catch {
+      setMessage(`${t("Users.error")} : serveur indisponible`);
+    }
   }
   async function remove(id: string) {
     const response = await fetch(`/api/admin/users/${id}`, {
@@ -30,6 +42,12 @@ export function UsersManager({ users }: { users: UserRow[] }) {
   }
   async function update(user: UserRow) {
     const password = passwords[user.id];
+    if (password && password.length < 12) {
+      setMessage(
+        "Le nouveau mot de passe doit contenir au moins 12 caractères.",
+      );
+      return;
+    }
     const response = await fetch(`/api/admin/users/${user.id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -38,7 +56,9 @@ export function UsersManager({ users }: { users: UserRow[] }) {
         ...(password ? { password } : {}),
       }),
     });
-    setMessage(response.ok ? "" : t("Users.error"));
+    setMessage(
+      response.ok ? "Utilisateur enregistré" : await failure(response),
+    );
     if (response.ok) router.refresh();
   }
   return (
@@ -64,7 +84,18 @@ export function UsersManager({ users }: { users: UserRow[] }) {
         </label>
         <button>{t("Users.create")}</button>
       </form>
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p
+          className={
+            message.includes("créé") || message.includes("enregistré")
+              ? "form-success"
+              : "form-status"
+          }
+          role="status"
+        >
+          {message}
+        </p>
+      )}
       <table>
         <thead>
           <tr>
