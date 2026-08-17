@@ -397,6 +397,93 @@ select {
 .production-block h3 strong {
   color: var(--accent-strong);
 }
+.ranking-placeholder {
+  margin: 1rem 0 0;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.7rem;
+  color: var(--muted);
+}
+.ranking-scale {
+  position: relative;
+  margin: 1rem 1.5rem 3.5rem;
+  padding-top: 1.5rem;
+}
+.ranking-axis-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.ranking-segments {
+  display: flex;
+  height: 3rem;
+  margin-top: 0.4rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+}
+.ranking-segment {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  color: var(--foreground);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.ranking-segment-0 {
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface));
+}
+.ranking-segment-1 {
+  background: color-mix(in srgb, var(--success) 32%, var(--surface));
+}
+.ranking-ticks {
+  position: relative;
+  height: 1.5rem;
+  margin-top: 0.35rem;
+}
+.ranking-ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+.ranking-table-wrap {
+  overflow-x: auto;
+}
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ranking-table th,
+.ranking-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.ranking-table th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+.ranking-unknown {
+  color: var(--muted);
+  font-style: italic;
+}
+.ranking-admin-editor {
+  display: grid;
+  gap: 1rem;
+}
+.ranking-admin-editor textarea {
+  min-height: 34rem;
+  padding: 1rem;
+  font-family: monospace;
+}
+.ranking-admin-editor button {
+  justify-self: start;
+  padding: 0.7rem 1rem;
+}
 @media (max-width: 42rem) {
   .public-header,
   .player-settings > details > summary {

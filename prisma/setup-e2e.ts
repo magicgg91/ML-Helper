@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 async function main() {
+  await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "reference_tables"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "audit_logs"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
   await prisma.$executeRawUnsafe(
@@ -14,6 +15,12 @@ async function main() {
   );
   await prisma.$executeRawUnsafe(
     'CREATE INDEX "audit_logs_created_at_idx" ON "audit_logs"("created_at")',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE "reference_tables" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "label" JSONB NOT NULL, "columns" JSONB NOT NULL, "rows" JSONB NOT NULL, "calculator_id" TEXT)',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE UNIQUE INDEX "reference_tables_key_key" ON "reference_tables"("key")',
   );
   await prisma.$disconnect();
 }

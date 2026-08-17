@@ -10,6 +10,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <strong>{t("title")}</strong>
         <nav>
           <Link href="/admin">{t("dashboard")}</Link>
+          {["super_admin", "admin", "calculators_manager"].includes(
+            session.user.role,
+          ) && <Link href="/admin/calculators/ranking">Classement</Link>}
           {session.user.role === "super_admin" && (
             <>
               <Link href="/admin/users">{t("users")}</Link>

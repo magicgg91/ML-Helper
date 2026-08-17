@@ -53,6 +53,30 @@ test("the Cities category exposes its three working calculators", async ({
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
 
+test("Ranking converts position and percentage into league ranges", async ({
+  page,
+}) => {
+  await page.goto("/tools/classement");
+  await expect(
+    page.getByRole("heading", { name: "Classement", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByTestId("ranking-total")).toHaveText("1 000");
+  await expect(
+    page.getByLabel("Échelle de classement de 100% à 0%"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "Descente Platine" }),
+  ).toBeVisible();
+
+  await page
+    .locator(".ranking-calculator")
+    .getByLabel("Ligue")
+    .selectOption("bronze");
+  await expect(page.getByRole("status")).toContainText(
+    "à définir dans l’administration",
+  );
+});
+
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {
