@@ -99,6 +99,16 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 });
 
+test("calculator pages only repeat names in their navigation tabs", async ({
+  page,
+}) => {
+  for (const slug of ["villes", "classement", "competences", "referentiels"]) {
+    await page.goto(`/tools/${slug}`);
+    await expect(page.locator("main > .lead")).toHaveCount(0);
+    await expect(page.locator("main h2")).toHaveCount(0);
+  }
+});
+
 test("the Cities category exposes its three working calculators", async ({
   page,
 }) => {

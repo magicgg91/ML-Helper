@@ -28,11 +28,6 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
   return (
     <div className="calculator-stack ranking-calculator">
       <section className="calculator-card">
-        <h2>Classement — Position ↔ Pourcentage</h2>
-        <p>
-          Déduis le nombre total de joueurs puis visualise chaque plage de
-          classement de ta ligue.
-        </p>
         <div className="calculator-fields">
           <label className="calculator-field">
             Ligue

@@ -281,13 +281,6 @@ export function StuffSimulator() {
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
       <section className="calculator-card">
-        <h2>Simulateur de Stuff</h2>
-        <p>
-          Configure les quatre blocs. La configuration est sauvegardée
-          automatiquement dans ce navigateur.
-        </p>
-      </section>
-      <section className="calculator-card">
         <h3>Récapitulatif — toutes familles confondues</h3>
         <Summary totals={global} />
       </section>
@@ -413,7 +406,6 @@ export function StuffComparison() {
   return (
     <div className="calculator-stack" data-testid="stuff-comparison">
       <section className="calculator-card">
-        <h2>Comparaison de stuff</h2>
         <div className="family-buttons">
           {equipmentBlocks.map((key) => (
             <button

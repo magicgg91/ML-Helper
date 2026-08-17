@@ -121,8 +121,6 @@ function CostCalculator({ settings }: { settings: PlayerSettings }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Coût d’upgrade</h2>
-        <p>Formules confirmées pour la ligue Légende.</p>
         <div className="calculator-fields">
           <Field
             label="Nombre de villes"
@@ -221,8 +219,6 @@ function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Niveau max atteignable</h2>
-        <p>Recherche niveau par niveau à partir du budget d’or disponible.</p>
         <div className="calculator-fields">
           <Field
             label="Nombre de villes"
@@ -333,11 +329,6 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Production</h2>
-        <p>
-          Production par ville, total détaillé et récompenses basées sur la
-          production de base.
-        </p>
         <div className="calculator-fields">
           <Field
             label="Nombre de villes"

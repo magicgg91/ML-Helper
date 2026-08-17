@@ -172,11 +172,6 @@ function GemsCalculator() {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Gemmes</h2>
-        <p>
-          Jusqu’à 27 emplacements, avec répartition uniforme pour limiter le
-          coût exponentiel des fusions.
-        </p>
         <div
           className="calculator-tabs compact mode-switch"
           role="tablist"
@@ -563,11 +558,6 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Templiers</h2>
-        <p>
-          Chaque type conserve indépendamment son niveau de départ et son niveau
-          cible.
-        </p>
         <div className="family-buttons">
           {templarKeys.map((key) => (
             <button

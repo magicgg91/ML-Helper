@@ -152,7 +152,6 @@ export function CombatReferenceTable({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Équipements de Combat</h2>
         <Filters
           families={["Or", "Troupes/Vitesse", "Défense", "Attaque"]}
           {...filters}
@@ -247,7 +246,6 @@ export function ExpeditionReferenceTable({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <h2>Équipement d’Expédition</h2>
         <p className="unconfirmed-notice">
           Pour les statistiques autres qu’Équipement et Vitalité, la projection
           par étoile est une <strong>hypothèse non confirmée</strong>.

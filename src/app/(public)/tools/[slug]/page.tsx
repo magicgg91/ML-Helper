@@ -20,9 +20,6 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
     return (
       <main className="public-main">
         <h1 className="sr-only">Référentiels</h1>
-        <p className="lead">
-          Consulte et filtre les équipements de combat et d’expédition.
-        </p>
         <ReferenceTables
           combatRows={await getCombatReferenceRows()}
           expeditionRows={await getExpeditionReferenceRows()}
@@ -37,9 +34,6 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
     return (
       <main className="public-main">
         <h1 className="sr-only">Compétences</h1>
-        <p className="lead">
-          Optimise tes gemmes et planifie séparément chacun de tes Templiers.
-        </p>
         <SkillsCalculators
           templarCostTable={await getTemplarCostRows()}
           availability={{
@@ -56,10 +50,6 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
     return (
       <main className="public-main">
         <h1 className="sr-only">Classement</h1>
-        <p className="lead">
-          Convertis ton rang et ton pourcentage en plages de promotion, maintien
-          ou descente.
-        </p>
         {active.ranking ? (
           <RankingCalculator config={config} />
         ) : (
@@ -73,10 +63,6 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   return (
     <main className="public-main">
       <h1 className="sr-only">Villes</h1>
-      <p className="lead">
-        Planifie tes upgrades et mesure précisément ta production en ligue
-        Légende.
-      </p>
       <CityCalculators
         availability={{
           cost: active["city-cost"],
