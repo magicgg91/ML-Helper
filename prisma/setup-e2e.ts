@@ -43,6 +43,71 @@ async function main() {
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "reference_tables_key_key" ON "reference_tables"("key")',
   );
+  const calculators = [
+    ["calculator-city-cost", "city-cost", "villes", "Coût de Ville"],
+    [
+      "calculator-city-max-level",
+      "city-max-level",
+      "villes",
+      "Niveau Max Atteignable",
+    ],
+    ["calculator-city-production", "city-production", "villes", "Production"],
+    ["calculator-ranking", "ranking", "classement", "Ranking"],
+    [
+      "calculator-stuff-simulator",
+      "stuff-simulator",
+      "competences",
+      "Simulateur de Stuff",
+    ],
+    [
+      "calculator-stuff-comparison",
+      "stuff-comparison",
+      "competences",
+      "Comparaison de stuff",
+    ],
+    ["calculator-gems", "gems", "competences", "Gemmes"],
+    ["calculator-templars", "templars", "competences", "Templiers"],
+    [
+      "calculator-combat-equipment",
+      "combat-equipment",
+      "referentiels",
+      "Équipements de Combat",
+    ],
+    [
+      "calculator-expedition-equipment",
+      "expedition-equipment",
+      "referentiels",
+      "Équipement d’Expédition",
+    ],
+  ];
+  for (const [id, slug, category, name] of calculators) {
+    await prisma.calculator.create({
+      data: {
+        id,
+        slug,
+        category,
+        name: { fr: name },
+        description: {},
+        active: true,
+        inputs: {},
+        outputs: {},
+        tips: {},
+      },
+    });
+  }
+  await prisma.guide.create({
+    data: {
+      id: "guide-visibility-test",
+      slug: "guide-visible",
+      category: "Débutants",
+      status: "published",
+      title: { fr: "Guide visible" },
+      excerpt: { fr: "Guide utilisé pour vérifier la dépublication." },
+      content: { fr: "Contenu de test" },
+      author: "Équipe ML-Helper",
+      publishedAt: new Date(),
+    },
+  });
   await prisma.$disconnect();
 }
 main().catch(async (error) => {
