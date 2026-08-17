@@ -98,6 +98,11 @@ export function SkillsCalculators({
           role="tab"
           aria-selected={active === "simulator"}
           disabled={!availability.simulator}
+          title={
+            !availability.simulator
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("simulator")}
         >
           Simulateur de Stuff
@@ -107,6 +112,11 @@ export function SkillsCalculators({
           role="tab"
           aria-selected={active === "comparison"}
           disabled={!availability.comparison}
+          title={
+            !availability.comparison
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("comparison")}
         >
           Comparaison de stuff
@@ -116,6 +126,11 @@ export function SkillsCalculators({
           role="tab"
           aria-selected={active === "gems"}
           disabled={!availability.gems}
+          title={
+            !availability.gems
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("gems")}
         >
           Gemmes
@@ -125,6 +140,11 @@ export function SkillsCalculators({
           role="tab"
           aria-selected={active === "templars"}
           disabled={!availability.templars}
+          title={
+            !availability.templars
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("templars")}
         >
           Templiers
