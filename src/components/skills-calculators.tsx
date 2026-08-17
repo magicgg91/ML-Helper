@@ -75,8 +75,8 @@ export function SkillsCalculators({
   >("simulator");
   return (
     <div className="city-calculators">
-      <div
-        className="calculator-tabs"
+      <nav
+        className="calculator-tabs tabs"
         role="tablist"
         aria-label="Calculateurs Compétences"
       >
@@ -112,7 +112,7 @@ export function SkillsCalculators({
         >
           Templiers
         </button>
-      </div>
+      </nav>
       {active === "simulator" ? (
         <StuffSimulator />
       ) : active === "comparison" ? (

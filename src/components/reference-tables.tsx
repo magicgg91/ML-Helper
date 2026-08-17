@@ -342,7 +342,11 @@ export function ReferenceTables({
   const [active, setActive] = useState<"combat" | "expedition">("combat");
   return (
     <div>
-      <div className="calculator-tabs" role="tablist" aria-label="Référentiels">
+      <nav
+        className="calculator-tabs tabs"
+        role="tablist"
+        aria-label="Référentiels"
+      >
         <button
           type="button"
           role="tab"
@@ -359,7 +363,7 @@ export function ReferenceTables({
         >
           Équipement d’Expédition
         </button>
-      </div>
+      </nav>
       {active === "combat" ? (
         <CombatReferenceTable rows={combatRows} />
       ) : (

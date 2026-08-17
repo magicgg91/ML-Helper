@@ -422,8 +422,8 @@ export function CityCalculators() {
   const settings = usePlayerSettings();
   return (
     <div className="city-calculators">
-      <div
-        className="calculator-tabs"
+      <nav
+        className="calculator-tabs tabs"
         role="tablist"
         aria-label="Calculateurs Villes"
       >
@@ -451,7 +451,7 @@ export function CityCalculators() {
         >
           Production
         </button>
-      </div>
+      </nav>
       {active === "cost" && <CostCalculator settings={settings} />}
       {active === "max-level" && <MaxLevelCalculator settings={settings} />}
       {active === "production" && <ProductionCalculator settings={settings} />}
