@@ -13,6 +13,7 @@ model Guide {
   slug        String    @unique
   category    String
   status      String    @default("draft")
+  active      Boolean   @default(true)
   title       Json
   content     Json
   excerpt     Json

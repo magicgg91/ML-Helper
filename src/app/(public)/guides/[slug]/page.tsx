@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
 import { getLocale } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
+import { GuideMarkdown } from "@/components/guide-markdown";
 
 export default async function GuidePage({
   params,
@@ -11,7 +12,7 @@ export default async function GuidePage({
   await connection();
   const locale = await getLocale();
   const guide = await prisma.guide.findFirst({
-    where: { slug, status: "published" },
+    where: { slug, status: "published", active: true },
   });
   if (!guide) notFound();
   return (
@@ -21,7 +22,7 @@ export default async function GuidePage({
         <h1>
           {localizedText(guide.title, locale) || slug.replaceAll("-", " ")}
         </h1>
-        <div>{localizedText(guide.content, locale)}</div>
+        <GuideMarkdown markdown={localizedText(guide.content, locale)} />
       </article>
     </main>
   );

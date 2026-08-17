@@ -380,9 +380,129 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
           page.getByRole("heading", { name: "Accès interdit" }),
         ).toBeVisible();
     }
+    const canAuthor = roleCase.username !== "role-calculators";
+    const canModerate = ["rootadmin", "role-admin"].includes(roleCase.username);
+    const slug = `rights-${roleCase.username}`;
+    const payload = {
+      slug,
+      category: "debutants",
+      coverImage: "",
+      translations: {
+        fr: {
+          title: `Guide ${roleCase.username}`,
+          excerpt: "Résumé",
+          content: "Paragraphe",
+        },
+        en: {
+          title: `Guide ${roleCase.username}`,
+          excerpt: "Summary",
+          content: "Paragraph",
+        },
+      },
+    };
+    const created = await page.request.post("/api/admin/guides", {
+      data: payload,
+    });
+    expect(created.status(), `${roleCase.username} create`).toBe(
+      canAuthor ? 201 : 403,
+    );
+    const guideId = canAuthor
+      ? (await created.json()).id
+      : "guide-visibility-test";
+    expect(
+      (
+        await page.request.patch(`/api/admin/guides/${guideId}`, {
+          data: payload,
+        })
+      ).status(),
+      `${roleCase.username} edit`,
+    ).toBe(canAuthor ? 200 : 403);
+    expect(
+      (
+        await page.request.patch(`/api/admin/guides/${guideId}/active`, {
+          data: { active: false },
+        })
+      ).status(),
+      `${roleCase.username} toggle`,
+    ).toBe(canAuthor ? 200 : 403);
+    expect(
+      (
+        await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+          data: { status: "pending_review" },
+        })
+      ).status(),
+      `${roleCase.username} submit`,
+    ).toBe(canAuthor ? 200 : 403);
+    expect(
+      (
+        await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+          data: { status: "published" },
+        })
+      ).status(),
+      `${roleCase.username} publish`,
+    ).toBe(canModerate ? 200 : 403);
+    expect(
+      (await page.request.delete(`/api/admin/guides/${guideId}`)).status(),
+      `${roleCase.username} delete`,
+    ).toBe(canModerate ? 200 : 403);
     await context.close();
   }
   await rootContext.close();
+});
+
+test("guide editor supports the complete editorial lifecycle", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await page.goto("/admin/guides/new");
+  await page.getByLabel("Slug").fill("guide-cycle-complet");
+  await page.getByLabel("Titre (FR)").fill("Guide cycle complet");
+  await page.getByLabel("Résumé (FR)").fill("Résumé du cycle complet");
+  await page
+    .getByRole("textbox", { name: "Paragraphe 1" })
+    .fill("Contenu initial du guide.");
+  await page.getByRole("button", { name: "Soumettre en review" }).click();
+  await expect(page).toHaveURL(/\/admin\/guides\/.+/);
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.");
+  await page.getByLabel("Titre (FR)").fill("Guide édité et publié");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.");
+  await page.goto("/admin/guides");
+  const row = page.getByRole("row", { name: /Guide édité et publié/ });
+  await expect(row.getByRole("combobox")).toHaveValue("pending_review");
+  await row.getByRole("combobox").selectOption("published");
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
+  await page.goto("/guides");
+  await expect(page.getByText("Guide édité et publié")).toBeVisible();
+  await page.goto("/admin/guides");
+  const publishedRow = page.getByRole("row", { name: /Guide édité et publié/ });
+  await publishedRow.getByRole("button", { name: "Désactiver" }).click();
+  await expect(page.getByRole("status")).toHaveText("Guide désactivé.");
+  await page.goto("/guides");
+  await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
+  await page.goto("/admin/guides");
+  const disabledRow = page.getByRole("row", { name: /Guide édité et publié/ });
+  await disabledRow.getByRole("button", { name: "Activer" }).click();
+  await expect(page.getByRole("status")).toHaveText("Guide activé.");
+  await page.goto("/guides");
+  await expect(page.getByText("Guide édité et publié")).toBeVisible();
+  await page.goto("/admin/guides");
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("row", { name: /Guide édité et publié/ })
+    .getByRole("button", { name: "Supprimer" })
+    .click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Guide supprimé définitivement.",
+  );
+  await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
 });
 
 test("calculator visibility and guide publication are reversible", async ({
@@ -412,18 +532,16 @@ test("calculator visibility and guide publication are reversible", async ({
   await expect(rankingCard.getByRole("link")).toHaveCount(0);
 
   await page.goto("/admin/guides");
-  const guideStatus = page.getByLabel("Statut de guide-visible");
+  const guideStatus = page.getByLabel("Statut de Guide visible");
   await guideStatus.selectOption("draft");
-  await expect(page.getByRole("status")).toHaveText(
-    "Statut du guide enregistré.",
-  );
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide visible")).toHaveCount(0);
   await page.goto("/admin/guides");
-  await expect(page.getByRole("cell", { name: "guide-visible" })).toBeVisible();
-  await expect(page.getByLabel("Statut de guide-visible")).toHaveValue("draft");
+  await expect(page.getByRole("cell", { name: "Guide visible" })).toBeVisible();
+  await expect(page.getByLabel("Statut de Guide visible")).toHaveValue("draft");
 
-  await page.getByLabel("Statut de guide-visible").selectOption("published");
+  await page.getByLabel("Statut de Guide visible").selectOption("published");
   const enabled = await page.request.patch(
     "/api/admin/calculators/calculator-ranking",
     { data: { active: true } },

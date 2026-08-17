@@ -8,6 +8,7 @@ const actions: Record<string, string> = {
   publish: "a publié",
   unpublish: "a dépublié",
   update_status: "a changé le statut de",
+  submit_review: "a soumis en validation",
   update_translations: "a modifié les traductions de",
   change_password: "a changé le mot de passe de",
   purge: "a purgé",

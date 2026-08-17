@@ -26,7 +26,7 @@ async function main() {
     'CREATE UNIQUE INDEX "calculators_slug_key" ON "calculators"("slug")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "guides" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT \'draft\', "title" JSONB NOT NULL, "content" JSONB NOT NULL, "excerpt" JSONB NOT NULL, "cover_image" TEXT, "author" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" DATETIME NOT NULL, "published_at" DATETIME)',
+    'CREATE TABLE "guides" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT \'draft\', "active" BOOLEAN NOT NULL DEFAULT true, "title" JSONB NOT NULL, "content" JSONB NOT NULL, "excerpt" JSONB NOT NULL, "cover_image" TEXT, "author" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" DATETIME NOT NULL, "published_at" DATETIME)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "guides_slug_key" ON "guides"("slug")',

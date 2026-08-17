@@ -8,7 +8,7 @@ export default async function GuidesPage() {
   await connection();
   const locale = await getLocale();
   const guides = await prisma.guide.findMany({
-    where: { status: "published" },
+    where: { status: "published", active: true },
     orderBy: { publishedAt: "desc" },
   });
   return (

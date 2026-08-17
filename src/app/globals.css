@@ -1364,3 +1364,97 @@ body > main h1 {
   border-color: var(--emerald-bright);
   background: color-mix(in srgb, var(--emerald) 10%, var(--bg));
 }
+.guide-metadata,
+.guide-locale-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.8rem;
+}
+.guide-metadata label,
+.guide-locale-fields label,
+.guide-editor-block label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-dim);
+}
+.guide-block-editor {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.guide-editor-block {
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
+.guide-block-toolbar,
+.guide-add-block,
+.table-actions,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.guide-block-toolbar span {
+  flex: 1;
+  color: var(--text-faint);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.guide-rich-block {
+  min-height: 3rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.guide-rich-block:focus {
+  border-color: var(--gold);
+  outline: none;
+  background: var(--bg-panel-raised);
+}
+.block-heading2 .guide-rich-block,
+.block-heading3 .guide-rich-block {
+  font-family: var(--font-title), serif;
+  font-weight: 700;
+}
+.block-heading2 .guide-rich-block {
+  font-size: 1.5rem;
+}
+.block-heading3 .guide-rich-block {
+  font-size: 1.2rem;
+}
+.block-quote .guide-rich-block {
+  border-left: 3px solid var(--violet-bright);
+  font-style: italic;
+}
+.guide-add-block {
+  padding: 0.8rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+.admin-actions {
+  margin-top: 1rem;
+}
+.guide-admin-table tr.is-disabled {
+  color: var(--text-faint);
+  opacity: 0.65;
+}
+.danger-action {
+  color: var(--ember);
+}
+.guide-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.guide-content blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--violet-bright);
+  color: var(--text-dim);
+}

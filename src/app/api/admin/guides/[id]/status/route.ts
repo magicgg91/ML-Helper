@@ -5,6 +5,7 @@ import { canChangeGuideStatus, type GuideStatus } from "@/auth/guide-status";
 import { prisma } from "@/lib/prisma";
 import { auditMessage } from "@/lib/audit-message";
 import { localizedText } from "@/lib/translations";
+import { canPerformGuideAction } from "@/auth/guide-actions";
 
 const statusSchema = z.object({
   status: z.enum(["draft", "pending_review", "published"]),
@@ -27,6 +28,10 @@ export async function PATCH(
   if (!before)
     return NextResponse.json({ error: "guide_not_found" }, { status: 404 });
   if (
+    !canPerformGuideAction(
+      session.user.role,
+      parsed.data.status === "published" ? "publish" : "submit_review",
+    ) ||
     !canChangeGuideStatus(
       session.user.role,
       before.status as GuideStatus,
@@ -51,7 +56,9 @@ export async function PATCH(
         ? "publish"
         : before.status === "published"
           ? "unpublish"
-          : "update_status";
+          : parsed.data.status === "pending_review"
+            ? "submit_review"
+            : "update_status";
     await tx.auditLog.create({
       data: {
         userId: session.user.id,
