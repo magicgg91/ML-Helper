@@ -1,27 +1,24 @@
-import Link from "next/link";
 import { requireAdminSession } from "@/auth/require-session";
-import { can, type AdminCapability } from "@/auth/permissions";
+import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
-
-const allShortcuts: Array<[string, string, AdminCapability]> = [
-  ["/admin/calculators", "Calculateurs", "calculators.read"],
-  ["/admin/references", "Référentiels", "references.read"],
-  ["/admin/guides", "Guides", "guides.read"],
-  ["/admin/content", "Contenu statique", "content.read"],
-  ["/admin/users", "Utilisateurs", "users.manage"],
-  ["/admin/logs", "Logs", "logs.view"],
-];
 
 export default async function AdminPage() {
   const session = await requireAdminSession();
   const mayViewCalculators = can(session.user.role, "calculators.read");
+  const mayViewGuides = can(session.user.role, "guides.read");
   const mayViewLogs = can(session.user.role, "logs.view");
-  const [active, inactive, recentLogs] = await Promise.all([
+  const [active, calculatorTotal, publishedGuides, guideTotal, recentLogs] = await Promise.all([
     mayViewCalculators
       ? prisma.calculator.count({ where: { active: true } })
       : Promise.resolve(0),
     mayViewCalculators
-      ? prisma.calculator.count({ where: { active: false } })
+      ? prisma.calculator.count()
+      : Promise.resolve(0),
+    mayViewGuides
+      ? prisma.guide.count({ where: { status: "published" } })
+      : Promise.resolve(0),
+    mayViewGuides
+      ? prisma.guide.count()
       : Promise.resolve(0),
     mayViewLogs
       ? prisma.auditLog.findMany({
@@ -31,40 +28,30 @@ export default async function AdminPage() {
         })
       : Promise.resolve([]),
   ]);
-  const shortcuts = allShortcuts.filter(([, , capability]) =>
-    can(session.user.role, capability),
-  );
   return (
     <main className="admin-main">
       <p className="eyebrow">Vue d’ensemble</p>
       <h1>Dashboard</h1>
-      {mayViewCalculators && (
+      {(mayViewCalculators || mayViewGuides) && (
         <section className="admin-metrics" aria-label="État des calculateurs">
+          {mayViewCalculators && (
           <article className="total-box">
-            <span className="label">Calculateurs actifs</span>
-            <strong className="value emerald">{active}</strong>
+            <span className="label">Calculateurs</span>
+            <strong className="value emerald">{active} activés / {calculatorTotal} au total</strong>
           </article>
+          )}
+          {mayViewGuides && (
           <article className="total-box">
-            <span className="label">Calculateurs inactifs</span>
-            <strong className="value">{inactive}</strong>
+            <span className="label">Guides</span>
+            <strong className="value">{publishedGuides} publiés / {guideTotal} au total</strong>
           </article>
+          )}
         </section>
       )}
-      <section className="admin-panel">
-        <h2>Accès rapides</h2>
-        <div className="admin-shortcuts">
-          {shortcuts.map(([href, label]) => (
-            <Link className="category-btn" href={href} key={href}>
-              {label}
-            </Link>
-          ))}
-        </div>
-      </section>
       {mayViewLogs && (
         <section className="admin-panel">
           <div className="admin-section-heading">
             <h2>Dernières actions</h2>
-            <Link href="/admin/logs">Voir tous les logs</Link>
           </div>
           {recentLogs.length ? (
             <div className="ranking-table-wrap">
@@ -73,8 +60,7 @@ export default async function AdminPage() {
                   <tr>
                     <th>Utilisateur</th>
                     <th>Rôle</th>
-                    <th>Action</th>
-                    <th>Entité</th>
+                    <th colSpan={2}>Message</th>
                     <th>Date</th>
                   </tr>
                 </thead>
@@ -83,8 +69,7 @@ export default async function AdminPage() {
                     <tr key={log.id}>
                       <td>{log.user.username}</td>
                       <td>{log.actorRole}</td>
-                      <td>{log.action}</td>
-                      <td>{log.entityType}</td>
+                      <td colSpan={2}>{log.message}</td>
                       <td>{log.createdAt.toLocaleString("fr-FR")}</td>
                     </tr>
                   ))}

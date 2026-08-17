@@ -3,6 +3,8 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
 import { mergeLaunchTranslations } from "@/lib/translations";
+import { localizedText } from "@/lib/translations";
+import { auditMessage } from "@/lib/audit-message";
 
 const localized = z.object({ fr: z.string().trim(), en: z.string().trim() });
 const schema = z.object({
@@ -44,6 +46,11 @@ export async function PATCH(
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
+        message: auditMessage(
+          session.user.name ?? session.user.id,
+          "update_translations",
+          `le calculateur ${localizedText(before.name, "fr") || before.slug}`,
+        ),
         action: "update_translations",
         entityType: "calculator",
         entityId: id,

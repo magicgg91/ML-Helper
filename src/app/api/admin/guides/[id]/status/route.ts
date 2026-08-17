@@ -3,6 +3,8 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canChangeGuideStatus, type GuideStatus } from "@/auth/guide-status";
 import { prisma } from "@/lib/prisma";
+import { auditMessage } from "@/lib/audit-message";
+import { localizedText } from "@/lib/translations";
 
 const statusSchema = z.object({
   status: z.enum(["draft", "pending_review", "published"]),
@@ -44,16 +46,22 @@ export async function PATCH(
             : null,
       },
     });
+    const action =
+      parsed.data.status === "published"
+        ? "publish"
+        : before.status === "published"
+          ? "unpublish"
+          : "update_status";
     await tx.auditLog.create({
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
-        action:
-          parsed.data.status === "published"
-            ? "publish"
-            : before.status === "published"
-              ? "unpublish"
-              : "update_status",
+        action,
+        message: auditMessage(
+          session.user.name ?? session.user.id,
+          action,
+          `le guide ${localizedText(before.title, "fr") || before.slug}`,
+        ),
         entityType: "guide",
         entityId: id,
         diff: {

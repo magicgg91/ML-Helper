@@ -19,8 +19,7 @@ export default async function LogsPage() {
           <tr>
             <th>{t("actor")}</th>
             <th>Rôle au moment de l’action</th>
-            <th>{t("action")}</th>
-            <th>{t("entity")}</th>
+            <th>Message</th>
             <th>{t("date")}</th>
           </tr>
         </thead>
@@ -29,10 +28,7 @@ export default async function LogsPage() {
             <tr key={log.id}>
               <td>{log.user.username}</td>
               <td>{log.actorRole}</td>
-              <td>{log.action}</td>
-              <td>
-                {log.entityType}:{log.entityId}
-              </td>
+              <td>{log.message}</td>
               <td>{log.createdAt.toISOString()}</td>
             </tr>
           ))}

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
+import { auditMessage } from "@/lib/audit-message";
+import { localizedText } from "@/lib/translations";
 
 const payloadSchema = z.object({ active: z.boolean() });
 
@@ -32,6 +34,11 @@ export async function PATCH(
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
+        message: auditMessage(
+          session.user.name ?? session.user.id,
+          parsed.data.active ? "activate" : "deactivate",
+          `le calculateur ${localizedText(before.name, "fr") || before.slug}`,
+        ),
         action: parsed.data.active ? "activate" : "deactivate",
         entityType: "calculator",
         entityId: id,

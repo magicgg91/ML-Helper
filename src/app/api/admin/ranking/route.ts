@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
 import { parseRankingConfig } from "@/lib/ranking";
+import { auditMessage } from "@/lib/audit-message";
 
 export async function PUT(request: Request) {
   const session = await authorizedSession("calculators.write");
@@ -28,6 +29,11 @@ export async function PUT(request: Request) {
         action: before ? "update" : "create",
         entityType: "calculator",
         entityId: table.id,
+        message: auditMessage(
+          session.user.name ?? session.user.id,
+          before ? "update" : "create",
+          "le classement par ligue",
+        ),
         diff: { before: before?.rows ?? null, after: rows },
       },
     });

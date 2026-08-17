@@ -34,6 +34,7 @@ export async function PUT(request: Request) {
       rows,
       userId: session!.user.id,
       actorRole: session.user.role,
+      actorName: session.user.name ?? session.user.id,
     });
     return NextResponse.json(rows);
   } catch {

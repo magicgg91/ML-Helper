@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("first launch creates the one-time Super Admin", async ({ page }) => {
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/admin\/setup$/);
   await page.goto("/");
   await expect(page).toHaveURL(/\/admin\/setup$/);
   await expect(
@@ -221,7 +223,8 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByText("Calculateurs actifs")).toBeVisible();
+  await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toBeVisible();
+  await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Dernières actions" }),
   ).toBeVisible();
@@ -243,11 +246,14 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
 
   await adminNav.getByRole("link", { name: /Logs|Historique/ }).click();
-  await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
+  await expect(
+    page.getByRole("cell", {
+      name: "rootadmin a créé l’utilisateur phase1admin",
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole("cell", { name: "super_admin" }).first(),
   ).toBeVisible();
-  await expect(page.getByText(/user:/).first()).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page.getByRole("link", { name: "Équipements de Combat" }).click();

@@ -82,6 +82,7 @@ model AuditLog {
   id         String   @id @default(uuid())
   userId     String   @map("user_id")
   actorRole  String   @map("actor_role")
+  message    String   @default("")
   action     String
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")

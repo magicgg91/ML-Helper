@@ -1,6 +1,7 @@
 import type { Session } from "next-auth";
 import { can } from "../auth/permissions";
 import { prisma } from "../lib/prisma";
+import { auditMessage } from "../lib/audit-message";
 
 export function canManageReferences(session: Session | null) {
   return Boolean(session?.user && can(session.user.role, "references.write"));
@@ -12,6 +13,7 @@ export async function saveReferenceTable(args: {
   rows: object[];
   userId: string;
   actorRole: string;
+  actorName: string;
 }) {
   const before = await prisma.referenceTable.findUnique({
     where: { key: args.key },
@@ -33,6 +35,11 @@ export async function saveReferenceTable(args: {
       action: before ? "update" : "create",
       entityType: "reference_table",
       entityId: table.id,
+      message: auditMessage(
+        args.actorName,
+        before ? "update" : "create",
+        `la table de référence ${args.label.fr}`,
+      ),
       diff: { before: before?.rows ?? null, after: args.rows },
     },
   });
