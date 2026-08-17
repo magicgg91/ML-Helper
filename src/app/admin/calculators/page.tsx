@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { requireCapability } from "@/auth/require-session";
+import { CalculatorVisibilityList } from "@/components/calculator-visibility-list";
+import { calculatorCatalog } from "@/lib/calculator-catalog";
 import { prisma } from "@/lib/prisma";
 
 export default async function CalculatorsAdminPage() {
@@ -11,24 +12,26 @@ export default async function CalculatorsAdminPage() {
     <main className="admin-main">
       <p className="eyebrow">Contenu fonctionnel</p>
       <h1>Calculateurs</h1>
-      <div className="admin-card-grid">
-        <Link className="admin-link-card" href="/admin/calculators/ranking">
-          <strong>Classement</strong>
-          <span>Seuils, ligues cibles et récompenses</span>
+      <p className="lead">
+        Un calculateur inactif reste annoncé au public, mais il est grisé et
+        impossible à ouvrir.
+      </p>
+      <p>
+        <Link href="/admin/calculators/ranking">
+          Éditer les seuils du classement
         </Link>
-        {calculators.map((calculator) => (
-          <article className="admin-link-card" key={calculator.id}>
-            <strong>{calculator.slug}</strong>
-            <span
-              className={
-                calculator.active ? "status-active" : "status-inactive"
-              }
-            >
-              {calculator.active ? "Actif" : "Inactif"}
-            </span>
-          </article>
-        ))}
-      </div>
+      </p>
+      <CalculatorVisibilityList
+        rows={calculators.map((calculator) => ({
+          id: calculator.id,
+          slug: calculator.slug,
+          label:
+            calculatorCatalog.find(({ slug }) => slug === calculator.slug)
+              ?.label ?? calculator.slug,
+          active: calculator.active,
+        }))}
+      />
     </main>
   );
 }
+import Link from "next/link";
