@@ -56,6 +56,10 @@ describe("ToolCategoryNav", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "Classement" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Classement" })).toHaveAttribute(
+      "title",
+      "Indisponible actuellement",
+    );
     expect(screen.queryByRole("link", { name: "Classement" })).toBeNull();
   });
 });
