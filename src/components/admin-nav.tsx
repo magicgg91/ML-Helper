@@ -3,39 +3,41 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { can, type AdminCapability } from "../auth/permissions";
+import { useTranslations } from "next-intl";
 
 const links: Array<{
   href: string;
   label: string;
   capability: AdminCapability;
 }> = [
-  { href: "/admin", label: "Dashboard", capability: "dashboard.view" },
+  { href: "/admin", label: "dashboard", capability: "dashboard.view" },
   {
     href: "/admin/calculators",
-    label: "Calculateurs",
+    label: "calculators",
     capability: "calculators.read",
   },
   {
     href: "/admin/references",
-    label: "Référentiels",
+    label: "references",
     capability: "references.read",
   },
   {
     href: "/admin/guides",
-    label: "Guides",
+    label: "guides",
     capability: "guides.read",
   },
   {
     href: "/admin/content",
-    label: "Contenu statique",
+    label: "content",
     capability: "content.read",
   },
-  { href: "/admin/users", label: "Utilisateurs", capability: "users.manage" },
-  { href: "/admin/logs", label: "Logs", capability: "logs.view" },
+  { href: "/admin/users", label: "users", capability: "users.manage" },
+  { href: "/admin/logs", label: "logs", capability: "logs.view" },
 ];
 
 export function AdminNav({ role }: { role: string }) {
   const pathname = usePathname();
+  const t = useTranslations("Admin");
   return (
     <nav className="admin-tabs tabs" aria-label="Navigation administration">
       {links
@@ -51,7 +53,7 @@ export function AdminNav({ role }: { role: string }) {
               href={link.href}
               key={link.href}
             >
-              {link.label}
+              {t(link.label)}
             </Link>
           );
         })}
