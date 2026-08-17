@@ -55,7 +55,15 @@ export function CalculatorVisibilityList({ rows }: { rows: CalculatorRow[] }) {
           </thead>
           <tbody>
             {calculators.map((row) => (
-              <tr key={row.id}>
+              <tr
+                className={row.active ? undefined : "calculator-row-disabled"}
+                key={row.id}
+                title={
+                  row.active
+                    ? undefined
+                    : "Désactivé — inaccessible côté public"
+                }
+              >
                 <td>{row.label}</td>
                 <td
                   className={row.active ? "status-active" : "status-inactive"}
