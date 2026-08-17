@@ -4,18 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const categories = [
-  { label: "Villes", slug: "villes", available: true },
-  { label: "Classement", slug: "classement", available: true },
-  { label: "Compétences", slug: "competences", available: true },
-  { label: "Référentiels", slug: "referentiels", available: true },
+  { label: "Villes", slug: "villes" },
+  { label: "Classement", slug: "classement" },
+  { label: "Compétences", slug: "competences" },
+  { label: "Référentiels", slug: "referentiels" },
 ] as const;
 
-export function ToolCategoryNav() {
+export function ToolCategoryNav({
+  availability,
+}: {
+  availability: Record<string, boolean>;
+}) {
   const pathname = usePathname();
   return (
     <nav className="category-nav" aria-label="Catégories de simulateurs">
       {categories.map((category) =>
-        category.available ? (
+        availability[category.slug] ? (
           <Link
             className="category-btn"
             aria-current={
