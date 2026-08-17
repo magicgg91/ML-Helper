@@ -68,8 +68,10 @@ test("tool routes alone expose persistent player settings", async ({
       exact: true,
     }),
   ).toHaveValue("12.5");
-  await page.goto("/guides/apercu");
-  await expect(page.getByRole("heading", { name: "apercu" })).toBeVisible();
+  await page.goto("/guides/guide-visible");
+  await expect(
+    page.getByRole("heading", { name: "Guide visible" }),
+  ).toBeVisible();
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
@@ -332,4 +334,44 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     await context.close();
   }
   await rootContext.close();
+});
+
+test("calculator visibility and guide publication are reversible", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("Username").fill("role-admin");
+  await page.getByLabel("Password").fill("role-test-password");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/calculators");
+  const rankingRow = page.getByRole("row", { name: /Ranking/ });
+  await rankingRow.getByRole("button", { name: "Désactiver" }).click();
+  await expect(rankingRow).toContainText("Inactif");
+  await page.goto("/tools");
+  const rankingCard = page
+    .getByRole("article")
+    .filter({ hasText: "Classement" });
+  await expect(rankingCard).toHaveAttribute("data-disabled", "true");
+  await expect(rankingCard.getByRole("link")).toHaveCount(0);
+
+  await page.goto("/admin/guides");
+  const guideStatus = page.getByLabel("Statut de guide-visible");
+  await guideStatus.selectOption("draft");
+  await expect(page.getByRole("status")).toHaveText(
+    "Statut du guide enregistré.",
+  );
+  await page.goto("/guides");
+  await expect(page.getByText("Guide visible")).toHaveCount(0);
+  await page.goto("/admin/guides");
+  await expect(page.getByRole("cell", { name: "guide-visible" })).toBeVisible();
+  await expect(page.getByLabel("Statut de guide-visible")).toHaveValue("draft");
+
+  await page.getByLabel("Statut de guide-visible").selectOption("published");
+  await page.goto("/admin/calculators");
+  await page
+    .getByRole("row", { name: /Ranking/ })
+    .getByRole("button", { name: "Activer" })
+    .click();
 });
