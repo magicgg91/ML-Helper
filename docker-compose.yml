@@ -1,8 +1,7 @@
 services:
   app:
-    build:
-      context: .
-      target: runner
+    image: ghcr.io/magicgg91/ml-helper:dev
+    pull_policy: always
     env_file:
       - .env
     ports:
