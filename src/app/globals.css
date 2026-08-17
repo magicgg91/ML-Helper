@@ -201,6 +201,10 @@ select {
 .public-card h2 {
   margin-top: 0;
 }
+.public-card-disabled {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
 .public-footer {
   padding: 2rem 0;
   border-top: 1px solid var(--border);
