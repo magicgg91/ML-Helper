@@ -4,6 +4,7 @@ import { RankingCalculator } from "../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../components/skills-calculators";
 import { ReferenceTables } from "../../../../components/reference-tables";
 import { getRankingConfig } from "../../../../lib/ranking";
+import { getCalculatorAvailability } from "../../../../lib/calculators-server";
 import {
   getCombatReferenceRows,
   getExpeditionReferenceRows,
@@ -12,6 +13,7 @@ import {
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
+  const active = await getCalculatorAvailability();
   if (!["villes", "classement", "competences", "referentiels"].includes(slug))
     notFound();
   if (slug === "referentiels")
@@ -25,6 +27,10 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         <ReferenceTables
           combatRows={await getCombatReferenceRows()}
           expeditionRows={await getExpeditionReferenceRows()}
+          availability={{
+            combat: active["combat-equipment"],
+            expedition: active["expedition-equipment"],
+          }}
         />
       </main>
     );
@@ -36,7 +42,15 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         <p className="lead">
           Optimise tes gemmes et planifie séparément chacun de tes Templiers.
         </p>
-        <SkillsCalculators templarCostTable={await getTemplarCostRows()} />
+        <SkillsCalculators
+          templarCostTable={await getTemplarCostRows()}
+          availability={{
+            simulator: active["stuff-simulator"],
+            comparison: active["stuff-comparison"],
+            gems: active.gems,
+            templars: active.templars,
+          }}
+        />
       </main>
     );
   if (slug === "classement") {
@@ -49,7 +63,13 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
           Convertis ton rang et ton pourcentage en plages de promotion, maintien
           ou descente.
         </p>
-        <RankingCalculator config={config} />
+        {active.ranking ? (
+          <RankingCalculator config={config} />
+        ) : (
+          <p className="empty-state">
+            Ce calculateur est temporairement indisponible.
+          </p>
+        )}
       </main>
     );
   }
@@ -61,7 +81,13 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         Planifie tes upgrades et mesure précisément ta production en ligue
         Légende.
       </p>
-      <CityCalculators />
+      <CityCalculators
+        availability={{
+          cost: active["city-cost"],
+          "max-level": active["city-max-level"],
+          production: active["city-production"],
+        }}
+      />
     </main>
   );
 }
