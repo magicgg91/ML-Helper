@@ -4,11 +4,14 @@ ML-Helper is the administration foundation for the future community site. Phase 
 
 ## Quick Docker test
 
-1. Copy the environment template and replace `NEXTAUTH_SECRET` with a secure random value.
+1. Copy the environment template, set the public URL of the instance and replace `NEXTAUTH_SECRET` with a secure random value.
 
    ```sh
    cp .env.example .env
    ```
+
+   - `NEXTAUTH_URL` is the external URL used by NextAuth for authentication callbacks and cookies. Set it to the HTTPS URL exposed by your reverse proxy in production (for example `https://ml-helper.example.com`).
+   - `NEXTAUTH_SECRET` signs and encrypts authentication data and sessions. It must be long, random, private, and stable between container restarts.
 
 2. Pull and start the `ghcr.io/magicgg91/ml-helper:dev` image. The container applies all committed Prisma migrations automatically.
 
@@ -18,7 +21,11 @@ ML-Helper is the administration foundation for the future community site. Phase 
 
 3. Open [http://localhost:3000/admin](http://localhost:3000/admin). At first launch, create the initial Super Admin directly in the one-time setup form, then sign in.
 
-SQLite data persists in the local `data/` directory mounted at `/app/data`. Later starts retain the database and apply only pending migrations. Once a Super Admin exists, the setup form is disabled and redirects to the login page.
+SQLite always uses `/app/data/database.db` inside the image; `DATABASE_URL` is therefore not configurable and is not needed in `.env`. By default, data persists in the local `./data` directory. To store it elsewhere, change only the host side of the bind mount in `docker-compose.yml` (the value before `:/app/data`). Later starts retain the database and apply only pending migrations. Once a Super Admin exists, the setup form is disabled and redirects to the login page.
+
+When upgrading an existing installation that still has `data/ml-helper.db`, stop the container and rename that file to `data/database.db` before starting the new image. Otherwise the application correctly creates a new, empty database under the new fixed name.
+
+Docker Compose checks `/api/health` every 30 seconds. The container is reported healthy only when the application responds and Prisma can query the SQLite database.
 
 ## Automated validation
 

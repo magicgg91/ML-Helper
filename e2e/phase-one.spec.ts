@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
+test("health endpoint confirms application and database availability", async ({
+  request,
+}) => {
+  const response = await request.get("/api/health");
+  expect(response.status()).toBe(200);
+  await expect(response.json()).resolves.toEqual({ status: "ok" });
+});
+
 test("first launch creates the one-time Super Admin", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/setup$/);

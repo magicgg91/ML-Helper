@@ -12,6 +12,7 @@ RUN pnpm prisma:generate \
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV DATABASE_URL=file:/app/data/database.db
 RUN apk add --no-cache su-exec \
     && addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
