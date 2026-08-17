@@ -37,6 +37,22 @@ test("public routes expose persistent player settings", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "apercu" })).toBeVisible();
 });
 
+test("the Cities category exposes its three working calculators", async ({
+  page,
+}) => {
+  await page.goto("/tools/villes");
+  await expect(page.getByRole("heading", { name: "Villes" })).toBeVisible();
+  await expect(page.getByTestId("city-cost-one")).toHaveText("10 or");
+
+  await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
+  await page.getByRole("spinbutton", { name: "Or disponible" }).fill("0.044");
+  await expect(page.getByTestId("max-level-result")).toHaveText("4");
+
+  await page.getByRole("tab", { name: "Production" }).click();
+  await expect(page.getByText("Or — Production totale")).toBeVisible();
+  await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
+});
+
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {

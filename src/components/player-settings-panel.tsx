@@ -20,6 +20,7 @@ import {
 } from "../lib/player-settings";
 
 export const playerStorageKey = "mlhelper_player_params";
+export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
 
 const skillLabels: Record<SkillKey, string> = {
   striker: "Attaque",
@@ -51,7 +52,7 @@ const leagueLabels: Record<League, string> = {
   legend: "Légende",
 };
 
-function safeSettings(raw: string): PlayerSettings {
+export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
   try {
     const parsed = JSON.parse(raw) as Partial<PlayerSettings>;
@@ -79,14 +80,18 @@ export function PlayerSettingsPanel() {
   useEffect(() => {
     queueMicrotask(() => {
       const saved = window.localStorage.getItem(playerStorageKey);
-      if (saved) setSettings(safeSettings(saved));
+      if (saved) setSettings(safePlayerSettings(saved));
       setLoaded(true);
     });
   }, []);
 
   useEffect(() => {
-    if (loaded)
+    if (loaded) {
       window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+      window.dispatchEvent(
+        new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
+      );
+    }
   }, [loaded, settings]);
 
   const available = availableSkillPoints(settings.level, settings.league);

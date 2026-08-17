@@ -302,6 +302,101 @@ select {
   padding: 0.45rem 0.7rem;
   border-radius: 0.45rem;
 }
+.city-calculators {
+  margin-top: 2rem;
+}
+.calculator-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.calculator-tabs button {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 750;
+}
+.calculator-tabs button[aria-selected="true"] {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--surface);
+}
+.calculator-stack {
+  display: grid;
+  gap: 1rem;
+}
+.calculator-card {
+  padding: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.calculator-card h2,
+.calculator-card h3,
+.calculator-card p {
+  margin-top: 0;
+}
+.calculator-card > p,
+.calculator-note {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.calculator-fields,
+.calculator-results,
+.production-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.8rem;
+}
+.calculator-field {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.calculator-stat {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-radius: 0.7rem;
+  background: var(--surface-muted);
+}
+.calculator-stat span {
+  color: var(--muted);
+}
+.calculator-stat strong {
+  color: var(--accent-strong);
+  text-align: right;
+}
+.city-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.city-comparison > div {
+  display: grid;
+  gap: 0.45rem;
+}
+.production-block + .production-block {
+  margin-top: 1rem;
+}
+.production-block h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.production-block h3 strong {
+  color: var(--accent-strong);
+}
 @media (max-width: 42rem) {
   .public-header,
   .player-settings > details > summary {
@@ -313,5 +408,12 @@ select {
   }
   .player-settings summary small {
     padding-left: 1.1rem;
+  }
+  .city-comparison {
+    grid-template-columns: 1fr;
+  }
+  .city-comparison > span {
+    transform: rotate(90deg);
+    text-align: center;
   }
 }

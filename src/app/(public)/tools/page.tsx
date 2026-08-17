@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-const categories = ["Villes", "Classement", "Compétences", "Référentiels"];
+const categories = [
+  { label: "Villes", slug: "villes", available: true },
+  { label: "Classement", slug: "classement", available: false },
+  { label: "Compétences", slug: "competences", available: false },
+  { label: "Référentiels", slug: "referentiels", available: false },
+];
 
 export default function ToolsPage() {
   return (
@@ -13,12 +18,16 @@ export default function ToolsPage() {
       </p>
       <div className="card-grid">
         {categories.map((category) => (
-          <article className="public-card" key={category}>
-            <h2>{category}</h2>
-            <p>Simulateurs à venir.</p>
-            <Link href={`/tools/${category.toLowerCase()}`}>
-              Ouvrir la catégorie
-            </Link>
+          <article className="public-card" key={category.slug}>
+            <h2>{category.label}</h2>
+            <p>
+              {category.available
+                ? "3 calculateurs disponibles."
+                : "Simulateurs à venir."}
+            </p>
+            {category.available && (
+              <Link href={`/tools/${category.slug}`}>Ouvrir la catégorie</Link>
+            )}
           </article>
         ))}
       </div>
