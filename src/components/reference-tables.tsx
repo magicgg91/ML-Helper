@@ -335,11 +335,19 @@ export function ExpeditionReferenceTable({
 export function ReferenceTables({
   combatRows,
   expeditionRows,
+  availability = { combat: true, expedition: true },
 }: {
   combatRows: readonly CombatReferenceRow[];
   expeditionRows: readonly ExpeditionReferenceRow[];
+  availability?: Record<"combat" | "expedition", boolean>;
 }) {
-  const [active, setActive] = useState<"combat" | "expedition">("combat");
+  const [active, setActive] = useState<"combat" | "expedition" | undefined>(
+    availability.combat
+      ? "combat"
+      : availability.expedition
+        ? "expedition"
+        : undefined,
+  );
   return (
     <div>
       <nav
@@ -351,6 +359,7 @@ export function ReferenceTables({
           type="button"
           role="tab"
           aria-selected={active === "combat"}
+          disabled={!availability.combat}
           onClick={() => setActive("combat")}
         >
           Équipements de Combat
@@ -359,6 +368,7 @@ export function ReferenceTables({
           type="button"
           role="tab"
           aria-selected={active === "expedition"}
+          disabled={!availability.expedition}
           onClick={() => setActive("expedition")}
         >
           Équipement d’Expédition
@@ -366,8 +376,12 @@ export function ReferenceTables({
       </nav>
       {active === "combat" ? (
         <CombatReferenceTable rows={combatRows} />
-      ) : (
+      ) : active === "expedition" ? (
         <ExpeditionReferenceTable rows={expeditionRows} />
+      ) : (
+        <p className="empty-state">
+          Ces référentiels sont temporairement indisponibles.
+        </p>
       )}
     </div>
   );
