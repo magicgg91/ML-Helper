@@ -163,7 +163,7 @@ export function optimizeGemBudget(
 
 export const templarCosts = [
   150, 195, 254, 330, 428, 557, 724, 941, 1224, 1591, 2068, 2688, 3495, 4543,
-  5907, 7678, 9981, 12976, 16868, 21929,
+  5907, 7678, 9981, 12976, 16868, 21929, 28507,
 ];
 export const templarRates: Record<TemplarKey, number> = {
   striker: 0.25,
@@ -173,12 +173,21 @@ export const templarRates: Record<TemplarKey, number> = {
   rusher: 1,
 };
 
-export function templarCumulativeCost(level: number): number {
-  return templarCosts
+export function templarCumulativeCost(
+  level: number,
+  costs: readonly number[] = templarCosts,
+): number {
+  return costs
     .slice(0, Math.max(0, Math.min(20, Math.floor(level))))
     .reduce((sum, cost) => sum + cost, 0);
 }
 
-export function templarUpgradeCost(start: number, target: number): number {
-  return Math.abs(templarCumulativeCost(target) - templarCumulativeCost(start));
+export function templarUpgradeCost(
+  start: number,
+  target: number,
+  costs: readonly number[] = templarCosts,
+): number {
+  return Math.abs(
+    templarCumulativeCost(target, costs) - templarCumulativeCost(start, costs),
+  );
 }

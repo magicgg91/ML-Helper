@@ -45,4 +45,14 @@ describe("ranking calculator", () => {
     });
     expect(config.legend).toEqual(defaultRankingConfig.legend);
   });
+
+  it("allows confirmed ranking rows to be edited too", () => {
+    const edited = structuredClone(defaultRankingConfig);
+    edited.legend[0] = {
+      threshold: 2,
+      target: "Cible modifiée",
+      reward: "Récompense modifiée",
+    };
+    expect(parseRankingConfig(edited).legend[0]).toEqual(edited.legend[0]);
+  });
 });

@@ -65,7 +65,11 @@ type GemRow = {
   target: number;
 };
 
-export function SkillsCalculators() {
+export function SkillsCalculators({
+  templarCostTable = templarCosts,
+}: {
+  templarCostTable?: readonly number[];
+}) {
   const [active, setActive] = useState<
     "simulator" | "comparison" | "gems" | "templars"
   >("simulator");
@@ -116,7 +120,7 @@ export function SkillsCalculators() {
       ) : active === "gems" ? (
         <GemsCalculator />
       ) : (
-        <TemplarsCalculator />
+        <TemplarsCalculator costs={templarCostTable} />
       )}
     </div>
   );
@@ -488,7 +492,7 @@ function Result({ label, value }: { label: string; value: string }) {
 }
 
 type TemplarState = Record<TemplarKey, { start: number; target: number }>;
-function TemplarsCalculator() {
+function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
   const [selected, setSelected] = useState<TemplarKey>("striker");
   const [levels, setLevels] = useState<TemplarState>(
     () =>
@@ -498,7 +502,7 @@ function TemplarsCalculator() {
   );
   const current = levels[selected];
   const rate = templarRates[selected];
-  const cost = templarUpgradeCost(current.start, current.target);
+  const cost = templarUpgradeCost(current.start, current.target, costs);
   const gain = (current.target - current.start) * rate;
   const update = (field: "start" | "target", value: number) =>
     setLevels((state) => ({
@@ -510,10 +514,10 @@ function TemplarsCalculator() {
     }));
   const cumulative = useMemo(
     () =>
-      templarCosts.map((_, index) =>
-        templarCosts.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
+      costs.map((_, index) =>
+        costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
       ),
-    [],
+    [costs],
   );
   return (
     <div className="calculator-stack">
@@ -589,7 +593,7 @@ function TemplarsCalculator() {
               </tr>
             </thead>
             <tbody>
-              {templarCosts.map((item, index) => (
+              {costs.map((item, index) => (
                 <tr key={index}>
                   <td>{index}</td>
                   <td>{formatGameNumber(item)}</td>

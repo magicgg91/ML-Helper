@@ -15,38 +15,24 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     const body = await request.json();
-    if (!Array.isArray(body) || body.length !== 180)
+    if (!Array.isArray(body) || body.length !== 120)
       throw new Error("invalid rows");
     const rows = body.map((raw) => {
       if (!raw || typeof raw !== "object") throw new Error("invalid row");
       const source = raw as Record<string, unknown>;
-      const row: Record<string, string> = {};
-      for (const field of [
-        "rarity",
-        "set_name",
-        "family",
-        "slot_type",
-        "slot_name",
-        "skill_1",
-        "skill_2",
-        "skill_3",
-        "skill_4",
-      ])
-        row[field] = stringField(source[field]);
-      for (const field of [
-        "skydust",
-        "gem_slots",
-        "value_1_pct",
-        "value_2_pct",
-        "value_3_pct",
-        "value_4_pct",
-      ])
-        row[field] = numericString(source[field]);
-      return row;
+      return {
+        rarity: stringField(source.rarity),
+        set_name: stringField(source.set_name),
+        family: stringField(source.family),
+        slot: stringField(source.slot),
+        type_stat_pct: numericString(source.type_stat_pct),
+        secondary_stat_name: stringField(source.secondary_stat_name),
+        secondary_stat_pct: numericString(source.secondary_stat_pct),
+      };
     });
     await saveReferenceTable({
-      key: referenceKeys.combat,
-      label: { fr: "Équipements de Combat", en: "Combat Equipment" },
+      key: referenceKeys.expedition,
+      label: { fr: "Équipement d’Expédition", en: "Expedition Equipment" },
       columns: Object.keys(rows[0]),
       rows,
       userId: session!.user.id,

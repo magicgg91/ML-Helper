@@ -4,8 +4,11 @@ import { RankingCalculator } from "../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../components/skills-calculators";
 import { ReferenceTables } from "../../../../components/reference-tables";
 import { getRankingConfig } from "../../../../lib/ranking";
-import { expeditionReferenceRows } from "../../../../lib/reference-equipment";
-import { getPublicCombatRows } from "../../../../lib/reference-equipment-server";
+import {
+  getCombatReferenceRows,
+  getExpeditionReferenceRows,
+  getTemplarCostRows,
+} from "../../../../lib/reference-equipment-server";
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
@@ -20,8 +23,8 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
           Consulte et filtre les équipements de combat et d’expédition.
         </p>
         <ReferenceTables
-          combatRows={await getPublicCombatRows()}
-          expeditionRows={expeditionReferenceRows}
+          combatRows={await getCombatReferenceRows()}
+          expeditionRows={await getExpeditionReferenceRows()}
         />
       </main>
     );
@@ -33,7 +36,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         <p className="lead">
           Optimise tes gemmes et planifie séparément chacun de tes Templiers.
         </p>
-        <SkillsCalculators />
+        <SkillsCalculators templarCostTable={await getTemplarCostRows()} />
       </main>
     );
   if (slug === "classement") {

@@ -182,5 +182,16 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "Référentiel — Équipements de Combat",
     }),
   ).toBeVisible();
-  await expect(page.locator("tbody tr")).toHaveCount(30);
+  await expect(page.locator("tbody tr")).toHaveCount(180);
+  await expect(page.getByLabel("Ligne 1 set")).not.toHaveValue("");
+
+  await page.getByRole("link", { name: "Référentiel expédition" }).click();
+  await expect(page.locator("tbody tr")).toHaveCount(120);
+  await expect(page.getByLabel("Expédition ligne 1 set")).not.toHaveValue("");
+
+  await page.getByRole("link", { name: "Templiers" }).click();
+  await expect(page.locator("tbody tr")).toHaveCount(21);
+  await expect(
+    page.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
+  ).toHaveValue("28507");
 });

@@ -18,11 +18,20 @@ export type CombatReferenceRow = {
   skill_4: string;
   value_4_pct: string;
 };
-export type ExpeditionReferenceRow = (typeof expeditionEquipmentData)[number];
+export type ExpeditionReferenceRow = {
+  rarity: string;
+  set_name: string;
+  family: string;
+  slot: string;
+  type_stat_pct: string;
+  secondary_stat_name: string;
+  secondary_stat_pct: string;
+};
 
 export const combatReferenceRows =
   combatEquipmentData as readonly CombatReferenceRow[];
-export const expeditionReferenceRows = expeditionEquipmentData;
+export const expeditionReferenceRows =
+  expeditionEquipmentData as readonly ExpeditionReferenceRow[];
 
 export function combatValueAtStar(
   skill: string,

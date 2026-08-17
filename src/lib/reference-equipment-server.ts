@@ -1,29 +1,56 @@
 import { prisma } from "./prisma";
+import { templarCosts } from "./gems-templars";
 import {
   applyCombatOverrides,
   combatReferenceRows,
-  missingCombatRows,
+  expeditionReferenceRows,
   type CombatReferenceRow,
+  type ExpeditionReferenceRow,
 } from "./reference-equipment";
 
-const key = "combat_equipment_overrides";
+export const referenceKeys = {
+  combat: "combat_equipment",
+  expedition: "expedition_equipment",
+  templars: "templar_costs",
+} as const;
 
-export async function getCombatOverrides(): Promise<
-  Partial<CombatReferenceRow>[]
-> {
+async function rowsFor<T>(key: string, fallback: readonly T[]): Promise<T[]> {
   const table = await prisma.referenceTable.findUnique({ where: { key } });
-  return Array.isArray(table?.rows)
-    ? (table.rows as Partial<CombatReferenceRow>[])
-    : [];
+  return Array.isArray(table?.rows) ? (table.rows as T[]) : [...fallback];
 }
 
-export async function getPublicCombatRows() {
-  return applyCombatOverrides(combatReferenceRows, await getCombatOverrides());
+export function getCombatReferenceRows(): Promise<CombatReferenceRow[]> {
+  return getCombatRowsWithLegacyFallback();
 }
 
-export async function getEditableCombatRows() {
-  const overrides = await getCombatOverrides();
-  return applyCombatOverrides(missingCombatRows(), overrides);
+async function getCombatRowsWithLegacyFallback(): Promise<
+  CombatReferenceRow[]
+> {
+  const table = await prisma.referenceTable.findUnique({
+    where: { key: referenceKeys.combat },
+  });
+  if (Array.isArray(table?.rows)) return table.rows as CombatReferenceRow[];
+  const legacy = await prisma.referenceTable.findUnique({
+    where: { key: "combat_equipment_overrides" },
+  });
+  return Array.isArray(legacy?.rows)
+    ? applyCombatOverrides(
+        combatReferenceRows,
+        legacy.rows as unknown as Partial<CombatReferenceRow>[],
+      )
+    : [...combatReferenceRows];
 }
 
-export { key as combatOverridesKey };
+export function getExpeditionReferenceRows(): Promise<
+  ExpeditionReferenceRow[]
+> {
+  return rowsFor(referenceKeys.expedition, expeditionReferenceRows);
+}
+
+export async function getTemplarCostRows(): Promise<number[]> {
+  const rows = await rowsFor<{ level: number; cost: number }>(
+    referenceKeys.templars,
+    templarCosts.map((cost, level) => ({ level, cost })),
+  );
+  return rows.sort((a, b) => a.level - b.level).map((row) => row.cost);
+}

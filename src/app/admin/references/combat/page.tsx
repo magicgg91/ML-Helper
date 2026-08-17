@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/auth/require-session";
-import { CombatReferenceAdmin } from "@/components/combat-reference-admin";
-import { getEditableCombatRows } from "@/lib/reference-equipment-server";
+import { CombatReferenceAdmin } from "@/components/reference-admin-editors";
+import { getCombatReferenceRows } from "@/lib/reference-equipment-server";
 
 export default async function CombatReferencesAdminPage() {
   const session = await requireAdminSession();
@@ -12,7 +12,7 @@ export default async function CombatReferencesAdminPage() {
   return (
     <main>
       <h1>Référentiel — Équipements de Combat</h1>
-      <CombatReferenceAdmin initialRows={await getEditableCombatRows()} />
+      <CombatReferenceAdmin initialRows={await getCombatReferenceRows()} />
     </main>
   );
 }
