@@ -4,6 +4,18 @@ import { AdminNav } from "./admin-nav";
 
 let pathname = "/admin";
 vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) =>
+    ({
+      dashboard: "Tableau de bord",
+      calculators: "Calculateurs",
+      references: "Référentiels",
+      guides: "Guides",
+      content: "Contenu statique",
+      users: "Utilisateurs",
+      logs: "Logs",
+    })[key],
+}));
 afterEach(cleanup);
 
 describe("AdminNav", () => {
