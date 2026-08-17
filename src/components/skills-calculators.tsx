@@ -137,7 +137,7 @@ function GemsCalculator() {
           coût exponentiel des fusions.
         </p>
         <div
-          className="calculator-tabs compact"
+          className="calculator-tabs compact mode-switch"
           role="tablist"
           aria-label="Mode Gemmes"
         >
@@ -484,9 +484,9 @@ function GemBudget() {
 
 function Result({ label, value }: { label: string; value: string }) {
   return (
-    <div className="calculator-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className="calculator-stat total-box">
+      <span className="label">{label}</span>
+      <strong className="value">{value}</strong>
     </div>
   );
 }

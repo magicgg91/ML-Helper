@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();
   return (
-    <html lang="en">
+    <html lang="fr" data-theme="dark" suppressHydrationWarning>
       <body>
         <NextIntlClientProvider messages={messages}>
           {children}

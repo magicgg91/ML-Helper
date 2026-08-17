@@ -82,9 +82,11 @@ function Stat({
   testId?: string;
 }) {
   return (
-    <div className="calculator-stat">
-      <span>{label}</span>
-      <strong data-testid={testId}>{value}</strong>
+    <div className="calculator-stat total-box">
+      <span className="label">{label}</span>
+      <strong className="value" data-testid={testId}>
+        {value}
+      </strong>
     </div>
   );
 }

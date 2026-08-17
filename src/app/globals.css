@@ -1,30 +1,63 @@
-:root {
-  --background: #f3f0e8;
-  --foreground: #17231f;
-  --surface: #fffdf7;
-  --surface-raised: #ffffff;
-  --surface-muted: #e9e5d9;
-  --accent: #a25f20;
-  --accent-strong: #794014;
-  --border: #d8d0bd;
-  --muted: #6d746f;
-  --success: #18765b;
-  color-scheme: light;
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root,
+:root[data-theme="dark"] {
+  --bg: #12151b;
+  --bg-panel: #191d25;
+  --bg-panel-raised: #20252f;
+  --border: #2b313d;
+  --gold: #c9a04a;
+  --gold-bright: #e0bb63;
+  --emerald: #4a9179;
+  --emerald-bright: #6ab596;
+  --ember: #c05a3e;
+  --violet: #8b6bb8;
+  --violet-bright: #c9a8ec;
+  --text: #e9e4d8;
+  --text-dim: #9299a6;
+  --text-faint: #5c6472;
+  --rarity-commun: #8a8f98;
+  --rarity-rare: #4a9179;
+  --rarity-epique: #5b8bc9;
+  --rarity-mythique: #a678d4;
+  --rarity-legendaire: #d4a13a;
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface: var(--bg-panel);
+  --surface-raised: var(--bg-panel-raised);
+  --surface-muted: #252a34;
+  --accent: var(--gold);
+  --accent-strong: var(--gold-bright);
+  --muted: var(--text-dim);
+  --success: var(--emerald-bright);
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #101713;
-    --foreground: #edf2ed;
-    --surface: #18221d;
-    --surface-raised: #1e2b25;
-    --surface-muted: #26332d;
-    --accent: #e0a35d;
-    --accent-strong: #f0bd7c;
-    --border: #35463e;
-    --muted: #a4aea8;
-    --success: #65c6a4;
-    color-scheme: dark;
-  }
+
+:root[data-theme="light"] {
+  --bg: #f2eee4;
+  --bg-panel: #fffaf0;
+  --bg-panel-raised: #ffffff;
+  --border: #d7ccb6;
+  --gold: #9b6f1e;
+  --gold-bright: #704b0e;
+  --emerald: #35735f;
+  --emerald-bright: #23634f;
+  --ember: #a7432e;
+  --violet: #75549d;
+  --violet-bright: #68458e;
+  --text: #20242b;
+  --text-dim: #626976;
+  --text-faint: #858b95;
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface: var(--bg-panel);
+  --surface-raised: var(--bg-panel-raised);
+  --surface-muted: #e9e2d4;
+  --accent: var(--gold);
+  --accent-strong: var(--gold-bright);
+  --muted: var(--text-dim);
+  --success: var(--emerald-bright);
+  color-scheme: light;
 }
 * {
   box-sizing: border-box;
@@ -33,7 +66,15 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "IBM Plex Sans", sans-serif;
+  background-image:
+    radial-gradient(ellipse at top left, rgb(201 160 74 / 6%), transparent 50%),
+    radial-gradient(
+      ellipse at bottom right,
+      rgb(74 145 121 / 6%),
+      transparent 50%
+    );
+  min-height: 100vh;
 }
 main {
   width: min(42rem, calc(100% - 2rem));
@@ -43,7 +84,7 @@ main {
   border-radius: 1rem;
 }
 h1 {
-  color: var(--accent);
+  color: var(--gold-bright);
 }
 a {
   color: inherit;
@@ -777,4 +818,194 @@ select {
   .gem-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Prototype visual language ------------------------------------------------ */
+h1,
+h2,
+h3,
+.brand {
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.025em;
+}
+h1 {
+  background: linear-gradient(110deg, var(--gold-bright), var(--gold));
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+input,
+select,
+.total-box .value,
+.result-highlight strong,
+.budget-result-main strong,
+.ranking-table td,
+.reference-count {
+  font-family: "JetBrains Mono", monospace;
+}
+.public-main,
+.player-settings {
+  width: min(74rem, calc(100% - 2rem));
+}
+.public-header nav a {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+.public-header nav a:hover {
+  color: var(--gold-bright);
+}
+.theme-toggle {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.7rem;
+}
+.theme-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+.calculator-card,
+.player-settings > details,
+.reference-card,
+.stuff-block,
+.ranking-table-wrap {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  border-radius: 12px;
+}
+
+.num-stepper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.num-stepper button {
+  flex: 0 0 30px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  line-height: 1;
+  user-select: none;
+}
+.num-stepper button:hover {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+.num-stepper button:first-child {
+  border-right: 0;
+  border-radius: 7px 0 0 7px;
+}
+.num-stepper button:last-child {
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+}
+.num-stepper input[type="number"] {
+  min-width: 0;
+  flex: 1;
+  border-radius: 0;
+  text-align: center;
+}
+
+.totals-grid,
+.calculator-results,
+.stuff-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.total-box {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.total-box .label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+.total-box .value {
+  color: var(--gold-bright);
+  font-size: 19px;
+  font-weight: 600;
+}
+.total-box .value.emerald {
+  color: var(--emerald);
+}
+.total-box small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.mode-switch button {
+  flex: 1;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+}
+.mode-switch button[aria-selected="true"],
+.mode-switch button.active {
+  background: var(--bg-panel-raised);
+  color: var(--violet-bright);
+  box-shadow: inset 0 0 0 1px rgb(139 107 184 / 40%);
+}
+
+.rarity-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.rarity-commun {
+  background: rgb(138 143 152 / 15%);
+  color: var(--rarity-commun);
+}
+.rarity-rare {
+  background: rgb(74 145 121 / 15%);
+  color: var(--rarity-rare);
+}
+.rarity-epique {
+  background: rgb(91 139 201 / 15%);
+  color: var(--rarity-epique);
+}
+.rarity-mythique {
+  background: rgb(166 120 212 / 15%);
+  color: var(--rarity-mythique);
+}
+.rarity-legendaire {
+  background: rgb(212 161 58 / 15%);
+  color: var(--rarity-legendaire);
+}
+
+body > main {
+  width: min(74rem, calc(100% - 2rem));
+  margin: 2rem auto;
+  border: 1px solid var(--border);
 }

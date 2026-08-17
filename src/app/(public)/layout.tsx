@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlayerSettingsPanel } from "@/components/player-settings-panel";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function PublicLayout({ children }: LayoutProps<"/">) {
   return (
@@ -13,6 +14,7 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
           <Link href="/guides">Guides</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/login">Administration</Link>
+          <ThemeToggle />
         </nav>
       </header>
       <PlayerSettingsPanel />

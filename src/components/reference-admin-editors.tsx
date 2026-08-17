@@ -28,7 +28,7 @@ function OptionalNumber({
       ),
     );
   return (
-    <div className="number-stepper">
+    <div className="num-stepper number-stepper">
       <button
         type="button"
         aria-label={`Diminuer ${label}`}

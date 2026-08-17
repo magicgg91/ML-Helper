@@ -74,9 +74,9 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
       </section>
       <section className="calculator-card">
         <div className="calculator-results">
-          <div className="calculator-stat">
-            <span>Nombre total de joueurs (déduit)</span>
-            <strong data-testid="ranking-total">
+          <div className="calculator-stat total-box">
+            <span className="label">Nombre total de joueurs (déduit)</span>
+            <strong className="value" data-testid="ranking-total">
               {result.total === null
                 ? "—"
                 : Math.round(result.total).toLocaleString("fr-FR")}

@@ -54,9 +54,9 @@ function Summary({
   return (
     <div className="stuff-summary-grid">
       {entries.map(([skill, value]) => (
-        <div className="stuff-total" key={skill}>
-          <span>{skill}</span>
-          <strong>
+        <div className="stuff-total total-box" key={skill}>
+          <span className="label">{skill}</span>
+          <strong className="value emerald">
             +{pct(value)}%{" "}
             {selected?.[skill] ? (
               <small>({pct(selected[skill]!)}%)</small>

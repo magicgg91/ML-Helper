@@ -19,7 +19,7 @@ export function NumberStepper({
     Math.min(max, Math.max(min, Math.round(candidate * 1000) / 1000));
 
   return (
-    <div className="number-stepper">
+    <div className="num-stepper number-stepper">
       <button
         type="button"
         aria-label={`Diminuer ${label}`}
