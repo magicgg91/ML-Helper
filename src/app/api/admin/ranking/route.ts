@@ -1,16 +1,11 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/auth/options";
+import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
 import { parseRankingConfig } from "@/lib/ranking";
 
 export async function PUT(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (
-    !session?.user ||
-    !["super_admin", "admin", "calculators_manager"].includes(session.user.role)
-  )
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const session = await authorizedSession("calculators.write");
+  if (!session) return forbiddenResponse();
   try {
     const rows = parseRankingConfig(await request.json());
     const before = await prisma.referenceTable.findUnique({
@@ -29,6 +24,7 @@ export async function PUT(request: Request) {
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
+        actorRole: session.user.role,
         action: before ? "update" : "create",
         entityType: "calculator",
         entityId: table.id,

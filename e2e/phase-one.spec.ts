@@ -190,6 +190,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
 
   await adminNav.getByRole("link", { name: "Logs" }).click();
   await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "super_admin" })).toBeVisible();
   await expect(page.getByText(/user:/)).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
@@ -213,4 +214,91 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
   ).toHaveValue("21929");
+});
+
+test("direct admin URLs enforce all four roles", async ({ browser }) => {
+  test.setTimeout(60_000);
+  const rootContext = await browser.newContext();
+  const root = await rootContext.newPage();
+  await root.goto("/login");
+  await root.getByLabel("Username").fill("rootadmin");
+  await root.getByLabel("Password").fill("correct-horse-battery-staple");
+  await root.getByRole("button", { name: "Sign in" }).click();
+  await expect(root).toHaveURL(/\/admin$/);
+
+  const accounts = [
+    ["role-admin", "admin"],
+    ["role-guides", "guides_manager"],
+    ["role-calculators", "calculators_manager"],
+  ] as const;
+  for (const [username, role] of accounts) {
+    const status = await root.evaluate(
+      async ({ username, role }) =>
+        fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            username,
+            role,
+            password: "role-test-password",
+          }),
+        }).then((response) => response.status),
+      { username, role },
+    );
+    expect(status).toBe(201);
+  }
+
+  const allSections = [
+    "/admin/guides",
+    "/admin/calculators",
+    "/admin/references",
+    "/admin/content",
+    "/admin/users",
+    "/admin/logs",
+  ];
+  const cases = [
+    {
+      username: "rootadmin",
+      password: "correct-horse-battery-staple",
+      allowed: allSections,
+    },
+    {
+      username: "role-admin",
+      password: "role-test-password",
+      allowed: allSections.filter((path) => path !== "/admin/users"),
+    },
+    {
+      username: "role-guides",
+      password: "role-test-password",
+      allowed: ["/admin/guides"],
+    },
+    {
+      username: "role-calculators",
+      password: "role-test-password",
+      allowed: ["/admin/calculators", "/admin/references"],
+    },
+  ];
+
+  for (const roleCase of cases) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto("/login");
+    await page.getByLabel("Username").fill(roleCase.username);
+    await page.getByLabel("Password").fill(roleCase.password);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/admin$/);
+    for (const path of allSections) {
+      const response = await page.goto(path);
+      const expectedStatus = roleCase.allowed.includes(path) ? 200 : 403;
+      expect(response?.status(), `${roleCase.username} / ${path}`).toBe(
+        expectedStatus,
+      );
+      if (expectedStatus === 403)
+        await expect(
+          page.getByRole("heading", { name: "Accès interdit" }),
+        ).toBeVisible();
+    }
+    await context.close();
+  }
+  await rootContext.close();
 });

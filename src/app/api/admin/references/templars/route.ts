@@ -1,16 +1,11 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/auth/options";
+import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { referenceKeys } from "@/lib/reference-equipment-server";
-import {
-  canManageReferences,
-  saveReferenceTable,
-} from "@/services/reference-table-admin";
+import { saveReferenceTable } from "@/services/reference-table-admin";
 
 export async function PUT(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!canManageReferences(session))
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const session = await authorizedSession("references.write");
+  if (!session) return forbiddenResponse();
   try {
     const body = await request.json();
     if (!Array.isArray(body) || body.length !== 20)
@@ -28,6 +23,7 @@ export async function PUT(request: Request) {
       columns: ["level", "cost"],
       rows,
       userId: session!.user.id,
+      actorRole: session.user.role,
     });
     return NextResponse.json(rows);
   } catch {

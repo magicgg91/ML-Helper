@@ -13,7 +13,11 @@ const inputSchema = z.object({
   password: z.string().min(12).max(128),
   role: z.string().refine(isAdminRole),
 });
-export async function createAdminUser(actorId: string, input: unknown) {
+export async function createAdminUser(
+  actorId: string,
+  actorRole: string,
+  input: unknown,
+) {
   const data = inputSchema.parse(input);
   const passwordHash = await hash(data.password, 12);
   return prisma.$transaction(async (tx) => {
@@ -23,6 +27,7 @@ export async function createAdminUser(actorId: string, input: unknown) {
     await tx.auditLog.create({
       data: {
         userId: actorId,
+        actorRole,
         action: "create",
         entityType: "user",
         entityId: user.id,
@@ -35,6 +40,7 @@ export async function createAdminUser(actorId: string, input: unknown) {
 
 export async function updateAdminUser(
   actorId: string,
+  actorRole: string,
   id: string,
   input: unknown,
 ) {
@@ -56,6 +62,7 @@ export async function updateAdminUser(
     await tx.auditLog.create({
       data: {
         userId: actorId,
+        actorRole,
         action: "update",
         entityType: "user",
         entityId: id,
@@ -69,13 +76,18 @@ export async function updateAdminUser(
   });
 }
 
-export async function deleteAdminUser(actorId: string, id: string) {
+export async function deleteAdminUser(
+  actorId: string,
+  actorRole: string,
+  id: string,
+) {
   if (actorId === id) throw new Error("cannot_delete_self");
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.delete({ where: { id } });
     await tx.auditLog.create({
       data: {
         userId: actorId,
+        actorRole,
         action: "delete",
         entityType: "user",
         entityId: id,

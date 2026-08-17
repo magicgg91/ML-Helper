@@ -1,16 +1,13 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "@/auth/options";
+import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
 import { createAdminUser } from "@/services/users";
 
 async function superAdmin() {
-  const session = await getServerSession(authOptions);
-  return session?.user.role === "super_admin" ? session : null;
+  return authorizedSession("users.manage");
 }
 export async function GET() {
-  if (!(await superAdmin()))
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await superAdmin())) return forbiddenResponse();
   return NextResponse.json(
     await prisma.user.findMany({
       select: {
@@ -26,10 +23,13 @@ export async function GET() {
 }
 export async function POST(request: Request) {
   const session = await superAdmin();
-  if (!session)
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!session) return forbiddenResponse();
   try {
-    const user = await createAdminUser(session.user.id, await request.json());
+    const user = await createAdminUser(
+      session.user.id,
+      session.user.role,
+      await request.json(),
+    );
     return NextResponse.json(
       { id: user.id, username: user.username, role: user.role },
       { status: 201 },

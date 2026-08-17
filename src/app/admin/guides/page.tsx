@@ -1,11 +1,8 @@
-import { redirect } from "next/navigation";
-import { requireAdminSession } from "@/auth/require-session";
+import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 
 export default async function GuidesAdminPage() {
-  const session = await requireAdminSession();
-  if (!["super_admin", "admin", "guides_manager"].includes(session.user.role))
-    redirect("/admin");
+  await requireCapability("guides.read");
   const guides = await prisma.guide.findMany({
     select: { id: true, slug: true, status: true },
     orderBy: { updatedAt: "desc" },

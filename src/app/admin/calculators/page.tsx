@@ -1,14 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { requireAdminSession } from "@/auth/require-session";
+import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 
 export default async function CalculatorsAdminPage() {
-  const session = await requireAdminSession();
-  if (
-    !["super_admin", "admin", "calculators_manager"].includes(session.user.role)
-  )
-    redirect("/admin");
+  await requireCapability("calculators.read");
   const calculators = await prisma.calculator.findMany({
     orderBy: { slug: "asc" },
   });

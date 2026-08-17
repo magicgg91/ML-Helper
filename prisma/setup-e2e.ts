@@ -4,6 +4,7 @@ async function main() {
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "reference_tables"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "calculators"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "guides"');
+  await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "static_content"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "audit_logs"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
   await prisma.$executeRawUnsafe(
@@ -13,7 +14,7 @@ async function main() {
     'CREATE UNIQUE INDEX "users_username_key" ON "users"("username")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "audit_logs" ("id" TEXT NOT NULL PRIMARY KEY, "user_id" TEXT NOT NULL, "action" TEXT NOT NULL, "entity_type" TEXT NOT NULL, "entity_id" TEXT NOT NULL, "diff" JSONB, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE)',
+    'CREATE TABLE "audit_logs" ("id" TEXT NOT NULL PRIMARY KEY, "user_id" TEXT NOT NULL, "actor_role" TEXT NOT NULL, "action" TEXT NOT NULL, "entity_type" TEXT NOT NULL, "entity_id" TEXT NOT NULL, "diff" JSONB, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE INDEX "audit_logs_created_at_idx" ON "audit_logs"("created_at")',
@@ -29,6 +30,12 @@ async function main() {
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "guides_slug_key" ON "guides"("slug")',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE "static_content" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "content" JSONB NOT NULL, "updated_at" DATETIME NOT NULL, "updated_by" TEXT NOT NULL)',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE UNIQUE INDEX "static_content_key_key" ON "static_content"("key")',
   );
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "reference_tables" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "label" JSONB NOT NULL, "columns" JSONB NOT NULL, "rows" JSONB NOT NULL, "calculator_id" TEXT)',

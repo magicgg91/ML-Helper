@@ -27,4 +27,28 @@ describe("AdminNav", () => {
       "page",
     );
   });
+
+  it("hides only user management from a regular admin", () => {
+    pathname = "/admin";
+    render(<AdminNav role="admin" />);
+    expect(screen.queryByRole("link", { name: "Utilisateurs" })).toBeNull();
+    for (const name of [
+      "Calculateurs",
+      "Référentiels",
+      "Guides",
+      "Contenu statique",
+      "Logs",
+    ])
+      expect(screen.getByRole("link", { name })).toBeVisible();
+  });
+
+  it("limits a calculator manager to calculators and references", () => {
+    pathname = "/admin/calculators";
+    render(<AdminNav role="calculators_manager" />);
+    expect(screen.getAllByRole("link")).toHaveLength(3);
+    expect(screen.getByRole("link", { name: "Calculateurs" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Référentiels" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Guides" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Logs" })).toBeNull();
+  });
 });

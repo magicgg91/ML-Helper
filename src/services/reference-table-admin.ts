@@ -1,11 +1,9 @@
 import type { Session } from "next-auth";
+import { can } from "../auth/permissions";
 import { prisma } from "../lib/prisma";
 
 export function canManageReferences(session: Session | null) {
-  return Boolean(
-    session?.user &&
-    ["super_admin", "admin", "calculators_manager"].includes(session.user.role),
-  );
+  return Boolean(session?.user && can(session.user.role, "references.write"));
 }
 export async function saveReferenceTable(args: {
   key: string;
@@ -13,6 +11,7 @@ export async function saveReferenceTable(args: {
   columns: string[];
   rows: object[];
   userId: string;
+  actorRole: string;
 }) {
   const before = await prisma.referenceTable.findUnique({
     where: { key: args.key },
@@ -30,6 +29,7 @@ export async function saveReferenceTable(args: {
   await prisma.auditLog.create({
     data: {
       userId: args.userId,
+      actorRole: args.actorRole,
       action: before ? "update" : "create",
       entityType: "reference_table",
       entityId: table.id,

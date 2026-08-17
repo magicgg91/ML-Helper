@@ -2,33 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-type AdminRole =
-  "super_admin" | "admin" | "guides_manager" | "calculators_manager";
+import { can, type AdminCapability } from "../auth/permissions";
 
 const links: Array<{
   href: string;
   label: string;
-  roles: AdminRole[] | null;
+  capability: AdminCapability;
 }> = [
-  { href: "/admin", label: "Dashboard", roles: null },
+  { href: "/admin", label: "Dashboard", capability: "dashboard.view" },
   {
     href: "/admin/calculators",
     label: "Calculateurs",
-    roles: ["super_admin", "admin", "calculators_manager"],
+    capability: "calculators.read",
   },
   {
     href: "/admin/references",
     label: "Référentiels",
-    roles: ["super_admin", "admin", "calculators_manager"],
+    capability: "references.read",
   },
   {
     href: "/admin/guides",
     label: "Guides",
-    roles: ["super_admin", "admin", "guides_manager"],
+    capability: "guides.read",
   },
-  { href: "/admin/users", label: "Utilisateurs", roles: ["super_admin"] },
-  { href: "/admin/logs", label: "Logs", roles: ["super_admin"] },
+  {
+    href: "/admin/content",
+    label: "Contenu statique",
+    capability: "content.read",
+  },
+  { href: "/admin/users", label: "Utilisateurs", capability: "users.manage" },
+  { href: "/admin/logs", label: "Logs", capability: "logs.view" },
 ];
 
 export function AdminNav({ role }: { role: string }) {
@@ -36,7 +39,7 @@ export function AdminNav({ role }: { role: string }) {
   return (
     <nav className="admin-tabs tabs" aria-label="Navigation administration">
       {links
-        .filter((link) => !link.roles || link.roles.includes(role as AdminRole))
+        .filter((link) => can(role, link.capability))
         .map((link) => {
           const current =
             link.href === "/admin"

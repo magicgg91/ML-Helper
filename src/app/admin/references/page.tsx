@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { requireAdminSession } from "@/auth/require-session";
+import { requireCapability } from "@/auth/require-session";
 
 const references = [
   ["/admin/references/combat", "Équipements de Combat", "180 lignes éditables"],
@@ -13,11 +12,7 @@ const references = [
 ];
 
 export default async function ReferencesAdminPage() {
-  const session = await requireAdminSession();
-  if (
-    !["super_admin", "admin", "calculators_manager"].includes(session.user.role)
-  )
-    redirect("/admin");
+  await requireCapability("references.read");
   return (
     <main className="admin-main">
       <p className="eyebrow">Données du jeu</p>
