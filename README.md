@@ -10,8 +10,12 @@ ML-Helper is the administration foundation for the future community site. Phase 
    cp .env.example .env
    ```
 
-   - `NEXTAUTH_URL` is the external URL used by NextAuth for authentication callbacks and cookies. Set it to the HTTPS URL exposed by your reverse proxy in production (for example `https://ml-helper.example.com`).
-   - `NEXTAUTH_SECRET` signs and encrypts authentication data and sessions. It must be long, random, private, and stable between container restarts.
+   Both settings are deliberately visible in the `environment:` section of `docker-compose.yml`, with development defaults/examples:
+
+   - `NEXTAUTH_URL` is the external URL used by NextAuth for authentication callbacks and cookies. Set it to the exact address used to access the application, including its port, or to the HTTPS URL exposed by your reverse proxy (for example `http://192.168.10.145:43000` or `https://ml-helper.example.com`).
+   - `NEXTAUTH_SECRET` signs and encrypts authentication data and sessions. Replace the example value with a long, random, private value and keep it stable between container restarts.
+
+   You can edit the defaults directly in `docker-compose.yml`, or define `NEXTAUTH_URL` and `NEXTAUTH_SECRET` in `.env`. Compose interpolation gives values from `.env` (or the shell environment) priority over the defaults written in the Compose file.
 
 2. Pull and start the `ghcr.io/magicgg91/ml-helper:dev` image. The container applies all committed Prisma migrations automatically.
 

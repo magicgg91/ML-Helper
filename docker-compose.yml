@@ -4,6 +4,12 @@ services:
     pull_policy: always
     env_file:
       - .env
+    environment:
+      # URL publique utilisée pour les cookies et callbacks NextAuth.
+      # Exemple derrière un reverse proxy : https://ml-helper.example.com
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      # Secret long et aléatoire servant à signer les sessions. Remplacer cet exemple.
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-replace-with-a-long-random-secret}"
     ports:
       - "3000:3000"
     volumes:
