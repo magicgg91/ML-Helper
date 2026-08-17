@@ -565,6 +565,82 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.reference-filters {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr minmax(190px, 0.8fr) minmax(120px, 0.4fr);
+  gap: 1rem;
+  align-items: end;
+}
+.reference-filters label,
+.reference-filters > div {
+  display: grid;
+  gap: 0.45rem;
+}
+.filter-label,
+.reference-filters label {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.reference-filters input,
+.reference-filters select {
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+.reference-count {
+  color: var(--muted);
+}
+.reference-table {
+  min-width: 1100px;
+}
+.reference-value {
+  display: block;
+  color: var(--success);
+}
+.unconfirmed {
+  display: block;
+  color: var(--accent);
+  font-size: 0.72rem;
+}
+.unconfirmed-notice {
+  padding: 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+.rarity-badge {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.rarity-legendaire {
+  color: #5f4300;
+  background: #f3d16f;
+}
+.rarity-mythique {
+  color: #fff;
+  background: #7850a8;
+}
+.rarity-epique {
+  color: #fff;
+  background: #2f6db0;
+}
+.rarity-rare {
+  color: #103f24;
+  background: #8bd49f;
+}
+.rarity-commun {
+  color: #26302c;
+  background: #c8cdca;
+}
+@media (max-width: 900px) {
+  .reference-filters {
+    grid-template-columns: 1fr;
+  }
+}
 .ranking-table {
   width: 100%;
   border-collapse: collapse;

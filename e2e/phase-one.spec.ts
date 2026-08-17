@@ -132,6 +132,28 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   ).toHaveValue("3");
 });
 
+test("Reference tables filter combat and flag expedition hypotheses", async ({
+  page,
+}) => {
+  await page.goto("/tools/referentiels");
+  await expect(
+    page.getByRole("heading", { name: "Référentiels", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Attaque" }).click();
+  await page
+    .getByRole("searchbox", { name: "Recherche libre" })
+    .fill("Spirit Fyra");
+  await page
+    .getByRole("combobox", { name: "Niveau d’étoile" })
+    .selectOption("5");
+  await expect(page.getByText("9 lignes — valeurs à 5★")).toBeVisible();
+  await expect(page.getByText("18%").first()).toBeVisible();
+  await page.getByRole("tab", { name: "Équipement d’Expédition" }).click();
+  await expect(page.getByText(/projection par étoile est une/)).toContainText(
+    "hypothèse non confirmée",
+  );
+});
+
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {
@@ -153,4 +175,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.getByRole("link", { name: "Logs" }).click();
   await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
   await expect(page.getByText(/user:/)).toBeVisible();
+
+  await page.getByRole("link", { name: "Référentiel combat" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Référentiel — Équipements de Combat",
+    }),
+  ).toBeVisible();
+  await expect(page.locator("tbody tr")).toHaveCount(30);
 });

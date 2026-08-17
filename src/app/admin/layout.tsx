@@ -13,6 +13,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           {["super_admin", "admin", "calculators_manager"].includes(
             session.user.role,
           ) && <Link href="/admin/calculators/ranking">Classement</Link>}
+          {["super_admin", "admin", "calculators_manager"].includes(
+            session.user.role,
+          ) && <Link href="/admin/references/combat">Référentiel combat</Link>}
           {session.user.role === "super_admin" && (
             <>
               <Link href="/admin/users">{t("users")}</Link>
