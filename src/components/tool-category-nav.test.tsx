@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToolCategoryNav } from "./tool-category-nav";
 
 let pathname = "/tools";
@@ -8,13 +8,23 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ToolCategoryNav", () => {
+  afterEach(cleanup);
   beforeEach(() => {
     pathname = "/tools";
   });
 
   it("marks only the current simulator category as active", () => {
     pathname = "/tools/competences";
-    render(<ToolCategoryNav />);
+    render(
+      <ToolCategoryNav
+        availability={{
+          villes: true,
+          classement: true,
+          competences: true,
+          referentiels: true,
+        }}
+      />,
+    );
 
     expect(screen.getByRole("link", { name: "Compétences" })).toHaveAttribute(
       "aria-current",
@@ -23,5 +33,20 @@ describe("ToolCategoryNav", () => {
     expect(screen.getByRole("link", { name: "Villes" })).not.toHaveAttribute(
       "aria-current",
     );
+  });
+
+  it("keeps unavailable categories visible but disabled", () => {
+    render(
+      <ToolCategoryNav
+        availability={{
+          villes: true,
+          classement: false,
+          competences: true,
+          referentiels: true,
+        }}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Classement" })).toBeDisabled();
+    expect(screen.queryByRole("link", { name: "Classement" })).toBeNull();
   });
 });
