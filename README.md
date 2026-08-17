@@ -10,7 +10,7 @@ ML-Helper is the administration foundation for the future community site. Phase 
    cp .env.example .env
    ```
 
-2. Build and start the application. The container applies all committed Prisma migrations and creates the bootstrap Super Admin only when that username does not already exist.
+2. Pull and start the `ghcr.io/magicgg91/ml-helper:dev` image. The container applies all committed Prisma migrations and creates the bootstrap Super Admin only when that username does not already exist.
 
    ```sh
    docker compose up
