@@ -439,6 +439,11 @@ export function CityCalculators({
           role="tab"
           aria-selected={active === "cost"}
           disabled={!availability.cost}
+          title={
+            !availability.cost
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("cost")}
         >
           Coût de Ville
@@ -448,6 +453,11 @@ export function CityCalculators({
           role="tab"
           aria-selected={active === "max-level"}
           disabled={!availability["max-level"]}
+          title={
+            !availability["max-level"]
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("max-level")}
         >
           Niveau Max Atteignable
@@ -457,6 +467,11 @@ export function CityCalculators({
           role="tab"
           aria-selected={active === "production"}
           disabled={!availability.production}
+          title={
+            !availability.production
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("production")}
         >
           Production
