@@ -1,7 +1,9 @@
 import { requireCapability } from "@/auth/require-session";
 import { CalculatorVisibilityList } from "@/components/calculator-visibility-list";
+import { CalculatorTranslationsEditor } from "@/components/calculator-translations-editor";
 import { calculatorCatalog } from "@/lib/calculator-catalog";
 import { prisma } from "@/lib/prisma";
+import { translationRecord } from "@/lib/translations";
 
 export default async function CalculatorsAdminPage() {
   await requireCapability("calculators.read");
@@ -31,6 +33,28 @@ export default async function CalculatorsAdminPage() {
           active: calculator.active,
         }))}
       />
+      <section
+        className="translation-editor-list"
+        aria-label="Traductions des calculateurs"
+      >
+        {calculators.map((calculator) => {
+          const label =
+            calculatorCatalog.find(({ slug }) => slug === calculator.slug)
+              ?.label ?? calculator.slug;
+          return (
+            <CalculatorTranslationsEditor
+              id={calculator.id}
+              initial={{
+                name: translationRecord(calculator.name),
+                description: translationRecord(calculator.description),
+                tips: translationRecord(calculator.tips),
+              }}
+              key={calculator.id}
+              label={label}
+            />
+          );
+        })}
+      </section>
     </main>
   );
 }
