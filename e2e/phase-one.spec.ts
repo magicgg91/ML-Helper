@@ -85,6 +85,28 @@ test("Skills exposes gem distributions and exact templar costs", async ({
     page.getByRole("heading", { name: "Compétences", exact: true }),
   ).toBeVisible();
 
+  await page
+    .getByRole("button", { name: /Amulette Vide/ })
+    .first()
+    .click();
+  await page
+    .getByRole("combobox", { name: "Équipement Attaque Amulette" })
+    .selectOption("Légendaire|Spirit Fyra");
+  await expect(page.getByText("+10% (10%)").first()).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("mlhelper_stuff_simulator")),
+    )
+    .toContain("Spirit Fyra");
+
+  await page.getByRole("tab", { name: "Comparaison de stuff" }).click();
+  const comparisonStars = page.getByRole("combobox", {
+    name: "Étoiles équipement Attaque Amulette",
+  });
+  await comparisonStars.nth(1).selectOption("8");
+  await expect(page.locator(".diff-positive").first()).toBeVisible();
+
+  await page.getByRole("tab", { name: "Gemmes" }).click();
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   await page.getByRole("spinbutton", { name: "Emplacements budget" }).fill("3");
   await page

@@ -6,6 +6,7 @@ describe("SkillsCalculators", () => {
   afterEach(cleanup);
   it("caps mixed optimization rows at the available socket count", () => {
     render(<SkillsCalculators />);
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
       { target: { value: "25" } },
@@ -22,6 +23,7 @@ describe("SkillsCalculators", () => {
   });
   it("shows the budget distribution as the primary result", () => {
     render(<SkillsCalculators />);
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Emplacements budget" }),

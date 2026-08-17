@@ -21,6 +21,7 @@ import {
   type TemplarKey,
 } from "../lib/player-settings";
 import { NumberStepper } from "./number-stepper";
+import { StuffComparison, StuffSimulator } from "./equipment-tools";
 
 const skillLabels: Record<SkillKey, string> = {
   striker: "Attaque",
@@ -65,7 +66,9 @@ type GemRow = {
 };
 
 export function SkillsCalculators() {
-  const [active, setActive] = useState<"gems" | "templars">("gems");
+  const [active, setActive] = useState<
+    "simulator" | "comparison" | "gems" | "templars"
+  >("simulator");
   return (
     <div className="city-calculators">
       <div
@@ -73,6 +76,22 @@ export function SkillsCalculators() {
         role="tablist"
         aria-label="Calculateurs Compétences"
       >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === "simulator"}
+          onClick={() => setActive("simulator")}
+        >
+          Simulateur de Stuff
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === "comparison"}
+          onClick={() => setActive("comparison")}
+        >
+          Comparaison de stuff
+        </button>
         <button
           type="button"
           role="tab"
@@ -90,7 +109,15 @@ export function SkillsCalculators() {
           Templiers
         </button>
       </div>
-      {active === "gems" ? <GemsCalculator /> : <TemplarsCalculator />}
+      {active === "simulator" ? (
+        <StuffSimulator />
+      ) : active === "comparison" ? (
+        <StuffComparison />
+      ) : active === "gems" ? (
+        <GemsCalculator />
+      ) : (
+        <TemplarsCalculator />
+      )}
     </div>
   );
 }

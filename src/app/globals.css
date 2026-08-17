@@ -452,6 +452,119 @@ select {
 .ranking-table-wrap {
   overflow-x: auto;
 }
+
+.stuff-block-columns {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(
+      220px,
+      0.8fr
+    );
+  gap: 1rem;
+  align-items: start;
+}
+
+.stuff-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.stuff-slot-grid button {
+  min-height: 76px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.stuff-slot-grid button.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.stuff-slot-grid small,
+.stuff-empty {
+  color: var(--muted);
+}
+
+.stuff-editor,
+.stuff-gems,
+.compare-side {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stuff-editor label,
+.stuff-gem-row label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.stuff-editor select,
+.stuff-gem-row select {
+  width: 100%;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.stuff-gem-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 1fr;
+  gap: 0.5rem;
+}
+
+.stuff-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.stuff-total {
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.stuff-total strong {
+  color: var(--success);
+}
+.stuff-total small {
+  color: var(--accent);
+}
+
+.compare-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.diff-positive {
+  color: var(--success);
+  font-weight: 700;
+}
+.diff-negative {
+  color: #b83a3a;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .stuff-block-columns,
+  .compare-equipment-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
