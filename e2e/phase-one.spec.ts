@@ -40,7 +40,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Plan your next progression." }),
   ).toBeVisible();
+  await page.goto("/guides");
+  await expect(
+    page.getByRole("heading", { name: "Visible guide" }),
+  ).toBeVisible();
   await page.getByLabel("Language / Langue").selectOption("fr");
+  await expect(
+    page.getByRole("heading", { name: "Guide visible" }),
+  ).toBeVisible();
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
@@ -235,7 +242,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   );
   await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
 
-  await adminNav.getByRole("link", { name: "Logs" }).click();
+  await adminNav.getByRole("link", { name: /Logs|Historique/ }).click();
   await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
   await expect(
     page.getByRole("cell", { name: "super_admin" }).first(),
