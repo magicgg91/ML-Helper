@@ -1,8 +1,10 @@
 import { requireCapability } from "@/auth/require-session";
+import { can } from "@/auth/permissions";
+import { GuideStatusList } from "@/components/guide-status-list";
 import { prisma } from "@/lib/prisma";
 
 export default async function GuidesAdminPage() {
-  await requireCapability("guides.read");
+  const session = await requireCapability("guides.read");
   const guides = await prisma.guide.findMany({
     select: { id: true, slug: true, status: true },
     orderBy: { updatedAt: "desc" },
@@ -15,24 +17,10 @@ export default async function GuidesAdminPage() {
         La gestion éditoriale complète arrivera dans la phase dédiée.
       </p>
       {guides.length ? (
-        <div className="ranking-table-wrap">
-          <table className="ranking-table">
-            <thead>
-              <tr>
-                <th>Slug</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {guides.map((guide) => (
-                <tr key={guide.id}>
-                  <td>{guide.slug}</td>
-                  <td>{guide.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <GuideStatusList
+          rows={guides}
+          canPublish={can(session.user.role, "guides.publish")}
+        />
       ) : (
         <p className="admin-empty">Aucun guide créé.</p>
       )}
