@@ -8,6 +8,11 @@ export async function authorizedSession(capability: AdminCapability) {
   return session?.user && can(session.user.role, capability) ? session : null;
 }
 
+export async function requireApiSession() {
+  const session = await getServerSession(authOptions);
+  return session?.user ? session : null;
+}
+
 export function forbiddenResponse() {
   return NextResponse.json(
     {
