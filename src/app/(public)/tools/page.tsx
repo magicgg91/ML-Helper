@@ -3,7 +3,7 @@ import Link from "next/link";
 const categories = [
   { label: "Villes", slug: "villes", available: true },
   { label: "Classement", slug: "classement", available: true },
-  { label: "Compétences", slug: "competences", available: false },
+  { label: "Compétences", slug: "competences", available: true },
   { label: "Référentiels", slug: "referentiels", available: false },
 ];
 

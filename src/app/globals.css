@@ -484,6 +484,88 @@ select {
   justify-self: start;
   padding: 0.7rem 1rem;
 }
+.calculator-tabs.compact {
+  margin: 1rem 0 0;
+}
+.family-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0;
+}
+.family-buttons button,
+.secondary-action {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.family-buttons button[aria-pressed="true"] {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+  box-shadow: inset 0 0 0 1px var(--accent-strong);
+}
+.gem-total-slots {
+  max-width: 18rem;
+}
+.gem-rows {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.gem-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1fr 1fr auto;
+  gap: 0.6rem;
+  align-items: end;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+.gem-row label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.gem-row > button {
+  min-height: 2.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--surface-muted);
+  color: var(--accent-strong);
+}
+.result-highlight,
+.budget-result-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background: var(--surface-muted);
+}
+.result-highlight strong {
+  color: var(--accent-strong);
+  font-size: 1.35rem;
+}
+.budget-result-main {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.budget-result-main strong {
+  color: var(--accent-strong);
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+}
+@media (max-width: 58rem) {
+  .gem-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 42rem) {
   .public-header,
   .player-settings > details > summary {
@@ -502,5 +584,8 @@ select {
   .city-comparison > span {
     transform: rotate(90deg);
     text-align: center;
+  }
+  .gem-row {
+    grid-template-columns: 1fr;
   }
 }

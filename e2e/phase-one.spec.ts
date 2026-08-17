@@ -77,6 +77,39 @@ test("Ranking converts position and percentage into league ranges", async ({
   );
 });
 
+test("Skills exposes gem distributions and exact templar costs", async ({
+  page,
+}) => {
+  await page.goto("/tools/competences");
+  await expect(
+    page.getByRole("heading", { name: "Compétences", exact: true }),
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Budget disponible" }).click();
+  await page.getByRole("spinbutton", { name: "Emplacements budget" }).fill("3");
+  await page
+    .getByRole("spinbutton", { name: "Budget disponible en saphirs" })
+    .fill("112000");
+  await expect(page.getByTestId("gem-budget-distribution")).toContainText(
+    "1 gemme 4★ + 2 gemmes 3★",
+  );
+
+  await page.getByRole("tab", { name: "Templiers" }).click();
+  await page
+    .getByRole("spinbutton", { name: "Niveau Templier cible" })
+    .fill("3");
+  await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
+
+  await page.getByRole("button", { name: "Défense" }).click();
+  await page
+    .getByRole("spinbutton", { name: "Niveau Templier cible" })
+    .fill("2");
+  await page.getByRole("button", { name: "Attaque" }).click();
+  await expect(
+    page.getByRole("spinbutton", { name: "Niveau Templier cible" }),
+  ).toHaveValue("3");
+});
+
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {

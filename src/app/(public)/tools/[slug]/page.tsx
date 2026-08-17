@@ -1,11 +1,23 @@
 import { notFound } from "next/navigation";
 import { CityCalculators } from "../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../components/ranking-calculator";
+import { SkillsCalculators } from "../../../../components/skills-calculators";
 import { getRankingConfig } from "../../../../lib/ranking";
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
-  if (slug !== "villes" && slug !== "classement") notFound();
+  if (!["villes", "classement", "competences"].includes(slug)) notFound();
+  if (slug === "competences")
+    return (
+      <main className="public-main">
+        <p className="eyebrow">Catégorie</p>
+        <h1>Compétences</h1>
+        <p className="lead">
+          Optimise tes gemmes et planifie séparément chacun de tes Templiers.
+        </p>
+        <SkillsCalculators />
+      </main>
+    );
   if (slug === "classement") {
     const config = await getRankingConfig();
     return (
