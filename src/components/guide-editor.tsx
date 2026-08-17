@@ -2,36 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  blocksToMarkdown,
-  markdownToBlocks,
-  newGuideBlock,
-  type GuideBlock,
-} from "../lib/guide-markdown";
 
 type Locale = "fr" | "en";
-type LocaleDraft = { title: string; excerpt: string; blocks: GuideBlock[] };
+type LocaleDraft = { title: string; excerpt: string; content: string };
 type GuideDraft = {
   id?: string;
   slug: string;
   category: string;
   coverImage: string;
   status: string;
-  translations: Record<
-    Locale,
-    { title: string; excerpt: string; content: string }
-  >;
+  translations: Record<Locale, LocaleDraft>;
 };
 
-const blockLabels: Record<GuideBlock["type"], string> = {
-  paragraph: "Paragraphe",
-  heading2: "Titre",
-  heading3: "Sous-titre",
-  bullet: "Liste à puces",
-  numbered: "Liste numérotée",
-  quote: "Citation",
-  image: "Image",
-};
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 120);
+}
 
 export function GuideEditor({
   initial,
@@ -43,23 +34,9 @@ export function GuideEditor({
   const router = useRouter();
   const [id, setId] = useState(initial.id);
   const [locale, setLocale] = useState<Locale>("fr");
-  const [slug, setSlug] = useState(initial.slug);
-  const [category, setCategory] = useState(initial.category);
-  const [coverImage, setCoverImage] = useState(initial.coverImage);
   const [status, setStatus] = useState(initial.status);
   const [message, setMessage] = useState("");
-  const [translations, setTranslations] = useState<Record<Locale, LocaleDraft>>(
-    {
-      fr: {
-        ...initial.translations.fr,
-        blocks: markdownToBlocks(initial.translations.fr.content),
-      },
-      en: {
-        ...initial.translations.en,
-        blocks: markdownToBlocks(initial.translations.en.content),
-      },
-    },
-  );
+  const [translations, setTranslations] = useState(initial.translations);
 
   function updateLocale(patch: Partial<LocaleDraft>) {
     setTranslations((current) => ({
@@ -67,51 +44,33 @@ export function GuideEditor({
       [locale]: { ...current[locale], ...patch },
     }));
   }
-  function updateBlock(index: number, patch: Partial<GuideBlock>) {
-    updateLocale({
-      blocks: translations[locale].blocks.map((block, item) =>
-        item === index ? { ...block, ...patch } : block,
-      ),
-    });
-  }
-  function moveBlock(index: number, direction: -1 | 1) {
-    const destination = index + direction;
-    if (destination < 0 || destination >= translations[locale].blocks.length)
-      return;
-    const blocks = [...translations[locale].blocks];
-    [blocks[index], blocks[destination]] = [blocks[destination], blocks[index]];
-    updateLocale({ blocks });
-  }
+
   async function save(nextStatus?: "pending_review" | "published" | "draft") {
     setMessage("Enregistrement…");
-    const payload = {
-      slug,
-      category,
-      coverImage,
-      translations: Object.fromEntries(
-        (["fr", "en"] as const).map((key) => [
-          key,
-          {
-            title: translations[key].title,
-            excerpt: translations[key].excerpt,
-            content: blocksToMarkdown(translations[key].blocks),
-          },
-        ]),
-      ),
-    };
+    const generatedSlug =
+      initial.slug || slugify(translations.fr.title || translations.en.title);
+    if (!generatedSlug) {
+      setMessage("Saisis un titre FR ou EN avant d’enregistrer.");
+      return;
+    }
     const response = await fetch(
       id ? `/api/admin/guides/${id}` : "/api/admin/guides",
       {
         method: id ? "PATCH" : "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          slug: generatedSlug,
+          category: initial.category,
+          coverImage: initial.coverImage,
+          translations,
+        }),
       },
     ).catch(() => null);
     if (!response?.ok) {
       const error = response ? await response.json().catch(() => null) : null;
       setMessage(
         error?.error === "slug_already_exists"
-          ? "Ce slug est déjà utilisé."
+          ? "Un guide utilise déjà ce titre/slug."
           : "Le guide contient des champs invalides ou incomplets.",
       );
       return;
@@ -144,39 +103,6 @@ export function GuideEditor({
   const draft = translations[locale];
   return (
     <div className="guide-editor">
-      <section className="admin-panel guide-metadata">
-        <label>
-          Slug
-          <input
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-            required
-          />
-        </label>
-        <label>
-          Catégorie
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-          >
-            <option value="debutants">Débutants</option>
-            <option value="expeditions">Expéditions</option>
-            <option value="stuff">Stuff</option>
-            <option value="combat">Combat</option>
-            <option value="defense">Défense</option>
-            <option value="evenements">Événements</option>
-          </select>
-        </label>
-        <label>
-          Image de couverture (URL)
-          <input
-            type="url"
-            value={coverImage}
-            onChange={(event) => setCoverImage(event.target.value)}
-          />
-        </label>
-      </section>
       <nav className="tabs" aria-label="Langue du guide">
         {(["fr", "en"] as const).map((key) => (
           <button
@@ -189,7 +115,7 @@ export function GuideEditor({
           </button>
         ))}
       </nav>
-      <section className="admin-panel guide-locale-fields">
+      <section className="admin-panel guide-simple-fields">
         <label>
           Titre ({locale.toUpperCase()})
           <input
@@ -205,97 +131,15 @@ export function GuideEditor({
             onChange={(event) => updateLocale({ excerpt: event.target.value })}
           />
         </label>
-      </section>
-      <section
-        className="guide-block-editor"
-        aria-label={`Contenu ${locale.toUpperCase()}`}
-      >
-        {draft.blocks.map((block, index) => (
-          <article
-            className={`guide-editor-block block-${block.type}`}
-            key={block.id}
-          >
-            <div className="guide-block-toolbar">
-              <span>{blockLabels[block.type]}</span>
-              <button
-                type="button"
-                onClick={() => moveBlock(index, -1)}
-                disabled={index === 0}
-                aria-label="Monter le bloc"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                onClick={() => moveBlock(index, 1)}
-                disabled={index === draft.blocks.length - 1}
-                aria-label="Descendre le bloc"
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  updateLocale({
-                    blocks: draft.blocks.filter((_, item) => item !== index),
-                  })
-                }
-                aria-label="Supprimer le bloc"
-              >
-                ×
-              </button>
-            </div>
-            {block.type === "image" ? (
-              <>
-                <label>
-                  URL de l’image
-                  <input
-                    type="url"
-                    value={block.url}
-                    onChange={(event) =>
-                      updateBlock(index, { url: event.target.value })
-                    }
-                  />
-                </label>
-                <label>
-                  Texte alternatif
-                  <input
-                    value={block.text}
-                    onChange={(event) =>
-                      updateBlock(index, { text: event.target.value })
-                    }
-                  />
-                </label>
-              </>
-            ) : (
-              <div
-                className="guide-rich-block"
-                role="textbox"
-                aria-label={`${blockLabels[block.type]} ${index + 1}`}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(event) =>
-                  updateBlock(index, { text: event.currentTarget.innerText })
-                }
-              >
-                {block.text}
-              </div>
-            )}
-          </article>
-        ))}
-        <div className="guide-add-block" aria-label="Ajouter un bloc">
-          {(Object.keys(blockLabels) as GuideBlock["type"][]).map((type) => (
-            <button
-              type="button"
-              key={type}
-              onClick={() =>
-                updateLocale({ blocks: [...draft.blocks, newGuideBlock(type)] })
-              }
-            >
-              + {blockLabels[type]}
-            </button>
-          ))}
-        </div>
+        <label>
+          Contenu Markdown ({locale.toUpperCase()})
+          <textarea
+            className="guide-markdown-input"
+            value={draft.content}
+            onChange={(event) => updateLocale({ content: event.target.value })}
+            spellCheck
+          />
+        </label>
       </section>
       <div className="admin-actions">
         <button type="button" onClick={() => save()}>

@@ -462,12 +462,11 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/guides/new");
-  await page.getByLabel("Slug").fill("guide-cycle-complet");
   await page.getByLabel("Titre (FR)").fill("Guide cycle complet");
   await page.getByLabel("Résumé (FR)").fill("Résumé du cycle complet");
   await page
-    .getByRole("textbox", { name: "Paragraphe 1" })
-    .fill("Contenu initial du guide.");
+    .getByLabel("Contenu Markdown (FR)")
+    .fill("## Départ\n\nContenu initial du guide.");
   await page.getByRole("button", { name: "Soumettre en review" }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
   await expect(page.getByRole("status")).toHaveText("Guide enregistré.");

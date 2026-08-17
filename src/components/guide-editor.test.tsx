@@ -48,6 +48,9 @@ describe("GuideEditor", () => {
     fireEvent.change(screen.getByLabelText("Titre (EN)"), {
       target: { value: "Updated English title" },
     });
+    fireEvent.change(screen.getByLabelText("Contenu Markdown (EN)"), {
+      target: { value: "## Updated\n\nEnglish markdown" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^Enregistrer$/ }));
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     const request = vi.mocked(fetch).mock.calls[0][1];
@@ -58,5 +61,6 @@ describe("GuideEditor", () => {
       content: "Contenu FR",
     });
     expect(body.translations.en.title).toBe("Updated English title");
+    expect(body.translations.en.content).toBe("## Updated\n\nEnglish markdown");
   });
 });
