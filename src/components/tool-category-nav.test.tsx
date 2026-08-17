@@ -6,6 +6,15 @@ let pathname = "/tools";
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
 }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) =>
+    ({
+      cities: "Villes",
+      ranking: "Classement",
+      skills: "Compétences",
+      references: "Référentiels",
+    })[key],
+}));
 
 describe("ToolCategoryNav", () => {
   afterEach(cleanup);
