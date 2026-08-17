@@ -33,7 +33,12 @@ export function ToolCategoryNav({
             {t(category.label)}
           </Link>
         ) : (
-          <button className="category-btn" disabled key={category.slug}>
+          <button
+            className="category-btn"
+            disabled
+            key={category.slug}
+            title="Indisponible actuellement"
+          >
             {t(category.label)}
           </button>
         ),
