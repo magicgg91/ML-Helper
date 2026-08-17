@@ -163,7 +163,7 @@ export function optimizeGemBudget(
 
 export const templarCosts = [
   150, 195, 254, 330, 428, 557, 724, 941, 1224, 1591, 2068, 2688, 3495, 4543,
-  5907, 7678, 9981, 12976, 16868, 21929, 28507,
+  5907, 7678, 9981, 12976, 16868, 21929,
 ];
 export const templarRates: Record<TemplarKey, number> = {
   striker: 0.25,
@@ -172,6 +172,25 @@ export const templarRates: Record<TemplarKey, number> = {
   recruiter: 0.5,
   rusher: 1,
 };
+
+export function normalizeTemplarCostRows(
+  input: readonly { level: number; cost: number }[],
+): number[] {
+  const rows = input
+    .filter(
+      (row) =>
+        Number.isFinite(Number(row.level)) && Number.isFinite(Number(row.cost)),
+    )
+    .sort((a, b) => a.level - b.level);
+  if (rows[0]?.level === 0) {
+    const migrated =
+      Number(rows[0].cost) === 0 ? rows.slice(1, 21) : rows.slice(0, 20);
+    return migrated.map((row) => Number(row.cost));
+  }
+  return rows
+    .filter((row) => row.level >= 1 && row.level <= 20)
+    .map((row) => Number(row.cost));
+}
 
 export function templarCumulativeCost(
   level: number,

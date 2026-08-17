@@ -13,9 +13,10 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     const body = await request.json();
-    if (!Array.isArray(body) || body.length !== 21)
+    if (!Array.isArray(body) || body.length !== 20)
       throw new Error("invalid rows");
-    const rows = body.map((raw, level) => {
+    const rows = body.map((raw, index) => {
+      const level = index + 1;
       const cost = Number(raw?.cost);
       if (Number(raw?.level) !== level || !Number.isFinite(cost) || cost < 0)
         throw new Error("invalid row");

@@ -587,15 +587,15 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
           <table className="ranking-table">
             <thead>
               <tr>
-                <th>Niveau actuel</th>
+                <th>Niveau atteint</th>
                 <th>Coût du niveau</th>
                 <th>Coût cumulé</th>
               </tr>
             </thead>
             <tbody>
               {costs.map((item, index) => (
-                <tr key={index}>
-                  <td>{index}</td>
+                <tr key={index + 1}>
+                  <td>{index + 1}</td>
                   <td>{formatGameNumber(item)}</td>
                   <td>{formatGameNumber(cumulative[index])}</td>
                 </tr>

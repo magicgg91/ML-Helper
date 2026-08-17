@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { templarCosts } from "./gems-templars";
+import { normalizeTemplarCostRows, templarCosts } from "./gems-templars";
 import {
   applyCombatOverrides,
   combatReferenceRows,
@@ -48,9 +48,11 @@ export function getExpeditionReferenceRows(): Promise<
 }
 
 export async function getTemplarCostRows(): Promise<number[]> {
-  const rows = await rowsFor<{ level: number; cost: number }>(
-    referenceKeys.templars,
-    templarCosts.map((cost, level) => ({ level, cost })),
+  const table = await prisma.referenceTable.findUnique({
+    where: { key: referenceKeys.templars },
+  });
+  if (!Array.isArray(table?.rows)) return [...templarCosts];
+  return normalizeTemplarCostRows(
+    table.rows as unknown as { level: number; cost: number }[],
   );
-  return rows.sort((a, b) => a.level - b.level).map((row) => row.cost);
 }

@@ -346,29 +346,32 @@ export function TemplarReferenceAdmin({
       <table className="ranking-table">
         <thead>
           <tr>
-            <th>Niveau actuel</th>
+            <th>Niveau atteint</th>
             <th>Coût du niveau</th>
           </tr>
         </thead>
         <tbody>
-          {costs.map((cost, level) => (
-            <tr key={level}>
-              <td>{level}</td>
-              <td>
-                <OptionalNumber
-                  label={`Coût Templier niveau ${level}`}
-                  value={String(cost)}
-                  onChange={(value) =>
-                    setCosts((current) =>
-                      current.map((item, index) =>
-                        index === level ? Number(value) : item,
-                      ),
-                    )
-                  }
-                />
-              </td>
-            </tr>
-          ))}
+          {costs.map((cost, index) => {
+            const level = index + 1;
+            return (
+              <tr key={level}>
+                <td>{level}</td>
+                <td>
+                  <OptionalNumber
+                    label={`Coût Templier niveau ${level}`}
+                    value={String(cost)}
+                    onChange={(value) =>
+                      setCosts((current) =>
+                        current.map((item, index) =>
+                          index === level - 1 ? Number(value) : item,
+                        ),
+                      )
+                    }
+                  />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <button
@@ -377,7 +380,7 @@ export function TemplarReferenceAdmin({
         onClick={() =>
           saveRows(
             "/api/admin/references/templars",
-            costs.map((cost, level) => ({ level, cost })),
+            costs.map((cost, index) => ({ level: index + 1, cost })),
             setStatus,
           )
         }

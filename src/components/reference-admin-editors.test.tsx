@@ -45,9 +45,9 @@ describe("complete lookup table administration", () => {
     );
     unmount();
     render(<TemplarReferenceAdmin initialCosts={[...templarCosts]} />);
-    expect(screen.getAllByRole("row")).toHaveLength(22);
+    expect(screen.getAllByRole("row")).toHaveLength(21);
     expect(
       screen.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
-    ).toHaveValue(28507);
+    ).toHaveValue(21929);
   });
 });
