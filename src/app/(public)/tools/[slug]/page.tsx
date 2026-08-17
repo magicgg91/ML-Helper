@@ -19,8 +19,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   if (slug === "referentiels")
     return (
       <main className="public-main">
-        <p className="eyebrow">Catégorie</p>
-        <h1>Référentiels</h1>
+        <h1 className="sr-only">Référentiels</h1>
         <p className="lead">
           Consulte et filtre les équipements de combat et d’expédition.
         </p>
@@ -37,8 +36,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   if (slug === "competences")
     return (
       <main className="public-main">
-        <p className="eyebrow">Catégorie</p>
-        <h1>Compétences</h1>
+        <h1 className="sr-only">Compétences</h1>
         <p className="lead">
           Optimise tes gemmes et planifie séparément chacun de tes Templiers.
         </p>
@@ -57,8 +55,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
     const config = await getRankingConfig();
     return (
       <main className="public-main">
-        <p className="eyebrow">Catégorie</p>
-        <h1>Classement</h1>
+        <h1 className="sr-only">Classement</h1>
         <p className="lead">
           Convertis ton rang et ton pourcentage en plages de promotion, maintien
           ou descente.
@@ -75,8 +72,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   }
   return (
     <main className="public-main">
-      <p className="eyebrow">Catégorie</p>
-      <h1>Villes</h1>
+      <h1 className="sr-only">Villes</h1>
       <p className="lead">
         Planifie tes upgrades et mesure précisément ta production en ligue
         Légende.
