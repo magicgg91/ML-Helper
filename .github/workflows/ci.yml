@@ -47,5 +47,19 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
+          load: true
           tags: ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+      - name: Verify container startup
+        run: |
+          mkdir -p "$RUNNER_TEMP/ml-helper-data"
+          docker run --rm \
+            --mount type=bind,src="$RUNNER_TEMP/ml-helper-data",dst=/app/data \
+            -e DATABASE_URL=file:/app/data/ml-helper.db \
+            -e NEXTAUTH_URL=http://localhost:3000 \
+            -e NEXTAUTH_SECRET=container-startup-test-secret \
+            -e SUPERADMIN_USERNAME=rootadmin \
+            -e SUPERADMIN_PASSWORD=correct-horse-battery-staple \
+            ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }} \
+            node -e "console.log('Container startup verified')"
+      - name: Push image
+        run: docker push ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
