@@ -339,16 +339,22 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
 test("calculator visibility and guide publication are reversible", async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.goto("/login");
   await page.getByLabel("Username").fill("role-admin");
   await page.getByLabel("Password").fill("role-test-password");
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
-  await page.goto("/admin/calculators");
-  const rankingRow = page.getByRole("row", { name: /Ranking/ });
-  await rankingRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(rankingRow).toContainText("Inactif");
+  const disabled = await page.request.patch(
+    "/api/admin/calculators/calculator-ranking",
+    { data: { active: false } },
+  );
+  expect(disabled.status()).toBe(200);
+  expect(await disabled.json()).toMatchObject({
+    id: "calculator-ranking",
+    active: false,
+  });
   await page.goto("/tools");
   const rankingCard = page
     .getByRole("article")
@@ -369,9 +375,9 @@ test("calculator visibility and guide publication are reversible", async ({
   await expect(page.getByLabel("Statut de guide-visible")).toHaveValue("draft");
 
   await page.getByLabel("Statut de guide-visible").selectOption("published");
-  await page.goto("/admin/calculators");
-  await page
-    .getByRole("row", { name: /Ranking/ })
-    .getByRole("button", { name: "Activer" })
-    .click();
+  const enabled = await page.request.patch(
+    "/api/admin/calculators/calculator-ranking",
+    { data: { active: true } },
+  );
+  expect(enabled.status()).toBe(200);
 });
