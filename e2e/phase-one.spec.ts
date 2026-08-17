@@ -36,6 +36,11 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
+  await page.getByLabel("Language / Langue").selectOption("en");
+  await expect(
+    page.getByRole("heading", { name: "Plan your next progression." }),
+  ).toBeVisible();
+  await page.getByLabel("Language / Langue").selectOption("fr");
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
@@ -81,7 +86,10 @@ test("the Cities category exposes its three working calculators", async ({
   page,
 }) => {
   await page.goto("/tools/villes");
-  await expect(page.getByRole("heading", { name: "Villes" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Villes" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
   await expect(page.getByTestId("city-cost-one")).toHaveText("10 or");
 
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
@@ -97,9 +105,10 @@ test("Ranking converts position and percentage into league ranges", async ({
   page,
 }) => {
   await page.goto("/tools/classement");
-  await expect(
-    page.getByRole("heading", { name: "Classement", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Classement" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
   await expect(page.getByTestId("ranking-total")).toHaveText("1 000");
   await expect(
     page.getByLabel("Échelle de classement de 100% à 0%"),
@@ -121,9 +130,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   page,
 }) => {
   await page.goto("/tools/competences");
-  await expect(
-    page.getByRole("heading", { name: "Compétences", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Compétences" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 
   await page
     .getByRole("button", { name: /Amulette Vide/ })
@@ -177,8 +187,8 @@ test("Reference tables filter combat and flag expedition hypotheses", async ({
 }) => {
   await page.goto("/tools/referentiels");
   await expect(
-    page.getByRole("heading", { name: "Référentiels", exact: true }),
-  ).toBeVisible();
+    page.getByRole("link", { name: "Référentiels" }),
+  ).toHaveAttribute("aria-current", "page");
   await page.getByRole("button", { name: "Attaque" }).click();
   await page
     .getByRole("searchbox", { name: "Recherche libre" })
@@ -198,9 +208,11 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   page,
 }) => {
   await page.goto("/login");
-  await page.getByLabel("Username").fill("rootadmin");
-  await page.getByLabel("Password").fill("correct-horse-battery-staple");
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByText("Calculateurs actifs")).toBeVisible();
   await expect(
@@ -211,12 +223,16 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   });
 
   await adminNav.getByRole("link", { name: "Utilisateurs" }).click();
-  const createForm = page.locator("form").first();
+  const createForm = page.locator('form:has(input[name="username"])');
   await createForm.locator('input[name="username"]').fill("phase1admin");
   await createForm.locator('input[name="password"]').fill("phase-one-password");
   await createForm.locator('select[name="role"]').selectOption("admin");
-  await page.getByRole("button", { name: "Create user" }).click();
-  await expect(page.getByRole("status")).toHaveText("User created");
+  await createForm
+    .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
+    .click();
+  await expect(page.getByRole("status")).toHaveText(
+    /User created|Utilisateur créé/,
+  );
   await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Logs" }).click();
@@ -254,9 +270,11 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
   const rootContext = await browser.newContext();
   const root = await rootContext.newPage();
   await root.goto("/login");
-  await root.getByLabel("Username").fill("rootadmin");
-  await root.getByLabel("Password").fill("correct-horse-battery-staple");
-  await root.getByRole("button", { name: "Sign in" }).click();
+  await root.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await root
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await root.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(root).toHaveURL(/\/admin$/);
 
   const accounts = [
@@ -316,9 +334,9 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.goto("/login");
-    await page.getByLabel("Username").fill(roleCase.username);
-    await page.getByLabel("Password").fill(roleCase.password);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel(/Username|Identifiant/).fill(roleCase.username);
+    await page.getByLabel(/Password|Mot de passe/).fill(roleCase.password);
+    await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
     await expect(page).toHaveURL(/\/admin$/);
     for (const path of allSections) {
       const response = await page.goto(path);
@@ -341,9 +359,9 @@ test("calculator visibility and guide publication are reversible", async ({
 }) => {
   test.setTimeout(60_000);
   await page.goto("/login");
-  await page.getByLabel("Username").fill("role-admin");
-  await page.getByLabel("Password").fill("role-test-password");
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
   const disabled = await page.request.patch(
