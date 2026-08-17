@@ -1,4 +1,24 @@
 {
+  "Public": {
+    "tools": "Simulateurs",
+    "guides": "Guides",
+    "contact": "Contact",
+    "admin": "Administration",
+    "legal": "Mentions légales"
+  },
+  "Home": {
+    "eyebrow": "Million Lords · Outils communautaires",
+    "title": "Prépare ta prochaine progression.",
+    "description": "Simule ta progression, compare ton équipement et consulte les données utiles. Tes paramètres joueur restent uniquement dans ce navigateur.",
+    "tools": "Voir les simulateurs",
+    "guides": "Parcourir les guides"
+  },
+  "Tools": {
+    "cities": "Villes",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "references": "Référentiels"
+  },
   "Login": {
     "title": "Connexion administration",
     "username": "Identifiant",
@@ -9,6 +29,10 @@
   "Admin": {
     "title": "Administration",
     "dashboard": "Tableau de bord",
+    "calculators": "Calculateurs",
+    "references": "Référentiels",
+    "guides": "Guides",
+    "content": "Contenu statique",
     "users": "Utilisateurs",
     "logs": "Historique",
     "empty": "Fondations de l’administration — Phase 1"
