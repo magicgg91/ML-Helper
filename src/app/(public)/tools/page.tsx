@@ -46,6 +46,7 @@ export default async function ToolsPage() {
               className={`public-card${available ? "" : " public-card-disabled"}`}
               key={category.slug}
               data-disabled={!available || undefined}
+              title={!available ? "Indisponible actuellement" : undefined}
             >
               <h2>{category.label}</h2>
               <p>
