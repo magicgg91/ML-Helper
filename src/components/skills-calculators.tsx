@@ -67,12 +67,25 @@ type GemRow = {
 
 export function SkillsCalculators({
   templarCostTable = templarCosts,
+  availability = {
+    simulator: true,
+    comparison: true,
+    gems: true,
+    templars: true,
+  },
 }: {
   templarCostTable?: readonly number[];
+  availability?: Record<
+    "simulator" | "comparison" | "gems" | "templars",
+    boolean
+  >;
 }) {
+  const firstAvailable = (
+    ["simulator", "comparison", "gems", "templars"] as const
+  ).find((key) => availability[key]);
   const [active, setActive] = useState<
-    "simulator" | "comparison" | "gems" | "templars"
-  >("simulator");
+    "simulator" | "comparison" | "gems" | "templars" | undefined
+  >(firstAvailable);
   return (
     <div className="city-calculators">
       <nav
@@ -84,6 +97,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "simulator"}
+          disabled={!availability.simulator}
           onClick={() => setActive("simulator")}
         >
           Simulateur de Stuff
@@ -92,6 +106,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "comparison"}
+          disabled={!availability.comparison}
           onClick={() => setActive("comparison")}
         >
           Comparaison de stuff
@@ -100,6 +115,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "gems"}
+          disabled={!availability.gems}
           onClick={() => setActive("gems")}
         >
           Gemmes
@@ -108,6 +124,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "templars"}
+          disabled={!availability.templars}
           onClick={() => setActive("templars")}
         >
           Templiers
@@ -119,8 +136,12 @@ export function SkillsCalculators({
         <StuffComparison />
       ) : active === "gems" ? (
         <GemsCalculator />
-      ) : (
+      ) : active === "templars" ? (
         <TemplarsCalculator costs={templarCostTable} />
+      ) : (
+        <p className="empty-state">
+          Ces calculateurs sont temporairement indisponibles.
+        </p>
       )}
     </div>
   );
