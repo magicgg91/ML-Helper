@@ -360,6 +360,11 @@ export function ReferenceTables({
           role="tab"
           aria-selected={active === "combat"}
           disabled={!availability.combat}
+          title={
+            !availability.combat
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("combat")}
         >
           Équipements de Combat
@@ -369,6 +374,11 @@ export function ReferenceTables({
           role="tab"
           aria-selected={active === "expedition"}
           disabled={!availability.expedition}
+          title={
+            !availability.expedition
+              ? "Désactivé — inaccessible actuellement"
+              : undefined
+          }
           onClick={() => setActive("expedition")}
         >
           Équipement d’Expédition
