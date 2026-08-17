@@ -1329,6 +1329,35 @@ body > main h1 {
   width: 100%;
   margin-top: 0.75rem;
 }
+.translation-editor-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.translation-editor {
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.translation-editor summary {
+  color: var(--text);
+  cursor: pointer;
+}
+.translation-editor fieldset {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  border-color: var(--border);
+}
+.translation-editor label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-dim);
+}
+.translation-editor textarea {
+  min-height: 4rem;
+}
 .form-success {
   border-color: var(--emerald-bright);
   background: color-mix(in srgb, var(--emerald) 10%, var(--bg));
