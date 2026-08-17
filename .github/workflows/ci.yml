@@ -19,16 +19,11 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm lint
       - run: pnpm test
-      - name: Verify migrations and idempotent bootstrap
+      - name: Verify migrations
         run: |
           pnpm prisma migrate deploy
-          pnpm prisma db seed
-          pnpm prisma db seed
-          pnpm exec tsx prisma/verify-bootstrap.ts
         env:
           DATABASE_URL: file:./startup-test.db
-          SUPERADMIN_USERNAME: rootadmin
-          SUPERADMIN_PASSWORD: correct-horse-battery-staple
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
@@ -57,8 +52,6 @@ jobs:
             -e DATABASE_URL=file:/app/data/ml-helper.db \
             -e NEXTAUTH_URL=http://localhost:3000 \
             -e NEXTAUTH_SECRET=container-startup-test-secret \
-            -e SUPERADMIN_USERNAME=rootadmin \
-            -e SUPERADMIN_PASSWORD=correct-horse-battery-staple \
             ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }} \
             node -e "console.log('Container startup verified')"
       - name: Push image

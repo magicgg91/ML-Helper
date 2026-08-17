@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
+import { hasSuperAdmin } from "../../services/setup-superadmin";
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connection();
+  if (!(await hasSuperAdmin())) redirect("/admin/setup");
   return (
     <main className="public-main">
       <section className="hero">

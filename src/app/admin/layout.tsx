@@ -1,9 +1,12 @@
 import { getTranslations } from "next-intl/server";
-import { requireAdminSession } from "@/auth/require-session";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth/options";
+import { isAdminRole } from "@/auth/roles";
 import { AdminNav } from "@/components/admin-nav";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const session = await requireAdminSession();
+  const session = await getServerSession(authOptions);
   const t = await getTranslations("Admin");
+  if (!session?.user || !isAdminRole(session.user.role)) return children;
   return (
     <>
       <header className="admin-header">

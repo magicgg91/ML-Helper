@@ -4,6 +4,5 @@ set -eu
 chown nextjs:nodejs /app/data
 
 su-exec nextjs ./node_modules/.bin/prisma migrate deploy --schema ./prisma/schema.prisma
-su-exec nextjs ./node_modules/.bin/tsx ./prisma/bootstrap-superadmin.ts
 
 exec su-exec nextjs "$@"

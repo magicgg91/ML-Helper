@@ -10,7 +10,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:prepare": "tsx prisma/setup-e2e.ts && prisma db seed",
+    "test:e2e:prepare": "tsx prisma/setup-e2e.ts",
     "prisma:generate": "prisma generate",
     "check": "pnpm lint && pnpm format:check && pnpm test"
   },
@@ -42,8 +42,5 @@
     "typescript": "^5",
     "vitest": "^3.2.0"
   },
-  "packageManager": "pnpm@11.19.0",
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  }
+  "packageManager": "pnpm@11.19.0"
 }

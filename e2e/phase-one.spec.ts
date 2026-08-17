@@ -1,5 +1,34 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ mode: "serial" });
+
+test("first launch creates the one-time Super Admin", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/admin\/setup$/);
+  await expect(
+    page.getByRole("heading", { name: "Créer le premier Super Admin" }),
+  ).toBeVisible();
+  await page.getByLabel("Nom d’utilisateur").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Créer le Super Admin" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("setup cannot be reused after a Super Admin exists", async ({ page }) => {
+  const status = await page.request.post("/api/admin/setup", {
+    data: {
+      username: "second-root",
+      password: "another-secure-password",
+    },
+  });
+  expect(status.status()).toBe(409);
+  await page.goto("/admin/setup");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("heading", { name: "Créer le premier Super Admin" }),
+  ).toHaveCount(0);
+});
+
 test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
@@ -190,8 +219,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
 
   await adminNav.getByRole("link", { name: "Logs" }).click();
   await expect(page.getByRole("cell", { name: "create" })).toBeVisible();
-  await expect(page.getByRole("cell", { name: "super_admin" })).toBeVisible();
-  await expect(page.getByText(/user:/)).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "super_admin" }).first(),
+  ).toBeVisible();
+  await expect(page.getByText(/user:/).first()).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page.getByRole("link", { name: "Équipements de Combat" }).click();
