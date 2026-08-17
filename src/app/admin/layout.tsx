@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/options";
 import { isAdminRole } from "@/auth/roles";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminAccountMenu } from "@/components/admin-account-menu";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);
   const t = await getTranslations("Admin");
@@ -11,7 +13,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     <>
       <header className="admin-header">
         <strong>{t("title")}</strong>
-        <span>{session.user.name ?? session.user.id}</span>
+        <div className="admin-header-actions">
+          <LocaleSwitcher />
+          <AdminAccountMenu username={session.user.name ?? session.user.id} />
+        </div>
       </header>
       <AdminNav role={session.user.role} />
       {children}
