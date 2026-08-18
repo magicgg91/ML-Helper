@@ -46,6 +46,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
+  await expect(page.locator(".home-carousel-track figure")).toHaveCount(3);
+  await expect(page.locator(".home-feature")).toHaveCount(2);
+  await expect(
+    page.getByRole("link", { name: "Voir les simulateurs" }),
+  ).toHaveAttribute("href", "/tools");
+  await expect(
+    page.getByRole("link", { name: "Parcourir les guides" }),
+  ).toHaveAttribute("href", "/guides");
   await page.getByLabel("Language / Langue").selectOption("en");
   await expect(
     page.getByRole("heading", { name: "Plan your next progression." }),
@@ -63,6 +71,9 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 
   await page.goto("/tools");
+  await expect(page.locator(".tool-category-card")).toHaveCount(5);
+  await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
+  await expect(page.getByText("Bientôt disponible")).toBeVisible();
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })

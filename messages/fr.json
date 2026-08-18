@@ -11,7 +11,32 @@
     "title": "Prépare ta prochaine progression.",
     "description": "Simule ta progression, compare ton équipement et consulte les données utiles. Tes paramètres joueur restent uniquement dans ce navigateur.",
     "tools": "Voir les simulateurs",
-    "guides": "Parcourir les guides"
+    "guides": "Parcourir les guides",
+    "carouselLabel": "Aperçu de l’univers Million Lords",
+    "carouselKingdom": "Royaume fortifié dans l’univers Million Lords",
+    "carouselBattle": "Champ de bataille dans l’univers Million Lords",
+    "carouselMap": "Carte stratégique dans l’univers Million Lords",
+    "toolsImageAlt": "Illustration des outils de simulation",
+    "guidesImageAlt": "Illustration des guides stratégiques",
+    "toolsEyebrow": "Simuler",
+    "toolsTitle": "Décide avec les bons chiffres",
+    "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
+    "guidesEyebrow": "Apprendre",
+    "guidesTitle": "Affûte ta stratégie",
+    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
+  },
+  "ToolsPage": {
+    "eyebrow": "Simulateurs",
+    "title": "Choisis ton domaine",
+    "cities": "Villes",
+    "combat": "Combat",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "references": "Référentiels",
+    "count": "{count, plural, =0 {Aucun simulateur disponible} one {# simulateur disponible} other {# simulateurs disponibles}}",
+    "open": "Ouvrir la catégorie",
+    "comingSoon": "Bientôt disponible",
+    "unavailable": "Catégorie indisponible actuellement"
   },
   "Tools": {
     "cities": "Villes",
