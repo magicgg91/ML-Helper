@@ -54,5 +54,20 @@ jobs:
             -e NEXTAUTH_SECRET=container-startup-test-secret \
             ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }} \
             node -e "console.log('Container startup verified')"
+      - name: Verify Docker Compose health
+        run: |
+          touch .env
+          docker compose up -d --pull never --wait --wait-timeout 180
+          docker compose ps
+          container_id="$(docker compose ps -q app)"
+          test -n "$container_id"
+          test "$(docker inspect --format '{{.State.Health.Status}}' "$container_id")" = "healthy"
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop Docker Compose stack
+        if: always()
+        run: docker compose down --volumes
       - name: Push image
         run: docker push ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+
