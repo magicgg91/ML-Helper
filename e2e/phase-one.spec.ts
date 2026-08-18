@@ -54,6 +54,16 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("link", { name: "Parcourir les guides" }),
   ).toHaveAttribute("href", "/guides");
+  const publicThemeToggle = page.getByRole("button", {
+    name: "Activer le mode clair",
+  });
+  await expect(publicThemeToggle).toHaveText("☀");
+  await publicThemeToggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  const lightOverlay = await page
+    .locator(".home-carousel")
+    .evaluate((node) => getComputedStyle(node, "::after").backgroundImage);
+  expect(lightOverlay).toContain("240, 242, 245");
   await page.getByLabel("Language / Langue").selectOption("en");
   await expect(
     page.getByRole("heading", { name: "Plan your next progression." }),
@@ -74,6 +84,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(page.locator(".tool-category-card")).toHaveCount(5);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(page.getByText("Bientôt disponible")).toBeVisible();
+  await expect(
+    page.getByText("Paramètres du joueur", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Catégories de simulateurs" }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: "Ouvrir la catégorie" }).first().click();
+  await expect(page).toHaveURL(/\/tools\/villes$/);
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
@@ -85,7 +103,7 @@ test("tool routes alone expose persistent player settings", async ({
       exact: true,
     })
     .fill("12.5");
-  await page.goto("/tools/villes");
+  await page.reload();
 
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await expect(
@@ -252,6 +270,9 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
+  await expect(
+    page.getByRole("button", { name: "Activer le mode clair" }),
+  ).toHaveText("☀");
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toBeVisible();
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
   await expect(

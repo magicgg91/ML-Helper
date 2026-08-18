@@ -29,7 +29,7 @@ export function ThemeToggle() {
       aria-label={`Activer le mode ${theme === "dark" ? "clair" : "sombre"}`}
       aria-pressed={theme === "light"}
     >
-      {theme === "dark" ? "☀ Clair" : "☾ Sombre"}
+      <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
     </button>
   );
 }

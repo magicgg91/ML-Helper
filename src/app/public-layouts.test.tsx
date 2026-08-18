@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import PublicLayout from "./(public)/layout";
 import ToolsLayout from "./(public)/tools/layout";
+import ToolDetailLayout from "./(public)/tools/[slug]/layout";
 import { NextIntlClientProvider } from "next-intl";
 
 vi.mock("../components/theme-toggle", () => ({
@@ -43,7 +44,21 @@ describe("public layouts", () => {
     expect(screen.queryByText("Paramètres du joueur")).not.toBeInTheDocument();
   });
 
-  it("shows player settings throughout the tools section", async () => {
+  it("keeps the tools landing page limited to its category content", () => {
+    render(
+      <ToolsLayout params={Promise.resolve({})}>
+        <p>Catégories</p>
+      </ToolsLayout>,
+    );
+
+    expect(screen.getByText("Catégories")).toBeInTheDocument();
+    expect(screen.queryByText("Paramètres du joueur")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Catégories de simulateurs" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows player settings after a tool category is selected", async () => {
     render(
       <NextIntlClientProvider
         locale="fr"
@@ -56,9 +71,9 @@ describe("public layouts", () => {
           },
         }}
       >
-        {await ToolsLayout({
+        {await ToolDetailLayout({
           children: <p>Outils</p>,
-          params: Promise.resolve({}),
+          params: Promise.resolve({ slug: "villes" }),
         })}
       </NextIntlClientProvider>,
     );

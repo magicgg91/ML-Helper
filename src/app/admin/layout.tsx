@@ -5,6 +5,7 @@ import { isAdminRole } from "@/auth/roles";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminAccountMenu } from "@/components/admin-account-menu";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);
   const t = await getTranslations("Admin");
@@ -15,6 +16,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <strong>{t("title")}</strong>
         <div className="admin-header-actions">
           <LocaleSwitcher />
+          <ThemeToggle />
           <AdminAccountMenu username={session.user.name ?? session.user.id} />
         </div>
       </header>

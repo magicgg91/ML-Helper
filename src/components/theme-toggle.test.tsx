@@ -19,6 +19,8 @@ describe("ThemeToggle", () => {
       name: "Activer le mode sombre",
     });
     expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle).toHaveTextContent("☾");
+    expect(toggle).not.toHaveTextContent("Sombre");
 
     fireEvent.click(toggle);
 
