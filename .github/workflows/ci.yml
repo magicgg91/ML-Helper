@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   packages: write
+  statuses: write
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -68,6 +69,30 @@ jobs:
       - name: Stop Docker Compose stack
         if: always()
         run: docker compose down --volumes
+      - name: Report successful Docker Compose health
+        if: success()
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            --data '{"state":"success","context":"docker-compose/health","description":"Docker Compose app container is healthy"}'
+      - name: Report failed Docker Compose health
+        if: failure()
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            --data '{"state":"failure","context":"docker-compose/health","description":"Docker Compose app container did not become healthy"}'
       - name: Push image
         run: docker push ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
 
