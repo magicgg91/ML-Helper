@@ -29,7 +29,12 @@ SQLite always uses `/app/data/database.db` inside the image; `DATABASE_URL` is t
 
 When upgrading an existing installation that still has `data/ml-helper.db`, stop the container and rename that file to `data/database.db` before starting the new image. Otherwise the application correctly creates a new, empty database under the new fixed name.
 
-Docker Compose checks `/api/health` every 30 seconds. The container is reported healthy only when the application responds and Prisma can query the SQLite database.
+Docker Compose checks the internal URL `http://127.0.0.1:3000/api/health`
+every 30 seconds with a small Node.js script included in the image. The check
+does not depend on `curl`, `wget`, `NEXTAUTH_URL`, or the host port mapping. A
+60-second startup grace period leaves time for Prisma migrations and the
+application startup. The container is reported healthy only when the
+application responds and Prisma can query the SQLite database.
 
 ## Automated validation
 

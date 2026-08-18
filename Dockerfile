@@ -22,6 +22,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+COPY --chown=nextjs:nodejs docker-healthcheck.mjs ./docker-healthcheck.mjs
 RUN mkdir -p /app/data \
     && chown nextjs:nodejs /app/data \
     && chmod +x /app/docker-entrypoint.sh
