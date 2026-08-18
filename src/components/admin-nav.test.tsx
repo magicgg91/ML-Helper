@@ -40,17 +40,12 @@ describe("AdminNav", () => {
     );
   });
 
-  it("hides only user management from a regular admin", () => {
+  it("hides user management and legal content from a regular admin", () => {
     pathname = "/admin";
     render(<AdminNav role="admin" />);
     expect(screen.queryByRole("link", { name: "Utilisateurs" })).toBeNull();
-    for (const name of [
-      "Calculateurs",
-      "Référentiels",
-      "Guides",
-      "Contenu statique",
-      "Logs",
-    ])
+    expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
+    for (const name of ["Calculateurs", "Référentiels", "Guides", "Logs"])
       expect(screen.getByRole("link", { name })).toBeVisible();
   });
 

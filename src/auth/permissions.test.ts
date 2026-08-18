@@ -13,7 +13,9 @@ const sections: AdminCapability[] = [
 
 const expected: Record<AdminRole, AdminCapability[]> = {
   super_admin: sections,
-  admin: sections.filter((item) => item !== "users.manage"),
+  admin: sections.filter(
+    (item) => item !== "users.manage" && item !== "content.read",
+  ),
   guides_manager: ["guides.read"],
   calculators_manager: ["calculators.read", "references.read"],
 };
@@ -41,5 +43,18 @@ describe("admin role permissions", () => {
     expect(can("calculators_manager", "calculators.toggle")).toBe(true);
     expect(can("calculators_manager", "references.write")).toBe(true);
     expect(can("calculators_manager", "guides.write")).toBe(false);
+  });
+
+  it("reserves legal content reads and writes to the Super Admin", () => {
+    for (const role of [
+      "admin",
+      "guides_manager",
+      "calculators_manager",
+    ] as const) {
+      expect(can(role, "content.read")).toBe(false);
+      expect(can(role, "content.write")).toBe(false);
+    }
+    expect(can("super_admin", "content.read")).toBe(true);
+    expect(can("super_admin", "content.write")).toBe(true);
   });
 });

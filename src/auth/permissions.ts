@@ -23,7 +23,14 @@ export type AdminCapability = (typeof adminCapabilities)[number];
 const all = new Set<AdminCapability>(adminCapabilities);
 const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
   super_admin: all,
-  admin: new Set(adminCapabilities.filter((item) => item !== "users.manage")),
+  admin: new Set(
+    adminCapabilities.filter(
+      (item) =>
+        item !== "users.manage" &&
+        item !== "content.read" &&
+        item !== "content.write",
+    ),
+  ),
   guides_manager: new Set(["dashboard.view", "guides.read", "guides.write"]),
   calculators_manager: new Set([
     "dashboard.view",

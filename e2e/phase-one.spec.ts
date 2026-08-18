@@ -379,7 +379,9 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     {
       username: "role-admin",
       password: "role-test-password",
-      allowed: allSections.filter((path) => path !== "/admin/users"),
+      allowed: allSections.filter(
+        (path) => path !== "/admin/users" && path !== "/admin/content",
+      ),
     },
     {
       username: "role-guides",
@@ -412,6 +414,13 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
           page.getByRole("heading", { name: "Accès interdit" }),
         ).toBeVisible();
     }
+    const legalUpdate = await page.request.patch(
+      "/api/admin/content/legal-notice",
+      { data: { content: "## Mentions test\n\nContenu légal public." } },
+    );
+    expect(legalUpdate.status(), `${roleCase.username} legal update`).toBe(
+      roleCase.username === "rootadmin" ? 200 : 403,
+    );
     const canAuthor = roleCase.username !== "role-calculators";
     const canModerate = ["rootadmin", "role-admin"].includes(roleCase.username);
     const slug = `rights-${roleCase.username}`;
@@ -479,6 +488,11 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     ).toBe(canModerate ? 200 : 403);
     await context.close();
   }
+  await root.goto("/legal");
+  await expect(
+    root.getByRole("heading", { name: "Mentions test", level: 2 }),
+  ).toBeVisible();
+  await expect(root.getByText("Contenu légal public.")).toBeVisible();
   await rootContext.close();
 });
 
