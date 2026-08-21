@@ -186,7 +186,7 @@ select {
 }
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: 0.65rem;
   margin-top: 1rem;
 }
@@ -1574,6 +1574,15 @@ body > main h1 {
   display: grid;
   grid-template-columns: 7rem minmax(0, 1fr);
   gap: 0.8rem;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+.guide-list-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 .guide-list-cover {
   width: 7rem;
@@ -1584,6 +1593,13 @@ body > main h1 {
 }
 .guide-list-copy {
   min-width: 0;
+}
+.guide-list-cta {
+  display: inline-block;
+  margin-top: 0.25rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 @media (max-width: 760px) {
   .editor-action-bar {
