@@ -1,4 +1,8 @@
 {
+  "Navigation": {
+    "tools": "Simulateurs",
+    "guides": "Guides"
+  },
   "Public": {
     "tools": "Simulateurs",
     "guides": "Guides",

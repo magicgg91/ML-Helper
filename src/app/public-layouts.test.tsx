@@ -8,8 +8,8 @@ import { NextIntlClientProvider } from "next-intl";
 vi.mock("../components/theme-toggle", () => ({
   ThemeToggle: () => <button type="button">Thème</button>,
 }));
-vi.mock("../components/locale-switcher", () => ({
-  LocaleSwitcher: () => <select aria-label="Language / Langue" />,
+vi.mock("../components/server-locale-switcher", () => ({
+  ServerLocaleSwitcher: () => <select aria-label="Language / Langue" />,
 }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
