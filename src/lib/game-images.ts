@@ -1,9 +1,4 @@
-import type {
-  EquipmentFamily,
-  EquipmentRarity,
-  EquipmentSkill,
-  EquipmentSlot,
-} from "./equipment";
+import type { EquipmentSkill } from "./equipment";
 import type { League } from "./player-settings";
 
 const diacritics = /\p{Diacritic}/gu;
@@ -50,10 +45,13 @@ export function gemImagePath(skill: EquipmentSkill, league: League): string {
 }
 
 // Convention actée cdc section 12 : {famille-slug}-{rarete-slug}-{emplacement-slug}.webp
+// Couvre Combat ET Expédition (vocabulaires famille/emplacement différents,
+// même convention de nommage) — types larges volontairement, les deux
+// référentiels stockent leurs lignes en `string`.
 export function equipmentImagePath(
-  family: EquipmentFamily,
-  rarity: EquipmentRarity,
-  slot: EquipmentSlot,
+  family: string,
+  rarity: string,
+  slot: string,
 ): string {
   return `/equipment/${slugify(family)}-${slugify(rarity)}-${slugify(slot)}.webp`;
 }

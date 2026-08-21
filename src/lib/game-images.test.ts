@@ -16,7 +16,7 @@ describe("gemImagePath", () => {
 });
 
 describe("equipmentImagePath", () => {
-  it("matches the confirmed equipment manifest naming convention", () => {
+  it("matches the confirmed combat equipment manifest naming convention", () => {
     expect(equipmentImagePath("Or", "Légendaire", "Arme")).toBe(
       "/equipment/or-legendaire-arme.webp",
     );
@@ -25,6 +25,15 @@ describe("equipmentImagePath", () => {
     ).toBe("/equipment/troupes-vitesse-commun-amulette.webp");
     expect(equipmentImagePath("Attaque", "Épique", "Bottes")).toBe(
       "/equipment/attaque-epique-bottes.webp",
+    );
+  });
+
+  it("also matches the expedition equipment manifest (different vocabulary, same convention)", () => {
+    expect(equipmentImagePath("Équipement", "Épique", "Longue-vue")).toBe(
+      "/equipment/equipement-epique-longue-vue.webp",
+    );
+    expect(equipmentImagePath("Troupes", "Rare", "Sacoche")).toBe(
+      "/equipment/troupes-rare-sacoche.webp",
     );
   });
 });

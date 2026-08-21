@@ -19,12 +19,14 @@ import {
   type EquipmentSkill,
   type EquipmentSlot,
 } from "../lib/equipment";
+import { equipmentImagePath } from "../lib/game-images";
 import {
   combatValueAtStar,
   expeditionValueAtStar,
   type CombatReferenceRow,
   type ExpeditionReferenceRow,
 } from "../lib/reference-equipment";
+import { GameImage } from "./game-image";
 import { RarityBadge } from "./rarity-badge";
 
 function formatPercent(value: number | null, locale: string) {
@@ -214,6 +216,16 @@ export function CombatReferenceTable({
                   key={`${row.rarity}-${row.set_name}-${row.slot_type}-${index}`}
                 >
                   <td>
+                    <GameImage
+                      src={equipmentImagePath(
+                        row.family,
+                        row.rarity,
+                        row.slot_type,
+                      )}
+                      alt={row.set_name}
+                      className="reference-equipment-image"
+                      fallback={null}
+                    />
                     <RarityBadge
                       rarity={row.rarity}
                       label={rarityLabel(row.rarity)}
@@ -355,6 +367,16 @@ export function ExpeditionReferenceTable({
                     key={`${row.rarity}-${row.set_name}-${row.slot}-${index}`}
                   >
                     <td>
+                      <GameImage
+                        src={equipmentImagePath(
+                          row.family,
+                          row.rarity,
+                          row.slot,
+                        )}
+                        alt={row.set_name}
+                        className="reference-equipment-image"
+                        fallback={null}
+                      />
                       <RarityBadge
                         rarity={row.rarity}
                         label={rarityLabel(row.rarity)}

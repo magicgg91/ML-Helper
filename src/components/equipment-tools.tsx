@@ -29,7 +29,13 @@ import {
   type StuffState,
 } from "../lib/equipment";
 import { rarityClassName } from "../lib/equipment-rarity";
-import { equipmentSkillColors } from "../lib/game-images";
+import {
+  equipmentImagePath,
+  equipmentSkillColors,
+  gemImagePath,
+} from "../lib/game-images";
+import type { League } from "../lib/player-settings";
+import { GameImage } from "./game-image";
 import { RarityBadge } from "./rarity-badge";
 
 const storageKey = "mlhelper_stuff_simulator";
@@ -193,8 +199,11 @@ function SlotCell({
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
   const rarity = state.equipment?.rarity;
+  const item = findEquipment(slot, state.equipment ?? null);
   const activeGems = state.gems.filter(
-    (gem): gem is EquipmentGem & { skill: EquipmentSkill } =>
+    (
+      gem,
+    ): gem is EquipmentGem & { skill: EquipmentSkill; league: League } =>
       gem.skill !== "none" && Boolean(gem.league),
   );
   const rarityVar = rarity ? `var(--rarity-${rarityClassName(rarity)})` : undefined;
@@ -217,6 +226,14 @@ function SlotCell({
       <span>{game(`slots.${equipmentSlotTranslationKeys[slot]}`)}</span>
       {rarity ? (
         <>
+          {item ? (
+            <GameImage
+              src={equipmentImagePath(item.family, rarity, slot)}
+              alt={item.set_name}
+              className="stuff-slot-image"
+              fallback={null}
+            />
+          ) : null}
           <RarityBadge
             rarity={rarity}
             label={game(`rarities.${equipmentRarityTranslationKeys[rarity]}`)}
@@ -224,16 +241,26 @@ function SlotCell({
           <small>{state.star}★</small>
           {activeGems.length ? (
             <div className="gem-badges">
-              {activeGems.map((gem, index) => (
-                <span
-                  className="gem-badge"
-                  key={index}
-                  style={{ background: equipmentSkillColors[gem.skill] }}
-                  title={`${game(`skills.${equipmentSkillTranslationKeys[gem.skill]}`)} ${game(`leagues.${gem.league}`)} ${gem.star}★`}
-                >
-                  {gem.star}★{game(`leagues-short.${gem.league}`)}
-                </span>
-              ))}
+              {activeGems.map((gem, index) => {
+                const title = `${game(`skills.${equipmentSkillTranslationKeys[gem.skill]}`)} ${game(`leagues.${gem.league}`)} ${gem.star}★`;
+                return (
+                  <GameImage
+                    key={index}
+                    src={gemImagePath(gem.skill, gem.league)}
+                    alt={title}
+                    className="gem-badge-image"
+                    fallback={
+                      <span
+                        className="gem-badge"
+                        style={{ background: equipmentSkillColors[gem.skill] }}
+                        title={title}
+                      >
+                        {gem.star}★{game(`leagues-short.${gem.league}`)}
+                      </span>
+                    }
+                  />
+                );
+              })}
             </div>
           ) : null}
         </>

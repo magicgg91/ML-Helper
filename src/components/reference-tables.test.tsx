@@ -34,6 +34,35 @@ describe("ReferenceTables", () => {
     expect(screen.getByText("9 lignes — valeurs à 5★")).toBeInTheDocument();
     expect(screen.getAllByText("18%").length).toBeGreaterThan(0);
   });
+  it("attempts the manifest image path for each combat equipment row", () => {
+    renderTables();
+    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Recherche libre" }),
+      { target: { value: "Spirit Fyra" } },
+    );
+    const images = document.querySelectorAll<HTMLImageElement>(
+      ".reference-equipment-image",
+    );
+    expect(images.length).toBe(9);
+    expect(
+      Array.from(images).map((image) => image.getAttribute("src")),
+    ).toContain("/equipment/attaque-legendaire-arme.webp");
+  });
+
+  it("attempts the manifest image path for each expedition equipment row", () => {
+    renderTables();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipement d’Expédition" }),
+    );
+    const image = document.querySelector<HTMLImageElement>(
+      ".reference-equipment-image",
+    )!;
+    expect(image.getAttribute("src")).toMatch(
+      /^\/equipment\/[a-z-]+-(commun|rare|epique|mythique|legendaire)-[a-z-]+\.webp$/,
+    );
+  });
+
   it("keeps the expedition fallback visibly unconfirmed", () => {
     renderTables();
     fireEvent.click(
