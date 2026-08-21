@@ -21,16 +21,18 @@ describe("GuidesHub", () => {
             {
               id: "one",
               slug: "combat-guide",
-              category: "Combat",
+              categories: ["combat", "clan"],
               title: "Guide combat",
               excerpt: "Attaquer efficacement",
+              coverImage: "https://example.com/combat.jpg",
             },
             {
               id: "two",
               slug: "clan-guide",
-              category: "Clan",
+              categories: ["clan"],
               title: "Guide clan",
               excerpt: "Jouer ensemble",
+              coverImage: null,
             },
           ]}
         />
@@ -41,9 +43,13 @@ describe("GuidesHub", () => {
       name: "Filtrer les guides par catégorie",
     });
     fireEvent.click(
-      within(guideFilters).getByRole("button", { name: "Combat" }),
+      within(guideFilters).getByRole("button", { name: "Combat & conquête" }),
     );
     expect(screen.getByText("Guide combat")).toBeVisible();
+    expect(document.querySelector(".guide-list-cover")).toHaveAttribute(
+      "src",
+      "https://example.com/combat.jpg",
+    );
 
     fireEvent.change(
       screen.getByRole("searchbox", { name: "Rechercher dans les guides" }),
@@ -68,6 +74,36 @@ describe("GuidesHub", () => {
     expect(screen.getByText("Équipements de Combat")).toBeVisible();
     expect(screen.queryByText("Équipement d’Expédition")).toBeNull();
     expect(screen.getByText("Guide combat")).toBeVisible();
+  });
+
+  it("shows a multi-category guide through every assigned category filter", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "multi",
+              slug: "multi",
+              categories: ["combat", "clan", "defense"],
+              title: "Guide transversal",
+              excerpt: "Résumé",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const filters = screen.getByRole("navigation", {
+      name: "Filtrer les guides par catégorie",
+    });
+    for (const category of [
+      "Combat & conquête",
+      "Clan & stratégie collective",
+      "Défense & territoire",
+    ]) {
+      fireEvent.click(within(filters).getByRole("button", { name: category }));
+      expect(screen.getByText("Guide transversal")).toBeVisible();
+    }
   });
 
   it("uses the canonical reference routes", () => {

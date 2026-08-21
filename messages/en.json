@@ -422,6 +422,16 @@
       "combat": "Combat",
       "expedition": "Expedition"
     },
+    "categories": {
+      "debuter": "Getting started & progressing",
+      "combat": "Combat & conquest",
+      "defense": "Defense & territory",
+      "competences": "Skills & builds",
+      "equipement": "Equipment & Templars",
+      "expeditions": "Expeditions",
+      "evenements": "Events & ranking",
+      "clan": "Clan & collective strategy"
+    },
     "search": {
       "label": "Search guides",
       "placeholder": "Search by title, summary or category…"
@@ -618,12 +628,28 @@
       "title": "Title ({locale})",
       "excerpt": "Summary ({locale})",
       "content": "Markdown content ({locale})",
+      "preview": "Live preview",
+      "categories-label": "Guide categories",
+      "categories": {
+        "debuter": "Getting started & progressing",
+        "combat": "Combat & conquest",
+        "defense": "Defense & territory",
+        "competences": "Skills & builds",
+        "equipement": "Equipment & Templars",
+        "expeditions": "Expeditions",
+        "evenements": "Events & ranking",
+        "clan": "Clan & collective strategy"
+      },
+      "cover-image": "Representative image URL",
+      "cover-image-placeholder": "https://example.com/guide-cover.jpg",
+      "cover-image-preview": "Representative image preview",
       "save": "Save",
       "submit-review": "Submit for review",
       "publish": "Publish",
       "unpublish": "Unpublish as draft",
       "saving": "Saving…",
       "missing-title": "Enter an EN or FR title before saving.",
+      "missing-category": "Select at least one category before saving.",
       "duplicate-slug": "A guide already uses this title/slug.",
       "invalid": "The guide contains invalid or incomplete fields.",
       "status-forbidden": "Guide saved, but your role does not allow this status change.",

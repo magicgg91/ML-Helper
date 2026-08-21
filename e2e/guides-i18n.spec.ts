@@ -35,14 +35,16 @@ test("translates the interface around a localized published guide", async ({
 }) => {
   await page.goto("/guides/guide-visible");
   await switchLocale(page, "en");
-  await expect(page.getByText("Guide in Débutants")).toBeVisible();
+  await expect(
+    page.getByText("Guide in Getting started & progressing"),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
   await expect(page.getByText("Test content")).toBeVisible();
 
   await switchLocale(page, "fr");
-  await expect(page.getByText("Guide · Débutants")).toBeVisible();
+  await expect(page.getByText("Guide · Débuter & progresser")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();

@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GuideEditor } from "./guide-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
@@ -10,6 +10,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("GuideEditor", () => {
+  afterEach(cleanup);
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal(
@@ -27,7 +28,7 @@ describe("GuideEditor", () => {
         initial={{
           id: "guide-1",
           slug: "guide-test",
-          category: "debutants",
+          category: ["debuter"],
           coverImage: "",
           status: "draft",
           translations: {
@@ -63,5 +64,39 @@ describe("GuideEditor", () => {
     });
     expect(body.translations.en.title).toBe("Updated English title");
     expect(body.translations.en.content).toBe("## Updated\n\nEnglish markdown");
+  });
+
+  it("saves multiple categories and the representative image without changing Markdown rendering", async () => {
+    render(
+      <GuideEditor
+        canPublish={false}
+        initial={{
+          id: "guide-1",
+          slug: "guide-test",
+          category: ["debuter"],
+          coverImage: "",
+          status: "draft",
+          translations: {
+            fr: { title: "Titre", excerpt: "Résumé", content: "~~ancien~~" },
+            en: { title: "Title", excerpt: "Summary", content: "" },
+          },
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Combat & conquête"));
+    fireEvent.change(screen.getByLabelText("URL de l’image représentative"), {
+      target: { value: "https://example.com/cover.jpg" },
+    });
+    expect(
+      screen.getByAltText("Aperçu de l’image représentative"),
+    ).toHaveAttribute("src", "https://example.com/cover.jpg");
+    expect(document.querySelector(".guide-live-preview del")).toHaveTextContent(
+      "ancien",
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^Enregistrer$/ }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(vi.mocked(fetch).mock.calls[0][1]?.body));
+    expect(body.category).toEqual(["debuter", "combat"]);
+    expect(body.coverImage).toBe("https://example.com/cover.jpg");
   });
 });

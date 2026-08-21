@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { guideCategories, type GuideCategory } from "../lib/guide-categories";
+import { GuideMarkdownEditor } from "./guide-markdown-editor";
 
 type Locale = "fr" | "en";
 type LocaleDraft = { title: string; excerpt: string; content: string };
 type GuideDraft = {
   id?: string;
   slug: string;
-  category: string;
+  category: GuideCategory[];
   coverImage: string;
   status: string;
   translations: Record<Locale, LocaleDraft>;
@@ -37,6 +39,8 @@ export function GuideEditor({
   const [status, setStatus] = useState(initial.status);
   const [message, setMessage] = useState("");
   const [translations, setTranslations] = useState(initial.translations);
+  const [categories, setCategories] = useState(initial.category);
+  const [coverImage, setCoverImage] = useState(initial.coverImage);
 
   function updateLocale(patch: Partial<LocaleDraft>) {
     setTranslations((current) => ({
@@ -53,6 +57,10 @@ export function GuideEditor({
       setMessage(t("missing-title"));
       return;
     }
+    if (!categories.length) {
+      setMessage(t("missing-category"));
+      return;
+    }
     const response = await fetch(
       id ? `/api/admin/guides/${id}` : "/api/admin/guides",
       {
@@ -60,8 +68,8 @@ export function GuideEditor({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           slug: generatedSlug,
-          category: initial.category,
-          coverImage: initial.coverImage,
+          category: categories,
+          coverImage,
           translations,
         }),
       },
@@ -88,9 +96,7 @@ export function GuideEditor({
         },
       );
       if (!statusResponse.ok) {
-        setMessage(
-          t("status-forbidden"),
-        );
+        setMessage(t("status-forbidden"));
         return;
       }
       setStatus(nextStatus);
@@ -115,6 +121,42 @@ export function GuideEditor({
         ))}
       </nav>
       <section className="admin-panel guide-simple-fields">
+        <fieldset className="guide-category-selector">
+          <legend>{t("categories-label")}</legend>
+          {guideCategories.map((category) => (
+            <label key={category}>
+              <input
+                type="checkbox"
+                checked={categories.includes(category)}
+                onChange={(event) =>
+                  setCategories((current) =>
+                    event.target.checked
+                      ? [...current, category]
+                      : current.filter((item) => item !== category),
+                  )
+                }
+              />
+              {t(`categories.${category}`)}
+            </label>
+          ))}
+        </fieldset>
+        <label>
+          {t("cover-image")}
+          <input
+            type="url"
+            value={coverImage}
+            placeholder={t("cover-image-placeholder")}
+            onChange={(event) => setCoverImage(event.target.value)}
+          />
+        </label>
+        {coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element -- Admin preview accepts an arbitrary validated URL.
+          <img
+            className="guide-cover-preview"
+            src={coverImage}
+            alt={t("cover-image-preview")}
+          />
+        )}
         <label>
           {t("title", { locale: locale.toUpperCase() })}
           <input
@@ -130,15 +172,12 @@ export function GuideEditor({
             onChange={(event) => updateLocale({ excerpt: event.target.value })}
           />
         </label>
-        <label>
-          {t("content", { locale: locale.toUpperCase() })}
-          <textarea
-            className="guide-markdown-input"
-            value={draft.content}
-            onChange={(event) => updateLocale({ content: event.target.value })}
-            spellCheck
-          />
-        </label>
+        <GuideMarkdownEditor
+          label={t("content", { locale: locale.toUpperCase() })}
+          previewLabel={t("preview")}
+          value={draft.content}
+          onChange={(content) => updateLocale({ content })}
+        />
       </section>
       <div className="admin-actions">
         <button type="button" onClick={() => save()}>

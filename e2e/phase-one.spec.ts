@@ -445,8 +445,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("heading", {
       name: "Éditer les Équipements de Combat",
     }),
-  ).toBeVisible();
-  await expect(page.locator("tbody tr")).toHaveCount(180);
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("tbody tr")).toHaveCount(180, {
+    timeout: 15_000,
+  });
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
@@ -575,7 +577,7 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     const slug = `rights-${roleCase.username}`;
     const payload = {
       slug,
-      category: "debutants",
+      category: ["debuter"],
       coverImage: "",
       translations: {
         fr: {
@@ -657,11 +659,24 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/guides/new");
+  await page.getByLabel("Combat & conquête").check();
+  await page.getByLabel("Clan & stratégie collective").check();
+  await page
+    .getByLabel("Image représentative")
+    .fill("https://example.com/guide-cover.jpg");
   await page.getByLabel("Titre (FR)").fill("Guide cycle complet");
   await page.getByLabel("Résumé (FR)").fill("Résumé du cycle complet");
   await page
     .getByLabel("Contenu Markdown (FR)")
-    .fill("## Départ\n\nContenu initial du guide.");
+    .fill("## Départ\n\nContenu initial avec ~~ancienne règle~~.");
+  await expect(
+    page.locator(".guide-live-preview").getByRole("heading", {
+      name: "Départ",
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".guide-live-preview del")).toHaveText(
+    "ancienne règle",
+  );
   await page.getByRole("button", { name: "Soumettre en review" }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
   await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
@@ -679,6 +694,18 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toBeVisible();
+  await expect(
+    page
+      .locator(".guide-list-card")
+      .filter({
+        hasText: "Guide édité et publié",
+      })
+      .locator(".guide-list-cover"),
+  ).toHaveAttribute("src", "https://example.com/guide-cover.jpg");
+  for (const category of ["Combat & conquête", "Clan & stratégie collective"]) {
+    await page.getByRole("button", { name: category }).click();
+    await expect(page.getByText("Guide édité et publié")).toBeVisible();
+  }
   await page.goto("/admin/guides");
   const publishedRow = page.getByRole("row", { name: /Guide édité et publié/ });
   await publishedRow.getByRole("button", { name: "Désactiver" }).click();
