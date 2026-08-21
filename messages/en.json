@@ -36,6 +36,9 @@
       "attack": "Attack",
       "defense": "Defense",
       "gold": "Gold",
+      "equipment": "Equipment",
+      "consumables": "Consumables",
+      "troops": "Troops",
       "speed": "Speed",
       "troops-speed": "Troops/Speed"
     },
@@ -55,7 +58,30 @@
       "gauntlet": "Gauntlet",
       "weapon": "Weapon",
       "boots": "Boots",
-      "shield": "Shield"
+      "shield": "Shield",
+      "cloak": "Cloak",
+      "spyglass": "Spyglass",
+      "pouch": "Pouch",
+      "compass": "Compass",
+      "torch": "Torch",
+      "pickaxe": "Pickaxe"
+    },
+    "weapon-types": {
+      "hammer": "Hammer",
+      "bow": "Bow",
+      "spear": "Spear",
+      "axe": "Axe",
+      "saber": "Saber",
+      "sword": "Sword",
+      "halberd": "Halberd"
+    },
+    "stats": {
+      "vitality": "Vitality",
+      "perception": "Perception",
+      "recovery": "Recovery",
+      "speed": "Speed",
+      "dodge": "Dodge",
+      "luck": "Luck"
     }
   },
   "tools": {
@@ -368,25 +394,87 @@
     "skills": "Skills",
     "references": "Reference tables"
   },
-  "GuidesHub": {
+  "guides": {
     "eyebrow": "Guides and data",
     "title": "Guides",
-    "guidesTitle": "Guides",
-    "referencesTitle": "Reference tables",
-    "guideFiltersLabel": "Filter guides by category",
-    "referenceFiltersLabel": "Filter reference tables by category",
-    "all": "All",
-    "combat": "Combat",
-    "expedition": "Expedition",
-    "combat-equipment": "Combat Equipment",
-    "expedition-equipment": "Expedition Equipment",
-    "readGuide": "Read guide",
-    "openReference": "Open reference table",
-    "emptyGuides": "No published guide yet.",
-    "unavailable": "This reference table is temporarily unavailable."
+    "sections": {
+      "guides": "Guides",
+      "references": "Reference tables"
+    },
+    "filters": {
+      "guides-label": "Filter guides by category",
+      "references-label": "Filter reference tables by category",
+      "all": "All",
+      "combat": "Combat",
+      "expedition": "Expedition"
+    },
+    "search": {
+      "label": "Search guides",
+      "placeholder": "Search by title, summary or category…"
+    },
+    "read-guide": "Read guide",
+    "open-reference": "Open reference table",
+    "empty": "No published guide yet.",
+    "no-results": "No guide matches these filters.",
+    "detail": {
+      "eyebrow": "Guide in {category}"
+    }
   },
-  "References": {
-    "viewFull": "View full reference table"
+  "references": {
+    "eyebrow": "Reference tables",
+    "filters": {
+      "label": "Reference table filters",
+      "family": "Family",
+      "rarity": "Rarity",
+      "slot": "Slot",
+      "skill": "Skill",
+      "search": "Free search",
+      "search-placeholder": "Set or slot…",
+      "star-level": "Star level"
+    },
+    "catalog": {
+      "combat": "Combat",
+      "expedition": "Expedition",
+      "combat-equipment": "Combat Equipment",
+      "expedition-equipment": "Expedition Equipment"
+    },
+    "tabs-label": "Reference tables",
+    "disabled-tooltip": "Disabled — currently unavailable",
+    "unavailable": "These reference tables are temporarily unavailable.",
+    "single-unavailable": "This reference table is temporarily unavailable."
+  },
+  "combat-equipment": {
+    "name": "Combat Equipment",
+    "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
+    "empty": "No combat equipment matches these filters.",
+    "columns": {
+      "rarity": "Rarity",
+      "set": "Set",
+      "skydust": "Skydust",
+      "gems": "Gems",
+      "slot": "Slot",
+      "skill": "Skill {number}"
+    },
+    "complete-in-admin": "Complete in administration"
+  },
+  "expedition-equipment": {
+    "name": "Expedition Equipment",
+    "notice": "For stats other than Equipment and Vitality, the star projection is an {status}.",
+    "unconfirmed-assumption": "unconfirmed assumption",
+    "unconfirmed-label": "Unconfirmed assumption",
+    "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
+    "empty": "No expedition equipment matches these filters.",
+    "columns": {
+      "rarity": "Rarity",
+      "set": "Set",
+      "family": "Family",
+      "slot": "Slot",
+      "type-stat": "Type stat",
+      "secondary-stat": "Secondary stat"
+    }
+  },
+  "level-up": {
+    "name": "Level Up"
   },
   "Login": {
     "title": "Admin sign in",

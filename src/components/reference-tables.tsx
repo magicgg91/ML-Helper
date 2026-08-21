@@ -1,7 +1,24 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { rarityOrder } from "../lib/equipment";
+import {
+  combatSlotNameTranslationKeys,
+  equipmentFamilyTranslationKeys,
+  equipmentRarityTranslationKeys,
+  equipmentSkillTranslationKeys,
+  equipmentSlotTranslationKeys,
+  expeditionFamilyTranslationKeys,
+  expeditionSlotTranslationKeys,
+  expeditionStatTranslationKeys,
+} from "../i18n/game-translation-keys";
+import {
+  rarityOrder,
+  type EquipmentFamily,
+  type EquipmentRarity,
+  type EquipmentSkill,
+  type EquipmentSlot,
+} from "../lib/equipment";
 import {
   combatValueAtStar,
   expeditionValueAtStar,
@@ -9,10 +26,10 @@ import {
   type ExpeditionReferenceRow,
 } from "../lib/reference-equipment";
 
-function formatPercent(value: number | null) {
+function formatPercent(value: number | null, locale: string) {
   return value === null
     ? "—"
-    : `${value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}%`;
+    : `${value.toLocaleString(locale, { maximumFractionDigits: 2 })}%`;
 }
 
 function Filters({
@@ -25,6 +42,7 @@ function Filters({
   setSearch,
   star,
   setStar,
+  familyLabel,
 }: {
   families: readonly string[];
   family: string;
@@ -35,11 +53,14 @@ function Filters({
   setSearch: (value: string) => void;
   star: number;
   setStar: (value: number) => void;
+  familyLabel: (value: string) => string;
 }) {
+  const t = useTranslations("references");
+  const game = useTranslations("game");
   return (
-    <div className="reference-filters">
+    <div className="reference-filters" aria-label={t("filters.label")}>
       <div>
-        <span className="filter-label">Famille</span>
+        <span className="filter-label">{t("filters.family")}</span>
         <div className="family-buttons">
           {families.map((item) => (
             <button
@@ -48,13 +69,13 @@ function Filters({
               key={item}
               onClick={() => setFamily(item)}
             >
-              {item}
+              {familyLabel(item)}
             </button>
           ))}
         </div>
       </div>
       <div>
-        <span className="filter-label">Rareté</span>
+        <span className="filter-label">{t("filters.rarity")}</span>
         <div className="family-buttons">
           {rarityOrder.map((item) => (
             <button
@@ -63,22 +84,24 @@ function Filters({
               key={item}
               onClick={() => toggleRarity(item)}
             >
-              {item}
+              {game(
+                `rarities.${equipmentRarityTranslationKeys[item as EquipmentRarity]}`,
+              )}
             </button>
           ))}
         </div>
       </div>
       <label>
-        Recherche libre
+        {t("filters.search")}
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Set ou emplacement…"
+          placeholder={t("filters.search-placeholder")}
         />
       </label>
       <label>
-        Niveau d’étoile
+        {t("filters.star-level")}
         <select
           value={star}
           onChange={(event) => setStar(Number(event.target.value))}
@@ -118,7 +141,7 @@ function useFilters(families: readonly string[]) {
   };
 }
 
-function RarityBadge({ rarity }: { rarity: string }) {
+function RarityBadge({ rarity, label }: { rarity: string; label: string }) {
   return (
     <span
       className={`rarity-badge rarity-${rarity
@@ -126,7 +149,7 @@ function RarityBadge({ rarity }: { rarity: string }) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")}`}
     >
-      {rarity}
+      {label}
     </span>
   );
 }
@@ -136,6 +159,23 @@ export function CombatReferenceTable({
 }: {
   rows: readonly CombatReferenceRow[];
 }) {
+  const locale = useLocale();
+  const t = useTranslations("combat-equipment");
+  const game = useTranslations("game");
+  const familyLabel = (value: string) =>
+    game(
+      `families.${equipmentFamilyTranslationKeys[value as EquipmentFamily]}`,
+    );
+  const rarityLabel = (value: string) =>
+    game(
+      `rarities.${equipmentRarityTranslationKeys[value as EquipmentRarity]}`,
+    );
+  const slotLabel = (value: string) =>
+    game(`slots.${equipmentSlotTranslationKeys[value as EquipmentSlot]}`);
+  const slotNameLabel = (value: string) =>
+    value ? game(`weapon-types.${combatSlotNameTranslationKeys[value]}`) : "";
+  const skillLabel = (value: string) =>
+    game(`skills.${equipmentSkillTranslationKeys[value as EquipmentSkill]}`);
   const filters = useFilters(["Or", "Troupes/Vitesse", "Défense", "Attaque"]);
   const filtered = useMemo(
     () =>
@@ -143,83 +183,91 @@ export function CombatReferenceTable({
         (row) =>
           filters.rarities.has(row.rarity) &&
           row.family === filters.family &&
-          `${row.set_name} ${row.slot_type} ${row.slot_name}`
-            .toLowerCase()
-            .includes(filters.search.toLowerCase()),
+          `${row.set_name} ${slotLabel(row.slot_type)} ${slotNameLabel(row.slot_name)}`
+            .toLocaleLowerCase(locale)
+            .includes(filters.search.toLocaleLowerCase(locale)),
       ),
-    [rows, filters.rarities, filters.family, filters.search],
+    // Translation functions change with the active locale, which is already a
+    // dependency and intentionally refreshes the searchable labels.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows, filters.rarities, filters.family, filters.search, locale],
   );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <Filters
           families={["Or", "Troupes/Vitesse", "Défense", "Attaque"]}
+          familyLabel={familyLabel}
           {...filters}
         />
       </section>
       <p className="reference-count">
-        {filtered.length} ligne{filtered.length > 1 ? "s" : ""} — valeurs à{" "}
-        {filters.star}★
+        {t("row-count", { count: filtered.length, star: filters.star })}
       </p>
-      <section className="calculator-card ranking-table-wrap">
-        <table className="ranking-table reference-table">
-          <thead>
-            <tr>
-              <th>Rareté</th>
-              <th>Set</th>
-              <th>Pouciel</th>
-              <th>Gemmes</th>
-              <th>Emplacement</th>
-              {[1, 2, 3, 4].map((i) => (
-                <th key={i}>Compétence {i}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((row, index) => (
-              <tr
-                key={`${row.rarity}-${row.set_name}-${row.slot_type}-${index}`}
-              >
-                <td>
-                  <RarityBadge rarity={row.rarity} />
-                </td>
-                <td>{row.set_name}</td>
-                <td>{row.skydust}</td>
-                <td>{row.gem_slots}</td>
-                <td>
-                  {row.slot_name
-                    ? `${row.slot_type} (${row.slot_name})`
-                    : row.slot_type}
-                </td>
-                {([1, 2, 3, 4] as const).map((number) => {
-                  const skill = row[`skill_${number}`];
-                  const value = combatValueAtStar(
-                    skill,
-                    row[`value_${number}_pct`],
-                    filters.star,
-                  );
-                  return (
-                    <td key={number}>
-                      {skill && skill !== "Inconnu" ? (
-                        <>
-                          {skill}
-                          <strong className="reference-value">
-                            {formatPercent(value)}
-                          </strong>
-                        </>
-                      ) : (
-                        <span className="unconfirmed">
-                          À compléter en admin
-                        </span>
-                      )}
-                    </td>
-                  );
-                })}
+      {!filtered.length ? <p className="empty-state">{t("empty")}</p> : null}
+      {filtered.length ? (
+        <section className="calculator-card ranking-table-wrap">
+          <table className="ranking-table reference-table">
+            <thead>
+              <tr>
+                <th>{t("columns.rarity")}</th>
+                <th>{t("columns.set")}</th>
+                <th>{t("columns.skydust")}</th>
+                <th>{t("columns.gems")}</th>
+                <th>{t("columns.slot")}</th>
+                {[1, 2, 3, 4].map((i) => (
+                  <th key={i}>{t("columns.skill", { number: i })}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {filtered.map((row, index) => (
+                <tr
+                  key={`${row.rarity}-${row.set_name}-${row.slot_type}-${index}`}
+                >
+                  <td>
+                    <RarityBadge
+                      rarity={row.rarity}
+                      label={rarityLabel(row.rarity)}
+                    />
+                  </td>
+                  <td>{row.set_name}</td>
+                  <td>{row.skydust}</td>
+                  <td>{row.gem_slots}</td>
+                  <td>
+                    {slotLabel(row.slot_type)}
+                    {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
+                  </td>
+                  {([1, 2, 3, 4] as const).map((number) => {
+                    const skill = row[`skill_${number}`];
+                    const value = combatValueAtStar(
+                      skill,
+                      row[`value_${number}_pct`],
+                      filters.star,
+                    );
+                    return (
+                      <td key={number}>
+                        {skill && skill !== "Inconnu" ? (
+                          <>
+                            {skillLabel(skill)}
+                            <strong className="reference-value">
+                              {formatPercent(value, locale)}
+                            </strong>
+                          </>
+                        ) : (
+                          <span className="unconfirmed">
+                            {t("complete-in-admin")}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -229,6 +277,19 @@ export function ExpeditionReferenceTable({
 }: {
   rows: readonly ExpeditionReferenceRow[];
 }) {
+  const locale = useLocale();
+  const t = useTranslations("expedition-equipment");
+  const game = useTranslations("game");
+  const familyLabel = (value: string) =>
+    game(`families.${expeditionFamilyTranslationKeys[value]}`);
+  const slotLabel = (value: string) =>
+    game(`slots.${expeditionSlotTranslationKeys[value]}`);
+  const rarityLabel = (value: string) =>
+    game(
+      `rarities.${equipmentRarityTranslationKeys[value as EquipmentRarity]}`,
+    );
+  const statLabel = (value: string) =>
+    game(`stats.${expeditionStatTranslationKeys[value]}`);
   const families = ["Or", "Équipement", "Consommables", "Troupes"] as const;
   const filters = useFilters(families);
   const filtered = useMemo(
@@ -237,95 +298,104 @@ export function ExpeditionReferenceTable({
         (row) =>
           filters.rarities.has(row.rarity) &&
           row.family === filters.family &&
-          `${row.set_name} ${row.slot}`
-            .toLowerCase()
-            .includes(filters.search.toLowerCase()),
+          `${row.set_name} ${slotLabel(row.slot)}`
+            .toLocaleLowerCase(locale)
+            .includes(filters.search.toLocaleLowerCase(locale)),
       ),
-    [rows, filters.rarities, filters.family, filters.search],
+    // Translation functions change with the active locale, which is already a
+    // dependency and intentionally refreshes the searchable labels.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows, filters.rarities, filters.family, filters.search, locale],
   );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <p className="unconfirmed-notice">
-          Pour les statistiques autres qu’Équipement et Vitalité, la projection
-          par étoile est une <strong>hypothèse non confirmée</strong>.
+          {t("notice", { status: t("unconfirmed-assumption") })}
         </p>
-        <Filters families={families} {...filters} />
+        <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
       <p className="reference-count">
-        {filtered.length} ligne{filtered.length > 1 ? "s" : ""} — valeurs à{" "}
-        {filters.star}★
+        {t("row-count", { count: filtered.length, star: filters.star })}
       </p>
-      <section className="calculator-card ranking-table-wrap">
-        <table className="ranking-table reference-table">
-          <thead>
-            <tr>
-              <th>Rareté</th>
-              <th>Set</th>
-              <th>Famille</th>
-              <th>Emplacement</th>
-              <th>Stat de type</th>
-              <th>Stat secondaire</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((row, index) => {
-              const primary = expeditionValueAtStar(
-                row.family,
-                row.type_stat_pct,
-                filters.star,
-              );
-              const secondaryName = row.secondary_stat_name.replace(
-                "_expé",
-                "",
-              );
-              const secondary = expeditionValueAtStar(
-                secondaryName,
-                row.secondary_stat_pct,
-                filters.star,
-              );
-              const value = (
-                result: ReturnType<typeof expeditionValueAtStar>,
-              ) => (
-                <>
-                  <strong className="reference-value">
-                    {formatPercent(result.value)}
-                  </strong>
-                  {result.value !== null && !result.confirmed ? (
-                    <small className="unconfirmed">
-                      Hypothèse non confirmée
-                    </small>
-                  ) : null}
-                </>
-              );
-              return (
-                <tr key={`${row.rarity}-${row.set_name}-${row.slot}-${index}`}>
-                  <td>
-                    <RarityBadge rarity={row.rarity} />
-                  </td>
-                  <td>{row.set_name}</td>
-                  <td>{row.family}</td>
-                  <td>{row.slot}</td>
-                  <td>
-                    {row.family}
-                    {value(primary)}
-                  </td>
-                  <td>
-                    {secondaryName ? (
-                      <>
-                        {secondaryName}
-                        {value(secondary)}
-                      </>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
+      {!filtered.length ? <p className="empty-state">{t("empty")}</p> : null}
+      {filtered.length ? (
+        <section className="calculator-card ranking-table-wrap">
+          <table className="ranking-table reference-table">
+            <thead>
+              <tr>
+                <th>{t("columns.rarity")}</th>
+                <th>{t("columns.set")}</th>
+                <th>{t("columns.family")}</th>
+                <th>{t("columns.slot")}</th>
+                <th>{t("columns.type-stat")}</th>
+                <th>{t("columns.secondary-stat")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((row, index) => {
+                const primary = expeditionValueAtStar(
+                  row.family,
+                  row.type_stat_pct,
+                  filters.star,
+                );
+                const secondaryName = row.secondary_stat_name.replace(
+                  "_expé",
+                  "",
+                );
+                const secondary = expeditionValueAtStar(
+                  secondaryName,
+                  row.secondary_stat_pct,
+                  filters.star,
+                );
+                const value = (
+                  result: ReturnType<typeof expeditionValueAtStar>,
+                ) => (
+                  <>
+                    <strong className="reference-value">
+                      {formatPercent(result.value, locale)}
+                    </strong>
+                    {result.value !== null && !result.confirmed ? (
+                      <small className="unconfirmed">
+                      {t("unconfirmed-label")}
+                      </small>
+                    ) : null}
+                  </>
+                );
+                return (
+                  <tr
+                    key={`${row.rarity}-${row.set_name}-${row.slot}-${index}`}
+                  >
+                    <td>
+                      <RarityBadge
+                        rarity={row.rarity}
+                        label={rarityLabel(row.rarity)}
+                      />
+                    </td>
+                    <td>{row.set_name}</td>
+                    <td>{familyLabel(row.family)}</td>
+                    <td>{slotLabel(row.slot)}</td>
+                    <td>
+                      {familyLabel(row.family)}
+                      {value(primary)}
+                    </td>
+                    <td>
+                      {secondaryName ? (
+                        <>
+                          {statLabel(secondaryName)}
+                          {value(secondary)}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -339,6 +409,7 @@ export function ReferenceTables({
   expeditionRows: readonly ExpeditionReferenceRow[];
   availability?: Record<"combat" | "expedition", boolean>;
 }) {
+  const t = useTranslations("references");
   const [active, setActive] = useState<"combat" | "expedition" | undefined>(
     availability.combat
       ? "combat"
@@ -351,35 +422,27 @@ export function ReferenceTables({
       <nav
         className="calculator-tabs tabs"
         role="tablist"
-        aria-label="Référentiels"
+        aria-label={t("tabs-label")}
       >
         <button
           type="button"
           role="tab"
           aria-selected={active === "combat"}
           disabled={!availability.combat}
-          title={
-            !availability.combat
-              ? "Désactivé — inaccessible actuellement"
-              : undefined
-          }
+          title={!availability.combat ? t("disabled-tooltip") : undefined}
           onClick={() => setActive("combat")}
         >
-          Équipements de Combat
+          {t("catalog.combat-equipment")}
         </button>
         <button
           type="button"
           role="tab"
           aria-selected={active === "expedition"}
           disabled={!availability.expedition}
-          title={
-            !availability.expedition
-              ? "Désactivé — inaccessible actuellement"
-              : undefined
-          }
+          title={!availability.expedition ? t("disabled-tooltip") : undefined}
           onClick={() => setActive("expedition")}
         >
-          Équipement d’Expédition
+          {t("catalog.expedition-equipment")}
         </button>
       </nav>
       {active === "combat" ? (
@@ -387,9 +450,7 @@ export function ReferenceTables({
       ) : active === "expedition" ? (
         <ExpeditionReferenceTable rows={expeditionRows} />
       ) : (
-        <p className="empty-state">
-          Ces référentiels sont temporairement indisponibles.
-        </p>
+        <p className="empty-state">{t("unavailable")}</p>
       )}
     </div>
   );

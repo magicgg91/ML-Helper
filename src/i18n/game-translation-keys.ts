@@ -73,3 +73,38 @@ export const equipmentSlotTranslationKeys: Record<
   Bottes: "boots",
   Bouclier: "shield",
 };
+
+export const combatSlotNameTranslationKeys: Record<string, string> = {
+  Marteau: "hammer",
+  Arc: "bow",
+  Lance: "spear",
+  Hache: "axe",
+  Sabre: "saber",
+  Épée: "sword",
+  Hallebarde: "halberd",
+};
+
+export const expeditionFamilyTranslationKeys: Record<string, string> = {
+  Or: "gold",
+  Équipement: "equipment",
+  Consommables: "consumables",
+  Troupes: "troops",
+};
+
+export const expeditionSlotTranslationKeys: Record<string, string> = {
+  Cape: "cloak",
+  "Longue-vue": "spyglass",
+  Sacoche: "pouch",
+  Boussole: "compass",
+  Torche: "torch",
+  Pioche: "pickaxe",
+};
+
+export const expeditionStatTranslationKeys: Record<string, string> = {
+  Vitalité: "vitality",
+  Perception: "perception",
+  Récupération: "recovery",
+  Vitesse: "speed",
+  Esquive: "dodge",
+  Chance: "luck",
+};
