@@ -4,7 +4,7 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
   const document = page.locator("html");
   if ((await document.getAttribute("lang")) === locale) return;
 
-  await page.getByLabel("Language / Langue").selectOption(locale);
+  await page.getByLabel(/Language|Langue/).selectOption(locale);
   await expect(document).toHaveAttribute("lang", locale);
 }
 

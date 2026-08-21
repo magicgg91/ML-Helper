@@ -1,12 +1,12 @@
 import {
   cleanup,
   fireEvent,
-  render,
   screen,
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CalculatorVisibilityList } from "./calculator-visibility-list";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 afterEach(() => {
   cleanup();

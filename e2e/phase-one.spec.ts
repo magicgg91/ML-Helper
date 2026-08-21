@@ -64,7 +64,7 @@ test("tool routes alone expose persistent player settings", async ({
     .locator(".home-carousel")
     .evaluate((node) => getComputedStyle(node, "::after").backgroundImage);
   expect(lightOverlay).toContain("240, 242, 245");
-  await page.getByLabel("Language / Langue").selectOption("en");
+  await page.getByLabel(/Language|Langue/).selectOption("en");
   await expect(
     page.getByRole("heading", { name: "Plan your next progression." }),
   ).toBeVisible();
@@ -72,7 +72,7 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
-  await page.getByLabel("Language / Langue").selectOption("fr");
+  await page.getByLabel(/Language|Langue/).selectOption("fr");
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();
@@ -334,12 +334,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     }),
   ).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(180);
-  await expect(page.getByLabel("Ligne 1 set")).not.toHaveValue("");
+  await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page.getByRole("link", { name: "Équipement d’Expédition" }).click();
   await expect(page.locator("tbody tr")).toHaveCount(120);
-  await expect(page.getByLabel("Expédition ligne 1 set")).not.toHaveValue("");
+  await expect(page.getByLabel("Expédition ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page.getByRole("link", { name: "Templiers" }).click();

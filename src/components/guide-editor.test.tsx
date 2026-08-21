@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GuideEditor } from "./guide-editor";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 const replace = vi.fn();
 const refresh = vi.fn();

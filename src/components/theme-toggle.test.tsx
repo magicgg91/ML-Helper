@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ThemeToggle } from "./theme-toggle";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 describe("ThemeToggle", () => {
   beforeEach(() => {

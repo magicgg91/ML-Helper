@@ -7,13 +7,14 @@ vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) =>
     ({
-      dashboard: "Tableau de bord",
-      calculators: "Calculateurs",
-      references: "Référentiels",
-      guides: "Guides",
-      content: "Contenu statique",
-      users: "Utilisateurs",
-      logs: "Logs",
+      "navigation-label": "Navigation administration",
+      "navigation.dashboard": "Tableau de bord",
+      "navigation.tools": "Outils",
+      "navigation.references": "Référentiels",
+      "navigation.guides": "Guides",
+      "navigation.content": "Contenu statique",
+      "navigation.users": "Utilisateurs",
+      "navigation.logs": "Historique",
     })[key],
 }));
 afterEach(cleanup);
@@ -27,7 +28,7 @@ describe("AdminNav", () => {
       "page",
     );
     expect(screen.getByRole("link", { name: "Utilisateurs" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "Logs" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Historique" })).toBeVisible();
   });
 
   it("places references after guides and exposes both to guide managers", () => {
@@ -51,7 +52,7 @@ describe("AdminNav", () => {
     render(<AdminNav role="admin" />);
     expect(screen.getByRole("link", { name: "Utilisateurs" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
-    for (const name of ["Calculateurs", "Référentiels", "Guides", "Logs"])
+    for (const name of ["Outils", "Référentiels", "Guides", "Historique"])
       expect(screen.getByRole("link", { name })).toBeVisible();
   });
 
@@ -59,10 +60,10 @@ describe("AdminNav", () => {
     pathname = "/admin/calculators";
     render(<AdminNav role="tools_manager" />);
     expect(screen.getAllByRole("link")).toHaveLength(2);
-    expect(screen.getByRole("link", { name: "Calculateurs" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Outils" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Référentiels" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Guides" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Logs" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Historique" })).toBeNull();
   });
 
   it("gives read-only users consultation links without legal content", () => {
@@ -70,11 +71,11 @@ describe("AdminNav", () => {
     render(<AdminNav role="read_only" />);
     for (const name of [
       "Tableau de bord",
-      "Calculateurs",
+      "Outils",
       "Guides",
       "Référentiels",
       "Utilisateurs",
-      "Logs",
+      "Historique",
     ])
       expect(screen.getByRole("link", { name })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();

@@ -1,7 +1,8 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultRankingConfig } from "../lib/ranking";
 import { RankingAdminEditor } from "./ranking-admin-editor";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 afterEach(() => {
   cleanup();
@@ -14,7 +15,7 @@ describe("RankingAdminEditor", () => {
     expect(
       screen.queryByRole("textbox", { name: "Configuration Ranking" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Argent ligne 1 target")).toHaveValue(
+    expect(screen.getByLabelText("Argent ligne 1 Ligue cible")).toHaveValue(
       "Montée Or",
     );
   });
@@ -22,7 +23,7 @@ describe("RankingAdminEditor", () => {
   it("shows field validation instead of failing silently", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     render(<RankingAdminEditor initialConfig={defaultRankingConfig} />);
-    fireEvent.change(screen.getByLabelText("Argent ligne 1 threshold"), {
+    fireEvent.change(screen.getByLabelText("Argent ligne 1 Seuil (%)"), {
       target: { value: "101" },
     });
     fireEvent.click(
