@@ -455,7 +455,8 @@
       "combat": "Combat",
       "expedition": "Expédition",
       "combat-equipment": "Équipements de Combat",
-      "expedition-equipment": "Équipement d’Expédition"
+      "expedition-equipment": "Équipement d’Expédition",
+      "level-up": "Level Up"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
@@ -491,6 +492,29 @@
       "type-stat": "Stat de type",
       "secondary-stat": "Stat secondaire"
     }
+  },
+  "level-up": {
+    "name": "Level Up",
+    "league": "Ligue",
+    "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
+    "columns": {
+      "level": "Niveau",
+      "xp": "XP requis",
+      "troops": "Troupes",
+      "reward": "Récompense"
+    },
+    "chests": {
+      "0": "Coffre",
+      "1": "Urne",
+      "2": "Coffret à bijoux",
+      "3": "Jarre",
+      "4": "Caisse"
+    },
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page {current} sur {total}",
+    "pagination-label": "Pages de niveaux",
+    "combat-link": "Ouvrir les Outils Combat"
   },
   "login": {
     "title": "Connexion administration",
@@ -573,6 +597,12 @@
       },
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer l’Équipement d’Expédition",
+      "reference-level-up": "Éditer Level Up",
+      "references": {
+        "combat-equipment": "Équipements de Combat",
+        "expedition-equipment": "Équipement d’Expédition",
+        "level-up": "Level Up"
+      },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
       "edit": "Éditer",
@@ -695,7 +725,13 @@
       "saving": "Enregistrement…",
       "saved": "Paramètres enregistrés.",
       "error": "Échec de l’enregistrement (HTTP {status}).",
-      "server-error": "Impossible de joindre le serveur."
+      "server-error": "Impossible de joindre le serveur.",
+      "league": "Ligue",
+      "coefficient": "Coefficient",
+      "ratio": "Ratio",
+      "xp-base": "Base XP",
+      "xp-ratio": "Ratio XP",
+      "unconfirmed": "Formule de troupes non confirmée"
     },
     "city-parameters": {
       "progression": "Paramètres de progression",

@@ -7,7 +7,11 @@ export const calculatorCatalog = [
   },
   { slug: "city-production", category: "villes", label: "Production" },
   { slug: "xp-gain-rate", category: "combat", label: "Taux de gain d’XP" },
-  { slug: "demo-attack-troops", category: "combat", label: "Troupes en attaque démo" },
+  {
+    slug: "demo-attack-troops",
+    category: "combat",
+    label: "Troupes en attaque démo",
+  },
   { slug: "ranking", category: "classement", label: "Ranking" },
   {
     slug: "stuff-simulator",
@@ -31,6 +35,7 @@ export const calculatorCatalog = [
     category: "referentiels",
     label: "Équipement d’Expédition",
   },
+  { slug: "level-up", category: "referentiels", label: "Level Up" },
 ] as const;
 
 export type CalculatorSlug = (typeof calculatorCatalog)[number]["slug"];

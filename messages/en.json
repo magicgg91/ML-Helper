@@ -450,7 +450,8 @@
       "combat": "Combat",
       "expedition": "Expedition",
       "combat-equipment": "Combat Equipment",
-      "expedition-equipment": "Expedition Equipment"
+      "expedition-equipment": "Expedition Equipment",
+      "level-up": "Level Up"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
@@ -488,7 +489,27 @@
     }
   },
   "level-up": {
-    "name": "Level Up"
+    "name": "Level Up",
+    "league": "League",
+    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league — only Legend, Diamond, Platinum, Bronze and Gold are currently available.",
+    "columns": {
+      "level": "Level",
+      "xp": "Required XP",
+      "troops": "Troops",
+      "reward": "Reward"
+    },
+    "chests": {
+      "0": "Chest",
+      "1": "Urn",
+      "2": "Jewelry box",
+      "3": "Jar",
+      "4": "Crate"
+    },
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {current} of {total}",
+    "pagination-label": "Level pages",
+    "combat-link": "Open Combat tools"
   },
   "login": {
     "title": "Admin sign in",
@@ -571,6 +592,12 @@
       },
       "reference-combat": "Edit Combat Equipment",
       "reference-expedition": "Edit Expedition Equipment",
+      "reference-level-up": "Edit Level Up",
+      "references": {
+        "combat-equipment": "Combat Equipment",
+        "expedition-equipment": "Expedition Equipment",
+        "level-up": "Level Up"
+      },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
       "edit": "Edit",
@@ -694,7 +721,13 @@
       "saving": "Saving…",
       "saved": "Parameters saved.",
       "error": "Save failed (HTTP {status}).",
-      "server-error": "Unable to reach the server."
+      "server-error": "Unable to reach the server.",
+      "league": "League",
+      "coefficient": "Coefficient",
+      "ratio": "Ratio",
+      "xp-base": "XP base",
+      "xp-ratio": "XP ratio",
+      "unconfirmed": "Troop formula not confirmed"
     },
     "city-parameters": {
       "progression": "Progression parameters",

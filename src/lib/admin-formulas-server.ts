@@ -10,6 +10,7 @@ import {
   parseDemoPercentages,
   parseXpTiers,
 } from "./combat-calculators";
+import { defaultLevelUpParameters, parseLevelUpParameters } from "./level-up";
 
 async function formulaParams(calculatorSlug: string, key: string) {
   return prisma.formula.findFirst({
@@ -45,4 +46,11 @@ export async function getCombatParameters() {
       ? parseDemoPercentages(demo.formulaParams)
       : { ...defaultDemoPercentages },
   };
+}
+
+export async function getLevelUpParameters() {
+  const formula = await formulaParams("level-up", "level_up_parameters");
+  return formula
+    ? parseLevelUpParameters(formula.formulaParams)
+    : structuredClone(defaultLevelUpParameters);
 }

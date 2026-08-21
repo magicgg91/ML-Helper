@@ -107,7 +107,12 @@ test("tool routes alone expose persistent player settings", async ({
   await page.goto("/tools");
   await expect(page.locator(".tool-category-card")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
-  await expect(page.getByText("Bientôt disponible")).toBeVisible();
+  await expect(
+    page
+      .getByRole("heading", { name: "Combat" })
+      .locator("..")
+      .getByText("2 outils disponibles"),
+  ).toBeVisible();
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
@@ -150,6 +155,41 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
+});
+
+test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
+  await page.goto("/tools/combat");
+  await expect(page.getByTestId(/xp-range-/)).toHaveCount(5);
+  await page.getByRole("spinbutton", { name: "Ma VP" }).fill("1");
+  await expect(page.getByTestId("xp-range-0")).toHaveText("< 400k");
+  await page.getByRole("tab", { name: "Je suis la cible" }).click();
+  await expect(page.getByTestId("xp-range-200")).toHaveText("< 500k");
+  await page.getByRole("tab", { name: "Troupes en attaque démo" }).click();
+  for (const [league, expected] of [
+    ["bronze", "70"],
+    ["silver", "35"],
+    ["gold", "28"],
+    ["diamond", "21"],
+  ]) {
+    await page.getByLabel("Ligue de l’attaquant").selectOption(league);
+    await expect(page.getByTestId("demo-troops")).toHaveText(expected);
+  }
+});
+
+test("Level Up is a Guides reference and keeps Silver unconfirmed", async ({
+  page,
+}) => {
+  await page.goto("/guides/referentiels/level-up");
+  await expect(page.getByRole("heading", { name: "Level Up" })).toBeVisible();
+  for (const league of ["bronze", "gold", "platinum", "diamond", "legend"]) {
+    await page.getByRole("combobox", { name: "Ligue" }).selectOption(league);
+    await expect(page.getByRole("table").first()).toBeVisible();
+  }
+  await page.getByRole("combobox", { name: "Ligue" }).selectOption("silver");
+  await expect(page.getByRole("status")).toContainText("non encore confirmée");
+  await expect(page.getByRole("table")).toHaveCount(0);
+  await page.goto("/tools/level-up");
+  await expect(page).toHaveTitle(/404|Not Found/i);
 });
 
 test("calculator pages only repeat names in their navigation tabs", async ({
