@@ -16,9 +16,15 @@ describe("LegalNoticeEditor", () => {
       "Texte des mentions légales (Markdown)",
     );
     expect(editor).toHaveValue("## Ancien texte");
+    expect(document.querySelector(".guide-live-preview h2")).toHaveTextContent(
+      "Ancien texte",
+    );
     fireEvent.change(editor, {
       target: { value: "## Nouveau\n\nTexte légal" },
     });
+    expect(document.querySelector(".guide-live-preview h2")).toHaveTextContent(
+      "Nouveau",
+    );
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());

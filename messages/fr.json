@@ -635,6 +635,7 @@
       "content": "Contenu Markdown ({locale})",
       "preview": "Aperçu en direct",
       "categories-label": "Catégories du guide",
+      "categories-summary": "Catégories du guide ({count, plural, one {# sélectionnée} other {# sélectionnées}})",
       "categories": {
         "debuter": "Débuter & progresser",
         "combat": "Combat & conquête",
@@ -677,6 +678,7 @@
       "state-saved": "{tool} est maintenant {state}.",
       "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
       "translations-summary": "Textes multilingues — {tool}",
+      "translations-language": "Langue du contenu",
       "name": "Nom",
       "description-field": "Description",
       "tip": "Astuce",
@@ -804,6 +806,7 @@
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
       "field": "Texte des mentions légales (Markdown)",
+      "preview": "Aperçu en direct",
       "save": "Enregistrer",
       "saving": "Enregistrement…",
       "saved": "Mentions légales enregistrées.",

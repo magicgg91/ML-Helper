@@ -4,6 +4,8 @@ import MarkdownEditor from "@uiw/react-md-editor";
 import { MarkdownRenderer } from "./markdown-renderer";
 import "@uiw/react-md-editor/markdown-editor.css";
 
+const markdownEditorHeight = 640;
+
 export function GuideMarkdownEditor({
   label,
   previewLabel,
@@ -23,7 +25,7 @@ export function GuideMarkdownEditor({
           value={value}
           onChange={(next) => onChange(next ?? "")}
           preview="edit"
-          height={520}
+          height={markdownEditorHeight}
           visibleDragbar={false}
           textareaProps={{ "aria-label": label, spellCheck: true }}
         />

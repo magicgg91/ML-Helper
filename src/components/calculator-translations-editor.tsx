@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
 
 type Values = {
   name: Record<string, string>;
@@ -20,8 +24,9 @@ export function CalculatorTranslationsEditor({
 }) {
   const t = useTranslations("admin.tools");
   const [values, setValues] = useState(initial);
+  const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [message, setMessage] = useState("");
-  function update(field: keyof Values, locale: "fr" | "en", value: string) {
+  function update(field: keyof Values, locale: EditorialLocale, value: string) {
     setValues((current) => ({
       ...current,
       [field]: { ...current[field], [locale]: value },
@@ -39,43 +44,42 @@ export function CalculatorTranslationsEditor({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    setMessage(
-      response.ok
-        ? t("translations-saved")
-        : t("translations-error"),
-    );
+    setMessage(response.ok ? t("translations-saved") : t("translations-error"));
   }
   return (
     <details className="translation-editor">
       <summary>{t("translations-summary", { tool: label })}</summary>
-      {(["fr", "en"] as const).map((locale) => (
-        <fieldset key={locale}>
-          <legend>{locale.toUpperCase()}</legend>
-          <label>
-            {t("name")}
-            <input
-              value={values.name[locale] ?? ""}
-              onChange={(event) => update("name", locale, event.target.value)}
-            />
-          </label>
-          <label>
-            {t("description-field")}
-            <textarea
-              value={values.description[locale] ?? ""}
-              onChange={(event) =>
-                update("description", locale, event.target.value)
-              }
-            />
-          </label>
-          <label>
-            {t("tip")}
-            <textarea
-              value={values.tips[locale] ?? ""}
-              onChange={(event) => update("tips", locale, event.target.value)}
-            />
-          </label>
-        </fieldset>
-      ))}
+      <EditorialLocaleSelect
+        label={t("translations-language")}
+        value={locale}
+        onChange={setLocale}
+      />
+      <fieldset>
+        <legend>{locale.toUpperCase()}</legend>
+        <label>
+          {t("name")}
+          <input
+            value={values.name[locale] ?? ""}
+            onChange={(event) => update("name", locale, event.target.value)}
+          />
+        </label>
+        <label>
+          {t("description-field")}
+          <textarea
+            value={values.description[locale] ?? ""}
+            onChange={(event) =>
+              update("description", locale, event.target.value)
+            }
+          />
+        </label>
+        <label>
+          {t("tip")}
+          <textarea
+            value={values.tips[locale] ?? ""}
+            onChange={(event) => update("tips", locale, event.target.value)}
+          />
+        </label>
+      </fieldset>
       <button type="button" onClick={save}>
         {t("save-translations")}
       </button>

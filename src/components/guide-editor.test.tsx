@@ -46,7 +46,10 @@ describe("GuideEditor", () => {
         }}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "EN" }));
+    fireEvent.change(screen.getByLabelText("Langue du guide"), {
+      target: { value: "en" },
+    });
+    expect(screen.queryByRole("tab")).toBeNull();
     fireEvent.change(screen.getByLabelText("Titre (EN)"), {
       target: { value: "Updated English title" },
     });
@@ -84,6 +87,9 @@ describe("GuideEditor", () => {
       />,
     );
     fireEvent.click(screen.getByLabelText("Combat & conquête"));
+    expect(
+      screen.getByText("Catégories du guide (2 sélectionnées)"),
+    ).toBeVisible();
     fireEvent.change(screen.getByLabelText("URL de l’image représentative"), {
       target: { value: "https://example.com/cover.jpg" },
     });

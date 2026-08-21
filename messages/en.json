@@ -630,6 +630,7 @@
       "content": "Markdown content ({locale})",
       "preview": "Live preview",
       "categories-label": "Guide categories",
+      "categories-summary": "Guide categories ({count, plural, one {# selected} other {# selected}})",
       "categories": {
         "debuter": "Getting started & progressing",
         "combat": "Combat & conquest",
@@ -672,6 +673,7 @@
       "state-saved": "{tool} is now {state}.",
       "server-error": "Unable to reach the server. Try again later.",
       "translations-summary": "Localized content — {tool}",
+      "translations-language": "Content language",
       "name": "Name",
       "description-field": "Description",
       "tip": "Tip",
@@ -800,6 +802,7 @@
       "eyebrow": "Institutional page",
       "title": "Legal notice",
       "field": "Legal notice text (Markdown)",
+      "preview": "Live preview",
       "save": "Save",
       "saving": "Saving…",
       "saved": "Legal notice saved.",
