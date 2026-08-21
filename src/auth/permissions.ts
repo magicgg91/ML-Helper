@@ -58,9 +58,3 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
 export function can(role: string | undefined, capability: AdminCapability) {
   return Boolean(role && matrix[role as AdminRole]?.has(capability));
 }
-
-export function capabilitiesFor(role: string | undefined) {
-  return role
-    ? (matrix[role as AdminRole] ?? new Set<AdminCapability>())
-    : new Set<AdminCapability>();
-}
