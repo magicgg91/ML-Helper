@@ -693,9 +693,12 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toBeVisible();
   await expect(
-    page.locator(".guide-list-card").filter({
-      hasText: "Guide édité et publié",
-    }).locator(".guide-list-cover"),
+    page
+      .locator(".guide-list-card")
+      .filter({
+        hasText: "Guide édité et publié",
+      })
+      .locator(".guide-list-cover"),
   ).toHaveAttribute("src", "https://example.com/guide-cover.jpg");
   for (const category of ["Combat & conquête", "Clan & stratégie collective"]) {
     await page.getByRole("button", { name: category }).click();
