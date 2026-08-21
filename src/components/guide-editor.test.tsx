@@ -96,8 +96,15 @@ describe("GuideEditor", () => {
     expect(
       screen.getByAltText("Aperçu de l’image représentative"),
     ).toHaveAttribute("src", "https://example.com/cover.jpg");
-    expect(document.querySelector(".guide-live-preview del")).toHaveTextContent(
-      "ancien",
+    expect(
+      document.querySelector(".w-md-editor-preview del"),
+    ).toHaveTextContent("ancien");
+    const actionBar = document.querySelector(".editor-action-bar");
+    expect(actionBar).toContainElement(
+      screen.getByRole("link", { name: "← Retour" }),
+    );
+    expect(actionBar).toContainElement(
+      screen.getByRole("button", { name: /^Enregistrer$/ }),
     );
     fireEvent.click(screen.getByRole("button", { name: /^Enregistrer$/ }));
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());

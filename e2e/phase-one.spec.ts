@@ -79,7 +79,7 @@ test("the legal notice admin reuses the live Markdown workspace", async ({
     .getByLabel("Texte des mentions légales (Markdown)")
     .fill("## Aperçu légal partagé");
   await expect(
-    page.locator(".guide-live-preview").getByRole("heading", {
+    page.locator(".w-md-editor-preview").getByRole("heading", {
       name: "Aperçu légal partagé",
     }),
   ).toBeVisible();
@@ -744,11 +744,11 @@ test("guide editor supports the complete editorial lifecycle", async ({
     .getByLabel("Contenu Markdown (FR)")
     .fill("## Départ\n\nContenu initial avec ~~ancienne règle~~.");
   await expect(
-    page.locator(".guide-live-preview").getByRole("heading", {
+    page.locator(".w-md-editor-preview").getByRole("heading", {
       name: "Départ",
     }),
   ).toBeVisible();
-  await expect(page.locator(".guide-live-preview del")).toHaveText(
+  await expect(page.locator(".w-md-editor-preview del")).toHaveText(
     "ancienne règle",
   );
   await page.getByRole("button", { name: "Soumettre en review" }).click();

@@ -8,6 +8,7 @@ import {
   type EditorialLocale,
 } from "./editorial-locale-select";
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
+import { EditorActionBar } from "./editor-action-bar";
 
 type LocaleDraft = { title: string; excerpt: string; content: string };
 type GuideDraft = {
@@ -111,6 +112,42 @@ export function GuideEditor({
   const draft = translations[locale];
   return (
     <div className="guide-editor">
+      <EditorActionBar backHref="/admin/guides" message={message}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={() => save()}
+        >
+          {t("save")}
+        </button>
+        {status !== "pending_review" && status !== "published" && (
+          <button
+            className="editor-action editor-action-review"
+            type="button"
+            onClick={() => save("pending_review")}
+          >
+            {t("submit-review")}
+          </button>
+        )}
+        {canPublish && status !== "published" && (
+          <button
+            className="editor-action editor-action-publish"
+            type="button"
+            onClick={() => save("published")}
+          >
+            {t("publish")}
+          </button>
+        )}
+        {canPublish && status === "published" && (
+          <button
+            className="editor-action editor-action-secondary"
+            type="button"
+            onClick={() => save("draft")}
+          >
+            {t("unpublish")}
+          </button>
+        )}
+      </EditorActionBar>
       <EditorialLocaleSelect
         label={t("language-label")}
         value={locale}
@@ -179,40 +216,10 @@ export function GuideEditor({
         </label>
         <GuideMarkdownEditor
           label={t("content", { locale: locale.toUpperCase() })}
-          previewLabel={t("preview")}
           value={draft.content}
           onChange={(content) => updateLocale({ content })}
         />
       </section>
-      <div className="admin-actions">
-        <button type="button" onClick={() => save()}>
-          {t("save")}
-        </button>
-        {status !== "pending_review" && status !== "published" && (
-          <button type="button" onClick={() => save("pending_review")}>
-            {t("submit-review")}
-          </button>
-        )}
-        {canPublish && status !== "published" && (
-          <button type="button" onClick={() => save("published")}>
-            {t("publish")}
-          </button>
-        )}
-        {canPublish && status === "published" && (
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={() => save("draft")}
-          >
-            {t("unpublish")}
-          </button>
-        )}
-      </div>
-      {message && (
-        <p className="form-status" role="status">
-          {message}
-        </p>
-      )}
     </div>
   );
 }
