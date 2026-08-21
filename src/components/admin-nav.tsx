@@ -7,12 +7,12 @@ import { useTranslations } from "next-intl";
 
 const links: Array<{
   href: string;
-  label: "dashboard" | "tools" | "guides" | "references" | "content" | "users" | "logs";
+  label: "dashboard" | "tools" | "guides" | "content" | "users" | "logs";
   capability: AdminCapability;
 }> = [
   { href: "/admin", label: "dashboard", capability: "dashboard.view" },
   {
-    href: "/admin/calculators",
+    href: "/admin/tools",
     label: "tools",
     capability: "calculators.read",
   },
@@ -20,11 +20,6 @@ const links: Array<{
     href: "/admin/guides",
     label: "guides",
     capability: "guides.read",
-  },
-  {
-    href: "/admin/references",
-    label: "references",
-    capability: "references.read",
   },
   {
     href: "/admin/content",

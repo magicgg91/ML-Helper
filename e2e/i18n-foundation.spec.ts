@@ -10,9 +10,9 @@ test("switches the public navigation language and falls back to English", async 
 
   const language = page.getByLabel(/Language|Langue/);
   await language.selectOption("en");
-  await expect(page.getByRole("link", { name: "Simulators" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Tools" })).toBeVisible();
 
   await language.selectOption("fr");
-  await expect(page.getByRole("link", { name: "Simulateurs" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Outils" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin area" })).toBeVisible();
 });

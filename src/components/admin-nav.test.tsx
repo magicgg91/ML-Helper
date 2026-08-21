@@ -10,7 +10,6 @@ vi.mock("next-intl", () => ({
       "navigation-label": "Navigation administration",
       "navigation.dashboard": "Tableau de bord",
       "navigation.tools": "Outils",
-      "navigation.references": "Référentiels",
       "navigation.guides": "Guides",
       "navigation.content": "Contenu statique",
       "navigation.users": "Utilisateurs",
@@ -21,9 +20,9 @@ afterEach(cleanup);
 
 describe("AdminNav", () => {
   it("marks the current section and exposes Super Admin links", () => {
-    pathname = "/admin/references/combat";
+    pathname = "/admin/guides/reference-combat-equipment";
     render(<AdminNav role="super_admin" />);
-    expect(screen.getByRole("link", { name: "Référentiels" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -31,11 +30,11 @@ describe("AdminNav", () => {
     expect(screen.getByRole("link", { name: "Historique" })).toBeVisible();
   });
 
-  it("places references after guides and exposes both to guide managers", () => {
+  it("co-locates references under Guides for guide managers", () => {
     pathname = "/admin/guides";
     render(<AdminNav role="guides_manager" />);
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(3);
+    expect(links).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -43,7 +42,6 @@ describe("AdminNav", () => {
     expect(links.map((link) => link.textContent)).toEqual([
       "Tableau de bord",
       "Guides",
-      "Référentiels",
     ]);
   });
 
@@ -52,12 +50,12 @@ describe("AdminNav", () => {
     render(<AdminNav role="admin" />);
     expect(screen.getByRole("link", { name: "Utilisateurs" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
-    for (const name of ["Outils", "Référentiels", "Guides", "Historique"])
+    for (const name of ["Outils", "Guides", "Historique"])
       expect(screen.getByRole("link", { name })).toBeVisible();
   });
 
   it("limits a tools manager to simulator administration", () => {
-    pathname = "/admin/calculators";
+    pathname = "/admin/tools";
     render(<AdminNav role="tools_manager" />);
     expect(screen.getAllByRole("link")).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Outils" })).toBeVisible();
@@ -73,7 +71,6 @@ describe("AdminNav", () => {
       "Tableau de bord",
       "Outils",
       "Guides",
-      "Référentiels",
       "Utilisateurs",
       "Historique",
     ])

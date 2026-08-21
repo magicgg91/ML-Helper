@@ -32,6 +32,7 @@ describe("CalculatorVisibilityList", () => {
             slug: "ranking",
             label: "Ranking",
             active: true,
+            editHref: "/admin/tools/ranking",
           },
         ]}
       />,
@@ -41,7 +42,7 @@ describe("CalculatorVisibilityList", () => {
 
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
-        "/api/admin/calculators/calculator-ranking",
+        "/api/admin/tools/calculator-ranking",
         {
           method: "PATCH",
           headers: { "content-type": "application/json" },
@@ -65,6 +66,7 @@ describe("CalculatorVisibilityList", () => {
             slug: "ranking",
             label: "Ranking",
             active: true,
+            editHref: "/admin/tools/ranking",
           },
         ]}
       />,

@@ -94,7 +94,7 @@
     "combat": "Combat",
     "ranking": "Classement",
     "skills": "Compétences",
-    "count": "{count, plural, =0 {Aucun simulateur disponible} one {# simulateur disponible} other {# simulateurs disponibles}}",
+    "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
     "open": "Ouvrir la catégorie",
     "comingSoon": "Bientôt disponible",
     "unavailable": "Indisponible actuellement",
@@ -345,11 +345,11 @@
     }
   },
   "Navigation": {
-    "tools": "Simulateurs",
+    "tools": "Outils",
     "guides": "Guides"
   },
   "Public": {
-    "tools": "Simulateurs",
+    "tools": "Outils",
     "guides": "Guides",
     "contact": "Contact",
     "admin": "Administration",
@@ -359,7 +359,7 @@
     "eyebrow": "Million Lords · Outils communautaires",
     "title": "Prépare ta prochaine progression.",
     "description": "Simule ta progression, compare ton équipement et consulte les données utiles. Tes paramètres joueur restent uniquement dans ce navigateur.",
-    "tools": "Voir les simulateurs",
+    "tools": "Voir les outils",
     "guides": "Parcourir les guides",
     "carouselLabel": "Aperçu de l’univers Million Lords",
     "carouselKingdom": "Royaume fortifié dans l’univers Million Lords",
@@ -375,14 +375,14 @@
     "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
   },
   "ToolsPage": {
-    "eyebrow": "Simulateurs",
+    "eyebrow": "Outils",
     "title": "Choisis ton domaine",
     "cities": "Villes",
     "combat": "Combat",
     "ranking": "Classement",
     "skills": "Compétences",
     "references": "Référentiels",
-    "count": "{count, plural, =0 {Aucun simulateur disponible} one {# simulateur disponible} other {# simulateurs disponibles}}",
+    "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
     "open": "Ouvrir la catégorie",
     "comingSoon": "Bientôt disponible",
     "unavailable": "Catégorie indisponible actuellement"
@@ -485,7 +485,6 @@
     "navigation": {
       "dashboard": "Tableau de bord",
       "tools": "Outils",
-      "references": "Référentiels",
       "guides": "Guides",
       "content": "Contenu statique",
       "users": "Utilisateurs",
@@ -537,13 +536,17 @@
       "empty": "Aucun guide créé.",
       "columns": {
         "title": "Titre",
+        "type": "Type",
         "author": "Auteur",
         "created": "Créé le",
         "updated": "Dernière édition",
         "status": "Statut",
         "actions": "Actions"
       },
-      "statuses": { "draft": "Brouillon", "pending_review": "En review", "published": "Publié" },
+      "types": { "guide": "Guide", "reference": "Référentiel" },
+      "statuses": { "draft": "Brouillon", "pending_review": "En review", "published": "Publié", "active": "Actif", "inactive": "Inactif" },
+      "reference-combat": "Éditer les Équipements de Combat",
+      "reference-expedition": "Éditer l’Équipement d’Expédition",
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
       "edit": "Éditer",
@@ -597,6 +600,11 @@
       "tip": "Astuce",
       "save-translations": "Enregistrer les traductions",
       "translations-saved": "Traductions enregistrées."
+      ,"edit": "Modifier",
+      "city-parameters": "Paramètres Villes partagés",
+      "ranking-editor": "Seuils du classement",
+      "templar-parameters": "Paramètres de coût des Templiers",
+      "edit-tool": "Modifier l’outil — {tool}"
     },
     "ranking": {
       "title": "Classement",
@@ -646,7 +654,16 @@
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "saved": "Référentiel enregistré.",
       "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie."
+      ,"all": "Tous",
+      "filters": { "skill": "Compétence" }
     },
+    "common": { "back": "Retour" },
+    "parameters": { "save": "Enregistrer les paramètres", "saving": "Enregistrement…", "saved": "Paramètres enregistrés.", "error": "Échec de l’enregistrement (HTTP {status}).", "server-error": "Impossible de joindre le serveur." },
+    "city-parameters": {
+      "progression": "Paramètres de progression", "multipliers": "Multiplicateurs par ligue", "league": "Ligue", "army": "Multiplicateur Armée", "gold": "Multiplicateur Or",
+      "vp": { "base": "Base VP", "ratio": "Ratio VP" }, "walls": { "base": "Base Remparts", "ratio": "Ratio Remparts" }, "cost": { "base": "Base Coût", "ratio": "Ratio Coût" }
+    },
+    "templar-parameters": { "formula": "Coût(n) = arrondi(base × ratio^(n-1))", "base": "Base", "ratio": "Ratio" },
     "users": {
       "title": "Utilisateurs administrateurs",
       "create": "Créer l’utilisateur",
