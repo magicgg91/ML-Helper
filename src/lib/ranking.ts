@@ -66,6 +66,17 @@ export type RankingRange = RankingBand & {
   rankEnd: number;
 };
 
+export type RankCategory = "montee" | "maintien" | "descente";
+
+// Catégorie déduite du libellé de ligue cible (ex: "Montée Or") — même
+// convention que les données admin, qui préfixent systématiquement le
+// libellé par Montée/Maintien/Descente.
+export function rankCategory(target: string): RankCategory {
+  if (target.startsWith("Montée")) return "montee";
+  if (target.startsWith("Descente")) return "descente";
+  return "maintien";
+}
+
 export function calculateRanking(
   bands: RankingBand[],
   percentage: number,

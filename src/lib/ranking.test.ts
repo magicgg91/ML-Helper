@@ -3,6 +3,7 @@ import {
   calculateRanking,
   defaultRankingConfig,
   parseRankingConfig,
+  rankCategory,
 } from "./ranking";
 
 describe("ranking calculator", () => {
@@ -54,5 +55,16 @@ describe("ranking calculator", () => {
       reward: "Récompense modifiée",
     };
     expect(parseRankingConfig(edited).legend[0]).toEqual(edited.legend[0]);
+  });
+});
+
+describe("rankCategory", () => {
+  it.each([
+    ["Montée Or", "montee"],
+    ["Descente Diamant", "descente"],
+    ["Maintien Légende", "maintien"],
+    ["À définir dans l’administration", "maintien"],
+  ] as const)("classifies %s as %s", (target, expected) => {
+    expect(rankCategory(target)).toBe(expected);
   });
 });
