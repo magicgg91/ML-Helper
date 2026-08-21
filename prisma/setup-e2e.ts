@@ -106,7 +106,32 @@ async function main() {
         fr: "Guide utilisé pour vérifier la dépublication.",
         en: "Guide used to verify unpublishing.",
       },
-      content: { fr: "Contenu de test", en: "Test content" },
+      content: {
+        fr: `## Guide Markdown
+
+| Colonne | Valeur |
+| --- | --- |
+| Test | 42 |
+
+- Élément à puces
+
+1. Première étape
+2. Deuxième étape
+
+- [ ] À faire
+- [x] Terminé
+
+~~Ancien texte~~
+
+\`\`\`ts
+const answer = 42;
+\`\`\`
+
+> Citation de test
+
+[Lien de test](https://example.com)`,
+        en: "Test content",
+      },
       author: "Équipe ML-Helper",
       publishedAt: new Date(),
     },

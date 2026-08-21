@@ -1411,6 +1411,56 @@ body > main h1 {
   border-left: 3px solid var(--violet-bright);
   color: var(--text-dim);
 }
+.markdown-content {
+  line-height: 1.7;
+}
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.markdown-content table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.markdown-content th,
+.markdown-content td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown-content th {
+  color: var(--text);
+  background: var(--bg-panel-raised);
+}
+.markdown-content blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--violet-bright);
+  color: var(--text-dim);
+}
+.markdown-content pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+}
+.markdown-content code {
+  font-family: var(--font-mono), monospace;
+}
+.markdown-content .contains-task-list {
+  padding-left: 0;
+  list-style: none;
+}
+.markdown-content .task-list-item input {
+  width: auto;
+  margin-right: 0.5rem;
+}
 
 /* Public landing pages */
 .home-carousel {

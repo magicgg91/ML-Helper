@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
 import { getLocale } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
-import { GuideMarkdown } from "@/components/guide-markdown";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 export default async function GuidePage({
   params,
@@ -22,7 +22,7 @@ export default async function GuidePage({
         <h1>
           {localizedText(guide.title, locale) || slug.replaceAll("-", " ")}
         </h1>
-        <GuideMarkdown markdown={localizedText(guide.content, locale)} />
+        <MarkdownRenderer markdown={localizedText(guide.content, locale)} />
       </article>
     </main>
   );
