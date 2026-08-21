@@ -1378,6 +1378,8 @@ Chaque nouvel exemple reconfirme des incréments déjà déduits (Bravoure et Re
 
 **Conséquence sur le modèle de données :** la mécanique de fusion (2→1 par étoile) reste la même que les gemmes, mais la **formule de bonus est additive** (pas multiplicative) — le calculateur Équipements ne pourra pas réutiliser la logique du calculateur Gemmes, il faudra une formule dédiée par compétence (`base + incrément × (n−1)`), désormais entièrement connue.
 
+**⚠️ Note d'implémentation (audit Bloc 6, 2026-08-21) :** cette formule est aujourd'hui codée dans `equipmentValueAtStar()` (`src/lib/equipment.ts`), écrite spécifiquement pour l'équipement de combat. Or la même formule additive `base + incrément × (n−1)` est confirmée pour l'Équipement d'Expédition (voir plus bas) — un système distinct mais avec la même mécanique de progression par étoile. **Avant de construire le calculateur Expédition, extraire cette formule en helper neutre partagé (ex: `valueAtStar(base, increment, star)`, pas de dépendance à un skill de combat)**, plutôt que de la recopier pour l'équipement d'expédition. Sans cette extraction, le futur calculateur Expédition dupliquerait exactement une logique déjà écrite — contraire à la consigne de factorisation d'AGENTS.md ("factoriser la logique partagée entre calculateurs plutôt que dupliquer"). Ne pas faire l'extraction avant que le second appelant existe réellement (pas d'abstraction prématurée) — mais la faire dans la même tâche que la construction du calculateur Expédition, pas après coup.
+
 #### Équipement d'Expédition — système distinct de l'équipement de combat
 
 **⚠️ Important : c'est un système séparé**, avec ses propres emplacements, sa propre monnaie et ses propres stats — à ne pas mélanger avec l'équipement de combat déjà documenté ci-dessus, même si la structure générale (5 raretés, fusion par étoiles) est similaire.
@@ -1423,6 +1425,8 @@ Chaque nouvel exemple reconfirme des incréments déjà déduits (Bravoure et Re
 | Vitalité (secondaire) | Cape de l'Archéologue, Épique | 15% | 17,5% | +2,5 |
 
 L'incrément Équipement (+0,2) est identique sur 2 raretés différentes (Commun et Épique) — même pattern que pour le combat où l'incrément dépend de la compétence, pas de la rareté/l'équipement. **Bonne indication que la même logique additive s'applique aux deux systèmes**, même si les 8 autres stats d'expédition restent à confirmer individuellement (Or, Consommables, Troupes en tant que stats de type ; Perception, Récupération, Vitesse, Esquive, Chance en tant que stats secondaires).
+
+**Rappel implémentation :** ne pas réécrire cette formule pour Expédition — réutiliser le helper additif partagé mentionné dans la section Équipements de Combat ci-dessus, une fois extrait de `equipmentValueAtStar()`.
 
 **Reste à définir :**
 - Incréments des 8 stats d'expédition restantes (voir tableau ci-dessus pour les 2 déjà confirmées)

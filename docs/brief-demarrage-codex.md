@@ -117,6 +117,7 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 - **Arrondi** : entier pour les quantités absolues (or, troupes, coûts), décimales conservées pour les pourcentages
 - **Formules jamais exposées côté public** — uniquement les résultats, jamais `VP = 20 × 1.115^(n-1)` visible pour un joueur
 - Toute donnée encore marquée "non confirmé"/"hypothèse" dans le cahier des charges doit rester **éditable en admin** avec sa valeur actuelle par défaut, pas bloquante pour livrer la fonctionnalité
+- **Formule additive par étoile (`base + incrément × (n−1)`) commune Combat/Expédition** — actuellement écrite uniquement pour le Combat (`equipmentValueAtStar()` dans `src/lib/equipment.ts`), à extraire en helper neutre partagé (voir cahier des charges section 7.1, note d'implémentation ajoutée lors de l'audit Bloc 6) **dans la même tâche que la construction du calculateur Expédition** — ne pas la recopier telle quelle pour l'équipement d'expédition, et ne pas faire l'extraction avant, tant que le second appelant n'existe pas encore
 
 ---
 
@@ -211,6 +212,7 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 ### Vérifications de données restantes (non bloquantes, pas des tâches Codex)
 - **15 lignes de valeurs manquantes** *(point 16, révisé — 7 sets sur 10 confirmés)* — Équipements de Combat, 5 sets restants Rare/Épique (section 7.1).
 - **8 stats sur 10 encore à confirmer** *(point 17)* — Équipement d'Expédition (seules Équipement +0,2/★ et Vitalité +2,5/★ le sont).
+- **Rappel pour le futur calculateur Expédition** — sa formule de progression par étoile est déjà confirmée additive, identique au Combat (cahier des charges section 7.1). Ne pas dupliquer `equipmentValueAtStar()` : extraire un helper partagé (`valueAtStar(base, increment, star)`) au moment de construire ce calculateur, voir "Rappels transverses" ci-dessus.
 
 ### Gros chantiers en attente de cadrage (pas prêts pour Codex)
 - **Combat — Fight, Enemy Troops** *(reste du point 18)* — non spécifiés, à cadrer avec toi avant de coder.

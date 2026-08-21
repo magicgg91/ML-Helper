@@ -16,6 +16,3 @@ export async function requireCapability(capability: AdminCapability) {
   if (!can(session.user.role, capability)) forbidden();
   return session;
 }
-export async function requireSuperAdminSession() {
-  return requireCapability("users.manage");
-}
