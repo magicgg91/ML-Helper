@@ -18,6 +18,7 @@ describe("Docker healthcheck", () => {
     expect(dockerfile).toContain(
       "docker-healthcheck.mjs ./docker-healthcheck.mjs",
     );
+    expect(dockerfile).toContain("ENV HOSTNAME=0.0.0.0");
     expect(healthcheck).toContain('process.env.PORT || "3000"');
     expect(healthcheck).toContain('path: "/api/health"');
   });
