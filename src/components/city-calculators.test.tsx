@@ -45,6 +45,27 @@ describe("CityCalculators", () => {
     expect(screen.getByTestId("max-level-result")).toHaveTextContent("3");
   });
 
+
+  it("keeps the target level strictly above the starting level from either input", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const start = screen.getByRole("spinbutton", {
+      name: "Niveau de départ",
+    });
+    const target = screen.getByRole("spinbutton", { name: "Niveau cible" });
+
+    fireEvent.change(start, { target: { value: "12" } });
+    expect(start).toHaveValue(12);
+    expect(target).toHaveValue(13);
+
+    fireEvent.change(target, { target: { value: "8" } });
+    expect(start).toHaveValue(12);
+    expect(target).toHaveValue(13);
+  });
+
   it("reads production bonuses from persisted player settings", () => {
     const settings = defaultPlayerSettings();
     settings.level = 11;

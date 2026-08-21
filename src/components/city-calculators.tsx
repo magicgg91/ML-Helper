@@ -124,14 +124,26 @@ function CostCalculator({
           <Field
             label={t("fields.start-level")}
             value={startLevel}
-            max={200}
-            onChange={(v) => setStartLevel(Math.floor(v))}
+            max={199}
+            onChange={(v) => {
+              const nextStart = Math.floor(v);
+              setStartLevel(nextStart);
+              setTargetLevel((current) =>
+                current <= nextStart ? nextStart + 1 : current,
+              );
+            }}
           />
           <Field
             label={t("fields.target-level")}
             value={targetLevel}
+            min={2}
             max={200}
-            onChange={(v) => setTargetLevel(Math.floor(v))}
+            onChange={(v) => {
+              const nextTarget = Math.floor(v);
+              setTargetLevel(
+                nextTarget <= startLevel ? startLevel + 1 : nextTarget,
+              );
+            }}
           />
         </div>
       </section>
