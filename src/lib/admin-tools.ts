@@ -1,5 +1,13 @@
-export const referenceToolSlugs = ["combat-equipment", "expedition-equipment"] as const;
-export const cityToolSlugs = ["city-cost", "city-max-level", "city-production"] as const;
+export const referenceToolSlugs = [
+  "combat-equipment",
+  "expedition-equipment",
+  "level-up",
+] as const;
+export const cityToolSlugs = [
+  "city-cost",
+  "city-max-level",
+  "city-production",
+] as const;
 
 export function adminToolEditHref(id: string, slug: string) {
   if (cityToolSlugs.includes(slug as (typeof cityToolSlugs)[number]))
@@ -8,4 +16,3 @@ export function adminToolEditHref(id: string, slug: string) {
   if (slug === "templars") return "/admin/tools/templars";
   return `/admin/tools/${id}`;
 }
-

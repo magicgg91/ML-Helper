@@ -13,7 +13,7 @@ export default async function ToolDetailLayout({
       active["city-cost"] ||
       active["city-max-level"] ||
       active["city-production"],
-    combat: false,
+    combat: active["xp-gain-rate"] || active["demo-attack-troops"],
     classement: active.ranking,
     competences:
       active["stuff-simulator"] ||

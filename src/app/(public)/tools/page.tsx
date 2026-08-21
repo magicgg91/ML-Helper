@@ -19,7 +19,7 @@ const categories: Array<{
   {
     label: "combat",
     slug: "combat",
-    calculators: [],
+    calculators: ["xp-gain-rate", "demo-attack-troops"],
     image: "/category-combat.svg",
   },
   {

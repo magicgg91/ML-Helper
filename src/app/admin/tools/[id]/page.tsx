@@ -21,7 +21,7 @@ export default async function EditToolPage({ params }: PageProps<"/admin/tools/[
   else if (id === "templars") { title = t("templar-parameters"); content = <TemplarParametersEditor initial={await getTemplarParameters()} />; }
   else {
     const tool = await prisma.calculator.findFirst({ where: { OR: [{ id }, { slug: id }] } });
-    if (!tool || ["combat-equipment", "expedition-equipment"].includes(tool.slug)) notFound();
+    if (!tool || ["combat-equipment", "expedition-equipment", "level-up"].includes(tool.slug)) notFound();
     title = t("edit-tool", { tool: tool.slug });
     content = <CalculatorTranslationsEditor id={tool.id} label={tool.slug} initial={{ name: translationRecord(tool.name), description: translationRecord(tool.description), tips: translationRecord(tool.tips) }} />;
   }

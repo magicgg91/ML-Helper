@@ -15,7 +15,10 @@ export default async function GuidesAdminPage() {
   ]);
   const [guides, references] = await Promise.all([
     prisma.guide.findMany({ orderBy: { updatedAt: "desc" } }),
-    prisma.calculator.findMany({ where: { slug: { in: [...referenceToolSlugs] } }, orderBy: { slug: "asc" } }),
+    prisma.calculator.findMany({
+      where: { slug: { in: [...referenceToolSlugs] } },
+      orderBy: { slug: "asc" },
+    }),
   ]);
   return (
     <main className="admin-main">
@@ -31,17 +34,31 @@ export default async function GuidesAdminPage() {
       </div>
       {guides.length || references.length ? (
         <GuideStatusList
-          rows={[...guides.map((guide) => ({
-            id: guide.id,
-            slug: guide.slug,
-            title: localizedText(guide.title, locale),
-            author: guide.author,
-            createdAt: guide.createdAt.toLocaleDateString(locale),
-            updatedAt: guide.updatedAt.toLocaleDateString(locale),
-            status: guide.status,
-            active: guide.active,
-            type: "guide" as const,
-          })), ...references.map((reference) => ({ id: reference.slug, slug: reference.slug, title: reference.slug === "combat-equipment" ? "Équipements de Combat" : "Équipement d’Expédition", author: "—", createdAt: "—", updatedAt: "—", status: "reference", active: reference.active, type: "reference" as const, editHref: `/admin/guides/reference-${reference.slug}` }))]}
+          rows={[
+            ...guides.map((guide) => ({
+              id: guide.id,
+              slug: guide.slug,
+              title: localizedText(guide.title, locale),
+              author: guide.author,
+              createdAt: guide.createdAt.toLocaleDateString(locale),
+              updatedAt: guide.updatedAt.toLocaleDateString(locale),
+              status: guide.status,
+              active: guide.active,
+              type: "guide" as const,
+            })),
+            ...references.map((reference) => ({
+              id: reference.slug,
+              slug: reference.slug,
+              title: t(`references.${reference.slug}`),
+              author: "—",
+              createdAt: "—",
+              updatedAt: "—",
+              status: "reference",
+              active: reference.active,
+              type: "reference" as const,
+              editHref: `/admin/guides/reference-${reference.slug}`,
+            })),
+          ]}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}
           canWrite={can(session.user.role, "guides.write")}

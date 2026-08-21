@@ -10,6 +10,8 @@ import {
   getCombatReferenceRows,
   getExpeditionReferenceRows,
 } from "@/lib/reference-equipment-server";
+import { LevelUpReference } from "@/components/level-up-reference";
+import { getLevelUpParameters } from "@/lib/admin-formulas-server";
 
 export default async function ReferencePage({
   params,
@@ -27,6 +29,8 @@ export default async function ReferencePage({
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
           <CombatReferenceTable rows={await getCombatReferenceRows()} />
+        ) : slug === "level-up" ? (
+          <LevelUpReference parameters={await getLevelUpParameters()} />
         ) : (
           <ExpeditionReferenceTable rows={await getExpeditionReferenceRows()} />
         )

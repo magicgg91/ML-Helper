@@ -13,6 +13,12 @@ export const referenceCatalog = [
     category: "expedition",
     image: "/category-references.svg",
   },
+  {
+    slug: "level-up",
+    calculatorSlug: "level-up" satisfies CalculatorSlug,
+    category: "combat",
+    image: "/category-combat.svg",
+  },
 ] as const;
 
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];

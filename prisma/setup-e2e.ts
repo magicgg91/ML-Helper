@@ -74,6 +74,13 @@ async function main() {
     ],
     ["calculator-gems", "gems", "competences", "Gemmes"],
     ["calculator-templars", "templars", "competences", "Templiers"],
+    ["calculator-xp-gain-rate", "xp-gain-rate", "combat", "Taux de gain d’XP"],
+    [
+      "calculator-demo-attack-troops",
+      "demo-attack-troops",
+      "combat",
+      "Troupes en attaque démo",
+    ],
     [
       "calculator-combat-equipment",
       "combat-equipment",
@@ -86,6 +93,7 @@ async function main() {
       "referentiels",
       "Équipement d’Expédition",
     ],
+    ["calculator-level-up", "level-up", "referentiels", "Level Up"],
   ];
   for (const [id, slug, category, name] of calculators) {
     await prisma.calculator.create({
@@ -123,6 +131,63 @@ async function main() {
           diamond: { army: 3, gold: 10 },
           legend: { army: 3, gold: 10 },
         },
+      },
+    },
+  });
+  await prisma.formula.create({
+    data: {
+      id: "formula-xp-gain-tiers",
+      calculatorId: "calculator-xp-gain-rate",
+      key: "xp_gain_tiers",
+      label: { fr: "Paliers XP" },
+      formulaParams: {
+        tiers: [
+          { low: 0, high: 40, rate: 0 },
+          { low: 40, high: 50, rate: 50 },
+          { low: 50, high: 150, rate: 100 },
+          { low: 150, high: 200, rate: 150 },
+          { low: 200, high: null, rate: 200 },
+        ],
+      },
+    },
+  });
+  await prisma.formula.create({
+    data: {
+      id: "formula-demo-attack-percentages",
+      calculatorId: "calculator-demo-attack-troops",
+      key: "demo_attack_percentages",
+      label: { fr: "Pourcentages démo" },
+      formulaParams: {
+        percentages: {
+          bronze: 100,
+          silver: 50,
+          gold: 40,
+          platinum: 40,
+          diamond: 30,
+          legend: 30,
+        },
+      },
+    },
+  });
+  await prisma.formula.create({
+    data: {
+      id: "formula-level-up",
+      calculatorId: "calculator-level-up",
+      key: "level_up_parameters",
+      label: { fr: "Paramètres Level Up" },
+      formulaParams: {
+        xp: { base: 50, ratio: 1.3 },
+        troops: {
+          bronze: { coefficient: 32.2028, ratio: 1.245 },
+          gold: { coefficient: 32.49, ratio: 1.24 },
+          platinum: { coefficient: 35.88, ratio: 1.237 },
+          diamond: { coefficient: 32.2028, ratio: 1.245 },
+          legend: { coefficient: 32.2028, ratio: 1.245 },
+        },
+        maxLevel: 150,
+        columnSize: 30,
+        pageSize: 60,
+        chestInterval: 10,
       },
     },
   });

@@ -11,11 +11,30 @@ test("renders every tool category in French and English", async ({ page }) => {
   await page.goto("/tools");
   await selectLanguage(page, "fr");
   await expect(page.getByRole("heading", { name: "Villes" })).toBeVisible();
-  await expect(page.getByText("Bientôt disponible")).toBeVisible();
+  await expect(
+    page
+      .getByRole("heading", { name: "Combat" })
+      .locator("..")
+      .getByText("2 outils disponibles"),
+  ).toBeVisible();
 
   await selectLanguage(page, "en");
   await expect(page.getByRole("heading", { name: "Cities" })).toBeVisible();
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(
+    page
+      .getByRole("heading", { name: "Combat" })
+      .locator("..")
+      .getByText("2 tools available"),
+  ).toBeVisible();
+
+  await page.goto("/tools/combat");
+  await expect(page.getByRole("tab", { name: "XP Gain Rate" })).toBeVisible();
+  await selectLanguage(page, "fr");
+  await expect(
+    page.getByRole("tab", { name: "Taux de gain d’XP" }),
+  ).toBeVisible();
+  await selectLanguage(page, "en");
+  await expect(page.getByRole("tab", { name: "XP Gain Rate" })).toBeVisible();
 
   await page.goto("/tools/villes");
   await expect(page.getByRole("tab", { name: "City Cost" })).toBeVisible();
