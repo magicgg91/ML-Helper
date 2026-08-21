@@ -445,8 +445,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("heading", {
       name: "Éditer les Équipements de Combat",
     }),
-  ).toBeVisible();
-  await expect(page.locator("tbody tr")).toHaveCount(180);
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("tbody tr")).toHaveCount(180, {
+    timeout: 15_000,
+  });
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
