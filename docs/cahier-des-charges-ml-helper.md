@@ -540,7 +540,7 @@ Vérifié sur 2 points de données (niveau 1 et 2) : VP(1)=20 exact, Remparts(1)
 - Nombre de villes
 - Niveau de départ (A)
 - Niveau cible (B)
-- *(à ajouter suite à la décision multi-ligues)* Ligue du joueur
+- **Ligue** — sélecteur dédié, vide par défaut, aligné automatiquement sur la ligue des Paramètres du joueur si définie (même comportement que Classement/Troupes attaque démo/Level Up, y compris au chargement initial — voir section 3.3 point 23)
 
 **Outputs — en deux parties :**
 
@@ -584,7 +584,7 @@ Où `CoûtCumulé`, `VP`, `Remparts`, `Gold` et `Army` sont calculés via les fo
 - Nombre de villes
 - Niveau de départ (toutes les villes au même niveau de base)
 - Quantité d'or disponible
-- *(à ajouter suite à la décision multi-ligues)* Ligue du joueur
+- **Ligue** — sélecteur dédié, vide par défaut, aligné automatiquement sur la ligue des Paramètres du joueur si définie (même comportement que Classement/Troupes attaque démo/Level Up, y compris au chargement initial — voir section 3.3 point 23)
 
 **Outputs :**
 - Niveau cible atteignable
@@ -696,6 +696,7 @@ VP total : [vp]
 **Inputs (partagés par les 3 sous-sections) :**
 - Nombre de villes
 - Niveau moyen des villes
+- **Ligue** — sélecteur dédié, vide par défaut, aligné automatiquement sur la ligue des Paramètres du joueur si définie (même comportement que Classement/Troupes attaque démo/Level Up, y compris au chargement initial — voir section 3.3 point 23)
 - *(implicite, lu depuis les Paramètres du joueur en localStorage)* Compétences perso (Prosperous %, Recruiter %) et Bonus de temple (Or %, Recruteur %), séparément
 - Heures de production Or reçues, heures de production Troupes reçues (pour la sous-section Récompenses)
 
@@ -856,11 +857,11 @@ Rang_au_seuil(P) = Total_joueurs × P/100
 
 **Concept confirmé par le joueur — c'est un référentiel (table de données consultable), pas un calculateur avec input/output**, cohérent avec le pattern déjà utilisé pour Équipements de Combat/Expédition.
 
-**Structure confirmée, par ligue (la table entière diffère selon la ligue) :**
-- **Niveau** — XP nécessaire pour l'atteindre, croissant (formule encore non confirmée, un seul point de donnée disponible)
+**Structure — XP et cycle de coffres sont universels, seules les troupes varient par ligue :**
+- **Niveau** — XP nécessaire pour l'atteindre — **✅ formule confirmée, universelle** (identique sur les 6 ligues, voir plus bas)
 - **Points de compétence gagnés** — 1 ou 2 selon la ligue — ✅ réutilise la règle déjà établie (voir juste en dessous)
-- **Troupes gagnées** — ✅ formule verrouillée pour Légende (voir plus bas), reste à vérifier sur les 5 autres ligues
-- **Coffre/urne/jarre** — tous les 10 niveaux — ✅ cycle de récompenses confirmé pour Légende (voir plus bas), leur contenu exact ne sera pas structuré en donnée (couvert par le guide dédié, section 10)
+- **Troupes gagnées** — ✅ formule verrouillée pour Légende, Diamant et Bronze (identique), ✅ verrouillée séparément pour Platine, ✅ verrouillée séparément pour Or — reste à vérifier pour Argent (voir plus bas)
+- **Coffre/urne/jarre** — tous les 10 niveaux — ✅ cycle de récompenses confirmé universel sur les 6 ligues (voir plus bas), leur contenu exact ne sera pas structuré en donnée (couvert par le guide dédié, section 10)
 
 **✅ Confirmé — "Level Up" = "niveau de Lord", même mécanique, pas de doublon.** Les points de compétence gagnés par niveau suivent exactement la règle déjà établie (section Compétences) : `Bronze/Argent/Or/Platine → +1 point/niveau`, `Diamant/Légende → +2 points/niveau`. Une seule table à maintenir pour cette donnée, réutilisée ici.
 
@@ -927,6 +928,14 @@ Troupes(n) ≈ 32,49 × 1,24^n   (pour n ≥ 2) — Or uniquement
 - Niveaux 50-55 : 1,52M / 1,89M / 2,34M / 2,9M / 3,60M / 4,47M
 - Niveaux 103-108 : 136G / 169G / 209G / 259G / 322G / 399G
 
+**✅ Formule d'XP requis par niveau — verrouillée, universelle (identique sur les 6 ligues) — régression sur 110 points de données consécutifs (niveaux 1 à 110), correspondance exacte 110/110 après arrondi entier, aucun écart résiduel :**
+
+```
+XP(n→n+1) = 50 × 1,3^(n-1)   (XP nécessaire pour passer du niveau n au niveau n+1)
+```
+
+Contrairement aux formules de troupes, cette formule **ne varie pas selon la ligue du joueur** — confirmé explicitement par le joueur. C'est la formule la plus propre confirmée sur ce projet à ce jour (aucune approximation, contrairement aux formules de troupes Or/Platine qui gardent un écart résiduel <0,3-0,4%).
+
 **✅ Cycle des récompenses tous les 10 niveaux — confirmé universel, identique sur les 6 ligues.** Cycle de 5 se répétant tous les 50 niveaux :
 ```
 Coffre → Urne → Coffret à bijoux → Jarre → Caisse → (répète)
@@ -936,8 +945,7 @@ Palier 10=Coffre, 20=Urne, 30=Coffret à bijoux, 40=Jarre, 50=Caisse, 60=Coffre,
 **💡 Motif de regroupement — 3 groupes de formules désormais confirmés, plus aucun ne suit le motif Villes.** Légende+Diamant+Bronze partagent une formule ; Platine et Or ont chacun la leur, proches en apparence mais distinctes (voir piège méthodologique ci-dessus). Aucun de ces regroupements ne correspond au motif observé sur Army/Gold des Villes (Or+Platine ensemble, Diamant+Légende ensemble, Bronze et Argent isolés) — **les deux mécaniques ont des logiques de regroupement indépendantes, ne pas présumer de l'une à partir de l'autre.** Reste à voir où se situe Argent — 4ᵉ groupe potentiel, ou rattaché à l'un des trois déjà connus, aucune hypothèse à faire avant d'avoir des données.
 
 **⚠️ Reste à obtenir :**
-- Argent — aucune donnée de troupes Level Up reçue pour l'instant
-- La formule d'XP requis par niveau (un seul point de donnée reçu jusqu'ici, insuffisant)
+- Argent — aucune donnée de troupes Level Up reçue pour l'instant (seule donnée manquante pour ce référentiel : XP et cycle de coffres sont déjà universels, donc déjà connus pour Argent aussi)
 
 **✅ Décidé : le contenu exact des coffres/urnes/jarres/coffrets/caisses ne sera pas structuré comme donnée de calculateur/référentiel** — couvert plutôt dans le contenu du guide Level Up (rédaction via ChatGPT), pas dans cette table.
 
@@ -1209,13 +1217,28 @@ Points_disponibles = (niveau − 1) × points_par_niveau(ligue)
 
 **✅ Confirmé — sets Légendaires bien uniformes.** Le joueur confirme en jeu : pour les 4 sets Légendaires (Spirit Fulgur, Spirit Zephyr, Spirit Vanna, Spirit Fyra), les 9 emplacements donnent effectivement des valeurs identiques entre eux. Ce n'est pas une erreur de source — c'est une vraie particularité du palier Légendaire, à l'inverse des autres raretés où chaque emplacement varie individuellement.
 
-**⚠️ 30 lignes encore manquantes (10 sets Épique/Rare/Commun)** — leur groupe Casque/Gantelet/Bottes n'a aucune valeur connue :
+**✅ 7 sets nouvellement confirmés par le joueur (Casque/Gantelet/Bottes partagent les mêmes valeurs au sein d'un même set — motif à part, différent du reste de la table où chaque emplacement varie individuellement) :**
+
+| Rareté | Set (famille) | Casque = Gantelet = Bottes |
+|---|---|---|
+| Commun | Barbarian (Attaque) *(déjà connu, reconfirmé)* | Attaque 2% |
+| Commun | Bard (Troupes/Vitesse) | Bravoure 2% |
+| Commun | Journeyman (Défense) | Bravoure 2% |
+| Commun | Thief (Or) | Récupération 2% |
+| Rare | Adventurer (Défense) | Bravoure 4%, Défense 3% |
+| Rare | Hunter (Troupes/Vitesse) *(déjà connu, reconfirmé)* | Bravoure 4%, Recruteur 3% |
+| Épique | Knight (Défense) | Bravoure 6%, Défense 6%, Recycleur 1% |
+
+*(Barbarian et Hunter n'étaient pas dans la liste des 30 lignes manquantes — leurs stats étaient déjà connues, le joueur les a redonnées en même temps, ça reconfirme les valeurs existantes.)*
+
+**⚠️ 15 lignes encore manquantes (5 sets Rare/Épique)** — leur groupe Casque/Gantelet/Bottes n'a aucune valeur connue :
 
 | Rareté | Sets concernés |
 |---|---|
-| Commun | Bard (Troupes/Vitesse), Journeyman (Défense), Thief (Or) |
-| Rare | Adventurer (Défense), Smuggler (Or), Soldier (Attaque) |
-| Épique | Knight (Défense), Royal Archer (Troupes/Vitesse), Royal Guard (Attaque), Shopkeeper (Or) |
+| Rare | Smuggler (Or), Soldier (Attaque) |
+| Épique | Royal Archer (Troupes/Vitesse), Royal Guard (Attaque), Shopkeeper (Or) |
+
+**🚨 À reporter manuellement dans `reference-data-equipment-sets.csv`** — ce fichier CSV externe n'est pas dans le contexte de cette session, les 7 lignes confirmées ci-dessus doivent y être recopiées séparément (21 lignes au total : 7 sets × 3 emplacements).
 
 **✅ Formule confirmée, motif propre découvert — remplace les estimations précédentes.**
 
@@ -1332,14 +1355,18 @@ où l'incrément est une **constante propre à chaque compétence**, indépendan
 | Équipement | Rareté | Compétence(s) | Détail | Incrément déduit |
 |---|---|---|---|---|
 | Bague du Barbare | Commun | Charognard | 1★=2% → 2★=4% | +2 |
-| Gantelet du Barbare | Commun | Intrépide | 1★=4% → 2★=6% | +2 |
-| Bottes du Barbare | Commun | Intrépide | 1★=2% → 2★=4% | +2 |
-| Gantelet du Chasseur | Rare | Intrépide | 1★=4% → 2★=6% | +2 |
+| Casque/Gantelet/Bottes du Barbare | Commun | Intrépide *(2ᵉ correction — 1ʳᵉ correction "Attaque" elle-même erronée, Intrépide reconfirmé directement en jeu)* | 1★=2%, identique sur les 3 emplacements | — |
+| Gantelet du Chasseur | Rare | **~~Intrépide~~ → Bravoure** *(corrigé, voir note ci-dessous)* | 1★=4% → 2★=6% | +2 |
+| Bottes du Chasseur | Rare | Bravoure + Recruteur | 4% + 3% *(revérifié directement en jeu)* | — |
 | Gantelet du Chasseur | Rare | Recruteur | 1★=3% → 2★=6% | +3 |
 | Amulette (Spirit Fyra) | Légendaire | Attaque/Charognard/Intrépide | 1★=10% → 5★=18% | +2 |
 | Équipement (Spirit Zephyr) | Légendaire | Vitesse/Intrépide/Bravoure/Recruteur | 5★→6★ : 45→50 / 18→20 / 18→20 / 27→30% | +5 / +2 / +2 / +3 |
 | Équipement (Spirit Fulgur) | Légendaire | Prospérité/Recycleur/Charognard/Récupération | 5★→6★ : 27→30 / 9→10 / 18→20 / 9→10% | +3 / +1 / +2 / +1 |
 | **Équipement (Spirit Vanna)** | **Légendaire** | **Défense/Bravoure/Recycleur** | **1★=15/10/5% → 5★=27/18/9%** | **+3 / +2 / +1** |
+
+**🚨 Correction de données historiques — deux allers-retours sur le Barbare, une seule correction pour le Chasseur, tous deux désormais stabilisés après revérification directe en jeu.**
+
+**✅ Nouvelle règle confirmée — nombre de compétences par pièce dépend de la rareté :** Commun = 1 compétence, Rare = 2 compétences, Épique = 3 compétences (Mythique/Légendaire non génériquement vérifiés sur ce point précis — les exemples Légendaire ci-dessus montrent 3 ou 4 compétences selon la pièce, donc pas une règle aussi stricte à ce palier, ou alors une exception à creuser). Casque/Gantelet/Bottes du Barbare (Commun) n'ont qu'**une seule** compétence chacun (**Intrépide 2%**, valeur finale) ; Gantelet/Bottes du Chasseur (Rare) en ont **deux** chacun (Bravoure 4% + Recruteur 3%).
 
 Chaque nouvel exemple reconfirme des incréments déjà déduits (Bravoure et Recycleur revérifiés une nouvelle fois) tout en complétant les compétences manquantes — **les 10 compétences ont maintenant chacune au moins une confirmation indépendante.**
 
@@ -1429,7 +1456,7 @@ gemme-{competence-slug}-{ligue-slug}.png
 ```
 Minuscules, sans accent, tirets. Exemple : `gemme-attaque-legendaire.png`. **Manifeste complet des 60 noms de fichiers attendus (10 compétences × 6 ligues) : voir section 11.**
 
-**✅ Convention équipements — actée : `{famille-slug}-{rarete-slug}-{emplacement-slug}.png`** (famille et rareté identifient un set de façon unique, pas besoin du nom exotique du set). Manifeste complet des 300 fichiers (180 Combat + 120 Expédition) généré : voir section 12.
+**✅ Convention équipements — actée : `{famille-slug}-{rarete-slug}-{emplacement-slug}.webp`** (famille et rareté identifient un set de façon unique, pas besoin du nom exotique du set). Manifeste complet des 300 fichiers (180 Combat + 120 Expédition) généré : voir section 12.
 
 **✅ Décidé :** chaque compétence a sa couleur propre, utilisée de façon cohérente partout où elle apparaît visuellement (gemmes sur le Simulateur de Stuff, badges de compétence, graphiques...) — distincte du code couleur de rareté (`--rarity-*`), qui reste réservé à l'équipement lui-même.
 
@@ -1747,75 +1774,79 @@ Pattern confirmé sur l'ensemble : progression linéaire de +1 palier fixe par l
 **✅ Convention équipements (Combat + Expédition) actée — manifeste complet en section 12.**
 ## 12. Manifeste des images — Équipements (Combat + Expédition)
 
-**Convention de nommage : `{famille-slug}-{rarete-slug}-{emplacement-slug}.png`** (minuscules, sans accent, tirets, apostrophes retirées) — plutôt qu'à partir du nom du set, pour rester systématique et prévisible sans avoir à connaître les noms exotiques des sets (Spirit Fyra, Almaty, Shark...). Famille+rareté identifient un set de façon unique (vérifié : 300 combinaisons, zéro collision). Exemple : `attaque-legendaire-amulette.png`.
+**Convention de nommage : `{famille-slug}-{rarete-slug}-{emplacement-slug}.webp`** (minuscules, sans accent, tirets, apostrophes retirées) — plutôt qu'à partir du nom du set, pour rester systématique et prévisible sans avoir à connaître les noms exotiques des sets (Spirit Fyra, Almaty, Shark...). Famille+rareté identifient un set de façon unique (vérifié : 300 combinaisons, zéro collision). Exemple : `attaque-legendaire-amulette.webp`.
 
 ### Équipements de Combat — 180 fichiers attendus (20 sets × 9 emplacements)
 
+**🟡 Statut (fourni par le joueur, vérifié) : 144/180 reçus.** Manquants (36, motif systématique) : **Casque, Gantelet et Bottes pour les raretés Commun/Rare/Épique, sur les 4 familles** — Mythique et Légendaire sont complets sur les 9 emplacements. **✅ Confirmé en jeu par le joueur : ces 3 emplacements existent bien à toutes les raretés** (ex. bottes du Chasseur [Hunter, Rare], casque de l'Aventurier [Adventurer, Rare], gantelets du Barde [Bard, Commun], gantelets du Compagnon [Journeyman, Commun]) — ce n'est **pas** une restriction de jeu (contrairement à l'hypothèse initiale), uniquement des captures manquantes côté collecte. Reste à récupérer avant d'intégrer les images au site (Bloc 10) ; pas bloquant pour lancer Bloc 10 sur les 144 déjà disponibles + les 120 Expédition complets.
+
 **Or**
 
-- **Spirit Fulgur** (Légendaire) : `or-legendaire-arme.png`, `or-legendaire-bouclier.png`, `or-legendaire-ceinture.png`, `or-legendaire-anneau.png`, `or-legendaire-bracelet.png`, `or-legendaire-amulette.png`, `or-legendaire-casque.png`, `or-legendaire-gantelet.png`, `or-legendaire-bottes.png`
-- **Shark** (Mythique) : `or-mythique-arme.png`, `or-mythique-bouclier.png`, `or-mythique-ceinture.png`, `or-mythique-anneau.png`, `or-mythique-bracelet.png`, `or-mythique-amulette.png`, `or-mythique-casque.png`, `or-mythique-gantelet.png`, `or-mythique-bottes.png`
-- **Shopkeeper** (Épique) : `or-epique-arme.png`, `or-epique-bouclier.png`, `or-epique-ceinture.png`, `or-epique-anneau.png`, `or-epique-bracelet.png`, `or-epique-amulette.png`, `or-epique-casque.png`, `or-epique-gantelet.png`, `or-epique-bottes.png`
-- **Smuggler** (Rare) : `or-rare-arme.png`, `or-rare-bouclier.png`, `or-rare-ceinture.png`, `or-rare-anneau.png`, `or-rare-bracelet.png`, `or-rare-amulette.png`, `or-rare-casque.png`, `or-rare-gantelet.png`, `or-rare-bottes.png`
-- **Thief** (Commun) : `or-commun-arme.png`, `or-commun-bouclier.png`, `or-commun-ceinture.png`, `or-commun-anneau.png`, `or-commun-bracelet.png`, `or-commun-amulette.png`, `or-commun-casque.png`, `or-commun-gantelet.png`, `or-commun-bottes.png`
+- **Spirit Fulgur** (Légendaire) : `or-legendaire-arme.webp`, `or-legendaire-bouclier.webp`, `or-legendaire-ceinture.webp`, `or-legendaire-anneau.webp`, `or-legendaire-bracelet.webp`, `or-legendaire-amulette.webp`, `or-legendaire-casque.webp`, `or-legendaire-gantelet.webp`, `or-legendaire-bottes.webp`
+- **Shark** (Mythique) : `or-mythique-arme.webp`, `or-mythique-bouclier.webp`, `or-mythique-ceinture.webp`, `or-mythique-anneau.webp`, `or-mythique-bracelet.webp`, `or-mythique-amulette.webp`, `or-mythique-casque.webp`, `or-mythique-gantelet.webp`, `or-mythique-bottes.webp`
+- **Shopkeeper** (Épique) : `or-epique-arme.webp`, `or-epique-bouclier.webp`, `or-epique-ceinture.webp`, `or-epique-anneau.webp`, `or-epique-bracelet.webp`, `or-epique-amulette.webp`, `or-epique-casque.webp`, `or-epique-gantelet.webp`, `or-epique-bottes.webp`
+- **Smuggler** (Rare) : `or-rare-arme.webp`, `or-rare-bouclier.webp`, `or-rare-ceinture.webp`, `or-rare-anneau.webp`, `or-rare-bracelet.webp`, `or-rare-amulette.webp`, `or-rare-casque.webp`, `or-rare-gantelet.webp`, `or-rare-bottes.webp`
+- **Thief** (Commun) : `or-commun-arme.webp`, `or-commun-bouclier.webp`, `or-commun-ceinture.webp`, `or-commun-anneau.webp`, `or-commun-bracelet.webp`, `or-commun-amulette.webp`, `or-commun-casque.webp`, `or-commun-gantelet.webp`, `or-commun-bottes.webp`
 
 **Troupes/Vitesse**
 
-- **Spirit Zephyr** (Légendaire) : `troupes-vitesse-legendaire-arme.png`, `troupes-vitesse-legendaire-bouclier.png`, `troupes-vitesse-legendaire-ceinture.png`, `troupes-vitesse-legendaire-anneau.png`, `troupes-vitesse-legendaire-bracelet.png`, `troupes-vitesse-legendaire-casque.png`, `troupes-vitesse-legendaire-gantelet.png`, `troupes-vitesse-legendaire-bottes.png`, `troupes-vitesse-legendaire-amulette.png`
-- **Owl** (Mythique) : `troupes-vitesse-mythique-arme.png`, `troupes-vitesse-mythique-bouclier.png`, `troupes-vitesse-mythique-ceinture.png`, `troupes-vitesse-mythique-anneau.png`, `troupes-vitesse-mythique-bracelet.png`, `troupes-vitesse-mythique-amulette.png`, `troupes-vitesse-mythique-casque.png`, `troupes-vitesse-mythique-gantelet.png`, `troupes-vitesse-mythique-bottes.png`
-- **Royal Archer** (Épique) : `troupes-vitesse-epique-arme.png`, `troupes-vitesse-epique-bouclier.png`, `troupes-vitesse-epique-ceinture.png`, `troupes-vitesse-epique-anneau.png`, `troupes-vitesse-epique-bracelet.png`, `troupes-vitesse-epique-amulette.png`, `troupes-vitesse-epique-casque.png`, `troupes-vitesse-epique-gantelet.png`, `troupes-vitesse-epique-bottes.png`
-- **Hunter** (Rare) : `troupes-vitesse-rare-arme.png`, `troupes-vitesse-rare-bouclier.png`, `troupes-vitesse-rare-ceinture.png`, `troupes-vitesse-rare-anneau.png`, `troupes-vitesse-rare-bracelet.png`, `troupes-vitesse-rare-amulette.png`, `troupes-vitesse-rare-casque.png`, `troupes-vitesse-rare-gantelet.png`, `troupes-vitesse-rare-bottes.png`
-- **Bard** (Commun) : `troupes-vitesse-commun-arme.png`, `troupes-vitesse-commun-bouclier.png`, `troupes-vitesse-commun-ceinture.png`, `troupes-vitesse-commun-anneau.png`, `troupes-vitesse-commun-bracelet.png`, `troupes-vitesse-commun-amulette.png`, `troupes-vitesse-commun-casque.png`, `troupes-vitesse-commun-gantelet.png`, `troupes-vitesse-commun-bottes.png`
+- **Spirit Zephyr** (Légendaire) : `troupes-vitesse-legendaire-arme.webp`, `troupes-vitesse-legendaire-bouclier.webp`, `troupes-vitesse-legendaire-ceinture.webp`, `troupes-vitesse-legendaire-anneau.webp`, `troupes-vitesse-legendaire-bracelet.webp`, `troupes-vitesse-legendaire-casque.webp`, `troupes-vitesse-legendaire-gantelet.webp`, `troupes-vitesse-legendaire-bottes.webp`, `troupes-vitesse-legendaire-amulette.webp`
+- **Owl** (Mythique) : `troupes-vitesse-mythique-arme.webp`, `troupes-vitesse-mythique-bouclier.webp`, `troupes-vitesse-mythique-ceinture.webp`, `troupes-vitesse-mythique-anneau.webp`, `troupes-vitesse-mythique-bracelet.webp`, `troupes-vitesse-mythique-amulette.webp`, `troupes-vitesse-mythique-casque.webp`, `troupes-vitesse-mythique-gantelet.webp`, `troupes-vitesse-mythique-bottes.webp`
+- **Royal Archer** (Épique) : `troupes-vitesse-epique-arme.webp`, `troupes-vitesse-epique-bouclier.webp`, `troupes-vitesse-epique-ceinture.webp`, `troupes-vitesse-epique-anneau.webp`, `troupes-vitesse-epique-bracelet.webp`, `troupes-vitesse-epique-amulette.webp`, `troupes-vitesse-epique-casque.webp`, `troupes-vitesse-epique-gantelet.webp`, `troupes-vitesse-epique-bottes.webp`
+- **Hunter** (Rare) : `troupes-vitesse-rare-arme.webp`, `troupes-vitesse-rare-bouclier.webp`, `troupes-vitesse-rare-ceinture.webp`, `troupes-vitesse-rare-anneau.webp`, `troupes-vitesse-rare-bracelet.webp`, `troupes-vitesse-rare-amulette.webp`, `troupes-vitesse-rare-casque.webp`, `troupes-vitesse-rare-gantelet.webp`, `troupes-vitesse-rare-bottes.webp`
+- **Bard** (Commun) : `troupes-vitesse-commun-arme.webp`, `troupes-vitesse-commun-bouclier.webp`, `troupes-vitesse-commun-ceinture.webp`, `troupes-vitesse-commun-anneau.webp`, `troupes-vitesse-commun-bracelet.webp`, `troupes-vitesse-commun-amulette.webp`, `troupes-vitesse-commun-casque.webp`, `troupes-vitesse-commun-gantelet.webp`, `troupes-vitesse-commun-bottes.webp`
 
 **Défense**
 
-- **Spirit Vanna** (Légendaire) : `defense-legendaire-arme.png`, `defense-legendaire-bouclier.png`, `defense-legendaire-ceinture.png`, `defense-legendaire-anneau.png`, `defense-legendaire-bracelet.png`, `defense-legendaire-amulette.png`, `defense-legendaire-casque.png`, `defense-legendaire-gantelet.png`, `defense-legendaire-bottes.png`
-- **Snake** (Mythique) : `defense-mythique-arme.png`, `defense-mythique-bouclier.png`, `defense-mythique-ceinture.png`, `defense-mythique-anneau.png`, `defense-mythique-bracelet.png`, `defense-mythique-amulette.png`, `defense-mythique-casque.png`, `defense-mythique-gantelet.png`, `defense-mythique-bottes.png`
-- **Knight** (Épique) : `defense-epique-arme.png`, `defense-epique-bouclier.png`, `defense-epique-ceinture.png`, `defense-epique-anneau.png`, `defense-epique-bracelet.png`, `defense-epique-amulette.png`, `defense-epique-casque.png`, `defense-epique-gantelet.png`, `defense-epique-bottes.png`
-- **Adventurer** (Rare) : `defense-rare-arme.png`, `defense-rare-bouclier.png`, `defense-rare-ceinture.png`, `defense-rare-anneau.png`, `defense-rare-bracelet.png`, `defense-rare-amulette.png`, `defense-rare-casque.png`, `defense-rare-gantelet.png`, `defense-rare-bottes.png`
-- **Journeyman** (Commun) : `defense-commun-arme.png`, `defense-commun-bouclier.png`, `defense-commun-ceinture.png`, `defense-commun-anneau.png`, `defense-commun-bracelet.png`, `defense-commun-amulette.png`, `defense-commun-casque.png`, `defense-commun-gantelet.png`, `defense-commun-bottes.png`
+- **Spirit Vanna** (Légendaire) : `defense-legendaire-arme.webp`, `defense-legendaire-bouclier.webp`, `defense-legendaire-ceinture.webp`, `defense-legendaire-anneau.webp`, `defense-legendaire-bracelet.webp`, `defense-legendaire-amulette.webp`, `defense-legendaire-casque.webp`, `defense-legendaire-gantelet.webp`, `defense-legendaire-bottes.webp`
+- **Snake** (Mythique) : `defense-mythique-arme.webp`, `defense-mythique-bouclier.webp`, `defense-mythique-ceinture.webp`, `defense-mythique-anneau.webp`, `defense-mythique-bracelet.webp`, `defense-mythique-amulette.webp`, `defense-mythique-casque.webp`, `defense-mythique-gantelet.webp`, `defense-mythique-bottes.webp`
+- **Knight** (Épique) : `defense-epique-arme.webp`, `defense-epique-bouclier.webp`, `defense-epique-ceinture.webp`, `defense-epique-anneau.webp`, `defense-epique-bracelet.webp`, `defense-epique-amulette.webp`, `defense-epique-casque.webp`, `defense-epique-gantelet.webp`, `defense-epique-bottes.webp`
+- **Adventurer** (Rare) : `defense-rare-arme.webp`, `defense-rare-bouclier.webp`, `defense-rare-ceinture.webp`, `defense-rare-anneau.webp`, `defense-rare-bracelet.webp`, `defense-rare-amulette.webp`, `defense-rare-casque.webp`, `defense-rare-gantelet.webp`, `defense-rare-bottes.webp`
+- **Journeyman** (Commun) : `defense-commun-arme.webp`, `defense-commun-bouclier.webp`, `defense-commun-ceinture.webp`, `defense-commun-anneau.webp`, `defense-commun-bracelet.webp`, `defense-commun-amulette.webp`, `defense-commun-casque.webp`, `defense-commun-gantelet.webp`, `defense-commun-bottes.webp`
 
 **Attaque**
 
-- **Spirit Fyra** (Légendaire) : `attaque-legendaire-arme.png`, `attaque-legendaire-bouclier.png`, `attaque-legendaire-ceinture.png`, `attaque-legendaire-anneau.png`, `attaque-legendaire-bracelet.png`, `attaque-legendaire-amulette.png`, `attaque-legendaire-casque.png`, `attaque-legendaire-gantelet.png`, `attaque-legendaire-bottes.png`
-- **Almaty** (Mythique) : `attaque-mythique-arme.png`, `attaque-mythique-bouclier.png`, `attaque-mythique-ceinture.png`, `attaque-mythique-anneau.png`, `attaque-mythique-bracelet.png`, `attaque-mythique-amulette.png`, `attaque-mythique-casque.png`, `attaque-mythique-gantelet.png`, `attaque-mythique-bottes.png`
-- **Royal Guard** (Épique) : `attaque-epique-arme.png`, `attaque-epique-bouclier.png`, `attaque-epique-ceinture.png`, `attaque-epique-anneau.png`, `attaque-epique-bracelet.png`, `attaque-epique-amulette.png`, `attaque-epique-casque.png`, `attaque-epique-gantelet.png`, `attaque-epique-bottes.png`
-- **Soldier** (Rare) : `attaque-rare-arme.png`, `attaque-rare-bouclier.png`, `attaque-rare-ceinture.png`, `attaque-rare-anneau.png`, `attaque-rare-bracelet.png`, `attaque-rare-amulette.png`, `attaque-rare-casque.png`, `attaque-rare-gantelet.png`, `attaque-rare-bottes.png`
-- **Barbarian** (Commun) : `attaque-commun-arme.png`, `attaque-commun-bouclier.png`, `attaque-commun-ceinture.png`, `attaque-commun-anneau.png`, `attaque-commun-bracelet.png`, `attaque-commun-amulette.png`, `attaque-commun-casque.png`, `attaque-commun-gantelet.png`, `attaque-commun-bottes.png`
+- **Spirit Fyra** (Légendaire) : `attaque-legendaire-arme.webp`, `attaque-legendaire-bouclier.webp`, `attaque-legendaire-ceinture.webp`, `attaque-legendaire-anneau.webp`, `attaque-legendaire-bracelet.webp`, `attaque-legendaire-amulette.webp`, `attaque-legendaire-casque.webp`, `attaque-legendaire-gantelet.webp`, `attaque-legendaire-bottes.webp`
+- **Almaty** (Mythique) : `attaque-mythique-arme.webp`, `attaque-mythique-bouclier.webp`, `attaque-mythique-ceinture.webp`, `attaque-mythique-anneau.webp`, `attaque-mythique-bracelet.webp`, `attaque-mythique-amulette.webp`, `attaque-mythique-casque.webp`, `attaque-mythique-gantelet.webp`, `attaque-mythique-bottes.webp`
+- **Royal Guard** (Épique) : `attaque-epique-arme.webp`, `attaque-epique-bouclier.webp`, `attaque-epique-ceinture.webp`, `attaque-epique-anneau.webp`, `attaque-epique-bracelet.webp`, `attaque-epique-amulette.webp`, `attaque-epique-casque.webp`, `attaque-epique-gantelet.webp`, `attaque-epique-bottes.webp`
+- **Soldier** (Rare) : `attaque-rare-arme.webp`, `attaque-rare-bouclier.webp`, `attaque-rare-ceinture.webp`, `attaque-rare-anneau.webp`, `attaque-rare-bracelet.webp`, `attaque-rare-amulette.webp`, `attaque-rare-casque.webp`, `attaque-rare-gantelet.webp`, `attaque-rare-bottes.webp`
+- **Barbarian** (Commun) : `attaque-commun-arme.webp`, `attaque-commun-bouclier.webp`, `attaque-commun-ceinture.webp`, `attaque-commun-anneau.webp`, `attaque-commun-bracelet.webp`, `attaque-commun-amulette.webp`, `attaque-commun-casque.webp`, `attaque-commun-gantelet.webp`, `attaque-commun-bottes.webp`
 
 ### Équipement d'Expédition — 120 fichiers attendus (20 sets × 6 emplacements)
 
+**✅ Statut : 120/120 reçus, complet, aucun typo.**
+
 **Or**
 
-- **Vanna** (Légendaire) : `or-legendaire-cape.png`, `or-legendaire-longue-vue.png`, `or-legendaire-sacoche.png`, `or-legendaire-boussole.png`, `or-legendaire-torche.png`, `or-legendaire-pioche.png`
-- **Safir** (Mythique) : `or-mythique-cape.png`, `or-mythique-longue-vue.png`, `or-mythique-sacoche.png`, `or-mythique-boussole.png`, `or-mythique-torche.png`, `or-mythique-pioche.png`
-- **Auric** (Épique) : `or-epique-cape.png`, `or-epique-longue-vue.png`, `or-epique-sacoche.png`, `or-epique-boussole.png`, `or-epique-torche.png`, `or-epique-pioche.png`
-- **Merchant** (Rare) : `or-rare-cape.png`, `or-rare-longue-vue.png`, `or-rare-sacoche.png`, `or-rare-boussole.png`, `or-rare-torche.png`, `or-rare-pioche.png`
-- **Prospector** (Commun) : `or-commun-cape.png`, `or-commun-longue-vue.png`, `or-commun-sacoche.png`, `or-commun-boussole.png`, `or-commun-torche.png`, `or-commun-pioche.png`
+- **Vanna** (Légendaire) : `or-legendaire-cape.webp`, `or-legendaire-longue-vue.webp`, `or-legendaire-sacoche.webp`, `or-legendaire-boussole.webp`, `or-legendaire-torche.webp`, `or-legendaire-pioche.webp`
+- **Safir** (Mythique) : `or-mythique-cape.webp`, `or-mythique-longue-vue.webp`, `or-mythique-sacoche.webp`, `or-mythique-boussole.webp`, `or-mythique-torche.webp`, `or-mythique-pioche.webp`
+- **Auric** (Épique) : `or-epique-cape.webp`, `or-epique-longue-vue.webp`, `or-epique-sacoche.webp`, `or-epique-boussole.webp`, `or-epique-torche.webp`, `or-epique-pioche.webp`
+- **Merchant** (Rare) : `or-rare-cape.webp`, `or-rare-longue-vue.webp`, `or-rare-sacoche.webp`, `or-rare-boussole.webp`, `or-rare-torche.webp`, `or-rare-pioche.webp`
+- **Prospector** (Commun) : `or-commun-cape.webp`, `or-commun-longue-vue.webp`, `or-commun-sacoche.webp`, `or-commun-boussole.webp`, `or-commun-torche.webp`, `or-commun-pioche.webp`
 
 **Équipement**
 
-- **Fyra** (Légendaire) : `equipement-legendaire-cape.png`, `equipement-legendaire-longue-vue.png`, `equipement-legendaire-sacoche.png`, `equipement-legendaire-boussole.png`, `equipement-legendaire-torche.png`, `equipement-legendaire-pioche.png`
-- **Sundira** (Mythique) : `equipement-mythique-cape.png`, `equipement-mythique-longue-vue.png`, `equipement-mythique-sacoche.png`, `equipement-mythique-boussole.png`, `equipement-mythique-torche.png`, `equipement-mythique-pioche.png`
-- **Archaeologist** (Épique) : `equipement-epique-cape.png`, `equipement-epique-longue-vue.png`, `equipement-epique-sacoche.png`, `equipement-epique-boussole.png`, `equipement-epique-torche.png`, `equipement-epique-pioche.png`
-- **Hunter** (Rare) : `equipement-rare-cape.png`, `equipement-rare-longue-vue.png`, `equipement-rare-sacoche.png`, `equipement-rare-boussole.png`, `equipement-rare-torche.png`, `equipement-rare-pioche.png`
-- **Wanderer** (Commun) : `equipement-commun-cape.png`, `equipement-commun-longue-vue.png`, `equipement-commun-sacoche.png`, `equipement-commun-boussole.png`, `equipement-commun-torche.png`, `equipement-commun-pioche.png`
+- **Fyra** (Légendaire) : `equipement-legendaire-cape.webp`, `equipement-legendaire-longue-vue.webp`, `equipement-legendaire-sacoche.webp`, `equipement-legendaire-boussole.webp`, `equipement-legendaire-torche.webp`, `equipement-legendaire-pioche.webp`
+- **Sundira** (Mythique) : `equipement-mythique-cape.webp`, `equipement-mythique-longue-vue.webp`, `equipement-mythique-sacoche.webp`, `equipement-mythique-boussole.webp`, `equipement-mythique-torche.webp`, `equipement-mythique-pioche.webp`
+- **Archaeologist** (Épique) : `equipement-epique-cape.webp`, `equipement-epique-longue-vue.webp`, `equipement-epique-sacoche.webp`, `equipement-epique-boussole.webp`, `equipement-epique-torche.webp`, `equipement-epique-pioche.webp`
+- **Hunter** (Rare) : `equipement-rare-cape.webp`, `equipement-rare-longue-vue.webp`, `equipement-rare-sacoche.webp`, `equipement-rare-boussole.webp`, `equipement-rare-torche.webp`, `equipement-rare-pioche.webp`
+- **Wanderer** (Commun) : `equipement-commun-cape.webp`, `equipement-commun-longue-vue.webp`, `equipement-commun-sacoche.webp`, `equipement-commun-boussole.webp`, `equipement-commun-torche.webp`, `equipement-commun-pioche.webp`
 
 **Consommables**
 
-- **Zephyr** (Légendaire) : `consommables-legendaire-cape.png`, `consommables-legendaire-longue-vue.png`, `consommables-legendaire-sacoche.png`, `consommables-legendaire-boussole.png`, `consommables-legendaire-torche.png`, `consommables-legendaire-pioche.png`
-- **Loriel** (Mythique) : `consommables-mythique-cape.png`, `consommables-mythique-longue-vue.png`, `consommables-mythique-sacoche.png`, `consommables-mythique-boussole.png`, `consommables-mythique-torche.png`, `consommables-mythique-pioche.png`
-- **Apothecary** (Épique) : `consommables-epique-cape.png`, `consommables-epique-longue-vue.png`, `consommables-epique-sacoche.png`, `consommables-epique-boussole.png`, `consommables-epique-torche.png`, `consommables-epique-pioche.png`
-- **Seeker** (Rare) : `consommables-rare-cape.png`, `consommables-rare-longue-vue.png`, `consommables-rare-sacoche.png`, `consommables-rare-boussole.png`, `consommables-rare-torche.png`, `consommables-rare-pioche.png`
-- **Gatherer** (Commun) : `consommables-commun-cape.png`, `consommables-commun-longue-vue.png`, `consommables-commun-sacoche.png`, `consommables-commun-boussole.png`, `consommables-commun-torche.png`, `consommables-commun-pioche.png`
+- **Zephyr** (Légendaire) : `consommables-legendaire-cape.webp`, `consommables-legendaire-longue-vue.webp`, `consommables-legendaire-sacoche.webp`, `consommables-legendaire-boussole.webp`, `consommables-legendaire-torche.webp`, `consommables-legendaire-pioche.webp`
+- **Loriel** (Mythique) : `consommables-mythique-cape.webp`, `consommables-mythique-longue-vue.webp`, `consommables-mythique-sacoche.webp`, `consommables-mythique-boussole.webp`, `consommables-mythique-torche.webp`, `consommables-mythique-pioche.webp`
+- **Apothecary** (Épique) : `consommables-epique-cape.webp`, `consommables-epique-longue-vue.webp`, `consommables-epique-sacoche.webp`, `consommables-epique-boussole.webp`, `consommables-epique-torche.webp`, `consommables-epique-pioche.webp`
+- **Seeker** (Rare) : `consommables-rare-cape.webp`, `consommables-rare-longue-vue.webp`, `consommables-rare-sacoche.webp`, `consommables-rare-boussole.webp`, `consommables-rare-torche.webp`, `consommables-rare-pioche.webp`
+- **Gatherer** (Commun) : `consommables-commun-cape.webp`, `consommables-commun-longue-vue.webp`, `consommables-commun-sacoche.webp`, `consommables-commun-boussole.webp`, `consommables-commun-torche.webp`, `consommables-commun-pioche.webp`
 
 **Troupes**
 
-- **Fulgur** (Légendaire) : `troupes-legendaire-cape.png`, `troupes-legendaire-longue-vue.png`, `troupes-legendaire-sacoche.png`, `troupes-legendaire-boussole.png`, `troupes-legendaire-torche.png`, `troupes-legendaire-pioche.png`
-- **Connord** (Mythique) : `troupes-mythique-cape.png`, `troupes-mythique-longue-vue.png`, `troupes-mythique-sacoche.png`, `troupes-mythique-boussole.png`, `troupes-mythique-torche.png`, `troupes-mythique-pioche.png`
-- **Survivor** (Épique) : `troupes-epique-cape.png`, `troupes-epique-longue-vue.png`, `troupes-epique-sacoche.png`, `troupes-epique-boussole.png`, `troupes-epique-torche.png`, `troupes-epique-pioche.png`
-- **Explorer** (Rare) : `troupes-rare-cape.png`, `troupes-rare-longue-vue.png`, `troupes-rare-sacoche.png`, `troupes-rare-boussole.png`, `troupes-rare-torche.png`, `troupes-rare-pioche.png`
-- **Initiate** (Commun) : `troupes-commun-cape.png`, `troupes-commun-longue-vue.png`, `troupes-commun-sacoche.png`, `troupes-commun-boussole.png`, `troupes-commun-torche.png`, `troupes-commun-pioche.png`
+- **Fulgur** (Légendaire) : `troupes-legendaire-cape.webp`, `troupes-legendaire-longue-vue.webp`, `troupes-legendaire-sacoche.webp`, `troupes-legendaire-boussole.webp`, `troupes-legendaire-torche.webp`, `troupes-legendaire-pioche.webp`
+- **Connord** (Mythique) : `troupes-mythique-cape.webp`, `troupes-mythique-longue-vue.webp`, `troupes-mythique-sacoche.webp`, `troupes-mythique-boussole.webp`, `troupes-mythique-torche.webp`, `troupes-mythique-pioche.webp`
+- **Survivor** (Épique) : `troupes-epique-cape.webp`, `troupes-epique-longue-vue.webp`, `troupes-epique-sacoche.webp`, `troupes-epique-boussole.webp`, `troupes-epique-torche.webp`, `troupes-epique-pioche.webp`
+- **Explorer** (Rare) : `troupes-rare-cape.webp`, `troupes-rare-longue-vue.webp`, `troupes-rare-sacoche.webp`, `troupes-rare-boussole.webp`, `troupes-rare-torche.webp`, `troupes-rare-pioche.webp`
+- **Initiate** (Commun) : `troupes-commun-cape.webp`, `troupes-commun-longue-vue.webp`, `troupes-commun-sacoche.webp`, `troupes-commun-boussole.webp`, `troupes-commun-torche.webp`, `troupes-commun-pioche.webp`
 
 ---
 

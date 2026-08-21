@@ -811,6 +811,18 @@
   <div class="calc-panel active" id="calc-city-cost">
     <div class="card">
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="cost-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="cost-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau de départ</label><input type="number" id="cost-a" value="1" min="1" max="200"></div>
         <div class="field"><label>Niveau cible</label><input type="number" id="cost-b" value="2" min="1" max="200"></div>
@@ -875,6 +887,18 @@
   <div class="calc-panel" id="calc-city-maxlevel">
     <div class="card">
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="ml-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="ml-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau de départ</label><input type="number" id="ml-a" value="1" min="1" max="200"></div>
         <div class="field">
@@ -912,6 +936,18 @@
   <div class="calc-panel" id="calc-production">
     <div class="card">
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="prod-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="prod-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau moyen des villes</label><input type="number" id="prod-level" value="1" min="1" max="200"></div>
       </div>
@@ -1764,7 +1800,7 @@ function updateCityCost() {
   const nb = parseInt(document.getElementById('cost-nb').value) || 1;
   const a = parseInt(document.getElementById('cost-a').value) || 1;
   const b = parseInt(document.getElementById('cost-b').value) || 1;
-  const league = document.getElementById('player-league').value;
+  const league = document.getElementById('cost-league').value;
   const recruiterPerso = getPersonalSkill('recruiter');
   const prosperousPerso = getPersonalSkill('prosperous');
   const recruiterTemple = getClanTempleBonus('recruiter');
@@ -1827,13 +1863,14 @@ document.getElementById('cost-b').addEventListener('input', () => {
   if (b <= a) bEl.value = a + 1;
   updateCityCost();
 });
+document.getElementById('cost-league').addEventListener('change', updateCityCost);
 
 /* ===================== CITY MAX LEVEL ===================== */
 function updateMaxLevel() {
   const nb = parseInt(document.getElementById('ml-nb').value) || 1;
   const a = parseInt(document.getElementById('ml-a').value) || 1;
   const budget = getUnitValue('ml-gold', 'ml-gold-unit');
-  const league = document.getElementById('player-league').value;
+  const league = document.getElementById('ml-league').value;
 
   let b = a;
   while (true) {
@@ -1853,6 +1890,7 @@ function updateMaxLevel() {
   document.getElementById('ml-army-prod').textContent = fmt(armyAt(a, league)*nb*armyMult) + ' → ' + fmt(armyAt(b, league)*nb*armyMult);
 }
 ['ml-nb','ml-a','ml-gold','ml-gold-unit'].forEach(id => document.getElementById(id).addEventListener('input', updateMaxLevel));
+document.getElementById('ml-league').addEventListener('change', updateMaxLevel);
 document.getElementById('ml-gold-unit').addEventListener('change', updateMaxLevel);
 
 /* ===================== CITY PRODUCTION ===================== */
@@ -1861,7 +1899,7 @@ document.getElementById('ml-gold-unit').addEventListener('change', updateMaxLeve
 function updateProduction() {
   const nb = parseInt(document.getElementById('prod-nb').value) || 1;
   const level = parseInt(document.getElementById('prod-level').value) || 1;
-  const league = document.getElementById('player-league').value;
+  const league = document.getElementById('prod-league').value;
 
   // Par ville (base, sans bonus)
   document.getElementById('p1-vp').textContent = fmt(vpAt(level));
@@ -1914,6 +1952,7 @@ function updateProduction() {
 ['prod-nb','prod-level','reward-gold-hours','reward-troops-hours'].forEach(id =>
   document.getElementById(id).addEventListener('input', updateProduction)
 );
+document.getElementById('prod-league').addEventListener('change', updateProduction);
 
 /* ===================== GEMMES ===================== */
 const GEM_VALUES = {
@@ -2746,6 +2785,10 @@ function levelupTroopsAt(n, league) {
   const formula = LEVELUP_TROOP_FORMULA[league] || LEVELUP_TROOP_FORMULA.legend;
   return formula.k * Math.pow(formula.ratio, n);
 }
+/* ✅ XP requis pour passer du niveau n à n+1 — formule universelle (identique sur les 6 ligues), verrouillée sur 110 points de données consécutifs (niveaux 1 à 110), correspondance exacte 110/110 après arrondi entier. cdc section 7.1 */
+function xpAt(n) {
+  return Math.round(50 * Math.pow(1.3, n - 1));
+}
 function levelupChestAt(n) {
   if (n < 10 || n % 10 !== 0) return '—';
   const palier = n / 10;
@@ -2783,7 +2826,7 @@ function renderLevelUpTable() {
       const chest = levelupChestAt(n);
       rows += `<tr>
         <td>${n}</td>
-        <td style="color:var(--text-faint);">—</td>
+        <td>${fmt(xpAt(n))}</td>
         <td>${fmt(levelupTroopsAt(n, league))}</td>
         <td>${chest === '—' ? '<span style="color:var(--text-faint);">—</span>' : `<span style="color:var(--gold-bright);">${chest}</span>`}</td>
       </tr>`;
@@ -2831,6 +2874,21 @@ function syncLeagueDependentSelectors() {
   if (rankSel && !rankSel.value) {
     rankSel.value = playerLeague;
     updateRanking();
+  }
+  const costSel = document.getElementById('cost-league');
+  if (costSel && !costSel.value) {
+    costSel.value = playerLeague;
+    updateCityCost();
+  }
+  const mlSel = document.getElementById('ml-league');
+  if (mlSel && !mlSel.value) {
+    mlSel.value = playerLeague;
+    updateMaxLevel();
+  }
+  const prodSel = document.getElementById('prod-league');
+  if (prodSel && !prodSel.value) {
+    prodSel.value = playerLeague;
+    updateProduction();
   }
 }
 document.getElementById('player-league').addEventListener('change', syncLeagueDependentSelectors);
