@@ -1,53 +1,63 @@
 export const legalNoticeKey = "legal_notice";
 
-export const defaultFrenchLegalNotice = `## Éditeur du site
+export const defaultFrenchLegalNotice = `# Mentions légales
 
-Le site ML-Helper est édité par **[Nom ou raison sociale de l’éditeur]**, domicilié à **[Adresse de l’éditeur]**.
+## Éditeur du site
+Le site ML-Helper (ml-helper.com) est édité à titre personnel et non
+commercial par :
+**[NOM DE L'ÉDITEUR — À COMPLÉTER]**
+Contact : [ADRESSE EMAIL DE CONTACT — À COMPLÉTER]
 
-Contact : **[Adresse e-mail de contact]**
-
-Responsable de la publication : **[Nom du responsable de la publication]**
+## Directeur de la publication
+[NOM DE L'ÉDITEUR — À COMPLÉTER]
 
 ## Hébergement
-
-Le site est hébergé par **[Nom de l’hébergeur]**, **[Adresse de l’hébergeur]**.
-
-## Absence d’affiliation
-
-ML-Helper est un projet communautaire indépendant. Ce site n’est ni édité, ni affilié, ni approuvé par Million Victories, éditeur du jeu, ni par Million Lords.
-
-Les marques, noms, visuels et autres éléments appartenant à Million Victories ou à Million Lords restent la propriété de leurs titulaires respectifs. Leur utilisation éventuelle sur ce site ne constitue aucune revendication de propriété.
+**[NOM DE L'HÉBERGEUR — À COMPLÉTER]**
+[ADRESSE DE L'HÉBERGEUR — À COMPLÉTER]
+[CONTACT DE L'HÉBERGEUR — À COMPLÉTER]
 
 ## Propriété intellectuelle
+Le contenu original de ce site (guides, textes, code source, interface)
+est la propriété de son éditeur, sauf mention contraire.
 
-Sauf mention contraire, les contenus propres à ML-Helper, notamment les guides et le code du site, sont la propriété de **[Nom ou raison sociale de l’éditeur]**. Toute reproduction ou réutilisation doit faire l’objet d’une autorisation préalable.
+*Million Lords* et l'ensemble des noms, images, marques et éléments
+visuels associés au jeu sont la propriété de leurs ayants droit
+respectifs. ML-Helper est un site communautaire non officiel, non
+affilié à l'éditeur du jeu, créé à des fins d'entraide entre joueurs.
 
-## Limitation de responsabilité
+## Développement et fiabilité des données
+Ce site a été développé avec l'assistance d'outils d'intelligence
+artificielle. Les formules, valeurs de jeu et contenus proposés dans les
+simulateurs ont été **vérifiés par observation directe en jeu** par
+l'équipe éditoriale, dans la mesure du possible — ils restent toutefois
+issus d'une démarche communautaire et non officielle, susceptibles de
+comporter des approximations ou des écarts avec des mises à jour
+récentes du jeu. En cas de doute, se référer en priorité à ce que vous
+observez vous-même en jeu.
 
-Les calculs et résultats fournis par ML-Helper sont proposés à titre indicatif uniquement. Malgré le soin apporté à leur élaboration, ils peuvent contenir des erreurs ou ne plus correspondre à la version actuelle du jeu.
+## Données personnelles
+Les paramètres de simulation (niveau, ligue, statistiques du joueur) que
+vous saisissez sur ce site sont stockés **uniquement dans votre
+navigateur** (localStorage), jamais transmis ni conservés sur nos
+serveurs.
 
-L’éditeur du site ne saurait être tenu responsable d’une erreur de calcul, d’une mauvaise interprétation par les joueurs, de l’exactitude des guides ou contenus, ni d’une indisponibilité temporaire du service.
+Seuls les comptes d'administration du site (réservés à l'équipe
+éditoriale) sont enregistrés en base de données, avec un mot de passe
+stocké de façon chiffrée.
 
-## Données personnelles et confidentialité
-
-Les données susceptibles d’être collectées sont limitées aux informations transmises au moyen du formulaire de contact et aux données nécessaires aux comptes d’administration. Les paramètres du joueur sont conservés uniquement dans le navigateur de l’utilisateur.
-
-Responsable du traitement : **[Nom du responsable du traitement]**
-
-Contact pour l’exercice des droits : **[Adresse e-mail RGPD]**
-
-Les modalités de conservation, d’accès, de rectification, d’effacement et de réclamation auprès de l’autorité compétente sont à compléter avant publication : **[Durées de conservation et modalités détaillées]**.
+[SI FORMULAIRE DE CONTACT / ANALYTICS AJOUTÉS PLUS TARD : compléter
+cette section en conséquence.]
 
 ## Cookies
+Ce site n'utilise pas de cookies de suivi publicitaire ou d'analyse
+tierce. [À AJUSTER SI DES COOKIES SONT AJOUTÉS ULTÉRIEUREMENT.]
 
-Le site utilise les cookies strictement nécessaires à son fonctionnement, notamment pour les sessions d’administration et les préférences. Si des outils de mesure d’audience ou d’autres cookies non essentiels sont ajoutés, cette section et le mécanisme de consentement seront mis à jour.
+## Limitation de responsabilité
+Les informations et simulateurs proposés sur ce site sont fournis à
+titre indicatif, établis à partir d'observations communautaires du jeu
+*Million Lords*. L'éditeur ne garantit pas l'exactitude absolue de ces
+données et ne saurait être tenu responsable des décisions prises par
+les joueurs sur cette base.
 
 ## Droit applicable
-
-Les présentes mentions sont soumises au droit **[Droit applicable]**. Tout litige relève, sous réserve des dispositions légales impératives, de la compétence des tribunaux de **[Juridiction compétente]**.
-
-## Modification des mentions
-
-Ces mentions peuvent être modifiées à tout moment afin de refléter les évolutions du site, de ses services ou de la réglementation applicable.
-
-Dernière mise à jour : **[Date de dernière mise à jour]**`;
+Les présentes mentions légales sont soumises au droit français.`;
