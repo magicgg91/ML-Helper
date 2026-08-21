@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
 import { GuidesHub } from "@/components/guides-hub";
 import { getTranslations } from "next-intl/server";
+import { parseGuideCategories } from "@/lib/guide-categories";
 
 export default async function GuidesPage() {
   await connection();
@@ -21,9 +22,10 @@ export default async function GuidesPage() {
         guides={guides.map((guide) => ({
           id: guide.id,
           slug: guide.slug,
-          category: guide.category,
+          categories: parseGuideCategories(guide.category),
           title: localizedText(guide.title, locale),
           excerpt: localizedText(guide.excerpt, locale),
+          coverImage: guide.coverImage,
         }))}
       />
     </main>

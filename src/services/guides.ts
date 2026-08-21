@@ -3,15 +3,7 @@ import { z } from "zod";
 import { auditMessage } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 import { mergeLaunchTranslations } from "@/lib/translations";
-
-export const guideCategories = [
-  "debutants",
-  "expeditions",
-  "stuff",
-  "combat",
-  "defense",
-  "evenements",
-] as const;
+import { guideCategories } from "@/lib/guide-categories";
 
 const localeContent = z.object({
   title: z.string().trim().max(160),
@@ -27,7 +19,7 @@ export const guideInputSchema = z
       .min(3)
       .max(120)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-    category: z.enum(guideCategories),
+    category: z.array(z.enum(guideCategories)).min(1),
     coverImage: z.union([z.url(), z.literal("")]),
     translations: z.object({ fr: localeContent, en: localeContent }),
   })

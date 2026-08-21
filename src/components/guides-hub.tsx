@@ -9,9 +9,10 @@ import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 export type PublicGuideCard = {
   id: string;
   slug: string;
-  category: string;
+  categories: string[];
   title: string;
   excerpt: string;
+  coverImage: string | null;
 };
 
 export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
@@ -19,7 +20,7 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   const t = useTranslations("guides");
   const references = useTranslations("references");
   const guideCategories = useMemo(
-    () => [...new Set(guides.map(({ category }) => category))].sort(),
+    () => [...new Set(guides.flatMap(({ categories }) => categories))].sort(),
     [guides],
   );
   const [guideCategory, setGuideCategory] = useState("all");
@@ -27,10 +28,10 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   const [guideSearch, setGuideSearch] = useState("");
   const normalizedSearch = guideSearch.trim().toLocaleLowerCase(locale);
   const visibleGuides = guides.filter(
-    ({ category, title, excerpt }) =>
-      (guideCategory === "all" || category === guideCategory) &&
+    ({ categories, title, excerpt }) =>
+      (guideCategory === "all" || categories.includes(guideCategory)) &&
       (!normalizedSearch ||
-        `${title} ${excerpt} ${category}`
+        `${title} ${excerpt} ${categories.join(" ")}`
           .toLocaleLowerCase(locale)
           .includes(normalizedSearch)),
   );
@@ -61,18 +62,34 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
               key={category}
               onClick={() => setGuideCategory(category)}
             >
-              {category === "all" ? t("filters.all") : category}
+              {category === "all"
+                ? t("filters.all")
+                : t(`categories.${category}`)}
             </button>
           ))}
         </nav>
         {visibleGuides.length ? (
           <div className="card-grid">
             {visibleGuides.map((guide) => (
-              <article className="public-card" key={guide.id}>
-                <p className="eyebrow">{guide.category}</p>
-                <h3>{guide.title}</h3>
-                <p>{guide.excerpt}</p>
-                <Link href={`/guides/${guide.slug}`}>{t("read-guide")}</Link>
+              <article className="public-card guide-list-card" key={guide.id}>
+                {guide.coverImage && (
+                  // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
+                  <img
+                    src={guide.coverImage}
+                    alt=""
+                    className="guide-list-cover"
+                  />
+                )}
+                <div className="guide-list-copy">
+                  <p className="eyebrow">
+                    {guide.categories
+                      .map((category) => t(`categories.${category}`))
+                      .join(" · ")}
+                  </p>
+                  <h3>{guide.title}</h3>
+                  <p>{guide.excerpt}</p>
+                  <Link href={`/guides/${guide.slug}`}>{t("read-guide")}</Link>
+                </div>
               </article>
             ))}
           </div>

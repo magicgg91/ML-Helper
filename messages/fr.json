@@ -427,6 +427,16 @@
       "combat": "Combat",
       "expedition": "Expédition"
     },
+    "categories": {
+      "debuter": "Débuter & progresser",
+      "combat": "Combat & conquête",
+      "defense": "Défense & territoire",
+      "competences": "Compétences & builds",
+      "equipement": "Équipement & Templiers",
+      "expeditions": "Expéditions",
+      "evenements": "Événements & classement",
+      "clan": "Clan & stratégie collective"
+    },
     "search": {
       "label": "Rechercher dans les guides",
       "placeholder": "Rechercher par titre, résumé ou catégorie…"
@@ -623,12 +633,28 @@
       "title": "Titre ({locale})",
       "excerpt": "Résumé ({locale})",
       "content": "Contenu Markdown ({locale})",
+      "preview": "Aperçu en direct",
+      "categories-label": "Catégories du guide",
+      "categories": {
+        "debuter": "Débuter & progresser",
+        "combat": "Combat & conquête",
+        "defense": "Défense & territoire",
+        "competences": "Compétences & builds",
+        "equipement": "Équipement & Templiers",
+        "expeditions": "Expéditions",
+        "evenements": "Événements & classement",
+        "clan": "Clan & stratégie collective"
+      },
+      "cover-image": "URL de l’image représentative",
+      "cover-image-placeholder": "https://exemple.fr/image-guide.jpg",
+      "cover-image-preview": "Aperçu de l’image représentative",
       "save": "Enregistrer",
       "submit-review": "Soumettre en review",
       "publish": "Publier",
       "unpublish": "Dépublier en brouillon",
       "saving": "Enregistrement…",
       "missing-title": "Saisis un titre FR ou EN avant d’enregistrer.",
+      "missing-category": "Sélectionne au moins une catégorie avant d’enregistrer.",
       "duplicate-slug": "Un guide utilise déjà ce titre/slug.",
       "invalid": "Le guide contient des champs invalides ou incomplets.",
       "status-forbidden": "Guide enregistré, mais ton rôle ne permet pas ce changement de statut.",

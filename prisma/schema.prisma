@@ -11,7 +11,7 @@ datasource db {
 model Guide {
   id          String    @id @default(uuid())
   slug        String    @unique
-  category    String
+  category    Json
   status      String    @default("draft")
   active      Boolean   @default(true)
   title       Json

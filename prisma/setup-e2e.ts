@@ -33,7 +33,7 @@ async function main() {
     'CREATE UNIQUE INDEX "formulas_calculator_id_key_key" ON "formulas"("calculator_id", "key")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "guides" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT \'draft\', "active" BOOLEAN NOT NULL DEFAULT true, "title" JSONB NOT NULL, "content" JSONB NOT NULL, "excerpt" JSONB NOT NULL, "cover_image" TEXT, "author" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" DATETIME NOT NULL, "published_at" DATETIME)',
+    'CREATE TABLE "guides" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" JSONB NOT NULL, "status" TEXT NOT NULL DEFAULT \'draft\', "active" BOOLEAN NOT NULL DEFAULT true, "title" JSONB NOT NULL, "content" JSONB NOT NULL, "excerpt" JSONB NOT NULL, "cover_image" TEXT, "author" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" DATETIME NOT NULL, "published_at" DATETIME)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "guides_slug_key" ON "guides"("slug")',
@@ -204,7 +204,7 @@ async function main() {
     data: {
       id: "guide-visibility-test",
       slug: "guide-visible",
-      category: "Débutants",
+      category: ["debuter"],
       status: "published",
       title: { fr: "Guide visible", en: "Visible guide" },
       excerpt: {

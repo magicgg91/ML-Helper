@@ -16,6 +16,7 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
+import { parseGuideCategories } from "@/lib/guide-categories";
 
 export default async function EditGuidePage({
   params,
@@ -68,7 +69,7 @@ export default async function EditGuidePage({
         initial={{
           id: guide.id,
           slug: guide.slug,
-          category: guide.category,
+          category: parseGuideCategories(guide.category),
           coverImage: guide.coverImage ?? "",
           status: guide.status,
           translations: {

@@ -16,7 +16,7 @@ export default async function NewGuidePage() {
         canPublish={can(session.user.role, "guides.publish")}
         initial={{
           slug: "",
-          category: "debutants",
+          category: ["debuter"],
           coverImage: "",
           status: "draft",
           translations: {
