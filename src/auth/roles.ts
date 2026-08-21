@@ -2,7 +2,8 @@ export const roles = [
   "super_admin",
   "admin",
   "guides_manager",
-  "calculators_manager",
+  "tools_manager",
+  "read_only",
 ] as const;
 export type AdminRole = (typeof roles)[number];
 export function isAdminRole(value: string): value is AdminRole {

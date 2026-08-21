@@ -2,6 +2,7 @@ import type { AdminRole } from "./roles";
 
 export const adminCapabilities = [
   "dashboard.view",
+  "users.read",
   "users.manage",
   "logs.view",
   "logs.purge",
@@ -31,14 +32,26 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
         item !== "content.write",
     ),
   ),
-  guides_manager: new Set(["dashboard.view", "guides.read", "guides.write"]),
-  calculators_manager: new Set([
+  guides_manager: new Set([
+    "dashboard.view",
+    "guides.read",
+    "guides.write",
+    "references.read",
+    "references.write",
+  ]),
+  tools_manager: new Set([
     "dashboard.view",
     "calculators.read",
     "calculators.write",
     "calculators.toggle",
+  ]),
+  read_only: new Set([
+    "dashboard.view",
+    "users.read",
+    "logs.view",
+    "guides.read",
+    "calculators.read",
     "references.read",
-    "references.write",
   ]),
 };
 

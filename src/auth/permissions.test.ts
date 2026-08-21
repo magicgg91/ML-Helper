@@ -7,17 +7,22 @@ const sections: AdminCapability[] = [
   "calculators.read",
   "references.read",
   "content.read",
-  "users.manage",
+  "users.read",
   "logs.view",
 ];
 
 const expected: Record<AdminRole, AdminCapability[]> = {
   super_admin: sections,
-  admin: sections.filter(
-    (item) => item !== "users.manage" && item !== "content.read",
-  ),
-  guides_manager: ["guides.read"],
-  calculators_manager: ["calculators.read", "references.read"],
+  admin: sections.filter((item) => item !== "content.read"),
+  guides_manager: ["guides.read", "references.read"],
+  tools_manager: ["calculators.read"],
+  read_only: [
+    "guides.read",
+    "calculators.read",
+    "references.read",
+    "users.read",
+    "logs.view",
+  ],
 };
 
 describe("admin role permissions", () => {
@@ -38,18 +43,35 @@ describe("admin role permissions", () => {
     expect(can("super_admin", "guides.delete")).toBe(true);
   });
 
-  it("lets calculator managers edit and toggle calculators and references", () => {
-    expect(can("calculators_manager", "calculators.write")).toBe(true);
-    expect(can("calculators_manager", "calculators.toggle")).toBe(true);
-    expect(can("calculators_manager", "references.write")).toBe(true);
-    expect(can("calculators_manager", "guides.write")).toBe(false);
+  it("moves reference editing to guide managers and keeps tools managers on simulators", () => {
+    expect(can("guides_manager", "references.write")).toBe(true);
+    expect(can("tools_manager", "calculators.write")).toBe(true);
+    expect(can("tools_manager", "calculators.toggle")).toBe(true);
+    expect(can("tools_manager", "references.read")).toBe(false);
+    expect(can("tools_manager", "guides.write")).toBe(false);
+  });
+
+  it("keeps the read-only role free of every mutation capability", () => {
+    for (const capability of [
+      "users.manage",
+      "logs.purge",
+      "guides.write",
+      "guides.publish",
+      "guides.delete",
+      "calculators.write",
+      "calculators.toggle",
+      "references.write",
+      "content.write",
+    ] as const)
+      expect(can("read_only", capability)).toBe(false);
   });
 
   it("reserves legal content reads and writes to the Super Admin", () => {
     for (const role of [
       "admin",
       "guides_manager",
-      "calculators_manager",
+      "tools_manager",
+      "read_only",
     ] as const) {
       expect(can(role, "content.read")).toBe(false);
       expect(can(role, "content.write")).toBe(false);

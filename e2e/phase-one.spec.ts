@@ -81,7 +81,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 
   await page.goto("/tools");
-  await expect(page.locator(".tool-category-card")).toHaveCount(5);
+  await expect(page.locator(".tool-category-card")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(page.getByText("Bientôt disponible")).toBeVisible();
   await expect(
@@ -131,7 +131,7 @@ test("tool routes alone expose persistent player settings", async ({
 test("calculator pages only repeat names in their navigation tabs", async ({
   page,
 }) => {
-  for (const slug of ["villes", "classement", "competences", "referentiels"]) {
+  for (const slug of ["villes", "classement", "competences"]) {
     await page.goto(`/tools/${slug}`);
     await expect(page.locator("main > .lead")).toHaveCount(0);
     await expect(page.locator("main h2")).toHaveCount(0);
@@ -204,8 +204,14 @@ test("Skills exposes gem distributions and exact templar costs", async ({
       page.evaluate(() => localStorage.getItem("mlhelper_stuff_simulator")),
     )
     .toContain("Spirit Fyra");
+  await expect(
+    page.getByRole("link", { name: "Voir le référentiel complet" }),
+  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
   await page.getByRole("tab", { name: "Comparaison de stuff" }).click();
+  await expect(
+    page.getByRole("link", { name: "Voir le référentiel complet" }),
+  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
   const comparisonStars = page.getByRole("combobox", {
     name: "Étoiles équipement Attaque Amulette",
   });
@@ -241,10 +247,21 @@ test("Skills exposes gem distributions and exact templar costs", async ({
 test("Reference tables filter combat and flag expedition hypotheses", async ({
   page,
 }) => {
-  await page.goto("/tools/referentiels");
+  await page.goto("/guides");
   await expect(
-    page.getByRole("link", { name: "Référentiels" }),
-  ).toHaveAttribute("aria-current", "page");
+    page.getByRole("heading", { name: "Guides", exact: true, level: 2 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Référentiels", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Équipements de Combat/ }),
+  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
+  await expect(
+    page.getByRole("link", { name: /Équipement d’Expédition/ }),
+  ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
+
+  await page.goto("/guides/referentiels/combat-equipment");
   await page.getByRole("button", { name: "Attaque" }).click();
   await page
     .getByRole("searchbox", { name: "Recherche libre" })
@@ -254,10 +271,14 @@ test("Reference tables filter combat and flag expedition hypotheses", async ({
     .selectOption("5");
   await expect(page.getByText("9 lignes — valeurs à 5★")).toBeVisible();
   await expect(page.getByText("18%").first()).toBeVisible();
-  await page.getByRole("tab", { name: "Équipement d’Expédition" }).click();
+
+  await page.goto("/guides/referentiels/expedition-equipment");
   await expect(page.getByText(/projection par étoile est une/)).toContainText(
     "hypothèse non confirmée",
   );
+
+  await page.goto("/tools/referentiels");
+  await expect(page).toHaveURL(/\/guides#references$/);
 });
 
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
@@ -328,7 +349,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   ).toHaveValue("21929");
 });
 
-test("direct admin URLs enforce all four roles", async ({ browser }) => {
+test("direct admin URLs enforce all five roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();
   const root = await rootContext.newPage();
@@ -343,7 +364,8 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
   const accounts = [
     ["role-admin", "admin"],
     ["role-guides", "guides_manager"],
-    ["role-calculators", "calculators_manager"],
+    ["role-tools", "tools_manager"],
+    ["role-readonly", "read_only"],
   ] as const;
   for (const [username, role] of accounts) {
     const status = await root.evaluate(
@@ -379,19 +401,28 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     {
       username: "role-admin",
       password: "role-test-password",
-      allowed: allSections.filter(
-        (path) => path !== "/admin/users" && path !== "/admin/content",
-      ),
+      allowed: allSections.filter((path) => path !== "/admin/content"),
     },
     {
       username: "role-guides",
       password: "role-test-password",
-      allowed: ["/admin/guides"],
+      allowed: ["/admin/guides", "/admin/references"],
     },
     {
-      username: "role-calculators",
+      username: "role-tools",
       password: "role-test-password",
-      allowed: ["/admin/calculators", "/admin/references"],
+      allowed: ["/admin/calculators"],
+    },
+    {
+      username: "role-readonly",
+      password: "role-test-password",
+      allowed: [
+        "/admin/guides",
+        "/admin/calculators",
+        "/admin/references",
+        "/admin/users",
+        "/admin/logs",
+      ],
     },
   ];
 
@@ -421,7 +452,9 @@ test("direct admin URLs enforce all four roles", async ({ browser }) => {
     expect(legalUpdate.status(), `${roleCase.username} legal update`).toBe(
       roleCase.username === "rootadmin" ? 200 : 403,
     );
-    const canAuthor = roleCase.username !== "role-calculators";
+    const canAuthor = ["rootadmin", "role-admin", "role-guides"].includes(
+      roleCase.username,
+    );
     const canModerate = ["rootadmin", "role-admin"].includes(roleCase.username);
     const slug = `rights-${roleCase.username}`;
     const payload = {

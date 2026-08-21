@@ -17,21 +17,21 @@ const links: Array<{
     capability: "calculators.read",
   },
   {
-    href: "/admin/references",
-    label: "references",
-    capability: "references.read",
-  },
-  {
     href: "/admin/guides",
     label: "guides",
     capability: "guides.read",
+  },
+  {
+    href: "/admin/references",
+    label: "references",
+    capability: "references.read",
   },
   {
     href: "/admin/content",
     label: "content",
     capability: "content.read",
   },
-  { href: "/admin/users", label: "users", capability: "users.manage" },
+  { href: "/admin/users", label: "users", capability: "users.read" },
   { href: "/admin/logs", label: "logs", capability: "logs.view" },
 ];
 
