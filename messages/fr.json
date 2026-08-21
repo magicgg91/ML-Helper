@@ -100,6 +100,7 @@
     "unavailable": "Indisponible actuellement",
     "navigation-label": "Catégories d’outils",
     "city-tabs": "Outils Villes",
+    "combat-tabs": "Outils Combat",
     "skills-tabs": "Outils Compétences",
     "calculator-unavailable": "Désactivé — inaccessible actuellement",
     "calculators-unavailable": "Ces outils sont temporairement indisponibles."
@@ -202,8 +203,27 @@
       "troops-bonus": "Bonus Troupes obtenu"
     }
   },
+  "xp-gain-rate": {
+    "name": "Taux de gain d’XP",
+    "mode-label": "Mode de calcul d’XP",
+    "modes": {
+      "attacker": "Je suis l’attaquant",
+      "target": "Je suis la cible"
+    },
+    "fields": { "my-vp": "Ma VP", "unit": "Unité de VP" },
+    "columns": {
+      "rate": "Taux de gain d’XP",
+      "opponent-vp": "Plage de VP adverse"
+    }
+  },
   "demo-attack-troops": {
-    "name": "Troupes en attaque démo"
+    "name": "Troupes en attaque démo",
+    "fields": {
+      "city-level": "Niveau de ville visée",
+      "league": "Ligue de l’attaquant"
+    },
+    "wall": "Remparts de la cible",
+    "maximum": "Troupes maximum ({percentage} %)"
   },
   "ranking": {
     "name": "Ranking",
@@ -544,7 +564,13 @@
         "actions": "Actions"
       },
       "types": { "guide": "Guide", "reference": "Référentiel" },
-      "statuses": { "draft": "Brouillon", "pending_review": "En review", "published": "Publié", "active": "Actif", "inactive": "Inactif" },
+      "statuses": {
+        "draft": "Brouillon",
+        "pending_review": "En review",
+        "published": "Publié",
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer l’Équipement d’Expédition",
       "disabled-tooltip": "Désactivé et invisible côté public",
@@ -599,8 +625,8 @@
       "description-field": "Description",
       "tip": "Astuce",
       "save-translations": "Enregistrer les traductions",
-      "translations-saved": "Traductions enregistrées."
-      ,"edit": "Modifier",
+      "translations-saved": "Traductions enregistrées.",
+      "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
       "ranking-editor": "Seuils du classement",
       "templar-parameters": "Paramètres de coût des Templiers",
@@ -637,9 +663,15 @@
       "expedition-description": "Les 120 lignes Expédition sont intégralement éditables. Les règles de confirmation restent affichées côté public.",
       "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
-        "set-name": "Nom du set", "family": "Famille", "slot-type": "Type d’emplacement", "slot-name": "Nom d’emplacement",
-        "value": "Valeur {number} (%)", "type-value": "Valeur type (%)", "secondary-value": "Valeur secondaire (%)",
-        "level": "Niveau atteint", "level-cost": "Coût du niveau"
+        "set-name": "Nom du set",
+        "family": "Famille",
+        "slot-type": "Type d’emplacement",
+        "slot-name": "Nom d’emplacement",
+        "value": "Valeur {number} (%)",
+        "type-value": "Valeur type (%)",
+        "secondary-value": "Valeur secondaire (%)",
+        "level": "Niveau atteint",
+        "level-cost": "Coût du niveau"
       },
       "row-label": "Ligne {row} {field}",
       "expedition-row-label": "Expédition ligne {row} {field}",
@@ -653,17 +685,33 @@
       "saving": "Enregistrement…",
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "saved": "Référentiel enregistré.",
-      "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie."
-      ,"all": "Tous",
+      "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
+      "all": "Tous",
       "filters": { "skill": "Compétence" }
     },
     "common": { "back": "Retour" },
-    "parameters": { "save": "Enregistrer les paramètres", "saving": "Enregistrement…", "saved": "Paramètres enregistrés.", "error": "Échec de l’enregistrement (HTTP {status}).", "server-error": "Impossible de joindre le serveur." },
-    "city-parameters": {
-      "progression": "Paramètres de progression", "multipliers": "Multiplicateurs par ligue", "league": "Ligue", "army": "Multiplicateur Armée", "gold": "Multiplicateur Or",
-      "vp": { "base": "Base VP", "ratio": "Ratio VP" }, "walls": { "base": "Base Remparts", "ratio": "Ratio Remparts" }, "cost": { "base": "Base Coût", "ratio": "Ratio Coût" }
+    "parameters": {
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement…",
+      "saved": "Paramètres enregistrés.",
+      "error": "Échec de l’enregistrement (HTTP {status}).",
+      "server-error": "Impossible de joindre le serveur."
     },
-    "templar-parameters": { "formula": "Coût(n) = arrondi(base × ratio^(n-1))", "base": "Base", "ratio": "Ratio" },
+    "city-parameters": {
+      "progression": "Paramètres de progression",
+      "multipliers": "Multiplicateurs par ligue",
+      "league": "Ligue",
+      "army": "Multiplicateur Armée",
+      "gold": "Multiplicateur Or",
+      "vp": { "base": "Base VP", "ratio": "Ratio VP" },
+      "walls": { "base": "Base Remparts", "ratio": "Ratio Remparts" },
+      "cost": { "base": "Base Coût", "ratio": "Ratio Coût" }
+    },
+    "templar-parameters": {
+      "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
+      "base": "Base",
+      "ratio": "Ratio"
+    },
     "users": {
       "title": "Utilisateurs administrateurs",
       "create": "Créer l’utilisateur",

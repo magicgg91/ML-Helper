@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 
 import { getMessagesForLocale } from "./config";
 
-function CombatFallbackProbe() {
-  const t = useTranslations("xp-gain-rate");
-  return <span>{t("name")}</span>;
+function FallbackProbe() {
+  const t = useTranslations("Navigation");
+  return <span>{t("admin")}</span>;
 }
 
 describe("tool translation catalogs", () => {
@@ -15,10 +15,10 @@ describe("tool translation catalogs", () => {
 
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <CombatFallbackProbe />
+        <FallbackProbe />
       </NextIntlClientProvider>,
     );
 
-    expect(screen.getByText("XP Gain Rate")).toBeVisible();
+    expect(screen.getByText("Admin area")).toBeVisible();
   });
 });

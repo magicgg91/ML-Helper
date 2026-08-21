@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState } from "react";
 import {
   calculateProduction,
   cityStatsAt,
@@ -9,43 +9,17 @@ import {
   formatGameNumber,
   maximumReachableLevel,
 } from "../lib/city-calculators";
-import {
-  defaultPlayerSettings,
-  type PlayerSettings,
-} from "../lib/player-settings";
+import { type PlayerSettings } from "../lib/player-settings";
 import {
   defaultCityParameters,
   type CityParameters,
 } from "../lib/city-parameters";
-import {
-  playerSettingsChangedEvent,
-  playerStorageKey,
-  safePlayerSettings,
-} from "./player-settings-panel";
 import { NumberStepper } from "./number-stepper";
+import { usePlayerSettings } from "./use-player-settings";
 
 type Calculator = "cost" | "max-level" | "production";
 
 const number = (value: number) => formatGameNumber(value);
-
-function usePlayerSettings(): PlayerSettings {
-  const raw = useSyncExternalStore(
-    (onStoreChange) => {
-      window.addEventListener(playerSettingsChangedEvent, onStoreChange);
-      window.addEventListener("storage", onStoreChange);
-      return () => {
-        window.removeEventListener(playerSettingsChangedEvent, onStoreChange);
-        window.removeEventListener("storage", onStoreChange);
-      };
-    },
-    () => window.localStorage.getItem(playerStorageKey) ?? "",
-    () => "",
-  );
-  return useMemo(
-    () => (raw ? safePlayerSettings(raw) : defaultPlayerSettings()),
-    [raw],
-  );
-}
 
 function Field({
   label,

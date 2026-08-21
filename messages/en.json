@@ -100,6 +100,7 @@
     "unavailable": "Currently unavailable",
     "navigation-label": "Tool categories",
     "city-tabs": "City tools",
+    "combat-tabs": "Combat tools",
     "skills-tabs": "Skill tools",
     "calculator-unavailable": "Disabled — currently unavailable",
     "calculators-unavailable": "These tools are temporarily unavailable."
@@ -203,10 +204,20 @@
     }
   },
   "xp-gain-rate": {
-    "name": "XP Gain Rate"
+    "name": "XP Gain Rate",
+    "mode-label": "XP calculation mode",
+    "modes": { "attacker": "I am the attacker", "target": "I am the target" },
+    "fields": { "my-vp": "My VP", "unit": "VP unit" },
+    "columns": { "rate": "XP gain rate", "opponent-vp": "Opponent VP range" }
   },
   "demo-attack-troops": {
-    "name": "Demo Attack Troops"
+    "name": "Demo Attack Troops",
+    "fields": {
+      "city-level": "Target city level",
+      "league": "Attacker league"
+    },
+    "wall": "Target walls",
+    "maximum": "Maximum troops ({percentage}%)"
   },
   "ranking": {
     "name": "Ranking",
@@ -613,8 +624,8 @@
       "tip": "Tip",
       "save-translations": "Save translations",
       "translations-saved": "Translations saved.",
-      "translations-error": "Unable to save translations."
-      ,"edit": "Edit",
+      "translations-error": "Unable to save translations.",
+      "edit": "Edit",
       "city-parameters": "Shared City parameters",
       "ranking-editor": "Ranking thresholds",
       "templar-parameters": "Templar cost parameters",
@@ -673,17 +684,33 @@
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
       "saved": "Reference table saved.",
-      "server-error": "Unable to reach the server. Check the connection and try again."
-      ,"all": "All",
+      "server-error": "Unable to reach the server. Check the connection and try again.",
+      "all": "All",
       "filters": { "skill": "Skill" }
     },
     "common": { "back": "Back" },
-    "parameters": { "save": "Save parameters", "saving": "Saving…", "saved": "Parameters saved.", "error": "Save failed (HTTP {status}).", "server-error": "Unable to reach the server." },
-    "city-parameters": {
-      "progression": "Progression parameters", "multipliers": "League multipliers", "league": "League", "army": "Army multiplier", "gold": "Gold multiplier",
-      "vp": { "base": "VP base", "ratio": "VP ratio" }, "walls": { "base": "Walls base", "ratio": "Walls ratio" }, "cost": { "base": "Cost base", "ratio": "Cost ratio" }
+    "parameters": {
+      "save": "Save parameters",
+      "saving": "Saving…",
+      "saved": "Parameters saved.",
+      "error": "Save failed (HTTP {status}).",
+      "server-error": "Unable to reach the server."
     },
-    "templar-parameters": { "formula": "Cost(n) = round(base × ratio^(n-1))", "base": "Base", "ratio": "Ratio" },
+    "city-parameters": {
+      "progression": "Progression parameters",
+      "multipliers": "League multipliers",
+      "league": "League",
+      "army": "Army multiplier",
+      "gold": "Gold multiplier",
+      "vp": { "base": "VP base", "ratio": "VP ratio" },
+      "walls": { "base": "Walls base", "ratio": "Walls ratio" },
+      "cost": { "base": "Cost base", "ratio": "Cost ratio" }
+    },
+    "templar-parameters": {
+      "formula": "Cost(n) = round(base × ratio^(n-1))",
+      "base": "Base",
+      "ratio": "Ratio"
+    },
     "users": {
       "title": "Admin users",
       "create": "Create user",
