@@ -39,6 +39,30 @@ test("setup cannot be reused after a Super Admin exists", async ({ page }) => {
   ).toHaveCount(0);
 });
 
+test("the legal page renders the seeded Markdown and its placeholders", async ({
+  page,
+}) => {
+  await page.goto("/legal");
+  await expect(
+    page.getByRole("heading", { name: "Mentions légales", level: 1 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Développement et fiabilité des données",
+      level: 2,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("[NOM DE L'ÉDITEUR — À COMPLÉTER]")).toHaveCount(
+    2,
+  );
+  await expect(
+    page.getByText("[ADRESSE EMAIL DE CONTACT — À COMPLÉTER]"),
+  ).toBeVisible();
+  await expect(
+    page.getByText("[NOM DE L'HÉBERGEUR — À COMPLÉTER]"),
+  ).toBeVisible();
+});
+
 test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
@@ -155,6 +179,52 @@ test("the Cities category exposes its three working calculators", async ({
   await page.getByRole("tab", { name: "Production" }).click();
   await expect(page.getByText("Or — Production totale")).toBeVisible();
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
+});
+
+test("all three City tools use all six confirmed league multipliers", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const leagueCases = [
+    ["bronze", "130", "52", "100/h", "40/h"],
+    ["silver", "163", "59", "125/h", "45/h"],
+    ["gold", "228", "72", "175/h", "55/h"],
+    ["platinum", "228", "72", "175/h", "55/h"],
+    ["diamond", "260", "78", "200/h", "60/h"],
+    ["legend", "260", "78", "200/h", "60/h"],
+  ] as const;
+
+  await page.goto("/tools/villes");
+  await page.getByText("Paramètres du joueur", { exact: true }).click();
+  for (const [
+    league,
+    boostedGold,
+    boostedArmy,
+    baseGold,
+    baseArmy,
+  ] of leagueCases) {
+    await page.getByLabel("Ligue").first().selectOption(league);
+
+    await page.getByRole("tab", { name: "Coût de Ville" }).click();
+    await expect(page.getByTestId("city-cost-gold")).toContainText(
+      `${boostedGold} →`,
+    );
+    await expect(page.getByTestId("city-cost-army")).toContainText(
+      `${boostedArmy} →`,
+    );
+
+    await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
+    await expect(page.getByTestId("city-max-level-gold")).toHaveText(
+      `${boostedGold} → ${boostedGold}`,
+    );
+    await expect(page.getByTestId("city-max-level-army")).toHaveText(
+      `${boostedArmy} → ${boostedArmy}`,
+    );
+
+    await page.getByRole("tab", { name: "Production" }).click();
+    await expect(page.getByTestId("city-production-gold")).toHaveText(baseGold);
+    await expect(page.getByTestId("city-production-army")).toHaveText(baseArmy);
+  }
 });
 
 test("Ranking converts position and percentage into league ranges", async ({
@@ -327,7 +397,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   ).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
-  await page.getByRole("row", { name: /Équipements de Combat/ }).getByRole("link", { name: "Éditer" }).click();
+  await page
+    .getByRole("row", { name: /Équipements de Combat/ })
+    .getByRole("link", { name: "Éditer" })
+    .click();
   await expect(
     page.getByRole("heading", {
       name: "Éditer les Équipements de Combat",
@@ -337,14 +410,26 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
-  await page.getByRole("row", { name: /Équipement d’Expédition/ }).getByRole("link", { name: "Éditer" }).click();
+  await page
+    .getByRole("row", { name: /Équipement d’Expédition/ })
+    .getByRole("link", { name: "Éditer" })
+    .click();
   await expect(page.locator("tbody tr")).toHaveCount(120);
-  await expect(page.getByLabel("Expédition ligne 1 Nom du set")).not.toHaveValue("");
+  await expect(
+    page.getByLabel("Expédition ligne 1 Nom du set"),
+  ).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
-  await page.getByRole("row", { name: /Templiers/ }).getByRole("link", { name: "Modifier" }).click();
-  await expect(page.getByRole("spinbutton", { name: "Base" })).toHaveValue("150");
-  await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue("1.3");
+  await page
+    .getByRole("row", { name: /Templiers/ })
+    .getByRole("link", { name: "Modifier" })
+    .click();
+  await expect(page.getByRole("spinbutton", { name: "Base" })).toHaveValue(
+    "150",
+  );
+  await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
+    "1.3",
+  );
 });
 
 test("direct admin URLs enforce all five roles", async ({ browser }) => {
@@ -413,12 +498,7 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     {
       username: "role-readonly",
       password: "role-test-password",
-      allowed: [
-        "/admin/guides",
-        "/admin/tools",
-        "/admin/users",
-        "/admin/logs",
-      ],
+      allowed: ["/admin/guides", "/admin/tools", "/admin/users", "/admin/logs"],
     },
   ];
 
@@ -544,10 +624,14 @@ test("guide editor supports the complete editorial lifecycle", async ({
     .fill("## Départ\n\nContenu initial du guide.");
   await page.getByRole("button", { name: "Soumettre en review" }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", { timeout: 15_000 });
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+    timeout: 15_000,
+  });
   await page.getByLabel("Titre (FR)").fill("Guide édité et publié");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", { timeout: 15_000 });
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+    timeout: 15_000,
+  });
   await page.goto("/admin/guides");
   const row = page.getByRole("row", { name: /Guide édité et publié/ });
   await expect(row.getByRole("combobox")).toHaveValue("pending_review");

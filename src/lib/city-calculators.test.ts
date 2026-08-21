@@ -7,6 +7,7 @@ import {
   maximumReachableLevel,
   upgradeCostAt,
 } from "./city-calculators";
+import { defaultCityParameters } from "./city-parameters";
 
 describe("city formulas", () => {
   it("uses the confirmed Legend geometric formulas", () => {
@@ -18,6 +19,25 @@ describe("city formulas", () => {
     expect(cumulativeCostAt(3)).toBe(22);
     expect(cityUpgradeCost(1, 3)).toBe(22);
   });
+
+  it.each([
+    ["bronze", 40, 100],
+    ["silver", 45, 125],
+    ["gold", 55, 175],
+    ["platinum", 55, 175],
+    ["diamond", 60, 200],
+    ["legend", 60, 200],
+  ] as const)(
+    "uses the confirmed Army and Gold multipliers for %s",
+    (league, army, gold) => {
+      expect(cityStatsAt(1, league, defaultCityParameters)).toEqual({
+        vp: 20,
+        wall: 70,
+        army,
+        gold,
+      });
+    },
+  );
 
   it("finds the maximum level iteratively and keeps the remainder", () => {
     expect(maximumReachableLevel(1, 2, 43)).toEqual({

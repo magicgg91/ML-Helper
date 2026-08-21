@@ -81,4 +81,50 @@ describe("CityCalculators", () => {
       "260/h",
     );
   });
+
+  it.each([
+    ["bronze", "130", "52", "100/h", "40/h"],
+    ["silver", "163", "59", "125/h", "45/h"],
+    ["gold", "228", "72", "175/h", "55/h"],
+    ["platinum", "228", "72", "175/h", "55/h"],
+    ["diamond", "260", "78", "200/h", "60/h"],
+    ["legend", "260", "78", "200/h", "60/h"],
+  ] as const)(
+    "shows the %s multipliers in all three City tools",
+    (league, boostedGold, boostedArmy, baseGold, baseArmy) => {
+      const settings = defaultPlayerSettings();
+      settings.league = league;
+      window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <CityCalculators />
+        </NextIntlClientProvider>,
+      );
+
+      expect(screen.getByTestId("city-cost-gold")).toHaveTextContent(
+        new RegExp(`^${boostedGold} →`),
+      );
+      expect(screen.getByTestId("city-cost-army")).toHaveTextContent(
+        new RegExp(`^${boostedArmy} →`),
+      );
+
+      fireEvent.click(
+        screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+      );
+      expect(screen.getByTestId("city-max-level-gold")).toHaveTextContent(
+        `${boostedGold} → ${boostedGold}`,
+      );
+      expect(screen.getByTestId("city-max-level-army")).toHaveTextContent(
+        `${boostedArmy} → ${boostedArmy}`,
+      );
+
+      fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+      expect(screen.getByTestId("city-production-gold")).toHaveTextContent(
+        baseGold,
+      );
+      expect(screen.getByTestId("city-production-army")).toHaveTextContent(
+        baseArmy,
+      );
+    },
+  );
 });
