@@ -23,7 +23,7 @@ describe("guide publication permissions", () => {
 
   it("rejects calculator managers", () => {
     expect(
-      canChangeGuideStatus("calculators_manager", "draft", "pending_review"),
+      canChangeGuideStatus("tools_manager", "draft", "pending_review"),
     ).toBe(false);
   });
 });

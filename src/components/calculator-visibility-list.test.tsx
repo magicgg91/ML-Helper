@@ -54,4 +54,22 @@ describe("CalculatorVisibilityList", () => {
     ).toBeVisible();
     expect(screen.getByText("Inactif")).toBeVisible();
   });
+
+  it("does not expose mutations in read-only mode", () => {
+    render(
+      <CalculatorVisibilityList
+        canToggle={false}
+        rows={[
+          {
+            id: "calculator-ranking",
+            slug: "ranking",
+            label: "Ranking",
+            active: true,
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText("Ranking")).toBeVisible();
+    expect(screen.queryByRole("button")).toBeNull();
+  });
 });

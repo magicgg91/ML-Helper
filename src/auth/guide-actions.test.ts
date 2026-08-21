@@ -23,8 +23,10 @@ describe("guide action permissions", () => {
     expect(canPerformGuideAction("guides_manager", "delete")).toBe(false);
   });
 
-  it("refuses every guide action to calculator managers", () => {
-    for (const action of actions)
-      expect(canPerformGuideAction("calculators_manager", action)).toBe(false);
+  it("refuses every guide action to tools managers and read-only users", () => {
+    for (const action of actions) {
+      expect(canPerformGuideAction("tools_manager", action)).toBe(false);
+      expect(canPerformGuideAction("read_only", action)).toBe(false);
+    }
   });
 });

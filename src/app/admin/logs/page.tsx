@@ -2,8 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { LogPurgeForm } from "@/components/log-purge-form";
+import { can } from "@/auth/permissions";
 export default async function LogsPage() {
-  await requireCapability("logs.view");
+  const session = await requireCapability("logs.view");
   const t = await getTranslations("Logs");
   const logs = await prisma.auditLog.findMany({
     include: { user: { select: { username: true } } },
@@ -13,7 +14,7 @@ export default async function LogsPage() {
   return (
     <main>
       <h1>{t("title")}</h1>
-      <LogPurgeForm />
+      {can(session.user.role, "logs.purge") && <LogPurgeForm />}
       <table>
         <thead>
           <tr>

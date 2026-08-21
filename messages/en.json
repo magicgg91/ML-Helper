@@ -44,6 +44,26 @@
     "skills": "Skills",
     "references": "Reference tables"
   },
+  "GuidesHub": {
+    "eyebrow": "Guides and data",
+    "title": "Guides",
+    "guidesTitle": "Guides",
+    "referencesTitle": "Reference tables",
+    "guideFiltersLabel": "Filter guides by category",
+    "referenceFiltersLabel": "Filter reference tables by category",
+    "all": "All",
+    "combat": "Combat",
+    "expedition": "Expedition",
+    "combat-equipment": "Combat Equipment",
+    "expedition-equipment": "Expedition Equipment",
+    "readGuide": "Read guide",
+    "openReference": "Open reference table",
+    "emptyGuides": "No published guide yet.",
+    "unavailable": "This reference table is temporarily unavailable."
+  },
+  "References": {
+    "viewFull": "View full reference table"
+  },
   "Login": {
     "title": "Admin sign in",
     "username": "Username",
@@ -89,6 +109,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Guides Manager",
-    "calculators_manager": "Calculators Manager"
+    "tools_manager": "Tools Manager",
+    "read_only": "Read Only"
   }
 }

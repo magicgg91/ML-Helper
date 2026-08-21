@@ -44,6 +44,26 @@
     "skills": "Compétences",
     "references": "Référentiels"
   },
+  "GuidesHub": {
+    "eyebrow": "Guides et données",
+    "title": "Guides",
+    "guidesTitle": "Guides",
+    "referencesTitle": "Référentiels",
+    "guideFiltersLabel": "Filtrer les guides par catégorie",
+    "referenceFiltersLabel": "Filtrer les référentiels par catégorie",
+    "all": "Tout",
+    "combat": "Combat",
+    "expedition": "Expédition",
+    "combat-equipment": "Équipements de Combat",
+    "expedition-equipment": "Équipement d’Expédition",
+    "readGuide": "Lire le guide",
+    "openReference": "Consulter le référentiel",
+    "emptyGuides": "Aucun guide publié pour le moment.",
+    "unavailable": "Ce référentiel est temporairement indisponible."
+  },
+  "References": {
+    "viewFull": "Voir le référentiel complet"
+  },
   "Login": {
     "title": "Connexion administration",
     "username": "Identifiant",
@@ -89,6 +109,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Gestion Guides",
-    "calculators_manager": "Gestion Calculateurs"
+    "tools_manager": "Gestion Outils",
+    "read_only": "Lecture Seule"
   }
 }

@@ -1,35 +1,31 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
 import { getLocale } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
+import { GuidesHub } from "@/components/guides-hub";
+import { getTranslations } from "next-intl/server";
 
 export default async function GuidesPage() {
   await connection();
   const locale = await getLocale();
+  const t = await getTranslations("GuidesHub");
   const guides = await prisma.guide.findMany({
     where: { status: "published", active: true },
     orderBy: { publishedAt: "desc" },
   });
   return (
     <main className="public-main">
-      <p className="eyebrow">Guides</p>
-      <h1>Bibliothèque communautaire</h1>
-      <p className="lead">Retrouve ici tous les guides actuellement publiés.</p>
-      {guides.length ? (
-        <div className="card-grid">
-          {guides.map((guide) => (
-            <article className="public-card" key={guide.id}>
-              <p className="eyebrow">{guide.category}</p>
-              <h2>{localizedText(guide.title, locale)}</h2>
-              <p>{localizedText(guide.excerpt, locale)}</p>
-              <Link href={`/guides/${guide.slug}`}>Lire le guide</Link>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <p className="empty-state">Aucun guide publié pour le moment.</p>
-      )}
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1>{t("title")}</h1>
+      <GuidesHub
+        guides={guides.map((guide) => ({
+          id: guide.id,
+          slug: guide.slug,
+          category: guide.category,
+          title: localizedText(guide.title, locale),
+          excerpt: localizedText(guide.excerpt, locale),
+        }))}
+      />
     </main>
   );
 }

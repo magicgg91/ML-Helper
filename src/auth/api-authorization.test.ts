@@ -12,10 +12,12 @@ describe("API role authorization", () => {
 
   it("returns the session for an allowed server action", async () => {
     mockedSession.mockResolvedValue({
-      user: { id: "calc", role: "calculators_manager" },
+      user: { id: "tools", role: "tools_manager" },
       expires: "2099-01-01",
     });
-    await expect(authorizedSession("references.write")).resolves.not.toBeNull();
+    await expect(
+      authorizedSession("calculators.write"),
+    ).resolves.not.toBeNull();
   });
 
   it("returns a clear 403 response for a forbidden server action", async () => {
@@ -23,7 +25,8 @@ describe("API role authorization", () => {
       user: { id: "guide", role: "guides_manager" },
       expires: "2099-01-01",
     });
-    await expect(authorizedSession("references.write")).resolves.toBeNull();
+    await expect(authorizedSession("references.write")).resolves.not.toBeNull();
+    await expect(authorizedSession("calculators.write")).resolves.toBeNull();
     const response = forbiddenResponse();
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({

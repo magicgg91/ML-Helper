@@ -9,7 +9,13 @@ type CalculatorRow = {
   active: boolean;
 };
 
-export function CalculatorVisibilityList({ rows }: { rows: CalculatorRow[] }) {
+export function CalculatorVisibilityList({
+  rows,
+  canToggle = true,
+}: {
+  rows: CalculatorRow[];
+  canToggle?: boolean;
+}) {
   const [calculators, setCalculators] = useState(rows);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
@@ -71,14 +77,16 @@ export function CalculatorVisibilityList({ rows }: { rows: CalculatorRow[] }) {
                   {row.active ? "Actif" : "Inactif"}
                 </td>
                 <td>
-                  <button
-                    className="secondary-action"
-                    type="button"
-                    disabled={saving === row.id}
-                    onClick={() => toggle(row)}
-                  >
-                    {row.active ? "Désactiver" : "Activer"}
-                  </button>
+                  {canToggle && (
+                    <button
+                      className="secondary-action"
+                      type="button"
+                      disabled={saving === row.id}
+                      onClick={() => toggle(row)}
+                    >
+                      {row.active ? "Désactiver" : "Activer"}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
 const categories: Array<{
-  label: "cities" | "combat" | "ranking" | "skills" | "references";
+  label: "cities" | "combat" | "ranking" | "skills";
   slug: string;
   calculators: CalculatorSlug[];
   image: string;
@@ -33,12 +33,6 @@ const categories: Array<{
     slug: "competences",
     calculators: ["stuff-simulator", "stuff-comparison", "gems", "templars"],
     image: "/category-skills.svg",
-  },
-  {
-    label: "references",
-    slug: "referentiels",
-    calculators: ["combat-equipment", "expedition-equipment"],
-    image: "/category-references.svg",
   },
 ];
 

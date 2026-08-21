@@ -16,9 +16,11 @@ export default async function GuidesAdminPage() {
       <h1>Guides</h1>
       <div className="admin-section-heading">
         <p>Crée, traduis et soumets les guides à validation.</p>
-        <Link className="primary-action" href="/admin/guides/new">
-          Nouveau
-        </Link>
+        {can(session.user.role, "guides.write") && (
+          <Link className="primary-action" href="/admin/guides/new">
+            Nouveau
+          </Link>
+        )}
       </div>
       {guides.length ? (
         <GuideStatusList
@@ -34,6 +36,7 @@ export default async function GuidesAdminPage() {
           }))}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}
+          canWrite={can(session.user.role, "guides.write")}
         />
       ) : (
         <p className="admin-empty">Aucun guide créé.</p>

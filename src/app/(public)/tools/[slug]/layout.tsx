@@ -19,7 +19,6 @@ export default async function ToolDetailLayout({
       active["stuff-comparison"] ||
       active.gems ||
       active.templars,
-    referentiels: active["combat-equipment"] || active["expedition-equipment"],
   };
 
   return (

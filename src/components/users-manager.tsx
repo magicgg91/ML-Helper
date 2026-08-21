@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { roles } from "@/auth/roles";
 type UserRow = { id: string; username: string; role: string };
-export function UsersManager({ users }: { users: UserRow[] }) {
+export function UsersManager({
+  users,
+  canManage = true,
+}: {
+  users: UserRow[];
+  canManage?: boolean;
+}) {
   const t = useTranslations();
   const router = useRouter();
   const [message, setMessage] = useState("");
@@ -63,27 +69,29 @@ export function UsersManager({ users }: { users: UserRow[] }) {
   }
   return (
     <>
-      <form action={create}>
-        <label>
-          {t("Users.username")}
-          <input name="username" required />
-        </label>
-        <label>
-          {t("Users.password")}
-          <input name="password" type="password" minLength={12} required />
-        </label>
-        <label>
-          {t("Users.role")}
-          <select name="role">
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {t(`Roles.${role}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button>{t("Users.create")}</button>
-      </form>
+      {canManage && (
+        <form action={create}>
+          <label>
+            {t("Users.username")}
+            <input name="username" required />
+          </label>
+          <label>
+            {t("Users.password")}
+            <input name="password" type="password" minLength={12} required />
+          </label>
+          <label>
+            {t("Users.role")}
+            <select name="role">
+              {roles.map((role) => (
+                <option key={role} value={role}>
+                  {t(`Roles.${role}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button>{t("Users.create")}</button>
+        </form>
+      )}
       {message && (
         <p
           className={
@@ -109,42 +117,50 @@ export function UsersManager({ users }: { users: UserRow[] }) {
             <tr key={user.id}>
               <td>{user.username}</td>
               <td>
-                <select
-                  aria-label={`${t("Users.role")} ${user.username}`}
-                  value={selectedRoles[user.id] ?? user.role}
-                  onChange={(event) =>
-                    setSelectedRoles({
-                      ...selectedRoles,
-                      [user.id]: event.target.value,
-                    })
-                  }
-                >
-                  {roles.map((role) => (
-                    <option key={role} value={role}>
-                      {t(`Roles.${role}`)}
-                    </option>
-                  ))}
-                </select>
+                {canManage ? (
+                  <select
+                    aria-label={`${t("Users.role")} ${user.username}`}
+                    value={selectedRoles[user.id] ?? user.role}
+                    onChange={(event) =>
+                      setSelectedRoles({
+                        ...selectedRoles,
+                        [user.id]: event.target.value,
+                      })
+                    }
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {t(`Roles.${role}`)}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  t(`Roles.${user.role}`)
+                )}
               </td>
               <td>
-                <input
-                  aria-label={`${t("Users.password")} ${user.username}`}
-                  type="password"
-                  minLength={12}
-                  value={passwords[user.id] ?? ""}
-                  onChange={(event) =>
-                    setPasswords({
-                      ...passwords,
-                      [user.id]: event.target.value,
-                    })
-                  }
-                />
-                <button type="button" onClick={() => update(user)}>
-                  {t("Users.save")}
-                </button>
-                <button type="button" onClick={() => remove(user.id)}>
-                  {t("Users.delete")}
-                </button>
+                {canManage && (
+                  <>
+                    <input
+                      aria-label={`${t("Users.password")} ${user.username}`}
+                      type="password"
+                      minLength={12}
+                      value={passwords[user.id] ?? ""}
+                      onChange={(event) =>
+                        setPasswords({
+                          ...passwords,
+                          [user.id]: event.target.value,
+                        })
+                      }
+                    />
+                    <button type="button" onClick={() => update(user)}>
+                      {t("Users.save")}
+                    </button>
+                    <button type="button" onClick={() => remove(user.id)}>
+                      {t("Users.delete")}
+                    </button>
+                  </>
+                )}
               </td>
             </tr>
           ))}

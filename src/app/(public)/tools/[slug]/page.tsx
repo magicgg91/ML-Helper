@@ -1,35 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CityCalculators } from "../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../components/skills-calculators";
-import { ReferenceTables } from "../../../../components/reference-tables";
 import { getRankingConfig } from "../../../../lib/ranking";
 import { getCalculatorAvailability } from "../../../../lib/calculators-server";
-import {
-  getCombatReferenceRows,
-  getExpeditionReferenceRows,
-  getTemplarCostRows,
-} from "../../../../lib/reference-equipment-server";
+import { getTemplarCostRows } from "../../../../lib/reference-equipment-server";
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
   const active = await getCalculatorAvailability();
-  if (!["villes", "classement", "competences", "referentiels"].includes(slug))
-    notFound();
-  if (slug === "referentiels")
-    return (
-      <main className="public-main">
-        <h1 className="sr-only">Référentiels</h1>
-        <ReferenceTables
-          combatRows={await getCombatReferenceRows()}
-          expeditionRows={await getExpeditionReferenceRows()}
-          availability={{
-            combat: active["combat-equipment"],
-            expedition: active["expedition-equipment"],
-          }}
-        />
-      </main>
-    );
+  if (slug === "referentiels") redirect("/guides#references");
+  if (!["villes", "classement", "competences"].includes(slug)) notFound();
   if (slug === "competences")
     return (
       <main className="public-main">

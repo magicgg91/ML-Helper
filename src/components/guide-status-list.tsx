@@ -23,10 +23,12 @@ export function GuideStatusList({
   rows,
   canPublish,
   canDelete,
+  canWrite,
 }: {
   rows: GuideAdminRow[];
   canPublish: boolean;
   canDelete: boolean;
+  canWrite: boolean;
 }) {
   const [guides, setGuides] = useState(rows);
   const [message, setMessage] = useState("");
@@ -102,6 +104,7 @@ export function GuideStatusList({
                   <select
                     aria-label={`Statut de ${guide.title || guide.slug}`}
                     value={guide.status}
+                    disabled={!canWrite}
                     onChange={(event) =>
                       changeStatus(guide.id, event.target.value)
                     }
@@ -119,13 +122,17 @@ export function GuideStatusList({
                 </td>
                 <td>
                   <div className="table-actions">
-                    <Link href={`/admin/guides/${guide.id}`}>Éditer</Link>
-                    <button
-                      type="button"
-                      onClick={() => toggle(guide.id, !guide.active)}
-                    >
-                      {guide.active ? "Désactiver" : "Activer"}
-                    </button>
+                    {canWrite && (
+                      <Link href={`/admin/guides/${guide.id}`}>Éditer</Link>
+                    )}
+                    {canWrite && (
+                      <button
+                        type="button"
+                        onClick={() => toggle(guide.id, !guide.active)}
+                      >
+                        {guide.active ? "Désactiver" : "Activer"}
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         type="button"

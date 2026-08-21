@@ -7,7 +7,7 @@ async function superAdmin() {
   return authorizedSession("users.manage");
 }
 export async function GET() {
-  if (!(await superAdmin())) return forbiddenResponse();
+  if (!(await authorizedSession("users.read"))) return forbiddenResponse();
   return NextResponse.json(
     await prisma.user.findMany({
       select: {
