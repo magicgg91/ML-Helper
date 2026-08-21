@@ -1,4 +1,320 @@
 {
+  "common": {
+    "choose": "— Choisir —",
+    "decrease": "Diminuer {label}",
+    "increase": "Augmenter {label}"
+  },
+  "game": {
+    "skills": {
+      "striker": "Attaque",
+      "brave": "Bravoure",
+      "scavenger": "Charognard",
+      "guardian": "Défense",
+      "fearless": "Intrépide",
+      "prosperous": "Prospérité",
+      "recruiter": "Recruteur",
+      "cautious": "Récupération",
+      "salvager": "Recycleur",
+      "rusher": "Vitesse"
+    },
+    "templars": {
+      "striker": "Attaque",
+      "guardian": "Défense",
+      "prosperous": "Or",
+      "recruiter": "Recruteur",
+      "rusher": "Vitesse"
+    },
+    "leagues": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "platinum": "Platine",
+      "diamond": "Diamant",
+      "legend": "Légende"
+    },
+    "families": {
+      "attack": "Attaque",
+      "defense": "Défense",
+      "gold": "Or",
+      "speed": "Vitesse",
+      "troops-speed": "Troupes/Vitesse"
+    },
+    "rarities": {
+      "common": "Commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "mythic": "Mythique",
+      "legendary": "Légendaire"
+    },
+    "slots": {
+      "amulet": "Amulette",
+      "helmet": "Casque",
+      "bracelet": "Bracelet",
+      "ring": "Anneau",
+      "belt": "Ceinture",
+      "gauntlet": "Gantelet",
+      "weapon": "Arme",
+      "boots": "Bottes",
+      "shield": "Bouclier"
+    }
+  },
+  "tools": {
+    "eyebrow": "Outils",
+    "title": "Choisis ton domaine",
+    "cities": "Villes",
+    "combat": "Combat",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "count": "{count, plural, =0 {Aucun simulateur disponible} one {# simulateur disponible} other {# simulateurs disponibles}}",
+    "open": "Ouvrir la catégorie",
+    "comingSoon": "Bientôt disponible",
+    "unavailable": "Indisponible actuellement",
+    "navigation-label": "Catégories d’outils",
+    "city-tabs": "Outils Villes",
+    "skills-tabs": "Outils Compétences",
+    "calculator-unavailable": "Désactivé — inaccessible actuellement",
+    "calculators-unavailable": "Ces outils sont temporairement indisponibles."
+  },
+  "player-settings": {
+    "title": "Paramètres du joueur",
+    "summary": "{league} · Niveau {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
+    "league": "Ligue",
+    "player-level": "Niveau du joueur",
+    "player-vp": "VP du joueur",
+    "vp-unit": "Unité des VP",
+    "equipment-skills": {
+      "title": "Compétences avec équipement",
+      "help": "Valeurs réellement utilisées par les outils. Elles restent indépendantes de la distribution des points.",
+      "field": "{skill} avec équipement"
+    },
+    "skill-points": {
+      "title": "Distribution des points",
+      "help": "Outil de planification uniquement : il ne modifie jamais les compétences avec équipement.",
+      "available": "Disponibles",
+      "allocated": "Alloués",
+      "remaining": "Restants",
+      "reset": "Réinitialiser",
+      "field": "Points {skill}"
+    },
+    "templars": {
+      "title": "Templiers personnels",
+      "field": "Templiers {templar}"
+    },
+    "clan-temple": {
+      "title": "Bonus de Temple du Clan",
+      "help": "Bonus total actif du clan, saisi directement. Le stepper utilise un pas uniforme et ne dérive pas du taux des Templiers personnels.",
+      "field": "Temple {templar}"
+    }
+  },
+  "city-cost": {
+    "name": "Coût de Ville",
+    "fields": {
+      "city-count": "Nombre de villes",
+      "start-level": "Niveau de départ",
+      "target-level": "Niveau cible"
+    },
+    "single-city": "Pour 1 ville",
+    "start": "Départ",
+    "target": "Cible",
+    "wall": "Mur",
+    "vp": "VP",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
+    "cost-one": "Coût pour cette ville",
+    "gold-unit": "or",
+    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "cost-total": "Coût total",
+    "vp-gained": "VP total gagné",
+    "gold-transition": "Or/h avant → après",
+    "army-transition": "Armée/h avant → après"
+  },
+  "city-max-level": {
+    "name": "Niveau Max Atteignable",
+    "fields": {
+      "city-count": "Nombre de villes",
+      "start-level": "Niveau de départ",
+      "available-gold": "Or disponible",
+      "gold-unit": "Unité de l’or disponible"
+    },
+    "reachable-level": "Niveau cible atteignable",
+    "remaining-gold": "Or restant",
+    "vp-gained": "VP total gagné",
+    "gold-transition": "Or/h avant → après",
+    "army-transition": "Armée/h avant → après"
+  },
+  "city-production": {
+    "name": "Production",
+    "fields": {
+      "city-count": "Nombre de villes",
+      "average-level": "Niveau moyen des villes"
+    },
+    "per-city-base": "Par ville — base",
+    "vp": "VP",
+    "wall": "Mur",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
+    "gold-total": "💰 Or — Production totale",
+    "troops-total": "⚔️ Troupes — Production totale",
+    "base": "Base",
+    "equipment": "Stuff",
+    "temple": "Temple",
+    "vp-total": "VP total",
+    "full-production": {
+      "title": "Si reskill full-prod",
+      "note": "Simulation avec les {points} points disponibles investis intégralement, calculée sur la production de base.",
+      "gold": "Or si full Prospérité",
+      "troops": "Troupes si full Recruteur"
+    },
+    "rewards": {
+      "title": "Récompenses",
+      "gold-hours": "Heures Or reçues",
+      "troops-hours": "Heures Troupes reçues",
+      "gold-bonus": "Bonus Or obtenu",
+      "troops-bonus": "Bonus Troupes obtenu"
+    }
+  },
+  "demo-attack-troops": {
+    "name": "Troupes en attaque démo"
+  },
+  "ranking": {
+    "name": "Ranking",
+    "fields": {
+      "league": "Ligue",
+      "percentage": "Ton pourcentage actuel",
+      "rank": "Ton rang actuel"
+    },
+    "undefined-suffix": " — à définir",
+    "total-players": "Nombre total de joueurs (déduit)",
+    "errors": {
+      "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
+      "missing-bands": "Seuils et récompenses à définir dans l’administration pour la ligue {league}."
+    },
+    "visual-scale": "Échelle visuelle",
+    "ranking-ranges": "Plages de classement",
+    "columns": {
+      "range": "Plage",
+      "rank": "Rang de plage",
+      "target-league": "Ligue cible",
+      "reward": "Récompense"
+    },
+    "scale-label": "Échelle de classement de 100% à 0%",
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+  },
+  "stuff-simulator": {
+    "name": "Simulateur de Stuff",
+    "view-reference": "Voir le référentiel complet",
+    "global-summary": "Récapitulatif — toutes familles confondues",
+    "empty-summary": "Aucun équipement configuré",
+    "empty-slot": "Vide",
+    "select-slot": "Clique sur un emplacement pour le configurer.",
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement {block} {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement {block} {slot}",
+    "gems-count": "Gemmes ({count})",
+    "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
+    "gem": {
+      "skill": "Compétence gemme {index}",
+      "stars": "Étoiles gemme {index}",
+      "league": "Ligue gemme {index}"
+    }
+  },
+  "stuff-comparison": {
+    "name": "Comparaison de stuff",
+    "view-reference": "Voir le référentiel complet",
+    "side-title": "Équipement {side}",
+    "slot": "Emplacement",
+    "comparison-title": "Comparaison par compétence",
+    "columns": {
+      "skill": "Compétence",
+      "side-a": "Équipement A",
+      "side-b": "Équipement B",
+      "difference": "Différence"
+    },
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement {block} {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement {block} {slot}",
+    "gems-count": "Gemmes ({count})",
+    "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
+    "gem": {
+      "skill": "Compétence gemme {index}",
+      "stars": "Étoiles gemme {index}",
+      "league": "Ligue gemme {index}"
+    }
+  },
+  "gems": {
+    "name": "Gemmes",
+    "mode-label": "Mode Gemmes",
+    "modes": {
+      "optimize": "Optimisation",
+      "budget": "Budget disponible"
+    },
+    "optimization": {
+      "title": "Optimisation multi-compétences"
+    },
+    "family-label": "Famille de gemmes",
+    "fields": {
+      "available-slots": "Emplacements disponibles",
+      "skill": "Compétence",
+      "skill-row": "Compétence ligne {row}",
+      "league": "Ligue",
+      "league-row": "Ligue ligne {row}",
+      "allocated-slots": "Emplacements alloués",
+      "slots-row": "Emplacements ligne {row}",
+      "target-stat": "Stat cible (%)",
+      "target-row": "Stat cible ligne {row}",
+      "budget-slots": "Emplacements budget",
+      "available-budget": "Budget disponible en saphirs"
+    },
+    "remove-row": "Supprimer ligne {row}",
+    "add-stat": "+ Ajouter une stat",
+    "allocated-summary": "Emplacements alloués",
+    "result": "Résultat",
+    "errors": {
+      "add-positive-stat": "Ajoute une stat avec des emplacements supérieurs à zéro."
+    },
+    "columns": {
+      "skill": "Compétence",
+      "league": "Ligue",
+      "slots": "Emplacements",
+      "distribution": "Répartition",
+      "stat": "Stat obtenue",
+      "cost": "Coût"
+    },
+    "total-cost": "Coût total",
+    "sapphires": "saphirs",
+    "optimal-distribution": "Répartition optimale",
+    "base-gems": "Gemmes de base à acheter",
+    "used-slots": "Emplacements utilisés",
+    "obtained-stat": "Stat obtenue",
+    "actual-cost": "Coût réel",
+    "remaining-budget": "Budget restant",
+    "gem-count": "{count, plural, one {# gemme} other {# gemmes}} {level}★",
+    "no-gems": "Aucune gemme"
+  },
+  "templars": {
+    "name": "Templiers",
+    "fields": {
+      "start-level": "Niveau Templier de départ",
+      "target-level": "Niveau Templier cible"
+    },
+    "total-cost": "Coût total — {templar}",
+    "skydust": "Pouciel",
+    "bonus-per-templar": "Bonus par Templier",
+    "total-bonus-level": "Bonus total au niveau {level}",
+    "gain-transition": "Gain départ → cible",
+    "cost-table": "Table de coût exacte",
+    "columns": {
+      "level": "Niveau atteint",
+      "level-cost": "Coût du niveau",
+      "cumulative-cost": "Coût cumulé"
+    }
+  },
   "Navigation": {
     "tools": "Simulateurs",
     "guides": "Guides"

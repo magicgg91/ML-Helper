@@ -8,13 +8,11 @@ import {
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
 import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
 
 function renderTool(tool: React.ReactNode) {
   return render(
-    <NextIntlClientProvider
-      locale="fr"
-      messages={{ References: { viewFull: "Voir le référentiel complet" } }}
-    >
+    <NextIntlClientProvider locale="fr" messages={messages}>
       {tool}
     </NextIntlClientProvider>,
   );

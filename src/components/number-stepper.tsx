@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 type NumberStepperProps = {
   label: string;
   value: number;
@@ -15,6 +19,7 @@ export function NumberStepper({
   max = Number.POSITIVE_INFINITY,
   step = 1,
 }: NumberStepperProps) {
+  const t = useTranslations("common");
   const clamp = (candidate: number) =>
     Math.min(max, Math.max(min, Math.round(candidate * 1000) / 1000));
 
@@ -22,7 +27,7 @@ export function NumberStepper({
     <div className="num-stepper number-stepper">
       <button
         type="button"
-        aria-label={`Diminuer ${label}`}
+        aria-label={t("decrease", { label })}
         onClick={() => onChange(clamp(value - step))}
       >
         −
@@ -38,7 +43,7 @@ export function NumberStepper({
       />
       <button
         type="button"
-        aria-label={`Augmenter ${label}`}
+        aria-label={t("increase", { label })}
         onClick={() => onChange(clamp(value + step))}
       >
         +

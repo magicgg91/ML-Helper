@@ -10,8 +10,11 @@ vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) =>
     ({
       cities: "Villes",
+      combat: "Combat",
       ranking: "Classement",
       skills: "Compétences",
+      "navigation-label": "Catégories d’outils",
+      unavailable: "Indisponible actuellement",
     })[key],
 }));
 

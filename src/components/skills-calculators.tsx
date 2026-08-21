@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
 import {
@@ -23,39 +24,13 @@ import {
 import { NumberStepper } from "./number-stepper";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
 
-const skillLabels: Record<SkillKey, string> = {
-  striker: "Attaque",
-  brave: "Bravoure",
-  scavenger: "Charognard",
-  guardian: "Défense",
-  fearless: "Intrépide",
-  prosperous: "Prospérité",
-  recruiter: "Recruteur",
-  cautious: "Récupération",
-  salvager: "Recycleur",
-  rusher: "Vitesse",
-};
-const leagueLabels: Record<GemLeague, string> = {
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-  diamond: "Diamant",
-  legend: "Légende",
-};
-const familyLabels: Record<GemFamily, string> = {
-  attack: "Attaque",
-  defense: "Défense",
-  gold: "Or",
-  speed: "Vitesse",
-};
-const templarLabels: Record<TemplarKey, string> = {
-  striker: "Attaque",
-  guardian: "Défense",
-  prosperous: "Or",
-  recruiter: "Recruteur",
-  rusher: "Vitesse",
-};
-const gemLeagues = Object.keys(leagueLabels) as GemLeague[];
+const gemLeagues: GemLeague[] = [
+  "silver",
+  "gold",
+  "platinum",
+  "diamond",
+  "legend",
+];
 
 type GemRow = {
   id: number;
@@ -64,6 +39,19 @@ type GemRow = {
   slots: number;
   target: number;
 };
+
+function gemDistributionLabel(
+  stars: Array<{ stars: number; count: number }>,
+  format: (count: number, level: number) => string,
+  empty: string,
+) {
+  return (
+    stars
+      .filter(({ count }) => count > 0)
+      .map(({ stars: level, count }) => format(count, level))
+      .join(" + ") || empty
+  );
+}
 
 export function SkillsCalculators({
   templarCostTable = templarCosts,
@@ -80,6 +68,11 @@ export function SkillsCalculators({
     boolean
   >;
 }) {
+  const tools = useTranslations("tools");
+  const simulator = useTranslations("stuff-simulator");
+  const comparison = useTranslations("stuff-comparison");
+  const gems = useTranslations("gems");
+  const templars = useTranslations("templars");
   const firstAvailable = (
     ["simulator", "comparison", "gems", "templars"] as const
   ).find((key) => availability[key]);
@@ -91,7 +84,7 @@ export function SkillsCalculators({
       <nav
         className="calculator-tabs tabs"
         role="tablist"
-        aria-label="Calculateurs Compétences"
+        aria-label={tools("skills-tabs")}
       >
         <button
           type="button"
@@ -100,12 +93,12 @@ export function SkillsCalculators({
           disabled={!availability.simulator}
           title={
             !availability.simulator
-              ? "Désactivé — inaccessible actuellement"
+              ? tools("calculator-unavailable")
               : undefined
           }
           onClick={() => setActive("simulator")}
         >
-          Simulateur de Stuff
+          {simulator("name")}
         </button>
         <button
           type="button"
@@ -114,12 +107,12 @@ export function SkillsCalculators({
           disabled={!availability.comparison}
           title={
             !availability.comparison
-              ? "Désactivé — inaccessible actuellement"
+              ? tools("calculator-unavailable")
               : undefined
           }
           onClick={() => setActive("comparison")}
         >
-          Comparaison de stuff
+          {comparison("name")}
         </button>
         <button
           type="button"
@@ -127,13 +120,11 @@ export function SkillsCalculators({
           aria-selected={active === "gems"}
           disabled={!availability.gems}
           title={
-            !availability.gems
-              ? "Désactivé — inaccessible actuellement"
-              : undefined
+            !availability.gems ? tools("calculator-unavailable") : undefined
           }
           onClick={() => setActive("gems")}
         >
-          Gemmes
+          {gems("name")}
         </button>
         <button
           type="button"
@@ -141,13 +132,11 @@ export function SkillsCalculators({
           aria-selected={active === "templars"}
           disabled={!availability.templars}
           title={
-            !availability.templars
-              ? "Désactivé — inaccessible actuellement"
-              : undefined
+            !availability.templars ? tools("calculator-unavailable") : undefined
           }
           onClick={() => setActive("templars")}
         >
-          Templiers
+          {templars("name")}
         </button>
       </nav>
       {active === "simulator" ? (
@@ -159,15 +148,14 @@ export function SkillsCalculators({
       ) : active === "templars" ? (
         <TemplarsCalculator costs={templarCostTable} />
       ) : (
-        <p className="empty-state">
-          Ces calculateurs sont temporairement indisponibles.
-        </p>
+        <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
     </div>
   );
 }
 
 function GemsCalculator() {
+  const t = useTranslations("gems");
   const [mode, setMode] = useState<"optimize" | "budget">("optimize");
   return (
     <div className="calculator-stack">
@@ -175,7 +163,7 @@ function GemsCalculator() {
         <div
           className="calculator-tabs compact mode-switch"
           role="tablist"
-          aria-label="Mode Gemmes"
+          aria-label={t("mode-label")}
         >
           <button
             type="button"
@@ -183,7 +171,7 @@ function GemsCalculator() {
             aria-selected={mode === "optimize"}
             onClick={() => setMode("optimize")}
           >
-            Optimisation
+            {t("modes.optimize")}
           </button>
           <button
             type="button"
@@ -191,7 +179,7 @@ function GemsCalculator() {
             aria-selected={mode === "budget"}
             onClick={() => setMode("budget")}
           >
-            Budget disponible
+            {t("modes.budget")}
           </button>
         </div>
       </section>
@@ -201,6 +189,8 @@ function GemsCalculator() {
 }
 
 function GemOptimization() {
+  const t = useTranslations("gems");
+  const game = useTranslations("game");
   const [family, setFamily] = useState<GemFamily>("attack");
   const [totalSlots, setTotalSlots] = useState(27);
   const [nextId, setNextId] = useState(2);
@@ -270,23 +260,25 @@ function GemOptimization() {
   return (
     <>
       <section className="calculator-card">
-        <h3>Optimisation multi-compétences</h3>
-        <div className="family-buttons" aria-label="Famille de gemmes">
-          {(Object.keys(familyLabels) as GemFamily[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              aria-pressed={family === key}
-              onClick={() => changeFamily(key)}
-            >
-              {familyLabels[key]}
-            </button>
-          ))}
+        <h3>{t("optimization.title")}</h3>
+        <div className="family-buttons" aria-label={t("family-label")}>
+          {(["attack", "defense", "gold", "speed"] as GemFamily[]).map(
+            (key) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={family === key}
+                onClick={() => changeFamily(key)}
+              >
+                {game(`families.${key}`)}
+              </button>
+            ),
+          )}
         </div>
         <label className="calculator-field gem-total-slots">
-          Emplacements disponibles
+          {t("fields.available-slots")}
           <NumberStepper
-            label="Emplacements disponibles"
+            label={t("fields.available-slots")}
             value={totalSlots}
             min={1}
             max={27}
@@ -297,9 +289,9 @@ function GemOptimization() {
           {rows.map((row, index) => (
             <div className="gem-row" key={row.id}>
               <label>
-                Compétence
+                {t("fields.skill")}
                 <select
-                  aria-label={`Compétence ligne ${index + 1}`}
+                  aria-label={t("fields.skill-row", { row: index + 1 })}
                   value={row.skill}
                   onChange={(event) =>
                     update(row.id, { skill: event.target.value as SkillKey })
@@ -307,15 +299,15 @@ function GemOptimization() {
                 >
                   {allowed.map((skill) => (
                     <option key={skill} value={skill}>
-                      {skillLabels[skill]}
+                      {game(`skills.${skill}`)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Ligue
+                {t("fields.league")}
                 <select
-                  aria-label={`Ligue ligne ${index + 1}`}
+                  aria-label={t("fields.league-row", { row: index + 1 })}
                   value={row.league}
                   onChange={(event) =>
                     update(row.id, { league: event.target.value as GemLeague })
@@ -323,15 +315,15 @@ function GemOptimization() {
                 >
                   {gemLeagues.map((league) => (
                     <option key={league} value={league}>
-                      {leagueLabels[league]}
+                      {game(`leagues.${league}`)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Emplacements alloués
+                {t("fields.allocated-slots")}
                 <NumberStepper
-                  label={`Emplacements ligne ${index + 1}`}
+                  label={t("fields.slots-row", { row: index + 1 })}
                   value={row.slots}
                   min={0}
                   max={27}
@@ -339,9 +331,9 @@ function GemOptimization() {
                 />
               </label>
               <label>
-                Stat cible (%)
+                {t("fields.target-stat")}
                 <NumberStepper
-                  label={`Stat cible ligne ${index + 1}`}
+                  label={t("fields.target-row", { row: index + 1 })}
                   value={row.target}
                   min={0}
                   step={0.5}
@@ -350,7 +342,7 @@ function GemOptimization() {
               </label>
               <button
                 type="button"
-                aria-label={`Supprimer ligne ${index + 1}`}
+                aria-label={t("remove-row", { row: index + 1 })}
                 onClick={() =>
                   setRows((current) =>
                     current.filter((item) => item.id !== row.id),
@@ -376,40 +368,44 @@ function GemOptimization() {
             setNextId((id) => id + 1);
           }}
         >
-          + Ajouter une stat
+          {t("add-stat")}
         </button>
         <p className="calculator-note">
-          Emplacements alloués :{" "}
+          {t("allocated-summary")}:{" "}
           <strong data-testid="gem-allocated">{allocated}</strong> /{" "}
           {totalSlots}
         </p>
       </section>
       <section className="calculator-card">
-        <h3>Résultat</h3>
+        <h3>{t("result")}</h3>
         {results.length === 0 ? (
-          <p className="ranking-placeholder">
-            Ajoute une stat avec des emplacements supérieurs à zéro.
-          </p>
+          <p className="ranking-placeholder">{t("errors.add-positive-stat")}</p>
         ) : (
           <div className="ranking-table-wrap">
             <table className="ranking-table">
               <thead>
                 <tr>
-                  <th>Compétence</th>
-                  <th>Ligue</th>
-                  <th>Emplacements</th>
-                  <th>Répartition</th>
-                  <th>Stat obtenue</th>
-                  <th>Coût</th>
+                  <th>{t("columns.skill")}</th>
+                  <th>{t("columns.league")}</th>
+                  <th>{t("columns.slots")}</th>
+                  <th>{t("columns.distribution")}</th>
+                  <th>{t("columns.stat")}</th>
+                  <th>{t("columns.cost")}</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((row) => (
                   <tr key={row.id}>
-                    <td>{skillLabels[row.skill]}</td>
-                    <td>{leagueLabels[row.league]}</td>
+                    <td>{game(`skills.${row.skill}`)}</td>
+                    <td>{game(`leagues.${row.league}`)}</td>
                     <td>{row.slots}</td>
-                    <td>{row.result.label}</td>
+                    <td>
+                      {gemDistributionLabel(
+                        row.result.stars,
+                        (count, level) => t("gem-count", { count, level }),
+                        t("no-gems"),
+                      )}
+                    </td>
                     <td>{row.result.actualStat}%</td>
                     <td>{formatGameNumber(row.cost)}</td>
                   </tr>
@@ -419,8 +415,10 @@ function GemOptimization() {
           </div>
         )}
         <div className="result-highlight">
-          <span>Coût total</span>
-          <strong>{formatGameNumber(totalCost)} saphirs</strong>
+          <span>{t("total-cost")}</span>
+          <strong>
+            {formatGameNumber(totalCost)} {t("sapphires")}
+          </strong>
         </div>
       </section>
     </>
@@ -428,6 +426,8 @@ function GemOptimization() {
 }
 
 function GemBudget() {
+  const t = useTranslations("gems");
+  const game = useTranslations("game");
   const [skill, setSkill] = useState<SkillKey>("fearless");
   const [league, setLeague] = useState<GemLeague>("legend");
   const [slots, setSlots] = useState(27);
@@ -443,35 +443,35 @@ function GemBudget() {
       <section className="calculator-card">
         <div className="calculator-fields">
           <label className="calculator-field">
-            Compétence
+            {t("fields.skill")}
             <select
               value={skill}
               onChange={(event) => setSkill(event.target.value as SkillKey)}
             >
               {skillKeys.map((key) => (
                 <option key={key} value={key}>
-                  {skillLabels[key]}
+                  {game(`skills.${key}`)}
                 </option>
               ))}
             </select>
           </label>
           <label className="calculator-field">
-            Ligue
+            {t("fields.league")}
             <select
               value={league}
               onChange={(event) => setLeague(event.target.value as GemLeague)}
             >
               {gemLeagues.map((key) => (
                 <option key={key} value={key}>
-                  {leagueLabels[key]}
+                  {game(`leagues.${key}`)}
                 </option>
               ))}
             </select>
           </label>
           <label className="calculator-field">
-            Emplacements disponibles
+            {t("fields.available-slots")}
             <NumberStepper
-              label="Emplacements budget"
+              label={t("fields.budget-slots")}
               value={slots}
               min={1}
               max={27}
@@ -479,9 +479,9 @@ function GemBudget() {
             />
           </label>
           <label className="calculator-field">
-            Budget disponible (saphirs)
+            {t("fields.available-budget")}
             <NumberStepper
-              label="Budget disponible en saphirs"
+              label={t("fields.available-budget")}
               value={budget}
               min={0}
               onChange={(value) => setBudget(Math.floor(value))}
@@ -491,26 +491,29 @@ function GemBudget() {
       </section>
       <section className="calculator-card">
         <div className="budget-result-main">
-          <span>Répartition optimale</span>
-          <strong data-testid="gem-budget-distribution">{result.label}</strong>
+          <span>{t("optimal-distribution")}</span>
+          <strong data-testid="gem-budget-distribution">
+            {gemDistributionLabel(
+              result.stars,
+              (count, level) => t("gem-count", { count, level }),
+              t("no-gems"),
+            )}
+          </strong>
         </div>
         <div className="calculator-results">
+          <Result label={t("base-gems")} value={String(result.baseGems)} />
           <Result
-            label="Gemmes de base à acheter"
-            value={String(result.baseGems)}
-          />
-          <Result
-            label="Emplacements utilisés"
+            label={t("used-slots")}
             value={`${result.slotsUsed} / ${slots}`}
           />
-          <Result label="Stat obtenue" value={`${result.actualStat}%`} />
+          <Result label={t("obtained-stat")} value={`${result.actualStat}%`} />
           <Result
-            label="Coût réel"
-            value={`${formatGameNumber(result.cost)} saphirs`}
+            label={t("actual-cost")}
+            value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
           />
           <Result
-            label="Budget restant"
-            value={`${formatGameNumber(result.remaining)} saphirs`}
+            label={t("remaining-budget")}
+            value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
           />
         </div>
       </section>
@@ -529,6 +532,8 @@ function Result({ label, value }: { label: string; value: string }) {
 
 type TemplarState = Record<TemplarKey, { start: number; target: number }>;
 function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
+  const t = useTranslations("templars");
+  const game = useTranslations("game");
   const [selected, setSelected] = useState<TemplarKey>("striker");
   const [levels, setLevels] = useState<TemplarState>(
     () =>
@@ -566,15 +571,15 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
               aria-pressed={selected === key}
               onClick={() => setSelected(key)}
             >
-              {templarLabels[key]}
+              {game(`templars.${key}`)}
             </button>
           ))}
         </div>
         <div className="calculator-fields">
           <label className="calculator-field">
-            Niveau de départ
+            {t("fields.start-level")}
             <NumberStepper
-              label="Niveau Templier de départ"
+              label={t("fields.start-level")}
               value={current.start}
               min={0}
               max={20}
@@ -582,9 +587,9 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
             />
           </label>
           <label className="calculator-field">
-            Niveau cible
+            {t("fields.target-level")}
             <NumberStepper
-              label="Niveau Templier cible"
+              label={t("fields.target-level")}
               value={current.target}
               min={0}
               max={20}
@@ -595,32 +600,34 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
       </section>
       <section className="calculator-card">
         <div className="result-highlight">
-          <span>Coût total — {templarLabels[selected]}</span>
+          <span>
+            {t("total-cost", { templar: game(`templars.${selected}`) })}
+          </span>
           <strong data-testid="templar-cost">
-            {formatGameNumber(cost)} Pouciel
+            {formatGameNumber(cost)} {t("skydust")}
           </strong>
         </div>
         <div className="calculator-results">
-          <Result label="Bonus par Templier" value={`${rate}%`} />
+          <Result label={t("bonus-per-templar")} value={`${rate}%`} />
           <Result
-            label={`Bonus total au niveau ${current.target}`}
+            label={t("total-bonus-level", { level: current.target })}
             value={`${current.target * rate}%`}
           />
           <Result
-            label="Gain départ → cible"
+            label={t("gain-transition")}
             value={`${gain >= 0 ? "+" : ""}${gain}%`}
           />
         </div>
       </section>
       <section className="calculator-card">
-        <h3>Table de coût exacte</h3>
+        <h3>{t("cost-table")}</h3>
         <div className="ranking-table-wrap">
           <table className="ranking-table">
             <thead>
               <tr>
-                <th>Niveau atteint</th>
-                <th>Coût du niveau</th>
-                <th>Coût cumulé</th>
+                <th>{t("columns.level")}</th>
+                <th>{t("columns.level-cost")}</th>
+                <th>{t("columns.cumulative-cost")}</th>
               </tr>
             </thead>
             <tbody>

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 const categories = [
   { label: "cities", slug: "villes" },
+  { label: "combat", slug: "combat" },
   { label: "ranking", slug: "classement" },
   { label: "skills", slug: "competences" },
 ] as const;
@@ -16,9 +17,9 @@ export function ToolCategoryNav({
   availability: Record<string, boolean>;
 }) {
   const pathname = usePathname();
-  const t = useTranslations("Tools");
+  const t = useTranslations("tools");
   return (
-    <nav className="category-nav" aria-label="Catégories de simulateurs">
+    <nav className="category-nav" aria-label={t("navigation-label")}>
       {categories.map((category) =>
         availability[category.slug] ? (
           <Link
@@ -36,7 +37,7 @@ export function ToolCategoryNav({
             className="category-btn"
             disabled
             key={category.slug}
-            title="Indisponible actuellement"
+            title={t("unavailable")}
           >
             {t(category.label)}
           </button>

@@ -44,25 +44,10 @@ export const gemPrice: Record<GemLeague, number> = {
 };
 
 export type GemDistribution = {
-  label: string;
   baseGems: number;
   actualStat: number;
   stars: Array<{ stars: number; count: number }>;
 };
-
-function distributionLabel(
-  stars: Array<{ stars: number; count: number }>,
-): string {
-  return (
-    stars
-      .filter(({ count }) => count > 0)
-      .map(
-        ({ stars: level, count }) =>
-          `${count} gemme${count > 1 ? "s" : ""} ${level}★`,
-      )
-      .join(" + ") || "Aucune gemme"
-  );
-}
 
 export function optimizeGemTarget(
   target: number,
@@ -72,11 +57,10 @@ export function optimizeGemTarget(
   const available = Math.max(0, Math.floor(slots));
   const units = Math.max(0, Math.round(Math.max(0, target) / value));
   if (available === 0 || units === 0)
-    return { label: "Aucune gemme", baseGems: 0, actualStat: 0, stars: [] };
+    return { baseGems: 0, actualStat: 0, stars: [] };
   if (units <= available) {
     const stars = [{ stars: 1, count: units }];
     return {
-      label: distributionLabel(stars),
       baseGems: units,
       actualStat: units * value,
       stars,
@@ -94,7 +78,6 @@ export function optimizeGemTarget(
     0,
   );
   return {
-    label: distributionLabel(stars),
     baseGems,
     actualStat: units * value,
     stars,
@@ -120,7 +103,6 @@ export function optimizeGemBudget(
     const stars = [{ stars: 1, count: affordable }];
     const cost = affordable * price;
     return {
-      label: distributionLabel(stars),
       stars,
       baseGems: affordable,
       actualStat: affordable * value,
@@ -151,7 +133,6 @@ export function optimizeGemBudget(
     0,
   );
   return {
-    label: distributionLabel(stars),
     stars,
     baseGems,
     actualStat,

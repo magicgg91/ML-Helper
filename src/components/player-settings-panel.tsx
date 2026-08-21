@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { NumberStepper } from "./number-stepper";
 import {
@@ -16,41 +17,10 @@ import {
   type League,
   type PlayerSettings,
   type SkillKey,
-  type TemplarKey,
 } from "../lib/player-settings";
 
 export const playerStorageKey = "mlhelper_player_params";
 export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
-
-const skillLabels: Record<SkillKey, string> = {
-  striker: "Attaque",
-  brave: "Bravoure",
-  scavenger: "Charognard",
-  guardian: "Défense",
-  fearless: "Intrépide",
-  prosperous: "Prospérité",
-  recruiter: "Recruteur",
-  cautious: "Récupération",
-  salvager: "Recycleur",
-  rusher: "Vitesse",
-};
-
-const templarLabels: Record<TemplarKey, string> = {
-  striker: "Attaque",
-  guardian: "Défense",
-  prosperous: "Or",
-  recruiter: "Recruteur",
-  rusher: "Vitesse",
-};
-
-const leagueLabels: Record<League, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-  diamond: "Diamant",
-  legend: "Légende",
-};
 
 export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
@@ -74,6 +44,9 @@ export function safePlayerSettings(raw: string): PlayerSettings {
 }
 
 export function PlayerSettingsPanel() {
+  const locale = useLocale();
+  const t = useTranslations("player-settings");
+  const game = useTranslations("game");
   const [settings, setSettings] = useState(defaultPlayerSettings);
   const [loaded, setLoaded] = useState(false);
 
@@ -103,8 +76,16 @@ export function PlayerSettingsPanel() {
   const vp = settings.vp * settings.vpUnit;
   const summary = useMemo(
     () =>
-      `${leagueLabels[settings.league]} · Niveau ${settings.level} · ${Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 2 }).format(vp)} VP · ${templarTotal} templier${templarTotal > 1 ? "s" : ""}`,
-    [settings.league, settings.level, templarTotal, vp],
+      t("summary", {
+        league: game(`leagues.${settings.league}`),
+        level: settings.level,
+        vp: Intl.NumberFormat(locale, {
+          notation: "compact",
+          maximumFractionDigits: 2,
+        }).format(vp),
+        templarTotal,
+      }),
+    [game, locale, settings.league, settings.level, t, templarTotal, vp],
   );
 
   const setLevel = (level: number) =>
@@ -145,38 +126,38 @@ export function PlayerSettingsPanel() {
     <aside className="player-settings" aria-labelledby="player-settings-title">
       <details>
         <summary>
-          <span id="player-settings-title">Paramètres du joueur</span>
+          <span id="player-settings-title">{t("title")}</span>
           <small>{summary}</small>
         </summary>
         <div className="player-settings-body">
           <div className="settings-grid settings-grid-primary">
             <label>
-              Ligue
+              {t("league")}
               <select
                 value={settings.league}
                 onChange={(event) => setLeague(event.target.value as League)}
               >
                 {leagues.map((league) => (
                   <option key={league} value={league}>
-                    {leagueLabels[league]}
+                    {game(`leagues.${league}`)}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              Niveau du joueur
+              {t("player-level")}
               <NumberStepper
-                label="Niveau du joueur"
+                label={t("player-level")}
                 value={settings.level}
                 min={1}
                 onChange={setLevel}
               />
             </label>
             <label>
-              VP du joueur
+              {t("player-vp")}
               <div className="unit-input">
                 <NumberStepper
-                  label="VP du joueur"
+                  label={t("player-vp")}
                   value={settings.vp}
                   min={0}
                   step={0.1}
@@ -185,7 +166,7 @@ export function PlayerSettingsPanel() {
                   }
                 />
                 <select
-                  aria-label="Unité des VP"
+                  aria-label={t("vp-unit")}
                   value={settings.vpUnit}
                   onChange={(event) =>
                     setSettings((current) => ({
@@ -205,17 +186,16 @@ export function PlayerSettingsPanel() {
             </label>
           </div>
 
-          <SettingsSection title="Compétences avec équipement">
-            <p className="settings-help">
-              Valeurs réellement utilisées par les futurs simulateurs. Elles
-              restent indépendantes de la distribution des points.
-            </p>
+          <SettingsSection title={t("equipment-skills.title")}>
+            <p className="settings-help">{t("equipment-skills.help")}</p>
             <div className="settings-grid">
               {skillKeys.map((key) => (
                 <label key={key}>
-                  {skillLabels[key]} %
+                  {game(`skills.${key}`)} %
                   <NumberStepper
-                    label={`${skillLabels[key]} avec équipement`}
+                    label={t("equipment-skills.field", {
+                      skill: game(`skills.${key}`),
+                    })}
                     value={settings.equipmentSkills[key]}
                     min={0}
                     max={key === "brave" || key === "fearless" ? 90 : undefined}
@@ -235,20 +215,18 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Distribution des points">
-            <p className="settings-help">
-              Outil de planification uniquement : il ne modifie jamais les
-              compétences avec équipement.
-            </p>
+          <SettingsSection title={t("skill-points.title")}>
+            <p className="settings-help">{t("skill-points.help")}</p>
             <div className="points-summary">
               <span>
-                Disponibles : <strong>{available}</strong>
+                {t("skill-points.available")}: <strong>{available}</strong>
               </span>
               <span>
-                Alloués : <strong>{allocated}</strong>
+                {t("skill-points.allocated")}: <strong>{allocated}</strong>
               </span>
               <span>
-                Restants : <strong>{available - allocated}</strong>
+                {t("skill-points.remaining")}:{" "}
+                <strong>{available - allocated}</strong>
               </span>
               <button
                 type="button"
@@ -259,21 +237,23 @@ export function PlayerSettingsPanel() {
                   }))
                 }
               >
-                Réinitialiser
+                {t("skill-points.reset")}
               </button>
             </div>
             <div className="settings-grid">
               {skillKeys.map((key) => (
                 <label key={key}>
                   <span>
-                    {skillLabels[key]}{" "}
+                    {game(`skills.${key}`)}{" "}
                     <output>
                       {skillPercent(key, settings.skillPoints, settings.league)}
                       %
                     </output>
                   </span>
                   <NumberStepper
-                    label={`Points ${skillLabels[key]}`}
+                    label={t("skill-points.field", {
+                      skill: game(`skills.${key}`),
+                    })}
                     value={settings.skillPoints[key]}
                     min={0}
                     onChange={(value) => setSkillPoints(key, value)}
@@ -283,13 +263,17 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Templiers personnels">
+          <SettingsSection title={t("templars.title")}>
             <div className="settings-grid">
               {templarKeys.map((key) => (
                 <label key={key}>
-                  Templiers {templarLabels[key]}
+                  {t("templars.field", {
+                    templar: game(`templars.${key}`),
+                  })}
                   <NumberStepper
-                    label={`Templiers ${templarLabels[key]}`}
+                    label={t("templars.field", {
+                      templar: game(`templars.${key}`),
+                    })}
                     value={settings.templars[key]}
                     min={0}
                     max={20}
@@ -308,17 +292,19 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Bonus de Temple du Clan">
-            <p className="settings-help">
-              Bonus total actif du clan, saisi directement. Le stepper utilise
-              un pas uniforme et ne dérive pas du taux des Templiers personnels.
-            </p>
+          <SettingsSection title={t("clan-temple.title")}>
+            <p className="settings-help">{t("clan-temple.help")}</p>
             <div className="settings-grid">
               {templarKeys.map((key) => (
                 <label key={key}>
-                  Temple {templarLabels[key]} %
+                  {t("clan-temple.field", {
+                    templar: game(`templars.${key}`),
+                  })}{" "}
+                  %
                   <NumberStepper
-                    label={`Temple ${templarLabels[key]}`}
+                    label={t("clan-temple.field", {
+                      templar: game(`templars.${key}`),
+                    })}
                     value={settings.clanTemple[key]}
                     min={clanTempleMinimums[key]}
                     step={1}
