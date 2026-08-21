@@ -24,8 +24,9 @@ Ce que ça veut dire concrètement :
 
 ## Convention de nommage — cohérence stricte, sans exception
 
-- **Code (variables, fonctions, champs DB, clés techniques) toujours en anglais**, même quand le libellé public est en français. Exemple déjà établi : le calculateur affiché "Coût de Ville" a pour clé technique `city-cost`.
-- **Tout texte visible par l'utilisateur passe par next-intl**, jamais codé en dur dans une langue — y compris erreurs, placeholders, tooltips.
+- **Code (variables, fonctions, champs DB, clés techniques) toujours en anglais**, même quand le libellé public est en français. Exemple déjà établi : le simulateur affiché "Coût de Ville" a pour clé technique `city-cost`.
+- **Terme englobant public et admin : "Outils"** (pas "Simulateurs", pas "Calculateurs"). "Simulateur" et "Référentiel" restent les termes justes au niveau d'un item individuel, mais la catégorie/section qui les regroupe tous les deux s'appelle "Outils" partout où elle apparaît (navigation publique, page admin `/admin/tools`, rôle "Gestion Outils"). "Calculateur" ne doit apparaître nulle part côté utilisateur, uniquement dans la documentation technique interne.
+- **Tout texte visible par l'utilisateur passe par next-intl**, jamais codé en dur dans une langue — y compris erreurs, placeholders, tooltips. **Aucun traitement spécial pour l'admin** : les labels internes admin (ex: nom d'une formule) suivent exactement le même mécanisme que le texte public — un seul système de fichiers de traduction statiques pour tout le texte fixe, pas de cas particulier. Seul le contenu éditorial dynamique (guides, mentions légales) reste en JSON par locale en base. **Repli sur l'anglais si une traduction manque**, jamais un vide ou une erreur.
 - Une seule casse par contexte, appliquée partout sans exception :
   - `camelCase` — variables et fonctions TypeScript
   - `PascalCase` — composants React
