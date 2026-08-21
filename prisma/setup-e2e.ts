@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 async function main() {
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "reference_tables"');
+  await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "formulas"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "calculators"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "guides"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "static_content"');
@@ -24,6 +25,12 @@ async function main() {
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "calculators_slug_key" ON "calculators"("slug")',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE "formulas" ("id" TEXT NOT NULL PRIMARY KEY, "calculator_id" TEXT NOT NULL, "key" TEXT NOT NULL, "label" JSONB NOT NULL, "formula_params" JSONB NOT NULL, CONSTRAINT "formulas_calculator_id_fkey" FOREIGN KEY ("calculator_id") REFERENCES "calculators" ("id") ON DELETE CASCADE ON UPDATE CASCADE)',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE UNIQUE INDEX "formulas_calculator_id_key_key" ON "formulas"("calculator_id", "key")',
   );
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "guides" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT \'draft\', "active" BOOLEAN NOT NULL DEFAULT true, "title" JSONB NOT NULL, "content" JSONB NOT NULL, "excerpt" JSONB NOT NULL, "cover_image" TEXT, "author" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" DATETIME NOT NULL, "published_at" DATETIME)',
@@ -95,6 +102,7 @@ async function main() {
       },
     });
   }
+  await prisma.formula.create({ data: { id: "formula-templar-cost", calculatorId: "calculator-templars", key: "templar_cost", label: { en: "Templar cost", fr: "Coût des Templiers" }, formulaParams: { base: 150, ratio: 1.3 } } });
   await prisma.guide.create({
     data: {
       id: "guide-visibility-test",

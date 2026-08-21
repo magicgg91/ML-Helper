@@ -9,12 +9,12 @@ import {
   gemValue,
   optimizeGemBudget,
   optimizeGemTarget,
-  templarCosts,
   templarRates,
   templarUpgradeCost,
   type GemFamily,
   type GemLeague,
 } from "../lib/gems-templars";
+import { defaultTemplarParameters, templarLevelCost, type TemplarParameters } from "../lib/templar-parameters";
 import {
   skillKeys,
   templarKeys,
@@ -54,7 +54,7 @@ function gemDistributionLabel(
 }
 
 export function SkillsCalculators({
-  templarCostTable = templarCosts,
+  templarParameters = defaultTemplarParameters,
   availability = {
     simulator: true,
     comparison: true,
@@ -62,7 +62,7 @@ export function SkillsCalculators({
     templars: true,
   },
 }: {
-  templarCostTable?: readonly number[];
+  templarParameters?: TemplarParameters;
   availability?: Record<
     "simulator" | "comparison" | "gems" | "templars",
     boolean
@@ -146,7 +146,7 @@ export function SkillsCalculators({
       ) : active === "gems" ? (
         <GemsCalculator />
       ) : active === "templars" ? (
-        <TemplarsCalculator costs={templarCostTable} />
+        <TemplarsCalculator parameters={templarParameters} />
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
@@ -531,7 +531,7 @@ function Result({ label, value }: { label: string; value: string }) {
 }
 
 type TemplarState = Record<TemplarKey, { start: number; target: number }>;
-function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
+function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const t = useTranslations("templars");
   const game = useTranslations("game");
   const [selected, setSelected] = useState<TemplarKey>("striker");
@@ -543,7 +543,7 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
   );
   const current = levels[selected];
   const rate = templarRates[selected];
-  const cost = templarUpgradeCost(current.start, current.target, costs);
+  const cost = templarUpgradeCost(current.start, current.target, parameters);
   const gain = (current.target - current.start) * rate;
   const update = (field: "start" | "target", value: number) =>
     setLevels((state) => ({
@@ -553,13 +553,8 @@ function TemplarsCalculator({ costs }: { costs: readonly number[] }) {
         [field]: Math.max(0, Math.min(20, Math.floor(value))),
       },
     }));
-  const cumulative = useMemo(
-    () =>
-      costs.map((_, index) =>
-        costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
-      ),
-    [costs],
-  );
+  const costs = useMemo(() => Array.from({ length: 20 }, (_, index) => templarLevelCost(index + 1, parameters)), [parameters]);
+  const cumulative = useMemo(() => costs.map((_, index) => costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0)), [costs]);
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
