@@ -36,6 +36,9 @@ describe("equipment tools", () => {
       /Légendaire.*Attaque/,
     );
     fireEvent.change(select, { target: { value: "Légendaire|Spirit Fyra" } });
+    expect(screen.getByRole("combobox", { name: "Ligue gemme 1" })).toHaveValue(
+      "",
+    );
     expect(screen.getAllByText("+10%").length).toBeGreaterThan(0);
     await waitFor(() =>
       expect(localStorage.getItem("mlhelper_stuff_simulator")).toContain(
@@ -50,6 +53,9 @@ describe("equipment tools", () => {
 
   it("compares explicit sets and colors a positive difference", () => {
     renderTool(<StuffComparison />);
+    expect(
+      screen.getAllByRole("combobox", { name: "Ligue gemme 1" })[0],
+    ).toHaveValue("");
     expect(
       screen.getByRole("link", { name: "Voir le référentiel complet" }),
     ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");

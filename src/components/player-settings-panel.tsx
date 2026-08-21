@@ -14,7 +14,7 @@ import {
   skillKeys,
   skillPercent,
   templarKeys,
-  type League,
+  type LeagueSelection,
   type PlayerSettings,
   type SkillKey,
 } from "../lib/player-settings";
@@ -47,6 +47,7 @@ export function PlayerSettingsPanel() {
   const locale = useLocale();
   const t = useTranslations("player-settings");
   const game = useTranslations("game");
+  const common = useTranslations("common");
   const [settings, setSettings] = useState(defaultPlayerSettings);
   const [loaded, setLoaded] = useState(false);
 
@@ -77,7 +78,9 @@ export function PlayerSettingsPanel() {
   const summary = useMemo(
     () =>
       t("summary", {
-        league: game(`leagues.${settings.league}`),
+        league: settings.league
+          ? game(`leagues.${settings.league}`)
+          : common("choose"),
         level: settings.level,
         vp: Intl.NumberFormat(locale, {
           notation: "compact",
@@ -85,7 +88,16 @@ export function PlayerSettingsPanel() {
         }).format(vp),
         templarTotal,
       }),
-    [game, locale, settings.league, settings.level, t, templarTotal, vp],
+    [
+      common,
+      game,
+      locale,
+      settings.league,
+      settings.level,
+      t,
+      templarTotal,
+      vp,
+    ],
   );
 
   const setLevel = (level: number) =>
@@ -99,7 +111,7 @@ export function PlayerSettingsPanel() {
       ),
     }));
 
-  const setLeague = (league: League) =>
+  const setLeague = (league: LeagueSelection) =>
     setSettings((current) => ({
       ...current,
       league,
@@ -135,8 +147,11 @@ export function PlayerSettingsPanel() {
               {t("league")}
               <select
                 value={settings.league}
-                onChange={(event) => setLeague(event.target.value as League)}
+                onChange={(event) =>
+                  setLeague(event.target.value as LeagueSelection)
+                }
               >
+                <option value="">{common("choose")}</option>
                 {leagues.map((league) => (
                   <option key={league} value={league}>
                     {game(`leagues.${league}`)}

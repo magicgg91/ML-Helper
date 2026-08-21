@@ -4,42 +4,32 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   calculateRanking,
-  rankingLeagues,
   type RankingConfig,
   type RankingLeague,
 } from "../lib/ranking";
 import { NumberStepper } from "./number-stepper";
+import { LeagueSelect } from "./league-select";
+import { useSyncedLeague } from "./use-synced-league";
 
 export function RankingCalculator({ config }: { config: RankingConfig }) {
   const locale = useLocale();
   const t = useTranslations("ranking");
   const game = useTranslations("game");
-  const [league, setLeague] = useState<RankingLeague>("diamond");
+  const [league, setLeague] = useSyncedLeague();
   const [percentage, setPercentage] = useState(1);
   const [rank, setRank] = useState(10);
-  const bands = config[league];
+  const bands = league ? config[league] : [];
   const result = calculateRanking(bands, percentage, rank);
 
   return (
     <div className="calculator-stack ranking-calculator">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <label className="calculator-field">
-            {t("fields.league")}
-            <select
-              value={league}
-              onChange={(event) =>
-                setLeague(event.target.value as RankingLeague)
-              }
-            >
-              {rankingLeagues.map((item) => (
-                <option key={item} value={item}>
-                  {game(`leagues.${item}`)}
-                  {config[item].length === 0 ? t("undefined-suffix") : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+          <LeagueSelect
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+          />
           <label className="calculator-field">
             {t("fields.percentage")}
             <NumberStepper
@@ -73,7 +63,11 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             </strong>
           </div>
         </div>
-        {percentage <= 0 ? (
+        {!league ? (
+          <p role="status" className="ranking-placeholder">
+            {t("errors.select-league")}
+          </p>
+        ) : percentage <= 0 ? (
           <p role="status" className="ranking-placeholder">
             {t("errors.positive-percentage")}
           </p>

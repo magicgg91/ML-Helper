@@ -8,6 +8,7 @@ export const leagues = [
 ] as const;
 
 export type League = (typeof leagues)[number];
+export type LeagueSelection = League | "";
 
 export const skillKeys = [
   "striker",
@@ -140,7 +141,7 @@ export const clanTempleMinimums: NumberMap<TemplarKey> = {
 
 export type PlayerSettings = {
   level: number;
-  league: League;
+  league: LeagueSelection;
   vp: number;
   vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000;
   equipmentSkills: NumberMap<SkillKey>;
@@ -151,7 +152,7 @@ export type PlayerSettings = {
 
 export const defaultPlayerSettings = (): PlayerSettings => ({
   level: 1,
-  league: "legend",
+  league: "",
   vp: 0,
   vpUnit: 1_000_000,
   equipmentSkills: emptySkills(),
@@ -160,8 +161,13 @@ export const defaultPlayerSettings = (): PlayerSettings => ({
   clanTemple: { ...clanTempleMinimums },
 });
 
-export function availableSkillPoints(level: number, league: League): number {
-  return Math.max(0, Math.floor(level) - 1) * leaguePointsPerLevel[league];
+export function availableSkillPoints(
+  level: number,
+  league: LeagueSelection,
+): number {
+  return league
+    ? Math.max(0, Math.floor(level) - 1) * leaguePointsPerLevel[league]
+    : 0;
 }
 
 export function allocatedSkillPoints(points: NumberMap<SkillKey>): number {
@@ -191,7 +197,7 @@ export function allocateSkillPoints(
   key: SkillKey,
   requested: number,
   level: number,
-  league: League,
+  league: LeagueSelection,
 ): NumberMap<SkillKey> {
   const next = { ...current, [key]: Math.max(0, Math.floor(requested)) };
   const budget = availableSkillPoints(level, league);
@@ -228,7 +234,7 @@ export function allocateSkillPoints(
 export function fitSkillPointsToBudget(
   current: NumberMap<SkillKey>,
   level: number,
-  league: League,
+  league: LeagueSelection,
 ): NumberMap<SkillKey> {
   const next = { ...current };
   let overflow =
@@ -245,10 +251,10 @@ export function fitSkillPointsToBudget(
 export function skillPercent(
   key: SkillKey,
   points: NumberMap<SkillKey>,
-  league: League,
+  league: LeagueSelection,
 ): number {
   const meta = skillPointMeta[key];
-  const base = meta.baseByLeague?.[league] ?? 0;
+  const base = league ? (meta.baseByLeague?.[league] ?? 0) : 0;
   const raw = base + points[key] * meta.bonus;
   if (meta.cap === null) return raw;
   const cap =

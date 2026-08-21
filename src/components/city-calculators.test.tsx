@@ -25,10 +25,16 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
     expect(screen.getByTestId("city-cost-one")).toHaveTextContent("10 or");
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Nombre de villes" }),
       {
@@ -44,7 +50,6 @@ describe("CityCalculators", () => {
     });
     expect(screen.getByTestId("max-level-result")).toHaveTextContent("3");
   });
-
 
   it("keeps the target level strictly above the starting level from either input", () => {
     render(
@@ -66,9 +71,31 @@ describe("CityCalculators", () => {
     expect(target).toHaveValue(13);
   });
 
+  it("starts each City tool without a league and places its selector first", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    for (const tab of [
+      "Coût de Ville",
+      "Niveau Max Atteignable",
+      "Production",
+    ]) {
+      fireEvent.click(screen.getByRole("tab", { name: tab }));
+      const fields = screen.getByRole("combobox", { name: "Ligue" });
+      expect(fields).toHaveValue("");
+      expect(
+        fields.closest(".calculator-fields")?.querySelector("select"),
+      ).toBe(fields);
+      expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+    }
+  });
+
   it("reads production bonuses from persisted player settings", () => {
     const settings = defaultPlayerSettings();
     settings.level = 11;
+    settings.league = "legend";
     settings.equipmentSkills.prosperous = 10;
     window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
     render(
@@ -92,6 +119,7 @@ describe("CityCalculators", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
     const settings = defaultPlayerSettings();
     settings.level = 6;
+    settings.league = "legend";
     window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
     act(() => {
       window.dispatchEvent(

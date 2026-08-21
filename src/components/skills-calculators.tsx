@@ -14,7 +14,11 @@ import {
   type GemFamily,
   type GemLeague,
 } from "../lib/gems-templars";
-import { defaultTemplarParameters, templarLevelCost, type TemplarParameters } from "../lib/templar-parameters";
+import {
+  defaultTemplarParameters,
+  templarLevelCost,
+  type TemplarParameters,
+} from "../lib/templar-parameters";
 import {
   skillKeys,
   templarKeys,
@@ -35,7 +39,7 @@ const gemLeagues: GemLeague[] = [
 type GemRow = {
   id: number;
   skill: SkillKey;
-  league: GemLeague;
+  league: GemLeague | "";
   slots: number;
   target: number;
 };
@@ -191,11 +195,12 @@ function GemsCalculator() {
 function GemOptimization() {
   const t = useTranslations("gems");
   const game = useTranslations("game");
+  const common = useTranslations("common");
   const [family, setFamily] = useState<GemFamily>("attack");
   const [totalSlots, setTotalSlots] = useState(27);
   const [nextId, setNextId] = useState(2);
   const [rows, setRows] = useState<GemRow[]>([
-    { id: 1, skill: "striker", league: "legend", slots: 0, target: 0 },
+    { id: 1, skill: "striker", league: "", slots: 0, target: 0 },
   ]);
   const allowed = gemFamilies[family];
   const allocated = rows.reduce((sum, row) => sum + row.slots, 0);
@@ -227,7 +232,7 @@ function GemOptimization() {
       {
         id: nextId,
         skill: gemFamilies[value][0],
-        league: "legend",
+        league: "",
         slots: 0,
         target: 0,
       },
@@ -247,7 +252,10 @@ function GemOptimization() {
     });
   };
   const results = rows
-    .filter((row) => row.slots > 0)
+    .filter(
+      (row): row is GemRow & { league: GemLeague } =>
+        row.slots > 0 && Boolean(row.league),
+    )
     .map((row) => {
       const result = optimizeGemTarget(
         row.target,
@@ -257,6 +265,7 @@ function GemOptimization() {
       return { ...row, result, cost: result.baseGems * gemPrice[row.league] };
     });
   const totalCost = results.reduce((sum, row) => sum + row.cost, 0);
+  const hasMissingLeague = rows.some((row) => row.slots > 0 && !row.league);
   return (
     <>
       <section className="calculator-card">
@@ -310,9 +319,12 @@ function GemOptimization() {
                   aria-label={t("fields.league-row", { row: index + 1 })}
                   value={row.league}
                   onChange={(event) =>
-                    update(row.id, { league: event.target.value as GemLeague })
+                    update(row.id, {
+                      league: event.target.value as GemLeague | "",
+                    })
                   }
                 >
+                  <option value="">{common("choose")}</option>
                   {gemLeagues.map((league) => (
                     <option key={league} value={league}>
                       {game(`leagues.${league}`)}
@@ -363,7 +375,7 @@ function GemOptimization() {
               allowed.find((item) => !used.includes(item)) ?? allowed[0];
             setRows((current) => [
               ...current,
-              { id: nextId, skill, league: "legend", slots: 0, target: 0 },
+              { id: nextId, skill, league: "", slots: 0, target: 0 },
             ]);
             setNextId((id) => id + 1);
           }}
@@ -379,7 +391,11 @@ function GemOptimization() {
       <section className="calculator-card">
         <h3>{t("result")}</h3>
         {results.length === 0 ? (
-          <p className="ranking-placeholder">{t("errors.add-positive-stat")}</p>
+          <p className="ranking-placeholder">
+            {hasMissingLeague
+              ? t("errors.select-league")
+              : t("errors.add-positive-stat")}
+          </p>
         ) : (
           <div className="ranking-table-wrap">
             <table className="ranking-table">
@@ -428,16 +444,19 @@ function GemOptimization() {
 function GemBudget() {
   const t = useTranslations("gems");
   const game = useTranslations("game");
+  const common = useTranslations("common");
   const [skill, setSkill] = useState<SkillKey>("fearless");
-  const [league, setLeague] = useState<GemLeague>("legend");
+  const [league, setLeague] = useState<GemLeague | "">("");
   const [slots, setSlots] = useState(27);
   const [budget, setBudget] = useState(0);
-  const result = optimizeGemBudget(
-    budget,
-    gemPrice[league],
-    gemValue(skill, league),
-    slots,
-  );
+  const result = league
+    ? optimizeGemBudget(
+        budget,
+        gemPrice[league],
+        gemValue(skill, league),
+        slots,
+      )
+    : null;
   return (
     <>
       <section className="calculator-card">
@@ -459,8 +478,11 @@ function GemBudget() {
             {t("fields.league")}
             <select
               value={league}
-              onChange={(event) => setLeague(event.target.value as GemLeague)}
+              onChange={(event) =>
+                setLeague(event.target.value as GemLeague | "")
+              }
             >
+              <option value="">{common("choose")}</option>
               {gemLeagues.map((key) => (
                 <option key={key} value={key}>
                   {game(`leagues.${key}`)}
@@ -489,34 +511,43 @@ function GemBudget() {
           </label>
         </div>
       </section>
-      <section className="calculator-card">
-        <div className="budget-result-main">
-          <span>{t("optimal-distribution")}</span>
-          <strong data-testid="gem-budget-distribution">
-            {gemDistributionLabel(
-              result.stars,
-              (count, level) => t("gem-count", { count, level }),
-              t("no-gems"),
-            )}
-          </strong>
-        </div>
-        <div className="calculator-results">
-          <Result label={t("base-gems")} value={String(result.baseGems)} />
-          <Result
-            label={t("used-slots")}
-            value={`${result.slotsUsed} / ${slots}`}
-          />
-          <Result label={t("obtained-stat")} value={`${result.actualStat}%`} />
-          <Result
-            label={t("actual-cost")}
-            value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
-          />
-          <Result
-            label={t("remaining-budget")}
-            value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
-          />
-        </div>
-      </section>
+      {!result ? (
+        <p className="empty-state" role="status">
+          {t("errors.select-league")}
+        </p>
+      ) : (
+        <section className="calculator-card">
+          <div className="budget-result-main">
+            <span>{t("optimal-distribution")}</span>
+            <strong data-testid="gem-budget-distribution">
+              {gemDistributionLabel(
+                result.stars,
+                (count, level) => t("gem-count", { count, level }),
+                t("no-gems"),
+              )}
+            </strong>
+          </div>
+          <div className="calculator-results">
+            <Result label={t("base-gems")} value={String(result.baseGems)} />
+            <Result
+              label={t("used-slots")}
+              value={`${result.slotsUsed} / ${slots}`}
+            />
+            <Result
+              label={t("obtained-stat")}
+              value={`${result.actualStat}%`}
+            />
+            <Result
+              label={t("actual-cost")}
+              value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
+            />
+            <Result
+              label={t("remaining-budget")}
+              value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
+            />
+          </div>
+        </section>
+      )}
     </>
   );
 }
@@ -553,8 +584,20 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
         [field]: Math.max(0, Math.min(20, Math.floor(value))),
       },
     }));
-  const costs = useMemo(() => Array.from({ length: 20 }, (_, index) => templarLevelCost(index + 1, parameters)), [parameters]);
-  const cumulative = useMemo(() => costs.map((_, index) => costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0)), [costs]);
+  const costs = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, index) =>
+        templarLevelCost(index + 1, parameters),
+      ),
+    [parameters],
+  );
+  const cumulative = useMemo(
+    () =>
+      costs.map((_, index) =>
+        costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
+      ),
+    [costs],
+  );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">

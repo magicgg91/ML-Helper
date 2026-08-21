@@ -7,6 +7,16 @@ import { LevelUpReference } from "./level-up-reference";
 
 afterEach(cleanup);
 describe("LevelUpReference", () => {
+  it("starts empty and waits for a league", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("combobox", { name: "Ligue" })).toHaveValue("");
+    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+  });
+
   it.each(["bronze", "gold", "platinum", "diamond", "legend"])(
     "renders the confirmed %s table",
     (league) => {
