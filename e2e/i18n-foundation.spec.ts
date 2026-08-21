@@ -8,7 +8,7 @@ test("switches the public navigation language and falls back to English", async 
   // shell and therefore isolates the locale switch behavior.
   await page.goto("/contact");
 
-  const language = page.getByLabel("Language / Langue");
+  const language = page.getByLabel(/Language|Langue/);
   await language.selectOption("en");
   await expect(page.getByRole("link", { name: "Simulators" })).toBeVisible();
 

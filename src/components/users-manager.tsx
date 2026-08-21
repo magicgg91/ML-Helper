@@ -14,17 +14,13 @@ export function UsersManager({
   const t = useTranslations();
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>(
     {},
   );
   const [passwords, setPasswords] = useState<Record<string, string>>({});
   async function failure(response: Response) {
-    const payload = (await response.json().catch(() => null)) as {
-      error?: string;
-    } | null;
-    return payload?.error
-      ? `${t("Users.error")} : ${payload.error}`
-      : `${t("Users.error")} (HTTP ${response.status})`;
+    return `${t("admin.users.error")} (HTTP ${response.status})`;
   }
   async function create(formData: FormData) {
     try {
@@ -33,25 +29,29 @@ export function UsersManager({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(Object.fromEntries(formData)),
       });
-      setMessage(response.ok ? t("Users.created") : await failure(response));
+      setSuccess(response.ok);
+      setMessage(response.ok ? t("admin.users.created") : await failure(response));
       if (response.ok) router.refresh();
     } catch {
-      setMessage(`${t("Users.error")} : serveur indisponible`);
+      setSuccess(false);
+      setMessage(`${t("admin.users.error")} : ${t("admin.users.server-error")}`);
     }
   }
   async function remove(id: string) {
     const response = await fetch(`/api/admin/users/${id}`, {
       method: "DELETE",
     });
-    setMessage(response.ok ? "" : t("Users.error"));
+    setMessage(response.ok ? "" : t("admin.users.error"));
+    setSuccess(response.ok);
     if (response.ok) router.refresh();
   }
   async function update(user: UserRow) {
     const password = passwords[user.id];
     if (password && password.length < 12) {
       setMessage(
-        "Le nouveau mot de passe doit contenir au moins 12 caractères.",
+        t("admin.users.password-too-short"),
       );
+      setSuccess(false);
       return;
     }
     const response = await fetch(`/api/admin/users/${user.id}`, {
@@ -63,8 +63,9 @@ export function UsersManager({
       }),
     });
     setMessage(
-      response.ok ? "Utilisateur enregistré" : await failure(response),
+      response.ok ? t("admin.users.saved") : await failure(response),
     );
+    setSuccess(response.ok);
     if (response.ok) router.refresh();
   }
   return (
@@ -72,32 +73,30 @@ export function UsersManager({
       {canManage && (
         <form action={create}>
           <label>
-            {t("Users.username")}
+            {t("admin.users.username")}
             <input name="username" required />
           </label>
           <label>
-            {t("Users.password")}
+            {t("admin.users.password")}
             <input name="password" type="password" minLength={12} required />
           </label>
           <label>
-            {t("Users.role")}
+            {t("admin.users.role")}
             <select name="role">
               {roles.map((role) => (
                 <option key={role} value={role}>
-                  {t(`Roles.${role}`)}
+                  {t(`roles.${role}`)}
                 </option>
               ))}
             </select>
           </label>
-          <button>{t("Users.create")}</button>
+          <button>{t("admin.users.create")}</button>
         </form>
       )}
       {message && (
         <p
           className={
-            message.includes("créé") || message.includes("enregistré")
-              ? "form-success"
-              : "form-status"
+            success ? "form-success" : "form-status"
           }
           role="status"
         >
@@ -107,8 +106,8 @@ export function UsersManager({
       <table>
         <thead>
           <tr>
-            <th>{t("Users.username")}</th>
-            <th>{t("Users.role")}</th>
+            <th>{t("admin.users.username")}</th>
+            <th>{t("admin.users.role")}</th>
             <th></th>
           </tr>
         </thead>
@@ -119,7 +118,7 @@ export function UsersManager({
               <td>
                 {canManage ? (
                   <select
-                    aria-label={`${t("Users.role")} ${user.username}`}
+                    aria-label={`${t("admin.users.role")} ${user.username}`}
                     value={selectedRoles[user.id] ?? user.role}
                     onChange={(event) =>
                       setSelectedRoles({
@@ -130,19 +129,19 @@ export function UsersManager({
                   >
                     {roles.map((role) => (
                       <option key={role} value={role}>
-                        {t(`Roles.${role}`)}
+                        {t(`roles.${role}`)}
                       </option>
                     ))}
                   </select>
                 ) : (
-                  t(`Roles.${user.role}`)
+                  t(`roles.${user.role}`)
                 )}
               </td>
               <td>
                 {canManage && (
                   <>
                     <input
-                      aria-label={`${t("Users.password")} ${user.username}`}
+                      aria-label={`${t("admin.users.password")} ${user.username}`}
                       type="password"
                       minLength={12}
                       value={passwords[user.id] ?? ""}
@@ -154,10 +153,10 @@ export function UsersManager({
                       }
                     />
                     <button type="button" onClick={() => update(user)}>
-                      {t("Users.save")}
+                      {t("admin.users.save")}
                     </button>
                     <button type="button" onClick={() => remove(user.id)}>
-                      {t("Users.delete")}
+                      {t("admin.users.delete")}
                     </button>
                   </>
                 )}

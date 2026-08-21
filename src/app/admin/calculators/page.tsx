@@ -2,28 +2,30 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { CalculatorVisibilityList } from "@/components/calculator-visibility-list";
 import { CalculatorTranslationsEditor } from "@/components/calculator-translations-editor";
-import { calculatorCatalog } from "@/lib/calculator-catalog";
 import { prisma } from "@/lib/prisma";
 import { translationRecord } from "@/lib/translations";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 export default async function CalculatorsAdminPage() {
   const session = await requireCapability("calculators.read");
+  const [t, messages] = await Promise.all([
+    getTranslations("admin.tools"),
+    getTranslations(),
+  ]);
   const canWrite = can(session.user.role, "calculators.write");
   const calculators = await prisma.calculator.findMany({
     orderBy: { slug: "asc" },
   });
   return (
     <main className="admin-main">
-      <p className="eyebrow">Contenu fonctionnel</p>
-      <h1>Calculateurs</h1>
-      <p className="lead">
-        Un calculateur inactif reste annoncé au public, mais il est grisé et
-        impossible à ouvrir.
-      </p>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1>{t("title")}</h1>
+      <p className="lead">{t("description")}</p>
       {canWrite && (
         <p>
           <Link href="/admin/calculators/ranking">
-            Éditer les seuils du classement
+            {t("edit-ranking")}
           </Link>
         </p>
       )}
@@ -32,21 +34,17 @@ export default async function CalculatorsAdminPage() {
         rows={calculators.map((calculator) => ({
           id: calculator.id,
           slug: calculator.slug,
-          label:
-            calculatorCatalog.find(({ slug }) => slug === calculator.slug)
-              ?.label ?? calculator.slug,
+          label: messages(`${calculator.slug}.name`),
           active: calculator.active,
         }))}
       />
       {canWrite && (
         <section
           className="translation-editor-list"
-          aria-label="Traductions des calculateurs"
+          aria-label={t("translations-label")}
         >
           {calculators.map((calculator) => {
-            const label =
-              calculatorCatalog.find(({ slug }) => slug === calculator.slug)
-                ?.label ?? calculator.slug;
+            const label = messages(`${calculator.slug}.name`);
             return (
               <CalculatorTranslationsEditor
                 id={calculator.id}
@@ -65,4 +63,3 @@ export default async function CalculatorsAdminPage() {
     </main>
   );
 }
-import Link from "next/link";

@@ -4,11 +4,13 @@ import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/guide-editor";
 import { prisma } from "@/lib/prisma";
 import { translationRecord } from "@/lib/translations";
+import { getTranslations } from "next-intl/server";
 
 export default async function EditGuidePage({
   params,
 }: PageProps<"/admin/guides/[id]">) {
   const session = await requireCapability("guides.write");
+  const t = await getTranslations("admin.guides");
   const { id } = await params;
   const guide = await prisma.guide.findUnique({ where: { id } });
   if (!guide) notFound();
@@ -17,8 +19,8 @@ export default async function EditGuidePage({
     content = translationRecord(guide.content);
   return (
     <main className="admin-main">
-      <p className="eyebrow">Guides</p>
-      <h1>Éditer le guide</h1>
+      <p className="eyebrow">{t("title")}</p>
+      <h1>{t("edit-title")}</h1>
       <GuideEditor
         canPublish={can(session.user.role, "guides.publish")}
         initial={{

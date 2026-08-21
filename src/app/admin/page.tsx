@@ -1,9 +1,14 @@
 import { requireAdminSession } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export default async function AdminPage() {
   const session = await requireAdminSession();
+  const [t, locale] = await Promise.all([
+    getTranslations("admin.dashboard"),
+    getLocale(),
+  ]);
   const mayViewCalculators = can(session.user.role, "calculators.read");
   const mayViewGuides = can(session.user.role, "guides.read");
   const mayViewLogs = can(session.user.role, "logs.view");
@@ -30,20 +35,20 @@ export default async function AdminPage() {
   ]);
   return (
     <main className="admin-main">
-      <p className="eyebrow">Vue d’ensemble</p>
-      <h1>Dashboard</h1>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1>{t("title")}</h1>
       {(mayViewCalculators || mayViewGuides) && (
-        <section className="admin-metrics" aria-label="État des calculateurs">
+        <section className="admin-metrics" aria-label={t("metrics-label")}>
           {mayViewCalculators && (
           <article className="total-box">
-            <span className="label">Calculateurs</span>
-            <strong className="value emerald">{active} activés / {calculatorTotal} au total</strong>
+            <span className="label">{t("tools")}</span>
+            <strong className="value emerald">{t("tools-summary", { active, total: calculatorTotal })}</strong>
           </article>
           )}
           {mayViewGuides && (
           <article className="total-box">
-            <span className="label">Guides</span>
-            <strong className="value">{publishedGuides} publiés / {guideTotal} au total</strong>
+            <span className="label">{t("guides")}</span>
+            <strong className="value">{t("guides-summary", { published: publishedGuides, total: guideTotal })}</strong>
           </article>
           )}
         </section>
@@ -51,17 +56,17 @@ export default async function AdminPage() {
       {mayViewLogs && (
         <section className="admin-panel">
           <div className="admin-section-heading">
-            <h2>Dernières actions</h2>
+            <h2>{t("recent-actions")}</h2>
           </div>
           {recentLogs.length ? (
             <div className="ranking-table-wrap">
               <table className="ranking-table">
                 <thead>
                   <tr>
-                    <th>Utilisateur</th>
-                    <th>Rôle</th>
-                    <th colSpan={2}>Message</th>
-                    <th>Date</th>
+                    <th>{t("user")}</th>
+                    <th>{t("role")}</th>
+                    <th colSpan={2}>{t("message")}</th>
+                    <th>{t("date")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -70,14 +75,14 @@ export default async function AdminPage() {
                       <td>{log.user.username}</td>
                       <td>{log.actorRole}</td>
                       <td colSpan={2}>{log.message}</td>
-                      <td>{log.createdAt.toLocaleString("fr-FR")}</td>
+                      <td>{log.createdAt.toLocaleString(locale)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <p className="admin-empty">Aucune action enregistrée.</p>
+            <p className="admin-empty">{t("empty")}</p>
           )}
         </section>
       )}

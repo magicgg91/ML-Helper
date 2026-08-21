@@ -4,7 +4,7 @@ async function selectLanguage(
   page: import("@playwright/test").Page,
   locale: string,
 ) {
-  await page.getByLabel("Language / Langue").selectOption(locale);
+  await page.getByLabel(/Language|Langue/).selectOption(locale);
 }
 
 test("renders every tool category in French and English", async ({ page }) => {

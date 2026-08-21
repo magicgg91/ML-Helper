@@ -18,12 +18,12 @@ describe("LocaleSwitcher", () => {
 
   it("persists the selected language and refreshes the route", async () => {
     render(
-      <NextIntlClientProvider locale="fr" messages={{}}>
+      <NextIntlClientProvider locale="fr" messages={{ common: { language: "Langue" } }}>
         <LocaleSwitcher locales={["en", "fr"]} />
       </NextIntlClientProvider>,
     );
 
-    fireEvent.change(screen.getByLabelText("Language / Langue"), {
+    fireEvent.change(screen.getByLabelText("Langue"), {
       target: { value: "en" },
     });
 

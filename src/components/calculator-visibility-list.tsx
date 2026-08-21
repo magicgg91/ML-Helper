@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type CalculatorRow = {
   id: string;
@@ -16,13 +17,14 @@ export function CalculatorVisibilityList({
   rows: CalculatorRow[];
   canToggle?: boolean;
 }) {
+  const t = useTranslations("admin.tools");
   const [calculators, setCalculators] = useState(rows);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
 
   async function toggle(row: CalculatorRow) {
     setSaving(row.id);
-    setMessage("Enregistrement…");
+    setMessage(t("saving"));
     try {
       const response = await fetch(`/api/admin/calculators/${row.id}`, {
         method: "PATCH",
@@ -30,7 +32,7 @@ export function CalculatorVisibilityList({
         body: JSON.stringify({ active: !row.active }),
       });
       if (!response.ok) {
-        setMessage(`Échec de l’enregistrement (HTTP ${response.status}).`);
+        setMessage(t("save-error", { status: response.status }));
         return;
       }
       setCalculators((current) =>
@@ -39,10 +41,13 @@ export function CalculatorVisibilityList({
         ),
       );
       setMessage(
-        `${row.label} est maintenant ${row.active ? "inactif" : "actif"}.`,
+        t("state-saved", {
+          tool: row.label,
+          state: t(row.active ? "inactive" : "active").toLocaleLowerCase(),
+        }),
       );
     } catch {
-      setMessage("Impossible de joindre le serveur. Réessaie plus tard.");
+      setMessage(t("server-error"));
     } finally {
       setSaving(undefined);
     }
@@ -54,9 +59,9 @@ export function CalculatorVisibilityList({
         <table className="ranking-table">
           <thead>
             <tr>
-              <th>Calculateur</th>
-              <th>Statut</th>
-              <th>Action</th>
+              <th>{t("columns.tool")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.action")}</th>
             </tr>
           </thead>
           <tbody>
@@ -67,14 +72,14 @@ export function CalculatorVisibilityList({
                 title={
                   row.active
                     ? undefined
-                    : "Désactivé — inaccessible côté public"
+                    : t("disabled-tooltip")
                 }
               >
                 <td>{row.label}</td>
                 <td
                   className={row.active ? "status-active" : "status-inactive"}
                 >
-                  {row.active ? "Actif" : "Inactif"}
+                  {t(row.active ? "active" : "inactive")}
                 </td>
                 <td>
                   {canToggle && (
@@ -84,7 +89,7 @@ export function CalculatorVisibilityList({
                       disabled={saving === row.id}
                       onClick={() => toggle(row)}
                     >
-                      {row.active ? "Désactiver" : "Activer"}
+                      {t(row.active ? "disable" : "enable")}
                     </button>
                   )}
                 </td>

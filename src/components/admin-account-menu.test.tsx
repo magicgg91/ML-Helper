@@ -1,12 +1,12 @@
 import {
   cleanup,
   fireEvent,
-  render,
   screen,
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdminAccountMenu } from "./admin-account-menu";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 const signOut = vi.fn();
 vi.mock("next-auth/react", () => ({

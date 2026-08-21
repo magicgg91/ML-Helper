@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export type EditableColumn<Row> = {
   key: keyof Row & string;
@@ -21,7 +22,7 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
   columns,
   endpoint,
   description,
-  saveLabel = "Enregistrer toute la table",
+  saveLabel,
   serialize = (rows) => rows,
 }: {
   initialRows: Row[];
@@ -31,9 +32,11 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
   saveLabel?: string;
   serialize?: (rows: Row[]) => unknown;
 }) {
+  const t = useTranslations("admin.references");
   const [rows, setRows] = useState(initialRows);
   const [status, setStatus] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [success, setSuccess] = useState(false);
 
   function update(index: number, field: keyof Row & string, value: string) {
     setRows((current) =>
@@ -47,6 +50,7 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
       return next;
     });
     setStatus("");
+    setSuccess(false);
   }
 
   function validate() {
@@ -56,19 +60,19 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
         const value = row[column.key];
         const key = errorKey(rowIndex, column.key);
         if (column.required && !value.trim())
-          next[key] = "Ce champ est obligatoire.";
+          next[key] = t("required");
         if (column.type === "number" && (value !== "" || column.required)) {
           const parsed = Number(value);
           if (!Number.isFinite(parsed))
-            next[key] = "Saisis une valeur numérique valide.";
+            next[key] = t("number");
           else if (column.min !== undefined && parsed < column.min)
-            next[key] = `La valeur minimale est ${column.min}.`;
+            next[key] = t("minimum", { min: column.min });
         }
       }),
     );
     setErrors(next);
     if (Object.keys(next).length) {
-      setStatus("Corrige les champs signalés avant l’enregistrement.");
+      setStatus(t("validation"));
       return false;
     }
     return true;
@@ -76,7 +80,8 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
 
   async function save() {
     if (!validate()) return;
-    setStatus("Enregistrement…");
+    setStatus(t("saving"));
+    setSuccess(false);
     try {
       const response = await fetch(endpoint, {
         method: "PUT",
@@ -84,21 +89,13 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
         body: JSON.stringify(serialize(rows)),
       });
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setStatus(
-          payload?.error
-            ? `Échec de l’enregistrement : ${payload.error}`
-            : `Échec de l’enregistrement (HTTP ${response.status}).`,
-        );
+        setStatus(t("save-error", { status: response.status }));
         return;
       }
-      setStatus("Référentiel enregistré.");
+      setStatus(t("saved"));
+      setSuccess(true);
     } catch {
-      setStatus(
-        "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
-      );
+      setStatus(t("server-error"));
     }
   }
 
@@ -121,7 +118,7 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
                   const key = errorKey(rowIndex, column.key);
                   const label =
                     column.inputLabel?.(rowIndex) ??
-                    `Ligne ${rowIndex + 1} ${column.label}`;
+                    t("row-label", { row: rowIndex + 1, field: column.label });
                   return (
                     <td key={column.key}>
                       <input
@@ -154,12 +151,12 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
         </table>
       </div>
       <button className="primary-button" type="button" onClick={save}>
-        {saveLabel}
+        {saveLabel ?? t("save")}
       </button>
       {status && (
         <p
           className={
-            status.startsWith("Référentiel") ? "form-success" : "form-status"
+            success ? "form-success" : "form-status"
           }
           role="status"
         >

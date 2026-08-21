@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function LegalNoticeEditor({
   initialContent,
 }: {
   initialContent: string;
 }) {
+  const t = useTranslations("admin.content");
   const [content, setContent] = useState(initialContent);
   const [message, setMessage] = useState("");
 
   async function save() {
-    setMessage("Enregistrement…");
+    setMessage(t("saving"));
     const response = await fetch("/api/admin/content/legal-notice", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -19,15 +21,15 @@ export function LegalNoticeEditor({
     }).catch(() => null);
     setMessage(
       response?.ok
-        ? "Mentions légales enregistrées."
-        : "Impossible d’enregistrer les mentions légales.",
+        ? t("saved")
+        : t("error"),
     );
   }
 
   return (
     <section className="admin-panel guide-simple-fields">
       <label>
-        Texte des mentions légales (Markdown)
+        {t("field")}
         <textarea
           className="guide-markdown-input"
           value={content}
@@ -36,7 +38,7 @@ export function LegalNoticeEditor({
         />
       </label>
       <button className="primary-button" type="button" onClick={save}>
-        Enregistrer
+        {t("save")}
       </button>
       {message && <p role="status">{message}</p>}
     </section>

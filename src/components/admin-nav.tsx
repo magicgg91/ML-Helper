@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 
 const links: Array<{
   href: string;
-  label: string;
+  label: "dashboard" | "tools" | "guides" | "references" | "content" | "users" | "logs";
   capability: AdminCapability;
 }> = [
   { href: "/admin", label: "dashboard", capability: "dashboard.view" },
   {
     href: "/admin/calculators",
-    label: "calculators",
+    label: "tools",
     capability: "calculators.read",
   },
   {
@@ -37,9 +37,9 @@ const links: Array<{
 
 export function AdminNav({ role }: { role: string }) {
   const pathname = usePathname();
-  const t = useTranslations("Admin");
+  const t = useTranslations("admin");
   return (
-    <nav className="admin-tabs tabs" aria-label="Navigation administration">
+    <nav className="admin-tabs tabs" aria-label={t("navigation-label")}>
       {links
         .filter((link) => can(role, link.capability))
         .map((link) => {
@@ -53,7 +53,7 @@ export function AdminNav({ role }: { role: string }) {
               href={link.href}
               key={link.href}
             >
-              {t(link.label)}
+              {t(`navigation.${link.label}`)}
             </Link>
           );
         })}

@@ -1,11 +1,12 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 export function LocaleSwitcher({ locales }: { locales: string[] }) {
   const locale = useLocale();
+  const t = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   async function change(nextLocale: string) {
@@ -18,9 +19,9 @@ export function LocaleSwitcher({ locales }: { locales: string[] }) {
   }
   return (
     <label className="locale-switcher">
-      <span className="sr-only">Language / Langue</span>
+      <span className="sr-only">{t("language")}</span>
       <select
-        aria-label="Language / Langue"
+        aria-label={t("language")}
         value={locale}
         disabled={pending}
         onChange={(event) => change(event.target.value)}

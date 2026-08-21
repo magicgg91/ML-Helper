@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 export function LogPurgeForm() {
-  const t = useTranslations("Logs");
+  const t = useTranslations("admin.logs");
   const router = useRouter();
   const [message, setMessage] = useState("");
   async function purge(formData: FormData) {

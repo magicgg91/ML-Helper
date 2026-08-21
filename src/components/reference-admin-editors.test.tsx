@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   combatReferenceRows,
@@ -10,6 +10,7 @@ import {
   ExpeditionReferenceAdmin,
   TemplarReferenceAdmin,
 } from "./reference-admin-editors";
+import { renderWithIntl as render } from "../test/render-with-intl";
 
 describe("complete lookup table administration", () => {
   afterEach(() => {
@@ -25,7 +26,7 @@ describe("complete lookup table administration", () => {
     );
     expect(container.querySelectorAll("tbody tr")).toHaveLength(180);
     fireEvent.change(
-      container.querySelector('input[aria-label="Ligne 1 set"]')!,
+      container.querySelector('input[aria-label="Ligne 1 Nom du set"]')!,
       {
         target: { value: "Set confirmé modifié" },
       },
@@ -40,7 +41,7 @@ describe("complete lookup table administration", () => {
       <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
     );
     expect(screen.getAllByRole("row")).toHaveLength(121);
-    expect(screen.getByLabelText("Expédition ligne 1 valeur type")).toHaveValue(
+    expect(screen.getByLabelText("Expédition ligne 1 Valeur type (%)")).toHaveValue(
       5.4,
     );
     unmount();

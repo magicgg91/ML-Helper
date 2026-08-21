@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Values = {
   name: Record<string, string>;
@@ -17,6 +18,7 @@ export function CalculatorTranslationsEditor({
   label: string;
   initial: Values;
 }) {
+  const t = useTranslations("admin.tools");
   const [values, setValues] = useState(initial);
   const [message, setMessage] = useState("");
   function update(field: keyof Values, locale: "fr" | "en", value: string) {
@@ -39,25 +41,25 @@ export function CalculatorTranslationsEditor({
     });
     setMessage(
       response.ok
-        ? "Traductions enregistrées."
-        : "Impossible d’enregistrer les traductions.",
+        ? t("translations-saved")
+        : t("translations-error"),
     );
   }
   return (
     <details className="translation-editor">
-      <summary>Textes multilingues — {label}</summary>
+      <summary>{t("translations-summary", { tool: label })}</summary>
       {(["fr", "en"] as const).map((locale) => (
         <fieldset key={locale}>
           <legend>{locale.toUpperCase()}</legend>
           <label>
-            Nom
+            {t("name")}
             <input
               value={values.name[locale] ?? ""}
               onChange={(event) => update("name", locale, event.target.value)}
             />
           </label>
           <label>
-            Description
+            {t("description-field")}
             <textarea
               value={values.description[locale] ?? ""}
               onChange={(event) =>
@@ -66,7 +68,7 @@ export function CalculatorTranslationsEditor({
             />
           </label>
           <label>
-            Astuce
+            {t("tip")}
             <textarea
               value={values.tips[locale] ?? ""}
               onChange={(event) => update("tips", locale, event.target.value)}
@@ -75,7 +77,7 @@ export function CalculatorTranslationsEditor({
         </fieldset>
       ))}
       <button type="button" onClick={save}>
-        Enregistrer les traductions
+        {t("save-translations")}
       </button>
       {message && <p role="status">{message}</p>}
     </details>

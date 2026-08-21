@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 export function SetupSuperAdminForm() {
   const router = useRouter();
+  const t = useTranslations("admin.setup");
   const [message, setMessage] = useState("");
 
   async function submit(formData: FormData) {
-    setMessage("Création du compte…");
+    setMessage(t("creating"));
     try {
       const response = await fetch("/api/admin/setup", {
         method: "POST",
@@ -25,18 +27,18 @@ export function SetupSuperAdminForm() {
       } | null;
       setMessage(
         payload?.error === "setup_already_completed"
-          ? "La configuration initiale a déjà été effectuée."
-          : "Impossible de créer le compte. Vérifie le nom et utilise un mot de passe d’au moins 12 caractères.",
+          ? t("already-completed")
+          : t("invalid"),
       );
     } catch {
-      setMessage("Impossible de joindre le serveur. Réessaie plus tard.");
+      setMessage(t("unavailable"));
     }
   }
 
   return (
     <form className="setup-form" action={submit}>
       <label>
-        Nom d’utilisateur
+        {t("username")}
         <input
           name="username"
           minLength={3}
@@ -47,7 +49,7 @@ export function SetupSuperAdminForm() {
         />
       </label>
       <label>
-        Mot de passe
+        {t("password")}
         <input
           name="password"
           type="password"
@@ -58,7 +60,7 @@ export function SetupSuperAdminForm() {
         />
       </label>
       <button className="primary-button" type="submit">
-        Créer le Super Admin
+        {t("submit")}
       </button>
       {message && (
         <p className="form-status" role="status">
