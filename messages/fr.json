@@ -177,6 +177,11 @@
       "available-gold": "Or disponible",
       "gold-unit": "Unité de l’or disponible"
     },
+    "single-city": "Ville seule (niveau atteint)",
+    "wall": "Mur",
+    "vp": "VP",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
     "reachable-level": "Niveau cible atteignable",
     "remaining-gold": "Or restant",
     "vp-gained": "VP total gagné",

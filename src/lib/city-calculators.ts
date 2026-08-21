@@ -99,11 +99,31 @@ export function maximumReachableLevel(
   return { level, spent, remaining: budget - spent };
 }
 
+export type BonusBreakdown = {
+  base: number;
+  stuff: number;
+  temple: number;
+  total: number;
+};
+
+// Décomposition base/stuff/temple partagée entre Production et les
+// résultats Coût/Niveau Max (cdc: réutiliser le pattern Production
+// plutôt que de le dupliquer par calculateur).
+export function bonusBreakdown(
+  base: number,
+  equipmentPercent: number,
+  templePercent: number,
+): BonusBreakdown {
+  const stuff = base * (Math.max(0, equipmentPercent) / 100);
+  const temple = base * (Math.max(0, templePercent) / 100);
+  return { base, stuff, temple, total: base + stuff + temple };
+}
+
 export type ProductionResult = {
   perCity: CityStats;
   vpTotal: number;
-  gold: { total: number; base: number; stuff: number; temple: number };
-  troops: { total: number; base: number; stuff: number; temple: number };
+  gold: BonusBreakdown;
+  troops: BonusBreakdown;
   rewards: { gold: number; troops: number };
   fullProduction: { gold: number; troops: number; points: number };
 };
@@ -127,11 +147,16 @@ export function calculateProduction(
   const perCity = cityStatsAt(input.cityLevel, input.league, parameters);
   const goldBase = perCity.gold * count;
   const troopsBase = perCity.army * count;
-  const goldStuff = goldBase * (Math.max(0, input.prosperousEquipment) / 100);
-  const goldTemple = goldBase * (Math.max(0, input.prosperousTemple) / 100);
-  const troopsStuff =
-    troopsBase * (Math.max(0, input.recruiterEquipment) / 100);
-  const troopsTemple = troopsBase * (Math.max(0, input.recruiterTemple) / 100);
+  const gold = bonusBreakdown(
+    goldBase,
+    input.prosperousEquipment,
+    input.prosperousTemple,
+  );
+  const troops = bonusBreakdown(
+    troopsBase,
+    input.recruiterEquipment,
+    input.recruiterTemple,
+  );
   const points = availableSkillPoints(input.playerLevel, input.league);
   const fullProsperous = points * skillPointMeta.prosperous.bonus;
   const fullRecruiter = points * skillPointMeta.recruiter.bonus;
@@ -139,18 +164,8 @@ export function calculateProduction(
   return {
     perCity,
     vpTotal: perCity.vp * count,
-    gold: {
-      base: goldBase,
-      stuff: goldStuff,
-      temple: goldTemple,
-      total: goldBase + goldStuff + goldTemple,
-    },
-    troops: {
-      base: troopsBase,
-      stuff: troopsStuff,
-      temple: troopsTemple,
-      total: troopsBase + troopsStuff + troopsTemple,
-    },
+    gold,
+    troops,
     rewards: {
       gold: goldBase * Math.max(0, input.goldRewardHours),
       troops: troopsBase * Math.max(0, input.troopsRewardHours),
