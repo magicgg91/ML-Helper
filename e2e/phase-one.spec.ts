@@ -232,13 +232,35 @@ test("the Cities category exposes its three working calculators", async ({
     "aria-current",
     "page",
   );
+  const cityLeague = page
+    .locator(".city-calculators")
+    .getByRole("combobox", { name: "Ligue" });
+  await expect(cityLeague).toHaveValue("");
+  await cityLeague.selectOption("legend");
   await expect(page.getByTestId("city-cost-one")).toHaveText("10 or");
 
+  await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("12");
+  await expect(
+    page.getByRole("spinbutton", { name: "Niveau cible" }),
+  ).toHaveValue("13");
+  await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("8");
+  await expect(
+    page.getByRole("spinbutton", { name: "Niveau cible" }),
+  ).toHaveValue("13");
+
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
+  await page
+    .locator(".city-calculators")
+    .getByRole("combobox", { name: "Ligue" })
+    .selectOption("legend");
   await page.getByRole("spinbutton", { name: "Or disponible" }).fill("0.044");
   await expect(page.getByTestId("max-level-result")).toHaveText("4");
 
   await page.getByRole("tab", { name: "Production" }).click();
+  await page
+    .locator(".city-calculators")
+    .getByRole("combobox", { name: "Ligue" })
+    .selectOption("legend");
   await expect(page.getByText("Or — Production totale")).toBeVisible();
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
@@ -289,6 +311,33 @@ test("all three City tools use all six confirmed league multipliers", async ({
   }
 });
 
+test("dependent league selectors sync once and preserve manual choices", async ({
+  page,
+}) => {
+  await page.goto("/tools/villes");
+  await page.getByText("Paramètres du joueur", { exact: true }).click();
+  const playerLeague = page
+    .locator(".player-settings")
+    .getByRole("combobox", { name: "Ligue" });
+  const cityLeague = page
+    .locator(".city-calculators")
+    .getByRole("combobox", { name: "Ligue" });
+
+  await expect(playerLeague).toHaveValue("");
+  await expect(cityLeague).toHaveValue("");
+  await playerLeague.selectOption("diamond");
+  await expect(cityLeague).toHaveValue("diamond");
+
+  await cityLeague.selectOption("gold");
+  await playerLeague.selectOption("legend");
+  await expect(cityLeague).toHaveValue("gold");
+
+  await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
+  await expect(
+    page.locator(".city-calculators").getByRole("combobox", { name: "Ligue" }),
+  ).toHaveValue("legend");
+});
+
 test("Ranking converts position and percentage into league ranges", async ({
   page,
 }) => {
@@ -297,6 +346,10 @@ test("Ranking converts position and percentage into league ranges", async ({
     "aria-current",
     "page",
   );
+  await page
+    .locator(".ranking-calculator")
+    .getByLabel("Ligue")
+    .selectOption("diamond");
   await expect(page.getByTestId("ranking-total")).toHaveText("1 000");
   await expect(
     page.getByLabel("Échelle de classement de 100% à 0%"),
@@ -352,6 +405,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   await page.getByRole("tab", { name: "Budget disponible" }).click();
+  await page
+    .locator(".city-calculators")
+    .getByRole("combobox", { name: "Ligue" })
+    .selectOption("legend");
   await page.getByRole("spinbutton", { name: "Emplacements budget" }).fill("3");
   await page
     .getByRole("spinbutton", { name: "Budget disponible en saphirs" })

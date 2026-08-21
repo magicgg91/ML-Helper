@@ -30,7 +30,6 @@ model Calculator {
   id              String           @id @default(uuid())
   slug            String           @unique
   category        String
-  name            Json
   description     Json
   active          Boolean          @default(false)
   inputs          Json
@@ -46,7 +45,6 @@ model Formula {
   id            String     @id @default(uuid())
   calculatorId  String     @map("calculator_id")
   key           String
-  label         Json
   formulaParams Json       @map("formula_params")
   calculator    Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
 
@@ -57,7 +55,6 @@ model Formula {
 model ReferenceTable {
   id           String      @id @default(uuid())
   key          String      @unique
-  label        Json
   columns      Json
   rows         Json
   calculatorId String?     @map("calculator_id")

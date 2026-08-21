@@ -12,9 +12,10 @@ import {
   type XpMode,
   type XpTier,
 } from "../lib/combat-calculators";
-import { leagues, type League } from "../lib/player-settings";
+import type { League } from "../lib/player-settings";
+import { LeagueSelect } from "./league-select";
 import { NumberStepper } from "./number-stepper";
-import { usePlayerSettings } from "./use-player-settings";
+import { useSyncedLeague } from "./use-synced-league";
 
 const units = [
   ["×1", 1],
@@ -113,20 +114,20 @@ function DemoAttackTroops({
   percentages: Record<League, number>;
 }) {
   const t = useTranslations("demo-attack-troops");
-  const game = useTranslations("game");
-  const settings = usePlayerSettings();
   const [cityLevel, setCityLevel] = useState(1);
-  const [league, setLeague] = useState<League>(settings.league);
-  const result = demoAttackTroops(
-    cityLevel,
-    league,
-    cityParameters,
-    percentages,
-  );
+  const [league, setLeague] = useSyncedLeague();
+  const result = league
+    ? demoAttackTroops(cityLevel, league, cityParameters, percentages)
+    : null;
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
+          <LeagueSelect
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+          />
           <label className="calculator-field">
             {t("fields.city-level")}
             <NumberStepper
@@ -137,38 +138,30 @@ function DemoAttackTroops({
               onChange={(value) => setCityLevel(Math.floor(value))}
             />
           </label>
-          <label className="calculator-field">
-            {t("fields.league")}
-            <select
-              aria-label={t("fields.league")}
-              value={league}
-              onChange={(event) => setLeague(event.target.value as League)}
-            >
-              {leagues.map((item) => (
-                <option value={item} key={item}>
-                  {game(`leagues.${item}`)}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
       </section>
-      <section className="calculator-card result-grid">
-        <div className="total-box">
-          <span className="label">{t("wall")}</span>
-          <strong className="value" data-testid="demo-wall">
-            {formatGameNumber(result.wall)}
-          </strong>
-        </div>
-        <div className="total-box">
-          <span className="label">
-            {t("maximum", { percentage: result.percentage })}
-          </span>
-          <strong className="value" data-testid="demo-troops">
-            {formatGameNumber(result.troops)}
-          </strong>
-        </div>
-      </section>
+      {result ? (
+        <section className="calculator-card result-grid">
+          <div className="total-box">
+            <span className="label">{t("wall")}</span>
+            <strong className="value" data-testid="demo-wall">
+              {formatGameNumber(result.wall)}
+            </strong>
+          </div>
+          <div className="total-box">
+            <span className="label">
+              {t("maximum", { percentage: result.percentage })}
+            </span>
+            <strong className="value" data-testid="demo-troops">
+              {formatGameNumber(result.troops)}
+            </strong>
+          </div>
+        </section>
+      ) : (
+        <p className="empty-state" role="status">
+          {t("select-league")}
+        </p>
+      )}
     </div>
   );
 }

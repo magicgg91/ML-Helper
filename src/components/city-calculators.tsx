@@ -15,11 +15,22 @@ import {
   type CityParameters,
 } from "../lib/city-parameters";
 import { NumberStepper } from "./number-stepper";
+import { LeagueSelect } from "./league-select";
 import { usePlayerSettings } from "./use-player-settings";
+import { useSyncedLeague } from "./use-synced-league";
 
 type Calculator = "cost" | "max-level" | "production";
 
 const number = (value: number) => formatGameNumber(value);
+
+function LeagueRequired() {
+  const common = useTranslations("common");
+  return (
+    <p className="empty-state" role="status">
+      {common("select-league")}
+    </p>
+  );
+}
 
 function Field({
   label,
@@ -101,8 +112,9 @@ function CostCalculator({
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [targetLevel, setTargetLevel] = useState(2);
-  const start = cityStatsAt(startLevel, settings.league, parameters);
-  const target = cityStatsAt(targetLevel, settings.league, parameters);
+  const [league, setLeague] = useSyncedLeague();
+  const start = cityStatsAt(startLevel, league || "bronze", parameters);
+  const target = cityStatsAt(targetLevel, league || "bronze", parameters);
   const cost = cityUpgradeCost(startLevel, targetLevel, parameters);
   const goldBonus =
     1 +
@@ -116,6 +128,11 @@ function CostCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
+          <LeagueSelect
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+          />
           <Field
             label={t("fields.city-count")}
             value={cityCount}
@@ -124,76 +141,94 @@ function CostCalculator({
           <Field
             label={t("fields.start-level")}
             value={startLevel}
-            max={200}
-            onChange={(v) => setStartLevel(Math.floor(v))}
+            max={199}
+            onChange={(v) => {
+              const nextStart = Math.floor(v);
+              setStartLevel(nextStart);
+              setTargetLevel((current) =>
+                current <= nextStart ? nextStart + 1 : current,
+              );
+            }}
           />
           <Field
             label={t("fields.target-level")}
             value={targetLevel}
+            min={2}
             max={200}
-            onChange={(v) => setTargetLevel(Math.floor(v))}
+            onChange={(v) => {
+              const nextTarget = Math.floor(v);
+              setTargetLevel(
+                nextTarget <= startLevel ? startLevel + 1 : nextTarget,
+              );
+            }}
           />
         </div>
       </section>
-      <section className="calculator-card">
-        <h3>{t("single-city")}</h3>
-        <div className="city-comparison">
-          <div>
-            <b>{t("start")}</b>
-            <Stat label={t("wall")} value={number(start.wall)} />
-            <Stat label={t("vp")} value={number(start.vp)} />
+      {!league ? (
+        <LeagueRequired />
+      ) : (
+        <>
+          <section className="calculator-card">
+            <h3>{t("single-city")}</h3>
+            <div className="city-comparison">
+              <div>
+                <b>{t("start")}</b>
+                <Stat label={t("wall")} value={number(start.wall)} />
+                <Stat label={t("vp")} value={number(start.vp)} />
+                <Stat
+                  label={t("gold-hour")}
+                  value={number(start.gold * goldBonus)}
+                />
+                <Stat
+                  label={t("army-hour")}
+                  value={number(start.army * armyBonus)}
+                />
+              </div>
+              <span aria-hidden="true">→</span>
+              <div>
+                <b>{t("target")}</b>
+                <Stat label={t("wall")} value={number(target.wall)} />
+                <Stat label={t("vp")} value={number(target.vp)} />
+                <Stat
+                  label={t("gold-hour")}
+                  value={number(target.gold * goldBonus)}
+                />
+                <Stat
+                  label={t("army-hour")}
+                  value={number(target.army * armyBonus)}
+                />
+              </div>
+            </div>
             <Stat
-              label={t("gold-hour")}
-              value={number(start.gold * goldBonus)}
+              label={t("cost-one")}
+              value={`${number(cost)} ${t("gold-unit")}`}
+              testId="city-cost-one"
             />
-            <Stat
-              label={t("army-hour")}
-              value={number(start.army * armyBonus)}
-            />
-          </div>
-          <span aria-hidden="true">→</span>
-          <div>
-            <b>{t("target")}</b>
-            <Stat label={t("wall")} value={number(target.wall)} />
-            <Stat label={t("vp")} value={number(target.vp)} />
-            <Stat
-              label={t("gold-hour")}
-              value={number(target.gold * goldBonus)}
-            />
-            <Stat
-              label={t("army-hour")}
-              value={number(target.army * armyBonus)}
-            />
-          </div>
-        </div>
-        <Stat
-          label={t("cost-one")}
-          value={`${number(cost)} ${t("gold-unit")}`}
-          testId="city-cost-one"
-        />
-      </section>
-      <section className="calculator-card">
-        <h3>{t("total-cities", { count: cityCount })}</h3>
-        <div className="calculator-results">
-          <Stat label={t("cost-total")} value={number(cost * cityCount)} />
-          <Stat
-            label={t("vp-gained")}
-            value={number(Math.max(0, target.vp - start.vp) * cityCount)}
-          />
-          <ProductionTransition
-            label={t("gold-transition")}
-            start={start.gold * goldBonus * cityCount}
-            target={target.gold * goldBonus * cityCount}
-            testId="city-cost-gold"
-          />
-          <ProductionTransition
-            label={t("army-transition")}
-            start={start.army * armyBonus * cityCount}
-            target={target.army * armyBonus * cityCount}
-            testId="city-cost-army"
-          />
-        </div>
-      </section>
+          </section>
+          <section className="calculator-card">
+            <h3>{t("total-cities", { count: cityCount })}</h3>
+            <div className="calculator-results">
+              <Stat label={t("cost-total")} value={number(cost * cityCount)} />
+              <Stat
+                label={t("vp-gained")}
+                value={number(Math.max(0, target.vp - start.vp) * cityCount)}
+              />
+              <ProductionTransition
+                label={t("gold-transition")}
+                start={start.gold * goldBonus * cityCount}
+                target={target.gold * goldBonus * cityCount}
+                testId="city-cost-gold"
+              />
+              <ProductionTransition
+                label={t("army-transition")}
+                start={start.army * armyBonus * cityCount}
+                target={target.army * armyBonus * cityCount}
+                testId="city-cost-army"
+              />
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -218,14 +253,15 @@ function MaxLevelCalculator({
   const [startLevel, setStartLevel] = useState(1);
   const [budget, setBudget] = useState(0);
   const [unit, setUnit] = useState(1_000);
+  const [league, setLeague] = useSyncedLeague();
   const result = maximumReachableLevel(
     startLevel,
     cityCount,
     budget * unit,
     parameters,
   );
-  const start = cityStatsAt(startLevel, settings.league, parameters);
-  const target = cityStatsAt(result.level, settings.league, parameters);
+  const start = cityStatsAt(startLevel, league || "bronze", parameters);
+  const target = cityStatsAt(result.level, league || "bronze", parameters);
   const goldBonus =
     1 +
     (settings.equipmentSkills.prosperous + settings.clanTemple.prosperous) /
@@ -238,6 +274,11 @@ function MaxLevelCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
+          <LeagueSelect
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+          />
           <Field
             label={t("fields.city-count")}
             value={cityCount}
@@ -274,30 +315,34 @@ function MaxLevelCalculator({
           </label>
         </div>
       </section>
-      <section className="calculator-card calculator-results">
-        <Stat
-          label={t("reachable-level")}
-          value={String(result.level)}
-          testId="max-level-result"
-        />
-        <Stat label={t("remaining-gold")} value={number(result.remaining)} />
-        <Stat
-          label={t("vp-gained")}
-          value={number((target.vp - start.vp) * cityCount)}
-        />
-        <ProductionTransition
-          label={t("gold-transition")}
-          start={start.gold * cityCount * goldBonus}
-          target={target.gold * cityCount * goldBonus}
-          testId="city-max-level-gold"
-        />
-        <ProductionTransition
-          label={t("army-transition")}
-          start={start.army * cityCount * armyBonus}
-          target={target.army * cityCount * armyBonus}
-          testId="city-max-level-army"
-        />
-      </section>
+      {!league ? (
+        <LeagueRequired />
+      ) : (
+        <section className="calculator-card calculator-results">
+          <Stat
+            label={t("reachable-level")}
+            value={String(result.level)}
+            testId="max-level-result"
+          />
+          <Stat label={t("remaining-gold")} value={number(result.remaining)} />
+          <Stat
+            label={t("vp-gained")}
+            value={number((target.vp - start.vp) * cityCount)}
+          />
+          <ProductionTransition
+            label={t("gold-transition")}
+            start={start.gold * cityCount * goldBonus}
+            target={target.gold * cityCount * goldBonus}
+            testId="city-max-level-gold"
+          />
+          <ProductionTransition
+            label={t("army-transition")}
+            start={start.army * cityCount * armyBonus}
+            target={target.army * cityCount * armyBonus}
+            testId="city-max-level-army"
+          />
+        </section>
+      )}
     </div>
   );
 }
@@ -337,6 +382,7 @@ function ProductionCalculator({
   const [cityLevel, setCityLevel] = useState(1);
   const [goldHours, setGoldHours] = useState(0);
   const [troopsHours, setTroopsHours] = useState(0);
+  const [league, setLeague] = useSyncedLeague();
   const result = useMemo(
     () =>
       calculateProduction(
@@ -344,7 +390,7 @@ function ProductionCalculator({
           cityCount,
           cityLevel,
           playerLevel: settings.level,
-          league: settings.league,
+          league: league || "bronze",
           prosperousEquipment: settings.equipmentSkills.prosperous,
           recruiterEquipment: settings.equipmentSkills.recruiter,
           prosperousTemple: settings.clanTemple.prosperous,
@@ -354,13 +400,26 @@ function ProductionCalculator({
         },
         parameters,
       ),
-    [cityCount, cityLevel, goldHours, parameters, settings, troopsHours],
+    [
+      cityCount,
+      cityLevel,
+      goldHours,
+      league,
+      parameters,
+      settings,
+      troopsHours,
+    ],
   );
 
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
+          <LeagueSelect
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+          />
           <Field
             label={t("fields.city-count")}
             value={cityCount}
@@ -374,74 +433,82 @@ function ProductionCalculator({
           />
         </div>
       </section>
-      <section className="calculator-card">
-        <h3>{t("per-city-base")}</h3>
-        <div className="calculator-results">
-          <Stat label={t("vp")} value={number(result.perCity.vp)} />
-          <Stat label={t("wall")} value={number(result.perCity.wall)} />
-          <Stat
-            label={t("gold-hour")}
-            value={`${number(result.perCity.gold)}/h`}
-            testId="city-production-gold"
-          />
-          <Stat
-            label={t("army-hour")}
-            value={`${number(result.perCity.army)}/h`}
-            testId="city-production-army"
-          />
-        </div>
-      </section>
-      <section className="calculator-card">
-        <Breakdown title={t("gold-total")} values={result.gold} />
-        <Breakdown title={t("troops-total")} values={result.troops} />
-        <Stat label={t("vp-total")} value={number(result.vpTotal)} />
-      </section>
-      <section className="calculator-card">
-        <h3>{t("full-production.title")}</h3>
-        <p className="calculator-note">
-          {t("full-production.note", { points: result.fullProduction.points })}
-        </p>
-        <div className="calculator-results">
-          <Stat
-            label={t("full-production.gold")}
-            value={`${number(result.fullProduction.gold)}/h`}
-            testId="full-production-gold"
-          />
-          <Stat
-            label={t("full-production.troops")}
-            value={`${number(result.fullProduction.troops)}/h`}
-          />
-        </div>
-      </section>
-      <section className="calculator-card">
-        <h3>{t("rewards.title")}</h3>
-        <div className="calculator-fields">
-          <Field
-            label={t("rewards.gold-hours")}
-            value={goldHours}
-            min={0}
-            step={0.5}
-            onChange={setGoldHours}
-          />
-          <Field
-            label={t("rewards.troops-hours")}
-            value={troopsHours}
-            min={0}
-            step={0.5}
-            onChange={setTroopsHours}
-          />
-        </div>
-        <div className="calculator-results">
-          <Stat
-            label={t("rewards.gold-bonus")}
-            value={number(result.rewards.gold)}
-          />
-          <Stat
-            label={t("rewards.troops-bonus")}
-            value={number(result.rewards.troops)}
-          />
-        </div>
-      </section>
+      {!league ? (
+        <LeagueRequired />
+      ) : (
+        <>
+          <section className="calculator-card">
+            <h3>{t("per-city-base")}</h3>
+            <div className="calculator-results">
+              <Stat label={t("vp")} value={number(result.perCity.vp)} />
+              <Stat label={t("wall")} value={number(result.perCity.wall)} />
+              <Stat
+                label={t("gold-hour")}
+                value={`${number(result.perCity.gold)}/h`}
+                testId="city-production-gold"
+              />
+              <Stat
+                label={t("army-hour")}
+                value={`${number(result.perCity.army)}/h`}
+                testId="city-production-army"
+              />
+            </div>
+          </section>
+          <section className="calculator-card">
+            <Breakdown title={t("gold-total")} values={result.gold} />
+            <Breakdown title={t("troops-total")} values={result.troops} />
+            <Stat label={t("vp-total")} value={number(result.vpTotal)} />
+          </section>
+          <section className="calculator-card">
+            <h3>{t("full-production.title")}</h3>
+            <p className="calculator-note">
+              {t("full-production.note", {
+                points: result.fullProduction.points,
+              })}
+            </p>
+            <div className="calculator-results">
+              <Stat
+                label={t("full-production.gold")}
+                value={`${number(result.fullProduction.gold)}/h`}
+                testId="full-production-gold"
+              />
+              <Stat
+                label={t("full-production.troops")}
+                value={`${number(result.fullProduction.troops)}/h`}
+              />
+            </div>
+          </section>
+          <section className="calculator-card">
+            <h3>{t("rewards.title")}</h3>
+            <div className="calculator-fields">
+              <Field
+                label={t("rewards.gold-hours")}
+                value={goldHours}
+                min={0}
+                step={0.5}
+                onChange={setGoldHours}
+              />
+              <Field
+                label={t("rewards.troops-hours")}
+                value={troopsHours}
+                min={0}
+                step={0.5}
+                onChange={setTroopsHours}
+              />
+            </div>
+            <div className="calculator-results">
+              <Stat
+                label={t("rewards.gold-bonus")}
+                value={number(result.rewards.gold)}
+              />
+              <Stat
+                label={t("rewards.troops-bonus")}
+                value={number(result.rewards.troops)}
+              />
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }

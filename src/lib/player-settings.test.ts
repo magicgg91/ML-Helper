@@ -8,6 +8,7 @@ import {
 
 describe("player skill-point planning", () => {
   it("derives the budget from level and league", () => {
+    expect(availableSkillPoints(11, "")).toBe(0);
     expect(availableSkillPoints(11, "gold")).toBe(10);
     expect(availableSkillPoints(11, "legend")).toBe(20);
   });

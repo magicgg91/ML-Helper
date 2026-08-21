@@ -14,6 +14,18 @@ describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
   afterEach(cleanup);
 
+  it("starts with no league selected", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("combobox", { name: "Ligue" })).toHaveValue("");
+    expect(
+      screen.getByRole("option", { name: "— Choisir —" }),
+    ).toBeInTheDocument();
+  });
+
   it("keeps equipment skills independent from planned points", async () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
@@ -30,6 +42,9 @@ describe("PlayerSettingsPanel", () => {
         target: { value: "10" },
       },
     );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "gold" },
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );

@@ -3,6 +3,7 @@
     "choose": "— Choose —",
     "decrease": "Decrease {label}",
     "increase": "Increase {label}",
+    "select-league": "Choose a league to calculate.",
     "language": "Language",
     "theme-light": "Enable light mode",
     "theme-dark": "Enable dark mode"
@@ -139,6 +140,7 @@
   "city-cost": {
     "name": "City Cost",
     "fields": {
+      "league": "League",
       "city-count": "Number of cities",
       "start-level": "Starting level",
       "target-level": "Target level"
@@ -161,6 +163,7 @@
   "city-max-level": {
     "name": "Maximum Reachable Level",
     "fields": {
+      "league": "League",
       "city-count": "Number of cities",
       "start-level": "Starting level",
       "available-gold": "Available gold",
@@ -175,6 +178,7 @@
   "city-production": {
     "name": "Production",
     "fields": {
+      "league": "League",
       "city-count": "Number of cities",
       "average-level": "Average city level"
     },
@@ -212,6 +216,7 @@
   },
   "demo-attack-troops": {
     "name": "Demo Attack Troops",
+    "select-league": "Choose a league to calculate.",
     "fields": {
       "city-level": "Target city level",
       "league": "Attacker league"
@@ -229,6 +234,7 @@
     "undefined-suffix": " — to be defined",
     "total-players": "Total players (deduced)",
     "errors": {
+      "select-league": "Choose a league to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
       "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
     },
@@ -319,7 +325,8 @@
     "allocated-summary": "Allocated slots",
     "result": "Result",
     "errors": {
-      "add-positive-stat": "Add a stat with more than zero slots."
+      "add-positive-stat": "Add a stat with more than zero slots.",
+      "select-league": "Choose a league to calculate."
     },
     "columns": {
       "skill": "Skill",
@@ -501,6 +508,7 @@
   "level-up": {
     "name": "Level Up",
     "league": "League",
+    "select-league": "Choose a league to display the reference table.",
     "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league — only Legend, Diamond, Platinum, Bronze and Gold are currently available.",
     "columns": {
       "level": "Level",

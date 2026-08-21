@@ -93,6 +93,7 @@ function GemEditor({
 }) {
   const t = useTranslations(namespace);
   const game = useTranslations("game");
+  const common = useTranslations("common");
   const skills = allowedSkills(block);
   return (
     <div className="stuff-gems">
@@ -161,6 +162,7 @@ function GemEditor({
                 )
               }
             >
+              <option value="">{common("choose")}</option>
               {leagueOptions.map((value) => (
                 <option value={value} key={value}>
                   {game(`leagues.${value}`)}
@@ -208,7 +210,7 @@ function SlotEditor({
       gems: Array.from({ length: count }, () => ({
         skill: "none",
         star: 1,
-        league: "legend" as const,
+        league: "" as const,
       })),
     });
   }
@@ -408,7 +410,7 @@ function defaultSide(block: EquipmentBlock, slot: EquipmentSlot): CompareSide {
     star: 1,
     gems: Array.from(
       { length: gemSlotsByRarity[item.rarity as EquipmentSelection["rarity"]] },
-      () => ({ skill: "none", star: 1, league: "legend" }),
+      () => ({ skill: "none", star: 1, league: "" }),
     ),
   };
 }

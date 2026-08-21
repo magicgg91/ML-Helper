@@ -18,6 +18,9 @@ describe("SkillsCalculators", () => {
   it("caps mixed optimization rows at the available socket count", () => {
     renderWithIntl(<SkillsCalculators />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    expect(screen.getByRole("combobox", { name: "Ligue ligne 1" })).toHaveValue(
+      "",
+    );
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
       { target: { value: "25" } },
@@ -36,6 +39,9 @@ describe("SkillsCalculators", () => {
     renderWithIntl(<SkillsCalculators />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    const league = screen.getByRole("combobox", { name: "Ligue" });
+    expect(league).toHaveValue("");
+    fireEvent.change(league, { target: { value: "legend" } });
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Emplacements budget" }),
       { target: { value: "3" } },
@@ -62,7 +68,9 @@ describe("SkillsCalculators", () => {
     ).toHaveValue(1);
   });
   it("uses the administrator-provided named Templar parameters", () => {
-    renderWithIntl(<SkillsCalculators templarParameters={{ base: 999, ratio: 1.3 }} />);
+    renderWithIntl(
+      <SkillsCalculators templarParameters={{ base: 999, ratio: 1.3 }} />,
+    );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),

@@ -10,8 +10,9 @@ import {
   xpAt,
   type LevelUpParameters,
 } from "../lib/level-up";
-import { leagues, type League } from "../lib/player-settings";
-import { usePlayerSettings } from "./use-player-settings";
+import type { League } from "../lib/player-settings";
+import { LeagueSelect } from "./league-select";
+import { useSyncedLeague } from "./use-synced-league";
 
 function LevelTable({
   levels,
@@ -63,10 +64,8 @@ export function LevelUpReference({
 }: {
   parameters: LevelUpParameters;
 }) {
-  const t = useTranslations("level-up"),
-    game = useTranslations("game");
-  const settings = usePlayerSettings();
-  const [league, setLeague] = useState<League>(settings.league);
+  const t = useTranslations("level-up");
+  const [league, setLeague] = useSyncedLeague();
   const [page, setPage] = useState(0);
   const start = page * parameters.pageSize + 1;
   const levels = Array.from(
@@ -81,25 +80,20 @@ export function LevelUpReference({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <label className="calculator-field">
-          {t("league")}
-          <select
-            aria-label={t("league")}
-            value={league}
-            onChange={(event) => {
-              setLeague(event.target.value as League);
-              setPage(0);
-            }}
-          >
-            {leagues.map((item) => (
-              <option key={item} value={item}>
-                {game(`leagues.${item}`)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <LeagueSelect
+          label={t("league")}
+          value={league}
+          onChange={(value) => {
+            setLeague(value);
+            setPage(0);
+          }}
+        />
       </section>
-      {league === "silver" ? (
+      {!league ? (
+        <p className="empty-state" role="status">
+          {t("select-league")}
+        </p>
+      ) : league === "silver" ? (
         <p className="empty-state" role="status">
           {t("unconfirmed")}
         </p>

@@ -25,13 +25,13 @@ async function main() {
     'CREATE INDEX "audit_logs_created_at_idx" ON "audit_logs"("created_at")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "calculators" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "name" JSONB NOT NULL, "description" JSONB NOT NULL, "active" BOOLEAN NOT NULL DEFAULT false, "inputs" JSONB NOT NULL, "outputs" JSONB NOT NULL, "tips" JSONB NOT NULL)',
+    'CREATE TABLE "calculators" ("id" TEXT NOT NULL PRIMARY KEY, "slug" TEXT NOT NULL, "category" TEXT NOT NULL, "description" JSONB NOT NULL, "active" BOOLEAN NOT NULL DEFAULT false, "inputs" JSONB NOT NULL, "outputs" JSONB NOT NULL, "tips" JSONB NOT NULL)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "calculators_slug_key" ON "calculators"("slug")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "formulas" ("id" TEXT NOT NULL PRIMARY KEY, "calculator_id" TEXT NOT NULL, "key" TEXT NOT NULL, "label" JSONB NOT NULL, "formula_params" JSONB NOT NULL, CONSTRAINT "formulas_calculator_id_fkey" FOREIGN KEY ("calculator_id") REFERENCES "calculators" ("id") ON DELETE CASCADE ON UPDATE CASCADE)',
+    'CREATE TABLE "formulas" ("id" TEXT NOT NULL PRIMARY KEY, "calculator_id" TEXT NOT NULL, "key" TEXT NOT NULL, "formula_params" JSONB NOT NULL, CONSTRAINT "formulas_calculator_id_fkey" FOREIGN KEY ("calculator_id") REFERENCES "calculators" ("id") ON DELETE CASCADE ON UPDATE CASCADE)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "formulas_calculator_id_key_key" ON "formulas"("calculator_id", "key")',
@@ -49,63 +49,32 @@ async function main() {
     'CREATE UNIQUE INDEX "static_content_key_key" ON "static_content"("key")',
   );
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "reference_tables" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "label" JSONB NOT NULL, "columns" JSONB NOT NULL, "rows" JSONB NOT NULL, "calculator_id" TEXT)',
+    'CREATE TABLE "reference_tables" ("id" TEXT NOT NULL PRIMARY KEY, "key" TEXT NOT NULL, "columns" JSONB NOT NULL, "rows" JSONB NOT NULL, "calculator_id" TEXT)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "reference_tables_key_key" ON "reference_tables"("key")',
   );
   const calculators = [
-    ["calculator-city-cost", "city-cost", "villes", "Coût de Ville"],
-    [
-      "calculator-city-max-level",
-      "city-max-level",
-      "villes",
-      "Niveau Max Atteignable",
-    ],
-    ["calculator-city-production", "city-production", "villes", "Production"],
-    ["calculator-ranking", "ranking", "classement", "Ranking"],
-    [
-      "calculator-stuff-simulator",
-      "stuff-simulator",
-      "competences",
-      "Simulateur de Stuff",
-    ],
-    [
-      "calculator-stuff-comparison",
-      "stuff-comparison",
-      "competences",
-      "Comparaison de stuff",
-    ],
-    ["calculator-gems", "gems", "competences", "Gemmes"],
-    ["calculator-templars", "templars", "competences", "Templiers"],
-    ["calculator-xp-gain-rate", "xp-gain-rate", "combat", "Taux de gain d’XP"],
-    [
-      "calculator-demo-attack-troops",
-      "demo-attack-troops",
-      "combat",
-      "Troupes en attaque démo",
-    ],
-    [
-      "calculator-combat-equipment",
-      "combat-equipment",
-      "referentiels",
-      "Équipements de Combat",
-    ],
-    [
-      "calculator-expedition-equipment",
-      "expedition-equipment",
-      "referentiels",
-      "Équipement d’Expédition",
-    ],
-    ["calculator-level-up", "level-up", "referentiels", "Level Up"],
+    ["calculator-city-cost", "city-cost", "villes"],
+    ["calculator-city-max-level", "city-max-level", "villes"],
+    ["calculator-city-production", "city-production", "villes"],
+    ["calculator-ranking", "ranking", "classement"],
+    ["calculator-stuff-simulator", "stuff-simulator", "competences"],
+    ["calculator-stuff-comparison", "stuff-comparison", "competences"],
+    ["calculator-gems", "gems", "competences"],
+    ["calculator-templars", "templars", "competences"],
+    ["calculator-xp-gain-rate", "xp-gain-rate", "combat"],
+    ["calculator-demo-attack-troops", "demo-attack-troops", "combat"],
+    ["calculator-combat-equipment", "combat-equipment", "referentiels"],
+    ["calculator-expedition-equipment", "expedition-equipment", "referentiels"],
+    ["calculator-level-up", "level-up", "referentiels"],
   ];
-  for (const [id, slug, category, name] of calculators) {
+  for (const [id, slug, category] of calculators) {
     await prisma.calculator.create({
       data: {
         id,
         slug,
         category,
-        name: { fr: name },
         description: {},
         active: true,
         inputs: {},
@@ -119,10 +88,6 @@ async function main() {
       id: "formula-city-parameters",
       calculatorId: "calculator-city-cost",
       key: "city_parameters",
-      label: {
-        en: "Shared City parameters",
-        fr: "Paramètres Villes partagés",
-      },
       formulaParams: {
         vp: { base: 20, ratio: 1.115 },
         walls: { base: 70, ratio: 1.2 },
@@ -143,7 +108,6 @@ async function main() {
       id: "formula-xp-gain-tiers",
       calculatorId: "calculator-xp-gain-rate",
       key: "xp_gain_tiers",
-      label: { fr: "Paliers XP" },
       formulaParams: {
         tiers: [
           { low: 0, high: 40, rate: 0 },
@@ -160,7 +124,6 @@ async function main() {
       id: "formula-demo-attack-percentages",
       calculatorId: "calculator-demo-attack-troops",
       key: "demo_attack_percentages",
-      label: { fr: "Pourcentages démo" },
       formulaParams: {
         percentages: {
           bronze: 100,
@@ -178,7 +141,6 @@ async function main() {
       id: "formula-level-up",
       calculatorId: "calculator-level-up",
       key: "level_up_parameters",
-      label: { fr: "Paramètres Level Up" },
       formulaParams: {
         xp: { base: 50, ratio: 1.3 },
         troops: {
@@ -200,7 +162,6 @@ async function main() {
       id: "formula-templar-cost",
       calculatorId: "calculator-templars",
       key: "templar_cost",
-      label: { en: "Templar cost", fr: "Coût des Templiers" },
       formulaParams: { base: 150, ratio: 1.3 },
     },
   });

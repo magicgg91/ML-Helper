@@ -8,7 +8,6 @@ import {
 } from "./editorial-locale-select";
 
 type Values = {
-  name: Record<string, string>;
   description: Record<string, string>;
   tips: Record<string, string>;
 };
@@ -34,7 +33,7 @@ export function CalculatorTranslationsEditor({
   }
   async function save() {
     const payload = Object.fromEntries(
-      (["name", "description", "tips"] as const).map((field) => [
+      (["description", "tips"] as const).map((field) => [
         field,
         { fr: values[field].fr ?? "", en: values[field].en ?? "" },
       ]),
@@ -56,13 +55,6 @@ export function CalculatorTranslationsEditor({
       />
       <fieldset>
         <legend>{locale.toUpperCase()}</legend>
-        <label>
-          {t("name")}
-          <input
-            value={values.name[locale] ?? ""}
-            onChange={(event) => update("name", locale, event.target.value)}
-          />
-        </label>
         <label>
           {t("description-field")}
           <textarea

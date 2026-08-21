@@ -15,6 +15,9 @@ describe("RankingCalculator", () => {
     );
   it("converts correlated rank and percentage and renders confirmed rewards", () => {
     renderCalculator();
+    fireEvent.change(screen.getByLabelText("Ligue"), {
+      target: { value: "diamond" },
+    });
     expect(screen.getByTestId("ranking-total")).toHaveTextContent("1 000");
     expect(
       screen.getAllByText("Montée Légende", { selector: "td" }),
@@ -34,10 +37,19 @@ describe("RankingCalculator", () => {
   });
   it("handles a zero percentage without dividing by zero", () => {
     renderCalculator();
+    fireEvent.change(screen.getByLabelText("Ligue"), {
+      target: { value: "diamond" },
+    });
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
       { target: { value: "0" } },
     );
     expect(screen.getByTestId("ranking-total")).toHaveTextContent("—");
+  });
+
+  it("waits for a league instead of calculating with a default", () => {
+    renderCalculator();
+    expect(screen.getByLabelText("Ligue")).toHaveValue("");
+    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
   });
 });

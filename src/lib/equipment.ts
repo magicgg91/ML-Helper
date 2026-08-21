@@ -1,6 +1,6 @@
 import { combatEquipmentData } from "./equipment-data";
-import { gemValue, type GemLeague } from "./gems-templars";
-import type { SkillKey } from "./player-settings";
+import { gemValue } from "./gems-templars";
+import type { LeagueSelection, SkillKey } from "./player-settings";
 
 export const equipmentBlocks = ["attack", "defense", "gold", "speed"] as const;
 export type EquipmentBlock = (typeof equipmentBlocks)[number];
@@ -105,7 +105,7 @@ const skillKeyByLabel: Record<EquipmentSkill, SkillKey> = {
 export type EquipmentGem = {
   skill: EquipmentSkill | "none";
   star: number;
-  league: GemLeague | "bronze";
+  league: LeagueSelection;
 };
 export type EquipmentSelection = { rarity: EquipmentRarity; setName: string };
 export type EquipmentSlotState = {
@@ -210,7 +210,11 @@ export function computeEquipmentSlot(
     }
   }
   for (const gem of state.gems) {
-    if (gem.skill !== "none" && allowedSkills(block).includes(gem.skill)) {
+    if (
+      gem.skill !== "none" &&
+      gem.league &&
+      allowedSkills(block).includes(gem.skill)
+    ) {
       add(
         total,
         gem.skill,

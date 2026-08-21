@@ -30,6 +30,10 @@ describe("CombatCalculators", () => {
     fireEvent.click(
       screen.getByRole("tab", { name: "Troupes en attaque démo" }),
     );
+    expect(
+      screen.getByRole("combobox", { name: "Ligue de l’attaquant" }),
+    ).toHaveValue("");
+    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
     fireEvent.change(
       screen.getByRole("combobox", { name: "Ligue de l’attaquant" }),
       { target: { value: "bronze" } },

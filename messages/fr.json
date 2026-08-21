@@ -3,6 +3,7 @@
     "choose": "— Choisir —",
     "decrease": "Diminuer {label}",
     "increase": "Augmenter {label}",
+    "select-league": "Choisis une ligue pour calculer.",
     "language": "Langue",
     "theme-light": "Activer le mode clair",
     "theme-dark": "Activer le mode sombre"
@@ -139,6 +140,7 @@
   "city-cost": {
     "name": "Coût de Ville",
     "fields": {
+      "league": "Ligue",
       "city-count": "Nombre de villes",
       "start-level": "Niveau de départ",
       "target-level": "Niveau cible"
@@ -161,6 +163,7 @@
   "city-max-level": {
     "name": "Niveau Max Atteignable",
     "fields": {
+      "league": "Ligue",
       "city-count": "Nombre de villes",
       "start-level": "Niveau de départ",
       "available-gold": "Or disponible",
@@ -175,6 +178,7 @@
   "city-production": {
     "name": "Production",
     "fields": {
+      "league": "Ligue",
       "city-count": "Nombre de villes",
       "average-level": "Niveau moyen des villes"
     },
@@ -218,6 +222,7 @@
   },
   "demo-attack-troops": {
     "name": "Troupes en attaque démo",
+    "select-league": "Choisis une ligue pour calculer.",
     "fields": {
       "city-level": "Niveau de ville visée",
       "league": "Ligue de l’attaquant"
@@ -235,6 +240,7 @@
     "undefined-suffix": " — à définir",
     "total-players": "Nombre total de joueurs (déduit)",
     "errors": {
+      "select-league": "Choisis une ligue pour calculer.",
       "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
       "missing-bands": "Seuils et récompenses à définir dans l’administration pour la ligue {league}."
     },
@@ -325,7 +331,8 @@
     "allocated-summary": "Emplacements alloués",
     "result": "Résultat",
     "errors": {
-      "add-positive-stat": "Ajoute une stat avec des emplacements supérieurs à zéro."
+      "add-positive-stat": "Ajoute une stat avec des emplacements supérieurs à zéro.",
+      "select-league": "Choisis une ligue pour calculer."
     },
     "columns": {
       "skill": "Compétence",
@@ -506,6 +513,7 @@
   "level-up": {
     "name": "Level Up",
     "league": "Ligue",
+    "select-league": "Choisis une ligue pour afficher le référentiel.",
     "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
     "columns": {
       "level": "Niveau",
