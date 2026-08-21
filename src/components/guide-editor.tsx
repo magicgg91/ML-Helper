@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -32,7 +31,6 @@ export function GuideEditor({
   initial: GuideDraft;
   canPublish: boolean;
 }) {
-  const router = useRouter();
   const t = useTranslations("admin.guide-editor");
   const [id, setId] = useState(initial.id);
   const [locale, setLocale] = useState<Locale>("fr");
@@ -98,8 +96,7 @@ export function GuideEditor({
       setStatus(nextStatus);
     }
     setMessage(t("saved"));
-    if (!id) router.replace(`/admin/guides/${guideId}`);
-    router.refresh();
+    if (!id) window.history.replaceState(null, "", `/admin/guides/${guideId}`);
   }
 
   const draft = translations[locale];

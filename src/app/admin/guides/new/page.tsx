@@ -2,12 +2,14 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/guide-editor";
 import { getTranslations } from "next-intl/server";
+import { AdminBackLink } from "@/components/admin-back-link";
 
 export default async function NewGuidePage() {
   const session = await requireCapability("guides.write");
   const t = await getTranslations("admin.guides");
   return (
     <main className="admin-main">
+      <AdminBackLink href="/admin/guides" />
       <p className="eyebrow">{t("title")}</p>
       <h1>{t("new-title")}</h1>
       <GuideEditor

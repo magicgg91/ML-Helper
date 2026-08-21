@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type CalculatorRow = {
   id: string;
   slug: string;
   label: string;
   active: boolean;
+  editHref: string;
 };
 
 export function CalculatorVisibilityList({
@@ -26,7 +28,7 @@ export function CalculatorVisibilityList({
     setSaving(row.id);
     setMessage(t("saving"));
     try {
-      const response = await fetch(`/api/admin/calculators/${row.id}`, {
+      const response = await fetch(`/api/admin/tools/${row.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ active: !row.active }),
@@ -82,6 +84,8 @@ export function CalculatorVisibilityList({
                   {t(row.active ? "active" : "inactive")}
                 </td>
                 <td>
+                  <div className="table-actions">
+                  <Link href={row.editHref}>{t("edit")}</Link>
                   {canToggle && (
                     <button
                       className="secondary-action"
@@ -92,6 +96,7 @@ export function CalculatorVisibilityList({
                       {t(row.active ? "disable" : "enable")}
                     </button>
                   )}
+                  </div>
                 </td>
               </tr>
             ))}

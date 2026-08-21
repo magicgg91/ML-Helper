@@ -4,6 +4,7 @@ import { defaultFrenchLegalNotice, legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
+import { AdminBackLink } from "@/components/admin-back-link";
 
 export default async function StaticContentAdminPage() {
   await requireCapability("content.read");
@@ -13,6 +14,7 @@ export default async function StaticContentAdminPage() {
   });
   return (
     <main className="admin-main">
+      <AdminBackLink href="/admin" />
       <p className="eyebrow">{t("eyebrow")}</p>
       <h1>{t("title")}</h1>
       <LegalNoticeEditor

@@ -3,8 +3,6 @@ import {
   gemValue,
   optimizeGemBudget,
   optimizeGemTarget,
-  normalizeTemplarCostRows,
-  templarCosts,
   templarCumulativeCost,
   templarUpgradeCost,
 } from "./gems-templars";
@@ -40,7 +38,7 @@ describe("gems", () => {
 });
 
 describe("templars", () => {
-  it("uses the exact lookup table rather than a formula", () => {
+  it("uses the named base and ratio formula", () => {
     expect(templarCumulativeCost(3)).toBe(599);
     expect(templarUpgradeCost(0, 1)).toBe(150);
     expect(templarUpgradeCost(0, 3)).toBe(599);
@@ -48,18 +46,7 @@ describe("templars", () => {
     expect(templarUpgradeCost(3, 1)).toBe(449);
     expect(templarUpgradeCost(19, 20)).toBe(21929);
   });
-  it("normalizes old level-zero tables without changing level costs", () => {
-    expect(
-      normalizeTemplarCostRows([
-        { level: 0, cost: 0 },
-        ...templarCosts.map((cost, index) => ({ level: index + 1, cost })),
-      ]),
-    ).toEqual(templarCosts);
-    expect(
-      normalizeTemplarCostRows([
-        ...templarCosts.map((cost, level) => ({ level, cost })),
-        { level: 20, cost: 28507 },
-      ]),
-    ).toEqual(templarCosts);
+  it("accepts administrator-provided named parameters", () => {
+    expect(templarUpgradeCost(0, 2, { base: 100, ratio: 2 })).toBe(300);
   });
 });

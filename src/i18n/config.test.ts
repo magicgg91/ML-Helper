@@ -16,7 +16,7 @@ describe("static translation configuration", () => {
 
     expect(messages).toMatchObject({
       Navigation: {
-        tools: "Simulateurs",
+        tools: "Outils",
         admin: "Admin area",
       },
     });

@@ -34,7 +34,7 @@ export function CalculatorTranslationsEditor({
         { fr: values[field].fr ?? "", en: values[field].en ?? "" },
       ]),
     );
-    const response = await fetch(`/api/admin/calculators/${id}/translations`, {
+    const response = await fetch(`/api/admin/tools/${id}/translations`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),

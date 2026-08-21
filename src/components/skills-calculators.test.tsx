@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import messages from "../../messages/fr.json";
 import { SkillsCalculators } from "./skills-calculators";
-import { templarCosts } from "../lib/gems-templars";
 
 function renderWithIntl(node: ReactNode) {
   return render(
@@ -62,16 +61,15 @@ describe("SkillsCalculators", () => {
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
     ).toHaveValue(1);
   });
-  it("uses the administrator-provided Templar lookup table", () => {
-    const costs = [999, ...templarCosts.slice(1)];
-    renderWithIntl(<SkillsCalculators templarCostTable={costs} />);
+  it("uses the administrator-provided named Templar parameters", () => {
+    renderWithIntl(<SkillsCalculators templarParameters={{ base: 999, ratio: 1.3 }} />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
       { target: { value: "3" } },
     );
     expect(screen.getByTestId("templar-cost")).toHaveTextContent(
-      "1.45k Pouciel",
+      "3.99k Pouciel",
     );
   });
 });

@@ -50,7 +50,7 @@ describe("admin page translations", () => {
     expect(fr("admin.guide-editor.submit-review")).toBe("Soumettre en review");
   });
 
-  it("covers the existing /admin/calculators tools list", async () => {
+  it("covers the /admin/tools tools list", async () => {
     const { en, fr } = await translators();
     expect(en("admin.tools.title")).toBe("Tools");
     expect(fr("admin.tools.title")).toBe("Outils");
@@ -80,7 +80,7 @@ describe("admin page translations", () => {
     expect(fr("login.submit")).toBe("Se connecter");
   });
 
-  it("covers the currently separate reference editors", async () => {
+  it("covers reference editors integrated into /admin/guides", async () => {
     const { en, fr } = await translators();
     expect(en("admin.references.save")).toBe("Save entire table");
     expect(fr("admin.references.save")).toBe("Enregistrer toute la table");

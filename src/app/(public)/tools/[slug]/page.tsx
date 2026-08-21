@@ -4,7 +4,7 @@ import { RankingCalculator } from "../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../components/skills-calculators";
 import { getRankingConfig } from "../../../../lib/ranking";
 import { getCalculatorAvailability } from "../../../../lib/calculators-server";
-import { getTemplarCostRows } from "../../../../lib/reference-equipment-server";
+import { getTemplarParameters } from "../../../../lib/admin-formulas-server";
 import { getTranslations } from "next-intl/server";
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
@@ -18,7 +18,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
       <main className="public-main">
         <h1 className="sr-only">{tools("skills")}</h1>
         <SkillsCalculators
-          templarCostTable={await getTemplarCostRows()}
+          templarParameters={await getTemplarParameters()}
           availability={{
             simulator: active["stuff-simulator"],
             comparison: active["stuff-comparison"],

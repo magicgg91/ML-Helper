@@ -13,6 +13,8 @@ export type GuideAdminRow = {
   updatedAt: string;
   status: string;
   active: boolean;
+  type?: "guide" | "reference";
+  editHref?: string;
 };
 export function GuideStatusList({
   rows,
@@ -41,8 +43,8 @@ export function GuideStatusList({
     );
     setMessage(t("status-saved"));
   }
-  async function toggle(id: string, active: boolean) {
-    const response = await fetch(`/api/admin/guides/${id}/active`, {
+  async function toggle(id: string, active: boolean, type?: "guide" | "reference") {
+    const response = await fetch(type === "reference" ? `/api/admin/guides/references/${id}/active` : `/api/admin/guides/${id}/active`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ active }),
@@ -73,7 +75,7 @@ export function GuideStatusList({
         <table className="ranking-table guide-admin-table">
           <thead>
             <tr>
-              <th>{t("columns.title")}</th>
+              <th>{t("columns.title")}</th><th>{t("columns.type")}</th>
               <th>{t("columns.author")}</th>
               <th>{t("columns.created")}</th>
               <th>{t("columns.updated")}</th>
@@ -93,11 +95,12 @@ export function GuideStatusList({
                 }
               >
                 <td>{guide.title || guide.slug}</td>
+                <td>{t(`types.${guide.type ?? "guide"}`)}</td>
                 <td>{guide.author}</td>
                 <td>{guide.createdAt}</td>
                 <td>{guide.updatedAt}</td>
                 <td>
-                  <select
+                  {guide.type === "reference" ? t(guide.active ? "statuses.active" : "statuses.inactive") : <select
                     aria-label={t("status-label", { title: guide.title || guide.slug })}
                     value={guide.status}
                     disabled={!canWrite}
@@ -114,22 +117,22 @@ export function GuideStatusList({
                         {t("statuses.published")}
                       </option>
                     )}
-                  </select>
+                  </select>}
                 </td>
                 <td>
                   <div className="table-actions">
                     {canWrite && (
-                      <Link href={`/admin/guides/${guide.id}`}>{t("edit")}</Link>
+                      <Link href={guide.editHref ?? `/admin/guides/${guide.id}`}>{t("edit")}</Link>
                     )}
                     {canWrite && (
                       <button
                         type="button"
-                        onClick={() => toggle(guide.id, !guide.active)}
+                        onClick={() => toggle(guide.id, !guide.active, guide.type)}
                       >
                         {t(guide.active ? "disable" : "enable")}
                       </button>
                     )}
-                    {canDelete && (
+                    {canDelete && guide.type !== "reference" && (
                       <button
                         type="button"
                         className="danger-action"

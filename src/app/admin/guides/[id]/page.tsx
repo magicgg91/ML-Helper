@@ -5,6 +5,9 @@ import { GuideEditor } from "@/components/guide-editor";
 import { prisma } from "@/lib/prisma";
 import { translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
+import { AdminBackLink } from "@/components/admin-back-link";
+import { CombatReferenceAdmin, ExpeditionReferenceAdmin } from "@/components/reference-admin-editors";
+import { getCombatReferenceRows, getExpeditionReferenceRows } from "@/lib/reference-equipment-server";
 
 export default async function EditGuidePage({
   params,
@@ -12,6 +15,11 @@ export default async function EditGuidePage({
   const session = await requireCapability("guides.write");
   const t = await getTranslations("admin.guides");
   const { id } = await params;
+  if (id === "reference-combat-equipment" || id === "reference-expedition-equipment") {
+    await requireCapability("references.write");
+    const combat = id === "reference-combat-equipment";
+    return <main className="admin-main"><AdminBackLink href="/admin/guides" /><h1>{combat ? t("reference-combat") : t("reference-expedition")}</h1>{combat ? <CombatReferenceAdmin initialRows={await getCombatReferenceRows()} /> : <ExpeditionReferenceAdmin initialRows={await getExpeditionReferenceRows()} />}</main>;
+  }
   const guide = await prisma.guide.findUnique({ where: { id } });
   if (!guide) notFound();
   const title = translationRecord(guide.title),
@@ -19,7 +27,7 @@ export default async function EditGuidePage({
     content = translationRecord(guide.content);
   return (
     <main className="admin-main">
-      <p className="eyebrow">{t("title")}</p>
+      <AdminBackLink href="/admin/guides" /><p className="eyebrow">{t("title")}</p>
       <h1>{t("edit-title")}</h1>
       <GuideEditor
         canPublish={can(session.user.role, "guides.publish")}

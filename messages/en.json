@@ -94,7 +94,7 @@
     "combat": "Combat",
     "ranking": "Ranking",
     "skills": "Skills",
-    "count": "{count, plural, =0 {No simulator available} one {# simulator available} other {# simulators available}}",
+    "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
     "open": "Open category",
     "comingSoon": "Coming soon",
     "unavailable": "Currently unavailable",
@@ -348,12 +348,12 @@
     }
   },
   "Navigation": {
-    "tools": "Simulators",
+    "tools": "Tools",
     "guides": "Guides",
     "admin": "Admin area"
   },
   "Public": {
-    "tools": "Simulators",
+    "tools": "Tools",
     "guides": "Guides",
     "contact": "Contact",
     "admin": "Administration",
@@ -363,7 +363,7 @@
     "eyebrow": "Million Lords · Community tools",
     "title": "Plan your next progression.",
     "description": "Simulate your progression, compare equipment and browse useful game data. Your player settings remain in this browser only.",
-    "tools": "View simulators",
+    "tools": "View tools",
     "guides": "Browse guides",
     "carouselLabel": "Million Lords universe preview",
     "carouselKingdom": "Fortified kingdom in the Million Lords universe",
@@ -379,14 +379,14 @@
     "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence."
   },
   "ToolsPage": {
-    "eyebrow": "Simulators",
+    "eyebrow": "Tools",
     "title": "Choose your domain",
     "cities": "Cities",
     "combat": "Combat",
     "ranking": "Ranking",
     "skills": "Skills",
     "references": "Reference tables",
-    "count": "{count, plural, =0 {No simulator available} one {# simulator available} other {# simulators available}}",
+    "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
     "open": "Open category",
     "comingSoon": "Coming soon",
     "unavailable": "Category currently unavailable"
@@ -492,7 +492,6 @@
     "navigation": {
       "dashboard": "Dashboard",
       "tools": "Tools",
-      "references": "Reference tables",
       "guides": "Guides",
       "content": "Static content",
       "users": "Users",
@@ -544,17 +543,23 @@
       "empty": "No guide created.",
       "columns": {
         "title": "Title",
+        "type": "Type",
         "author": "Author",
         "created": "Created",
         "updated": "Last edited",
         "status": "Status",
         "actions": "Actions"
       },
+      "types": { "guide": "Guide", "reference": "Reference table" },
       "statuses": {
         "draft": "Draft",
         "pending_review": "Pending review",
-        "published": "Published"
+        "published": "Published",
+        "active": "Enabled",
+        "inactive": "Disabled"
       },
+      "reference-combat": "Edit Combat Equipment",
+      "reference-expedition": "Edit Expedition Equipment",
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
       "edit": "Edit",
@@ -609,6 +614,11 @@
       "save-translations": "Save translations",
       "translations-saved": "Translations saved.",
       "translations-error": "Unable to save translations."
+      ,"edit": "Edit",
+      "city-parameters": "Shared City parameters",
+      "ranking-editor": "Ranking thresholds",
+      "templar-parameters": "Templar cost parameters",
+      "edit-tool": "Edit tool — {tool}"
     },
     "ranking": {
       "title": "Ranking",
@@ -664,7 +674,16 @@
       "save-error": "Save failed (HTTP {status}).",
       "saved": "Reference table saved.",
       "server-error": "Unable to reach the server. Check the connection and try again."
+      ,"all": "All",
+      "filters": { "skill": "Skill" }
     },
+    "common": { "back": "Back" },
+    "parameters": { "save": "Save parameters", "saving": "Saving…", "saved": "Parameters saved.", "error": "Save failed (HTTP {status}).", "server-error": "Unable to reach the server." },
+    "city-parameters": {
+      "progression": "Progression parameters", "multipliers": "League multipliers", "league": "League", "army": "Army multiplier", "gold": "Gold multiplier",
+      "vp": { "base": "VP base", "ratio": "VP ratio" }, "walls": { "base": "Walls base", "ratio": "Walls ratio" }, "cost": { "base": "Cost base", "ratio": "Cost ratio" }
+    },
+    "templar-parameters": { "formula": "Cost(n) = round(base × ratio^(n-1))", "base": "Base", "ratio": "Ratio" },
     "users": {
       "title": "Admin users",
       "create": "Create user",

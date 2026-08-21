@@ -2,6 +2,7 @@ import { requireAdminSession } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { getLocale, getTranslations } from "next-intl/server";
+import { referenceToolSlugs } from "@/lib/admin-tools";
 
 export default async function AdminPage() {
   const session = await requireAdminSession();
@@ -14,10 +15,10 @@ export default async function AdminPage() {
   const mayViewLogs = can(session.user.role, "logs.view");
   const [active, calculatorTotal, publishedGuides, guideTotal, recentLogs] = await Promise.all([
     mayViewCalculators
-      ? prisma.calculator.count({ where: { active: true } })
+      ? prisma.calculator.count({ where: { active: true, slug: { notIn: [...referenceToolSlugs] } } })
       : Promise.resolve(0),
     mayViewCalculators
-      ? prisma.calculator.count()
+      ? prisma.calculator.count({ where: { slug: { notIn: [...referenceToolSlugs] } } })
       : Promise.resolve(0),
     mayViewGuides
       ? prisma.guide.count({ where: { status: "published" } })

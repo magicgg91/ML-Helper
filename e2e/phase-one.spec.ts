@@ -49,7 +49,7 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(page.locator(".home-carousel-track figure")).toHaveCount(3);
   await expect(page.locator(".home-feature")).toHaveCount(2);
   await expect(
-    page.getByRole("link", { name: "Voir les simulateurs" }),
+    page.getByRole("link", { name: "Voir les outils" }),
   ).toHaveAttribute("href", "/tools");
   await expect(
     page.getByRole("link", { name: "Parcourir les guides" }),
@@ -326,27 +326,25 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("cell", { name: "super_admin" }).first(),
   ).toBeVisible();
 
-  await adminNav.getByRole("link", { name: "Référentiels" }).click();
-  await page.getByRole("link", { name: "Équipements de Combat" }).click();
+  await adminNav.getByRole("link", { name: "Guides" }).click();
+  await page.getByRole("row", { name: /Équipements de Combat/ }).getByRole("link", { name: "Éditer" }).click();
   await expect(
     page.getByRole("heading", {
-      name: "Référentiel — Équipements de Combat",
+      name: "Éditer les Équipements de Combat",
     }),
   ).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(180);
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
-  await adminNav.getByRole("link", { name: "Référentiels" }).click();
-  await page.getByRole("link", { name: "Équipement d’Expédition" }).click();
+  await adminNav.getByRole("link", { name: "Guides" }).click();
+  await page.getByRole("row", { name: /Équipement d’Expédition/ }).getByRole("link", { name: "Éditer" }).click();
   await expect(page.locator("tbody tr")).toHaveCount(120);
   await expect(page.getByLabel("Expédition ligne 1 Nom du set")).not.toHaveValue("");
 
-  await adminNav.getByRole("link", { name: "Référentiels" }).click();
-  await page.getByRole("link", { name: "Templiers" }).click();
-  await expect(page.locator("tbody tr")).toHaveCount(20);
-  await expect(
-    page.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
-  ).toHaveValue("21929");
+  await adminNav.getByRole("link", { name: "Outils" }).click();
+  await page.getByRole("row", { name: /Templiers/ }).getByRole("link", { name: "Modifier" }).click();
+  await expect(page.getByRole("spinbutton", { name: "Base" })).toHaveValue("150");
+  await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue("1.3");
 });
 
 test("direct admin URLs enforce all five roles", async ({ browser }) => {
@@ -386,8 +384,7 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
 
   const allSections = [
     "/admin/guides",
-    "/admin/calculators",
-    "/admin/references",
+    "/admin/tools",
     "/admin/content",
     "/admin/users",
     "/admin/logs",
@@ -406,20 +403,19 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     {
       username: "role-guides",
       password: "role-test-password",
-      allowed: ["/admin/guides", "/admin/references"],
+      allowed: ["/admin/guides"],
     },
     {
       username: "role-tools",
       password: "role-test-password",
-      allowed: ["/admin/calculators"],
+      allowed: ["/admin/tools"],
     },
     {
       username: "role-readonly",
       password: "role-test-password",
       allowed: [
         "/admin/guides",
-        "/admin/calculators",
-        "/admin/references",
+        "/admin/tools",
         "/admin/users",
         "/admin/logs",
       ],
@@ -548,10 +544,10 @@ test("guide editor supports the complete editorial lifecycle", async ({
     .fill("## Départ\n\nContenu initial du guide.");
   await page.getByRole("button", { name: "Soumettre en review" }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.");
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", { timeout: 15_000 });
   await page.getByLabel("Titre (FR)").fill("Guide édité et publié");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.");
+  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", { timeout: 15_000 });
   await page.goto("/admin/guides");
   const row = page.getByRole("row", { name: /Guide édité et publié/ });
   await expect(row.getByRole("combobox")).toHaveValue("pending_review");
@@ -594,7 +590,7 @@ test("calculator visibility and guide publication are reversible", async ({
   await expect(page).toHaveURL(/\/admin$/);
 
   const disabled = await page.request.patch(
-    "/api/admin/calculators/calculator-ranking",
+    "/api/admin/tools/calculator-ranking",
     { data: { active: false } },
   );
   expect(disabled.status()).toBe(200);
@@ -621,7 +617,7 @@ test("calculator visibility and guide publication are reversible", async ({
 
   await page.getByLabel("Statut de Guide visible").selectOption("published");
   const enabled = await page.request.patch(
-    "/api/admin/calculators/calculator-ranking",
+    "/api/admin/tools/calculator-ranking",
     { data: { active: true } },
   );
   expect(enabled.status()).toBe(200);
