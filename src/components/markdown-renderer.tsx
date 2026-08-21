@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
-import rehypeSanitize from "rehype-sanitize";
-import remarkGfm from "remark-gfm";
+import {
+  markdownRehypePlugins,
+  markdownRemarkPlugins,
+} from "../lib/markdown-plugins";
 
 type MarkdownRendererProps = {
   markdown: string;
@@ -16,8 +18,8 @@ export function MarkdownRenderer({
   return (
     <div className={classes}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSanitize]}
+        remarkPlugins={markdownRemarkPlugins}
+        rehypePlugins={markdownRehypePlugins}
       >
         {markdown}
       </ReactMarkdown>

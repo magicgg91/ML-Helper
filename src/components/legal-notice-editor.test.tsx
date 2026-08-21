@@ -16,14 +16,21 @@ describe("LegalNoticeEditor", () => {
       "Texte des mentions légales (Markdown)",
     );
     expect(editor).toHaveValue("## Ancien texte");
-    expect(document.querySelector(".guide-live-preview h2")).toHaveTextContent(
+    expect(document.querySelector(".w-md-editor-preview h2")).toHaveTextContent(
       "Ancien texte",
     );
     fireEvent.change(editor, {
       target: { value: "## Nouveau\n\nTexte légal" },
     });
-    expect(document.querySelector(".guide-live-preview h2")).toHaveTextContent(
+    expect(document.querySelector(".w-md-editor-preview h2")).toHaveTextContent(
       "Nouveau",
+    );
+    const actionBar = document.querySelector(".editor-action-bar");
+    expect(actionBar).toContainElement(
+      screen.getByRole("link", { name: "← Retour" }),
+    );
+    expect(actionBar).toContainElement(
+      screen.getByRole("button", { name: "Enregistrer" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 

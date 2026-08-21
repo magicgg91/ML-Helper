@@ -61,7 +61,6 @@ export default async function EditGuidePage({
     content = translationRecord(guide.content);
   return (
     <main className="admin-main">
-      <AdminBackLink href="/admin/guides" />
       <p className="eyebrow">{t("title")}</p>
       <h1>{t("edit-title")}</h1>
       <GuideEditor
