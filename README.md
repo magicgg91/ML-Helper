@@ -36,6 +36,21 @@ does not depend on `curl`, `wget`, `NEXTAUTH_URL`, or the host port mapping. A
 application startup. The container is reported healthy only when the
 application responds and Prisma can query the SQLite database.
 
+## Administration security
+
+The login endpoint allows five consecutive failures for one normalized
+username, then blocks that identifier for 15 minutes. The counter and lock are
+stored in SQLite, so restarting the container does not bypass the protection.
+Authentication failures deliberately use one generic message, whether the
+username, password, TOTP code, or rate limit caused the rejection.
+
+Each administrator can enable TOTP two-factor authentication from the account
+menu. The setup displays a QR code compatible with common authenticator apps
+and requires a valid six-digit code before activation. TOTP secrets are
+encrypted at rest with a key derived from `NEXTAUTH_SECRET`; keep that value
+private and stable, because changing it invalidates existing TOTP enrollments
+as well as active sessions.
+
 ## Automated validation
 
 ```sh

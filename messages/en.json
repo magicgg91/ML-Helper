@@ -525,6 +525,8 @@
     "title": "Admin sign in",
     "username": "Username",
     "password": "Password",
+    "totp": "Authentication code",
+    "totp-hint": "Enter the 6-digit code only if two-factor authentication is enabled.",
     "submit": "Sign in",
     "error": "Invalid username or password"
   },
@@ -546,7 +548,23 @@
       "save": "Save",
       "saved": "Password updated.",
       "invalid": "The current password is incorrect or the new password is invalid.",
-      "logout": "Sign out"
+      "logout": "Sign out",
+      "totp": {
+        "title": "Two-factor authentication",
+        "active": "Two-factor authentication is enabled.",
+        "activate": "Enable two-factor authentication",
+        "scan": "Scan this QR code with your authenticator app, then enter the generated code.",
+        "qr-alt": "Two-factor authentication QR code",
+        "manual-key": "Manual setup key",
+        "code": "6-digit code",
+        "confirm": "Confirm activation",
+        "disable": "Disable two-factor authentication",
+        "enabled": "Two-factor authentication enabled.",
+        "disabled": "Two-factor authentication disabled.",
+        "invalid": "The authentication code is invalid or expired.",
+        "setup-error": "Unable to start two-factor authentication setup.",
+        "disable-error": "The password or authentication code is invalid."
+      }
     },
     "dashboard": {
       "eyebrow": "Overview",

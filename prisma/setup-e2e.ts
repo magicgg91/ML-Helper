@@ -8,11 +8,15 @@ async function main() {
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "static_content"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "audit_logs"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
+  await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "login_throttles"');
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME)',
+    'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "users_username_key" ON "users"("username")',
+  );
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE "login_throttles" ("identifier_hash" TEXT NOT NULL PRIMARY KEY, "failed_attempts" INTEGER NOT NULL DEFAULT 0, "locked_until" DATETIME, "updated_at" DATETIME NOT NULL)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "audit_logs" ("id" TEXT NOT NULL PRIMARY KEY, "user_id" TEXT NOT NULL, "actor_role" TEXT NOT NULL, "message" TEXT NOT NULL DEFAULT \'\', "action" TEXT NOT NULL, "entity_type" TEXT NOT NULL, "entity_id" TEXT NOT NULL, "diff" JSONB, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE)',

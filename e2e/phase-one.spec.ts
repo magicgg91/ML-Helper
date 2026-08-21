@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import * as OTPAuth from "otpauth";
 
 test.describe.configure({ mode: "serial" });
 
@@ -499,6 +500,13 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();
   const root = await rootContext.newPage();
+  const setup = await root.request.post("/api/admin/setup", {
+    data: {
+      username: "rootadmin",
+      password: "correct-horse-battery-staple",
+    },
+  });
+  expect([201, 409]).toContain(setup.status());
   await root.goto("/login");
   await root.getByLabel(/Username|Identifiant/).fill("rootadmin");
   await root
@@ -658,6 +666,50 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
       (await page.request.delete(`/api/admin/guides/${guideId}`)).status(),
       `${roleCase.username} delete`,
     ).toBe(canModerate ? 200 : 403);
+    if (roleCase.username === "role-readonly") {
+      const blockedMutations = [
+        page.request.post("/api/admin/users", { data: {} }),
+        page.request.post("/api/admin/setup", { data: {} }),
+        page.request.patch("/api/admin/users/unknown-user", { data: {} }),
+        page.request.delete("/api/admin/users/unknown-user"),
+        page.request.delete("/api/admin/logs", { data: {} }),
+        page.request.patch("/api/admin/tools/calculator-ranking", { data: {} }),
+        page.request.patch("/api/admin/tools/calculator-ranking/translations", {
+          data: {},
+        }),
+        page.request.put("/api/admin/tools/city-parameters", { data: {} }),
+        page.request.put("/api/admin/tools/ranking", { data: {} }),
+        page.request.put("/api/admin/tools/templars", { data: {} }),
+        page.request.patch(
+          "/api/admin/guides/references/combat-equipment/active",
+          { data: {} },
+        ),
+        page.request.put("/api/admin/guides/references/combat-equipment", {
+          data: {},
+        }),
+        page.request.put("/api/admin/guides/references/expedition-equipment", {
+          data: {},
+        }),
+        page.request.put("/api/admin/guides/references/level-up", {
+          data: {},
+        }),
+      ];
+      for (const mutation of blockedMutations)
+        expect((await mutation).status()).toBe(403);
+
+      const ownPassword = await page.request.patch(
+        "/api/admin/profile/password",
+        {
+          data: {
+            currentPassword: "role-test-password",
+            newPassword: "role-test-password-updated",
+          },
+        },
+      );
+      expect(ownPassword.status()).toBe(204);
+      await page.goto("/admin/setup");
+      await expect(page).toHaveURL(/\/login$/);
+    }
     await context.close();
   }
   await root.goto("/legal");
@@ -682,9 +734,7 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.goto("/admin/guides/new");
   await page.getByText(/Catégories du guide \(\d+ sélectionnée/).click();
   await page.getByText("Combat & conquête", { exact: true }).click();
-  await page
-    .getByText("Clan & stratégie collective", { exact: true })
-    .click();
+  await page.getByText("Clan & stratégie collective", { exact: true }).click();
   await page
     .getByLabel("Image représentative")
     .fill("https://example.com/guide-cover.jpg");
@@ -796,4 +846,123 @@ test("calculator visibility and guide publication are reversible", async ({
     { data: { active: true } },
   );
   expect(enabled.status()).toBe(200);
+});
+
+test("admin login is throttled and TOTP is required once enabled", async ({
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  const rootContext = await browser.newContext();
+  const root = await rootContext.newPage();
+  const setup = await root.request.post("/api/admin/setup", {
+    data: {
+      username: "rootadmin",
+      password: "correct-horse-battery-staple",
+    },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await root.goto("/login");
+  await root.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await root
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await root.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(root).toHaveURL(/\/admin$/);
+  for (const username of ["totp-admin", "rate-limited-admin"]) {
+    const created = await root.request.post("/api/admin/users", {
+      data: { username, password: "security-test-password", role: "admin" },
+    });
+    expect(created.status()).toBe(201);
+  }
+
+  const totpContext = await browser.newContext();
+  const totpPage = await totpContext.newPage();
+  await totpPage.goto("/login");
+  await totpPage.getByLabel(/Username|Identifiant/).fill("totp-admin");
+  await totpPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("security-test-password");
+  await totpPage.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(totpPage).toHaveURL(/\/admin$/);
+  const enrollmentResponse = await totpPage.request.post(
+    "/api/admin/profile/totp/setup",
+  );
+  expect(enrollmentResponse.status()).toBe(200);
+  const enrollment = (await enrollmentResponse.json()) as {
+    secret: string;
+    qrCodeDataUrl: string;
+  };
+  expect(enrollment.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+  const totp = new OTPAuth.TOTP({
+    issuer: "ML-Helper",
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(enrollment.secret),
+  });
+  const enableResponse = await totpPage.request.patch(
+    "/api/admin/profile/totp",
+    { data: { token: totp.generate() } },
+  );
+  expect(enableResponse.status()).toBe(204);
+  await totpContext.close();
+
+  const protectedContext = await browser.newContext();
+  const protectedPage = await protectedContext.newPage();
+  await protectedPage.goto("/login");
+  await protectedPage.getByLabel(/Username|Identifiant/).fill("totp-admin");
+  await protectedPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("security-test-password");
+  await protectedPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(protectedPage.locator("p[role='alert']")).toHaveText(
+    "Identifiant ou mot de passe invalide",
+  );
+  await protectedPage
+    .getByLabel("Code d’authentification")
+    .fill(totp.generate());
+  await protectedPage.getByLabel(/Username|Identifiant/).fill("totp-admin");
+  await protectedPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("security-test-password");
+  await protectedPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(protectedPage).toHaveURL(/\/admin$/);
+  await protectedContext.close();
+
+  const throttleContext = await browser.newContext();
+  const throttlePage = await throttleContext.newPage();
+  await throttlePage.goto("/login");
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await throttlePage
+      .getByLabel(/Username|Identifiant/)
+      .fill("rate-limited-admin");
+    await throttlePage
+      .getByLabel(/Password|Mot de passe/)
+      .fill("wrong-password");
+    await throttlePage
+      .getByRole("button", { name: /Sign in|Se connecter/ })
+      .click();
+    await expect(throttlePage.locator("p[role='alert']")).toHaveText(
+      "Identifiant ou mot de passe invalide",
+    );
+  }
+  await throttlePage
+    .getByLabel(/Username|Identifiant/)
+    .fill("rate-limited-admin");
+  await throttlePage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("security-test-password");
+  await throttlePage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(throttlePage.locator("p[role='alert']")).toHaveText(
+    "Identifiant ou mot de passe invalide",
+  );
+  await expect(throttlePage).toHaveURL(/\/login$/);
+  await throttleContext.close();
+  await rootContext.close();
 });

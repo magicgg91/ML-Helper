@@ -73,10 +73,21 @@ model User {
   role                 String
   createdAt            DateTime        @default(now()) @map("created_at")
   lastLoginAt          DateTime?       @map("last_login_at")
+  totpSecretEncrypted  String?         @map("totp_secret_encrypted")
+  totpEnabled          Boolean         @default(false) @map("totp_enabled")
   logs                 AuditLog[]
   staticContentUpdates StaticContent[]
 
   @@map("users")
+}
+
+model LoginThrottle {
+  identifierHash String    @id @map("identifier_hash")
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("login_throttles")
 }
 
 model AuditLog {

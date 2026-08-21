@@ -3,8 +3,13 @@ import {
   createInitialSuperAdmin,
   SetupAlreadyCompletedError,
 } from "@/services/setup-superadmin";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth/options";
+import { forbiddenResponse } from "@/auth/api-authorization";
 
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (session?.user.role === "read_only") return forbiddenResponse();
   try {
     const user = await createInitialSuperAdmin(await request.json());
     return NextResponse.json(

@@ -3,9 +3,12 @@ import { LoginForm } from "@/components/login-form";
 export default async function LoginPage() {
   const t = await getTranslations("login");
   return (
-    <main>
-      <h1>{t("title")}</h1>
-      <LoginForm />
+    <main className="login-shell">
+      <section className="login-card" aria-labelledby="login-title">
+        <p className="eyebrow">ML-Helper</p>
+        <h1 id="login-title">{t("title")}</h1>
+        <LoginForm />
+      </section>
     </main>
   );
 }

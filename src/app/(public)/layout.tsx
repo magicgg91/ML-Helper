@@ -16,7 +16,6 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
           <Link href="/tools">{navigation("tools")}</Link>
           <Link href="/guides">{navigation("guides")}</Link>
           <Link href="/contact">{t("contact")}</Link>
-          <Link href="/login">{navigation("admin")}</Link>
           <ServerLocaleSwitcher />
           <ThemeToggle />
         </nav>

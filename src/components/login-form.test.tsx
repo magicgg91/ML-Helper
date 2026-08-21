@@ -19,5 +19,9 @@ describe("LoginForm", () => {
       "type",
       "password",
     );
+    expect(screen.getByLabelText("Authentication code")).toHaveAttribute(
+      "autocomplete",
+      "one-time-code",
+    );
   });
 });

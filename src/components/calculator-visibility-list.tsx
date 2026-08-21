@@ -15,9 +15,11 @@ type CalculatorRow = {
 export function CalculatorVisibilityList({
   rows,
   canToggle = true,
+  canEdit = true,
 }: {
   rows: CalculatorRow[];
   canToggle?: boolean;
+  canEdit?: boolean;
 }) {
   const t = useTranslations("admin.tools");
   const [calculators, setCalculators] = useState(rows);
@@ -71,11 +73,7 @@ export function CalculatorVisibilityList({
               <tr
                 className={row.active ? undefined : "calculator-row-disabled"}
                 key={row.id}
-                title={
-                  row.active
-                    ? undefined
-                    : t("disabled-tooltip")
-                }
+                title={row.active ? undefined : t("disabled-tooltip")}
               >
                 <td>{row.label}</td>
                 <td
@@ -85,17 +83,17 @@ export function CalculatorVisibilityList({
                 </td>
                 <td>
                   <div className="table-actions">
-                  <Link href={row.editHref}>{t("edit")}</Link>
-                  {canToggle && (
-                    <button
-                      className="secondary-action"
-                      type="button"
-                      disabled={saving === row.id}
-                      onClick={() => toggle(row)}
-                    >
-                      {t(row.active ? "disable" : "enable")}
-                    </button>
-                  )}
+                    {canEdit && <Link href={row.editHref}>{t("edit")}</Link>}
+                    {canToggle && (
+                      <button
+                        className="secondary-action"
+                        type="button"
+                        disabled={saving === row.id}
+                        onClick={() => toggle(row)}
+                      >
+                        {t(row.active ? "disable" : "enable")}
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

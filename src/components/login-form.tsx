@@ -12,6 +12,7 @@ export function LoginForm() {
     const result = await signIn("credentials", {
       username: formData.get("username"),
       password: formData.get("password"),
+      totp: formData.get("totp"),
       redirect: false,
     });
     if (result?.ok) {
@@ -33,6 +34,17 @@ export function LoginForm() {
           autoComplete="current-password"
         />
       </label>
+      <label>
+        {t("totp")}
+        <input
+          name="totp"
+          inputMode="numeric"
+          pattern="[0-9]{6}"
+          autoComplete="one-time-code"
+          aria-describedby="login-totp-hint"
+        />
+      </label>
+      <small id="login-totp-hint">{t("totp-hint")}</small>
       <button type="submit">{t("submit")}</button>
       {error && <p role="alert">{t("error")}</p>}
     </form>

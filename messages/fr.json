@@ -530,6 +530,8 @@
     "title": "Connexion administration",
     "username": "Identifiant",
     "password": "Mot de passe",
+    "totp": "Code d’authentification",
+    "totp-hint": "Saisis le code à 6 chiffres uniquement si l’authentification à deux facteurs est activée.",
     "submit": "Se connecter",
     "error": "Identifiant ou mot de passe invalide"
   },
@@ -551,7 +553,23 @@
       "save": "Enregistrer",
       "saved": "Mot de passe mis à jour.",
       "invalid": "Le mot de passe actuel est incorrect ou le nouveau mot de passe est invalide.",
-      "logout": "Se déconnecter"
+      "logout": "Se déconnecter",
+      "totp": {
+        "title": "Authentification à deux facteurs",
+        "active": "L’authentification à deux facteurs est activée.",
+        "activate": "Activer l’authentification à deux facteurs",
+        "scan": "Scanne ce QR code avec ton application d’authentification, puis saisis le code généré.",
+        "qr-alt": "QR code d’authentification à deux facteurs",
+        "manual-key": "Clé de configuration manuelle",
+        "code": "Code à 6 chiffres",
+        "confirm": "Confirmer l’activation",
+        "disable": "Désactiver l’authentification à deux facteurs",
+        "enabled": "Authentification à deux facteurs activée.",
+        "disabled": "Authentification à deux facteurs désactivée.",
+        "invalid": "Le code d’authentification est invalide ou expiré.",
+        "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
+        "disable-error": "Le mot de passe ou le code d’authentification est invalide."
+      }
     },
     "dashboard": {
       "eyebrow": "Vue d’ensemble",
