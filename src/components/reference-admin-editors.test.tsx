@@ -4,11 +4,9 @@ import {
   combatReferenceRows,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
-import { templarCosts } from "../lib/gems-templars";
 import {
   CombatReferenceAdmin,
   ExpeditionReferenceAdmin,
-  TemplarReferenceAdmin,
 } from "./reference-admin-editors";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
@@ -36,7 +34,7 @@ describe("complete lookup table administration", () => {
     expect(body).toHaveLength(180);
     expect(body[0].set_name).toBe("Set confirmé modifié");
   });
-  it("exposes every expedition row and every templar cost", () => {
+  it("exposes every expedition row with structured dropdowns", () => {
     const { unmount } = render(
       <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
     );
@@ -44,27 +42,15 @@ describe("complete lookup table administration", () => {
     expect(screen.getByLabelText("Expédition ligne 1 Valeur type (%)")).toHaveValue(
       5.4,
     );
+    expect(screen.getAllByRole("combobox", { name: "Rareté" })[0]).toBeVisible();
     unmount();
-    render(<TemplarReferenceAdmin initialCosts={[...templarCosts]} />);
-    expect(screen.getAllByRole("row")).toHaveLength(21);
-    expect(
-      screen.getByRole("spinbutton", { name: "Coût Templier niveau 20" }),
-    ).toHaveValue(21929);
   });
-  it("blocks invalid cells with a visible message", () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch");
-    render(<TemplarReferenceAdmin initialCosts={[...templarCosts]} />);
-    fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Coût Templier niveau 1" }),
-      { target: { value: "-1" } },
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Enregistrer toute la table" }),
-    );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Corrige les champs signalés",
-    );
-    expect(screen.getByText("La valeur minimale est 0.")).toBeVisible();
-    expect(fetchMock).not.toHaveBeenCalled();
+  it("derives read-only skydust and gem slots from rarity", () => {
+    const { container } = render(<CombatReferenceAdmin initialRows={[...combatReferenceRows]} />);
+    const rarity = container.querySelector('select[aria-label="Ligne 1 Rareté"]')!;
+    fireEvent.change(rarity, { target: { value: "Rare" } });
+    expect(container.querySelector('input[aria-label="Ligne 1 Pouciel"]')).toHaveValue(10);
+    expect(container.querySelector('input[aria-label="Ligne 1 Gemmes"]')).toHaveValue(0);
+    expect(container.querySelector('input[aria-label="Ligne 1 Pouciel"]')).toHaveAttribute("readonly");
   });
 });
