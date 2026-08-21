@@ -16,14 +16,16 @@ describe("gems", () => {
   });
   it("distributes target units as uniformly as possible", () => {
     expect(optimizeGemTarget(60, 6, 3)).toMatchObject({
-      label: "1 gemme 4★ + 2 gemmes 3★",
       baseGems: 16,
       actualStat: 60,
+      stars: [
+        { stars: 4, count: 1 },
+        { stars: 3, count: 2 },
+      ],
     });
   });
   it("maximizes a budget using adjacent star levels", () => {
     expect(optimizeGemBudget(96000, 6000, 5, 3)).toMatchObject({
-      label: "1 gemme 4★ + 2 gemmes 3★",
       baseGems: 16,
       actualStat: 50,
       cost: 96000,

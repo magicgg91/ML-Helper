@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   calculateProduction,
@@ -104,6 +105,7 @@ function ProductionTransition({
 }
 
 function CostCalculator({ settings }: { settings: PlayerSettings }) {
+  const t = useTranslations("city-cost");
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [targetLevel, setTargetLevel] = useState(2);
@@ -123,18 +125,18 @@ function CostCalculator({ settings }: { settings: PlayerSettings }) {
       <section className="calculator-card">
         <div className="calculator-fields">
           <Field
-            label="Nombre de villes"
+            label={t("fields.city-count")}
             value={cityCount}
             onChange={(v) => setCityCount(Math.floor(v))}
           />
           <Field
-            label="Niveau de départ"
+            label={t("fields.start-level")}
             value={startLevel}
             max={200}
             onChange={(v) => setStartLevel(Math.floor(v))}
           />
           <Field
-            label="Niveau cible"
+            label={t("fields.target-level")}
             value={targetLevel}
             max={200}
             onChange={(v) => setTargetLevel(Math.floor(v))}
@@ -142,47 +144,57 @@ function CostCalculator({ settings }: { settings: PlayerSettings }) {
         </div>
       </section>
       <section className="calculator-card">
-        <h3>Pour 1 ville</h3>
+        <h3>{t("single-city")}</h3>
         <div className="city-comparison">
           <div>
-            <b>Départ</b>
-            <Stat label="Mur" value={number(start.wall)} />
-            <Stat label="VP" value={number(start.vp)} />
-            <Stat label="Or/h" value={number(start.gold * goldBonus)} />
-            <Stat label="Armée/h" value={number(start.army * armyBonus)} />
+            <b>{t("start")}</b>
+            <Stat label={t("wall")} value={number(start.wall)} />
+            <Stat label={t("vp")} value={number(start.vp)} />
+            <Stat
+              label={t("gold-hour")}
+              value={number(start.gold * goldBonus)}
+            />
+            <Stat
+              label={t("army-hour")}
+              value={number(start.army * armyBonus)}
+            />
           </div>
           <span aria-hidden="true">→</span>
           <div>
-            <b>Cible</b>
-            <Stat label="Mur" value={number(target.wall)} />
-            <Stat label="VP" value={number(target.vp)} />
-            <Stat label="Or/h" value={number(target.gold * goldBonus)} />
-            <Stat label="Armée/h" value={number(target.army * armyBonus)} />
+            <b>{t("target")}</b>
+            <Stat label={t("wall")} value={number(target.wall)} />
+            <Stat label={t("vp")} value={number(target.vp)} />
+            <Stat
+              label={t("gold-hour")}
+              value={number(target.gold * goldBonus)}
+            />
+            <Stat
+              label={t("army-hour")}
+              value={number(target.army * armyBonus)}
+            />
           </div>
         </div>
         <Stat
-          label="Coût pour cette ville"
-          value={`${number(cost)} or`}
+          label={t("cost-one")}
+          value={`${number(cost)} ${t("gold-unit")}`}
           testId="city-cost-one"
         />
       </section>
       <section className="calculator-card">
-        <h3>
-          Total pour {cityCount} ville{cityCount > 1 ? "s" : ""}
-        </h3>
+        <h3>{t("total-cities", { count: cityCount })}</h3>
         <div className="calculator-results">
-          <Stat label="Coût total" value={number(cost * cityCount)} />
+          <Stat label={t("cost-total")} value={number(cost * cityCount)} />
           <Stat
-            label="VP total gagné"
+            label={t("vp-gained")}
             value={number(Math.max(0, target.vp - start.vp) * cityCount)}
           />
           <ProductionTransition
-            label="Or/h avant → après"
+            label={t("gold-transition")}
             start={start.gold * goldBonus * cityCount}
             target={target.gold * goldBonus * cityCount}
           />
           <ProductionTransition
-            label="Armée/h avant → après"
+            label={t("army-transition")}
             start={start.army * armyBonus * cityCount}
             target={target.army * armyBonus * cityCount}
           />
@@ -201,6 +213,7 @@ const budgetUnits = [
 ] as const;
 
 function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
+  const t = useTranslations("city-max-level");
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [budget, setBudget] = useState(0);
@@ -221,28 +234,28 @@ function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
       <section className="calculator-card">
         <div className="calculator-fields">
           <Field
-            label="Nombre de villes"
+            label={t("fields.city-count")}
             value={cityCount}
             onChange={(v) => setCityCount(Math.floor(v))}
           />
           <Field
-            label="Niveau de départ"
+            label={t("fields.start-level")}
             value={startLevel}
             max={200}
             onChange={(v) => setStartLevel(Math.floor(v))}
           />
           <label className="calculator-field">
-            Or disponible
+            {t("fields.available-gold")}
             <div className="unit-input">
               <NumberStepper
-                label="Or disponible"
+                label={t("fields.available-gold")}
                 value={budget}
                 min={0}
                 step={0.1}
                 onChange={setBudget}
               />
               <select
-                aria-label="Unité de l’or disponible"
+                aria-label={t("fields.gold-unit")}
                 value={unit}
                 onChange={(event) => setUnit(Number(event.target.value))}
               >
@@ -258,22 +271,22 @@ function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
       </section>
       <section className="calculator-card calculator-results">
         <Stat
-          label="Niveau cible atteignable"
+          label={t("reachable-level")}
           value={String(result.level)}
           testId="max-level-result"
         />
-        <Stat label="Or restant" value={number(result.remaining)} />
+        <Stat label={t("remaining-gold")} value={number(result.remaining)} />
         <Stat
-          label="VP total gagné"
+          label={t("vp-gained")}
           value={number((target.vp - start.vp) * cityCount)}
         />
         <ProductionTransition
-          label="Or/h avant → après"
+          label={t("gold-transition")}
           start={start.gold * cityCount * goldBonus}
           target={target.gold * cityCount * goldBonus}
         />
         <ProductionTransition
-          label="Armée/h avant → après"
+          label={t("army-transition")}
           start={start.army * cityCount * armyBonus}
           target={target.army * cityCount * armyBonus}
         />
@@ -289,6 +302,7 @@ function Breakdown({
   title: string;
   values: { total: number; base: number; stuff: number; temple: number };
 }) {
+  const t = useTranslations("city-production");
   return (
     <div className="production-block">
       <h3>
@@ -296,15 +310,16 @@ function Breakdown({
         <strong>{number(values.total)}/h</strong>
       </h3>
       <div className="production-breakdown">
-        <Stat label="Base" value={`${number(values.base)}/h`} />
-        <Stat label="Stuff" value={`${number(values.stuff)}/h`} />
-        <Stat label="Temple" value={`${number(values.temple)}/h`} />
+        <Stat label={t("base")} value={`${number(values.base)}/h`} />
+        <Stat label={t("equipment")} value={`${number(values.stuff)}/h`} />
+        <Stat label={t("temple")} value={`${number(values.temple)}/h`} />
       </div>
     </div>
   );
 }
 
 function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
+  const t = useTranslations("city-production");
   const [cityCount, setCityCount] = useState(1);
   const [cityLevel, setCityLevel] = useState(1);
   const [goldHours, setGoldHours] = useState(0);
@@ -331,12 +346,12 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
       <section className="calculator-card">
         <div className="calculator-fields">
           <Field
-            label="Nombre de villes"
+            label={t("fields.city-count")}
             value={cityCount}
             onChange={(v) => setCityCount(Math.floor(v))}
           />
           <Field
-            label="Niveau moyen des villes"
+            label={t("fields.average-level")}
             value={cityLevel}
             max={200}
             onChange={(v) => setCityLevel(Math.floor(v))}
@@ -344,52 +359,54 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
         </div>
       </section>
       <section className="calculator-card">
-        <h3>Par ville — base</h3>
+        <h3>{t("per-city-base")}</h3>
         <div className="calculator-results">
-          <Stat label="VP" value={number(result.perCity.vp)} />
-          <Stat label="Mur" value={number(result.perCity.wall)} />
-          <Stat label="Or/h" value={`${number(result.perCity.gold)}/h`} />
-          <Stat label="Armée/h" value={`${number(result.perCity.army)}/h`} />
+          <Stat label={t("vp")} value={number(result.perCity.vp)} />
+          <Stat label={t("wall")} value={number(result.perCity.wall)} />
+          <Stat
+            label={t("gold-hour")}
+            value={`${number(result.perCity.gold)}/h`}
+          />
+          <Stat
+            label={t("army-hour")}
+            value={`${number(result.perCity.army)}/h`}
+          />
         </div>
       </section>
       <section className="calculator-card">
-        <Breakdown title="💰 Or — Production totale" values={result.gold} />
-        <Breakdown
-          title="⚔️ Troupes — Production totale"
-          values={result.troops}
-        />
-        <Stat label="VP total" value={number(result.vpTotal)} />
+        <Breakdown title={t("gold-total")} values={result.gold} />
+        <Breakdown title={t("troops-total")} values={result.troops} />
+        <Stat label={t("vp-total")} value={number(result.vpTotal)} />
       </section>
       <section className="calculator-card">
-        <h3>Si reskill full-prod</h3>
+        <h3>{t("full-production.title")}</h3>
         <p className="calculator-note">
-          Simulation avec les {result.fullProduction.points} points disponibles
-          investis intégralement, calculée sur la production de base.
+          {t("full-production.note", { points: result.fullProduction.points })}
         </p>
         <div className="calculator-results">
           <Stat
-            label="Or si full Prospérité"
+            label={t("full-production.gold")}
             value={`${number(result.fullProduction.gold)}/h`}
             testId="full-production-gold"
           />
           <Stat
-            label="Troupes si full Recruteur"
+            label={t("full-production.troops")}
             value={`${number(result.fullProduction.troops)}/h`}
           />
         </div>
       </section>
       <section className="calculator-card">
-        <h3>Récompenses</h3>
+        <h3>{t("rewards.title")}</h3>
         <div className="calculator-fields">
           <Field
-            label="Heures Or reçues"
+            label={t("rewards.gold-hours")}
             value={goldHours}
             min={0}
             step={0.5}
             onChange={setGoldHours}
           />
           <Field
-            label="Heures Troupes reçues"
+            label={t("rewards.troops-hours")}
             value={troopsHours}
             min={0}
             step={0.5}
@@ -397,9 +414,12 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
           />
         </div>
         <div className="calculator-results">
-          <Stat label="Bonus Or obtenu" value={number(result.rewards.gold)} />
           <Stat
-            label="Bonus Troupes obtenu"
+            label={t("rewards.gold-bonus")}
+            value={number(result.rewards.gold)}
+          />
+          <Stat
+            label={t("rewards.troops-bonus")}
             value={number(result.rewards.troops)}
           />
         </div>
@@ -413,6 +433,10 @@ export function CityCalculators({
 }: {
   availability?: Record<Calculator, boolean>;
 }) {
+  const tools = useTranslations("tools");
+  const cost = useTranslations("city-cost");
+  const maxLevel = useTranslations("city-max-level");
+  const production = useTranslations("city-production");
   const firstAvailable = (
     ["cost", "max-level", "production"] as Calculator[]
   ).find((key) => availability[key]);
@@ -423,7 +447,7 @@ export function CityCalculators({
       <nav
         className="calculator-tabs tabs"
         role="tablist"
-        aria-label="Calculateurs Villes"
+        aria-label={tools("city-tabs")}
       >
         <button
           type="button"
@@ -431,13 +455,11 @@ export function CityCalculators({
           aria-selected={active === "cost"}
           disabled={!availability.cost}
           title={
-            !availability.cost
-              ? "Désactivé — inaccessible actuellement"
-              : undefined
+            !availability.cost ? tools("calculator-unavailable") : undefined
           }
           onClick={() => setActive("cost")}
         >
-          Coût de Ville
+          {cost("name")}
         </button>
         <button
           type="button"
@@ -446,12 +468,12 @@ export function CityCalculators({
           disabled={!availability["max-level"]}
           title={
             !availability["max-level"]
-              ? "Désactivé — inaccessible actuellement"
+              ? tools("calculator-unavailable")
               : undefined
           }
           onClick={() => setActive("max-level")}
         >
-          Niveau Max Atteignable
+          {maxLevel("name")}
         </button>
         <button
           type="button"
@@ -460,21 +482,19 @@ export function CityCalculators({
           disabled={!availability.production}
           title={
             !availability.production
-              ? "Désactivé — inaccessible actuellement"
+              ? tools("calculator-unavailable")
               : undefined
           }
           onClick={() => setActive("production")}
         >
-          Production
+          {production("name")}
         </button>
       </nav>
       {active === "cost" && <CostCalculator settings={settings} />}
       {active === "max-level" && <MaxLevelCalculator settings={settings} />}
       {active === "production" && <ProductionCalculator settings={settings} />}
       {!active && (
-        <p className="empty-state">
-          Ces calculateurs sont temporairement indisponibles.
-        </p>
+        <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
     </div>
   );

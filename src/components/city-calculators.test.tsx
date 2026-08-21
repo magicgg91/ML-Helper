@@ -6,6 +6,8 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
 import { defaultPlayerSettings } from "../lib/player-settings";
 import { CityCalculators } from "./city-calculators";
 import {
@@ -18,7 +20,11 @@ describe("CityCalculators", () => {
   afterEach(cleanup);
 
   it("calculates city cost and maximum level", () => {
-    render(<CityCalculators />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
     expect(screen.getByTestId("city-cost-one")).toHaveTextContent("10 or");
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
@@ -44,7 +50,11 @@ describe("CityCalculators", () => {
     settings.level = 11;
     settings.equipmentSkills.prosperous = 10;
     window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
-    render(<CityCalculators />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
     expect(screen.getByText("280/h")).toBeInTheDocument();
     expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
@@ -53,7 +63,11 @@ describe("CityCalculators", () => {
   });
 
   it("reacts immediately when player settings change", () => {
-    render(<CityCalculators />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
     const settings = defaultPlayerSettings();
     settings.level = 6;

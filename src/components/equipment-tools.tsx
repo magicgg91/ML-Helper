@@ -1,17 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import {
+  equipmentFamilyTranslationKeys,
+  equipmentRarityTranslationKeys,
+  equipmentSkillTranslationKeys,
+  equipmentSlotTranslationKeys,
+} from "../i18n/game-translation-keys";
 import {
   allowedSkills,
   computeEquipmentSlot,
   computeStuffBlock,
   computeStuffGlobal,
   createEmptyStuffState,
-  equipmentBlockDefinitions,
   equipmentBlocks,
-  equipmentLabel,
   equipmentOptions,
   equipmentSlotLayout,
   findEquipment,
@@ -19,6 +23,7 @@ import {
   type EquipmentBlock,
   type EquipmentGem,
   type EquipmentSelection,
+  type EquipmentSkill,
   type EquipmentSlot,
   type EquipmentSlotState,
   type StuffState,
@@ -26,17 +31,13 @@ import {
 
 const storageKey = "mlhelper_stuff_simulator";
 const leagueOptions = [
-  ["bronze", "Bronze"],
-  ["silver", "Argent"],
-  ["gold", "Or"],
-  ["platinum", "Platine"],
-  ["diamond", "Diamant"],
-  ["legend", "Légende"],
+  "bronze",
+  "silver",
+  "gold",
+  "platinum",
+  "diamond",
+  "legend",
 ] as const;
-
-function pct(value: number) {
-  return value.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
-}
 
 function Summary({
   totals,
@@ -45,19 +46,28 @@ function Summary({
   totals: Partial<Record<string, number>>;
   selected?: Partial<Record<string, number>>;
 }) {
+  const locale = useLocale();
+  const t = useTranslations("stuff-simulator");
+  const game = useTranslations("game");
+  const pct = (value: number) =>
+    value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const entries = Object.entries(totals)
     .filter(
       (entry): entry is [string, number] =>
         typeof entry[1] === "number" && entry[1] > 0,
     )
-    .sort(([a], [b]) => a.localeCompare(b, "fr"));
+    .sort(([a], [b]) => a.localeCompare(b, locale));
   if (!entries.length)
-    return <p className="stuff-empty">Aucun équipement configuré</p>;
+    return <p className="stuff-empty">{t("empty-summary")}</p>;
   return (
     <div className="stuff-summary-grid">
       {entries.map(([skill, value]) => (
         <div className="stuff-total total-box" key={skill}>
-          <span className="label">{skill}</span>
+          <span className="label">
+            {game(
+              `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
+            )}
+          </span>
           <strong className="value emerald">
             +{pct(value)}%{" "}
             {selected?.[skill] ? (
@@ -73,19 +83,23 @@ function Summary({
 function GemEditor({
   block,
   gems,
+  namespace,
   onChange,
 }: {
   block: EquipmentBlock;
   gems: EquipmentGem[];
+  namespace: "stuff-simulator" | "stuff-comparison";
   onChange: (gems: EquipmentGem[]) => void;
 }) {
+  const t = useTranslations(namespace);
+  const game = useTranslations("game");
   const skills = allowedSkills(block);
   return (
     <div className="stuff-gems">
       {gems.map((gem, index) => (
         <div className="stuff-gem-row" key={index}>
           <label>
-            Compétence gemme {index + 1}
+            {t("gem.skill", { index: index + 1 })}
             <select
               value={gem.skill}
               onChange={(event) =>
@@ -101,14 +115,16 @@ function GemEditor({
                 )
               }
             >
-              <option value="none">Aucune</option>
+              <option value="none">{t("none")}</option>
               {skills.map((skill) => (
-                <option key={skill}>{skill}</option>
+                <option key={skill} value={skill}>
+                  {game(`skills.${equipmentSkillTranslationKeys[skill]}`)}
+                </option>
               ))}
             </select>
           </label>
           <label>
-            Étoiles gemme {index + 1}
+            {t("gem.stars", { index: index + 1 })}
             <select
               value={gem.star}
               onChange={(event) =>
@@ -129,7 +145,7 @@ function GemEditor({
             </select>
           </label>
           <label>
-            Ligue gemme {index + 1}
+            {t("gem.league", { index: index + 1 })}
             <select
               value={gem.league}
               onChange={(event) =>
@@ -145,9 +161,9 @@ function GemEditor({
                 )
               }
             >
-              {leagueOptions.map(([value, label]) => (
+              {leagueOptions.map((value) => (
                 <option value={value} key={value}>
-                  {label}
+                  {game(`leagues.${value}`)}
                 </option>
               ))}
             </select>
@@ -166,13 +182,17 @@ function SlotEditor({
   block,
   slot,
   state,
+  namespace,
   onChange,
 }: {
   block: EquipmentBlock;
   slot: EquipmentSlot;
   state: EquipmentSlotState;
+  namespace: "stuff-simulator" | "stuff-comparison";
   onChange: (state: EquipmentSlotState) => void;
 }) {
+  const t = useTranslations(namespace);
+  const game = useTranslations("game");
   const options = equipmentOptions(block, slot);
   const selected = findEquipment(slot, state.equipment);
   function choose(value: string) {
@@ -195,19 +215,32 @@ function SlotEditor({
   return (
     <div className="stuff-editor">
       <label>
-        Équipement ({slot})
+        {t("equipment-label", {
+          slot: game(`slots.${equipmentSlotTranslationKeys[slot]}`),
+        })}
         <select
-          aria-label={`Équipement ${equipmentBlockDefinitions[block].label} ${slot}`}
+          aria-label={t("equipment-aria", {
+            block: game(`families.${block}`),
+            slot: game(`slots.${equipmentSlotTranslationKeys[slot]}`),
+          })}
           value={selectionValue(state.equipment)}
           onChange={(event) => choose(event.target.value)}
         >
-          <option value="">Aucun</option>
+          <option value="">{t("none")}</option>
           {options.map((item) => (
             <option
               key={`${item.rarity}-${item.set_name}`}
               value={`${item.rarity}|${item.set_name}`}
             >
-              {equipmentLabel(item)}
+              {t("equipment-option", {
+                rarity: game(
+                  `rarities.${equipmentRarityTranslationKeys[item.rarity as EquipmentSelection["rarity"]]}`,
+                ),
+                name: item.set_name,
+                family: game(
+                  `families.${equipmentFamilyTranslationKeys[item.family as keyof typeof equipmentFamilyTranslationKeys]}`,
+                ),
+              })}
             </option>
           ))}
         </select>
@@ -215,9 +248,12 @@ function SlotEditor({
       {selected ? (
         <>
           <label>
-            Niveau d’étoile
+            {t("star-level")}
             <select
-              aria-label={`Étoiles équipement ${equipmentBlockDefinitions[block].label} ${slot}`}
+              aria-label={t("equipment-stars-aria", {
+                block: game(`families.${block}`),
+                slot: game(`slots.${equipmentSlotTranslationKeys[slot]}`),
+              })}
               value={state.star}
               onChange={(event) =>
                 onChange({ ...state, star: Number(event.target.value) })
@@ -232,17 +268,16 @@ function SlotEditor({
           </label>
           {state.gems.length ? (
             <>
-              <h4>Gemmes ({state.gems.length})</h4>
+              <h4>{t("gems-count", { count: state.gems.length })}</h4>
               <GemEditor
                 block={block}
                 gems={state.gems}
+                namespace={namespace}
                 onChange={(gems) => onChange({ ...state, gems })}
               />
             </>
           ) : (
-            <p className="stuff-empty">
-              Aucun emplacement de gemme à cette rareté
-            </p>
+            <p className="stuff-empty">{t("no-gem-slot")}</p>
           )}
         </>
       ) : null}
@@ -251,7 +286,8 @@ function SlotEditor({
 }
 
 export function StuffSimulator() {
-  const t = useTranslations("References");
+  const t = useTranslations("stuff-simulator");
+  const game = useTranslations("game");
   const [state, setState] = useState<StuffState>(createEmptyStuffState);
   const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<Partial<Record<EquipmentBlock, number>>>(
@@ -287,10 +323,10 @@ export function StuffSimulator() {
         className="reference-cross-link"
         href="/guides/referentiels/combat-equipment"
       >
-        {t("viewFull")}
+        {t("view-reference")}
       </Link>
       <section className="calculator-card">
-        <h3>Récapitulatif — toutes familles confondues</h3>
+        <h3>{t("global-summary")}</h3>
         <Summary totals={global} />
       </section>
       {equipmentBlocks.map((block) => {
@@ -306,7 +342,7 @@ export function StuffSimulator() {
               );
         return (
           <section className="calculator-card stuff-block" key={block}>
-            <h3>{equipmentBlockDefinitions[block].label}</h3>
+            <h3>{game(`families.${block}`)}</h3>
             <div className="stuff-block-columns">
               <div className="stuff-slot-grid">
                 {equipmentSlotLayout.map((slot, index) => (
@@ -322,28 +358,31 @@ export function StuffSimulator() {
                       }))
                     }
                   >
-                    <span>{slot}</span>
+                    <span>
+                      {game(`slots.${equipmentSlotTranslationKeys[slot]}`)}
+                    </span>
                     {state[block][index].equipment ? (
                       <small>
-                        {state[block][index].equipment!.rarity} ·{" "}
-                        {state[block][index].star}★
+                        {game(
+                          `rarities.${equipmentRarityTranslationKeys[state[block][index].equipment!.rarity]}`,
+                        )}{" "}
+                        · {state[block][index].star}★
                       </small>
                     ) : (
-                      <small>Vide</small>
+                      <small>{t("empty-slot")}</small>
                     )}
                   </button>
                 ))}
               </div>
               <div>
                 {activeIndex === undefined ? (
-                  <p className="stuff-empty">
-                    Clique sur un emplacement pour le configurer.
-                  </p>
+                  <p className="stuff-empty">{t("select-slot")}</p>
                 ) : (
                   <SlotEditor
                     block={block}
                     slot={equipmentSlotLayout[activeIndex]}
                     state={state[block][activeIndex]}
+                    namespace="stuff-simulator"
                     onChange={(slot) => update(block, activeIndex, slot)}
                   />
                 )}
@@ -387,16 +426,27 @@ function CompareSideEditor({
   state: CompareSide;
   onChange: (side: CompareSide) => void;
 }) {
+  const t = useTranslations("stuff-comparison");
   return (
     <div className="compare-side">
-      <h3>Équipement {name}</h3>
-      <SlotEditor block={block} slot={slot} state={state} onChange={onChange} />
+      <h3>{t("side-title", { side: name })}</h3>
+      <SlotEditor
+        block={block}
+        slot={slot}
+        state={state}
+        namespace="stuff-comparison"
+        onChange={onChange}
+      />
     </div>
   );
 }
 
 export function StuffComparison() {
-  const t = useTranslations("References");
+  const locale = useLocale();
+  const t = useTranslations("stuff-comparison");
+  const game = useTranslations("game");
+  const pct = (value: number) =>
+    value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const [block, setBlock] = useState<EquipmentBlock>("attack");
   const [slot, setSlot] = useState<EquipmentSlot>("Amulette");
   const [a, setA] = useState<CompareSide>(() =>
@@ -419,7 +469,7 @@ export function StuffComparison() {
         className="reference-cross-link"
         href="/guides/referentiels/combat-equipment"
       >
-        {t("viewFull")}
+        {t("view-reference")}
       </Link>
       <section className="calculator-card">
         <div className="family-buttons">
@@ -430,12 +480,12 @@ export function StuffComparison() {
               aria-pressed={block === key}
               onClick={() => changeContext(key, slot)}
             >
-              {equipmentBlockDefinitions[key].label}
+              {game(`families.${key}`)}
             </button>
           ))}
         </div>
         <label className="calculator-field">
-          Emplacement
+          {t("slot")}
           <select
             value={slot}
             onChange={(event) =>
@@ -443,7 +493,9 @@ export function StuffComparison() {
             }
           >
             {equipmentSlotLayout.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {game(`slots.${equipmentSlotTranslationKeys[item]}`)}
+              </option>
             ))}
           </select>
         </label>
@@ -465,15 +517,15 @@ export function StuffComparison() {
         />
       </section>
       <section className="calculator-card">
-        <h3>Comparaison par compétence</h3>
+        <h3>{t("comparison-title")}</h3>
         <div className="ranking-table-wrap">
           <table className="ranking-table">
             <thead>
               <tr>
-                <th>Compétence</th>
-                <th>Équipement A</th>
-                <th>Équipement B</th>
-                <th>Différence</th>
+                <th>{t("columns.skill")}</th>
+                <th>{t("columns.side-a")}</th>
+                <th>{t("columns.side-b")}</th>
+                <th>{t("columns.difference")}</th>
               </tr>
             </thead>
             <tbody>
@@ -483,7 +535,9 @@ export function StuffComparison() {
                   diff = vb - va;
                 return (
                   <tr key={skill}>
-                    <td>{skill}</td>
+                    <td>
+                      {game(`skills.${equipmentSkillTranslationKeys[skill]}`)}
+                    </td>
                     <td>{pct(va)}%</td>
                     <td>{pct(vb)}%</td>
                     <td

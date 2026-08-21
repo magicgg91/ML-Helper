@@ -4,6 +4,7 @@ import PublicLayout from "./(public)/layout";
 import ToolsLayout from "./(public)/tools/layout";
 import ToolDetailLayout from "./(public)/tools/[slug]/layout";
 import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
 
 vi.mock("../components/theme-toggle", () => ({
   ThemeToggle: () => <button type="button">Thème</button>,
@@ -60,16 +61,7 @@ describe("public layouts", () => {
 
   it("shows player settings after a tool category is selected", async () => {
     render(
-      <NextIntlClientProvider
-        locale="fr"
-        messages={{
-          Tools: {
-            cities: "Villes",
-            ranking: "Classement",
-            skills: "Compétences",
-          },
-        }}
-      >
+      <NextIntlClientProvider locale="fr" messages={messages}>
         {await ToolDetailLayout({
           children: <p>Outils</p>,
           params: Promise.resolve({ slug: "villes" }),

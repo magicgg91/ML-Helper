@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   calculateRanking,
@@ -9,16 +10,10 @@ import {
 } from "../lib/ranking";
 import { NumberStepper } from "./number-stepper";
 
-const labels: Record<RankingLeague, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-  diamond: "Diamant",
-  legend: "Légende",
-};
-
 export function RankingCalculator({ config }: { config: RankingConfig }) {
+  const locale = useLocale();
+  const t = useTranslations("ranking");
+  const game = useTranslations("game");
   const [league, setLeague] = useState<RankingLeague>("diamond");
   const [percentage, setPercentage] = useState(1);
   const [rank, setRank] = useState(10);
@@ -30,7 +25,7 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
       <section className="calculator-card">
         <div className="calculator-fields">
           <label className="calculator-field">
-            Ligue
+            {t("fields.league")}
             <select
               value={league}
               onChange={(event) =>
@@ -39,16 +34,16 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             >
               {rankingLeagues.map((item) => (
                 <option key={item} value={item}>
-                  {labels[item]}
-                  {config[item].length === 0 ? " — à définir" : ""}
+                  {game(`leagues.${item}`)}
+                  {config[item].length === 0 ? t("undefined-suffix") : ""}
                 </option>
               ))}
             </select>
           </label>
           <label className="calculator-field">
-            Ton pourcentage actuel
+            {t("fields.percentage")}
             <NumberStepper
-              label="Ton pourcentage actuel"
+              label={t("fields.percentage")}
               value={percentage}
               min={0}
               max={100}
@@ -57,9 +52,9 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             />
           </label>
           <label className="calculator-field">
-            Ton rang actuel
+            {t("fields.rank")}
             <NumberStepper
-              label="Ton rang actuel"
+              label={t("fields.rank")}
               value={rank}
               min={1}
               onChange={(value) => setRank(Math.floor(value))}
@@ -70,36 +65,37 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
       <section className="calculator-card">
         <div className="calculator-results">
           <div className="calculator-stat total-box">
-            <span className="label">Nombre total de joueurs (déduit)</span>
+            <span className="label">{t("total-players")}</span>
             <strong className="value" data-testid="ranking-total">
               {result.total === null
                 ? "—"
-                : Math.round(result.total).toLocaleString("fr-FR")}
+                : Math.round(result.total).toLocaleString(locale)}
             </strong>
           </div>
         </div>
         {percentage <= 0 ? (
           <p role="status" className="ranking-placeholder">
-            Saisis un pourcentage supérieur à 0 pour calculer.
+            {t("errors.positive-percentage")}
           </p>
         ) : bands.length === 0 ? (
           <p role="status" className="ranking-placeholder">
-            Seuils et récompenses à définir dans l’administration pour la ligue{" "}
-            {labels[league]}.
+            {t("errors.missing-bands", {
+              league: game(`leagues.${league}`),
+            })}
           </p>
         ) : (
           <>
-            <h3>Échelle visuelle</h3>
+            <h3>{t("visual-scale")}</h3>
             <RankingScale bands={bands} />
-            <h3>Plages de classement</h3>
+            <h3>{t("ranking-ranges")}</h3>
             <div className="ranking-table-wrap">
               <table className="ranking-table">
                 <thead>
                   <tr>
-                    <th>Plage</th>
-                    <th>Rang de plage</th>
-                    <th>Ligue cible</th>
-                    <th>Récompense</th>
+                    <th>{t("columns.range")}</th>
+                    <th>{t("columns.rank")}</th>
+                    <th>{t("columns.target-league")}</th>
+                    <th>{t("columns.reward")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -109,8 +105,8 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
                         {range.threshold}–{range.rangeStart}%
                       </td>
                       <td>
-                        {range.rankEnd.toLocaleString("fr-FR")} –{" "}
-                        {range.rankStart.toLocaleString("fr-FR")}
+                        {range.rankEnd.toLocaleString(locale)} –{" "}
+                        {range.rankStart.toLocaleString(locale)}
                       </td>
                       <td
                         className={
@@ -143,12 +139,10 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
 }
 
 function RankingScale({ bands }: { bands: RankingConfig[RankingLeague] }) {
+  const t = useTranslations("ranking");
   const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
   return (
-    <div
-      className="ranking-scale"
-      aria-label="Échelle de classement de 100% à 0%"
-    >
+    <div className="ranking-scale" aria-label={t("scale-label")}>
       <div className="ranking-axis-labels">
         <span>100%</span>
         <span>0%</span>
@@ -162,7 +156,12 @@ function RankingScale({ bands }: { bands: RankingConfig[RankingLeague] }) {
                 key={band.threshold}
                 className={`ranking-segment ranking-segment-${index % 2}`}
                 style={{ width: `${band.threshold - start}%` }}
-                title={`${band.threshold}–${start}% · ${band.target} · ${band.reward}`}
+                title={t("segment-tooltip", {
+                  threshold: band.threshold,
+                  start,
+                  target: band.target,
+                  reward: band.reward,
+                })}
               >
                 <span>
                   {band.threshold}–{start}%

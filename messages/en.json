@@ -1,4 +1,323 @@
 {
+  "common": {
+    "choose": "— Choose —",
+    "decrease": "Decrease {label}",
+    "increase": "Increase {label}"
+  },
+  "game": {
+    "skills": {
+      "striker": "Attack",
+      "brave": "Bravery",
+      "scavenger": "Scavenger",
+      "guardian": "Defense",
+      "fearless": "Fearless",
+      "prosperous": "Prosperity",
+      "recruiter": "Recruiter",
+      "cautious": "Recovery",
+      "salvager": "Salvager",
+      "rusher": "Speed"
+    },
+    "templars": {
+      "striker": "Attack",
+      "guardian": "Defense",
+      "prosperous": "Gold",
+      "recruiter": "Recruiter",
+      "rusher": "Speed"
+    },
+    "leagues": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "diamond": "Diamond",
+      "legend": "Legend"
+    },
+    "families": {
+      "attack": "Attack",
+      "defense": "Defense",
+      "gold": "Gold",
+      "speed": "Speed",
+      "troops-speed": "Troops/Speed"
+    },
+    "rarities": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "mythic": "Mythic",
+      "legendary": "Legendary"
+    },
+    "slots": {
+      "amulet": "Amulet",
+      "helmet": "Helmet",
+      "bracelet": "Bracelet",
+      "ring": "Ring",
+      "belt": "Belt",
+      "gauntlet": "Gauntlet",
+      "weapon": "Weapon",
+      "boots": "Boots",
+      "shield": "Shield"
+    }
+  },
+  "tools": {
+    "eyebrow": "Tools",
+    "title": "Choose your domain",
+    "cities": "Cities",
+    "combat": "Combat",
+    "ranking": "Ranking",
+    "skills": "Skills",
+    "count": "{count, plural, =0 {No simulator available} one {# simulator available} other {# simulators available}}",
+    "open": "Open category",
+    "comingSoon": "Coming soon",
+    "unavailable": "Currently unavailable",
+    "navigation-label": "Tool categories",
+    "city-tabs": "City tools",
+    "skills-tabs": "Skill tools",
+    "calculator-unavailable": "Disabled — currently unavailable",
+    "calculators-unavailable": "These tools are temporarily unavailable."
+  },
+  "player-settings": {
+    "title": "Player settings",
+    "summary": "{league} · Level {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
+    "league": "League",
+    "player-level": "Player level",
+    "player-vp": "Player VP",
+    "vp-unit": "VP unit",
+    "equipment-skills": {
+      "title": "Skills with equipment",
+      "help": "Values actually used by the tools. They remain independent from the skill point distribution.",
+      "field": "{skill} with equipment"
+    },
+    "skill-points": {
+      "title": "Skill point distribution",
+      "help": "Planning tool only: it never changes skills with equipment.",
+      "available": "Available",
+      "allocated": "Allocated",
+      "remaining": "Remaining",
+      "reset": "Reset",
+      "field": "{skill} points"
+    },
+    "templars": {
+      "title": "Personal templars",
+      "field": "{templar} templars"
+    },
+    "clan-temple": {
+      "title": "Clan Temple bonuses",
+      "help": "Enter the clan's active total bonus directly. The stepper uses a uniform step and does not derive from personal templar rates.",
+      "field": "{templar} Temple"
+    }
+  },
+  "city-cost": {
+    "name": "City Cost",
+    "fields": {
+      "city-count": "Number of cities",
+      "start-level": "Starting level",
+      "target-level": "Target level"
+    },
+    "single-city": "For 1 city",
+    "start": "Start",
+    "target": "Target",
+    "wall": "Wall",
+    "vp": "VP",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
+    "cost-one": "Cost for this city",
+    "gold-unit": "gold",
+    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "cost-total": "Total cost",
+    "vp-gained": "Total VP gained",
+    "gold-transition": "Gold/h before → after",
+    "army-transition": "Army/h before → after"
+  },
+  "city-max-level": {
+    "name": "Maximum Reachable Level",
+    "fields": {
+      "city-count": "Number of cities",
+      "start-level": "Starting level",
+      "available-gold": "Available gold",
+      "gold-unit": "Available gold unit"
+    },
+    "reachable-level": "Reachable target level",
+    "remaining-gold": "Remaining gold",
+    "vp-gained": "Total VP gained",
+    "gold-transition": "Gold/h before → after",
+    "army-transition": "Army/h before → after"
+  },
+  "city-production": {
+    "name": "Production",
+    "fields": {
+      "city-count": "Number of cities",
+      "average-level": "Average city level"
+    },
+    "per-city-base": "Per city — base",
+    "vp": "VP",
+    "wall": "Wall",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
+    "gold-total": "💰 Gold — Total production",
+    "troops-total": "⚔️ Troops — Total production",
+    "base": "Base",
+    "equipment": "Equipment",
+    "temple": "Temple",
+    "vp-total": "Total VP",
+    "full-production": {
+      "title": "Full-production reskill",
+      "note": "Simulation with all {points} available points invested, calculated from base production.",
+      "gold": "Gold with full Prosperity",
+      "troops": "Troops with full Recruiter"
+    },
+    "rewards": {
+      "title": "Rewards",
+      "gold-hours": "Gold hours received",
+      "troops-hours": "Troop hours received",
+      "gold-bonus": "Gold bonus obtained",
+      "troops-bonus": "Troop bonus obtained"
+    }
+  },
+  "xp-gain-rate": {
+    "name": "XP Gain Rate"
+  },
+  "demo-attack-troops": {
+    "name": "Demo Attack Troops"
+  },
+  "ranking": {
+    "name": "Ranking",
+    "fields": {
+      "league": "League",
+      "percentage": "Your current percentage",
+      "rank": "Your current rank"
+    },
+    "undefined-suffix": " — to be defined",
+    "total-players": "Total players (deduced)",
+    "errors": {
+      "positive-percentage": "Enter a percentage greater than 0 to calculate.",
+      "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
+    },
+    "visual-scale": "Visual scale",
+    "ranking-ranges": "Ranking ranges",
+    "columns": {
+      "range": "Range",
+      "rank": "Range rank",
+      "target-league": "Target league",
+      "reward": "Reward"
+    },
+    "scale-label": "Ranking scale from 100% to 0%",
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+  },
+  "stuff-simulator": {
+    "name": "Equipment Simulator",
+    "view-reference": "View full reference table",
+    "global-summary": "Summary — all families combined",
+    "empty-summary": "No equipment configured",
+    "empty-slot": "Empty",
+    "select-slot": "Click a slot to configure it.",
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "{block} equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "{block} equipment stars {slot}",
+    "gems-count": "Gems ({count})",
+    "no-gem-slot": "No gem slot at this rarity",
+    "gem": {
+      "skill": "Gem skill {index}",
+      "stars": "Gem stars {index}",
+      "league": "Gem league {index}"
+    }
+  },
+  "stuff-comparison": {
+    "name": "Equipment Comparison",
+    "view-reference": "View full reference table",
+    "side-title": "Equipment {side}",
+    "slot": "Slot",
+    "comparison-title": "Comparison by skill",
+    "columns": {
+      "skill": "Skill",
+      "side-a": "Equipment A",
+      "side-b": "Equipment B",
+      "difference": "Difference"
+    },
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "{block} equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "{block} equipment stars {slot}",
+    "gems-count": "Gems ({count})",
+    "no-gem-slot": "No gem slot at this rarity",
+    "gem": {
+      "skill": "Gem skill {index}",
+      "stars": "Gem stars {index}",
+      "league": "Gem league {index}"
+    }
+  },
+  "gems": {
+    "name": "Gems",
+    "mode-label": "Gem mode",
+    "modes": {
+      "optimize": "Optimization",
+      "budget": "Available budget"
+    },
+    "optimization": {
+      "title": "Multi-skill optimization"
+    },
+    "family-label": "Gem family",
+    "fields": {
+      "available-slots": "Available slots",
+      "skill": "Skill",
+      "skill-row": "Skill row {row}",
+      "league": "League",
+      "league-row": "League row {row}",
+      "allocated-slots": "Allocated slots",
+      "slots-row": "Slots row {row}",
+      "target-stat": "Target stat (%)",
+      "target-row": "Target stat row {row}",
+      "budget-slots": "Budget slots",
+      "available-budget": "Available budget in sapphires"
+    },
+    "remove-row": "Remove row {row}",
+    "add-stat": "+ Add a stat",
+    "allocated-summary": "Allocated slots",
+    "result": "Result",
+    "errors": {
+      "add-positive-stat": "Add a stat with more than zero slots."
+    },
+    "columns": {
+      "skill": "Skill",
+      "league": "League",
+      "slots": "Slots",
+      "distribution": "Distribution",
+      "stat": "Obtained stat",
+      "cost": "Cost"
+    },
+    "total-cost": "Total cost",
+    "sapphires": "sapphires",
+    "optimal-distribution": "Optimal distribution",
+    "base-gems": "Base gems to buy",
+    "used-slots": "Used slots",
+    "obtained-stat": "Obtained stat",
+    "actual-cost": "Actual cost",
+    "remaining-budget": "Remaining budget",
+    "gem-count": "{count, plural, one {# gem} other {# gems}} {level}★",
+    "no-gems": "No gems"
+  },
+  "templars": {
+    "name": "Templars",
+    "fields": {
+      "start-level": "Starting templar level",
+      "target-level": "Target templar level"
+    },
+    "total-cost": "Total cost — {templar}",
+    "skydust": "Skydust",
+    "bonus-per-templar": "Bonus per templar",
+    "total-bonus-level": "Total bonus at level {level}",
+    "gain-transition": "Start → target gain",
+    "cost-table": "Exact cost table",
+    "columns": {
+      "level": "Reached level",
+      "level-cost": "Level cost",
+      "cumulative-cost": "Cumulative cost"
+    }
+  },
   "Navigation": {
     "tools": "Simulators",
     "guides": "Guides",

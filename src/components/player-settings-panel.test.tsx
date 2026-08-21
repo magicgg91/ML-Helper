@@ -6,6 +6,8 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
 import { PlayerSettingsPanel, playerStorageKey } from "./player-settings-panel";
 
 describe("PlayerSettingsPanel", () => {
@@ -13,7 +15,11 @@ describe("PlayerSettingsPanel", () => {
   afterEach(cleanup);
 
   it("keeps equipment skills independent from planned points", async () => {
-    render(<PlayerSettingsPanel />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Attaque avec équipement" }),
@@ -49,7 +55,11 @@ describe("PlayerSettingsPanel", () => {
       }),
     );
 
-    render(<PlayerSettingsPanel />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
 
     await waitFor(() =>
       expect(
@@ -61,7 +71,11 @@ describe("PlayerSettingsPanel", () => {
   });
 
   it("enforces clan temple minimums with a uniform step", () => {
-    render(<PlayerSettingsPanel />);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
     const attack = screen.getByLabelText("Temple Attaque", {
       selector: "input",
     });

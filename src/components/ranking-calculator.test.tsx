@@ -1,12 +1,20 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
 import { defaultRankingConfig } from "../lib/ranking";
 import { RankingCalculator } from "./ranking-calculator";
 
 describe("RankingCalculator", () => {
   afterEach(cleanup);
+  const renderCalculator = () =>
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <RankingCalculator config={defaultRankingConfig} />
+      </NextIntlClientProvider>,
+    );
   it("converts correlated rank and percentage and renders confirmed rewards", () => {
-    render(<RankingCalculator config={defaultRankingConfig} />);
+    renderCalculator();
     expect(screen.getByTestId("ranking-total")).toHaveTextContent("1 000");
     expect(
       screen.getAllByText("Montée Légende", { selector: "td" }),
@@ -16,7 +24,7 @@ describe("RankingCalculator", () => {
     ).toBeInTheDocument();
   });
   it("shows the editable placeholder for an unknown league", () => {
-    render(<RankingCalculator config={defaultRankingConfig} />);
+    renderCalculator();
     fireEvent.change(screen.getByLabelText("Ligue"), {
       target: { value: "bronze" },
     });
@@ -25,7 +33,7 @@ describe("RankingCalculator", () => {
     );
   });
   it("handles a zero percentage without dividing by zero", () => {
-    render(<RankingCalculator config={defaultRankingConfig} />);
+    renderCalculator();
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
       { target: { value: "0" } },

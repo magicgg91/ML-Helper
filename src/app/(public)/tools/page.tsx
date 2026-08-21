@@ -38,7 +38,7 @@ const categories: Array<{
 
 export default async function ToolsPage() {
   const active = await getCalculatorAvailability();
-  const t = await getTranslations("ToolsPage");
+  const t = await getTranslations("tools");
   return (
     <main className="public-main">
       <p className="eyebrow">{t("eyebrow")}</p>
