@@ -8,7 +8,7 @@ import { ServerLocaleSwitcher } from "@/components/server-locale-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);
-  const t = await getTranslations("Admin");
+  const t = await getTranslations("admin");
   if (!session?.user || !isAdminRole(session.user.role)) return children;
   return (
     <>

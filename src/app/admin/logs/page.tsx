@@ -5,7 +5,7 @@ import { LogPurgeForm } from "@/components/log-purge-form";
 import { can } from "@/auth/permissions";
 export default async function LogsPage() {
   const session = await requireCapability("logs.view");
-  const t = await getTranslations("Logs");
+  const t = await getTranslations("admin.logs");
   const logs = await prisma.auditLog.findMany({
     include: { user: { select: { username: true } } },
     orderBy: { createdAt: "desc" },
@@ -19,8 +19,8 @@ export default async function LogsPage() {
         <thead>
           <tr>
             <th>{t("actor")}</th>
-            <th>Rôle au moment de l’action</th>
-            <th>Message</th>
+            <th>{t("actor-role")}</th>
+            <th>{t("message")}</th>
             <th>{t("date")}</th>
           </tr>
         </thead>

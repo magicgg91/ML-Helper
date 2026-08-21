@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Locale = "fr" | "en";
 type LocaleDraft = { title: string; excerpt: string; content: string };
@@ -32,6 +33,7 @@ export function GuideEditor({
   canPublish: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.guide-editor");
   const [id, setId] = useState(initial.id);
   const [locale, setLocale] = useState<Locale>("fr");
   const [status, setStatus] = useState(initial.status);
@@ -46,11 +48,11 @@ export function GuideEditor({
   }
 
   async function save(nextStatus?: "pending_review" | "published" | "draft") {
-    setMessage("Enregistrement…");
+    setMessage(t("saving"));
     const generatedSlug =
       initial.slug || slugify(translations.fr.title || translations.en.title);
     if (!generatedSlug) {
-      setMessage("Saisis un titre FR ou EN avant d’enregistrer.");
+      setMessage(t("missing-title"));
       return;
     }
     const response = await fetch(
@@ -70,8 +72,8 @@ export function GuideEditor({
       const error = response ? await response.json().catch(() => null) : null;
       setMessage(
         error?.error === "slug_already_exists"
-          ? "Un guide utilise déjà ce titre/slug."
-          : "Le guide contient des champs invalides ou incomplets.",
+          ? t("duplicate-slug")
+          : t("invalid"),
       );
       return;
     }
@@ -89,13 +91,13 @@ export function GuideEditor({
       );
       if (!statusResponse.ok) {
         setMessage(
-          "Guide enregistré, mais ton rôle ne permet pas ce changement de statut.",
+          t("status-forbidden"),
         );
         return;
       }
       setStatus(nextStatus);
     }
-    setMessage("Guide enregistré.");
+    setMessage(t("saved"));
     if (!id) router.replace(`/admin/guides/${guideId}`);
     router.refresh();
   }
@@ -103,7 +105,7 @@ export function GuideEditor({
   const draft = translations[locale];
   return (
     <div className="guide-editor">
-      <nav className="tabs" aria-label="Langue du guide">
+      <nav className="tabs" aria-label={t("language-label")}>
         {(["fr", "en"] as const).map((key) => (
           <button
             type="button"
@@ -117,14 +119,14 @@ export function GuideEditor({
       </nav>
       <section className="admin-panel guide-simple-fields">
         <label>
-          Titre ({locale.toUpperCase()})
+          {t("title", { locale: locale.toUpperCase() })}
           <input
             value={draft.title}
             onChange={(event) => updateLocale({ title: event.target.value })}
           />
         </label>
         <label>
-          Résumé ({locale.toUpperCase()})
+          {t("excerpt", { locale: locale.toUpperCase() })}
           <input
             value={draft.excerpt}
             maxLength={320}
@@ -132,7 +134,7 @@ export function GuideEditor({
           />
         </label>
         <label>
-          Contenu Markdown ({locale.toUpperCase()})
+          {t("content", { locale: locale.toUpperCase() })}
           <textarea
             className="guide-markdown-input"
             value={draft.content}
@@ -143,16 +145,16 @@ export function GuideEditor({
       </section>
       <div className="admin-actions">
         <button type="button" onClick={() => save()}>
-          Enregistrer
+          {t("save")}
         </button>
         {status !== "pending_review" && status !== "published" && (
           <button type="button" onClick={() => save("pending_review")}>
-            Soumettre en review
+            {t("submit-review")}
           </button>
         )}
         {canPublish && status !== "published" && (
           <button type="button" onClick={() => save("published")}>
-            Publier
+            {t("publish")}
           </button>
         )}
         {canPublish && status === "published" && (
@@ -161,7 +163,7 @@ export function GuideEditor({
             className="secondary-action"
             onClick={() => save("draft")}
           >
-            Dépublier en brouillon
+            {t("unpublish")}
           </button>
         )}
       </div>

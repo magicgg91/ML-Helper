@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export type GuideAdminRow = {
   id: string;
@@ -13,12 +14,6 @@ export type GuideAdminRow = {
   status: string;
   active: boolean;
 };
-const labels: Record<string, string> = {
-  draft: "Brouillon",
-  pending_review: "En review",
-  published: "Publié",
-};
-
 export function GuideStatusList({
   rows,
   canPublish,
@@ -30,6 +25,7 @@ export function GuideStatusList({
   canDelete: boolean;
   canWrite: boolean;
 }) {
+  const t = useTranslations("admin.guides");
   const [guides, setGuides] = useState(rows);
   const [message, setMessage] = useState("");
   async function changeStatus(id: string, status: string) {
@@ -39,11 +35,11 @@ export function GuideStatusList({
       body: JSON.stringify({ status }),
     });
     if (!response.ok)
-      return setMessage("Ton rôle ne permet pas ce changement de statut.");
+      return setMessage(t("status-forbidden"));
     setGuides((current) =>
       current.map((guide) => (guide.id === id ? { ...guide, status } : guide)),
     );
-    setMessage("Statut enregistré.");
+    setMessage(t("status-saved"));
   }
   async function toggle(id: string, active: boolean) {
     const response = await fetch(`/api/admin/guides/${id}/active`, {
@@ -52,24 +48,24 @@ export function GuideStatusList({
       body: JSON.stringify({ active }),
     });
     if (!response.ok)
-      return setMessage("Impossible de modifier la visibilité.");
+      return setMessage(t("visibility-error"));
     setGuides((current) =>
       current.map((guide) => (guide.id === id ? { ...guide, active } : guide)),
     );
-    setMessage(active ? "Guide activé." : "Guide désactivé.");
+    setMessage(t(active ? "enabled" : "disabled"));
   }
   async function remove(guide: GuideAdminRow) {
     if (
-      !window.confirm(`Supprimer définitivement le guide « ${guide.title} » ?`)
+      !window.confirm(t("confirm-delete", { title: guide.title }))
     )
       return;
     const response = await fetch(`/api/admin/guides/${guide.id}`, {
       method: "DELETE",
     });
     if (!response.ok)
-      return setMessage("Ton rôle ne permet pas de supprimer ce guide.");
+      return setMessage(t("delete-forbidden"));
     setGuides((current) => current.filter((item) => item.id !== guide.id));
-    setMessage("Guide supprimé définitivement.");
+    setMessage(t("deleted"));
   }
   return (
     <>
@@ -77,12 +73,12 @@ export function GuideStatusList({
         <table className="ranking-table guide-admin-table">
           <thead>
             <tr>
-              <th>Titre</th>
-              <th>Auteur</th>
-              <th>Créé le</th>
-              <th>Dernière édition</th>
-              <th>Statut</th>
-              <th>Actions</th>
+              <th>{t("columns.title")}</th>
+              <th>{t("columns.author")}</th>
+              <th>{t("columns.created")}</th>
+              <th>{t("columns.updated")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -93,7 +89,7 @@ export function GuideStatusList({
                 title={
                   guide.active
                     ? undefined
-                    : "Désactivé et invisible côté public"
+                    : t("disabled-tooltip")
                 }
               >
                 <td>{guide.title || guide.slug}</td>
@@ -102,20 +98,20 @@ export function GuideStatusList({
                 <td>{guide.updatedAt}</td>
                 <td>
                   <select
-                    aria-label={`Statut de ${guide.title || guide.slug}`}
+                    aria-label={t("status-label", { title: guide.title || guide.slug })}
                     value={guide.status}
                     disabled={!canWrite}
                     onChange={(event) =>
                       changeStatus(guide.id, event.target.value)
                     }
                   >
-                    <option value="draft">{labels.draft}</option>
+                    <option value="draft">{t("statuses.draft")}</option>
                     <option value="pending_review">
-                      {labels.pending_review}
+                      {t("statuses.pending_review")}
                     </option>
                     {(canPublish || guide.status === "published") && (
                       <option value="published" disabled={!canPublish}>
-                        {labels.published}
+                        {t("statuses.published")}
                       </option>
                     )}
                   </select>
@@ -123,14 +119,14 @@ export function GuideStatusList({
                 <td>
                   <div className="table-actions">
                     {canWrite && (
-                      <Link href={`/admin/guides/${guide.id}`}>Éditer</Link>
+                      <Link href={`/admin/guides/${guide.id}`}>{t("edit")}</Link>
                     )}
                     {canWrite && (
                       <button
                         type="button"
                         onClick={() => toggle(guide.id, !guide.active)}
                       >
-                        {guide.active ? "Désactiver" : "Activer"}
+                        {t(guide.active ? "disable" : "enable")}
                       </button>
                     )}
                     {canDelete && (
@@ -139,7 +135,7 @@ export function GuideStatusList({
                         className="danger-action"
                         onClick={() => remove(guide)}
                       >
-                        Supprimer
+                        {t("delete")}
                       </button>
                     )}
                   </div>

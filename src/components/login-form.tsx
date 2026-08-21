@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 export function LoginForm() {
-  const t = useTranslations("Login");
+  const t = useTranslations("login");
   const router = useRouter();
   const [error, setError] = useState(false);
   async function submit(formData: FormData) {

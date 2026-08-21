@@ -1,9 +1,11 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 export function AdminAccountMenu({ username }: { username: string }) {
+  const t = useTranslations("admin.account");
   const [message, setMessage] = useState("");
   async function changePassword(formData: FormData) {
     const response = await fetch("/api/admin/profile/password", {
@@ -16,8 +18,8 @@ export function AdminAccountMenu({ username }: { username: string }) {
     });
     setMessage(
       response.ok
-        ? "Mot de passe mis à jour."
-        : "Mot de passe actuel incorrect ou nouveau mot de passe invalide.",
+        ? t("saved")
+        : t("invalid"),
     );
   }
   return (
@@ -26,13 +28,13 @@ export function AdminAccountMenu({ username }: { username: string }) {
         <summary>{username}</summary>
         <div className="admin-account-menu">
           <form action={changePassword}>
-            <strong>Changer mon mot de passe</strong>
+            <strong>{t("change-password")}</strong>
             <label>
-              Mot de passe actuel
+              {t("current-password")}
               <input name="currentPassword" type="password" required />
             </label>
             <label>
-              Nouveau mot de passe
+              {t("new-password")}
               <input
                 name="newPassword"
                 type="password"
@@ -40,7 +42,7 @@ export function AdminAccountMenu({ username }: { username: string }) {
                 required
               />
             </label>
-            <button type="submit">Enregistrer</button>
+            <button type="submit">{t("save")}</button>
             {message && <p role="status">{message}</p>}
           </form>
           <button
@@ -48,7 +50,7 @@ export function AdminAccountMenu({ username }: { username: string }) {
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
-            Se déconnecter
+            {t("logout")}
           </button>
         </div>
       </details>

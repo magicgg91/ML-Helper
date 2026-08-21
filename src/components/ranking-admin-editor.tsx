@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   rankingLeagues,
   type RankingBand,
@@ -8,20 +9,13 @@ import {
   type RankingLeague,
 } from "../lib/ranking";
 
-const labels: Record<RankingLeague, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-  diamond: "Diamant",
-  legend: "Légende",
-};
-
 export function RankingAdminEditor({
   initialConfig,
 }: {
   initialConfig: RankingConfig;
 }) {
+  const t = useTranslations("admin.ranking");
+  const leagues = useTranslations("game.leagues");
   const [config, setConfig] = useState(() => structuredClone(initialConfig));
   const [message, setMessage] = useState("");
   const [invalid, setInvalid] = useState<string[]>([]);
@@ -79,10 +73,10 @@ export function RankingAdminEditor({
     );
     setInvalid(errors);
     if (errors.length) {
-      setMessage("Corrige les champs signalés avant l’enregistrement.");
+      setMessage(t("validation"));
       return;
     }
-    setMessage("Enregistrement…");
+    setMessage(t("saving"));
     try {
       const response = await fetch("/api/admin/ranking", {
         method: "PUT",
@@ -90,36 +84,28 @@ export function RankingAdminEditor({
         body: JSON.stringify(config),
       });
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setMessage(
-          `Échec de l’enregistrement${payload?.error ? ` : ${payload.error}` : ` (HTTP ${response.status})`}.`,
-        );
+        setMessage(t("save-error", { status: response.status }));
         return;
       }
-      setMessage("Configuration enregistrée.");
+      setMessage(t("saved"));
     } catch {
-      setMessage("Impossible de joindre le serveur. Réessaie plus tard.");
+      setMessage(t("server-error"));
     }
   }
 
   return (
     <div className="ranking-admin-editor">
-      <p>
-        Édite chaque plage individuellement. Bronze et Or peuvent rester sans
-        ligne tant que leurs données ne sont pas confirmées.
-      </p>
+      <p>{t("description")}</p>
       {rankingLeagues.map((league) => (
         <section className="admin-panel" key={league}>
           <div className="admin-section-heading">
-            <h2>{labels[league]}</h2>
+            <h2>{leagues(league)}</h2>
             <button
               className="secondary-action"
               type="button"
               onClick={() => add(league)}
             >
-              Ajouter une plage
+              {t("add")}
             </button>
           </div>
           {config[league].length ? (
@@ -127,10 +113,10 @@ export function RankingAdminEditor({
               <table className="ranking-table">
                 <thead>
                   <tr>
-                    <th>Seuil (%)</th>
-                    <th>Ligue cible</th>
-                    <th>Récompense</th>
-                    <th>Action</th>
+                    <th>{t("threshold")}</th>
+                    <th>{t("target")}</th>
+                    <th>{t("reward")}</th>
+                    <th>{t("action")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -142,7 +128,11 @@ export function RankingAdminEditor({
                           return (
                             <td key={field}>
                               <input
-                                aria-label={`${labels[league]} ligne ${index + 1} ${field}`}
+                                aria-label={t("row-label", {
+                                  league: leagues(league),
+                                  row: index + 1,
+                                  field: t(field),
+                                })}
                                 aria-invalid={invalid.includes(key)}
                                 className={
                                   invalid.includes(key)
@@ -166,8 +156,8 @@ export function RankingAdminEditor({
                               {invalid.includes(key) && (
                                 <small className="field-error">
                                   {field === "threshold"
-                                    ? "Entre 0 et 100 requis."
-                                    : "Ce champ est obligatoire."}
+                                    ? t("range-error")
+                                    : t("required")}
                                 </small>
                               )}
                             </td>
@@ -180,7 +170,7 @@ export function RankingAdminEditor({
                           type="button"
                           onClick={() => remove(league, index)}
                         >
-                          Supprimer
+                          {t("remove")}
                         </button>
                       </td>
                     </tr>
@@ -189,17 +179,17 @@ export function RankingAdminEditor({
               </table>
             </div>
           ) : (
-            <p className="admin-empty">Aucune plage confirmée.</p>
+            <p className="admin-empty">{t("empty")}</p>
           )}
         </section>
       ))}
       <button className="primary-button" type="button" onClick={save}>
-        Enregistrer le classement
+        {t("save")}
       </button>
       {message && (
         <p
           className={
-            message.startsWith("Configuration") ? "form-success" : "form-status"
+            message === t("saved") ? "form-success" : "form-status"
           }
           role="status"
         >
