@@ -3,6 +3,7 @@ import {
   skillPointMeta,
   type League,
 } from "./player-settings";
+import { defaultCityParameters, type CityParameters } from "./city-parameters";
 
 export const CITY_LEVEL_MAX = 200;
 
@@ -13,39 +14,67 @@ export type CityStats = {
   army: number;
 };
 
-export function vpAt(level: number): number {
-  return 20 * 1.115 ** (Math.max(1, level) - 1);
+export function vpAt(
+  level: number,
+  parameters: CityParameters = defaultCityParameters,
+): number {
+  return parameters.vp.base * parameters.vp.ratio ** (Math.max(1, level) - 1);
 }
 
-export function wallAt(level: number): number {
-  return 70 * 1.2 ** (Math.max(1, level) - 1);
+export function wallAt(
+  level: number,
+  parameters: CityParameters = defaultCityParameters,
+): number {
+  return (
+    parameters.walls.base * parameters.walls.ratio ** (Math.max(1, level) - 1)
+  );
 }
 
-export function upgradeCostAt(level: number): number {
+export function upgradeCostAt(
+  level: number,
+  parameters: CityParameters = defaultCityParameters,
+): number {
   if (level <= 1) return 0;
-  return level === 2 ? 10 : 10 * 1.2 ** (level - 2);
+  return level === 2
+    ? parameters.cost.base
+    : parameters.cost.base * parameters.cost.ratio ** (level - 2);
 }
 
-export function cumulativeCostAt(level: number): number {
+export function cumulativeCostAt(
+  level: number,
+  parameters: CityParameters = defaultCityParameters,
+): number {
   let total = 0;
   for (let current = 1; current <= Math.floor(level); current += 1) {
-    total += upgradeCostAt(current);
+    total += upgradeCostAt(current, parameters);
   }
   return total;
 }
 
-export function cityStatsAt(level: number): CityStats {
-  const vp = vpAt(level);
-  return { vp, wall: wallAt(level), gold: vp * 10, army: vp * 3 };
+export function cityStatsAt(
+  level: number,
+  league: League = "legend",
+  parameters: CityParameters = defaultCityParameters,
+): CityStats {
+  const vp = vpAt(level, parameters);
+  const multipliers = parameters.multipliers[league];
+  return {
+    vp,
+    wall: wallAt(level, parameters),
+    gold: vp * multipliers.gold,
+    army: vp * multipliers.army,
+  };
 }
 
 export function cityUpgradeCost(
   startLevel: number,
   targetLevel: number,
+  parameters: CityParameters = defaultCityParameters,
 ): number {
   return Math.max(
     0,
-    cumulativeCostAt(targetLevel) - cumulativeCostAt(startLevel),
+    cumulativeCostAt(targetLevel, parameters) -
+      cumulativeCostAt(startLevel, parameters),
   );
 }
 
@@ -53,6 +82,7 @@ export function maximumReachableLevel(
   startLevel: number,
   cityCount: number,
   goldBudget: number,
+  parameters: CityParameters = defaultCityParameters,
 ): { level: number; spent: number; remaining: number } {
   const start = Math.min(CITY_LEVEL_MAX, Math.max(1, Math.floor(startLevel)));
   const count = Math.max(1, Math.floor(cityCount));
@@ -60,12 +90,12 @@ export function maximumReachableLevel(
   let level = start;
 
   while (level < CITY_LEVEL_MAX) {
-    const nextCost = cityUpgradeCost(start, level + 1) * count;
+    const nextCost = cityUpgradeCost(start, level + 1, parameters) * count;
     if (nextCost > budget) break;
     level += 1;
   }
 
-  const spent = cityUpgradeCost(start, level) * count;
+  const spent = cityUpgradeCost(start, level, parameters) * count;
   return { level, spent, remaining: budget - spent };
 }
 
@@ -78,20 +108,23 @@ export type ProductionResult = {
   fullProduction: { gold: number; troops: number; points: number };
 };
 
-export function calculateProduction(input: {
-  cityCount: number;
-  cityLevel: number;
-  playerLevel: number;
-  league: League;
-  prosperousEquipment: number;
-  recruiterEquipment: number;
-  prosperousTemple: number;
-  recruiterTemple: number;
-  goldRewardHours: number;
-  troopsRewardHours: number;
-}): ProductionResult {
+export function calculateProduction(
+  input: {
+    cityCount: number;
+    cityLevel: number;
+    playerLevel: number;
+    league: League;
+    prosperousEquipment: number;
+    recruiterEquipment: number;
+    prosperousTemple: number;
+    recruiterTemple: number;
+    goldRewardHours: number;
+    troopsRewardHours: number;
+  },
+  parameters: CityParameters = defaultCityParameters,
+): ProductionResult {
   const count = Math.max(1, Math.floor(input.cityCount));
-  const perCity = cityStatsAt(input.cityLevel);
+  const perCity = cityStatsAt(input.cityLevel, input.league, parameters);
   const goldBase = perCity.gold * count;
   const troopsBase = perCity.army * count;
   const goldStuff = goldBase * (Math.max(0, input.prosperousEquipment) / 100);

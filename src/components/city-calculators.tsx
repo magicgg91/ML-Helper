@@ -14,6 +14,10 @@ import {
   type PlayerSettings,
 } from "../lib/player-settings";
 import {
+  defaultCityParameters,
+  type CityParameters,
+} from "../lib/city-parameters";
+import {
   playerSettingsChangedEvent,
   playerStorageKey,
   safePlayerSettings,
@@ -96,22 +100,36 @@ function ProductionTransition({
   label,
   start,
   target,
+  testId,
 }: {
   label: string;
   start: number;
   target: number;
+  testId?: string;
 }) {
-  return <Stat label={label} value={`${number(start)} → ${number(target)}`} />;
+  return (
+    <Stat
+      label={label}
+      value={`${number(start)} → ${number(target)}`}
+      testId={testId}
+    />
+  );
 }
 
-function CostCalculator({ settings }: { settings: PlayerSettings }) {
+function CostCalculator({
+  settings,
+  parameters,
+}: {
+  settings: PlayerSettings;
+  parameters: CityParameters;
+}) {
   const t = useTranslations("city-cost");
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [targetLevel, setTargetLevel] = useState(2);
-  const start = cityStatsAt(startLevel);
-  const target = cityStatsAt(targetLevel);
-  const cost = cityUpgradeCost(startLevel, targetLevel);
+  const start = cityStatsAt(startLevel, settings.league, parameters);
+  const target = cityStatsAt(targetLevel, settings.league, parameters);
+  const cost = cityUpgradeCost(startLevel, targetLevel, parameters);
   const goldBonus =
     1 +
     (settings.equipmentSkills.prosperous + settings.clanTemple.prosperous) /
@@ -192,11 +210,13 @@ function CostCalculator({ settings }: { settings: PlayerSettings }) {
             label={t("gold-transition")}
             start={start.gold * goldBonus * cityCount}
             target={target.gold * goldBonus * cityCount}
+            testId="city-cost-gold"
           />
           <ProductionTransition
             label={t("army-transition")}
             start={start.army * armyBonus * cityCount}
             target={target.army * armyBonus * cityCount}
+            testId="city-cost-army"
           />
         </div>
       </section>
@@ -212,15 +232,26 @@ const budgetUnits = [
   ["T", 1_000_000_000_000],
 ] as const;
 
-function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
+function MaxLevelCalculator({
+  settings,
+  parameters,
+}: {
+  settings: PlayerSettings;
+  parameters: CityParameters;
+}) {
   const t = useTranslations("city-max-level");
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [budget, setBudget] = useState(0);
   const [unit, setUnit] = useState(1_000);
-  const result = maximumReachableLevel(startLevel, cityCount, budget * unit);
-  const start = cityStatsAt(startLevel);
-  const target = cityStatsAt(result.level);
+  const result = maximumReachableLevel(
+    startLevel,
+    cityCount,
+    budget * unit,
+    parameters,
+  );
+  const start = cityStatsAt(startLevel, settings.league, parameters);
+  const target = cityStatsAt(result.level, settings.league, parameters);
   const goldBonus =
     1 +
     (settings.equipmentSkills.prosperous + settings.clanTemple.prosperous) /
@@ -284,11 +315,13 @@ function MaxLevelCalculator({ settings }: { settings: PlayerSettings }) {
           label={t("gold-transition")}
           start={start.gold * cityCount * goldBonus}
           target={target.gold * cityCount * goldBonus}
+          testId="city-max-level-gold"
         />
         <ProductionTransition
           label={t("army-transition")}
           start={start.army * cityCount * armyBonus}
           target={target.army * cityCount * armyBonus}
+          testId="city-max-level-army"
         />
       </section>
     </div>
@@ -318,7 +351,13 @@ function Breakdown({
   );
 }
 
-function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
+function ProductionCalculator({
+  settings,
+  parameters,
+}: {
+  settings: PlayerSettings;
+  parameters: CityParameters;
+}) {
   const t = useTranslations("city-production");
   const [cityCount, setCityCount] = useState(1);
   const [cityLevel, setCityLevel] = useState(1);
@@ -326,19 +365,22 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
   const [troopsHours, setTroopsHours] = useState(0);
   const result = useMemo(
     () =>
-      calculateProduction({
-        cityCount,
-        cityLevel,
-        playerLevel: settings.level,
-        league: settings.league,
-        prosperousEquipment: settings.equipmentSkills.prosperous,
-        recruiterEquipment: settings.equipmentSkills.recruiter,
-        prosperousTemple: settings.clanTemple.prosperous,
-        recruiterTemple: settings.clanTemple.recruiter,
-        goldRewardHours: goldHours,
-        troopsRewardHours: troopsHours,
-      }),
-    [cityCount, cityLevel, goldHours, settings, troopsHours],
+      calculateProduction(
+        {
+          cityCount,
+          cityLevel,
+          playerLevel: settings.level,
+          league: settings.league,
+          prosperousEquipment: settings.equipmentSkills.prosperous,
+          recruiterEquipment: settings.equipmentSkills.recruiter,
+          prosperousTemple: settings.clanTemple.prosperous,
+          recruiterTemple: settings.clanTemple.recruiter,
+          goldRewardHours: goldHours,
+          troopsRewardHours: troopsHours,
+        },
+        parameters,
+      ),
+    [cityCount, cityLevel, goldHours, parameters, settings, troopsHours],
   );
 
   return (
@@ -366,10 +408,12 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
           <Stat
             label={t("gold-hour")}
             value={`${number(result.perCity.gold)}/h`}
+            testId="city-production-gold"
           />
           <Stat
             label={t("army-hour")}
             value={`${number(result.perCity.army)}/h`}
+            testId="city-production-army"
           />
         </div>
       </section>
@@ -430,8 +474,10 @@ function ProductionCalculator({ settings }: { settings: PlayerSettings }) {
 
 export function CityCalculators({
   availability = { cost: true, "max-level": true, production: true },
+  parameters = defaultCityParameters,
 }: {
   availability?: Record<Calculator, boolean>;
+  parameters?: CityParameters;
 }) {
   const tools = useTranslations("tools");
   const cost = useTranslations("city-cost");
@@ -490,9 +536,15 @@ export function CityCalculators({
           {production("name")}
         </button>
       </nav>
-      {active === "cost" && <CostCalculator settings={settings} />}
-      {active === "max-level" && <MaxLevelCalculator settings={settings} />}
-      {active === "production" && <ProductionCalculator settings={settings} />}
+      {active === "cost" && (
+        <CostCalculator settings={settings} parameters={parameters} />
+      )}
+      {active === "max-level" && (
+        <MaxLevelCalculator settings={settings} parameters={parameters} />
+      )}
+      {active === "production" && (
+        <ProductionCalculator settings={settings} parameters={parameters} />
+      )}
       {!active && (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
