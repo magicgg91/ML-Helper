@@ -4,6 +4,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   calculateRanking,
+  rankCategory,
+  rankCategoryShade,
+  type RankCategory,
   type RankingConfig,
   type RankingLeague,
 } from "../lib/ranking";
@@ -80,7 +83,7 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
         ) : (
           <>
             <h3>{t("visual-scale")}</h3>
-            <RankingScale bands={bands} />
+            <RankingScale bands={bands} percentage={percentage} />
             <h3>{t("ranking-ranges")}</h3>
             <div className="ranking-table-wrap">
               <table className="ranking-table">
@@ -132,46 +135,85 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
   );
 }
 
-function RankingScale({ bands }: { bands: RankingConfig[RankingLeague] }) {
+function RankingScale({
+  bands,
+  percentage,
+}: {
+  bands: RankingConfig[RankingLeague];
+  percentage: number;
+}) {
   const t = useTranslations("ranking");
+  const locale = useLocale();
   const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
+  const categoryCounters: Record<RankCategory, number> = {
+    montee: 0,
+    maintien: 0,
+    descente: 0,
+  };
+  const playerLeft = 100 - percentage;
   return (
     <div className="ranking-scale" aria-label={t("scale-label")}>
-      <div className="ranking-axis-labels">
-        <span>100%</span>
-        <span>0%</span>
-      </div>
-      <div className="ranking-segments">
-        {sorted
-          .map((band, index) => {
-            const start = index === 0 ? 0 : sorted[index - 1].threshold;
-            return (
-              <div
-                key={band.threshold}
-                className={`ranking-segment ranking-segment-${index % 2}`}
-                style={{ width: `${band.threshold - start}%` }}
-                title={t("segment-tooltip", {
-                  threshold: band.threshold,
-                  start,
-                  target: band.target,
-                  reward: band.reward,
-                })}
-              >
-                <span>
+      <div className="ranking-scale-axis" />
+      {Array.from({ length: 11 }, (_, index) => {
+        const value = index * 10;
+        const left = 100 - value;
+        return (
+          <div key={value}>
+            <span
+              className="ranking-scale-tick"
+              style={{ left: `${left}%` }}
+            />
+            <span
+              className="ranking-scale-tick-label"
+              style={{ left: `${left}%` }}
+            >
+              {value}%
+            </span>
+          </div>
+        );
+      })}
+      {sorted.map((band, index) => {
+        const start = index === 0 ? 0 : sorted[index - 1].threshold;
+        const left = 100 - band.threshold;
+        const width = band.threshold - start;
+        const category = rankCategory(band.target);
+        const color = rankCategoryShade(category, categoryCounters[category]);
+        categoryCounters[category] += 1;
+        const side = index % 2 === 0 ? "above" : "below";
+        return (
+          <div key={band.threshold}>
+            <div
+              className="ranking-scale-segment"
+              style={{ left: `${left}%`, width: `${width}%`, background: `${color}CC` }}
+              title={t("segment-tooltip", {
+                threshold: band.threshold,
+                start,
+                target: band.target,
+                reward: band.reward,
+              })}
+            />
+            <div
+              className="ranking-scale-marker"
+              style={{ left: `${left + width / 2}%` }}
+            >
+              <div className={`ranking-scale-label ranking-scale-label-${side}`}>
+                <div className="ranking-scale-range">
                   {band.threshold}–{start}%
-                </span>
+                </div>
+                <div className="ranking-scale-target">{band.target}</div>
               </div>
-            );
-          })
-          .reverse()}
-      </div>
-      <div className="ranking-ticks">
-        {Array.from({ length: 11 }, (_, index) => (
-          <span key={index} style={{ left: `${index * 10}%` }}>
-            {100 - index * 10}%
-          </span>
-        ))}
-      </div>
+            </div>
+          </div>
+        );
+      })}
+      {percentage > 0 && percentage <= 100 ? (
+        <div
+          className="ranking-scale-player-line"
+          data-testid="ranking-scale-player-line"
+          style={{ left: `${playerLeft}%` }}
+          data-pct={`${percentage.toLocaleString(locale, { maximumFractionDigits: 2 })}%`}
+        />
+      ) : null}
     </div>
   );
 }

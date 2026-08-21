@@ -4,6 +4,7 @@ import {
   defaultRankingConfig,
   parseRankingConfig,
   rankCategory,
+  rankCategoryShade,
 } from "./ranking";
 
 describe("ranking calculator", () => {
@@ -66,5 +67,16 @@ describe("rankCategory", () => {
     ["À définir dans l’administration", "maintien"],
   ] as const)("classifies %s as %s", (target, expected) => {
     expect(rankCategory(target)).toBe(expected);
+  });
+});
+
+describe("rankCategoryShade", () => {
+  it("goes from light to dark as the index grows within a category", () => {
+    expect(rankCategoryShade("montee", 0)).toBe("#a8dcb8");
+    expect(rankCategoryShade("montee", 1)).toBe("#7ec99a");
+    expect(rankCategoryShade("descente", 0)).toBe("#f0b088");
+  });
+  it("cycles back to the lightest shade past the palette length", () => {
+    expect(rankCategoryShade("maintien", 5)).toBe(rankCategoryShade("maintien", 0));
   });
 });

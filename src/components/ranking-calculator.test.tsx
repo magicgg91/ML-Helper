@@ -52,4 +52,44 @@ describe("RankingCalculator", () => {
     expect(screen.getByLabelText("Ligue")).toHaveValue("");
     expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
   });
+
+  it("shows the exact-position indicator and alternates labels above/below", () => {
+    const { container } = renderCalculator();
+    fireEvent.change(screen.getByLabelText("Ligue"), {
+      target: { value: "diamond" },
+    });
+    const line = screen.getByTestId("ranking-scale-player-line");
+    expect(line).toHaveAttribute("data-pct", "1%");
+    expect(line).toHaveStyle({ left: "99%" });
+
+    const labels = Array.from(
+      container.querySelectorAll(".ranking-scale-label"),
+    );
+    expect(labels.map((label) => label.className)).toEqual([
+      "ranking-scale-label ranking-scale-label-above",
+      "ranking-scale-label ranking-scale-label-below",
+      "ranking-scale-label ranking-scale-label-above",
+      "ranking-scale-label ranking-scale-label-below",
+      "ranking-scale-label ranking-scale-label-above",
+    ]);
+  });
+
+  it("colors each segment light-to-dark within its Montée/Maintien/Descente category", () => {
+    const { container } = renderCalculator();
+    fireEvent.change(screen.getByLabelText("Ligue"), {
+      target: { value: "diamond" },
+    });
+    const segments = Array.from(
+      container.querySelectorAll(".ranking-scale-segment"),
+    );
+    expect(
+      segments.map((segment) => (segment as HTMLElement).style.background),
+    ).toEqual([
+      "rgba(168, 220, 184, 0.8)",
+      "rgba(126, 201, 154, 0.8)",
+      "rgba(168, 201, 232, 0.8)",
+      "rgba(126, 171, 217, 0.8)",
+      "rgba(240, 176, 136, 0.8)",
+    ]);
+  });
 });

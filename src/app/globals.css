@@ -460,48 +460,91 @@ select {
 }
 .ranking-scale {
   position: relative;
-  margin: 1rem 1.5rem 3.5rem;
-  padding-top: 1.5rem;
+  height: 9.5rem;
+  margin: 1rem 0.5rem 2.5rem;
+  padding: 0 0.5rem;
 }
-.ranking-axis-labels {
-  display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 800;
-}
-.ranking-segments {
-  display: flex;
-  height: 3rem;
-  margin-top: 0.4rem;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 0.65rem;
-}
-.ranking-segment {
-  display: grid;
-  min-width: 0;
-  place-items: center;
-  color: var(--foreground);
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-.ranking-segment-0 {
-  background: color-mix(in srgb, var(--accent) 30%, var(--surface));
-}
-.ranking-segment-1 {
-  background: color-mix(in srgb, var(--success) 32%, var(--surface));
-}
-.ranking-ticks {
-  position: relative;
-  height: 1.5rem;
-  margin-top: 0.35rem;
-}
-.ranking-ticks span {
+.ranking-scale-axis {
   position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 3.5rem;
+  height: 2px;
+  background: var(--border);
+}
+.ranking-scale-tick {
+  position: absolute;
+  top: 3.15rem;
+  width: 1px;
+  height: 0.85rem;
+  background: var(--text-faint);
+  opacity: 0.35;
+}
+.ranking-scale-tick-label {
+  position: absolute;
+  top: 4.1rem;
   transform: translateX(-50%);
-  color: var(--muted);
+  color: var(--text-faint);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.56rem;
+  opacity: 0.6;
+}
+.ranking-scale-segment {
+  position: absolute;
+  top: 3rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  border-inline: 1px solid var(--bg-panel);
+}
+.ranking-scale-marker {
+  position: absolute;
+  top: 3.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+}
+.ranking-scale-label {
+  position: absolute;
+}
+.ranking-scale-label-above {
+  bottom: 2.1rem;
+}
+.ranking-scale-label-below {
+  top: 2.1rem;
+}
+.ranking-scale-range {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+}
+.ranking-scale-target {
+  font-size: 0.6rem;
+  color: var(--emerald-bright);
+}
+.ranking-scale-player-line {
+  position: absolute;
+  top: 2.4rem;
+  bottom: 2.4rem;
+  width: 2px;
+  background: var(--ember);
+  transform: translateX(-50%);
+  z-index: 3;
+}
+.ranking-scale-player-line::after {
+  content: attr(data-pct);
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ember);
+  font-family: var(--font-mono), monospace;
   font-size: 0.62rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 .ranking-table-wrap {
   overflow-x: auto;
