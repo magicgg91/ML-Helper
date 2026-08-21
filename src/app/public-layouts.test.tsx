@@ -43,6 +43,7 @@ describe("public layouts", () => {
     );
 
     expect(screen.queryByText("Paramètres du joueur")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "admin" })).toBeNull();
   });
 
   it("keeps the tools landing page limited to its category content", () => {

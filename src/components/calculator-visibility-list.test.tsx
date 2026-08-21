@@ -1,9 +1,4 @@
-import {
-  cleanup,
-  fireEvent,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CalculatorVisibilityList } from "./calculator-visibility-list";
 import { renderWithIntl as render } from "../test/render-with-intl";
@@ -59,6 +54,7 @@ describe("CalculatorVisibilityList", () => {
   it("does not expose mutations in read-only mode", () => {
     render(
       <CalculatorVisibilityList
+        canEdit={false}
         canToggle={false}
         rows={[
           {
@@ -73,5 +69,6 @@ describe("CalculatorVisibilityList", () => {
     );
     expect(screen.getByText("Ranking")).toBeVisible();
     expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Modifier" })).toBeNull();
   });
 });

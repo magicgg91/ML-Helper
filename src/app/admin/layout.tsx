@@ -6,10 +6,15 @@ import { AdminNav } from "@/components/admin-nav";
 import { AdminAccountMenu } from "@/components/admin-account-menu";
 import { ServerLocaleSwitcher } from "@/components/server-locale-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { prisma } from "@/lib/prisma";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);
   const t = await getTranslations("admin");
   if (!session?.user || !isAdminRole(session.user.role)) return children;
+  const account = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { totpEnabled: true },
+  });
   return (
     <>
       <header className="admin-header">
@@ -17,7 +22,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="admin-header-actions">
           <ServerLocaleSwitcher />
           <ThemeToggle />
-          <AdminAccountMenu username={session.user.name ?? session.user.id} />
+          <AdminAccountMenu
+            username={session.user.name ?? session.user.id}
+            totpEnabled={account?.totpEnabled ?? false}
+          />
         </div>
       </header>
       <AdminNav role={session.user.role} />

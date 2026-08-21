@@ -1335,6 +1335,55 @@ body > main h1 {
   width: 100%;
   margin-top: 0.75rem;
 }
+.totp-settings {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.totp-qr {
+  width: 12rem;
+  height: 12rem;
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+.totp-secret {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.login-shell {
+  display: grid;
+  min-height: calc(100vh - 9rem);
+  place-items: center;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background: transparent;
+}
+.login-card {
+  width: min(27rem, 100%);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 18%);
+}
+.login-card h1 {
+  margin: 0.35rem 0 1.5rem;
+}
+.login-card form {
+  display: grid;
+  gap: 0.85rem;
+}
+.login-card label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-dim);
+}
+.login-card small {
+  color: var(--text-faint);
+}
 .translation-editor-list {
   display: grid;
   gap: 0.65rem;

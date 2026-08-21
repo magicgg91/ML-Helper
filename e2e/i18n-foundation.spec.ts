@@ -14,5 +14,5 @@ test("switches the public navigation language and falls back to English", async 
 
   await language.selectOption("fr");
   await expect(page.getByRole("link", { name: "Outils" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Admin area" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Admin area" })).toHaveCount(0);
 });
