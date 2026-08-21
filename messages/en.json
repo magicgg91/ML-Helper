@@ -1,4 +1,9 @@
 {
+  "Navigation": {
+    "tools": "Simulators",
+    "guides": "Guides",
+    "admin": "Admin area"
+  },
   "Public": {
     "tools": "Simulators",
     "guides": "Guides",

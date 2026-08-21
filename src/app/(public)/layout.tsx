@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
   const t = await getTranslations("Public");
+  const navigation = await getTranslations("Navigation");
   return (
     <div className="public-shell">
       <header className="public-header">
@@ -12,10 +13,10 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
           ML-Helper
         </Link>
         <nav aria-label="Navigation principale">
-          <Link href="/tools">{t("tools")}</Link>
-          <Link href="/guides">{t("guides")}</Link>
+          <Link href="/tools">{navigation("tools")}</Link>
+          <Link href="/guides">{navigation("guides")}</Link>
           <Link href="/contact">{t("contact")}</Link>
-          <Link href="/login">{t("admin")}</Link>
+          <Link href="/login">{navigation("admin")}</Link>
           <ServerLocaleSwitcher />
           <ThemeToggle />
         </nav>
