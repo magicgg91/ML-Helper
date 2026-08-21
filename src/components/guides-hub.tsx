@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 
 export type PublicGuideCard = {
@@ -15,15 +15,24 @@ export type PublicGuideCard = {
 };
 
 export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
-  const t = useTranslations("GuidesHub");
+  const locale = useLocale();
+  const t = useTranslations("guides");
+  const references = useTranslations("references");
   const guideCategories = useMemo(
     () => [...new Set(guides.map(({ category }) => category))].sort(),
     [guides],
   );
   const [guideCategory, setGuideCategory] = useState("all");
   const [referenceCategory, setReferenceCategory] = useState("all");
+  const [guideSearch, setGuideSearch] = useState("");
+  const normalizedSearch = guideSearch.trim().toLocaleLowerCase(locale);
   const visibleGuides = guides.filter(
-    ({ category }) => guideCategory === "all" || category === guideCategory,
+    ({ category, title, excerpt }) =>
+      (guideCategory === "all" || category === guideCategory) &&
+      (!normalizedSearch ||
+        `${title} ${excerpt} ${category}`
+          .toLocaleLowerCase(locale)
+          .includes(normalizedSearch)),
   );
   const visibleReferences = referenceCatalog.filter(
     ({ category }) =>
@@ -33,8 +42,17 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   return (
     <>
       <section aria-labelledby="guide-section-title">
-        <h2 id="guide-section-title">{t("guidesTitle")}</h2>
-        <nav className="category-nav" aria-label={t("guideFiltersLabel")}>
+        <h2 id="guide-section-title">{t("sections.guides")}</h2>
+        <label>
+          {t("search.label")}
+          <input
+            type="search"
+            value={guideSearch}
+            onChange={(event) => setGuideSearch(event.target.value)}
+            placeholder={t("search.placeholder")}
+          />
+        </label>
+        <nav className="category-nav" aria-label={t("filters.guides-label")}>
           {["all", ...guideCategories].map((category) => (
             <button
               className="category-btn"
@@ -43,7 +61,7 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
               key={category}
               onClick={() => setGuideCategory(category)}
             >
-              {category === "all" ? t("all") : category}
+              {category === "all" ? t("filters.all") : category}
             </button>
           ))}
         </nav>
@@ -54,12 +72,14 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                 <p className="eyebrow">{guide.category}</p>
                 <h3>{guide.title}</h3>
                 <p>{guide.excerpt}</p>
-                <Link href={`/guides/${guide.slug}`}>{t("readGuide")}</Link>
+                <Link href={`/guides/${guide.slug}`}>{t("read-guide")}</Link>
               </article>
             ))}
           </div>
         ) : (
-          <p className="empty-state">{t("emptyGuides")}</p>
+          <p className="empty-state">
+            {guides.length ? t("no-results") : t("empty")}
+          </p>
         )}
       </section>
 
@@ -68,8 +88,11 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
         id="references"
         aria-labelledby="reference-section-title"
       >
-        <h2 id="reference-section-title">{t("referencesTitle")}</h2>
-        <nav className="category-nav" aria-label={t("referenceFiltersLabel")}>
+        <h2 id="reference-section-title">{t("sections.references")}</h2>
+        <nav
+          className="category-nav"
+          aria-label={t("filters.references-label")}
+        >
           {["all", "combat", "expedition"].map((category) => (
             <button
               className="category-btn"
@@ -78,7 +101,7 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
               key={category}
               onClick={() => setReferenceCategory(category)}
             >
-              {t(category)}
+              {t(`filters.${category}`)}
             </button>
           ))}
         </nav>
@@ -98,8 +121,8 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                 />
               </div>
               <div className="tool-category-copy">
-                <h3>{t(reference.slug)}</h3>
-                <span>{t("openReference")}</span>
+                <h3>{references(`catalog.${reference.slug}`)}</h3>
+                <span>{t("open-reference")}</span>
               </div>
             </Link>
           ))}

@@ -36,6 +36,9 @@
       "attack": "Attaque",
       "defense": "Défense",
       "gold": "Or",
+      "equipment": "Équipement",
+      "consumables": "Consommables",
+      "troops": "Troupes",
       "speed": "Vitesse",
       "troops-speed": "Troupes/Vitesse"
     },
@@ -55,7 +58,30 @@
       "gauntlet": "Gantelet",
       "weapon": "Arme",
       "boots": "Bottes",
-      "shield": "Bouclier"
+      "shield": "Bouclier",
+      "cloak": "Cape",
+      "spyglass": "Longue-vue",
+      "pouch": "Sacoche",
+      "compass": "Boussole",
+      "torch": "Torche",
+      "pickaxe": "Pioche"
+    },
+    "weapon-types": {
+      "hammer": "Marteau",
+      "bow": "Arc",
+      "spear": "Lance",
+      "axe": "Hache",
+      "saber": "Sabre",
+      "sword": "Épée",
+      "halberd": "Hallebarde"
+    },
+    "stats": {
+      "vitality": "Vitalité",
+      "perception": "Perception",
+      "recovery": "Récupération",
+      "speed": "Vitesse",
+      "dodge": "Esquive",
+      "luck": "Chance"
     }
   },
   "tools": {
@@ -364,25 +390,84 @@
     "skills": "Compétences",
     "references": "Référentiels"
   },
-  "GuidesHub": {
+  "guides": {
     "eyebrow": "Guides et données",
     "title": "Guides",
-    "guidesTitle": "Guides",
-    "referencesTitle": "Référentiels",
-    "guideFiltersLabel": "Filtrer les guides par catégorie",
-    "referenceFiltersLabel": "Filtrer les référentiels par catégorie",
-    "all": "Tout",
-    "combat": "Combat",
-    "expedition": "Expédition",
-    "combat-equipment": "Équipements de Combat",
-    "expedition-equipment": "Équipement d’Expédition",
-    "readGuide": "Lire le guide",
-    "openReference": "Consulter le référentiel",
-    "emptyGuides": "Aucun guide publié pour le moment.",
-    "unavailable": "Ce référentiel est temporairement indisponible."
+    "sections": {
+      "guides": "Guides",
+      "references": "Référentiels"
+    },
+    "filters": {
+      "guides-label": "Filtrer les guides par catégorie",
+      "references-label": "Filtrer les référentiels par catégorie",
+      "all": "Tout",
+      "combat": "Combat",
+      "expedition": "Expédition"
+    },
+    "search": {
+      "label": "Rechercher dans les guides",
+      "placeholder": "Rechercher par titre, résumé ou catégorie…"
+    },
+    "read-guide": "Lire le guide",
+    "open-reference": "Consulter le référentiel",
+    "empty": "Aucun guide publié pour le moment.",
+    "no-results": "Aucun guide ne correspond à ces filtres.",
+    "detail": {
+      "eyebrow": "Guide · {category}"
+    }
   },
-  "References": {
-    "viewFull": "Voir le référentiel complet"
+  "references": {
+    "eyebrow": "Référentiels",
+    "filters": {
+      "label": "Filtres du référentiel",
+      "family": "Famille",
+      "rarity": "Rareté",
+      "slot": "Emplacement",
+      "skill": "Compétence",
+      "search": "Recherche libre",
+      "search-placeholder": "Set ou emplacement…",
+      "star-level": "Niveau d’étoile"
+    },
+    "catalog": {
+      "combat": "Combat",
+      "expedition": "Expédition",
+      "combat-equipment": "Équipements de Combat",
+      "expedition-equipment": "Équipement d’Expédition"
+    },
+    "tabs-label": "Référentiels",
+    "disabled-tooltip": "Désactivé — inaccessible actuellement",
+    "unavailable": "Ces référentiels sont temporairement indisponibles.",
+    "single-unavailable": "Ce référentiel est temporairement indisponible."
+  },
+  "combat-equipment": {
+    "name": "Équipements de Combat",
+    "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
+    "empty": "Aucun équipement de combat ne correspond à ces filtres.",
+    "columns": {
+      "rarity": "Rareté",
+      "set": "Set",
+      "skydust": "Pouciel",
+      "gems": "Gemmes",
+      "slot": "Emplacement",
+      "skill": "Compétence {number}"
+    },
+    "complete-in-admin": "À compléter en admin"
+  },
+  "expedition-equipment": {
+    "name": "Équipement d’Expédition",
+    "notice": "Pour les statistiques autres qu’Équipement et Vitalité, la projection par étoile est une {status}.",
+    "unconfirmed-assumption": "hypothèse non confirmée",
+    "unconfirmed-label": "Hypothèse non confirmée",
+    "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
+    "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
+    "columns": {
+      "rarity": "Rareté",
+      "set": "Set",
+      "family": "Famille",
+      "slot": "Emplacement",
+      "type-stat": "Stat de type",
+      "secondary-stat": "Stat secondaire"
+    }
   },
   "Login": {
     "title": "Connexion administration",

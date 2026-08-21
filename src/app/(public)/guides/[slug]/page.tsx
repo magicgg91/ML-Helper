@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 
@@ -11,6 +11,7 @@ export default async function GuidePage({
   const { slug } = await params;
   await connection();
   const locale = await getLocale();
+  const t = await getTranslations("guides");
   const guide = await prisma.guide.findFirst({
     where: { slug, status: "published", active: true },
   });
@@ -18,7 +19,9 @@ export default async function GuidePage({
   return (
     <main className="public-main">
       <article className="guide-shell">
-        <p className="eyebrow">Guide · {guide.category}</p>
+        <p className="eyebrow">
+          {t("detail.eyebrow", { category: guide.category })}
+        </p>
         <h1>
           {localizedText(guide.title, locale) || slug.replaceAll("-", " ")}
         </h1>

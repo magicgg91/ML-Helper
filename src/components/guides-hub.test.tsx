@@ -7,31 +7,15 @@ import {
 } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
+import frMessages from "../../messages/fr.json";
 import { GuidesHub } from "./guides-hub";
-
-const messages = {
-  GuidesHub: {
-    guidesTitle: "Guides",
-    referencesTitle: "Référentiels",
-    guideFiltersLabel: "Filtrer les guides par catégorie",
-    referenceFiltersLabel: "Filtrer les référentiels par catégorie",
-    all: "Tout",
-    combat: "Combat",
-    expedition: "Expédition",
-    "combat-equipment": "Équipements de Combat",
-    "expedition-equipment": "Équipement d’Expédition",
-    readGuide: "Lire le guide",
-    openReference: "Consulter le référentiel",
-    emptyGuides: "Aucun guide publié pour le moment.",
-  },
-};
 
 describe("GuidesHub", () => {
   afterEach(cleanup);
 
   it("keeps guide and reference filters independent", () => {
     render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
         <GuidesHub
           guides={[
             {
@@ -60,8 +44,20 @@ describe("GuidesHub", () => {
       within(guideFilters).getByRole("button", { name: "Combat" }),
     );
     expect(screen.getByText("Guide combat")).toBeVisible();
-    expect(screen.queryByText("Guide clan")).toBeNull();
+
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Rechercher dans les guides" }),
+      { target: { value: "introuvable" } },
+    );
+    expect(
+      screen.getByText("Aucun guide ne correspond à ces filtres."),
+    ).toBeVisible();
     expect(screen.getByText("Équipement d’Expédition")).toBeVisible();
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Rechercher dans les guides" }),
+      { target: { value: "" } },
+    );
+    expect(screen.queryByText("Guide clan")).toBeNull();
 
     const referenceFilters = screen.getByRole("navigation", {
       name: "Filtrer les référentiels par catégorie",
@@ -76,7 +72,7 @@ describe("GuidesHub", () => {
 
   it("uses the canonical reference routes", () => {
     render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
         <GuidesHub guides={[]} />
       </NextIntlClientProvider>,
     );

@@ -8,7 +8,7 @@ import { getTranslations } from "next-intl/server";
 export default async function GuidesPage() {
   await connection();
   const locale = await getLocale();
-  const t = await getTranslations("GuidesHub");
+  const t = await getTranslations("guides");
   const guides = await prisma.guide.findMany({
     where: { status: "published", active: true },
     orderBy: { publishedAt: "desc" },

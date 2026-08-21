@@ -18,12 +18,12 @@ export default async function ReferencePage({
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
   const active = await getCalculatorAvailability();
-  const t = await getTranslations("GuidesHub");
+  const t = await getTranslations("references");
 
   return (
     <main className="public-main">
-      <p className="eyebrow">{t("referencesTitle")}</p>
-      <h1>{t(reference.slug)}</h1>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1>{t(`catalog.${reference.slug}`)}</h1>
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
           <CombatReferenceTable rows={await getCombatReferenceRows()} />
@@ -31,7 +31,7 @@ export default async function ReferencePage({
           <ExpeditionReferenceTable rows={await getExpeditionReferenceRows()} />
         )
       ) : (
-        <p className="empty-state">{t("unavailable")}</p>
+        <p className="empty-state">{t("single-unavailable")}</p>
       )}
     </main>
   );
