@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "../../components/theme-toggle";
-import { LocaleSwitcher } from "../../components/locale-switcher";
+import { ServerLocaleSwitcher } from "../../components/server-locale-switcher";
 import { getTranslations } from "next-intl/server";
 
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
@@ -16,7 +16,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
           <Link href="/guides">{t("guides")}</Link>
           <Link href="/contact">{t("contact")}</Link>
           <Link href="/login">{t("admin")}</Link>
-          <LocaleSwitcher />
+          <ServerLocaleSwitcher />
           <ThemeToggle />
         </nav>
       </header>

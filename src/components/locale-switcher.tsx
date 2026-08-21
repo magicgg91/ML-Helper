@@ -4,7 +4,7 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ locales }: { locales: string[] }) {
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -25,8 +25,11 @@ export function LocaleSwitcher() {
         disabled={pending}
         onChange={(event) => change(event.target.value)}
       >
-        <option value="fr">FR</option>
-        <option value="en">EN</option>
+        {locales.map((availableLocale) => (
+          <option key={availableLocale} value={availableLocale}>
+            {availableLocale.toUpperCase()}
+          </option>
+        ))}
       </select>
     </label>
   );
