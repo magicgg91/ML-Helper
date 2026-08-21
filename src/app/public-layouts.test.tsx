@@ -67,7 +67,6 @@ describe("public layouts", () => {
             cities: "Villes",
             ranking: "Classement",
             skills: "Compétences",
-            references: "Référentiels",
           },
         }}
       >

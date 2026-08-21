@@ -7,13 +7,28 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
+import { NextIntlClientProvider } from "next-intl";
+
+function renderTool(tool: React.ReactNode) {
+  return render(
+    <NextIntlClientProvider
+      locale="fr"
+      messages={{ References: { viewFull: "Voir le référentiel complet" } }}
+    >
+      {tool}
+    </NextIntlClientProvider>,
+  );
+}
 
 describe("equipment tools", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 
   it("toggles a simulator slot and persists an exact set", async () => {
-    render(<StuffSimulator />);
+    renderTool(<StuffSimulator />);
+    expect(
+      screen.getByRole("link", { name: "Voir le référentiel complet" }),
+    ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
     const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {
@@ -36,7 +51,10 @@ describe("equipment tools", () => {
   });
 
   it("compares explicit sets and colors a positive difference", () => {
-    render(<StuffComparison />);
+    renderTool(<StuffComparison />);
+    expect(
+      screen.getByRole("link", { name: "Voir le référentiel complet" }),
+    ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
     const [a, b] = screen.getAllByRole("combobox", {
       name: /Équipement Attaque Amulette/,
     });

@@ -8,7 +8,6 @@ const categories = [
   { label: "cities", slug: "villes" },
   { label: "ranking", slug: "classement" },
   { label: "skills", slug: "competences" },
-  { label: "references", slug: "referentiels" },
 ] as const;
 
 export function ToolCategoryNav({

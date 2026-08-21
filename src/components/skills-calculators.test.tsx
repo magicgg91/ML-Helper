@@ -1,12 +1,23 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
+import messages from "../../messages/fr.json";
 import { SkillsCalculators } from "./skills-calculators";
 import { templarCosts } from "../lib/gems-templars";
+
+function renderWithIntl(node: ReactNode) {
+  return render(
+    <NextIntlClientProvider locale="fr" messages={messages}>
+      {node}
+    </NextIntlClientProvider>,
+  );
+}
 
 describe("SkillsCalculators", () => {
   afterEach(cleanup);
   it("caps mixed optimization rows at the available socket count", () => {
-    render(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
@@ -23,7 +34,7 @@ describe("SkillsCalculators", () => {
     ).toHaveValue(2);
   });
   it("shows the budget distribution as the primary result", () => {
-    render(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
     fireEvent.change(
@@ -39,7 +50,7 @@ describe("SkillsCalculators", () => {
     );
   });
   it("keeps the five Templar types independent", () => {
-    render(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
@@ -53,7 +64,7 @@ describe("SkillsCalculators", () => {
   });
   it("uses the administrator-provided Templar lookup table", () => {
     const costs = [999, ...templarCosts.slice(1)];
-    render(<SkillsCalculators templarCostTable={costs} />);
+    renderWithIntl(<SkillsCalculators templarCostTable={costs} />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),

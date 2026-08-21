@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import {
   allowedSkills,
@@ -249,6 +251,7 @@ function SlotEditor({
 }
 
 export function StuffSimulator() {
+  const t = useTranslations("References");
   const [state, setState] = useState<StuffState>(createEmptyStuffState);
   const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<Partial<Record<EquipmentBlock, number>>>(
@@ -280,6 +283,12 @@ export function StuffSimulator() {
   }
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
+      <Link
+        className="reference-cross-link"
+        href="/guides/referentiels/combat-equipment"
+      >
+        {t("viewFull")}
+      </Link>
       <section className="calculator-card">
         <h3>Récapitulatif — toutes familles confondues</h3>
         <Summary totals={global} />
@@ -387,6 +396,7 @@ function CompareSideEditor({
 }
 
 export function StuffComparison() {
+  const t = useTranslations("References");
   const [block, setBlock] = useState<EquipmentBlock>("attack");
   const [slot, setSlot] = useState<EquipmentSlot>("Amulette");
   const [a, setA] = useState<CompareSide>(() =>
@@ -405,6 +415,12 @@ export function StuffComparison() {
   const totalsB = computeEquipmentSlot(block, slot, b);
   return (
     <div className="calculator-stack" data-testid="stuff-comparison">
+      <Link
+        className="reference-cross-link"
+        href="/guides/referentiels/combat-equipment"
+      >
+        {t("viewFull")}
+      </Link>
       <section className="calculator-card">
         <div className="family-buttons">
           {equipmentBlocks.map((key) => (

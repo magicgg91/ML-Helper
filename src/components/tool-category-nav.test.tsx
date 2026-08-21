@@ -12,7 +12,6 @@ vi.mock("next-intl", () => ({
       cities: "Villes",
       ranking: "Classement",
       skills: "Compétences",
-      references: "Référentiels",
     })[key],
 }));
 
@@ -30,7 +29,6 @@ describe("ToolCategoryNav", () => {
           villes: true,
           classement: true,
           competences: true,
-          referentiels: true,
         }}
       />,
     );
@@ -42,6 +40,7 @@ describe("ToolCategoryNav", () => {
     expect(screen.getByRole("link", { name: "Villes" })).not.toHaveAttribute(
       "aria-current",
     );
+    expect(screen.queryByText("Référentiels")).toBeNull();
   });
 
   it("keeps unavailable categories visible but disabled", () => {
@@ -51,7 +50,6 @@ describe("ToolCategoryNav", () => {
           villes: true,
           classement: false,
           competences: true,
-          referentiels: true,
         }}
       />,
     );
