@@ -45,7 +45,12 @@ export function LoginForm() {
         />
       </label>
       <small id="login-totp-hint">{t("totp-hint")}</small>
-      <button type="submit">{t("submit")}</button>
+      <button
+        type="submit"
+        className="editor-action editor-action-primary"
+      >
+        {t("submit")}
+      </button>
       {error && <p role="alert">{t("error")}</p>}
     </form>
   );

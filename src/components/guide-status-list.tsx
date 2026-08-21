@@ -122,11 +122,17 @@ export function GuideStatusList({
                 <td>
                   <div className="table-actions">
                     {canWrite && (
-                      <Link href={guide.editHref ?? `/admin/guides/${guide.id}`}>{t("edit")}</Link>
+                      <Link
+                        className="editor-action editor-action-primary"
+                        href={guide.editHref ?? `/admin/guides/${guide.id}`}
+                      >
+                        {t("edit")}
+                      </Link>
                     )}
                     {canWrite && (
                       <button
                         type="button"
+                        className="editor-action editor-action-secondary"
                         onClick={() => toggle(guide.id, !guide.active, guide.type)}
                       >
                         {t(guide.active ? "disable" : "enable")}
@@ -135,7 +141,7 @@ export function GuideStatusList({
                     {canDelete && guide.type !== "reference" && (
                       <button
                         type="button"
-                        className="danger-action"
+                        className="editor-action danger-action"
                         onClick={() => remove(guide)}
                       >
                         {t("delete")}

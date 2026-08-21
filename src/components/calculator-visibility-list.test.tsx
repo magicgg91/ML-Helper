@@ -9,6 +9,29 @@ afterEach(() => {
 });
 
 describe("CalculatorVisibilityList", () => {
+  it("gives the edit link and toggle button the polished editor-action styling", () => {
+    render(
+      <CalculatorVisibilityList
+        rows={[
+          {
+            id: "calculator-ranking",
+            slug: "ranking",
+            label: "Ranking",
+            active: true,
+            editHref: "/admin/tools/ranking",
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Modifier" })).toHaveClass(
+      "editor-action",
+      "editor-action-primary",
+    );
+    expect(
+      screen.getByRole("button", { name: "Désactiver" }),
+    ).toHaveClass("editor-action", "editor-action-secondary");
+  });
+
   it("disables an active calculator and reflects the saved state", async () => {
     const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

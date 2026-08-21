@@ -27,7 +27,10 @@ export default async function GuidesAdminPage() {
       <div className="admin-section-heading">
         <p>{t("description")}</p>
         {can(session.user.role, "guides.write") && (
-          <Link className="primary-action" href="/admin/guides/new">
+          <Link
+            className="editor-action editor-action-primary"
+            href="/admin/guides/new"
+          >
             {t("new")}
           </Link>
         )}
