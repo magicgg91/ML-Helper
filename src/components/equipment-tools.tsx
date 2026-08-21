@@ -28,6 +28,9 @@ import {
   type EquipmentSlotState,
   type StuffState,
 } from "../lib/equipment";
+import { rarityClassName } from "../lib/equipment-rarity";
+import { equipmentSkillColors } from "../lib/game-images";
+import { RarityBadge } from "./rarity-badge";
 
 const storageKey = "mlhelper_stuff_simulator";
 const leagueOptions = [
@@ -173,6 +176,71 @@ function GemEditor({
         </div>
       ))}
     </div>
+  );
+}
+
+function SlotCell({
+  slot,
+  state,
+  active,
+  onClick,
+}: {
+  slot: EquipmentSlot;
+  state: EquipmentSlotState;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const t = useTranslations("stuff-simulator");
+  const game = useTranslations("game");
+  const rarity = state.equipment?.rarity;
+  const activeGems = state.gems.filter(
+    (gem): gem is EquipmentGem & { skill: EquipmentSkill } =>
+      gem.skill !== "none" && Boolean(gem.league),
+  );
+  const rarityVar = rarity ? `var(--rarity-${rarityClassName(rarity)})` : undefined;
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={active ? "selected" : ""}
+      style={
+        rarityVar
+          ? {
+              borderColor: rarityVar,
+              borderWidth: "2px",
+              background: `color-mix(in srgb, ${rarityVar} 14%, var(--bg))`,
+            }
+          : undefined
+      }
+      onClick={onClick}
+    >
+      <span>{game(`slots.${equipmentSlotTranslationKeys[slot]}`)}</span>
+      {rarity ? (
+        <>
+          <RarityBadge
+            rarity={rarity}
+            label={game(`rarities.${equipmentRarityTranslationKeys[rarity]}`)}
+          />
+          <small>{state.star}★</small>
+          {activeGems.length ? (
+            <div className="gem-badges">
+              {activeGems.map((gem, index) => (
+                <span
+                  className="gem-badge"
+                  key={index}
+                  style={{ background: equipmentSkillColors[gem.skill] }}
+                  title={`${game(`skills.${equipmentSkillTranslationKeys[gem.skill]}`)} ${game(`leagues.${gem.league}`)} ${gem.star}★`}
+                >
+                  {gem.star}★{game(`leagues-short.${gem.league}`)}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <small>{t("empty-slot")}</small>
+      )}
+    </button>
   );
 }
 
@@ -348,32 +416,18 @@ export function StuffSimulator() {
             <div className="stuff-block-columns">
               <div className="stuff-slot-grid">
                 {equipmentSlotLayout.map((slot, index) => (
-                  <button
-                    type="button"
-                    aria-pressed={activeIndex === index}
-                    className={activeIndex === index ? "selected" : ""}
+                  <SlotCell
                     key={slot}
+                    slot={slot}
+                    state={state[block][index]}
+                    active={activeIndex === index}
                     onClick={() =>
                       setActive((current) => ({
                         ...current,
                         [block]: current[block] === index ? undefined : index,
                       }))
                     }
-                  >
-                    <span>
-                      {game(`slots.${equipmentSlotTranslationKeys[slot]}`)}
-                    </span>
-                    {state[block][index].equipment ? (
-                      <small>
-                        {game(
-                          `rarities.${equipmentRarityTranslationKeys[state[block][index].equipment!.rarity]}`,
-                        )}{" "}
-                        · {state[block][index].star}★
-                      </small>
-                    ) : (
-                      <small>{t("empty-slot")}</small>
-                    )}
-                  </button>
+                  />
                 ))}
               </div>
               <div>

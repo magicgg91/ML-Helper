@@ -51,6 +51,32 @@ describe("equipment tools", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("colors the slot cell by rarity and shows gem badges with league and star", () => {
+    renderTool(<StuffSimulator />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    expect(amulet).toHaveStyle({ borderColor: "var(--rarity-legendaire)" });
+    const badge = amulet.querySelector(".rarity-badge");
+    expect(badge).toHaveClass("rarity-legendaire");
+    expect(badge).toHaveTextContent("Légendaire");
+    expect(amulet.querySelector(".gem-badge")).toBeNull();
+
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence gemme 1" }),
+      { target: { value: "Attaque" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 1" }), {
+      target: { value: "legend" },
+    });
+    const gemBadge = amulet.querySelector(".gem-badge")!;
+    expect(gemBadge).toHaveTextContent("1★Lég");
+    expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
+  });
+
   it("compares explicit sets and colors a positive difference", () => {
     renderTool(<StuffComparison />);
     expect(

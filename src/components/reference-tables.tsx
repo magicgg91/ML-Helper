@@ -25,6 +25,7 @@ import {
   type CombatReferenceRow,
   type ExpeditionReferenceRow,
 } from "../lib/reference-equipment";
+import { RarityBadge } from "./rarity-badge";
 
 function formatPercent(value: number | null, locale: string) {
   return value === null
@@ -139,19 +140,6 @@ function useFilters(families: readonly string[]) {
     star,
     setStar,
   };
-}
-
-function RarityBadge({ rarity, label }: { rarity: string; label: string }) {
-  return (
-    <span
-      className={`rarity-badge rarity-${rarity
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")}`}
-    >
-      {label}
-    </span>
-  );
 }
 
 export function CombatReferenceTable({

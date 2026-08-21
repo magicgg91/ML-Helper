@@ -36,6 +36,14 @@
       "diamond": "Diamond",
       "legend": "Legend"
     },
+    "leagues-short": {
+      "bronze": "Br",
+      "silver": "Si",
+      "gold": "Go",
+      "platinum": "Pl",
+      "diamond": "Di",
+      "legend": "Le"
+    },
     "families": {
       "attack": "Attack",
       "defense": "Defense",
