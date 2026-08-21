@@ -1364,6 +1364,20 @@ body > main h1 {
 .translation-editor textarea {
   min-height: 4rem;
 }
+.editorial-locale-select {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+  color: var(--text-dim);
+}
+.editorial-locale-select select {
+  min-width: 5rem;
+}
+.translation-editor .editorial-locale-select {
+  display: flex;
+  margin-top: 0.8rem;
+}
 .form-success {
   border-color: var(--emerald-bright);
   background: color-mix(in srgb, var(--emerald) 10%, var(--bg));
@@ -1371,6 +1385,9 @@ body > main h1 {
 .guide-simple-fields {
   display: grid;
   gap: 0.8rem;
+}
+.guide-editor > .editorial-locale-select {
+  margin-bottom: 0.8rem;
 }
 .guide-simple-fields label {
   display: grid;
@@ -1391,21 +1408,40 @@ body > main h1 {
   line-height: 1.55;
 }
 .guide-category-selector {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: 0.5rem;
-  padding: 0.8rem;
+  padding: 0.65rem 0.8rem;
   border: 1px solid var(--border);
+  border-radius: 8px;
 }
-.guide-category-selector legend,
+.guide-category-selector summary,
 .guide-field-label {
   color: var(--text-dim);
 }
-.guide-category-selector label {
+.guide-category-selector summary {
+  cursor: pointer;
+}
+.guide-category-chips {
   display: flex;
-  grid-template-columns: none;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+.guide-category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.guide-category-chip:hover {
+  color: var(--text);
+}
+.guide-category-chip[data-selected="true"] {
+  border-color: var(--gold);
+  background: var(--bg-panel-raised);
+  color: var(--gold-bright);
 }
 .guide-cover-preview {
   width: min(24rem, 100%);
@@ -1415,7 +1451,7 @@ body > main h1 {
 }
 .guide-markdown-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
   gap: 0.8rem;
 }
 .guide-markdown-pane {
@@ -1425,7 +1461,8 @@ body > main h1 {
   min-width: 0;
 }
 .guide-live-preview {
-  min-height: 520px;
+  min-height: 640px;
+  max-height: 640px;
   padding: 0.8rem;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1450,6 +1487,10 @@ body > main h1 {
 @media (max-width: 760px) {
   .guide-markdown-workspace {
     grid-template-columns: 1fr;
+  }
+  .guide-live-preview {
+    min-height: 18rem;
+    max-height: 32rem;
   }
 }
 .admin-actions {

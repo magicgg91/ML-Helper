@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { guideCategories, type GuideCategory } from "../lib/guide-categories";
+import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
 
-type Locale = "fr" | "en";
 type LocaleDraft = { title: string; excerpt: string; content: string };
 type GuideDraft = {
   id?: string;
@@ -13,7 +16,7 @@ type GuideDraft = {
   category: GuideCategory[];
   coverImage: string;
   status: string;
-  translations: Record<Locale, LocaleDraft>;
+  translations: Record<EditorialLocale, LocaleDraft>;
 };
 
 function slugify(value: string) {
@@ -35,7 +38,7 @@ export function GuideEditor({
 }) {
   const t = useTranslations("admin.guide-editor");
   const [id, setId] = useState(initial.id);
-  const [locale, setLocale] = useState<Locale>("fr");
+  const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [status, setStatus] = useState(initial.status);
   const [message, setMessage] = useState("");
   const [translations, setTranslations] = useState(initial.translations);
@@ -108,38 +111,40 @@ export function GuideEditor({
   const draft = translations[locale];
   return (
     <div className="guide-editor">
-      <nav className="tabs" aria-label={t("language-label")}>
-        {(["fr", "en"] as const).map((key) => (
-          <button
-            type="button"
-            key={key}
-            aria-current={locale === key ? "page" : undefined}
-            onClick={() => setLocale(key)}
-          >
-            {key.toUpperCase()}
-          </button>
-        ))}
-      </nav>
+      <EditorialLocaleSelect
+        label={t("language-label")}
+        value={locale}
+        onChange={setLocale}
+      />
       <section className="admin-panel guide-simple-fields">
-        <fieldset className="guide-category-selector">
-          <legend>{t("categories-label")}</legend>
-          {guideCategories.map((category) => (
-            <label key={category}>
-              <input
-                type="checkbox"
-                checked={categories.includes(category)}
-                onChange={(event) =>
-                  setCategories((current) =>
-                    event.target.checked
-                      ? [...current, category]
-                      : current.filter((item) => item !== category),
-                  )
-                }
-              />
-              {t(`categories.${category}`)}
-            </label>
-          ))}
-        </fieldset>
+        <details className="guide-category-selector">
+          <summary>
+            {t("categories-summary", { count: categories.length })}
+          </summary>
+          <div className="guide-category-chips">
+            {guideCategories.map((category) => (
+              <label
+                className="guide-category-chip"
+                data-selected={categories.includes(category)}
+                key={category}
+              >
+                <input
+                  className="sr-only"
+                  type="checkbox"
+                  checked={categories.includes(category)}
+                  onChange={(event) =>
+                    setCategories((current) =>
+                      event.target.checked
+                        ? [...current, category]
+                        : current.filter((item) => item !== category),
+                    )
+                  }
+                />
+                <span>{t(`categories.${category}`)}</span>
+              </label>
+            ))}
+          </div>
+        </details>
         <label>
           {t("cover-image")}
           <input

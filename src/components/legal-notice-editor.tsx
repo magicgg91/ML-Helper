@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { GuideMarkdownEditor } from "./guide-markdown-editor";
 
 export function LegalNoticeEditor({
   initialContent,
@@ -19,24 +20,17 @@ export function LegalNoticeEditor({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ content }),
     }).catch(() => null);
-    setMessage(
-      response?.ok
-        ? t("saved")
-        : t("error"),
-    );
+    setMessage(response?.ok ? t("saved") : t("error"));
   }
 
   return (
     <section className="admin-panel guide-simple-fields">
-      <label>
-        {t("field")}
-        <textarea
-          className="guide-markdown-input"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          spellCheck
-        />
-      </label>
+      <GuideMarkdownEditor
+        label={t("field")}
+        previewLabel={t("preview")}
+        value={content}
+        onChange={setContent}
+      />
       <button className="primary-button" type="button" onClick={save}>
         {t("save")}
       </button>

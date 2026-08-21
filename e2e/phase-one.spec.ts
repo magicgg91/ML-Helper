@@ -63,6 +63,27 @@ test("the legal page renders the seeded Markdown and its placeholders", async ({
   ).toBeVisible();
 });
 
+test("the legal notice admin reuses the live Markdown workspace", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await page.goto("/admin/content");
+  await page
+    .getByLabel("Texte des mentions légales (Markdown)")
+    .fill("## Aperçu légal partagé");
+  await expect(
+    page.locator(".guide-live-preview").getByRole("heading", {
+      name: "Aperçu légal partagé",
+    }),
+  ).toBeVisible();
+});
+
 test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
@@ -659,8 +680,11 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/guides/new");
-  await page.getByLabel("Combat & conquête").check();
-  await page.getByLabel("Clan & stratégie collective").check();
+  await page.getByText(/Catégories du guide \(\d+ sélectionnée/).click();
+  await page.getByText("Combat & conquête", { exact: true }).click();
+  await page
+    .getByText("Clan & stratégie collective", { exact: true })
+    .click();
   await page
     .getByLabel("Image représentative")
     .fill("https://example.com/guide-cover.jpg");

@@ -1,9 +1,4 @@
-import {
-  cleanup,
-  fireEvent,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CalculatorTranslationsEditor } from "./calculator-translations-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
@@ -30,8 +25,15 @@ describe("CalculatorTranslationsEditor", () => {
       />,
     );
     fireEvent.click(screen.getByText(/Textes multilingues/));
-    expect(screen.getByText("FR")).toBeVisible();
-    expect(screen.getByText("EN")).toBeVisible();
+    expect(screen.getByRole("group", { name: "FR" })).toBeVisible();
+    expect(screen.queryByRole("group", { name: "EN" })).toBeNull();
+    fireEvent.change(screen.getByLabelText("Langue du contenu"), {
+      target: { value: "en" },
+    });
+    expect(screen.getByRole("group", { name: "EN" })).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Nom"), {
+      target: { value: "Updated ranking" },
+    });
     expect(screen.queryByText(/"es"/)).toBeNull();
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer les traductions" }),
@@ -40,6 +42,9 @@ describe("CalculatorTranslationsEditor", () => {
     const body = JSON.parse(
       (request.mock.calls[0][1] as RequestInit).body as string,
     );
-    expect(body.name).toEqual({ fr: "Classement", en: "Ranking" });
+    expect(body.name).toEqual({
+      fr: "Classement",
+      en: "Updated ranking",
+    });
   });
 });
