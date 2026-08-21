@@ -18,7 +18,6 @@ describe("CalculatorTranslationsEditor", () => {
         id="calculator-ranking"
         label="Ranking"
         initial={{
-          name: { fr: "Classement", en: "Ranking", es: "Clasificación" },
           description: { fr: "Description", en: "Description" },
           tips: { fr: "Astuce", en: "Tip" },
         }}
@@ -31,8 +30,9 @@ describe("CalculatorTranslationsEditor", () => {
       target: { value: "en" },
     });
     expect(screen.getByRole("group", { name: "EN" })).toBeVisible();
-    fireEvent.change(screen.getByLabelText("Nom"), {
-      target: { value: "Updated ranking" },
+    expect(screen.queryByLabelText("Nom")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "Updated description" },
     });
     expect(screen.queryByText(/"es"/)).toBeNull();
     fireEvent.click(
@@ -42,9 +42,10 @@ describe("CalculatorTranslationsEditor", () => {
     const body = JSON.parse(
       (request.mock.calls[0][1] as RequestInit).body as string,
     );
-    expect(body.name).toEqual({
-      fr: "Classement",
-      en: "Updated ranking",
+    expect(body).not.toHaveProperty("name");
+    expect(body.description).toEqual({
+      fr: "Description",
+      en: "Updated description",
     });
   });
 });

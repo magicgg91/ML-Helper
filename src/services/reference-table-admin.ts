@@ -8,7 +8,7 @@ export function canManageReferences(session: Session | null) {
 }
 export async function saveReferenceTable(args: {
   key: string;
-  label: { fr: string; en: string };
+  target: string;
   columns: string[];
   rows: object[];
   userId: string;
@@ -22,7 +22,6 @@ export async function saveReferenceTable(args: {
     where: { key: args.key },
     create: {
       key: args.key,
-      label: args.label,
       columns: args.columns,
       rows: args.rows,
     },
@@ -38,7 +37,7 @@ export async function saveReferenceTable(args: {
       message: auditMessage(
         args.actorName,
         before ? "update" : "create",
-        `la table de référence ${args.label.fr}`,
+        args.target,
       ),
       diff: { before: before?.rows ?? null, after: args.rows },
     },

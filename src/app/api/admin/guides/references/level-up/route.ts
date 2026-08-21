@@ -22,7 +22,6 @@ export async function PUT(request: Request) {
   await saveFormulaParameters({
     calculatorSlug: "level-up",
     key: "level_up_parameters",
-    label: { en: "Level Up parameters", fr: "Paramètres Level Up" },
     formulaParams: parameters,
     userId: session.user.id,
     actorRole: session.user.role,
