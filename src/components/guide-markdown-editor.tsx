@@ -1,39 +1,38 @@
 "use client";
 
 import MarkdownEditor from "@uiw/react-md-editor";
-import { MarkdownRenderer } from "./markdown-renderer";
+import {
+  markdownRehypePlugins,
+  markdownRemarkPlugins,
+} from "../lib/markdown-plugins";
 import "@uiw/react-md-editor/markdown-editor.css";
 
 const markdownEditorHeight = 640;
 
 export function GuideMarkdownEditor({
   label,
-  previewLabel,
   value,
   onChange,
 }: {
   label: string;
-  previewLabel: string;
   value: string;
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="guide-markdown-workspace">
-      <div className="guide-markdown-pane">
-        <span className="guide-field-label">{label}</span>
-        <MarkdownEditor
-          value={value}
-          onChange={(next) => onChange(next ?? "")}
-          preview="edit"
-          height={markdownEditorHeight}
-          visibleDragbar={false}
-          textareaProps={{ "aria-label": label, spellCheck: true }}
-        />
-      </div>
-      <div className="guide-markdown-pane guide-live-preview">
-        <span className="guide-field-label">{previewLabel}</span>
-        <MarkdownRenderer markdown={value} />
-      </div>
+    <div className="guide-markdown-workspace" data-color-mode="light">
+      <span className="guide-field-label">{label}</span>
+      <MarkdownEditor
+        value={value}
+        onChange={(next) => onChange(next ?? "")}
+        preview="live"
+        previewOptions={{
+          remarkPlugins: markdownRemarkPlugins,
+          rehypePlugins: markdownRehypePlugins,
+        }}
+        height={markdownEditorHeight}
+        visibleDragbar={false}
+        textareaProps={{ "aria-label": label, spellCheck: true }}
+      />
     </div>
   );
 }
