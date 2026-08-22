@@ -145,6 +145,20 @@ describe("PlayerSettingsPanel", () => {
     );
   });
 
+  it("highlights available points and the per-skill hint in gold, like the prototype", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      container.querySelector(".points-summary strong.stat-highlight"),
+    ).not.toBeNull();
+    expect(
+      container.querySelectorAll(".settings-grid output.stat-highlight"),
+    ).toHaveLength(10);
+  });
+
   it("enforces clan temple minimums with a uniform step", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>

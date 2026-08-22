@@ -152,7 +152,7 @@ function DemoAttackTroops({
             <span className="label">
               {t("maximum", { percentage: result.percentage })}
             </span>
-            <strong className="value" data-testid="demo-troops">
+            <strong className="value emerald" data-testid="demo-troops">
               {formatGameNumber(result.troops)}
             </strong>
           </div>

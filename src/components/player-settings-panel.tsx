@@ -255,7 +255,8 @@ export function PlayerSettingsPanel() {
             <p className="settings-help">{t("skill-points.help")}</p>
             <div className="points-summary">
               <span>
-                {t("skill-points.available")}: <strong>{available}</strong>
+                {t("skill-points.available")}:{" "}
+                <strong className="stat-highlight">{available}</strong>
               </span>
               <span>
                 {t("skill-points.allocated")}: <strong>{allocated}</strong>
@@ -281,7 +282,7 @@ export function PlayerSettingsPanel() {
                 <label key={key}>
                   <span>
                     {game(`skills.${key}`)}{" "}
-                    <output>
+                    <output className="stat-highlight">
                       {skillPercent(key, settings.skillPoints, settings.league)}
                       %
                     </output>

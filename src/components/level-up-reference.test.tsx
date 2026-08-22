@@ -32,6 +32,23 @@ describe("LevelUpReference", () => {
       expect(screen.getByText("Coffret à bijoux")).toBeVisible();
     },
   );
+
+  it("colors the chest column and keeps empty levels visibly faint", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    expect(screen.getByText("Coffret à bijoux").closest("td")).toHaveClass(
+      "level-up-chest",
+    );
+    expect(screen.getAllByText("—")[0].closest("td")).toHaveClass(
+      "level-up-chest-empty",
+    );
+  });
   it("warns for Silver without inventing troop values", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>

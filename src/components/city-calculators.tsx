@@ -67,15 +67,17 @@ function Stat({
   label,
   value,
   testId,
+  tone,
 }: {
   label: string;
   value: string;
   testId?: string;
+  tone?: "emerald";
 }) {
   return (
     <div className="calculator-stat total-box">
       <span className="label">{label}</span>
-      <strong className="value" data-testid={testId}>
+      <strong className={tone ? `value ${tone}` : "value"} data-testid={testId}>
         {value}
       </strong>
     </div>
@@ -522,10 +524,12 @@ function ProductionCalculator({
                 label={t("full-production.gold")}
                 value={`${number(result.fullProduction.gold)}/h`}
                 testId="full-production-gold"
+                tone="emerald"
               />
               <Stat
                 label={t("full-production.troops")}
                 value={`${number(result.fullProduction.troops)}/h`}
+                tone="emerald"
               />
             </div>
           </section>
@@ -551,10 +555,12 @@ function ProductionCalculator({
               <Stat
                 label={t("rewards.gold-bonus")}
                 value={number(result.rewards.gold)}
+                tone="emerald"
               />
               <Stat
                 label={t("rewards.troops-bonus")}
                 value={number(result.rewards.troops)}
+                tone="emerald"
               />
             </div>
           </section>

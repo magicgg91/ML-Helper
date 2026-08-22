@@ -309,6 +309,10 @@ select {
 .points-summary strong {
   color: var(--success);
 }
+.points-summary strong.stat-highlight,
+.settings-grid output.stat-highlight {
+  color: var(--gold-bright);
+}
 select,
 input {
   min-height: 2.55rem;
@@ -690,7 +694,7 @@ select {
   color: var(--success);
 }
 .stuff-total small {
-  color: var(--accent);
+  color: var(--violet-bright);
 }
 
 .compare-equipment-grid {
@@ -2023,6 +2027,12 @@ body > main h1 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+.level-up-chest {
+  color: var(--gold-bright);
+}
+.level-up-chest-empty {
+  color: var(--text-faint);
 }
 
 .pagination {

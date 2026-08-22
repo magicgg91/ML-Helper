@@ -536,6 +536,7 @@ function GemBudget() {
             <Result
               label={t("obtained-stat")}
               value={`${result.actualStat}%`}
+              tone="emerald"
             />
             <Result
               label={t("actual-cost")}
@@ -552,11 +553,19 @@ function GemBudget() {
   );
 }
 
-function Result({ label, value }: { label: string; value: string }) {
+function Result({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "emerald";
+}) {
   return (
     <div className="calculator-stat total-box">
       <span className="label">{label}</span>
-      <strong className="value">{value}</strong>
+      <strong className={tone ? `value ${tone}` : "value"}>{value}</strong>
     </div>
   );
 }

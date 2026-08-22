@@ -39,6 +39,8 @@ describe("CombatCalculators", () => {
       { target: { value: "bronze" } },
     );
     expect(screen.getByTestId("demo-wall")).toHaveTextContent("70");
+    expect(screen.getByTestId("demo-wall")).not.toHaveClass("emerald");
     expect(screen.getByTestId("demo-troops")).toHaveTextContent("70");
+    expect(screen.getByTestId("demo-troops")).toHaveClass("emerald");
   });
 });
