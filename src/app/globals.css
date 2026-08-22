@@ -26,8 +26,8 @@
   --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
   --surface-muted: #252a34;
-  --accent: var(--gold);
-  --accent-strong: var(--gold-bright);
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
   color-scheme: dark;
@@ -53,8 +53,8 @@
   --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
   --surface-muted: #d9dde3;
-  --accent: var(--gold);
-  --accent-strong: var(--gold-bright);
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
   color-scheme: light;
