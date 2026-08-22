@@ -1595,12 +1595,14 @@ body > main h1 {
   color: inherit;
   text-decoration: none;
   transition:
-    border-color 160ms ease,
-    transform 160ms ease;
+    border-color 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 .guide-list-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 1.2rem 2.5rem rgb(37 44 39 / 14%);
 }
 .guide-list-media {
   position: relative;
@@ -1613,6 +1615,10 @@ body > main h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 300ms ease;
+}
+.guide-list-card:hover .guide-list-cover {
+  transform: scale(1.05);
 }
 .guide-list-badge {
   position: absolute;
