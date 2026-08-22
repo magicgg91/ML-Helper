@@ -62,7 +62,10 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   await expect(page.getByText("Aucun résultat.")).toBeVisible();
 
   await switchLocale(page, "en");
-  await search.fill("visible");
+  const searchEn = page.getByRole("searchbox", {
+    name: "Search the site",
+  });
+  await searchEn.fill("visible");
   await expect(
     page.getByRole("link", { name: /Visible guide/ }),
   ).toHaveAttribute("href", "/guides/guide-visible");
