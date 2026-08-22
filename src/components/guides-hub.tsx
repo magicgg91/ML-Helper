@@ -71,7 +71,11 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
         {visibleGuides.length ? (
           <div className="card-grid">
             {visibleGuides.map((guide) => (
-              <article className="public-card guide-list-card" key={guide.id}>
+              <Link
+                className="public-card guide-list-card"
+                href={`/guides/${guide.slug}`}
+                key={guide.id}
+              >
                 {guide.coverImage && (
                   // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
                   <img
@@ -88,9 +92,9 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                   </p>
                   <h3>{guide.title}</h3>
                   <p>{guide.excerpt}</p>
-                  <Link href={`/guides/${guide.slug}`}>{t("read-guide")}</Link>
+                  <span className="guide-list-cta">{t("read-guide")}</span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         ) : (

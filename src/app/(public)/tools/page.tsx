@@ -49,13 +49,8 @@ export default async function ToolsPage() {
             (slug) => active[slug],
           ).length;
           const available = count > 0;
-          return (
-            <article
-              className={`tool-category-card${available ? "" : " public-card-disabled"}`}
-              key={category.slug}
-              data-disabled={!available || undefined}
-              title={!available ? t("unavailable") : undefined}
-            >
+          const content = (
+            <>
               <div className="tool-category-image">
                 <Image
                   src={category.image}
@@ -67,13 +62,30 @@ export default async function ToolsPage() {
               <div className="tool-category-copy">
                 <h2>{t(category.label)}</h2>
                 <strong className="tool-count">{t("count", { count })}</strong>
-                {available && (
-                  <Link href={`/tools/${category.slug}`}>{t("open")}</Link>
-                )}
-                {!available && (
+                {available ? (
+                  <span className="tool-category-cta">{t("open")}</span>
+                ) : (
                   <span className="tool-unavailable">{t("comingSoon")}</span>
                 )}
               </div>
+            </>
+          );
+          return available ? (
+            <Link
+              className="tool-category-card"
+              href={`/tools/${category.slug}`}
+              key={category.slug}
+            >
+              {content}
+            </Link>
+          ) : (
+            <article
+              className="tool-category-card public-card-disabled"
+              key={category.slug}
+              data-disabled
+              title={t("unavailable")}
+            >
+              {content}
             </article>
           );
         })}

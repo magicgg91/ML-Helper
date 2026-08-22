@@ -51,6 +51,53 @@ describe("equipment tools", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("colors the slot cell by rarity and attempts the real equipment image", () => {
+    renderTool(<StuffSimulator />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    expect(amulet).toHaveStyle({ borderColor: "var(--rarity-legendaire)" });
+    const badge = amulet.querySelector(".rarity-badge");
+    expect(badge).toHaveClass("rarity-legendaire");
+    expect(badge).toHaveTextContent("Légendaire");
+    expect(amulet.querySelector("img.stuff-slot-image")).toHaveAttribute(
+      "src",
+      "/equipment/attaque-legendaire-amulette.webp",
+    );
+    expect(amulet.querySelector(".gem-badge")).toBeNull();
+  });
+
+  it("shows the real gem image, falling back to the colored badge only once it fails to load", () => {
+    renderTool(<StuffSimulator />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence gemme 1" }),
+      { target: { value: "Attaque" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 1" }), {
+      target: { value: "legend" },
+    });
+    const gemImage = amulet.querySelector("img.gem-badge-image")!;
+    expect(gemImage).toHaveAttribute(
+      "src",
+      "/gems/gemme-attaque-legende.png",
+    );
+    expect(amulet.querySelector(".gem-badge")).toBeNull();
+
+    fireEvent.error(gemImage);
+    const gemBadge = amulet.querySelector(".gem-badge")!;
+    expect(gemBadge).toHaveTextContent("1★Lég");
+    expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
+  });
+
   it("compares explicit sets and colors a positive difference", () => {
     renderTool(<StuffComparison />);
     expect(

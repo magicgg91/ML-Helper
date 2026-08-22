@@ -176,4 +176,49 @@ describe("CityCalculators", () => {
       );
     },
   );
+
+  it("shows the base city-only value first with a separate Stuff/Temple breakdown and the total in evidence", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    // Le temple de clan a un minimum garanti de 30% pour Prospérité même
+    // sans configuration jointeur (voir clanTempleMinimums).
+    const breakdown = screen.getByTestId("city-cost-single-gold-start");
+    expect(breakdown).toHaveTextContent("Base200/h");
+    expect(breakdown).toHaveTextContent("Stuff0/h");
+    expect(breakdown).toHaveTextContent("Temple60/h");
+    expect(breakdown).toHaveTextContent("Or/h260/h");
+  });
+
+  it("splits gold/army bonuses between equipment and clan temple in the results", () => {
+    const settings = defaultPlayerSettings();
+    settings.league = "legend";
+    settings.equipmentSkills.prosperous = 10;
+    settings.clanTemple.prosperous = 20;
+    window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const start = screen.getByTestId("city-cost-single-gold-start");
+    expect(start).toHaveTextContent("Base200/h");
+    expect(start).toHaveTextContent("Stuff20/h");
+    expect(start).toHaveTextContent("Temple40/h");
+    expect(start).toHaveTextContent("Or/h260/h");
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    const single = screen.getByTestId("city-max-level-single-gold");
+    expect(single).toHaveTextContent("Base200/h");
+    expect(single).toHaveTextContent("Stuff20/h");
+    expect(single).toHaveTextContent("Temple40/h");
+    expect(single).toHaveTextContent("Or/h260/h");
+  });
 });

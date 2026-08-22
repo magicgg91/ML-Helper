@@ -36,6 +36,14 @@
       "diamond": "Diamond",
       "legend": "Legend"
     },
+    "leagues-short": {
+      "bronze": "Br",
+      "silver": "Si",
+      "gold": "Go",
+      "platinum": "Pl",
+      "diamond": "Di",
+      "legend": "Le"
+    },
     "families": {
       "attack": "Attack",
       "defense": "Defense",
@@ -169,6 +177,11 @@
       "available-gold": "Available gold",
       "gold-unit": "Available gold unit"
     },
+    "single-city": "City alone (reached level)",
+    "wall": "Wall",
+    "vp": "VP",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
     "reachable-level": "Reachable target level",
     "remaining-gold": "Remaining gold",
     "vp-gained": "Total VP gained",

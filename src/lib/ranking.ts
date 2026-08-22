@@ -66,6 +66,30 @@ export type RankingRange = RankingBand & {
   rankEnd: number;
 };
 
+export type RankCategory = "montee" | "maintien" | "descente";
+
+// Catégorie déduite du libellé de ligue cible (ex: "Montée Or") — même
+// convention que les données admin, qui préfixent systématiquement le
+// libellé par Montée/Maintien/Descente.
+export function rankCategory(target: string): RankCategory {
+  if (target.startsWith("Montée")) return "montee";
+  if (target.startsWith("Descente")) return "descente";
+  return "maintien";
+}
+
+// Palettes par catégorie, clair -> foncé au fil des paliers de cette
+// catégorie (prototype-ml-helper-unifie.html, RANK_CATEGORY_SHADES).
+const rankCategoryShades: Record<RankCategory, readonly string[]> = {
+  montee: ["#a8dcb8", "#7ec99a", "#4fae78", "#2f8c5a", "#1c6b41"],
+  maintien: ["#a8c9e8", "#7eabd9", "#4f8bc4", "#2f6ba6", "#1c4d80"],
+  descente: ["#f0b088", "#e8895c", "#d9633a", "#b8452a", "#8f2f1c"],
+};
+
+export function rankCategoryShade(category: RankCategory, index: number): string {
+  const shades = rankCategoryShades[category];
+  return shades[index % shades.length];
+}
+
 export function calculateRanking(
   bands: RankingBand[],
   percentage: number,

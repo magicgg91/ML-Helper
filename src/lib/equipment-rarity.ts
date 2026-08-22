@@ -16,3 +16,9 @@ export function derivedEquipmentValues(rarity: string) {
   return equipmentRarityDerived[rarity as EquipmentRarity] ?? { gemSlots: 0, skydust: 0 };
 }
 
+const diacritics = /\p{Diacritic}/gu;
+
+export function rarityClassName(rarity: string): string {
+  return rarity.toLowerCase().normalize("NFD").replace(diacritics, "");
+}
+

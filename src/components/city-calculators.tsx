@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import {
+  bonusBreakdown,
   calculateProduction,
   cityStatsAt,
   cityUpgradeCost,
@@ -175,13 +176,23 @@ function CostCalculator({
                 <b>{t("start")}</b>
                 <Stat label={t("wall")} value={number(start.wall)} />
                 <Stat label={t("vp")} value={number(start.vp)} />
-                <Stat
-                  label={t("gold-hour")}
-                  value={number(start.gold * goldBonus)}
+                <Breakdown
+                  title={t("gold-hour")}
+                  testId="city-cost-single-gold-start"
+                  values={bonusBreakdown(
+                    start.gold,
+                    settings.equipmentSkills.prosperous,
+                    settings.clanTemple.prosperous,
+                  )}
                 />
-                <Stat
-                  label={t("army-hour")}
-                  value={number(start.army * armyBonus)}
+                <Breakdown
+                  title={t("army-hour")}
+                  testId="city-cost-single-army-start"
+                  values={bonusBreakdown(
+                    start.army,
+                    settings.equipmentSkills.recruiter,
+                    settings.clanTemple.recruiter,
+                  )}
                 />
               </div>
               <span aria-hidden="true">→</span>
@@ -189,13 +200,23 @@ function CostCalculator({
                 <b>{t("target")}</b>
                 <Stat label={t("wall")} value={number(target.wall)} />
                 <Stat label={t("vp")} value={number(target.vp)} />
-                <Stat
-                  label={t("gold-hour")}
-                  value={number(target.gold * goldBonus)}
+                <Breakdown
+                  title={t("gold-hour")}
+                  testId="city-cost-single-gold-target"
+                  values={bonusBreakdown(
+                    target.gold,
+                    settings.equipmentSkills.prosperous,
+                    settings.clanTemple.prosperous,
+                  )}
                 />
-                <Stat
-                  label={t("army-hour")}
-                  value={number(target.army * armyBonus)}
+                <Breakdown
+                  title={t("army-hour")}
+                  testId="city-cost-single-army-target"
+                  values={bonusBreakdown(
+                    target.army,
+                    settings.equipmentSkills.recruiter,
+                    settings.clanTemple.recruiter,
+                  )}
                 />
               </div>
             </div>
@@ -318,30 +339,58 @@ function MaxLevelCalculator({
       {!league ? (
         <LeagueRequired />
       ) : (
-        <section className="calculator-card calculator-results">
-          <Stat
-            label={t("reachable-level")}
-            value={String(result.level)}
-            testId="max-level-result"
-          />
-          <Stat label={t("remaining-gold")} value={number(result.remaining)} />
-          <Stat
-            label={t("vp-gained")}
-            value={number((target.vp - start.vp) * cityCount)}
-          />
-          <ProductionTransition
-            label={t("gold-transition")}
-            start={start.gold * cityCount * goldBonus}
-            target={target.gold * cityCount * goldBonus}
-            testId="city-max-level-gold"
-          />
-          <ProductionTransition
-            label={t("army-transition")}
-            start={start.army * cityCount * armyBonus}
-            target={target.army * cityCount * armyBonus}
-            testId="city-max-level-army"
-          />
-        </section>
+        <>
+          <section className="calculator-card">
+            <h3>{t("single-city")}</h3>
+            <Stat label={t("wall")} value={number(target.wall)} />
+            <Stat label={t("vp")} value={number(target.vp)} />
+            <Breakdown
+              title={t("gold-hour")}
+              testId="city-max-level-single-gold"
+              values={bonusBreakdown(
+                target.gold,
+                settings.equipmentSkills.prosperous,
+                settings.clanTemple.prosperous,
+              )}
+            />
+            <Breakdown
+              title={t("army-hour")}
+              testId="city-max-level-single-army"
+              values={bonusBreakdown(
+                target.army,
+                settings.equipmentSkills.recruiter,
+                settings.clanTemple.recruiter,
+              )}
+            />
+          </section>
+          <section className="calculator-card calculator-results">
+            <Stat
+              label={t("reachable-level")}
+              value={String(result.level)}
+              testId="max-level-result"
+            />
+            <Stat
+              label={t("remaining-gold")}
+              value={number(result.remaining)}
+            />
+            <Stat
+              label={t("vp-gained")}
+              value={number((target.vp - start.vp) * cityCount)}
+            />
+            <ProductionTransition
+              label={t("gold-transition")}
+              start={start.gold * cityCount * goldBonus}
+              target={target.gold * cityCount * goldBonus}
+              testId="city-max-level-gold"
+            />
+            <ProductionTransition
+              label={t("army-transition")}
+              start={start.army * cityCount * armyBonus}
+              target={target.army * cityCount * armyBonus}
+              testId="city-max-level-army"
+            />
+          </section>
+        </>
       )}
     </div>
   );
@@ -350,13 +399,15 @@ function MaxLevelCalculator({
 function Breakdown({
   title,
   values,
+  testId,
 }: {
   title: string;
   values: { total: number; base: number; stuff: number; temple: number };
+  testId?: string;
 }) {
   const t = useTranslations("city-production");
   return (
-    <div className="production-block">
+    <div className="production-block" data-testid={testId}>
       <h3>
         {title}
         <strong>{number(values.total)}/h</strong>

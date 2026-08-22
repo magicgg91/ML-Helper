@@ -83,10 +83,17 @@ export function CalculatorVisibilityList({
                 </td>
                 <td>
                   <div className="table-actions">
-                    {canEdit && <Link href={row.editHref}>{t("edit")}</Link>}
+                    {canEdit && (
+                      <Link
+                        className="editor-action editor-action-primary"
+                        href={row.editHref}
+                      >
+                        {t("edit")}
+                      </Link>
+                    )}
                     {canToggle && (
                       <button
-                        className="secondary-action"
+                        className="editor-action editor-action-secondary"
                         type="button"
                         disabled={saving === row.id}
                         onClick={() => toggle(row)}

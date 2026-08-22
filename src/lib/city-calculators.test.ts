@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  bonusBreakdown,
   calculateProduction,
   cityStatsAt,
   cityUpgradeCost,
@@ -82,6 +83,25 @@ describe("city formulas", () => {
       points: 20,
       gold: 640,
       troops: 192,
+    });
+  });
+});
+
+describe("bonusBreakdown", () => {
+  it("splits a base value into its equipment and temple contributions", () => {
+    expect(bonusBreakdown(200, 10, 30)).toEqual({
+      base: 200,
+      stuff: 20,
+      temple: 60,
+      total: 280,
+    });
+  });
+  it("ignores negative percentages instead of subtracting from the base", () => {
+    expect(bonusBreakdown(100, -5, -10)).toEqual({
+      base: 100,
+      stuff: 0,
+      temple: 0,
+      total: 100,
     });
   });
 });

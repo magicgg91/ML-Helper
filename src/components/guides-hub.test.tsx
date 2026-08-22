@@ -106,6 +106,29 @@ describe("GuidesHub", () => {
     }
   });
 
+  it("makes the whole guide card a link instead of only the read-guide text", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const card = screen.getByRole("link", { name: /Guide combat/ });
+    expect(card).toHaveAttribute("href", "/guides/combat-guide");
+    expect(card).toHaveClass("guide-list-card");
+    expect(within(card).getByText("Lire le guide")).toBeVisible();
+  });
+
   it("uses the canonical reference routes", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
