@@ -88,4 +88,15 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     // whole page must not carry a warm/golden tint any more.
     expect(globalsCss).not.toMatch(/rgb\(201 160 74/);
   });
+
+  it("keeps the light theme tinted (never pure white), same blue family as dark", () => {
+    for (const name of ["bg", "bg-panel", "bg-panel-raised", "surface-muted"]) {
+      const hex = extractHex(lightBlock, name);
+      expect(hex.toLowerCase()).not.toBe("#ffffff");
+      const { h, s } = hexToHsl(hex);
+      expect(s).toBeGreaterThan(0);
+      expect(h).toBeGreaterThanOrEqual(blueSlateHueRange.min);
+      expect(h).toBeLessThanOrEqual(blueSlateHueRange.max);
+    }
+  });
 });
