@@ -9,8 +9,11 @@ import messages from "../../messages/fr.json";
 vi.mock("../components/theme-toggle", () => ({
   ThemeToggle: () => <button type="button">Thème</button>,
 }));
-vi.mock("../components/server-locale-switcher", () => ({
-  ServerLocaleSwitcher: () => <select aria-label="Language / Langue" />,
+vi.mock("../components/locale-toggle", () => ({
+  LocaleToggle: () => <div role="group">FR EN</div>,
+}));
+vi.mock("../i18n/config", () => ({
+  getAvailableLocales: async () => ["en", "fr"],
 }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,

@@ -21,8 +21,8 @@ vi.mock("@/components/admin-nav", () => ({
 vi.mock("@/components/admin-account-menu", () => ({
   AdminAccountMenu: () => <div>account</div>,
 }));
-vi.mock("@/components/admin-locale-toggle", () => ({
-  AdminLocaleToggle: () => <div role="group">locale</div>,
+vi.mock("@/components/locale-toggle", () => ({
+  LocaleToggle: () => <div role="group">locale</div>,
 }));
 vi.mock("@/components/theme-toggle", () => ({
   ThemeToggle: () => <button type="button">theme</button>,

@@ -8,7 +8,7 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AdminLocaleToggle } from "./admin-locale-toggle";
+import { LocaleToggle } from "./locale-toggle";
 
 const refresh = vi.fn();
 
@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
 
 afterEach(cleanup);
 
-describe("AdminLocaleToggle", () => {
+describe("LocaleToggle", () => {
   beforeEach(() => {
     refresh.mockReset();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
@@ -30,7 +30,7 @@ describe("AdminLocaleToggle", () => {
         locale="fr"
         messages={{ common: { language: "Langue" } }}
       >
-        <AdminLocaleToggle locales={["en", "fr"]} />
+        <LocaleToggle locales={["en", "fr"]} />
       </NextIntlClientProvider>,
     );
 
@@ -48,7 +48,7 @@ describe("AdminLocaleToggle", () => {
         locale="fr"
         messages={{ common: { language: "Langue" } }}
       >
-        <AdminLocaleToggle locales={["en", "fr"]} />
+        <LocaleToggle locales={["en", "fr"]} />
       </NextIntlClientProvider>,
     );
 
