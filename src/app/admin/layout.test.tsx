@@ -57,6 +57,26 @@ describe("AdminLayout", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  it("keeps the main navigation in the top bar, not a sidebar", async () => {
+    mockedSession.mockResolvedValue({
+      user: { id: "admin", role: "super_admin", name: "Admin" },
+      expires: "2099-01-01",
+    });
+    mockedFindUnique.mockResolvedValue({
+      totpEnabled: false,
+    } as Awaited<ReturnType<typeof prisma.user.findUnique>>);
+
+    const { container } = render(
+      await AdminLayout({
+        children: <p>content</p>,
+        params: Promise.resolve({}),
+      }),
+    );
+
+    expect(container.querySelector("header nav")).toBeInTheDocument();
+    expect(container.querySelector('button[aria-label="Menu"]')).toBeNull();
+  });
+
   it("renders the page content unchanged when there is no admin session", async () => {
     mockedSession.mockResolvedValue(null);
 

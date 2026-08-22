@@ -4,12 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { can, type AdminCapability } from "../auth/permissions";
 import { useTranslations } from "next-intl";
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const links: Array<{
   href: string;
@@ -40,29 +36,33 @@ export function AdminNav({ role }: { role: string }) {
   const pathname = usePathname();
   const t = useTranslations("admin");
   return (
-    <SidebarContent>
-      <SidebarMenu>
-        {links
-          .filter((link) => can(role, link.capability))
-          .map((link) => {
-            const current =
-              link.href === "/admin"
-                ? pathname === link.href
-                : pathname.startsWith(link.href);
-            return (
-              <SidebarMenuItem key={link.href}>
-                <SidebarMenuButton asChild isActive={current}>
-                  <Link
-                    aria-current={current ? "page" : undefined}
-                    href={link.href}
-                  >
-                    {t(`navigation.${link.label}`)}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-      </SidebarMenu>
-    </SidebarContent>
+    <nav
+      aria-label={t("navigation-label")}
+      className="flex flex-wrap items-center gap-1"
+    >
+      {links
+        .filter((link) => can(role, link.capability))
+        .map((link) => {
+          const current =
+            link.href === "/admin"
+              ? pathname === link.href
+              : pathname.startsWith(link.href);
+          return (
+            <Link
+              key={link.href}
+              aria-current={current ? "page" : undefined}
+              href={link.href}
+              className={cn(
+                buttonVariants({
+                  variant: current ? "secondary" : "ghost",
+                  size: "sm",
+                }),
+              )}
+            >
+              {t(`navigation.${link.label}`)}
+            </Link>
+          );
+        })}
+    </nav>
   );
 }

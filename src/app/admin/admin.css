@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /*
  * Tailwind v4 theme for the admin shell (shadcn/ui components), scoped to
@@ -30,14 +29,6 @@
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--gold);
-  --color-sidebar: var(--bg-panel);
-  --color-sidebar-foreground: var(--text);
-  --color-sidebar-primary: var(--gold-bright);
-  --color-sidebar-primary-foreground: var(--bg);
-  --color-sidebar-accent: var(--bg-panel-raised);
-  --color-sidebar-accent-foreground: var(--text);
-  --color-sidebar-border: var(--border);
-  --color-sidebar-ring: var(--gold);
   --radius-lg: 0.6rem;
   --radius-md: calc(0.6rem - 2px);
   --radius-sm: calc(0.6rem - 4px);
