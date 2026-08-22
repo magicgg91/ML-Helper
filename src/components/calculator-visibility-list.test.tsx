@@ -23,13 +23,17 @@ describe("CalculatorVisibilityList", () => {
         ]}
       />,
     );
-    expect(screen.getByRole("link", { name: "Modifier" })).toHaveAttribute(
-      "data-slot",
-      "button",
-    );
-    expect(
-      screen.getByRole("button", { name: "Désactiver" }),
-    ).toHaveAttribute("data-slot", "button");
+    const edit = screen.getByRole("link", { name: "Modifier" });
+    expect(edit).toHaveAttribute("data-slot", "button");
+    expect(edit).toHaveAttribute("title", "Modifier");
+    expect(edit.textContent).toBe("");
+    expect(edit.querySelector("svg")).toBeInTheDocument();
+    const disable = screen.getByRole("button", { name: "Désactiver" });
+    expect(disable).toHaveAttribute("data-slot", "button");
+    expect(disable).toHaveAttribute("title", "Désactiver");
+    expect(disable.textContent).toBe("");
+    expect(disable.querySelector("svg")).toBeInTheDocument();
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("disables an active calculator and reflects the saved state", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Power, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -144,32 +145,42 @@ export function GuideStatusList({
                   <TableCell>
                     <div className="flex justify-end gap-2">
                       {canWrite && (
-                        <Button asChild size="sm" variant="secondary">
+                        <Button
+                          asChild
+                          size="icon"
+                          variant="secondary"
+                          title={t("edit")}
+                        >
                           <Link
                             href={guide.editHref ?? `/admin/guides/${guide.id}`}
+                            aria-label={t("edit")}
                           >
-                            {t("edit")}
+                            <Pencil aria-hidden="true" />
                           </Link>
                         </Button>
                       )}
                       {canWrite && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
                           onClick={() =>
                             toggle(guide.id, !guide.active, guide.type)
                           }
+                          title={t(guide.active ? "disable" : "enable")}
+                          aria-label={t(guide.active ? "disable" : "enable")}
                         >
-                          {t(guide.active ? "disable" : "enable")}
+                          <Power aria-hidden="true" />
                         </Button>
                       )}
                       {canDelete && guide.type !== "reference" && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="destructive"
                           onClick={() => remove(guide)}
+                          title={t("delete")}
+                          aria-label={t("delete")}
                         >
-                          {t("delete")}
+                          <Trash2 aria-hidden="true" />
                         </Button>
                       )}
                     </div>

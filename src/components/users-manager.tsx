@@ -1,4 +1,5 @@
 "use client";
+import { Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -184,18 +185,22 @@ export function UsersManager({
                           }
                         />
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="secondary"
                           onClick={() => update(user)}
+                          title={t("admin.users.save")}
+                          aria-label={t("admin.users.save")}
                         >
-                          {t("admin.users.save")}
+                          <Save aria-hidden="true" />
                         </Button>
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="destructive"
                           onClick={() => remove(user.id)}
+                          title={t("admin.users.delete")}
+                          aria-label={t("admin.users.delete")}
                         >
-                          {t("admin.users.delete")}
+                          <Trash2 aria-hidden="true" />
                         </Button>
                       </div>
                     )}

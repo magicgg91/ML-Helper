@@ -23,12 +23,15 @@ describe("UsersManager", () => {
     expect(
       screen.getByRole("button", { name: "Créer l’utilisateur" }),
     ).toHaveAttribute("data-slot", "button");
-    expect(
-      screen.getAllByRole("button", { name: "Enregistrer" })[0],
-    ).toHaveAttribute("data-slot", "button");
-    expect(
-      screen.getAllByRole("button", { name: "Supprimer" })[0],
-    ).toHaveAttribute("data-slot", "button");
+    const save = screen.getAllByRole("button", { name: "Enregistrer" })[0];
+    expect(save).toHaveAttribute("data-slot", "button");
+    expect(save).toHaveAttribute("title", "Enregistrer");
+    expect(save.querySelector("svg")).toBeInTheDocument();
+    const remove = screen.getAllByRole("button", { name: "Supprimer" })[0];
+    expect(remove).toHaveAttribute("data-slot", "button");
+    expect(remove).toHaveAttribute("title", "Supprimer");
+    expect(remove.querySelector("svg")).toBeInTheDocument();
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("hides every mutation control for a read-only viewer", () => {
