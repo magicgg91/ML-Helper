@@ -25,4 +25,19 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     expect(adminCss).toMatch(/--color-primary:\s*var\(--accent-strong\);/);
     expect(adminCss).toMatch(/--color-ring:\s*var\(--accent\);/);
   });
+
+  it("never uses --gold or --gold-bright as a generic interface color", () => {
+    // The site's own rarity system (.rarity-legendaire) uses its own
+    // dedicated --rarity-legendaire token and hardcoded badge colors, not
+    // --gold — so no selector should reference var(--gold) or
+    // var(--gold-bright) at all. Catches gold creeping back in as a hover/
+    // active/link accent instead of staying reserved for legendary data.
+    expect(globalsCss).not.toMatch(/var\(--gold(-bright)?\)/);
+    expect(adminCss).not.toMatch(/var\(--gold(-bright)?\)/);
+  });
+
+  it("still defines --gold and --gold-bright, reserved for legendary data", () => {
+    expect(globalsCss).toMatch(/--gold:\s*#[0-9a-fA-F]{6};/);
+    expect(globalsCss).toMatch(/--gold-bright:\s*#[0-9a-fA-F]{6};/);
+  });
 });
