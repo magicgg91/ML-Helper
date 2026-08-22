@@ -4,7 +4,10 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
   const document = page.locator("html");
   if ((await document.getAttribute("lang")) === locale) return;
 
-  await page.getByLabel(/Language|Langue/).selectOption(locale);
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: locale.toUpperCase() })
+    .click();
   await expect(document).toHaveAttribute("lang", locale);
 }
 
