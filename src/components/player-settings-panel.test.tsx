@@ -145,6 +145,91 @@ describe("PlayerSettingsPanel", () => {
     );
   });
 
+  it("caps the collapsed summary's Bravoure/Intrépide total at 75% in Légende", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        level: 1,
+        league: "legend",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: { fearless: 80 },
+        skillPoints: { fearless: 30 },
+      }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
+        "Int 75%",
+      ),
+    );
+  });
+
+  it("caps the collapsed summary's Récupération total at 50% even if equipment plus points exceed it", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        level: 1,
+        league: "gold",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: { cautious: 45 },
+        skillPoints: { cautious: 10 },
+      }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
+        "Rup 50%",
+      ),
+    );
+  });
+
+  it("caps the 'equipment stats' input for Récupération at 50%, and for Intrépide/Bravoure at 90% (75% in Légende)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.getByLabelText("Récupération avec équipement"),
+    ).toHaveAttribute("max", "50");
+    expect(screen.getByLabelText("Intrépide avec équipement")).toHaveAttribute(
+      "max",
+      "90",
+    );
+    expect(screen.getByLabelText("Bravoure avec équipement")).toHaveAttribute(
+      "max",
+      "90",
+    );
+    expect(
+      screen.getByLabelText("Attaque avec équipement"),
+    ).not.toHaveAttribute("max");
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    expect(screen.getByLabelText("Intrépide avec équipement")).toHaveAttribute(
+      "max",
+      "75",
+    );
+    expect(screen.getByLabelText("Bravoure avec équipement")).toHaveAttribute(
+      "max",
+      "75",
+    );
+    expect(
+      screen.getByLabelText("Récupération avec équipement"),
+    ).toHaveAttribute("max", "50");
+  });
+
   it("highlights available points and the per-skill hint in gold, like the prototype", () => {
     const { container } = render(
       <NextIntlClientProvider locale="fr" messages={messages}>

@@ -100,4 +100,45 @@ describe("SiteSearch", () => {
     expect(input).toHaveValue("");
     expect(screen.queryByRole("list")).toBeNull();
   });
+
+  it("closes the results dropdown when clicking outside the search", () => {
+    renderSearch();
+    const input = screen.getByRole("searchbox", {
+      name: "Rechercher sur le site",
+    });
+    fireEvent.change(input, { target: { value: "gemmes" } });
+    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+
+    fireEvent.mouseDown(document.body);
+
+    expect(screen.queryByRole("link", { name: /Gemmes/ })).toBeNull();
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(input).toHaveValue("gemmes");
+  });
+
+  it("does not close when clicking inside the search box or its results", () => {
+    renderSearch();
+    const input = screen.getByRole("searchbox", {
+      name: "Rechercher sur le site",
+    });
+    fireEvent.change(input, { target: { value: "gemmes" } });
+    fireEvent.mouseDown(input);
+    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+
+    fireEvent.mouseDown(screen.getByRole("link", { name: /Gemmes/ }));
+    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+  });
+
+  it("reopens the results when the search box regains focus after an outside click", () => {
+    renderSearch();
+    const input = screen.getByRole("searchbox", {
+      name: "Rechercher sur le site",
+    });
+    fireEvent.change(input, { target: { value: "gemmes" } });
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("link", { name: /Gemmes/ })).toBeNull();
+
+    fireEvent.focus(input);
+    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+  });
 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildSiteSearchResults,
   type SiteSearchGuide,
@@ -13,6 +13,8 @@ export function SiteSearch({ guides }: { guides: SiteSearchGuide[] }) {
   const t = useTranslations("search");
   const translate = useTranslations();
   const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const results = useMemo(
     () =>
@@ -27,23 +29,47 @@ export function SiteSearch({ guides }: { guides: SiteSearchGuide[] }) {
 
   const trimmed = query.trim();
 
+  useEffect(() => {
+    if (!open) return;
+    function handleOutsideClick(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [open]);
+
   return (
-    <div className="site-search">
+    <div className="site-search" ref={containerRef}>
       <label className="site-search-label">
         <span className="sr-only">{t("label")}</span>
         <input
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
           placeholder={t("placeholder")}
         />
       </label>
-      {trimmed ? (
+      {open && trimmed ? (
         results.length ? (
           <ul className="site-search-results" aria-label={t("results-label")}>
             {results.map((result) => (
               <li key={result.id}>
-                <Link href={result.href} onClick={() => setQuery("")}>
+                <Link
+                  href={result.href}
+                  onClick={() => {
+                    setQuery("");
+                    setOpen(false);
+                  }}
+                >
                   <span className="site-search-result-type">
                     {t(`types.${result.type}`)}
                   </span>
