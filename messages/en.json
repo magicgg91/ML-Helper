@@ -396,6 +396,17 @@
     "admin": "Admin area",
     "menu": "Menu"
   },
+  "search": {
+    "label": "Search the site",
+    "placeholder": "Guides, reference tables, tools…",
+    "results-label": "Search results",
+    "no-results": "No results.",
+    "types": {
+      "guide": "Guide",
+      "reference": "Reference table",
+      "tool": "Tool"
+    }
+  },
   "Public": {
     "tools": "Tools",
     "guides": "Guides",
@@ -464,10 +475,6 @@
       "expeditions": "Expeditions",
       "evenements": "Events & ranking",
       "clan": "Clan & collective strategy"
-    },
-    "search": {
-      "label": "Search guides",
-      "placeholder": "Search by title, summary or category…"
     },
     "read-guide": "Read guide",
     "open-reference": "Open reference table",

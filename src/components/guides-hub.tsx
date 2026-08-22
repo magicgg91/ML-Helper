@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 
 export type PublicGuideCard = {
@@ -16,7 +16,6 @@ export type PublicGuideCard = {
 };
 
 export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
-  const locale = useLocale();
   const t = useTranslations("guides");
   const references = useTranslations("references");
   const guideCategories = useMemo(
@@ -25,15 +24,9 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   );
   const [guideCategory, setGuideCategory] = useState("all");
   const [referenceCategory, setReferenceCategory] = useState("all");
-  const [guideSearch, setGuideSearch] = useState("");
-  const normalizedSearch = guideSearch.trim().toLocaleLowerCase(locale);
   const visibleGuides = guides.filter(
-    ({ categories, title, excerpt }) =>
-      (guideCategory === "all" || categories.includes(guideCategory)) &&
-      (!normalizedSearch ||
-        `${title} ${excerpt} ${categories.join(" ")}`
-          .toLocaleLowerCase(locale)
-          .includes(normalizedSearch)),
+    ({ categories }) =>
+      guideCategory === "all" || categories.includes(guideCategory),
   );
   const visibleReferences = referenceCatalog.filter(
     ({ category }) =>
@@ -44,15 +37,6 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
     <>
       <section aria-labelledby="guide-section-title">
         <h2 id="guide-section-title">{t("sections.guides")}</h2>
-        <label>
-          {t("search.label")}
-          <input
-            type="search"
-            value={guideSearch}
-            onChange={(event) => setGuideSearch(event.target.value)}
-            placeholder={t("search.placeholder")}
-          />
-        </label>
         <nav
           className="guide-filter-nav"
           aria-label={t("filters.guides-label")}
