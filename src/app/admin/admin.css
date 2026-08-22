@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /*
  * Tailwind v4 theme for the admin shell (shadcn/ui components), scoped to

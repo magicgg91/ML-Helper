@@ -4,6 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { can, type AdminCapability } from "../auth/permissions";
 import { useTranslations } from "next-intl";
+import {
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
 const links: Array<{
   href: string;
@@ -34,24 +40,29 @@ export function AdminNav({ role }: { role: string }) {
   const pathname = usePathname();
   const t = useTranslations("admin");
   return (
-    <nav className="admin-tabs tabs" aria-label={t("navigation-label")}>
-      {links
-        .filter((link) => can(role, link.capability))
-        .map((link) => {
-          const current =
-            link.href === "/admin"
-              ? pathname === link.href
-              : pathname.startsWith(link.href);
-          return (
-            <Link
-              aria-current={current ? "page" : undefined}
-              href={link.href}
-              key={link.href}
-            >
-              {t(`navigation.${link.label}`)}
-            </Link>
-          );
-        })}
-    </nav>
+    <SidebarContent>
+      <SidebarMenu>
+        {links
+          .filter((link) => can(role, link.capability))
+          .map((link) => {
+            const current =
+              link.href === "/admin"
+                ? pathname === link.href
+                : pathname.startsWith(link.href);
+            return (
+              <SidebarMenuItem key={link.href}>
+                <SidebarMenuButton asChild isActive={current}>
+                  <Link
+                    aria-current={current ? "page" : undefined}
+                    href={link.href}
+                  >
+                    {t(`navigation.${link.label}`)}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+      </SidebarMenu>
+    </SidebarContent>
   );
 }
