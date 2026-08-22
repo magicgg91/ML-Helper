@@ -3,6 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export type GuideAdminRow = {
   id: string;
@@ -36,126 +46,142 @@ export function GuideStatusList({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    if (!response.ok)
-      return setMessage(t("status-forbidden"));
+    if (!response.ok) return setMessage(t("status-forbidden"));
     setGuides((current) =>
       current.map((guide) => (guide.id === id ? { ...guide, status } : guide)),
     );
     setMessage(t("status-saved"));
   }
-  async function toggle(id: string, active: boolean, type?: "guide" | "reference") {
-    const response = await fetch(type === "reference" ? `/api/admin/guides/references/${id}/active` : `/api/admin/guides/${id}/active`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ active }),
-    });
-    if (!response.ok)
-      return setMessage(t("visibility-error"));
+  async function toggle(
+    id: string,
+    active: boolean,
+    type?: "guide" | "reference",
+  ) {
+    const response = await fetch(
+      type === "reference"
+        ? `/api/admin/guides/references/${id}/active`
+        : `/api/admin/guides/${id}/active`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ active }),
+      },
+    );
+    if (!response.ok) return setMessage(t("visibility-error"));
     setGuides((current) =>
       current.map((guide) => (guide.id === id ? { ...guide, active } : guide)),
     );
     setMessage(t(active ? "enabled" : "disabled"));
   }
   async function remove(guide: GuideAdminRow) {
-    if (
-      !window.confirm(t("confirm-delete", { title: guide.title }))
-    )
-      return;
+    if (!window.confirm(t("confirm-delete", { title: guide.title }))) return;
     const response = await fetch(`/api/admin/guides/${guide.id}`, {
       method: "DELETE",
     });
-    if (!response.ok)
-      return setMessage(t("delete-forbidden"));
+    if (!response.ok) return setMessage(t("delete-forbidden"));
     setGuides((current) => current.filter((item) => item.id !== guide.id));
     setMessage(t("deleted"));
   }
   return (
     <>
-      <div className="ranking-table-wrap">
-        <table className="ranking-table guide-admin-table">
-          <thead>
-            <tr>
-              <th>{t("columns.title")}</th><th>{t("columns.type")}</th>
-              <th>{t("columns.author")}</th>
-              <th>{t("columns.created")}</th>
-              <th>{t("columns.updated")}</th>
-              <th>{t("columns.status")}</th>
-              <th>{t("columns.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {guides.map((guide) => (
-              <tr
-                key={guide.id}
-                className={guide.active ? undefined : "is-disabled"}
-                title={
-                  guide.active
-                    ? undefined
-                    : t("disabled-tooltip")
-                }
-              >
-                <td>{guide.title || guide.slug}</td>
-                <td>{t(`types.${guide.type ?? "guide"}`)}</td>
-                <td>{guide.author}</td>
-                <td>{guide.createdAt}</td>
-                <td>{guide.updatedAt}</td>
-                <td>
-                  {guide.type === "reference" ? t(guide.active ? "statuses.active" : "statuses.inactive") : <select
-                    aria-label={t("status-label", { title: guide.title || guide.slug })}
-                    value={guide.status}
-                    disabled={!canWrite}
-                    onChange={(event) =>
-                      changeStatus(guide.id, event.target.value)
-                    }
-                  >
-                    <option value="draft">{t("statuses.draft")}</option>
-                    <option value="pending_review">
-                      {t("statuses.pending_review")}
-                    </option>
-                    {(canPublish || guide.status === "published") && (
-                      <option value="published" disabled={!canPublish}>
-                        {t("statuses.published")}
-                      </option>
-                    )}
-                  </select>}
-                </td>
-                <td>
-                  <div className="table-actions">
-                    {canWrite && (
-                      <Link
-                        className="editor-action editor-action-primary"
-                        href={guide.editHref ?? `/admin/guides/${guide.id}`}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("columns.title")}</TableHead>
+                <TableHead>{t("columns.type")}</TableHead>
+                <TableHead>{t("columns.author")}</TableHead>
+                <TableHead>{t("columns.created")}</TableHead>
+                <TableHead>{t("columns.updated")}</TableHead>
+                <TableHead>{t("columns.status")}</TableHead>
+                <TableHead className="text-right">
+                  {t("columns.actions")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {guides.map((guide) => (
+                <TableRow
+                  key={guide.id}
+                  className={guide.active ? undefined : "opacity-60"}
+                  title={guide.active ? undefined : t("disabled-tooltip")}
+                >
+                  <TableCell className="font-medium">
+                    {guide.title || guide.slug}
+                  </TableCell>
+                  <TableCell>{t(`types.${guide.type ?? "guide"}`)}</TableCell>
+                  <TableCell>{guide.author}</TableCell>
+                  <TableCell>{guide.createdAt}</TableCell>
+                  <TableCell>{guide.updatedAt}</TableCell>
+                  <TableCell>
+                    {guide.type === "reference" ? (
+                      t(guide.active ? "statuses.active" : "statuses.inactive")
+                    ) : (
+                      <select
+                        className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
+                        aria-label={t("status-label", {
+                          title: guide.title || guide.slug,
+                        })}
+                        value={guide.status}
+                        disabled={!canWrite}
+                        onChange={(event) =>
+                          changeStatus(guide.id, event.target.value)
+                        }
                       >
-                        {t("edit")}
-                      </Link>
+                        <option value="draft">{t("statuses.draft")}</option>
+                        <option value="pending_review">
+                          {t("statuses.pending_review")}
+                        </option>
+                        {(canPublish || guide.status === "published") && (
+                          <option value="published" disabled={!canPublish}>
+                            {t("statuses.published")}
+                          </option>
+                        )}
+                      </select>
                     )}
-                    {canWrite && (
-                      <button
-                        type="button"
-                        className="editor-action editor-action-secondary"
-                        onClick={() => toggle(guide.id, !guide.active, guide.type)}
-                      >
-                        {t(guide.active ? "disable" : "enable")}
-                      </button>
-                    )}
-                    {canDelete && guide.type !== "reference" && (
-                      <button
-                        type="button"
-                        className="editor-action danger-action"
-                        onClick={() => remove(guide)}
-                      >
-                        {t("delete")}
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      {canWrite && (
+                        <Button asChild size="sm" variant="secondary">
+                          <Link
+                            href={guide.editHref ?? `/admin/guides/${guide.id}`}
+                          >
+                            {t("edit")}
+                          </Link>
+                        </Button>
+                      )}
+                      {canWrite && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            toggle(guide.id, !guide.active, guide.type)
+                          }
+                        >
+                          {t(guide.active ? "disable" : "enable")}
+                        </Button>
+                      )}
+                      {canDelete && guide.type !== "reference" && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => remove(guide)}
+                        >
+                          {t("delete")}
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
       {message && (
-        <p className="form-status" role="status">
+        <p className="mt-2 text-sm text-muted-foreground" role="status">
           {message}
         </p>
       )}

@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe("GuideStatusList", () => {
-  it("gives the edit link and the toggle/delete buttons the polished editor-action styling", () => {
+  it("renders the edit link and the toggle/delete buttons as shadcn Button components", () => {
     render(
       <GuideStatusList
         rows={[row]}
@@ -31,12 +31,12 @@ describe("GuideStatusList", () => {
       />,
     );
     const edit = screen.getByRole("link", { name: "Éditer" });
-    expect(edit).toHaveClass("editor-action", "editor-action-primary");
+    expect(edit).toHaveAttribute("data-slot", "button");
     expect(edit).toHaveAttribute("href", "/admin/guides/guide-1");
     const disable = screen.getByRole("button", { name: "Désactiver" });
-    expect(disable).toHaveClass("editor-action", "editor-action-secondary");
+    expect(disable).toHaveAttribute("data-slot", "button");
     const remove = screen.getByRole("button", { name: "Supprimer" });
-    expect(remove).toHaveClass("editor-action", "danger-action");
+    expect(remove).toHaveAttribute("data-slot", "button");
   });
 
   it("toggles visibility and reports a failure without crashing", async () => {

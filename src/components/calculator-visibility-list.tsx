@@ -3,6 +3,16 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type CalculatorRow = {
   id: string;
@@ -59,57 +69,60 @@ export function CalculatorVisibilityList({
 
   return (
     <>
-      <div className="ranking-table-wrap">
-        <table className="ranking-table">
-          <thead>
-            <tr>
-              <th>{t("columns.tool")}</th>
-              <th>{t("columns.status")}</th>
-              <th>{t("columns.action")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {calculators.map((row) => (
-              <tr
-                className={row.active ? undefined : "calculator-row-disabled"}
-                key={row.id}
-                title={row.active ? undefined : t("disabled-tooltip")}
-              >
-                <td>{row.label}</td>
-                <td
-                  className={row.active ? "status-active" : "status-inactive"}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("columns.tool")}</TableHead>
+                <TableHead>{t("columns.status")}</TableHead>
+                <TableHead className="text-right">
+                  {t("columns.action")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {calculators.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className={row.active ? undefined : "opacity-60"}
+                  title={row.active ? undefined : t("disabled-tooltip")}
                 >
-                  {t(row.active ? "active" : "inactive")}
-                </td>
-                <td>
-                  <div className="table-actions">
-                    {canEdit && (
-                      <Link
-                        className="editor-action editor-action-primary"
-                        href={row.editHref}
-                      >
-                        {t("edit")}
-                      </Link>
-                    )}
-                    {canToggle && (
-                      <button
-                        className="editor-action editor-action-secondary"
-                        type="button"
-                        disabled={saving === row.id}
-                        onClick={() => toggle(row)}
-                      >
-                        {t(row.active ? "disable" : "enable")}
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  <TableCell className="font-medium">{row.label}</TableCell>
+                  <TableCell
+                    className={
+                      row.active ? "text-success" : "text-muted-foreground"
+                    }
+                  >
+                    {t(row.active ? "active" : "inactive")}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      {canEdit && (
+                        <Button asChild size="sm" variant="secondary">
+                          <Link href={row.editHref}>{t("edit")}</Link>
+                        </Button>
+                      )}
+                      {canToggle && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={saving === row.id}
+                          onClick={() => toggle(row)}
+                        >
+                          {t(row.active ? "disable" : "enable")}
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
       {message && (
-        <p className="form-status" role="status">
+        <p className="mt-2 text-sm text-muted-foreground" role="status">
           {message}
         </p>
       )}

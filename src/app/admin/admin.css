@@ -25,6 +25,7 @@
   --color-accent-foreground: var(--text);
   --color-destructive: var(--ember);
   --color-destructive-foreground: var(--bg);
+  --color-success: var(--emerald-bright);
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--gold);

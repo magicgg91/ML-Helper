@@ -18,6 +18,19 @@ afterEach(() => {
 });
 
 describe("UsersManager", () => {
+  it("renders the create/save/delete actions as shadcn Button components", () => {
+    render(<UsersManager users={users} />);
+    expect(
+      screen.getByRole("button", { name: "Créer l’utilisateur" }),
+    ).toHaveAttribute("data-slot", "button");
+    expect(
+      screen.getAllByRole("button", { name: "Enregistrer" })[0],
+    ).toHaveAttribute("data-slot", "button");
+    expect(
+      screen.getAllByRole("button", { name: "Supprimer" })[0],
+    ).toHaveAttribute("data-slot", "button");
+  });
+
   it("hides every mutation control for a read-only viewer", () => {
     render(<UsersManager users={users} canManage={false} />);
     expect(
