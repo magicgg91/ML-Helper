@@ -461,10 +461,7 @@
     },
     "filters": {
       "guides-label": "Filter guides by category",
-      "references-label": "Filter reference tables by category",
-      "all": "All",
-      "combat": "Combat",
-      "expedition": "Expedition"
+      "all": "All"
     },
     "categories": {
       "debuter": "Getting started & progressing",

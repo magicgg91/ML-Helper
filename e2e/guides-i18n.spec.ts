@@ -11,18 +11,26 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
   await expect(document).toHaveAttribute("lang", locale);
 }
 
-test("translates the guides hub headings", async ({ page }) => {
+test("shows every reference table with no category filter on the guides hub", async ({
+  page,
+}) => {
   await page.goto("/guides");
   await switchLocale(page, "fr");
   await expect(
     page.getByRole("heading", { name: "Référentiels" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: /référentiels/i }),
+  ).toHaveCount(0);
+  await expect(page.getByText("Équipements de Combat")).toBeVisible();
+  await expect(page.getByText("Équipement d’Expédition")).toBeVisible();
 
   await switchLocale(page, "en");
   await expect(
     page.getByRole("heading", { name: "Reference tables" }),
   ).toBeVisible();
   await expect(page.getByText("Combat Equipment")).toBeVisible();
+  await expect(page.getByText("Expedition Equipment")).toBeVisible();
 });
 
 test("finds a guide, a reference table and a tool from the site-wide search on any page", async ({

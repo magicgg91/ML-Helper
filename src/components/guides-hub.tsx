@@ -23,14 +23,9 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
     [guides],
   );
   const [guideCategory, setGuideCategory] = useState("all");
-  const [referenceCategory, setReferenceCategory] = useState("all");
   const visibleGuides = guides.filter(
     ({ categories }) =>
       guideCategory === "all" || categories.includes(guideCategory),
-  );
-  const visibleReferences = referenceCatalog.filter(
-    ({ category }) =>
-      referenceCategory === "all" || category === referenceCategory,
   );
 
   return (
@@ -102,24 +97,8 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
         aria-labelledby="reference-section-title"
       >
         <h2 id="reference-section-title">{t("sections.references")}</h2>
-        <nav
-          className="guide-filter-nav"
-          aria-label={t("filters.references-label")}
-        >
-          {["all", "combat", "expedition"].map((category) => (
-            <button
-              className="guide-filter-chip"
-              type="button"
-              aria-pressed={referenceCategory === category}
-              key={category}
-              onClick={() => setReferenceCategory(category)}
-            >
-              {t(`filters.${category}`)}
-            </button>
-          ))}
-        </nav>
         <div className="tool-category-grid">
-          {visibleReferences.map((reference) => (
+          {referenceCatalog.map((reference) => (
             <Link
               className="tool-category-card reference-category-card"
               href={referenceHref(reference.slug)}

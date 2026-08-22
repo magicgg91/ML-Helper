@@ -466,10 +466,7 @@
     },
     "filters": {
       "guides-label": "Filtrer les guides par catégorie",
-      "references-label": "Filtrer les référentiels par catégorie",
-      "all": "Tout",
-      "combat": "Combat",
-      "expedition": "Expédition"
+      "all": "Tout"
     },
     "categories": {
       "debuter": "Débuter & progresser",
