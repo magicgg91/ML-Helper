@@ -565,6 +565,7 @@
   },
   "admin": {
     "title": "Administration",
+    "view-site": "View site",
     "navigation-label": "Administration navigation",
     "navigation": {
       "dashboard": "Dashboard",
