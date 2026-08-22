@@ -1206,6 +1206,34 @@ button:disabled,
   opacity: 0.5;
 }
 
+.guide-filter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  gap: 0.5rem;
+}
+.guide-filter-chip {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-faint);
+  cursor: pointer;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.guide-filter-chip:hover {
+  border-color: var(--gold);
+  color: var(--text);
+}
+.guide-filter-chip[aria-pressed="true"] {
+  border-color: var(--gold);
+  background: var(--bg-panel-raised);
+  color: var(--gold-bright);
+}
+
 nav.tabs {
   display: flex;
   flex-wrap: wrap;

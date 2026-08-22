@@ -76,6 +76,52 @@ describe("GuidesHub", () => {
     expect(screen.getByText("Guide combat")).toBeVisible();
   });
 
+  it("renders both category filters as directly clickable chips, no dropdown", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    const guideFilters = screen.getByRole("navigation", {
+      name: "Filtrer les guides par catégorie",
+    });
+    const allChip = within(guideFilters).getByRole("button", {
+      name: "Tout",
+    });
+    expect(allChip).toHaveClass("guide-filter-chip");
+    expect(allChip).toHaveAttribute("aria-pressed", "true");
+
+    const combatChip = within(guideFilters).getByRole("button", {
+      name: "Combat & conquête",
+    });
+    expect(combatChip).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(combatChip);
+    expect(combatChip).toHaveAttribute("aria-pressed", "true");
+    expect(allChip).toHaveAttribute("aria-pressed", "false");
+
+    const referenceFilters = screen.getByRole("navigation", {
+      name: "Filtrer les référentiels par catégorie",
+    });
+    for (const chip of within(referenceFilters).getAllByRole("button")) {
+      expect(chip).toHaveClass("guide-filter-chip");
+    }
+  });
+
   it("shows a multi-category guide through every assigned category filter", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
