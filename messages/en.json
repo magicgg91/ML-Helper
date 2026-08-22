@@ -848,7 +848,12 @@
       "end": "End date",
       "purge": "Purge range",
       "purged": "History purged",
-      "error": "Unable to purge history"
+      "error": "Unable to purge history",
+      "filter-user": "User",
+      "filter-message": "Word in message",
+      "filter-apply": "Filter",
+      "filter-reset": "Reset",
+      "no-results": "No entry matches the filters."
     },
     "content": {
       "eyebrow": "Institutional page",

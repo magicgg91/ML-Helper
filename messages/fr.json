@@ -852,7 +852,12 @@
       "end": "Date de fin",
       "purge": "Purger la plage",
       "purged": "Historique purgé",
-      "error": "Impossible de purger l’historique"
+      "error": "Impossible de purger l’historique",
+      "filter-user": "Utilisateur",
+      "filter-message": "Mot dans le message",
+      "filter-apply": "Filtrer",
+      "filter-reset": "Réinitialiser",
+      "no-results": "Aucune entrée ne correspond aux filtres."
     },
     "content": {
       "eyebrow": "Page institutionnelle",
