@@ -85,13 +85,16 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                       className="guide-list-cover"
                     />
                   ) : null}
+                  {guide.categories[0] && (
+                    <span className="guide-list-badge">
+                      {t(`categories.${guide.categories[0]}`)}
+                      {guide.categories.length > 1
+                        ? ` +${guide.categories.length - 1}`
+                        : ""}
+                    </span>
+                  )}
                 </div>
                 <div className="guide-list-copy">
-                  <p className="eyebrow">
-                    {guide.categories
-                      .map((category) => t(`categories.${category}`))
-                      .join(" · ")}
-                  </p>
                   <h3>{guide.title}</h3>
                   <p>{guide.excerpt}</p>
                   <span className="guide-list-cta">{t("read-guide")}</span>

@@ -1614,6 +1614,20 @@ body > main h1 {
   height: 100%;
   object-fit: cover;
 }
+.guide-list-badge {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  backdrop-filter: blur(4px);
+  color: var(--gold-bright);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .guide-list-copy {
   min-width: 0;
   padding: 1rem 1.1rem 1.2rem;

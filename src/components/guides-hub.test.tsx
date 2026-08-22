@@ -178,6 +178,46 @@ describe("GuidesHub", () => {
     expect(media?.querySelector("img")).toBeNull();
   });
 
+  it("shows the guide's primary category as a badge on the cover", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat", "clan"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: "https://example.com/combat.jpg",
+            },
+            {
+              id: "two",
+              slug: "clan-guide",
+              categories: ["clan"],
+              title: "Guide clan",
+              excerpt: "Jouer ensemble",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const multiCategoryCard = screen.getByRole("link", {
+      name: /Guide combat/,
+    });
+    expect(
+      within(multiCategoryCard).getByText("Combat & conquête +1"),
+    ).toBeVisible();
+
+    const singleCategoryCard = screen.getByRole("link", {
+      name: /Guide clan/,
+    });
+    expect(
+      within(singleCategoryCard).getByText("Clan & stratégie collective"),
+    ).toBeVisible();
+  });
+
   it("uses the canonical reference routes", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
