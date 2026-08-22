@@ -1,3 +1,4 @@
+import "./admin.css";
 import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/options";
