@@ -74,7 +74,11 @@ body {
   color: var(--foreground);
   font-family: "IBM Plex Sans", sans-serif;
   background-image:
-    radial-gradient(ellipse at top left, rgb(201 160 74 / 6%), transparent 50%),
+    radial-gradient(
+      ellipse at top left,
+      rgb(139 107 184 / 6%),
+      transparent 50%
+    ),
     radial-gradient(
       ellipse at bottom right,
       rgb(74 145 121 / 6%),
