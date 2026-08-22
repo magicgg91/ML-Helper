@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import PublicLayout from "./(public)/layout";
 import ToolsLayout from "./(public)/tools/layout";
@@ -47,6 +47,31 @@ describe("public layouts", () => {
 
     expect(screen.queryByText("Paramètres du joueur")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "admin" })).toBeNull();
+  });
+
+  it("exposes the main sections as real links in the header nav", async () => {
+    render(
+      await PublicLayout({
+        children: <p>Accueil</p>,
+        params: Promise.resolve({}),
+      }),
+    );
+
+    const nav = screen.getByRole("navigation", {
+      name: "Navigation principale",
+    });
+    expect(within(nav).getByRole("link", { name: "tools" })).toHaveAttribute(
+      "href",
+      "/tools",
+    );
+    expect(within(nav).getByRole("link", { name: "guides" })).toHaveAttribute(
+      "href",
+      "/guides",
+    );
+    expect(within(nav).getByRole("link", { name: "contact" })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
   });
 
   it("keeps the tools landing page limited to its category content", () => {

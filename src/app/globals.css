@@ -117,7 +117,8 @@ select {
 .public-header nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.1rem;
+  align-items: center;
+  gap: 0.6rem;
 }
 .public-header a,
 .public-footer a {
@@ -964,12 +965,21 @@ select,
   width: min(74rem, calc(100% - 2rem));
 }
 .public-header nav a {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
   color: var(--text-dim);
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: color 150ms ease;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
 }
 .public-header nav a:hover {
+  border-color: var(--gold);
+  background: var(--bg-panel);
   color: var(--gold-bright);
 }
 .theme-toggle {
