@@ -12,6 +12,7 @@ import {
   defaultPlayerSettings,
   fitSkillPointsToBudget,
   leagues,
+  skillCapForLeague,
   skillKeys,
   skillPercent,
   templarKeys,
@@ -152,10 +153,9 @@ export function PlayerSettingsPanel() {
                   {game(`skills-short.${key}`)}
                 </span>{" "}
                 <span className="sk-value">
-                  {combinedSkillPercent(key, settings).toLocaleString(
-                    locale,
-                    { maximumFractionDigits: 2 },
-                  )}
+                  {combinedSkillPercent(key, settings).toLocaleString(locale, {
+                    maximumFractionDigits: 2,
+                  })}
                   %
                 </span>
               </span>
@@ -234,7 +234,7 @@ export function PlayerSettingsPanel() {
                     })}
                     value={settings.equipmentSkills[key]}
                     min={0}
-                    max={key === "brave" || key === "fearless" ? 90 : undefined}
+                    max={skillCapForLeague(key, settings.league)}
                     step={0.5}
                     onChange={(value) =>
                       setSettings((current) => ({

@@ -248,6 +248,22 @@ export function fitSkillPointsToBudget(
   return next;
 }
 
+// Plafond confirmé (cdc section 7.1) : 50% pour Récupération, 90% pour
+// Intrépide/Bravoure (75% en Légende), aucun plafond pour les 7 autres.
+// Source unique pour tout total affiché ou calculé à partir d'une
+// compétence — bloc "Points de compétence", résumé replié, champ
+// "Statistiques données par l'équipement", et tout calculateur qui
+// consommerait ces stats.
+export function skillCapForLeague(
+  key: SkillKey,
+  league: LeagueSelection,
+): number | undefined {
+  const cap = skillPointMeta[key].cap;
+  if (cap === null) return undefined;
+  if (typeof cap === "number") return cap;
+  return league === "legend" ? cap.legend : cap.default;
+}
+
 export function skillPercent(
   key: SkillKey,
   points: NumberMap<SkillKey>,
@@ -256,23 +272,9 @@ export function skillPercent(
   const meta = skillPointMeta[key];
   const base = league ? (meta.baseByLeague?.[league] ?? 0) : 0;
   const raw = base + points[key] * meta.bonus;
-  if (meta.cap === null) return raw;
-  const cap =
-    typeof meta.cap === "number"
-      ? meta.cap
-      : league === "legend"
-        ? meta.cap.legend
-        : meta.cap.default;
-  return Math.min(raw, cap);
+  const cap = skillCapForLeague(key, league);
+  return cap === undefined ? raw : Math.min(raw, cap);
 }
-
-// Plafond d'affichage sur le TOTAL équipement + points, distinct du plafond
-// interne de skillPercent() sur la seule composante points (voir résumé
-// replié des Paramètres du joueur, section 3.3 du cahier des charges).
-const combinedSkillPercentCap: Partial<Record<SkillKey, number>> = {
-  brave: 90,
-  fearless: 90,
-};
 
 export function combinedSkillPercent(
   key: SkillKey,
@@ -281,6 +283,6 @@ export function combinedSkillPercent(
   const total =
     settings.equipmentSkills[key] +
     skillPercent(key, settings.skillPoints, settings.league);
-  const cap = combinedSkillPercentCap[key];
+  const cap = skillCapForLeague(key, settings.league);
   return cap === undefined ? total : Math.min(total, cap);
 }

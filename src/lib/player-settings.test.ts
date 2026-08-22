@@ -4,6 +4,7 @@ import {
   availableSkillPoints,
   combinedSkillPercent,
   emptySkills,
+  skillCapForLeague,
   skillPercent,
 } from "./player-settings";
 
@@ -48,10 +49,47 @@ describe("player skill-point planning", () => {
   });
 });
 
+describe("skillCapForLeague", () => {
+  it("has no cap for the 7 skills without a confirmed ceiling", () => {
+    for (const key of [
+      "striker",
+      "guardian",
+      "scavenger",
+      "salvager",
+      "prosperous",
+      "recruiter",
+      "rusher",
+    ] as const) {
+      expect(skillCapForLeague(key, "legend")).toBeUndefined();
+    }
+  });
+
+  it("caps Récupération at 50% in every league", () => {
+    for (const league of ["", "bronze", "gold", "diamond", "legend"] as const) {
+      expect(skillCapForLeague("cautious", league)).toBe(50);
+    }
+  });
+
+  it("caps Intrépide/Bravoure at 90% outside Légende and 75% in Légende", () => {
+    for (const key of ["fearless", "brave"] as const) {
+      expect(skillCapForLeague(key, "bronze")).toBe(90);
+      expect(skillCapForLeague(key, "diamond")).toBe(90);
+      expect(skillCapForLeague(key, "")).toBe(90);
+      expect(skillCapForLeague(key, "legend")).toBe(75);
+    }
+  });
+});
+
 describe("combinedSkillPercent", () => {
   it("adds equipment and skill-points percentages for an uncapped skill", () => {
     const equipmentSkills = { ...emptySkills(), striker: 12 };
-    const skillPoints = allocateSkillPoints(emptySkills(), "striker", 5, 6, "gold");
+    const skillPoints = allocateSkillPoints(
+      emptySkills(),
+      "striker",
+      5,
+      6,
+      "gold",
+    );
     expect(
       combinedSkillPercent("striker", {
         equipmentSkills,
@@ -71,5 +109,41 @@ describe("combinedSkillPercent", () => {
         league: "diamond",
       }),
     ).toBe(90);
+  });
+
+  it("caps the combined total at 75% for Bravoure/Intrépide in Légende", () => {
+    const equipmentSkills = { ...emptySkills(), brave: 70 };
+    const skillPoints = { ...emptySkills(), brave: 20 };
+    expect(
+      combinedSkillPercent("brave", {
+        equipmentSkills,
+        skillPoints,
+        league: "legend",
+      }),
+    ).toBe(75);
+  });
+
+  it("caps the combined total at 50% for Récupération even if the sum exceeds it", () => {
+    const equipmentSkills = { ...emptySkills(), cautious: 45 };
+    const skillPoints = { ...emptySkills(), cautious: 10 };
+    expect(
+      combinedSkillPercent("cautious", {
+        equipmentSkills,
+        skillPoints,
+        league: "gold",
+      }),
+    ).toBe(50);
+  });
+
+  it("does not cap Récupération below its 50% ceiling", () => {
+    const equipmentSkills = { ...emptySkills(), cautious: 20 };
+    const skillPoints = { ...emptySkills(), cautious: 0 };
+    expect(
+      combinedSkillPercent("cautious", {
+        equipmentSkills,
+        skillPoints,
+        league: "gold",
+      }),
+    ).toBe(20);
   });
 });
