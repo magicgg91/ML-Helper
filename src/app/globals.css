@@ -237,24 +237,50 @@ select {
   display: none;
 }
 .player-settings > details > summary {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
   padding: 1rem 1.2rem;
 }
-.player-settings > details > summary::before,
 .settings-section > summary::before {
   content: "▸";
   margin-right: 0.55rem;
   color: var(--accent);
 }
-.player-settings > details[open] > summary::before,
 .settings-section[open] > summary::before {
   content: "▾";
 }
 .player-settings summary small {
   color: var(--muted);
   font-weight: 500;
+}
+.player-summary-row1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.player-summary-row1::before {
+  content: "▸";
+  margin-right: 0.55rem;
+  color: var(--accent);
+}
+.player-settings > details[open] > summary .player-summary-row1::before {
+  content: "▾";
+}
+.player-summary-line2 {
+  display: block;
+  margin-top: 0.4rem;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-weight: 500;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.player-summary-line2 .sk-name {
+  color: var(--text-dim);
+}
+.player-summary-line2 .sk-value {
+  color: var(--success);
 }
 .player-settings-body {
   padding: 0 1.2rem 1.2rem;
@@ -880,7 +906,7 @@ select {
 }
 @media (max-width: 42rem) {
   .public-header,
-  .player-settings > details > summary {
+  .player-summary-row1 {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -889,6 +915,10 @@ select {
   }
   .player-settings summary small {
     padding-left: 1.1rem;
+  }
+  .player-summary-line2 {
+    white-space: normal;
+    overflow-x: visible;
   }
   .city-comparison {
     grid-template-columns: 1fr;

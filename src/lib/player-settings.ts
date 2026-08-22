@@ -265,3 +265,22 @@ export function skillPercent(
         : meta.cap.default;
   return Math.min(raw, cap);
 }
+
+// Plafond d'affichage sur le TOTAL équipement + points, distinct du plafond
+// interne de skillPercent() sur la seule composante points (voir résumé
+// replié des Paramètres du joueur, section 3.3 du cahier des charges).
+const combinedSkillPercentCap: Partial<Record<SkillKey, number>> = {
+  brave: 90,
+  fearless: 90,
+};
+
+export function combinedSkillPercent(
+  key: SkillKey,
+  settings: Pick<PlayerSettings, "equipmentSkills" | "skillPoints" | "league">,
+): number {
+  const total =
+    settings.equipmentSkills[key] +
+    skillPercent(key, settings.skillPoints, settings.league);
+  const cap = combinedSkillPercentCap[key];
+  return cap === undefined ? total : Math.min(total, cap);
+}

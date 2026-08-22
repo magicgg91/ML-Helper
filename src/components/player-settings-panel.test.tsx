@@ -85,6 +85,66 @@ describe("PlayerSettingsPanel", () => {
     expect(screen.getByLabelText("Unité des VP")).toHaveValue("1000000");
   });
 
+  it("keeps the two-line summary visible while the panel stays collapsed", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByRole("combobox", { name: "Ligue" })).not.toBeVisible();
+    const line2 = screen.getByTestId("player-summary-line2");
+    expect(line2).toBeVisible();
+    expect(line2).toHaveTextContent("Atq 0%");
+    expect(line2).toHaveTextContent("Vit 0%");
+  });
+
+  it("updates the collapsed summary's per-skill total after editing equipment and points", async () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Augmenter Attaque avec équipement" }),
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "gold" },
+    });
+    fireEvent.change(
+      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
+      { target: { value: "10" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Augmenter Points Attaque" }),
+    );
+    const line2 = screen.getByTestId("player-summary-line2");
+    await waitFor(() => expect(line2).toHaveTextContent("Atq 2,5%"));
+  });
+
+  it("caps the collapsed summary's Bravoure/Intrépide total at 90% even if equipment plus points exceed it", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        level: 1,
+        league: "diamond",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: { fearless: 80 },
+        skillPoints: { fearless: 30 },
+      }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
+        "Int 90%",
+      ),
+    );
+  });
+
   it("enforces clan temple minimums with a uniform step", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>

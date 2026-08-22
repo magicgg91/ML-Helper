@@ -21,6 +21,18 @@
       "salvager": "Recycleur",
       "rusher": "Vitesse"
     },
+    "skills-short": {
+      "striker": "Atq",
+      "brave": "Bra",
+      "scavenger": "Cha",
+      "guardian": "Def",
+      "fearless": "Int",
+      "prosperous": "Pro",
+      "recruiter": "Rec",
+      "cautious": "Rup",
+      "salvager": "Rcy",
+      "rusher": "Vit"
+    },
     "templars": {
       "striker": "Attaque",
       "guardian": "Défense",

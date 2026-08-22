@@ -8,6 +8,7 @@ import {
   allocatedSkillPoints,
   availableSkillPoints,
   clanTempleMinimums,
+  combinedSkillPercent,
   defaultPlayerSettings,
   fitSkillPointsToBudget,
   leagues,
@@ -140,6 +141,26 @@ export function PlayerSettingsPanel() {
         <summary>
           <span id="player-settings-title">{t("title")}</span>
           <small>{summary}</small>
+          <small
+            className="player-summary-line2"
+            data-testid="player-summary-line2"
+          >
+            {skillKeys.map((key, index) => (
+              <span key={key}>
+                {index > 0 ? " · " : ""}
+                <span className="sk-name">
+                  {game(`skills-short.${key}`)}
+                </span>{" "}
+                <span className="sk-value">
+                  {combinedSkillPercent(key, settings).toLocaleString(
+                    locale,
+                    { maximumFractionDigits: 2 },
+                  )}
+                  %
+                </span>
+              </span>
+            ))}
+          </small>
         </summary>
         <div className="player-settings-body">
           <div className="settings-grid settings-grid-primary">
