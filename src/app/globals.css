@@ -111,10 +111,37 @@ select {
   gap: 1.5rem;
 }
 .public-header {
+  position: relative;
   min-height: 4.5rem;
   border-bottom: 1px solid var(--border);
 }
-.public-header nav {
+.public-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.public-nav {
+  display: flex;
+  align-items: center;
+}
+.public-nav-toggle {
+  display: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+}
+.public-nav-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+.public-header-nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -910,13 +937,31 @@ select {
   }
 }
 @media (max-width: 42rem) {
-  .public-header,
   .player-summary-row1 {
     align-items: flex-start;
     flex-direction: column;
   }
-  .public-header {
-    padding: 1rem 0;
+  .public-nav-toggle {
+    display: inline-grid;
+  }
+  .public-header-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+  .public-header-nav[data-open="true"] {
+    display: flex;
+  }
+  .public-header-nav a {
+    text-align: center;
   }
   .player-settings summary small {
     padding-left: 1.1rem;
@@ -964,7 +1009,7 @@ select,
 .player-settings {
   width: min(74rem, calc(100% - 2rem));
 }
-.public-header nav a {
+.public-header-nav a {
   padding: 0.5rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -977,7 +1022,7 @@ select,
     color 150ms ease,
     background-color 150ms ease;
 }
-.public-header nav a:hover {
+.public-header-nav a:hover {
   border-color: var(--gold);
   background: var(--bg-panel);
   color: var(--gold-bright);

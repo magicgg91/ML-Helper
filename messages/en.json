@@ -393,7 +393,8 @@
   "Navigation": {
     "tools": "Tools",
     "guides": "Guides",
-    "admin": "Admin area"
+    "admin": "Admin area",
+    "menu": "Menu"
   },
   "Public": {
     "tools": "Tools",
@@ -644,7 +645,11 @@
         "status": "Status",
         "actions": "Actions"
       },
-      "types": { "all": "All", "guide": "Guide", "reference": "Reference table" },
+      "types": {
+        "all": "All",
+        "guide": "Guide",
+        "reference": "Reference table"
+      },
       "filter-type-label": "Filter by type",
       "no-results": "No result for this filter.",
       "statuses": {

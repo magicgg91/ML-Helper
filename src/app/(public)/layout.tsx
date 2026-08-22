@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "../../components/theme-toggle";
 import { LocaleToggle } from "../../components/locale-toggle";
+import { PublicNav } from "../../components/public-nav";
 import { getAvailableLocales } from "../../i18n/config";
 import { getTranslations } from "next-intl/server";
 
@@ -16,13 +17,19 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
         <Link className="brand" href="/">
           ML-Helper
         </Link>
-        <nav aria-label="Navigation principale">
-          <Link href="/tools">{navigation("tools")}</Link>
-          <Link href="/guides">{navigation("guides")}</Link>
-          <Link href="/contact">{t("contact")}</Link>
+        <div className="public-header-actions">
+          <PublicNav
+            navLabel="Navigation principale"
+            menuLabel={navigation("menu")}
+            links={[
+              { href: "/tools", label: navigation("tools") },
+              { href: "/guides", label: navigation("guides") },
+              { href: "/contact", label: t("contact") },
+            ]}
+          />
           <LocaleToggle locales={locales} />
           <ThemeToggle />
-        </nav>
+        </div>
       </header>
       {children}
       <footer className="public-footer">
