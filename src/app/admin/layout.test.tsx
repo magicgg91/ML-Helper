@@ -12,14 +12,17 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
 }));
+vi.mock("@/i18n/config", () => ({
+  getAvailableLocales: async () => ["en", "fr"],
+}));
 vi.mock("@/components/admin-nav", () => ({
   AdminNav: () => <nav>nav</nav>,
 }));
 vi.mock("@/components/admin-account-menu", () => ({
   AdminAccountMenu: () => <div>account</div>,
 }));
-vi.mock("@/components/server-locale-switcher", () => ({
-  ServerLocaleSwitcher: () => <select aria-label="locale" />,
+vi.mock("@/components/admin-locale-toggle", () => ({
+  AdminLocaleToggle: () => <div role="group">locale</div>,
 }));
 vi.mock("@/components/theme-toggle", () => ({
   ThemeToggle: () => <button type="button">theme</button>,
@@ -75,6 +78,7 @@ describe("AdminLayout", () => {
 
     expect(container.querySelector("header nav")).toBeInTheDocument();
     expect(container.querySelector('button[aria-label="Menu"]')).toBeNull();
+    expect(screen.getByRole("group")).toBeInTheDocument();
   });
 
   it("renders the page content unchanged when there is no admin session", async () => {
