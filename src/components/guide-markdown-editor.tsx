@@ -6,6 +6,14 @@ import {
   markdownRemarkPlugins,
 } from "../lib/markdown-plugins";
 import "@uiw/react-md-editor/markdown-editor.css";
+// react-md-editor's own CSS never defines --color-fg-default (only the
+// separate react-markdown-preview stylesheet does, scoped per
+// data-color-mode) — without it the editor's text color falls back to
+// whatever color it inherits from the page, i.e. the site's own dark-theme
+// text on top of the editor's forced-light background. Importing this
+// locks the editor's foreground to GitHub's light palette regardless of
+// the site's active theme.
+import "@uiw/react-markdown-preview/markdown.css";
 
 const markdownEditorHeight = 640;
 
