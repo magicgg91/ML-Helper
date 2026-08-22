@@ -6,6 +6,9 @@
   --bg-panel: #191d25;
   --bg-panel-raised: #20252f;
   --border: #2b313d;
+  /* Reserved for genuinely Legendary game data (rarity badges, item
+     highlights) — never a generic interface accent. Use --accent /
+     --accent-strong (violet) for buttons, links, focus states, hover. */
   --gold: #c9a04a;
   --gold-bright: #e0bb63;
   --emerald: #4a9179;
@@ -26,8 +29,8 @@
   --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
   --surface-muted: #252a34;
-  --accent: var(--gold);
-  --accent-strong: var(--gold-bright);
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
   color-scheme: dark;
@@ -36,7 +39,7 @@
 :root[data-theme="light"] {
   --bg: #e4e7eb;
   --bg-panel: #f0f2f5;
-  --bg-panel-raised: #ffffff;
+  --bg-panel-raised: #f6f7f9;
   --border: #c5cad2;
   --gold: #9b6f1e;
   --gold-bright: #704b0e;
@@ -53,8 +56,8 @@
   --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
   --surface-muted: #d9dde3;
-  --accent: var(--gold);
-  --accent-strong: var(--gold-bright);
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
   color-scheme: light;
@@ -71,7 +74,11 @@ body {
   color: var(--foreground);
   font-family: "IBM Plex Sans", sans-serif;
   background-image:
-    radial-gradient(ellipse at top left, rgb(201 160 74 / 6%), transparent 50%),
+    radial-gradient(
+      ellipse at top left,
+      rgb(139 107 184 / 6%),
+      transparent 50%
+    ),
     radial-gradient(
       ellipse at bottom right,
       rgb(74 145 121 / 6%),
@@ -87,7 +94,7 @@ main {
   border-radius: 1rem;
 }
 h1 {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 a {
   color: inherit;
@@ -138,8 +145,8 @@ select {
   font-size: 1rem;
 }
 .public-nav-toggle:hover {
-  border-color: var(--gold);
-  color: var(--gold-bright);
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 .public-header-nav {
   display: flex;
@@ -339,7 +346,7 @@ select {
 }
 .points-summary strong.stat-highlight,
 .settings-grid output.stat-highlight {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 select,
 input {
@@ -577,7 +584,7 @@ select {
 .ranking-scale-range {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .ranking-scale-target {
   font-size: 0.6rem;
@@ -991,7 +998,7 @@ h3,
   letter-spacing: 0.025em;
 }
 h1 {
-  background: linear-gradient(110deg, var(--gold-bright), var(--gold));
+  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
@@ -1023,9 +1030,9 @@ select,
     background-color 150ms ease;
 }
 .public-header-nav a:hover {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: var(--bg-panel);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .theme-toggle {
   display: inline-grid;
@@ -1041,8 +1048,8 @@ select,
   font-size: 1rem;
 }
 .theme-toggle:hover {
-  border-color: var(--gold);
-  color: var(--gold-bright);
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 .calculator-card,
 .player-settings > details,
@@ -1071,8 +1078,8 @@ select,
   user-select: none;
 }
 .num-stepper button:hover {
-  border-color: var(--gold);
-  color: var(--gold-bright);
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 .num-stepper button:first-child {
   border-right: 0;
@@ -1109,7 +1116,7 @@ select,
   font-size: 11.5px;
 }
 .total-box .value {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   font-size: 19px;
   font-weight: 600;
 }
@@ -1241,9 +1248,9 @@ button:disabled,
   color: var(--text);
 }
 .category-btn[aria-current="page"] {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: var(--bg-panel-raised);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .category-btn:disabled,
 .category-btn[aria-disabled="true"] {
@@ -1270,13 +1277,13 @@ button:disabled,
   font-weight: 600;
 }
 .guide-filter-chip:hover {
-  border-color: var(--gold);
+  border-color: var(--accent);
   color: var(--text);
 }
 .guide-filter-chip[aria-pressed="true"] {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: var(--bg-panel-raised);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 
 nav.tabs {
@@ -1306,7 +1313,7 @@ nav.tabs button:hover {
 nav.tabs button[aria-selected="true"] {
   border: 0;
   background: var(--bg-panel-raised);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
@@ -1370,7 +1377,7 @@ body > main h1 {
   text-decoration: none;
 }
 .admin-link-card:hover {
-  border-color: var(--gold);
+  border-color: var(--accent);
 }
 .admin-link-card span,
 .admin-empty {
@@ -1446,10 +1453,10 @@ body > main h1 {
   border-left: 1px solid var(--border);
 }
 .locale-toggle button:hover {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .locale-toggle button[aria-pressed="true"] {
-  background: var(--gold);
+  background: var(--accent);
   color: var(--bg);
 }
 .admin-account {
@@ -1637,9 +1644,9 @@ body > main h1 {
   color: var(--text);
 }
 .guide-category-chip[data-selected="true"] {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: var(--bg-panel-raised);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .guide-cover-preview {
   width: min(24rem, 100%);
@@ -1701,7 +1708,7 @@ body > main h1 {
   border-radius: 999px;
   background: color-mix(in srgb, var(--bg) 65%, transparent);
   backdrop-filter: blur(4px);
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -1771,9 +1778,9 @@ body > main h1 {
   color: var(--text-dim);
 }
 .editor-action-primary {
-  border-color: var(--gold);
-  background: color-mix(in srgb, var(--gold) 16%, var(--bg-panel-raised));
-  color: var(--gold-bright);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-panel-raised));
+  color: var(--accent-strong);
 }
 .editor-action-review {
   border-color: var(--violet);
@@ -1795,7 +1802,7 @@ body > main h1 {
   flex: 1 1 16rem;
   margin: 0;
   padding: 0.45rem 0.65rem;
-  border-left: 3px solid var(--gold);
+  border-left: 3px solid var(--accent);
   color: var(--text-dim);
   font-size: 0.8rem;
 }
@@ -1961,7 +1968,7 @@ body > main h1 {
 .home-feature-copy .primary-link {
   display: inline-flex;
   margin-top: 0.8rem;
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   font-weight: 700;
 }
 
@@ -1984,7 +1991,7 @@ body > main h1 {
     transform 160ms ease;
 }
 .tool-category-card:not([data-disabled]):hover {
-  border-color: var(--gold);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
 .tool-category-image {
@@ -2003,7 +2010,7 @@ body > main h1 {
   font-size: 1.12rem;
 }
 .tool-count {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   font-family: "JetBrains Mono", monospace;
   font-size: 0.78rem;
 }
@@ -2033,7 +2040,7 @@ body > main h1 {
 }
 .reference-cross-link {
   justify-self: start;
-  color: var(--gold-bright);
+  color: var(--accent-strong);
   font-weight: 700;
 }
 
@@ -2091,7 +2098,7 @@ body > main h1 {
   gap: 1rem;
 }
 .level-up-chest {
-  color: var(--gold-bright);
+  color: var(--accent-strong);
 }
 .level-up-chest-empty {
   color: var(--text-faint);

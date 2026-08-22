@@ -15,7 +15,7 @@
   --color-card-foreground: var(--text);
   --color-popover: var(--bg-panel-raised);
   --color-popover-foreground: var(--text);
-  --color-primary: var(--gold-bright);
+  --color-primary: var(--accent-strong);
   --color-primary-foreground: var(--bg);
   --color-secondary: var(--bg-panel-raised);
   --color-secondary-foreground: var(--text);
@@ -28,7 +28,7 @@
   --color-success: var(--emerald-bright);
   --color-border: var(--border);
   --color-input: var(--border);
-  --color-ring: var(--gold);
+  --color-ring: var(--accent);
   --radius-lg: 0.6rem;
   --radius-md: calc(0.6rem - 2px);
   --radius-sm: calc(0.6rem - 4px);
