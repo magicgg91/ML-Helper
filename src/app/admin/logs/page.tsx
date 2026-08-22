@@ -3,6 +3,15 @@ import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { LogPurgeForm } from "@/components/log-purge-form";
 import { can } from "@/auth/permissions";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 export default async function LogsPage() {
   const session = await requireCapability("logs.view");
   const t = await getTranslations("admin.logs");
@@ -12,29 +21,37 @@ export default async function LogsPage() {
     take: 200,
   });
   return (
-    <main>
+    <main className="flex flex-col gap-4">
       <h1>{t("title")}</h1>
       {can(session.user.role, "logs.purge") && <LogPurgeForm />}
-      <table>
-        <thead>
-          <tr>
-            <th>{t("actor")}</th>
-            <th>{t("actor-role")}</th>
-            <th>{t("message")}</th>
-            <th>{t("date")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td>{log.user.username}</td>
-              <td>{log.actorRole}</td>
-              <td>{log.message}</td>
-              <td>{log.createdAt.toISOString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("actor")}</TableHead>
+                <TableHead>{t("actor-role")}</TableHead>
+                <TableHead>{t("message")}</TableHead>
+                <TableHead>{t("date")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="font-medium">
+                    {log.user.username}
+                  </TableCell>
+                  <TableCell>{log.actorRole}</TableCell>
+                  <TableCell className="whitespace-normal">
+                    {log.message}
+                  </TableCell>
+                  <TableCell>{log.createdAt.toISOString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </main>
   );
 }

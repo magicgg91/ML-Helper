@@ -570,6 +570,7 @@
   },
   "admin": {
     "title": "Administration",
+    "view-site": "Voir le site",
     "navigation-label": "Navigation administration",
     "navigation": {
       "dashboard": "Tableau de bord",

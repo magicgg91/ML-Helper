@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 describe("CalculatorVisibilityList", () => {
-  it("gives the edit link and toggle button the polished editor-action styling", () => {
+  it("renders the edit link and toggle button as shadcn Button components", () => {
     render(
       <CalculatorVisibilityList
         rows={[
@@ -23,13 +23,13 @@ describe("CalculatorVisibilityList", () => {
         ]}
       />,
     );
-    expect(screen.getByRole("link", { name: "Modifier" })).toHaveClass(
-      "editor-action",
-      "editor-action-primary",
+    expect(screen.getByRole("link", { name: "Modifier" })).toHaveAttribute(
+      "data-slot",
+      "button",
     );
     expect(
       screen.getByRole("button", { name: "Désactiver" }),
-    ).toHaveClass("editor-action", "editor-action-secondary");
+    ).toHaveAttribute("data-slot", "button");
   });
 
   it("disables an active calculator and reflects the saved state", async () => {
