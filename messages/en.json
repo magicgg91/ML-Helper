@@ -21,6 +21,18 @@
       "salvager": "Salvager",
       "rusher": "Speed"
     },
+    "skills-short": {
+      "striker": "Atk",
+      "brave": "Brv",
+      "scavenger": "Scv",
+      "guardian": "Def",
+      "fearless": "Frl",
+      "prosperous": "Pro",
+      "recruiter": "Rcr",
+      "cautious": "Cau",
+      "salvager": "Slv",
+      "rusher": "Rsh"
+    },
     "templars": {
       "striker": "Attack",
       "guardian": "Defense",

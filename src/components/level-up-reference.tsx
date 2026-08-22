@@ -49,7 +49,13 @@ function LevelTable({
                     levelUpTroopsAt(level, league, parameters) ?? 0,
                   )}
                 </td>
-                <td>{chest === null ? "—" : t(`chests.${chest}`)}</td>
+                <td
+                  className={
+                    chest === null ? "level-up-chest-empty" : "level-up-chest"
+                  }
+                >
+                  {chest === null ? "—" : t(`chests.${chest}`)}
+                </td>
               </tr>
             );
           })}

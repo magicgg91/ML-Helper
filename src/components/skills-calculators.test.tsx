@@ -53,6 +53,11 @@ describe("SkillsCalculators", () => {
     expect(screen.getByTestId("gem-budget-distribution")).toHaveTextContent(
       "1 gemme 4★ + 2 gemmes 3★",
     );
+    const obtainedStat = screen
+      .getByText("Stat obtenue")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    expect(obtainedStat).toHaveClass("value", "emerald");
   });
   it("keeps the five Templar types independent", () => {
     renderWithIntl(<SkillsCalculators />);

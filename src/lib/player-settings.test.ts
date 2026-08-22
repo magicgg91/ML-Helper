@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   allocateSkillPoints,
   availableSkillPoints,
+  combinedSkillPercent,
   emptySkills,
   skillPercent,
 } from "./player-settings";
@@ -44,5 +45,31 @@ describe("player skill-point planning", () => {
     result.fearless = 100;
     expect(skillPercent("fearless", result, "legend")).toBe(75);
     expect(skillPercent("fearless", result, "diamond")).toBe(90);
+  });
+});
+
+describe("combinedSkillPercent", () => {
+  it("adds equipment and skill-points percentages for an uncapped skill", () => {
+    const equipmentSkills = { ...emptySkills(), striker: 12 };
+    const skillPoints = allocateSkillPoints(emptySkills(), "striker", 5, 6, "gold");
+    expect(
+      combinedSkillPercent("striker", {
+        equipmentSkills,
+        skillPoints,
+        league: "gold",
+      }),
+    ).toBe(12 + skillPercent("striker", skillPoints, "gold"));
+  });
+
+  it("caps the combined total at 90% for Bravoure/Intrépide even if the sum exceeds it", () => {
+    const equipmentSkills = { ...emptySkills(), fearless: 80 };
+    const skillPoints = { ...emptySkills(), fearless: 20 };
+    expect(
+      combinedSkillPercent("fearless", {
+        equipmentSkills,
+        skillPoints,
+        league: "diamond",
+      }),
+    ).toBe(90);
   });
 });
