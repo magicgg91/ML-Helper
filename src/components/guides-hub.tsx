@@ -53,10 +53,13 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
             placeholder={t("search.placeholder")}
           />
         </label>
-        <nav className="category-nav" aria-label={t("filters.guides-label")}>
+        <nav
+          className="guide-filter-nav"
+          aria-label={t("filters.guides-label")}
+        >
           {["all", ...guideCategories].map((category) => (
             <button
-              className="category-btn"
+              className="guide-filter-chip"
               type="button"
               aria-pressed={guideCategory === category}
               key={category}
@@ -76,20 +79,25 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                 href={`/guides/${guide.slug}`}
                 key={guide.id}
               >
-                {guide.coverImage && (
-                  // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
-                  <img
-                    src={guide.coverImage}
-                    alt=""
-                    className="guide-list-cover"
-                  />
-                )}
+                <div className="guide-list-media">
+                  {guide.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
+                    <img
+                      src={guide.coverImage}
+                      alt=""
+                      className="guide-list-cover"
+                    />
+                  ) : null}
+                  {guide.categories[0] && (
+                    <span className="guide-list-badge">
+                      {t(`categories.${guide.categories[0]}`)}
+                      {guide.categories.length > 1
+                        ? ` +${guide.categories.length - 1}`
+                        : ""}
+                    </span>
+                  )}
+                </div>
                 <div className="guide-list-copy">
-                  <p className="eyebrow">
-                    {guide.categories
-                      .map((category) => t(`categories.${category}`))
-                      .join(" · ")}
-                  </p>
                   <h3>{guide.title}</h3>
                   <p>{guide.excerpt}</p>
                   <span className="guide-list-cta">{t("read-guide")}</span>
@@ -111,12 +119,12 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
       >
         <h2 id="reference-section-title">{t("sections.references")}</h2>
         <nav
-          className="category-nav"
+          className="guide-filter-nav"
           aria-label={t("filters.references-label")}
         >
           {["all", "combat", "expedition"].map((category) => (
             <button
-              className="category-btn"
+              className="guide-filter-chip"
               type="button"
               aria-pressed={referenceCategory === category}
               key={category}

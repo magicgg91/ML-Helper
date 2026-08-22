@@ -76,6 +76,52 @@ describe("GuidesHub", () => {
     expect(screen.getByText("Guide combat")).toBeVisible();
   });
 
+  it("renders both category filters as directly clickable chips, no dropdown", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    const guideFilters = screen.getByRole("navigation", {
+      name: "Filtrer les guides par catégorie",
+    });
+    const allChip = within(guideFilters).getByRole("button", {
+      name: "Tout",
+    });
+    expect(allChip).toHaveClass("guide-filter-chip");
+    expect(allChip).toHaveAttribute("aria-pressed", "true");
+
+    const combatChip = within(guideFilters).getByRole("button", {
+      name: "Combat & conquête",
+    });
+    expect(combatChip).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(combatChip);
+    expect(combatChip).toHaveAttribute("aria-pressed", "true");
+    expect(allChip).toHaveAttribute("aria-pressed", "false");
+
+    const referenceFilters = screen.getByRole("navigation", {
+      name: "Filtrer les référentiels par catégorie",
+    });
+    for (const chip of within(referenceFilters).getAllByRole("button")) {
+      expect(chip).toHaveClass("guide-filter-chip");
+    }
+  });
+
   it("shows a multi-category guide through every assigned category filter", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
@@ -127,6 +173,95 @@ describe("GuidesHub", () => {
     expect(card).toHaveAttribute("href", "/guides/combat-guide");
     expect(card).toHaveClass("guide-list-card");
     expect(within(card).getByText("Lire le guide")).toBeVisible();
+  });
+
+  it("renders the cover image inside a full-width media wrapper", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: "https://example.com/combat.jpg",
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const card = screen.getByRole("link", { name: /Guide combat/ });
+    const media = card.querySelector(".guide-list-media");
+    expect(media).toBeInTheDocument();
+    expect(media?.querySelector("img.guide-list-cover")).toHaveAttribute(
+      "src",
+      "https://example.com/combat.jpg",
+    );
+  });
+
+  it("keeps the media wrapper when a guide has no cover image", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "two",
+              slug: "clan-guide",
+              categories: ["clan"],
+              title: "Guide clan",
+              excerpt: "Jouer ensemble",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const card = screen.getByRole("link", { name: /Guide clan/ });
+    const media = card.querySelector(".guide-list-media");
+    expect(media).toBeInTheDocument();
+    expect(media?.querySelector("img")).toBeNull();
+  });
+
+  it("shows the guide's primary category as a badge on the cover", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat", "clan"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: "https://example.com/combat.jpg",
+            },
+            {
+              id: "two",
+              slug: "clan-guide",
+              categories: ["clan"],
+              title: "Guide clan",
+              excerpt: "Jouer ensemble",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const multiCategoryCard = screen.getByRole("link", {
+      name: /Guide combat/,
+    });
+    expect(
+      within(multiCategoryCard).getByText("Combat & conquête +1"),
+    ).toBeVisible();
+
+    const singleCategoryCard = screen.getByRole("link", {
+      name: /Guide clan/,
+    });
+    expect(
+      within(singleCategoryCard).getByText("Clan & stratégie collective"),
+    ).toBeVisible();
   });
 
   it("uses the canonical reference routes", () => {
