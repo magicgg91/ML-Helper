@@ -41,6 +41,13 @@ export function GuideStatusList({
   const t = useTranslations("admin.guides");
   const [guides, setGuides] = useState(rows);
   const [message, setMessage] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "guide" | "reference">(
+    "all",
+  );
+  const visibleGuides =
+    typeFilter === "all"
+      ? guides
+      : guides.filter((guide) => (guide.type ?? "guide") === typeFilter);
   async function changeStatus(id: string, status: string) {
     const response = await fetch(`/api/admin/guides/${id}/status`, {
       method: "PATCH",
@@ -85,112 +92,140 @@ export function GuideStatusList({
   }
   return (
     <>
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.title")}</TableHead>
-                <TableHead>{t("columns.type")}</TableHead>
-                <TableHead>{t("columns.author")}</TableHead>
-                <TableHead>{t("columns.created")}</TableHead>
-                <TableHead>{t("columns.updated")}</TableHead>
-                <TableHead>{t("columns.status")}</TableHead>
-                <TableHead className="text-right">
-                  {t("columns.actions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {guides.map((guide) => (
-                <TableRow
-                  key={guide.id}
-                  className={guide.active ? undefined : "opacity-60"}
-                  title={guide.active ? undefined : t("disabled-tooltip")}
-                >
-                  <TableCell className="font-medium">
-                    {guide.title || guide.slug}
-                  </TableCell>
-                  <TableCell>{t(`types.${guide.type ?? "guide"}`)}</TableCell>
-                  <TableCell>{guide.author}</TableCell>
-                  <TableCell>{guide.createdAt}</TableCell>
-                  <TableCell>{guide.updatedAt}</TableCell>
-                  <TableCell>
-                    {guide.type === "reference" ? (
-                      t(guide.active ? "statuses.active" : "statuses.inactive")
-                    ) : (
-                      <select
-                        className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
-                        aria-label={t("status-label", {
-                          title: guide.title || guide.slug,
-                        })}
-                        value={guide.status}
-                        disabled={!canWrite}
-                        onChange={(event) =>
-                          changeStatus(guide.id, event.target.value)
-                        }
-                      >
-                        <option value="draft">{t("statuses.draft")}</option>
-                        <option value="pending_review">
-                          {t("statuses.pending_review")}
-                        </option>
-                        {(canPublish || guide.status === "published") && (
-                          <option value="published" disabled={!canPublish}>
-                            {t("statuses.published")}
-                          </option>
-                        )}
-                      </select>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      {canWrite && (
-                        <Button
-                          asChild
-                          size="icon"
-                          variant="secondary"
-                          title={t("edit")}
-                        >
-                          <Link
-                            href={guide.editHref ?? `/admin/guides/${guide.id}`}
-                            aria-label={t("edit")}
-                          >
-                            <Pencil aria-hidden="true" />
-                          </Link>
-                        </Button>
-                      )}
-                      {canWrite && (
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() =>
-                            toggle(guide.id, !guide.active, guide.type)
-                          }
-                          title={t(guide.active ? "disable" : "enable")}
-                          aria-label={t(guide.active ? "disable" : "enable")}
-                        >
-                          <Power aria-hidden="true" />
-                        </Button>
-                      )}
-                      {canDelete && guide.type !== "reference" && (
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          onClick={() => remove(guide)}
-                          title={t("delete")}
-                          aria-label={t("delete")}
-                        >
-                          <Trash2 aria-hidden="true" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+      <div
+        role="group"
+        aria-label={t("filter-type-label")}
+        className="mb-2 flex items-center gap-2"
+      >
+        {(["all", "guide", "reference"] as const).map((type) => (
+          <Button
+            key={type}
+            type="button"
+            size="sm"
+            variant={typeFilter === type ? "secondary" : "outline"}
+            aria-pressed={typeFilter === type}
+            onClick={() => setTypeFilter(type)}
+          >
+            {t(`types.${type}`)}
+          </Button>
+        ))}
+      </div>
+      {visibleGuides.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t("no-results")}</p>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("columns.title")}</TableHead>
+                  <TableHead>{t("columns.type")}</TableHead>
+                  <TableHead>{t("columns.author")}</TableHead>
+                  <TableHead>{t("columns.created")}</TableHead>
+                  <TableHead>{t("columns.updated")}</TableHead>
+                  <TableHead>{t("columns.status")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("columns.actions")}
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {visibleGuides.map((guide) => (
+                  <TableRow
+                    key={guide.id}
+                    className={guide.active ? undefined : "opacity-60"}
+                    title={guide.active ? undefined : t("disabled-tooltip")}
+                  >
+                    <TableCell className="font-medium">
+                      {guide.title || guide.slug}
+                    </TableCell>
+                    <TableCell>{t(`types.${guide.type ?? "guide"}`)}</TableCell>
+                    <TableCell>{guide.author}</TableCell>
+                    <TableCell>{guide.createdAt}</TableCell>
+                    <TableCell>{guide.updatedAt}</TableCell>
+                    <TableCell>
+                      {guide.type === "reference" ? (
+                        t(
+                          guide.active
+                            ? "statuses.active"
+                            : "statuses.inactive",
+                        )
+                      ) : (
+                        <select
+                          className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
+                          aria-label={t("status-label", {
+                            title: guide.title || guide.slug,
+                          })}
+                          value={guide.status}
+                          disabled={!canWrite}
+                          onChange={(event) =>
+                            changeStatus(guide.id, event.target.value)
+                          }
+                        >
+                          <option value="draft">{t("statuses.draft")}</option>
+                          <option value="pending_review">
+                            {t("statuses.pending_review")}
+                          </option>
+                          {(canPublish || guide.status === "published") && (
+                            <option value="published" disabled={!canPublish}>
+                              {t("statuses.published")}
+                            </option>
+                          )}
+                        </select>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        {canWrite && (
+                          <Button
+                            asChild
+                            size="icon"
+                            variant="secondary"
+                            title={t("edit")}
+                          >
+                            <Link
+                              href={
+                                guide.editHref ?? `/admin/guides/${guide.id}`
+                              }
+                              aria-label={t("edit")}
+                            >
+                              <Pencil aria-hidden="true" />
+                            </Link>
+                          </Button>
+                        )}
+                        {canWrite && (
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() =>
+                              toggle(guide.id, !guide.active, guide.type)
+                            }
+                            title={t(guide.active ? "disable" : "enable")}
+                            aria-label={t(guide.active ? "disable" : "enable")}
+                          >
+                            <Power aria-hidden="true" />
+                          </Button>
+                        )}
+                        {canDelete && guide.type !== "reference" && (
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            onClick={() => remove(guide)}
+                            title={t("delete")}
+                            aria-label={t("delete")}
+                          >
+                            <Trash2 aria-hidden="true" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
       {message && (
         <p className="mt-2 text-sm text-muted-foreground" role="status">
           {message}

@@ -649,7 +649,9 @@
         "status": "Statut",
         "actions": "Actions"
       },
-      "types": { "guide": "Guide", "reference": "Référentiel" },
+      "types": { "all": "Tous", "guide": "Guide", "reference": "Référentiel" },
+      "filter-type-label": "Filtrer par type",
+      "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",
         "pending_review": "En review",

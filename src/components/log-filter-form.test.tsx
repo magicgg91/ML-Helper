@@ -42,11 +42,10 @@ describe("LogFilterForm", () => {
   });
 
   it("exposes a reset link that clears every filter", () => {
-    render(
-      <LogFilterForm filters={{ user: "alice" }} t={t} />,
+    render(<LogFilterForm filters={{ user: "alice" }} t={t} />);
+    expect(screen.getByRole("link", { name: "Réinitialiser" })).toHaveAttribute(
+      "href",
+      "/admin/logs",
     );
-    expect(
-      screen.getByRole("link", { name: "Réinitialiser" }),
-    ).toHaveAttribute("href", "/admin/logs");
   });
 });

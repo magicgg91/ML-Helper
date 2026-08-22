@@ -15,6 +15,18 @@ const row: GuideAdminRow = {
   type: "guide",
 };
 
+const referenceRow: GuideAdminRow = {
+  id: "combat-equipment",
+  slug: "combat-equipment",
+  title: "Équipements de Combat",
+  author: "—",
+  createdAt: "—",
+  updatedAt: "—",
+  status: "reference",
+  active: true,
+  type: "reference",
+};
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -68,6 +80,50 @@ describe("GuideStatusList", () => {
     expect(
       await screen.findByText("Impossible de modifier la visibilité."),
     ).toBeVisible();
+  });
+
+  it("filters rows by type with directly clickable buttons, no dropdown", () => {
+    render(
+      <GuideStatusList
+        rows={[row, referenceRow]}
+        canPublish={false}
+        canDelete={true}
+        canWrite={true}
+      />,
+    );
+
+    expect(screen.getByText("Premiers pas")).toBeVisible();
+    expect(screen.getByText("Équipements de Combat")).toBeVisible();
+    const typeFilterGroup = screen.getByRole("group", {
+      name: "Filtrer par type",
+    });
+    expect(typeFilterGroup.querySelector("select")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Guide" }));
+    expect(screen.getByText("Premiers pas")).toBeVisible();
+    expect(screen.queryByText("Équipements de Combat")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Référentiel" }));
+    expect(screen.queryByText("Premiers pas")).toBeNull();
+    expect(screen.getByText("Équipements de Combat")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Tous" }));
+    expect(screen.getByText("Premiers pas")).toBeVisible();
+    expect(screen.getByText("Équipements de Combat")).toBeVisible();
+  });
+
+  it("shows a no-results message when a filter matches nothing", () => {
+    render(
+      <GuideStatusList
+        rows={[row]}
+        canPublish={false}
+        canDelete={true}
+        canWrite={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Référentiel" }));
+    expect(screen.getByText("Aucun résultat pour ce filtre.")).toBeVisible();
+    expect(screen.queryByText("Premiers pas")).toBeNull();
   });
 
   it("asks for confirmation before deleting a guide", () => {
