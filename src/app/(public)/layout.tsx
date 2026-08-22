@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { ThemeToggle } from "../../components/theme-toggle";
-import { ServerLocaleSwitcher } from "../../components/server-locale-switcher";
+import { LocaleToggle } from "../../components/locale-toggle";
+import { getAvailableLocales } from "../../i18n/config";
 import { getTranslations } from "next-intl/server";
 
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
-  const t = await getTranslations("Public");
-  const navigation = await getTranslations("Navigation");
+  const [t, navigation, locales] = await Promise.all([
+    getTranslations("Public"),
+    getTranslations("Navigation"),
+    getAvailableLocales(),
+  ]);
   return (
     <div className="public-shell">
       <header className="public-header">
@@ -16,7 +20,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
           <Link href="/tools">{navigation("tools")}</Link>
           <Link href="/guides">{navigation("guides")}</Link>
           <Link href="/contact">{t("contact")}</Link>
-          <ServerLocaleSwitcher />
+          <LocaleToggle locales={locales} />
           <ThemeToggle />
         </nav>
       </header>

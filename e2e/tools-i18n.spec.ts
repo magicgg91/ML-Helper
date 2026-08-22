@@ -4,7 +4,10 @@ async function selectLanguage(
   page: import("@playwright/test").Page,
   locale: string,
 ) {
-  await page.getByLabel(/Language|Langue/).selectOption(locale);
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: locale.toUpperCase() })
+    .click();
 }
 
 test("renders every tool category in French and English", async ({ page }) => {

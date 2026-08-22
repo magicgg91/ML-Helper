@@ -649,7 +649,9 @@
         "status": "Statut",
         "actions": "Actions"
       },
-      "types": { "guide": "Guide", "reference": "Référentiel" },
+      "types": { "all": "Tous", "guide": "Guide", "reference": "Référentiel" },
+      "filter-type-label": "Filtrer par type",
+      "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",
         "pending_review": "En review",
@@ -852,7 +854,12 @@
       "end": "Date de fin",
       "purge": "Purger la plage",
       "purged": "Historique purgé",
-      "error": "Impossible de purger l’historique"
+      "error": "Impossible de purger l’historique",
+      "filter-user": "Utilisateur",
+      "filter-message": "Mot dans le message",
+      "filter-apply": "Filtrer",
+      "filter-reset": "Réinitialiser",
+      "no-results": "Aucune entrée ne correspond aux filtres."
     },
     "content": {
       "eyebrow": "Page institutionnelle",

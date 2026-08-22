@@ -110,7 +110,10 @@ test("tool routes alone expose persistent player settings", async ({
     .locator(".home-carousel")
     .evaluate((node) => getComputedStyle(node, "::after").backgroundImage);
   expect(lightOverlay).toContain("240, 242, 245");
-  await page.getByLabel(/Language|Langue/).selectOption("en");
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: "EN" })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Plan your next progression." }),
   ).toBeVisible();
@@ -118,7 +121,10 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
-  await page.getByLabel(/Language|Langue/).selectOption("fr");
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: "FR" })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();

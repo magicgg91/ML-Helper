@@ -644,7 +644,9 @@
         "status": "Status",
         "actions": "Actions"
       },
-      "types": { "guide": "Guide", "reference": "Reference table" },
+      "types": { "all": "All", "guide": "Guide", "reference": "Reference table" },
+      "filter-type-label": "Filter by type",
+      "no-results": "No result for this filter.",
       "statuses": {
         "draft": "Draft",
         "pending_review": "Pending review",
@@ -848,7 +850,12 @@
       "end": "End date",
       "purge": "Purge range",
       "purged": "History purged",
-      "error": "Unable to purge history"
+      "error": "Unable to purge history",
+      "filter-user": "User",
+      "filter-message": "Word in message",
+      "filter-apply": "Filter",
+      "filter-reset": "Reset",
+      "no-results": "No entry matches the filters."
     },
     "content": {
       "eyebrow": "Institutional page",

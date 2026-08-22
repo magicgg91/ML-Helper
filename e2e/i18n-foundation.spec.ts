@@ -8,11 +8,11 @@ test("switches the public navigation language and falls back to English", async 
   // shell and therefore isolates the locale switch behavior.
   await page.goto("/contact");
 
-  const language = page.getByLabel(/Language|Langue/);
-  await language.selectOption("en");
+  const language = page.getByRole("group", { name: /Language|Langue/ });
+  await language.getByRole("button", { name: "EN" }).click();
   await expect(page.getByRole("link", { name: "Tools" })).toBeVisible();
 
-  await language.selectOption("fr");
+  await language.getByRole("button", { name: "FR" }).click();
   await expect(page.getByRole("link", { name: "Outils" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin area" })).toHaveCount(0);
 });
