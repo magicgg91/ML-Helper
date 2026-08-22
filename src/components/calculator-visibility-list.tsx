@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Power } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -99,18 +100,27 @@ export function CalculatorVisibilityList({
                   <TableCell>
                     <div className="flex justify-end gap-2">
                       {canEdit && (
-                        <Button asChild size="sm" variant="secondary">
-                          <Link href={row.editHref}>{t("edit")}</Link>
+                        <Button
+                          asChild
+                          size="icon"
+                          variant="secondary"
+                          title={t("edit")}
+                        >
+                          <Link href={row.editHref} aria-label={t("edit")}>
+                            <Pencil aria-hidden="true" />
+                          </Link>
                         </Button>
                       )}
                       {canToggle && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
                           disabled={saving === row.id}
                           onClick={() => toggle(row)}
+                          title={t(row.active ? "disable" : "enable")}
+                          aria-label={t(row.active ? "disable" : "enable")}
                         >
-                          {t(row.active ? "disable" : "enable")}
+                          <Power aria-hidden="true" />
                         </Button>
                       )}
                     </div>

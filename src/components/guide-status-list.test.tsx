@@ -33,10 +33,17 @@ describe("GuideStatusList", () => {
     const edit = screen.getByRole("link", { name: "Éditer" });
     expect(edit).toHaveAttribute("data-slot", "button");
     expect(edit).toHaveAttribute("href", "/admin/guides/guide-1");
+    expect(edit).toHaveAttribute("title", "Éditer");
+    expect(edit.querySelector("svg")).toBeInTheDocument();
     const disable = screen.getByRole("button", { name: "Désactiver" });
     expect(disable).toHaveAttribute("data-slot", "button");
+    expect(disable).toHaveAttribute("title", "Désactiver");
+    expect(disable.querySelector("svg")).toBeInTheDocument();
     const remove = screen.getByRole("button", { name: "Supprimer" });
     expect(remove).toHaveAttribute("data-slot", "button");
+    expect(remove).toHaveAttribute("title", "Supprimer");
+    expect(remove.querySelector("svg")).toBeInTheDocument();
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("toggles visibility and reports a failure without crashing", async () => {
