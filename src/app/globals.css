@@ -119,6 +119,7 @@ select {
 }
 .public-header {
   position: relative;
+  z-index: 30;
   min-height: 4.5rem;
   border-bottom: 1px solid var(--border);
 }
