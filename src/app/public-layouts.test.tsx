@@ -17,6 +17,10 @@ vi.mock("../i18n/config", () => ({
 }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
+  getLocale: async () => "fr",
+}));
+vi.mock("@/lib/prisma", () => ({
+  prisma: { guide: { findMany: vi.fn().mockResolvedValue([]) } },
 }));
 vi.mock("../lib/calculators-server", () => ({
   getCalculatorAvailability: async () => ({
@@ -39,10 +43,12 @@ afterEach(cleanup);
 describe("public layouts", () => {
   it("keeps player settings out of general public pages", async () => {
     render(
-      await PublicLayout({
-        children: <p>Accueil</p>,
-        params: Promise.resolve({}),
-      }),
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        {await PublicLayout({
+          children: <p>Accueil</p>,
+          params: Promise.resolve({}),
+        })}
+      </NextIntlClientProvider>,
     );
 
     expect(screen.queryByText("Paramètres du joueur")).not.toBeInTheDocument();
@@ -51,10 +57,12 @@ describe("public layouts", () => {
 
   it("exposes the main sections as real links in the header nav", async () => {
     render(
-      await PublicLayout({
-        children: <p>Accueil</p>,
-        params: Promise.resolve({}),
-      }),
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        {await PublicLayout({
+          children: <p>Accueil</p>,
+          params: Promise.resolve({}),
+        })}
+      </NextIntlClientProvider>,
     );
 
     const nav = screen.getByRole("navigation", {

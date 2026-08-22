@@ -2,21 +2,36 @@ import Link from "next/link";
 import { ThemeToggle } from "../../components/theme-toggle";
 import { LocaleToggle } from "../../components/locale-toggle";
 import { PublicNav } from "../../components/public-nav";
+import { SiteSearch } from "../../components/site-search";
 import { getAvailableLocales } from "../../i18n/config";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { prisma } from "@/lib/prisma";
+import { localizedText } from "@/lib/translations";
 
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
-  const [t, navigation, locales] = await Promise.all([
+  const [t, navigation, locales, locale, guides] = await Promise.all([
     getTranslations("Public"),
     getTranslations("Navigation"),
     getAvailableLocales(),
+    getLocale(),
+    prisma.guide.findMany({
+      where: { status: "published", active: true },
+      orderBy: { publishedAt: "desc" },
+    }),
   ]);
+  const searchGuides = guides.map((guide) => ({
+    id: guide.id,
+    slug: guide.slug,
+    title: localizedText(guide.title, locale),
+    excerpt: localizedText(guide.excerpt, locale),
+  }));
   return (
     <div className="public-shell">
       <header className="public-header">
         <Link className="brand" href="/">
           ML-Helper
         </Link>
+        <SiteSearch guides={searchGuides} />
         <div className="public-header-actions">
           <PublicNav
             navLabel="Navigation principale"

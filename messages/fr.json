@@ -401,6 +401,17 @@
     "guides": "Guides",
     "menu": "Menu"
   },
+  "search": {
+    "label": "Rechercher sur le site",
+    "placeholder": "Guides, référentiels, outils…",
+    "results-label": "Résultats de recherche",
+    "no-results": "Aucun résultat.",
+    "types": {
+      "guide": "Guide",
+      "reference": "Référentiel",
+      "tool": "Outil"
+    }
+  },
   "Public": {
     "tools": "Outils",
     "guides": "Guides",
@@ -455,10 +466,7 @@
     },
     "filters": {
       "guides-label": "Filtrer les guides par catégorie",
-      "references-label": "Filtrer les référentiels par catégorie",
-      "all": "Tout",
-      "combat": "Combat",
-      "expedition": "Expédition"
+      "all": "Tout"
     },
     "categories": {
       "debuter": "Débuter & progresser",
@@ -469,10 +477,6 @@
       "expeditions": "Expéditions",
       "evenements": "Événements & classement",
       "clan": "Clan & stratégie collective"
-    },
-    "search": {
-      "label": "Rechercher dans les guides",
-      "placeholder": "Rechercher par titre, résumé ou catégorie…"
     },
     "read-guide": "Lire le guide",
     "open-reference": "Consulter le référentiel",

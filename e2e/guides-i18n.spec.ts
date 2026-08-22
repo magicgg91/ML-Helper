@@ -11,26 +11,64 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
   await expect(document).toHaveAttribute("lang", locale);
 }
 
-test("translates the guides hub and keeps search limited to guides", async ({
+test("shows every reference table with no category filter on the guides hub", async ({
   page,
 }) => {
   await page.goto("/guides");
   await switchLocale(page, "fr");
   await expect(
-    page.getByRole("searchbox", { name: "Rechercher dans les guides" }),
-  ).toBeVisible();
-  await expect(
     page.getByRole("heading", { name: "Référentiels" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: /référentiels/i }),
+  ).toHaveCount(0);
+  await expect(page.getByText("Équipements de Combat")).toBeVisible();
+  await expect(page.getByText("Équipement d’Expédition")).toBeVisible();
 
   await switchLocale(page, "en");
-  const search = page.getByRole("searchbox", { name: "Search guides" });
-  await search.fill("does not exist");
-  await expect(page.getByText("No guide matches these filters.")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Reference tables" }),
   ).toBeVisible();
   await expect(page.getByText("Combat Equipment")).toBeVisible();
+  await expect(page.getByText("Expedition Equipment")).toBeVisible();
+});
+
+test("finds a guide, a reference table and a tool from the site-wide search on any page", async ({
+  page,
+}) => {
+  await page.goto("/tools");
+  await switchLocale(page, "fr");
+  const search = page.getByRole("searchbox", {
+    name: "Rechercher sur le site",
+  });
+
+  await search.fill("visible");
+  await expect(
+    page.getByRole("link", { name: /Guide visible/ }),
+  ).toHaveAttribute("href", "/guides/guide-visible");
+
+  await search.fill("équipements de combat");
+  await expect(
+    page.getByRole("link", { name: /Équipements de Combat/ }),
+  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
+
+  await search.fill("gemmes");
+  await expect(page.getByRole("link", { name: /Gemmes/ })).toHaveAttribute(
+    "href",
+    "/tools/competences",
+  );
+
+  await search.fill("introuvable");
+  await expect(page.getByText("Aucun résultat.")).toBeVisible();
+
+  await switchLocale(page, "en");
+  const searchEn = page.getByRole("searchbox", {
+    name: "Search the site",
+  });
+  await searchEn.fill("visible");
+  await expect(
+    page.getByRole("link", { name: /Visible guide/ }),
+  ).toHaveAttribute("href", "/guides/guide-visible");
 });
 
 test("translates the interface around a localized published guide", async ({

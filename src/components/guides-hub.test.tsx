@@ -13,7 +13,7 @@ import { GuidesHub } from "./guides-hub";
 describe("GuidesHub", () => {
   afterEach(cleanup);
 
-  it("keeps guide and reference filters independent", () => {
+  it("filters guides by category, with no search box", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <GuidesHub
@@ -39,6 +39,8 @@ describe("GuidesHub", () => {
       </NextIntlClientProvider>,
     );
 
+    expect(screen.queryByRole("searchbox")).toBeNull();
+
     const guideFilters = screen.getByRole("navigation", {
       name: "Filtrer les guides par catégorie",
     });
@@ -46,37 +48,42 @@ describe("GuidesHub", () => {
       within(guideFilters).getByRole("button", { name: "Combat & conquête" }),
     );
     expect(screen.getByText("Guide combat")).toBeVisible();
+    expect(screen.queryByText("Guide clan")).toBeNull();
     expect(document.querySelector(".guide-list-cover")).toHaveAttribute(
       "src",
       "https://example.com/combat.jpg",
     );
-
-    fireEvent.change(
-      screen.getByRole("searchbox", { name: "Rechercher dans les guides" }),
-      { target: { value: "introuvable" } },
-    );
-    expect(
-      screen.getByText("Aucun guide ne correspond à ces filtres."),
-    ).toBeVisible();
-    expect(screen.getByText("Équipement d’Expédition")).toBeVisible();
-    fireEvent.change(
-      screen.getByRole("searchbox", { name: "Rechercher dans les guides" }),
-      { target: { value: "" } },
-    );
-    expect(screen.queryByText("Guide clan")).toBeNull();
-
-    const referenceFilters = screen.getByRole("navigation", {
-      name: "Filtrer les référentiels par catégorie",
-    });
-    fireEvent.click(
-      within(referenceFilters).getByRole("button", { name: "Combat" }),
-    );
-    expect(screen.getByText("Équipements de Combat")).toBeVisible();
-    expect(screen.queryByText("Équipement d’Expédition")).toBeNull();
-    expect(screen.getByText("Guide combat")).toBeVisible();
   });
 
-  it("renders both category filters as directly clickable chips, no dropdown", () => {
+  it("renders the references section as a plain grid, with no category filter", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    expect(
+      screen.queryByRole("navigation", {
+        name: "Filtrer les référentiels par catégorie",
+      }),
+    ).toBeNull();
+    expect(screen.getByText("Équipements de Combat")).toBeVisible();
+    expect(screen.getByText("Équipement d’Expédition")).toBeVisible();
+    expect(screen.getByText("Level Up")).toBeVisible();
+  });
+
+  it("renders the guide category filter as directly clickable chips, no dropdown", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <GuidesHub
@@ -113,13 +120,6 @@ describe("GuidesHub", () => {
     fireEvent.click(combatChip);
     expect(combatChip).toHaveAttribute("aria-pressed", "true");
     expect(allChip).toHaveAttribute("aria-pressed", "false");
-
-    const referenceFilters = screen.getByRole("navigation", {
-      name: "Filtrer les référentiels par catégorie",
-    });
-    for (const chip of within(referenceFilters).getAllByRole("button")) {
-      expect(chip).toHaveClass("guide-filter-chip");
-    }
   });
 
   it("shows a multi-category guide through every assigned category filter", () => {
