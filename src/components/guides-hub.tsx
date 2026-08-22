@@ -76,14 +76,16 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
                 href={`/guides/${guide.slug}`}
                 key={guide.id}
               >
-                {guide.coverImage && (
-                  // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
-                  <img
-                    src={guide.coverImage}
-                    alt=""
-                    className="guide-list-cover"
-                  />
-                )}
+                <div className="guide-list-media">
+                  {guide.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
+                    <img
+                      src={guide.coverImage}
+                      alt=""
+                      className="guide-list-cover"
+                    />
+                  ) : null}
+                </div>
                 <div className="guide-list-copy">
                   <p className="eyebrow">
                     {guide.categories

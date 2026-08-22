@@ -129,6 +129,55 @@ describe("GuidesHub", () => {
     expect(within(card).getByText("Lire le guide")).toBeVisible();
   });
 
+  it("renders the cover image inside a full-width media wrapper", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "one",
+              slug: "combat-guide",
+              categories: ["combat"],
+              title: "Guide combat",
+              excerpt: "Attaquer efficacement",
+              coverImage: "https://example.com/combat.jpg",
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const card = screen.getByRole("link", { name: /Guide combat/ });
+    const media = card.querySelector(".guide-list-media");
+    expect(media).toBeInTheDocument();
+    expect(media?.querySelector("img.guide-list-cover")).toHaveAttribute(
+      "src",
+      "https://example.com/combat.jpg",
+    );
+  });
+
+  it("keeps the media wrapper when a guide has no cover image", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub
+          guides={[
+            {
+              id: "two",
+              slug: "clan-guide",
+              categories: ["clan"],
+              title: "Guide clan",
+              excerpt: "Jouer ensemble",
+              coverImage: null,
+            },
+          ]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const card = screen.getByRole("link", { name: /Guide clan/ });
+    const media = card.querySelector(".guide-list-media");
+    expect(media).toBeInTheDocument();
+    expect(media?.querySelector("img")).toBeNull();
+  });
+
   it("uses the canonical reference routes", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
