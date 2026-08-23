@@ -1104,6 +1104,12 @@ select,
   background: var(--bg-panel);
   color: var(--accent-strong);
 }
+.public-header-nav a[aria-current="page"] {
+  border-color: var(--accent-strong);
+  background: var(--bg-panel);
+  color: var(--accent-strong);
+  font-weight: 800;
+}
 .theme-toggle {
   display: inline-grid;
   width: 2.2rem;
