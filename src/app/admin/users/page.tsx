@@ -5,7 +5,7 @@ import { UsersManager } from "@/components/users-manager";
 export default async function UsersPage() {
   const session = await requireCapability("users.read");
   const users = await prisma.user.findMany({
-    select: { id: true, username: true, role: true },
+    select: { id: true, username: true, role: true, active: true },
     orderBy: { username: "asc" },
   });
   return (

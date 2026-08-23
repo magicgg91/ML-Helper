@@ -22,6 +22,7 @@ export async function PATCH(
       id: user.id,
       username: user.username,
       role: user.role,
+      active: user.active,
     });
   } catch {
     return NextResponse.json({ error: "invalid_user" }, { status: 400 });

@@ -1,5 +1,5 @@
 "use client";
-import { Save, Trash2 } from "lucide-react";
+import { Power, Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -18,7 +18,7 @@ import {
 const inputClass =
   "h-9 rounded-md border border-border bg-transparent px-3 text-sm";
 
-type UserRow = { id: string; username: string; role: string };
+type UserRow = { id: string; username: string; role: string; active: boolean };
 export function UsersManager({
   users,
   canManage = true,
@@ -83,6 +83,20 @@ export function UsersManager({
     setSuccess(response.ok);
     if (response.ok) router.refresh();
   }
+  async function toggleActive(user: UserRow) {
+    const response = await fetch(`/api/admin/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ active: !user.active }),
+    });
+    setMessage(
+      response.ok
+        ? t(user.active ? "admin.users.deactivated" : "admin.users.activated")
+        : await failure(response),
+    );
+    setSuccess(response.ok);
+    if (response.ok) router.refresh();
+  }
   return (
     <div className="flex flex-col gap-4">
       {canManage && (
@@ -123,7 +137,9 @@ export function UsersManager({
       )}
       {message && (
         <p
-          className={success ? "text-sm text-success" : "text-sm text-destructive"}
+          className={
+            success ? "text-sm text-success" : "text-sm text-destructive"
+          }
           role="status"
         >
           {message}
@@ -136,15 +152,14 @@ export function UsersManager({
               <TableRow>
                 <TableHead>{t("admin.users.username")}</TableHead>
                 <TableHead>{t("admin.users.role")}</TableHead>
+                <TableHead>{t("admin.users.status")}</TableHead>
                 <TableHead className="text-right" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    {user.username}
-                  </TableCell>
+                  <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>
                     {canManage ? (
                       <select
@@ -168,9 +183,37 @@ export function UsersManager({
                       t(`roles.${user.role}`)
                     )}
                   </TableCell>
+                  <TableCell
+                    className={
+                      user.active ? "text-success" : "text-muted-foreground"
+                    }
+                  >
+                    {t(
+                      user.active
+                        ? "admin.users.active"
+                        : "admin.users.inactive",
+                    )}
+                  </TableCell>
                   <TableCell>
                     {canManage && (
                       <div className="flex justify-end gap-2">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => toggleActive(user)}
+                          title={t(
+                            user.active
+                              ? "admin.users.deactivate"
+                              : "admin.users.activate",
+                          )}
+                          aria-label={t(
+                            user.active
+                              ? "admin.users.deactivate"
+                              : "admin.users.activate",
+                          )}
+                        >
+                          <Power aria-hidden="true" />
+                        </Button>
                         <input
                           className={inputClass}
                           aria-label={`${t("admin.users.password")} ${user.username}`}

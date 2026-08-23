@@ -8,8 +8,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 const users = [
-  { id: "user-1", username: "alice", role: "admin" },
-  { id: "user-2", username: "bob", role: "read_only" },
+  { id: "user-1", username: "alice", role: "admin", active: true },
+  { id: "user-2", username: "bob", role: "read_only", active: false },
 ];
 
 afterEach(() => {
@@ -39,9 +39,7 @@ describe("UsersManager", () => {
     expect(
       screen.queryByRole("button", { name: "Créer l’utilisateur" }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByLabelText("Rôle alice"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Rôle alice")).not.toBeInTheDocument();
     expect(screen.getByText("alice")).toBeVisible();
     expect(screen.getByText("Admin")).toBeVisible();
   });
@@ -52,9 +50,7 @@ describe("UsersManager", () => {
     fireEvent.change(screen.getByLabelText("Mot de passe alice"), {
       target: { value: "short" },
     });
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Enregistrer" })[0],
-    );
+    fireEvent.click(screen.getAllByRole("button", { name: "Enregistrer" })[0]);
     expect(
       await screen.findByText(
         "Le nouveau mot de passe doit contenir au moins 12 caractères.",
@@ -71,9 +67,7 @@ describe("UsersManager", () => {
     fireEvent.change(screen.getByLabelText("Rôle alice"), {
       target: { value: "read_only" },
     });
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Enregistrer" })[0],
-    );
+    fireEvent.click(screen.getAllByRole("button", { name: "Enregistrer" })[0]);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/admin/users/user-1",
@@ -84,14 +78,46 @@ describe("UsersManager", () => {
     expect(await screen.findByText("Utilisateur enregistré")).toBeVisible();
   });
 
+  it("shows each user's active status", () => {
+    render(<UsersManager users={users} />);
+    expect(screen.getByText("Actif")).toBeVisible();
+    expect(screen.getByText("Désactivé")).toBeVisible();
+  });
+
+  it("deactivates an active user", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    render(<UsersManager users={users} />);
+    fireEvent.click(screen.getByRole("button", { name: "Désactiver" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/admin/users/user-1",
+      expect.objectContaining({ method: "PATCH" }),
+    );
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toEqual({ active: false });
+    expect(await screen.findByText("Utilisateur désactivé")).toBeVisible();
+  });
+
+  it("reactivates a disabled user", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    render(<UsersManager users={users} />);
+    fireEvent.click(screen.getByRole("button", { name: "Activer" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toEqual({ active: true });
+    expect(await screen.findByText("Utilisateur activé")).toBeVisible();
+  });
+
   it("deletes a user and surfaces a server failure", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 500 }));
     render(<UsersManager users={users} />);
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Supprimer" })[0],
-    );
+    fireEvent.click(screen.getAllByRole("button", { name: "Supprimer" })[0]);
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith("/api/admin/users/user-1", {
         method: "DELETE",

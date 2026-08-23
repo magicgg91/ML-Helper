@@ -595,7 +595,8 @@
     "totp": "Authentication code",
     "totp-hint": "Enter the 6-digit code only if two-factor authentication is enabled.",
     "submit": "Sign in",
-    "error": "Invalid username or password"
+    "error": "Invalid username or password",
+    "error-disabled": "Account disabled, contact the administrator."
   },
   "admin": {
     "title": "Administration",
@@ -878,7 +879,14 @@
       "saved": "User saved",
       "password-too-short": "The new password must contain at least 12 characters.",
       "error": "Unable to complete the action",
-      "server-error": "Server unavailable"
+      "server-error": "Server unavailable",
+      "status": "Status",
+      "active": "Enabled",
+      "inactive": "Disabled",
+      "activate": "Enable",
+      "deactivate": "Disable",
+      "activated": "User enabled",
+      "deactivated": "User disabled"
     },
     "logs": {
       "title": "Change history",

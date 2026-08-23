@@ -600,7 +600,8 @@
     "totp": "Code d’authentification",
     "totp-hint": "Saisis le code à 6 chiffres uniquement si l’authentification à deux facteurs est activée.",
     "submit": "Se connecter",
-    "error": "Identifiant ou mot de passe invalide"
+    "error": "Identifiant ou mot de passe invalide",
+    "error-disabled": "Compte désactivé, contacter l’administrateur."
   },
   "admin": {
     "title": "Administration",
@@ -878,7 +879,14 @@
       "saved": "Utilisateur enregistré",
       "password-too-short": "Le nouveau mot de passe doit contenir au moins 12 caractères.",
       "error": "Impossible d’effectuer l’action",
-      "server-error": "Serveur indisponible"
+      "server-error": "Serveur indisponible",
+      "status": "Statut",
+      "active": "Actif",
+      "inactive": "Désactivé",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "activated": "Utilisateur activé",
+      "deactivated": "Utilisateur désactivé"
     },
     "logs": {
       "title": "Historique des actions",

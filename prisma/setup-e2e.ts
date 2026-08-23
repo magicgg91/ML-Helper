@@ -10,7 +10,7 @@ async function main() {
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "login_throttles"');
   await prisma.$executeRawUnsafe(
-    'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
+    'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE UNIQUE INDEX "users_username_key" ON "users"("username")',

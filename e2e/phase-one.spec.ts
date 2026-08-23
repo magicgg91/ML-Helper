@@ -597,6 +597,74 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   );
 });
 
+test("deactivating a user blocks sign-in until reactivated", async ({
+  browser,
+}) => {
+  const rootContext = await browser.newContext();
+  const root = await rootContext.newPage();
+  await root.goto("/login");
+  await root.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await root
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await root.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(root).toHaveURL(/\/admin$/);
+
+  const created = await root.request.post("/api/admin/users", {
+    data: {
+      username: "togglable-user",
+      role: "read_only",
+      password: "toggle-user-password",
+    },
+  });
+  expect(created.status()).toBe(201);
+
+  await root.goto("/admin/users");
+  const row = root.getByRole("row", { name: /togglable-user/ });
+  await expect(row.getByText("Actif")).toBeVisible();
+  await row.getByRole("button", { name: "Désactiver" }).click();
+  await expect(root.getByRole("status")).toHaveText("Utilisateur désactivé");
+  await expect(row.getByText("Désactivé")).toBeVisible();
+
+  const disabledContext = await browser.newContext();
+  const disabledPage = await disabledContext.newPage();
+  await disabledPage.goto("/login");
+  await disabledPage.getByLabel(/Username|Identifiant/).fill("togglable-user");
+  await disabledPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("toggle-user-password");
+  await disabledPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(disabledPage.locator("form").getByRole("alert")).toHaveText(
+    "Compte désactivé, contacter l’administrateur.",
+  );
+  await expect(disabledPage).toHaveURL(/\/login$/);
+
+  await row.getByRole("button", { name: "Activer" }).click();
+  await expect(root.getByRole("status")).toHaveText("Utilisateur activé");
+  await expect(row.getByText("Actif")).toBeVisible();
+
+  await disabledPage.getByLabel(/Username|Identifiant/).fill("togglable-user");
+  await disabledPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("toggle-user-password");
+  await disabledPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(disabledPage).toHaveURL(/\/admin$/);
+
+  const usersList = (await (
+    await root.request.get("/api/admin/users")
+  ).json()) as { id: string; username: string }[];
+  const selfId = usersList.find((user) => user.username === "rootadmin")?.id;
+  const selfDeactivate = await root.request.patch(
+    `/api/admin/users/${selfId}`,
+    { data: { active: false } },
+  );
+  expect(selfDeactivate.status()).toBe(400);
+});
+
 test("direct admin URLs enforce all five roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();
