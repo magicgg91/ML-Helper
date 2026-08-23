@@ -669,7 +669,6 @@
     "guides": {
       "eyebrow": "Editorial content",
       "title": "Guides",
-      "description": "Create, translate and submit guides for review.",
       "new": "New",
       "new-title": "New guide",
       "edit-title": "Edit guide",
@@ -756,7 +755,6 @@
     "tools": {
       "eyebrow": "Functional content",
       "title": "Tools",
-      "description": "A disabled tool remains listed publicly, but is greyed out and cannot be opened.",
       "edit-ranking": "Edit ranking thresholds",
       "translations-label": "Tool translations",
       "columns": { "tool": "Tool", "status": "Status", "action": "Action" },
@@ -910,7 +908,7 @@
     "content": {
       "eyebrow": "Institutional page",
       "title": "Legal notice",
-      "field": "Legal notice text (Markdown)",
+      "field": "Markdown",
       "preview": "Live preview",
       "save": "Save",
       "saving": "Saving…",

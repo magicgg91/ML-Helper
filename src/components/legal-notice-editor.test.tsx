@@ -12,9 +12,7 @@ describe("LegalNoticeEditor", () => {
       .mockResolvedValue(new Response(null, { status: 200 }));
     render(<LegalNoticeEditor initialContent="## Ancien texte" />);
 
-    const editor = screen.getByLabelText(
-      "Texte des mentions légales (Markdown)",
-    );
+    const editor = screen.getByLabelText("Markdown");
     expect(editor).toHaveValue("## Ancien texte");
     expect(document.querySelector(".w-md-editor-preview h2")).toHaveTextContent(
       "Ancien texte",

@@ -674,7 +674,6 @@
     "guides": {
       "eyebrow": "Contenu éditorial",
       "title": "Guides",
-      "description": "Crée, traduis et soumets les guides à validation.",
       "new": "Nouveau",
       "new-title": "Nouveau guide",
       "edit-title": "Éditer le guide",
@@ -757,7 +756,6 @@
     "tools": {
       "eyebrow": "Contenu fonctionnel",
       "title": "Outils",
-      "description": "Un outil inactif reste annoncé au public, mais il est grisé et impossible à ouvrir.",
       "edit-ranking": "Éditer les seuils du classement",
       "translations-label": "Traductions des outils",
       "columns": { "tool": "Outil", "status": "Statut", "action": "Action" },
@@ -910,7 +908,7 @@
     "content": {
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
-      "field": "Texte des mentions légales (Markdown)",
+      "field": "Markdown",
       "preview": "Aperçu en direct",
       "save": "Enregistrer",
       "saving": "Enregistrement…",

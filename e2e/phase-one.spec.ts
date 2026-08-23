@@ -75,9 +75,7 @@ test("the legal notice admin reuses the live Markdown workspace", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/content");
-  await page
-    .getByLabel("Texte des mentions légales (Markdown)")
-    .fill("## Aperçu légal partagé");
+  await page.getByLabel("Markdown").fill("## Aperçu légal partagé");
   await expect(
     page.locator(".w-md-editor-preview").getByRole("heading", {
       name: "Aperçu légal partagé",
