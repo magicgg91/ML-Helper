@@ -225,6 +225,23 @@
       "troops": "Troops with full Recruiter"
     }
   },
+  "city-rewards": {
+    "name": "Production Rewards",
+    "gold": {
+      "title": "Gold",
+      "base": "Base gold production",
+      "base-unit": "Gold production unit",
+      "hours": "Gold hours received",
+      "bonus": "Gold bonus obtained"
+    },
+    "troops": {
+      "title": "Troops",
+      "base": "Base troops production",
+      "base-unit": "Troops production unit",
+      "hours": "Troop hours received",
+      "bonus": "Troop bonus obtained"
+    }
+  },
   "xp-gain-rate": {
     "name": "XP Gain Rate",
     "mode-label": "XP calculation mode",

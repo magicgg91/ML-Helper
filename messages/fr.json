@@ -225,6 +225,23 @@
       "troops": "Troupes si full Recruteur"
     }
   },
+  "city-rewards": {
+    "name": "Récompenses de Production",
+    "gold": {
+      "title": "Or",
+      "base": "Production d’or de base",
+      "base-unit": "Unité de production d’or",
+      "hours": "Heures Or reçues",
+      "bonus": "Bonus Or obtenu"
+    },
+    "troops": {
+      "title": "Troupes",
+      "base": "Production de troupes de base",
+      "base-unit": "Unité de production de troupes",
+      "hours": "Heures Troupes reçues",
+      "bonus": "Bonus Troupes obtenu"
+    }
+  },
   "xp-gain-rate": {
     "name": "Taux de gain d’XP",
     "mode-label": "Mode de calcul d’XP",

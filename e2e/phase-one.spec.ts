@@ -271,6 +271,43 @@ test("the Cities category exposes its three working calculators", async ({
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
 
+test("Récompenses de Production is a standalone Villes calculator with no shared league", async ({
+  page,
+}) => {
+  await page.goto("/tools/villes");
+  await page.getByRole("tab", { name: "Récompenses de Production" }).click();
+  await expect(
+    page.locator(".city-calculators").getByRole("combobox", { name: "Ligue" }),
+  ).toHaveCount(0);
+
+  await page
+    .getByRole("spinbutton", { name: "Production d’or de base" })
+    .fill("2");
+  await page.getByLabel("Unité de production d’or").selectOption("1000");
+  await page.getByRole("spinbutton", { name: "Heures Or reçues" }).fill("5");
+  const goldBonus = page
+    .getByText("Bonus Or obtenu")
+    .locator("xpath=ancestor::div[contains(@class,'calculator-stat')]")
+    .locator("strong");
+  await expect(goldBonus).toHaveText("10k");
+
+  await page
+    .getByRole("spinbutton", { name: "Production de troupes de base" })
+    .fill("4");
+  await page
+    .getByLabel("Unité de production de troupes")
+    .selectOption("1000000");
+  await page
+    .getByRole("spinbutton", { name: "Heures Troupes reçues" })
+    .fill("2");
+  const troopsBonus = page
+    .getByText("Bonus Troupes obtenu")
+    .locator("xpath=ancestor::div[contains(@class,'calculator-stat')]")
+    .locator("strong");
+  await expect(troopsBonus).toHaveText("8M");
+  await expect(goldBonus).toHaveText("10k");
+});
+
 test("all three City tools use all six confirmed league multipliers", async ({
   page,
 }) => {

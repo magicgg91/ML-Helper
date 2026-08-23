@@ -72,6 +72,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
           cost: active["city-cost"],
           "max-level": active["city-max-level"],
           production: active["city-production"],
+          rewards: active["city-rewards"],
         }}
       />
     </main>

@@ -13,7 +13,12 @@ const categories: Array<{
   {
     label: "cities",
     slug: "villes",
-    calculators: ["city-cost", "city-max-level", "city-production"],
+    calculators: [
+      "city-cost",
+      "city-max-level",
+      "city-production",
+      "city-rewards",
+    ],
     image: "/category-cities.svg",
   },
   {
