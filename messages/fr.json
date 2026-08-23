@@ -628,6 +628,8 @@
       "tools-summary": "{active} activés / {total} au total",
       "guides": "Guides",
       "guides-summary": "{published} publiés / {total} au total",
+      "references": "Référentiels",
+      "references-summary": "{active} activés / {total} au total",
       "recent-actions": "Dernières actions",
       "user": "Utilisateur",
       "role": "Rôle",

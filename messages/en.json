@@ -623,6 +623,8 @@
       "tools-summary": "{active} enabled / {total} total",
       "guides": "Guides",
       "guides-summary": "{published} published / {total} total",
+      "references": "Reference tables",
+      "references-summary": "{active} enabled / {total} total",
       "recent-actions": "Latest actions",
       "user": "User",
       "role": "Role",
