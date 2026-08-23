@@ -424,6 +424,25 @@
     "admin": "Administration",
     "legal": "Legal notice"
   },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Contact ML-Helper",
+    "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
+    "email": "Email",
+    "subject": "Subject",
+    "choose-subject": "— Choose —",
+    "subjects": {
+      "data-error": "Report a data error",
+      "improvement-suggestion": "Improvement suggestion",
+      "technical-bug": "Technical issue / bug",
+      "other": "Other"
+    },
+    "message": "Message",
+    "submit": "Send",
+    "success": "Message sent, thank you!",
+    "error-invalid": "Check the form fields and try again.",
+    "error-not-configured": "Email sending isn't configured right now, please try again later."
+  },
   "Home": {
     "eyebrow": "Million Lords · Community tools",
     "title": "Plan your next progression.",

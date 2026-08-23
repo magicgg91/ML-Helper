@@ -429,6 +429,25 @@
     "admin": "Administration",
     "legal": "Mentions légales"
   },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Contacter ML-Helper",
+    "lead": "Une erreur à signaler, une idée d’amélioration ou une question ? Écris-nous, on lit tout.",
+    "email": "Email",
+    "subject": "Objet",
+    "choose-subject": "— Choisir —",
+    "subjects": {
+      "data-error": "Signaler une erreur de donnée",
+      "improvement-suggestion": "Suggestion d’amélioration",
+      "technical-bug": "Problème technique / bug",
+      "other": "Autre"
+    },
+    "message": "Message",
+    "submit": "Envoyer",
+    "success": "Message envoyé, merci !",
+    "error-invalid": "Vérifie les champs du formulaire et réessaie.",
+    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard."
+  },
   "Home": {
     "eyebrow": "Million Lords · Outils communautaires",
     "title": "Prépare ta prochaine progression.",
