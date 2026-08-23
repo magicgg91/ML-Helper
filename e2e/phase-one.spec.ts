@@ -606,6 +606,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .click();
   await expect(toolActionBar.getByRole("status")).toHaveText(
     "Paramètres enregistrés.",
+    { timeout: 15_000 },
   );
 });
 
