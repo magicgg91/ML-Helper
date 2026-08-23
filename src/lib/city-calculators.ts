@@ -124,7 +124,6 @@ export type ProductionResult = {
   vpTotal: number;
   gold: BonusBreakdown;
   troops: BonusBreakdown;
-  rewards: { gold: number; troops: number };
   fullProduction: { gold: number; troops: number; points: number };
 };
 
@@ -138,8 +137,6 @@ export function calculateProduction(
     recruiterEquipment: number;
     prosperousTemple: number;
     recruiterTemple: number;
-    goldRewardHours: number;
-    troopsRewardHours: number;
   },
   parameters: CityParameters = defaultCityParameters,
 ): ProductionResult {
@@ -166,16 +163,20 @@ export function calculateProduction(
     vpTotal: perCity.vp * count,
     gold,
     troops,
-    rewards: {
-      gold: goldBase * Math.max(0, input.goldRewardHours),
-      troops: troopsBase * Math.max(0, input.troopsRewardHours),
-    },
     fullProduction: {
       points,
       gold: goldBase * (1 + fullProsperous / 100),
       troops: troopsBase * (1 + fullRecruiter / 100),
     },
   };
+}
+
+// Calculateur autonome "Récompenses de Production" (bloc 18) — la
+// production de base est désormais saisie directement par le joueur
+// (plus dérivée du nombre de villes/niveau), mais la formule reste
+// inchangée : bonus = production_base × heures_reçues (cdc section 7.1).
+export function calculateReward(base: number, hours: number): number {
+  return base * hours;
 }
 
 export function formatGameNumber(value: number): string {

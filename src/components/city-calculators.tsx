@@ -433,8 +433,6 @@ function ProductionCalculator({
   const t = useTranslations("city-production");
   const [cityCount, setCityCount] = useState(1);
   const [cityLevel, setCityLevel] = useState(1);
-  const [goldHours, setGoldHours] = useState(0);
-  const [troopsHours, setTroopsHours] = useState(0);
   const [league, setLeague] = useSyncedLeague();
   const result = useMemo(
     () =>
@@ -448,20 +446,10 @@ function ProductionCalculator({
           recruiterEquipment: settings.equipmentSkills.recruiter,
           prosperousTemple: settings.clanTemple.prosperous,
           recruiterTemple: settings.clanTemple.recruiter,
-          goldRewardHours: goldHours,
-          troopsRewardHours: troopsHours,
         },
         parameters,
       ),
-    [
-      cityCount,
-      cityLevel,
-      goldHours,
-      league,
-      parameters,
-      settings,
-      troopsHours,
-    ],
+    [cityCount, cityLevel, league, parameters, settings],
   );
 
   return (
@@ -529,37 +517,6 @@ function ProductionCalculator({
               <Stat
                 label={t("full-production.troops")}
                 value={`${number(result.fullProduction.troops)}/h`}
-                tone="emerald"
-              />
-            </div>
-          </section>
-          <section className="calculator-card">
-            <h3>{t("rewards.title")}</h3>
-            <div className="calculator-fields">
-              <Field
-                label={t("rewards.gold-hours")}
-                value={goldHours}
-                min={0}
-                step={0.5}
-                onChange={setGoldHours}
-              />
-              <Field
-                label={t("rewards.troops-hours")}
-                value={troopsHours}
-                min={0}
-                step={0.5}
-                onChange={setTroopsHours}
-              />
-            </div>
-            <div className="calculator-results">
-              <Stat
-                label={t("rewards.gold-bonus")}
-                value={number(result.rewards.gold)}
-                tone="emerald"
-              />
-              <Stat
-                label={t("rewards.troops-bonus")}
-                value={number(result.rewards.troops)}
                 tone="emerald"
               />
             </div>

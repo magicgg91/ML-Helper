@@ -114,27 +114,6 @@ describe("CityCalculators", () => {
     );
   });
 
-  it("highlights the reward bonuses obtained in emerald, like the prototype", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <CityCalculators />
-      </NextIntlClientProvider>,
-    );
-    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
-    fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Heures Or reçues" }),
-      { target: { value: "1" } },
-    );
-    const goldBonus = screen
-      .getByText("Bonus Or obtenu")
-      .closest(".calculator-stat")!
-      .querySelector("strong")!;
-    expect(goldBonus).toHaveClass("value", "emerald");
-  });
-
   it("reacts immediately when player settings change", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>

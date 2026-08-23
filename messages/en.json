@@ -223,13 +223,6 @@
       "note": "Simulation with all {points} available points invested, calculated from base production.",
       "gold": "Gold with full Prosperity",
       "troops": "Troops with full Recruiter"
-    },
-    "rewards": {
-      "title": "Rewards",
-      "gold-hours": "Gold hours received",
-      "troops-hours": "Troop hours received",
-      "gold-bonus": "Gold bonus obtained",
-      "troops-bonus": "Troop bonus obtained"
     }
   },
   "xp-gain-rate": {

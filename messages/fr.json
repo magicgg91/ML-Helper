@@ -223,13 +223,6 @@
       "note": "Simulation avec les {points} points disponibles investis intégralement, calculée sur la production de base.",
       "gold": "Or si full Prospérité",
       "troops": "Troupes si full Recruteur"
-    },
-    "rewards": {
-      "title": "Récompenses",
-      "gold-hours": "Heures Or reçues",
-      "troops-hours": "Heures Troupes reçues",
-      "gold-bonus": "Bonus Or obtenu",
-      "troops-bonus": "Bonus Troupes obtenu"
     }
   },
   "xp-gain-rate": {
