@@ -664,6 +664,46 @@ test("deactivating a user blocks sign-in until reactivated", async ({
   expect(selfDeactivate.status()).toBe(400);
 });
 
+test("the audit log paginates by 20 entries", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const created = await page.request.post("/api/admin/users", {
+    data: {
+      username: "pagination-user",
+      role: "read_only",
+      password: "pagination-password",
+    },
+  });
+  expect(created.status()).toBe(201);
+  const { id } = (await created.json()) as { id: string };
+  for (let i = 0; i < 25; i += 1) {
+    const response = await page.request.patch(`/api/admin/users/${id}`, {
+      data: { active: i % 2 === 0 },
+    });
+    expect(response.status()).toBe(200);
+  }
+
+  await page.goto("/admin/logs?q=pagination-user");
+  await expect(page.locator("tbody tr")).toHaveCount(20);
+  await expect(page.getByText("Page 1 / 2")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Précédent" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Suivant" }).click();
+  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
+  await expect(page.locator("tbody tr")).toHaveCount(6);
+  await expect(page.getByText("Page 2 / 2")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Suivant" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Précédent" }).click();
+  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user$/);
+});
+
 test("direct admin URLs enforce all five roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();

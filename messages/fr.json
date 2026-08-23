@@ -903,7 +903,11 @@
       "filter-message": "Mot dans le message",
       "filter-apply": "Filtrer",
       "filter-reset": "Réinitialiser",
-      "no-results": "Aucune entrée ne correspond aux filtres."
+      "no-results": "Aucune entrée ne correspond aux filtres.",
+      "pagination": "Pagination de l’historique",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page-summary": "Page {page} / {total}"
     },
     "content": {
       "eyebrow": "Page institutionnelle",

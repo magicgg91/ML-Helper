@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildLogsWhere, parseLogFilters } from "./log-filters";
+import {
+  buildLogsWhere,
+  logsPageHref,
+  parseLogFilters,
+  parseLogPage,
+} from "./log-filters";
 
 describe("parseLogFilters", () => {
   it("trims values and drops blank ones", () => {
@@ -26,6 +31,52 @@ describe("parseLogFilters", () => {
       from: undefined,
       to: undefined,
     });
+  });
+});
+
+describe("parseLogPage", () => {
+  it("defaults to page 1 when no page param is present", () => {
+    expect(parseLogPage({})).toBe(1);
+  });
+
+  it("parses a valid page number", () => {
+    expect(parseLogPage({ page: "3" })).toBe(3);
+  });
+
+  it("falls back to page 1 for a non-numeric or non-positive value", () => {
+    expect(parseLogPage({ page: "not-a-number" })).toBe(1);
+    expect(parseLogPage({ page: "0" })).toBe(1);
+    expect(parseLogPage({ page: "-2" })).toBe(1);
+  });
+
+  it("takes the first value when the param is repeated", () => {
+    expect(parseLogPage({ page: ["2", "5"] })).toBe(2);
+  });
+});
+
+describe("logsPageHref", () => {
+  it("links to the plain logs page for page 1 with no filters", () => {
+    expect(logsPageHref({}, 1)).toBe("/admin/logs");
+  });
+
+  it("omits the page param for page 1 but keeps filters", () => {
+    expect(logsPageHref({ user: "alice" }, 1)).toBe("/admin/logs?user=alice");
+  });
+
+  it("includes the page param and every active filter", () => {
+    expect(
+      logsPageHref(
+        {
+          user: "alice",
+          message: "guide",
+          from: "2026-01-01",
+          to: "2026-01-31",
+        },
+        2,
+      ),
+    ).toBe(
+      "/admin/logs?user=alice&q=guide&from=2026-01-01&to=2026-01-31&page=2",
+    );
   });
 });
 

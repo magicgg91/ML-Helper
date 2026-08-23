@@ -903,7 +903,11 @@
       "filter-message": "Word in message",
       "filter-apply": "Filter",
       "filter-reset": "Reset",
-      "no-results": "No entry matches the filters."
+      "no-results": "No entry matches the filters.",
+      "pagination": "History pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "page-summary": "Page {page} / {total}"
     },
     "content": {
       "eyebrow": "Institutional page",
