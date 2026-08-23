@@ -28,7 +28,6 @@ export default async function LogsPage({
   });
   return (
     <main className="flex flex-col gap-4">
-      <h1>{t("title")}</h1>
       {can(session.user.role, "logs.purge") && <LogPurgeForm />}
       <LogFilterForm filters={filters} t={t} />
       {logs.length === 0 ? (

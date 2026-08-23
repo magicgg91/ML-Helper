@@ -14,7 +14,6 @@ export default async function StaticContentAdminPage() {
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
       <LegalNoticeEditor
         initialContent={
           localizedText(legalNotice?.content, "fr") || defaultFrenchLegalNotice

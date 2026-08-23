@@ -58,7 +58,6 @@ export default async function AdminPage() {
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
       {(mayViewCalculators || mayViewGuides || mayViewReferences) && (
         <section className="admin-metrics" aria-label={t("metrics-label")}>
           {mayViewCalculators && (
