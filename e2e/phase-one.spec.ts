@@ -526,8 +526,9 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByRole("button", { name: "Activer le mode clair" }),
   ).toHaveText("☀");
-  await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toBeVisible();
+  await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
+  await expect(page.getByText("Référentiels", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Dernières actions" }),
   ).toBeVisible();

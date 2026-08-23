@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PublicNav } from "./public-nav";
 
 const links = [
@@ -8,9 +8,18 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
+let pathname = "/tools";
+vi.mock("next/navigation", () => ({
+  usePathname: () => pathname,
+}));
+
 afterEach(cleanup);
 
 describe("PublicNav", () => {
+  beforeEach(() => {
+    pathname = "/tools";
+  });
+
   it("exposes the nav links and the menu toggle, no dropdown", () => {
     render(
       <PublicNav
@@ -69,5 +78,60 @@ describe("PublicNav", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Outils" }));
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("marks only the link for the current page as active", () => {
+    pathname = "/guides";
+    render(
+      <PublicNav
+        links={links}
+        navLabel="Navigation principale"
+        menuLabel="Menu"
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Outils" })).not.toHaveAttribute(
+      "aria-current",
+    );
+    expect(screen.getByRole("link", { name: "Contact" })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
+  it("keeps a section link active on its nested sub-pages", () => {
+    pathname = "/tools/villes";
+    render(
+      <PublicNav
+        links={links}
+        navLabel="Navigation principale"
+        menuLabel="Menu"
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Outils" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Guides" })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
+  it("marks no link active when the current page isn't in the nav", () => {
+    pathname = "/legal";
+    render(
+      <PublicNav
+        links={links}
+        navLabel="Navigation principale"
+        menuLabel="Menu"
+      />,
+    );
+    for (const link of links) {
+      expect(
+        screen.getByRole("link", { name: link.label }),
+      ).not.toHaveAttribute("aria-current");
+    }
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export type PublicNavLink = { href: string; label: string };
@@ -15,6 +16,7 @@ export function PublicNav({
   menuLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="public-nav">
@@ -34,11 +36,20 @@ export function PublicNav({
         aria-label={navLabel}
         data-open={open}
       >
-        {links.map((link) => (
-          <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const isActive =
+            pathname === link.href || pathname?.startsWith(`${link.href}/`);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => setOpen(false)}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

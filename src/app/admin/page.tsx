@@ -12,19 +12,40 @@ export default async function AdminPage() {
   ]);
   const mayViewCalculators = can(session.user.role, "calculators.read");
   const mayViewGuides = can(session.user.role, "guides.read");
+  const mayViewReferences = can(session.user.role, "references.read");
   const mayViewLogs = can(session.user.role, "logs.view");
-  const [active, calculatorTotal, publishedGuides, guideTotal, recentLogs] = await Promise.all([
+  const [
+    active,
+    calculatorTotal,
+    publishedGuides,
+    guideTotal,
+    activeReferences,
+    referenceTotal,
+    recentLogs,
+  ] = await Promise.all([
     mayViewCalculators
-      ? prisma.calculator.count({ where: { active: true, slug: { notIn: [...referenceToolSlugs] } } })
+      ? prisma.calculator.count({
+          where: { active: true, slug: { notIn: [...referenceToolSlugs] } },
+        })
       : Promise.resolve(0),
     mayViewCalculators
-      ? prisma.calculator.count({ where: { slug: { notIn: [...referenceToolSlugs] } } })
+      ? prisma.calculator.count({
+          where: { slug: { notIn: [...referenceToolSlugs] } },
+        })
       : Promise.resolve(0),
     mayViewGuides
       ? prisma.guide.count({ where: { status: "published" } })
       : Promise.resolve(0),
-    mayViewGuides
-      ? prisma.guide.count()
+    mayViewGuides ? prisma.guide.count() : Promise.resolve(0),
+    mayViewReferences
+      ? prisma.calculator.count({
+          where: { active: true, slug: { in: [...referenceToolSlugs] } },
+        })
+      : Promise.resolve(0),
+    mayViewReferences
+      ? prisma.calculator.count({
+          where: { slug: { in: [...referenceToolSlugs] } },
+        })
       : Promise.resolve(0),
     mayViewLogs
       ? prisma.auditLog.findMany({
@@ -38,19 +59,37 @@ export default async function AdminPage() {
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <h1>{t("title")}</h1>
-      {(mayViewCalculators || mayViewGuides) && (
+      {(mayViewCalculators || mayViewGuides || mayViewReferences) && (
         <section className="admin-metrics" aria-label={t("metrics-label")}>
           {mayViewCalculators && (
-          <article className="total-box">
-            <span className="label">{t("tools")}</span>
-            <strong className="value emerald">{t("tools-summary", { active, total: calculatorTotal })}</strong>
-          </article>
+            <article className="total-box">
+              <span className="label">{t("tools")}</span>
+              <strong className="value emerald">
+                {t("tools-summary", { active, total: calculatorTotal })}
+              </strong>
+            </article>
           )}
           {mayViewGuides && (
-          <article className="total-box">
-            <span className="label">{t("guides")}</span>
-            <strong className="value">{t("guides-summary", { published: publishedGuides, total: guideTotal })}</strong>
-          </article>
+            <article className="total-box">
+              <span className="label">{t("guides")}</span>
+              <strong className="value">
+                {t("guides-summary", {
+                  published: publishedGuides,
+                  total: guideTotal,
+                })}
+              </strong>
+            </article>
+          )}
+          {mayViewReferences && (
+            <article className="total-box">
+              <span className="label">{t("references")}</span>
+              <strong className="value">
+                {t("references-summary", {
+                  active: activeReferences,
+                  total: referenceTotal,
+                })}
+              </strong>
+            </article>
           )}
         </section>
       )}

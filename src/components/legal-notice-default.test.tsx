@@ -40,5 +40,14 @@ describe("default French legal notice", () => {
     expect(
       screen.getByText("vérifiés par observation directe en jeu").tagName,
     ).toBe("STRONG");
+    expect(document.body).toHaveTextContent(
+      "Le formulaire de contact collecte votre adresse email, l'objet sélectionné et le message que vous rédigez.",
+    );
+    expect(document.body).toHaveTextContent(
+      "envoyées par email à l'équipe éditoriale et ne sont jamais conservées en base de données sur ce site.",
+    );
+    expect(
+      screen.queryByText(/SI FORMULAIRE DE CONTACT/),
+    ).not.toBeInTheDocument();
   });
 });
