@@ -262,7 +262,7 @@ test("the Cities category exposes its three working calculators", async ({
   await page.getByRole("spinbutton", { name: "Or disponible" }).fill("0.044");
   await expect(page.getByTestId("max-level-result")).toHaveText("4");
 
-  await page.getByRole("tab", { name: "Production" }).click();
+  await page.getByRole("tab", { name: "Production", exact: true }).click();
   await page
     .locator(".city-calculators")
     .getByRole("combobox", { name: "Ligue" })
@@ -348,7 +348,7 @@ test("all three City tools use all six confirmed league multipliers", async ({
       `${boostedArmy} → ${boostedArmy}`,
     );
 
-    await page.getByRole("tab", { name: "Production" }).click();
+    await page.getByRole("tab", { name: "Production", exact: true }).click();
     await expect(page.getByTestId("city-production-gold")).toHaveText(baseGold);
     await expect(page.getByTestId("city-production-army")).toHaveText(baseArmy);
   }
