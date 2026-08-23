@@ -528,6 +528,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   ).toHaveText("☀");
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
+  await expect(page.getByText(/\d+ actifs \/ \d+ au total/)).toBeVisible();
   await expect(page.getByText("Référentiels", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Dernières actions" }),

@@ -645,6 +645,8 @@
       "guides-summary": "{published} published / {total} total",
       "references": "Reference tables",
       "references-summary": "{active} enabled / {total} total",
+      "users": "Users",
+      "users-summary": "{active} active / {total} total",
       "recent-actions": "Latest actions",
       "user": "User",
       "role": "Role",
