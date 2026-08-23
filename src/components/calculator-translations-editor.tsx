@@ -6,6 +6,7 @@ import {
   EditorialLocaleSelect,
   type EditorialLocale,
 } from "./editorial-locale-select";
+import { EditorActionBar } from "./editor-action-bar";
 
 type Values = {
   description: Record<string, string>;
@@ -46,36 +47,43 @@ export function CalculatorTranslationsEditor({
     setMessage(response.ok ? t("translations-saved") : t("translations-error"));
   }
   return (
-    <details className="translation-editor">
-      <summary>{t("translations-summary", { tool: label })}</summary>
-      <EditorialLocaleSelect
-        label={t("translations-language")}
-        value={locale}
-        onChange={setLocale}
-      />
-      <fieldset>
-        <legend>{locale.toUpperCase()}</legend>
-        <label>
-          {t("description-field")}
-          <textarea
-            value={values.description[locale] ?? ""}
-            onChange={(event) =>
-              update("description", locale, event.target.value)
-            }
-          />
-        </label>
-        <label>
-          {t("tip")}
-          <textarea
-            value={values.tips[locale] ?? ""}
-            onChange={(event) => update("tips", locale, event.target.value)}
-          />
-        </label>
-      </fieldset>
-      <button type="button" onClick={save}>
-        {t("save-translations")}
-      </button>
-      {message && <p role="status">{message}</p>}
-    </details>
+    <div className="calculator-translations-editor">
+      <EditorActionBar backHref="/admin/tools" message={message}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {t("save-translations")}
+        </button>
+      </EditorActionBar>
+      <details className="translation-editor">
+        <summary>{t("translations-summary", { tool: label })}</summary>
+        <EditorialLocaleSelect
+          label={t("translations-language")}
+          value={locale}
+          onChange={setLocale}
+        />
+        <fieldset>
+          <legend>{locale.toUpperCase()}</legend>
+          <label>
+            {t("description-field")}
+            <textarea
+              value={values.description[locale] ?? ""}
+              onChange={(event) =>
+                update("description", locale, event.target.value)
+              }
+            />
+          </label>
+          <label>
+            {t("tip")}
+            <textarea
+              value={values.tips[locale] ?? ""}
+              onChange={(event) => update("tips", locale, event.target.value)}
+            />
+          </label>
+        </fieldset>
+      </details>
+    </div>
   );
 }

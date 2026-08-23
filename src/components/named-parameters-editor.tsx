@@ -8,14 +8,9 @@ import {
   confirmedLevelUpLeagues,
   type LevelUpParameters,
 } from "../lib/level-up";
+import { EditorActionBar } from "./editor-action-bar";
 
-function SaveButton({
-  endpoint,
-  payload,
-}: {
-  endpoint: string;
-  payload: unknown;
-}) {
+function useToolSave(endpoint: string, payload: unknown) {
   const t = useTranslations("admin.parameters");
   const [status, setStatus] = useState("");
   async function save() {
@@ -33,6 +28,18 @@ function SaveButton({
       setStatus(t("server-error"));
     }
   }
+  return { status, save };
+}
+
+function SaveButton({
+  endpoint,
+  payload,
+}: {
+  endpoint: string;
+  payload: unknown;
+}) {
+  const t = useTranslations("admin.parameters");
+  const { status, save } = useToolSave(endpoint, payload);
   return (
     <>
       <button className="primary-button" type="button" onClick={save}>
@@ -75,8 +82,13 @@ function NumericField({
 
 export function CityParametersEditor({ initial }: { initial: CityParameters }) {
   const t = useTranslations("admin.city-parameters");
+  const tCommon = useTranslations("admin.parameters");
   const leagues = useTranslations("game.leagues");
   const [value, setValue] = useState(initial);
+  const { status, save } = useToolSave(
+    "/api/admin/tools/city-parameters",
+    value,
+  );
   const updateFormula = (
     key: "vp" | "walls" | "cost",
     field: "base" | "ratio",
@@ -88,6 +100,15 @@ export function CityParametersEditor({ initial }: { initial: CityParameters }) {
     }));
   return (
     <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/tools" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {tCommon("save")}
+        </button>
+      </EditorActionBar>
       <section className="admin-panel">
         <h2>{t("progression")}</h2>
         <div className="calculator-fields">
@@ -151,7 +172,6 @@ export function CityParametersEditor({ initial }: { initial: CityParameters }) {
           </table>
         </div>
       </section>
-      <SaveButton endpoint="/api/admin/tools/city-parameters" payload={value} />
     </div>
   );
 }
@@ -162,9 +182,20 @@ export function TemplarParametersEditor({
   initial: TemplarParameters;
 }) {
   const t = useTranslations("admin.templar-parameters");
+  const tCommon = useTranslations("admin.parameters");
   const [value, setValue] = useState(initial);
+  const { status, save } = useToolSave("/api/admin/tools/templars", value);
   return (
     <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/tools" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {tCommon("save")}
+        </button>
+      </EditorActionBar>
       <p>{t("formula")}</p>
       <div className="calculator-fields">
         <NumericField
@@ -179,7 +210,6 @@ export function TemplarParametersEditor({
           onChange={(ratio) => setValue((current) => ({ ...current, ratio }))}
         />
       </div>
-      <SaveButton endpoint="/api/admin/tools/templars" payload={value} />
     </div>
   );
 }

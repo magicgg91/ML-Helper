@@ -594,6 +594,19 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
     "1.3",
   );
+  const toolActionBar = page.locator(".editor-action-bar");
+  await expect(
+    toolActionBar.getByRole("link", { name: "← Retour" }),
+  ).toBeVisible();
+  await expect(
+    toolActionBar.getByRole("button", { name: "Enregistrer les paramètres" }),
+  ).toBeVisible();
+  await toolActionBar
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(toolActionBar.getByRole("status")).toHaveText(
+    "Paramètres enregistrés.",
+  );
 });
 
 test("deactivating a user blocks sign-in until reactivated", async ({

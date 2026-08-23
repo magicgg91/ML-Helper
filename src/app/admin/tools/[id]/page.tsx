@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { requireCapability } from "@/auth/require-session";
-import { AdminBackLink } from "@/components/admin-back-link";
 import { CalculatorTranslationsEditor } from "@/components/calculator-translations-editor";
 import {
   CityParametersEditor,
@@ -60,7 +59,6 @@ export default async function EditToolPage({
   }
   return (
     <main className="admin-main">
-      <AdminBackLink href="/admin/tools" />
       <h1>{title}</h1>
       {content}
     </main>
