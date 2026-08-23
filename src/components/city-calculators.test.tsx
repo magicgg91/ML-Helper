@@ -4,6 +4,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
@@ -114,7 +115,7 @@ describe("CityCalculators", () => {
     );
   });
 
-  it("highlights the reward bonuses obtained in emerald, like the prototype", () => {
+  it("no longer shows Récompenses in the Production tab (extracted to its own tab)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <CityCalculators />
@@ -124,15 +125,111 @@ describe("CityCalculators", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
       target: { value: "legend" },
     });
+    expect(screen.queryByText("Bonus Or obtenu")).toBeNull();
+    expect(screen.queryByText("Bonus Troupes obtenu")).toBeNull();
+    expect(screen.queryByText("Heures Or reçues")).toBeNull();
+    expect(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    ).toBeInTheDocument();
+  });
+
+  it("computes the Or block bonus from a base production and hours received, applying the unit selector", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Production d’or de base" }),
+      { target: { value: "2" } },
+    );
+    fireEvent.change(screen.getByLabelText("Unité de production d’or"), {
+      target: { value: "1000" },
+    });
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Heures Or reçues" }),
-      { target: { value: "1" } },
+      { target: { value: "5" } },
     );
     const goldBonus = screen
       .getByText("Bonus Or obtenu")
       .closest(".calculator-stat")!
       .querySelector("strong")!;
+    expect(goldBonus).toHaveTextContent("10k");
     expect(goldBonus).toHaveClass("value", "emerald");
+  });
+
+  it("computes the Troupes block bonus independently from the Or block", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Production d’or de base" }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Heures Or reçues" }),
+      { target: { value: "10" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "Production de troupes de base",
+      }),
+      { target: { value: "4" } },
+    );
+    fireEvent.change(screen.getByLabelText("Unité de production de troupes"), {
+      target: { value: "1000000" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Heures Troupes reçues" }),
+      { target: { value: "2" } },
+    );
+
+    const goldBonus = screen
+      .getByText("Bonus Or obtenu")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    const troopsBonus = screen
+      .getByText("Bonus Troupes obtenu")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    expect(goldBonus).toHaveTextContent("1k");
+    expect(troopsBonus).toHaveTextContent("8M");
+  });
+
+  it("renders the Or and Troupes blocks as two separate cards, not a mixed form", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    const goldCard = screen
+      .getByText("Or", { selector: "h3" })
+      .closest<HTMLElement>(".calculator-card")!;
+    const troopsCard = screen
+      .getByText("Troupes", { selector: "h3" })
+      .closest<HTMLElement>(".calculator-card")!;
+    expect(goldCard).not.toBe(troopsCard);
+    expect(
+      within(goldCard).getByRole("spinbutton", {
+        name: "Production d’or de base",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(troopsCard).getByRole("spinbutton", {
+        name: "Production de troupes de base",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("reacts immediately when player settings change", () => {

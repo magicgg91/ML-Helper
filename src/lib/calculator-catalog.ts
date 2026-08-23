@@ -6,6 +6,11 @@ export const calculatorCatalog = [
     label: "Niveau Max Atteignable",
   },
   { slug: "city-production", category: "villes", label: "Production" },
+  {
+    slug: "city-rewards",
+    category: "villes",
+    label: "Récompenses de Production",
+  },
   { slug: "xp-gain-rate", category: "combat", label: "Taux de gain d’XP" },
   {
     slug: "demo-attack-troops",

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   bonusBreakdown,
   calculateProduction,
+  calculateReward,
   cityStatsAt,
   cityUpgradeCost,
   formatGameNumber,
@@ -20,7 +21,8 @@ import { LeagueSelect } from "./league-select";
 import { usePlayerSettings } from "./use-player-settings";
 import { useSyncedLeague } from "./use-synced-league";
 
-type Calculator = "cost" | "max-level" | "production";
+type Calculator = "cost" | "max-level" | "production" | "rewards";
+type AmountUnit = 1 | 1_000 | 1_000_000 | 1_000_000_000 | 1_000_000_000_000;
 
 const number = (value: number) => formatGameNumber(value);
 
@@ -433,8 +435,6 @@ function ProductionCalculator({
   const t = useTranslations("city-production");
   const [cityCount, setCityCount] = useState(1);
   const [cityLevel, setCityLevel] = useState(1);
-  const [goldHours, setGoldHours] = useState(0);
-  const [troopsHours, setTroopsHours] = useState(0);
   const [league, setLeague] = useSyncedLeague();
   const result = useMemo(
     () =>
@@ -448,20 +448,10 @@ function ProductionCalculator({
           recruiterEquipment: settings.equipmentSkills.recruiter,
           prosperousTemple: settings.clanTemple.prosperous,
           recruiterTemple: settings.clanTemple.recruiter,
-          goldRewardHours: goldHours,
-          troopsRewardHours: troopsHours,
         },
         parameters,
       ),
-    [
-      cityCount,
-      cityLevel,
-      goldHours,
-      league,
-      parameters,
-      settings,
-      troopsHours,
-    ],
+    [cityCount, cityLevel, league, parameters, settings],
   );
 
   return (
@@ -533,45 +523,131 @@ function ProductionCalculator({
               />
             </div>
           </section>
-          <section className="calculator-card">
-            <h3>{t("rewards.title")}</h3>
-            <div className="calculator-fields">
-              <Field
-                label={t("rewards.gold-hours")}
-                value={goldHours}
-                min={0}
-                step={0.5}
-                onChange={setGoldHours}
-              />
-              <Field
-                label={t("rewards.troops-hours")}
-                value={troopsHours}
-                min={0}
-                step={0.5}
-                onChange={setTroopsHours}
-              />
-            </div>
-            <div className="calculator-results">
-              <Stat
-                label={t("rewards.gold-bonus")}
-                value={number(result.rewards.gold)}
-                tone="emerald"
-              />
-              <Stat
-                label={t("rewards.troops-bonus")}
-                value={number(result.rewards.troops)}
-                tone="emerald"
-              />
-            </div>
-          </section>
         </>
       )}
     </div>
   );
 }
 
+function AmountUnitField({
+  label,
+  unitLabel,
+  amount,
+  unit,
+  onAmountChange,
+  onUnitChange,
+}: {
+  label: string;
+  unitLabel: string;
+  amount: number;
+  unit: AmountUnit;
+  onAmountChange: (value: number) => void;
+  onUnitChange: (value: AmountUnit) => void;
+}) {
+  return (
+    <label className="calculator-field">
+      {label}
+      <div className="unit-input">
+        <NumberStepper
+          label={label}
+          value={amount}
+          min={0}
+          step={0.1}
+          onChange={onAmountChange}
+        />
+        <select
+          aria-label={unitLabel}
+          value={unit}
+          onChange={(event) =>
+            onUnitChange(Number(event.target.value) as AmountUnit)
+          }
+        >
+          <option value={1}>×1</option>
+          <option value={1_000}>k</option>
+          <option value={1_000_000}>M</option>
+          <option value={1_000_000_000}>G</option>
+          <option value={1_000_000_000_000}>T</option>
+        </select>
+      </div>
+    </label>
+  );
+}
+
+function ResourceRewardBlock({
+  title,
+  baseLabel,
+  baseUnitLabel,
+  hoursLabel,
+  bonusLabel,
+}: {
+  title: string;
+  baseLabel: string;
+  baseUnitLabel: string;
+  hoursLabel: string;
+  bonusLabel: string;
+}) {
+  const [amount, setAmount] = useState(0);
+  const [unit, setUnit] = useState<AmountUnit>(1);
+  const [hours, setHours] = useState(0);
+  const base = amount * unit;
+  const bonus = calculateReward(base, hours);
+
+  return (
+    <section className="calculator-card">
+      <h3>{title}</h3>
+      <div className="calculator-fields">
+        <AmountUnitField
+          label={baseLabel}
+          unitLabel={baseUnitLabel}
+          amount={amount}
+          unit={unit}
+          onAmountChange={setAmount}
+          onUnitChange={setUnit}
+        />
+        <Field
+          label={hoursLabel}
+          value={hours}
+          min={0}
+          step={0.5}
+          onChange={setHours}
+        />
+      </div>
+      <div className="calculator-results">
+        <Stat label={bonusLabel} value={number(bonus)} tone="emerald" />
+      </div>
+    </section>
+  );
+}
+
+function RewardsCalculator() {
+  const t = useTranslations("city-rewards");
+  return (
+    <div className="calculator-stack">
+      <ResourceRewardBlock
+        title={t("gold.title")}
+        baseLabel={t("gold.base")}
+        baseUnitLabel={t("gold.base-unit")}
+        hoursLabel={t("gold.hours")}
+        bonusLabel={t("gold.bonus")}
+      />
+      <ResourceRewardBlock
+        title={t("troops.title")}
+        baseLabel={t("troops.base")}
+        baseUnitLabel={t("troops.base-unit")}
+        hoursLabel={t("troops.hours")}
+        bonusLabel={t("troops.bonus")}
+      />
+    </div>
+  );
+}
+
 export function CityCalculators({
-  availability = { cost: true, "max-level": true, production: true },
+  availability = {
+    cost: true,
+    "max-level": true,
+    production: true,
+    rewards: true,
+  },
   parameters = defaultCityParameters,
 }: {
   availability?: Record<Calculator, boolean>;
@@ -581,8 +657,9 @@ export function CityCalculators({
   const cost = useTranslations("city-cost");
   const maxLevel = useTranslations("city-max-level");
   const production = useTranslations("city-production");
+  const rewards = useTranslations("city-rewards");
   const firstAvailable = (
-    ["cost", "max-level", "production"] as Calculator[]
+    ["cost", "max-level", "production", "rewards"] as Calculator[]
   ).find((key) => availability[key]);
   const [active, setActive] = useState<Calculator | undefined>(firstAvailable);
   const settings = usePlayerSettings();
@@ -633,6 +710,18 @@ export function CityCalculators({
         >
           {production("name")}
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === "rewards"}
+          disabled={!availability.rewards}
+          title={
+            !availability.rewards ? tools("calculator-unavailable") : undefined
+          }
+          onClick={() => setActive("rewards")}
+        >
+          {rewards("name")}
+        </button>
       </nav>
       {active === "cost" && (
         <CostCalculator settings={settings} parameters={parameters} />
@@ -643,6 +732,7 @@ export function CityCalculators({
       {active === "production" && (
         <ProductionCalculator settings={settings} parameters={parameters} />
       )}
+      {active === "rewards" && <RewardsCalculator />}
       {!active && (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}

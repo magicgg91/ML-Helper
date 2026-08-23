@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   bonusBreakdown,
   calculateProduction,
+  calculateReward,
   cityStatsAt,
   cityUpgradeCost,
   cumulativeCostAt,
@@ -53,7 +54,7 @@ describe("city formulas", () => {
     });
   });
 
-  it("separates base, stuff and temple and bases rewards on base only", () => {
+  it("separates the gold and troops production into base, stuff and temple", () => {
     const result = calculateProduction({
       cityCount: 2,
       cityLevel: 1,
@@ -63,8 +64,6 @@ describe("city formulas", () => {
       recruiterEquipment: 20,
       prosperousTemple: 30,
       recruiterTemple: 50,
-      goldRewardHours: 5,
-      troopsRewardHours: 2,
     });
     expect(result.gold).toEqual({
       base: 400,
@@ -78,12 +77,26 @@ describe("city formulas", () => {
       temple: 60,
       total: 204,
     });
-    expect(result.rewards).toEqual({ gold: 2000, troops: 240 });
     expect(result.fullProduction).toEqual({
       points: 20,
       gold: 640,
       troops: 192,
     });
+  });
+});
+
+describe("calculateReward", () => {
+  it("multiplies the base production by the hours received", () => {
+    expect(calculateReward(1, 25)).toBe(25);
+    expect(calculateReward(2000, 5)).toBe(10000);
+  });
+
+  it("returns zero when no hours were received", () => {
+    expect(calculateReward(2000, 0)).toBe(0);
+  });
+
+  it("returns zero when the base production is zero", () => {
+    expect(calculateReward(0, 25)).toBe(0);
   });
 });
 
