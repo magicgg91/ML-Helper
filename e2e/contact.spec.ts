@@ -4,6 +4,7 @@ test("submits the contact form and reports that email sending isn't configured",
   page,
 }) => {
   await page.goto("/contact");
+  await expect(page.locator("main.contact-page")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Contacter ML-Helper" }),
   ).toBeVisible();

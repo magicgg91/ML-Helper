@@ -317,11 +317,34 @@ select {
   color: var(--muted);
 }
 
+main.public-main.contact-page {
+  max-width: 34rem;
+  text-align: center;
+}
+.contact-page h1 {
+  max-width: none;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+}
+.contact-page .eyebrow,
+.contact-page .lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+.contact-page .contact-form {
+  text-align: left;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 0.8rem 2.5rem rgb(37 44 39 / 7%);
+}
+
 .contact-form {
   display: grid;
   gap: 1rem;
   max-width: 32rem;
-  margin-top: 1.5rem;
+  margin: 1.5rem auto 0;
 }
 .contact-form label {
   display: grid;
