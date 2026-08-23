@@ -75,9 +75,7 @@ test("the legal notice admin reuses the live Markdown workspace", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/content");
-  await page
-    .getByLabel("Texte des mentions légales (Markdown)")
-    .fill("## Aperçu légal partagé");
+  await page.getByLabel("Markdown").fill("## Aperçu légal partagé");
   await expect(
     page.locator(".w-md-editor-preview").getByRole("heading", {
       name: "Aperçu légal partagé",
@@ -528,6 +526,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   ).toHaveText("☀");
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
+  await expect(page.getByText(/\d+ actifs \/ \d+ au total/)).toBeVisible();
   await expect(page.getByText("Référentiels", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Dernières actions" }),
@@ -595,6 +594,127 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
     "1.3",
   );
+  const toolActionBar = page.locator(".editor-action-bar");
+  await expect(
+    toolActionBar.getByRole("link", { name: "← Retour" }),
+  ).toBeVisible();
+  await expect(
+    toolActionBar.getByRole("button", { name: "Enregistrer les paramètres" }),
+  ).toBeVisible();
+  await toolActionBar
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(toolActionBar.getByRole("status")).toHaveText(
+    "Paramètres enregistrés.",
+  );
+});
+
+test("deactivating a user blocks sign-in until reactivated", async ({
+  browser,
+}) => {
+  const rootContext = await browser.newContext();
+  const root = await rootContext.newPage();
+  await root.goto("/login");
+  await root.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await root
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await root.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(root).toHaveURL(/\/admin$/);
+
+  const created = await root.request.post("/api/admin/users", {
+    data: {
+      username: "togglable-user",
+      role: "read_only",
+      password: "toggle-user-password",
+    },
+  });
+  expect(created.status()).toBe(201);
+
+  await root.goto("/admin/users");
+  const row = root.getByRole("row", { name: /togglable-user/ });
+  await expect(row.getByText("Actif")).toBeVisible();
+  await row.getByRole("button", { name: "Désactiver" }).click();
+  await expect(root.getByRole("status")).toHaveText("Utilisateur désactivé");
+  await expect(row.getByText("Désactivé")).toBeVisible();
+
+  const disabledContext = await browser.newContext();
+  const disabledPage = await disabledContext.newPage();
+  await disabledPage.goto("/login");
+  await disabledPage.getByLabel(/Username|Identifiant/).fill("togglable-user");
+  await disabledPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("toggle-user-password");
+  await disabledPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(disabledPage.locator("form").getByRole("alert")).toHaveText(
+    "Compte désactivé, contacter l’administrateur.",
+  );
+  await expect(disabledPage).toHaveURL(/\/login$/);
+
+  await row.getByRole("button", { name: "Activer" }).click();
+  await expect(root.getByRole("status")).toHaveText("Utilisateur activé");
+  await expect(row.getByText("Actif")).toBeVisible();
+
+  await disabledPage.getByLabel(/Username|Identifiant/).fill("togglable-user");
+  await disabledPage
+    .getByLabel(/Password|Mot de passe/)
+    .fill("toggle-user-password");
+  await disabledPage
+    .getByRole("button", { name: /Sign in|Se connecter/ })
+    .click();
+  await expect(disabledPage).toHaveURL(/\/admin$/);
+
+  const usersList = (await (
+    await root.request.get("/api/admin/users")
+  ).json()) as { id: string; username: string }[];
+  const selfId = usersList.find((user) => user.username === "rootadmin")?.id;
+  const selfDeactivate = await root.request.patch(
+    `/api/admin/users/${selfId}`,
+    { data: { active: false } },
+  );
+  expect(selfDeactivate.status()).toBe(400);
+});
+
+test("the audit log paginates by 20 entries", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const created = await page.request.post("/api/admin/users", {
+    data: {
+      username: "pagination-user",
+      role: "read_only",
+      password: "pagination-password",
+    },
+  });
+  expect(created.status()).toBe(201);
+  const { id } = (await created.json()) as { id: string };
+  for (let i = 0; i < 25; i += 1) {
+    const response = await page.request.patch(`/api/admin/users/${id}`, {
+      data: { active: i % 2 === 0 },
+    });
+    expect(response.status()).toBe(200);
+  }
+
+  await page.goto("/admin/logs?q=pagination-user");
+  await expect(page.locator("tbody tr")).toHaveCount(20);
+  await expect(page.getByText("Page 1 / 2")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Précédent" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Suivant" }).click();
+  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
+  await expect(page.locator("tbody tr")).toHaveCount(6);
+  await expect(page.getByText("Page 2 / 2")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Suivant" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Précédent" }).click();
+  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user$/);
 });
 
 test("direct admin URLs enforce all five roles", async ({ browser }) => {

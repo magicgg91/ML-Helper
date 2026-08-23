@@ -68,6 +68,7 @@ model User {
   username             String          @unique
   passwordHash         String          @map("password_hash")
   role                 String
+  active               Boolean         @default(true)
   createdAt            DateTime        @default(now()) @map("created_at")
   lastLoginAt          DateTime?       @map("last_login_at")
   totpSecretEncrypted  String?         @map("totp_secret_encrypted")

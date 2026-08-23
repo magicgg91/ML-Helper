@@ -600,7 +600,8 @@
     "totp": "Code d’authentification",
     "totp-hint": "Saisis le code à 6 chiffres uniquement si l’authentification à deux facteurs est activée.",
     "submit": "Se connecter",
-    "error": "Identifiant ou mot de passe invalide"
+    "error": "Identifiant ou mot de passe invalide",
+    "error-disabled": "Compte désactivé, contacter l’administrateur."
   },
   "admin": {
     "title": "Administration",
@@ -610,7 +611,7 @@
       "dashboard": "Tableau de bord",
       "tools": "Outils",
       "guides": "Guides",
-      "content": "Contenu statique",
+      "content": "Conditions d’utilisation",
       "users": "Utilisateurs",
       "logs": "Historique"
     },
@@ -649,6 +650,8 @@
       "guides-summary": "{published} publiés / {total} au total",
       "references": "Référentiels",
       "references-summary": "{active} activés / {total} au total",
+      "users": "Utilisateurs",
+      "users-summary": "{active} actifs / {total} au total",
       "recent-actions": "Dernières actions",
       "user": "Utilisateur",
       "role": "Rôle",
@@ -671,7 +674,6 @@
     "guides": {
       "eyebrow": "Contenu éditorial",
       "title": "Guides",
-      "description": "Crée, traduis et soumets les guides à validation.",
       "new": "Nouveau",
       "new-title": "Nouveau guide",
       "edit-title": "Éditer le guide",
@@ -754,7 +756,6 @@
     "tools": {
       "eyebrow": "Contenu fonctionnel",
       "title": "Outils",
-      "description": "Un outil inactif reste annoncé au public, mais il est grisé et impossible à ouvrir.",
       "edit-ranking": "Éditer les seuils du classement",
       "translations-label": "Traductions des outils",
       "columns": { "tool": "Outil", "status": "Statut", "action": "Action" },
@@ -878,7 +879,14 @@
       "saved": "Utilisateur enregistré",
       "password-too-short": "Le nouveau mot de passe doit contenir au moins 12 caractères.",
       "error": "Impossible d’effectuer l’action",
-      "server-error": "Serveur indisponible"
+      "server-error": "Serveur indisponible",
+      "status": "Statut",
+      "active": "Actif",
+      "inactive": "Désactivé",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "activated": "Utilisateur activé",
+      "deactivated": "Utilisateur désactivé"
     },
     "logs": {
       "title": "Historique des actions",
@@ -895,12 +903,16 @@
       "filter-message": "Mot dans le message",
       "filter-apply": "Filtrer",
       "filter-reset": "Réinitialiser",
-      "no-results": "Aucune entrée ne correspond aux filtres."
+      "no-results": "Aucune entrée ne correspond aux filtres.",
+      "pagination": "Pagination de l’historique",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page-summary": "Page {page} / {total}"
     },
     "content": {
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
-      "field": "Texte des mentions légales (Markdown)",
+      "field": "Markdown",
       "preview": "Aperçu en direct",
       "save": "Enregistrer",
       "saving": "Enregistrement…",

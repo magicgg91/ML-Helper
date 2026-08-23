@@ -24,6 +24,27 @@ export function parseLogFilters(
   };
 }
 
+export const logsPageSize = 20;
+
+export function parseLogPage(
+  searchParams: Record<string, string | string[] | undefined>,
+): number {
+  const raw = firstValue(searchParams.page);
+  const page = raw ? Number.parseInt(raw, 10) : 1;
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+export function logsPageHref(filters: LogFilterInput, page: number): string {
+  const params = new URLSearchParams();
+  if (filters.user) params.set("user", filters.user);
+  if (filters.message) params.set("q", filters.message);
+  if (filters.from) params.set("from", filters.from);
+  if (filters.to) params.set("to", filters.to);
+  if (page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/admin/logs?${query}` : "/admin/logs";
+}
+
 export function buildLogsWhere(
   filters: LogFilterInput,
 ): Prisma.AuditLogWhereInput {

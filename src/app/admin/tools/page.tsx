@@ -18,8 +18,6 @@ export default async function ToolsAdminPage() {
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
-      <p className="lead">{t("description")}</p>
       <CalculatorVisibilityList
         canEdit={can(session.user.role, "calculators.write")}
         canToggle={can(session.user.role, "calculators.toggle")}

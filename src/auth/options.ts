@@ -40,6 +40,9 @@ export async function authorizeAdminCredentials(credentials?: {
     await registerFailedLogin(credentials.username);
     return null;
   }
+  if (!user.active) {
+    throw new Error("account_disabled");
+  }
   await clearFailedLogins(credentials.username);
   await prisma.user.update({
     where: { id: user.id },

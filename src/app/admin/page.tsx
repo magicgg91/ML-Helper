@@ -13,6 +13,7 @@ export default async function AdminPage() {
   const mayViewCalculators = can(session.user.role, "calculators.read");
   const mayViewGuides = can(session.user.role, "guides.read");
   const mayViewReferences = can(session.user.role, "references.read");
+  const mayViewUsers = can(session.user.role, "users.read");
   const mayViewLogs = can(session.user.role, "logs.view");
   const [
     active,
@@ -21,6 +22,8 @@ export default async function AdminPage() {
     guideTotal,
     activeReferences,
     referenceTotal,
+    activeUsers,
+    userTotal,
     recentLogs,
   ] = await Promise.all([
     mayViewCalculators
@@ -47,6 +50,10 @@ export default async function AdminPage() {
           where: { slug: { in: [...referenceToolSlugs] } },
         })
       : Promise.resolve(0),
+    mayViewUsers
+      ? prisma.user.count({ where: { active: true } })
+      : Promise.resolve(0),
+    mayViewUsers ? prisma.user.count() : Promise.resolve(0),
     mayViewLogs
       ? prisma.auditLog.findMany({
           include: { user: { select: { username: true } } },
@@ -58,8 +65,10 @@ export default async function AdminPage() {
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
-      {(mayViewCalculators || mayViewGuides || mayViewReferences) && (
+      {(mayViewCalculators ||
+        mayViewGuides ||
+        mayViewReferences ||
+        mayViewUsers) && (
         <section className="admin-metrics" aria-label={t("metrics-label")}>
           {mayViewCalculators && (
             <article className="total-box">
@@ -88,6 +97,14 @@ export default async function AdminPage() {
                   active: activeReferences,
                   total: referenceTotal,
                 })}
+              </strong>
+            </article>
+          )}
+          {mayViewUsers && (
+            <article className="total-box">
+              <span className="label">{t("users")}</span>
+              <strong className="value">
+                {t("users-summary", { active: activeUsers, total: userTotal })}
               </strong>
             </article>
           )}

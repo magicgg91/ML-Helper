@@ -23,9 +23,7 @@ export default async function GuidesAdminPage() {
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
       <div className="admin-section-heading">
-        <p>{t("description")}</p>
         {can(session.user.role, "guides.write") && (
           <Link
             className="editor-action editor-action-primary"

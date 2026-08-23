@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 export function LoginForm() {
   const t = useTranslations("login");
   const router = useRouter();
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"invalid" | "disabled" | null>(null);
   async function submit(formData: FormData) {
-    setError(false);
+    setError(null);
     const result = await signIn("credentials", {
       username: formData.get("username"),
       password: formData.get("password"),
@@ -17,7 +17,11 @@ export function LoginForm() {
     });
     if (result?.ok) {
       router.push("/admin");
-    } else setError(true);
+    } else if (result?.error === "account_disabled") {
+      setError("disabled");
+    } else {
+      setError("invalid");
+    }
   }
   return (
     <form action={submit}>
@@ -45,13 +49,14 @@ export function LoginForm() {
         />
       </label>
       <small id="login-totp-hint">{t("totp-hint")}</small>
-      <button
-        type="submit"
-        className="editor-action editor-action-primary"
-      >
+      <button type="submit" className="editor-action editor-action-primary">
         {t("submit")}
       </button>
-      {error && <p role="alert">{t("error")}</p>}
+      {error && (
+        <p role="alert">
+          {t(error === "disabled" ? "error-disabled" : "error")}
+        </p>
+      )}
     </form>
   );
 }
