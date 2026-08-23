@@ -34,7 +34,7 @@ export default async function AdminPage() {
         })
       : Promise.resolve(0),
     mayViewGuides
-      ? prisma.guide.count({ where: { status: "published" } })
+      ? prisma.guide.count({ where: { status: "published", active: true } })
       : Promise.resolve(0),
     mayViewGuides ? prisma.guide.count() : Promise.resolve(0),
     mayViewReferences

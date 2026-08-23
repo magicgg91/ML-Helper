@@ -597,6 +597,73 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   );
 });
 
+test("the dashboard's published-guides counter ignores an inactive guide", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  function publishedCount(text: string) {
+    return Number(/(\d+) publiés/.exec(text)?.[1]);
+  }
+  const before = publishedCount(
+    (await page.getByText(/\d+ publiés \/ \d+ au total/).textContent()) ?? "",
+  );
+
+  const created = await page.request.post("/api/admin/guides", {
+    data: {
+      slug: "dashboard-counter-guide",
+      category: ["debuter"],
+      coverImage: "",
+      translations: {
+        fr: { title: "Compteur dashboard", excerpt: "R", content: "P" },
+        en: { title: "Dashboard counter", excerpt: "S", content: "P" },
+      },
+    },
+  });
+  expect(created.status()).toBe(201);
+  const { id: guideId } = (await created.json()) as { id: string };
+  expect(
+    (
+      await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+        data: { status: "pending_review" },
+      })
+    ).status(),
+  ).toBe(200);
+  expect(
+    (
+      await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+        data: { status: "published" },
+      })
+    ).status(),
+  ).toBe(200);
+
+  await page.goto("/admin");
+  const afterPublish = publishedCount(
+    (await page.getByText(/\d+ publiés \/ \d+ au total/).textContent()) ?? "",
+  );
+  expect(afterPublish).toBe(before + 1);
+
+  expect(
+    (
+      await page.request.patch(`/api/admin/guides/${guideId}/active`, {
+        data: { active: false },
+      })
+    ).status(),
+  ).toBe(200);
+
+  await page.goto("/admin");
+  const afterDeactivate = publishedCount(
+    (await page.getByText(/\d+ publiés \/ \d+ au total/).textContent()) ?? "",
+  );
+  expect(afterDeactivate).toBe(before);
+});
+
 test("direct admin URLs enforce all five roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();
