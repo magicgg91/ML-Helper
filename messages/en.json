@@ -408,7 +408,7 @@
   },
   "search": {
     "label": "Search the site",
-    "placeholder": "Guides, reference tables, tools…",
+    "placeholder": "Search",
     "results-label": "Search results",
     "no-results": "No results.",
     "types": {

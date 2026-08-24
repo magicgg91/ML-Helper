@@ -413,7 +413,7 @@
   },
   "search": {
     "label": "Rechercher sur le site",
-    "placeholder": "Guides, référentiels, outils…",
+    "placeholder": "Rechercher",
     "results-label": "Résultats de recherche",
     "no-results": "Aucun résultat.",
     "types": {

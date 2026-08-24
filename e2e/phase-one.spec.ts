@@ -88,6 +88,7 @@ test("tool routes alone expose persistent player settings", async ({
 }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("ML Helper");
+  await expect(page.getByPlaceholder("Rechercher")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
