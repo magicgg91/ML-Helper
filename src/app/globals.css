@@ -1431,6 +1431,18 @@ button:disabled,
   cursor: not-allowed;
   opacity: 0.5;
 }
+@media (max-width: 42rem) {
+  /* A real 2-per-row grid instead of flex-wrap, which packed the 3 short
+     labels (Villes/Combat/Classement) onto row 1 and left the longer
+     "Compétences" stretched alone on row 2. */
+  .category-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .category-btn {
+    min-width: 0;
+  }
+}
 
 .guide-filter-nav {
   display: flex;
