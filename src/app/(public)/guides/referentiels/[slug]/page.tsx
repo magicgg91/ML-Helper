@@ -12,7 +12,11 @@ import {
   getExpeditionReferenceRows,
 } from "@/lib/reference-equipment-server";
 import { LevelUpReference } from "@/components/level-up-reference";
-import { getLevelUpParameters } from "@/lib/admin-formulas-server";
+import { TemplarsReferenceTable } from "@/components/templars-reference";
+import {
+  getLevelUpParameters,
+  getTemplarParameters,
+} from "@/lib/admin-formulas-server";
 
 export async function generateMetadata({
   params,
@@ -42,6 +46,8 @@ export default async function ReferencePage({
           <CombatReferenceTable rows={await getCombatReferenceRows()} />
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />
+        ) : slug === "templiers" ? (
+          <TemplarsReferenceTable parameters={await getTemplarParameters()} />
         ) : (
           <ExpeditionReferenceTable rows={await getExpeditionReferenceRows()} />
         )

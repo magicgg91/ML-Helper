@@ -294,7 +294,7 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
     .locator(".player-summary-line2 .sk-value")
     .first()
     .evaluate((el) => getComputedStyle(el).color);
-  expect(totalColor).toBe("rgb(130, 44, 23)");
+  expect(totalColor).toBe("rgb(143, 50, 16)");
 });
 
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
@@ -573,19 +573,20 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   );
 
   await page.getByRole("tab", { name: "Templiers" }).click();
-  await page
-    .getByRole("spinbutton", { name: "Niveau Templier cible" })
-    .fill("3");
-  await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
-
-  await page.getByRole("button", { name: "Défense" }).click();
-  await page
-    .getByRole("spinbutton", { name: "Niveau Templier cible" })
-    .fill("2");
-  await page.getByRole("button", { name: "Attaque" }).click();
   await expect(
-    page.getByRole("spinbutton", { name: "Niveau Templier cible" }),
-  ).toHaveValue("3");
+    page.getByRole("link", { name: "Voir le référentiel complet" }),
+  ).toHaveAttribute("href", "/guides/referentiels/templiers");
+  await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
+  await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
+  // Point 1: one shared level range applies to all 5 skills at once.
+  const rusherRow = page.getByRole("row", { name: /Vitesse/ });
+  await expect(rusherRow.getByRole("cell").nth(1)).toHaveText(
+    "1%/Templier",
+  );
+  await expect(rusherRow.getByRole("cell").nth(2)).toHaveText("3%");
+  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+3%");
+  await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");
+  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+2%");
 });
 
 test("Reference tables filter combat and flag expedition hypotheses", async ({

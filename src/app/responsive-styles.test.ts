@@ -47,6 +47,22 @@ describe("public responsive styles", () => {
     );
   });
 
+  it("also uniformly splits the Outils category nav 2-per-row on mobile", () => {
+    // Point 6: Villes/Combat/Classement/Compétences must wrap 2-per-line as
+    // a real grid, not organically via flex-wrap (which left the longer
+    // "Compétences" label alone, stretched, on its own line). The override
+    // must come AFTER the unconditional `.category-nav { display: flex }`
+    // base rule in source order, or the base rule wins the cascade at equal
+    // specificity regardless of the media query matching.
+    const baseRuleIndex = css.indexOf(".category-nav {\n  display: flex;");
+    const overrideRuleIndex = css.indexOf(
+      ".category-nav {\n    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));",
+    );
+    expect(baseRuleIndex).toBeGreaterThan(-1);
+    expect(overrideRuleIndex).toBeGreaterThan(-1);
+    expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
+  });
+
   it("offsets the expanded mobile navigation below the header", () => {
     expect(css).toMatch(/\.public-header-nav\s*{[\s\S]*?margin-top: 0\.3rem/);
   });

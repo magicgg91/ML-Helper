@@ -64,18 +64,28 @@ describe("SkillsCalculators", () => {
       .querySelector("strong")!;
     expect(obtainedStat).toHaveClass("value", "emerald");
   });
-  it("keeps the five Templar types independent", () => {
+  it("applies one shared level range to all five Templar skills at once", () => {
     renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
+      screen.getByRole("spinbutton", { name: "Niveau cible" }),
       { target: { value: "3" } },
     );
     expect(screen.getByTestId("templar-cost")).toHaveTextContent("599 Pouciel");
-    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
-    expect(
-      screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
-    ).toHaveValue(1);
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows).toHaveLength(5);
+    const striker = rows
+      .find((row) => row.textContent?.startsWith("Attaque"))!
+      .querySelectorAll("td");
+    expect(striker[1]).toHaveTextContent("0.25%/Templier");
+    expect(striker[2]).toHaveTextContent("0.75%");
+    expect(striker[3]).toHaveTextContent("+0.75%");
+    const rusher = rows
+      .find((row) => row.textContent?.startsWith("Vitesse"))!
+      .querySelectorAll("td");
+    expect(rusher[1]).toHaveTextContent("1%/Templier");
+    expect(rusher[2]).toHaveTextContent("3%");
+    expect(rusher[3]).toHaveTextContent("+3%");
   });
   it("uses the administrator-provided named Templar parameters", () => {
     renderWithIntl(
@@ -86,7 +96,7 @@ describe("SkillsCalculators", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
+      screen.getByRole("spinbutton", { name: "Niveau cible" }),
       { target: { value: "3" } },
     );
     expect(screen.getByTestId("templar-cost")).toHaveTextContent(

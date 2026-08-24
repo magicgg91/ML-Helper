@@ -383,20 +383,24 @@
   "templars": {
     "name": "Templars",
     "fields": {
-      "start-level": "Starting templar level",
-      "target-level": "Target templar level"
+      "start-level": "Starting level",
+      "target-level": "Target level"
     },
-    "total-cost": "Total cost — {templar}",
+    "total-cost": "Total cost",
     "skydust": "Skydust",
     "bonus-per-templar": "Bonus per templar",
     "total-bonus-level": "Total bonus at level {level}",
     "gain-transition": "Start → target gain",
+    "rate-value": "{rate}%/templar",
+    "view-reference": "View full reference table",
     "cost-table": "Exact cost table",
     "columns": {
+      "skill": "Skill",
       "level": "Reached level",
       "level-cost": "Level cost",
       "cumulative-cost": "Cumulative cost"
-    }
+    },
+    "competences-link": "Open Skills tools"
   },
   "Navigation": {
     "tools": "Tools",
@@ -525,7 +529,8 @@
       "expedition": "Expedition",
       "combat-equipment": "Combat Equipment",
       "expedition-equipment": "Expedition Equipment",
-      "level-up": "Level Up"
+      "level-up": "Level Up",
+      "templiers": "Templar Cost"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
