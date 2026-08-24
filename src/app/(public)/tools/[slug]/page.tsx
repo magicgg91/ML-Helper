@@ -12,6 +12,7 @@ import {
   getCombatParameters,
 } from "../../../../lib/admin-formulas-server";
 import { getTranslations } from "next-intl/server";
+import { pageTitle } from "../../../../lib/page-title";
 
 const toolTitleKeys: Record<string, string> = {
   villes: "cities",
@@ -26,8 +27,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const key = toolTitleKeys[slug];
   if (!key) return {};
-  const tools = await getTranslations("tools");
-  return { title: tools(key) };
+  const [publicTranslations, tools] = await Promise.all([
+    getTranslations("Public"),
+    getTranslations("tools"),
+  ]);
+  return { title: pageTitle(publicTranslations("tools"), tools(key)) };
 }
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {

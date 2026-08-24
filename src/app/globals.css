@@ -26,6 +26,7 @@
   --rarity-legendaire: #d4a13a;
   --sapphire: #4a72c9;
   --sapphire-bright: #7fa3e6;
+  --summary-total: #f08a65;
   --background: var(--bg);
   --foreground: var(--text);
   --surface: var(--bg-panel);
@@ -55,6 +56,7 @@
   --text-faint: #858b95;
   --sapphire: #3d63b0;
   --sapphire-bright: #2c4a87;
+  --summary-total: #923721;
   --background: var(--bg);
   --foreground: var(--text);
   --surface: var(--bg-panel);
@@ -433,6 +435,9 @@ main.public-main.contact-page {
   font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
   line-height: 1.6;
+}
+.player-summary-skill-group {
+  display: block;
   white-space: nowrap;
   overflow-x: auto;
 }
@@ -440,7 +445,7 @@ main.public-main.contact-page {
   color: var(--text-dim);
 }
 .player-summary-line2 .sk-value {
-  color: var(--success);
+  color: var(--summary-total);
 }
 .sk-breakdown {
   color: var(--text-faint);
@@ -1115,6 +1120,7 @@ select {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
+    margin-top: 0.3rem;
     padding: 0.9rem 1rem;
     border-bottom: 1px solid var(--border);
     background: var(--bg-panel);
@@ -1129,8 +1135,19 @@ select {
     padding-left: 1.1rem;
   }
   .player-summary-line2 {
+    overflow-x: visible;
+  }
+  .player-summary-skill-group {
     white-space: normal;
     overflow-x: visible;
+  }
+  .tool-category-grid,
+  nav.calculator-tabs:not(.compact) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tool-category-grid,
+  nav.calculator-tabs:not(.compact) {
+    display: grid;
   }
   .city-comparison {
     grid-template-columns: 1fr;
