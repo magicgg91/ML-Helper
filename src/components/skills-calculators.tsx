@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
 import {
   gemFamilies,
@@ -20,15 +21,9 @@ import {
 } from "../lib/gem-parameters";
 import {
   defaultTemplarParameters,
-  templarLevelCost,
   type TemplarParameters,
 } from "../lib/templar-parameters";
-import {
-  skillKeys,
-  templarKeys,
-  type SkillKey,
-  type TemplarKey,
-} from "../lib/player-settings";
+import { skillKeys, templarKeys, type SkillKey } from "../lib/player-settings";
 import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { NumberStepper } from "./number-stepper";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
@@ -582,121 +577,77 @@ function Result({
   );
 }
 
-type TemplarState = Record<TemplarKey, { start: number; target: number }>;
 function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const t = useTranslations("templars");
   const game = useTranslations("game");
-  const [selected, setSelected] = useState<TemplarKey>("striker");
-  const [levels, setLevels] = useState<TemplarState>(
-    () =>
-      Object.fromEntries(
-        templarKeys.map((key) => [key, { start: 0, target: 1 }]),
-      ) as TemplarState,
-  );
-  const current = levels[selected];
-  const rate = templarRates[selected];
-  const cost = templarUpgradeCost(current.start, current.target, parameters);
-  const gain = (current.target - current.start) * rate;
-  const update = (field: "start" | "target", value: number) =>
-    setLevels((state) => ({
-      ...state,
-      [selected]: {
-        ...state[selected],
-        [field]: Math.max(0, Math.min(20, Math.floor(value))),
-      },
-    }));
-  const costs = useMemo(
-    () =>
-      Array.from({ length: 20 }, (_, index) =>
-        templarLevelCost(index + 1, parameters),
-      ),
-    [parameters],
-  );
-  const cumulative = useMemo(
-    () =>
-      costs.map((_, index) =>
-        costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
-      ),
-    [costs],
-  );
+  const [start, setStart] = useState(0);
+  const [target, setTarget] = useState(1);
+  const clampLevel = (value: number) => Math.max(0, Math.min(20, Math.floor(value)));
+  const cost = templarUpgradeCost(start, target, parameters);
   return (
     <div className="calculator-stack">
+      <Link
+        className="reference-cross-link"
+        href="/guides/referentiels/templiers"
+      >
+        {t("view-reference")}
+      </Link>
       <section className="calculator-card">
-        <div className="family-buttons">
-          {templarKeys.map((key) => (
-            <button
-              type="button"
-              key={key}
-              aria-pressed={selected === key}
-              onClick={() => setSelected(key)}
-            >
-              {game(`templars.${key}`)}
-            </button>
-          ))}
-        </div>
         <div className="calculator-fields">
           <label className="calculator-field">
             {t("fields.start-level")}
             <NumberStepper
               label={t("fields.start-level")}
-              value={current.start}
+              value={start}
               min={0}
               max={20}
-              onChange={(value) => update("start", value)}
+              onChange={(value) => setStart(clampLevel(value))}
             />
           </label>
           <label className="calculator-field">
             {t("fields.target-level")}
             <NumberStepper
               label={t("fields.target-level")}
-              value={current.target}
+              value={target}
               min={0}
               max={20}
-              onChange={(value) => update("target", value)}
+              onChange={(value) => setTarget(clampLevel(value))}
             />
           </label>
         </div>
       </section>
       <section className="calculator-card">
         <div className="result-highlight">
-          <span>
-            {t("total-cost", { templar: game(`templars.${selected}`) })}
-          </span>
+          <span>{t("total-cost")}</span>
           <strong data-testid="templar-cost">
             {formatGameNumber(cost)} {t("skydust")}
           </strong>
         </div>
-        <div className="calculator-results">
-          <Result label={t("bonus-per-templar")} value={`${rate}%`} />
-          <Result
-            label={t("total-bonus-level", { level: current.target })}
-            value={`${current.target * rate}%`}
-          />
-          <Result
-            label={t("gain-transition")}
-            value={`${gain >= 0 ? "+" : ""}${gain}%`}
-          />
-        </div>
       </section>
       <section className="calculator-card">
-        <h3>{t("cost-table")}</h3>
         <div className="ranking-table-wrap">
           <table className="ranking-table">
             <thead>
               <tr>
-                <th>{t("columns.level")}</th>
-                <th>{t("columns.level-cost")}</th>
-                <th>{t("columns.cumulative-cost")}</th>
+                <th>{t("columns.skill")}</th>
+                <th>{t("bonus-per-templar")}</th>
+                <th>{t("total-bonus-level", { level: target })}</th>
+                <th>{t("gain-transition")}</th>
               </tr>
             </thead>
             <tbody>
-              {costs.map((item, index) => (
-                <tr key={index + 1}>
-                  <td>{index + 1}</td>
-                  <td>{formatGameNumber(item)}</td>
-                  <td>{formatGameNumber(cumulative[index])}</td>
-                </tr>
-              ))}
+              {templarKeys.map((key) => {
+                const rate = templarRates[key];
+                const gain = (target - start) * rate;
+                return (
+                  <tr key={key}>
+                    <td>{game(`templars.${key}`)}</td>
+                    <td>{t("rate-value", { rate })}</td>
+                    <td>{`${target * rate}%`}</td>
+                    <td>{`${gain >= 0 ? "+" : ""}${gain}%`}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

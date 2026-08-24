@@ -389,20 +389,24 @@
   "templars": {
     "name": "Templiers",
     "fields": {
-      "start-level": "Niveau Templier de départ",
-      "target-level": "Niveau Templier cible"
+      "start-level": "Niveau de départ",
+      "target-level": "Niveau cible"
     },
-    "total-cost": "Coût total — {templar}",
+    "total-cost": "Coût total",
     "skydust": "Pouciel",
     "bonus-per-templar": "Bonus par Templier",
     "total-bonus-level": "Bonus total au niveau {level}",
     "gain-transition": "Gain départ → cible",
+    "rate-value": "{rate}%/Templier",
+    "view-reference": "Voir le référentiel complet",
     "cost-table": "Table de coût exacte",
     "columns": {
+      "skill": "Compétence",
       "level": "Niveau atteint",
       "level-cost": "Coût du niveau",
       "cumulative-cost": "Coût cumulé"
-    }
+    },
+    "competences-link": "Ouvrir les Outils Compétences"
   },
   "Navigation": {
     "tools": "Outils",
@@ -530,7 +534,8 @@
       "expedition": "Expédition",
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipement d’Expédition",
-      "level-up": "Level Up"
+      "level-up": "Level Up",
+      "templiers": "Coût des Templiers"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
