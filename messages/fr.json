@@ -264,7 +264,7 @@
     "maximum": "Troupes maximum ({percentage} %)"
   },
   "ranking": {
-    "name": "Ranking",
+    "name": "Classement",
     "fields": {
       "league": "Ligue",
       "percentage": "Ton pourcentage actuel",
