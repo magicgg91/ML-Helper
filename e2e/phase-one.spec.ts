@@ -83,6 +83,61 @@ test("the legal notice admin reuses the live Markdown workspace", async ({
   ).toBeVisible();
 });
 
+test("the admin tools table shows categories, hides Edit with nothing to edit, and shares one Villes editor", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await page.goto("/admin/tools");
+
+  // Point 2: the Ranking tool must display as "Classement" in French.
+  await expect(
+    page.locator("td.font-medium", { hasText: "Classement" }),
+  ).toBeVisible();
+  await expect(
+    page.locator("td.font-medium", { hasText: "Ranking" }),
+  ).toHaveCount(0);
+
+  // Point 5: a Catégorie column sits next to the tool name.
+  await expect(
+    page.getByRole("columnheader", { name: "Catégorie" }),
+  ).toBeVisible();
+  const cityCostRow = page.getByRole("row", { name: "Coût de Ville" });
+  await expect(cityCostRow.getByRole("cell", { name: "Villes" })).toBeVisible();
+
+  // Point 4: the 3 Villes simulators share the same edit destination.
+  for (const tool of [
+    "Coût de Ville",
+    "Niveau Max Atteignable",
+    "Production",
+  ]) {
+    await expect(
+      page
+        .getByRole("row", { name: tool })
+        .getByRole("link", { name: "Modifier" }),
+    ).toHaveAttribute("href", "/admin/tools/city-parameters");
+  }
+
+  // Point 3: a tool with no editable numeric parameter has no Modifier
+  // button — only activate/deactivate remains available.
+  const gemsRow = page.getByRole("row", { name: "Gemmes" });
+  await expect(gemsRow.getByRole("link", { name: "Modifier" })).toHaveCount(0);
+  await expect(
+    gemsRow.getByRole("button", { name: "Désactiver" }),
+  ).toBeVisible();
+
+  // Point 1: the old "Textes multilingues" editor is gone entirely — its
+  // route now 404s instead of rendering an empty/dead block.
+  const response = await page.goto("/admin/tools/calculator-gems");
+  expect(response?.status()).toBe(404);
+});
+
 test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
@@ -988,9 +1043,6 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
         page.request.delete("/api/admin/users/unknown-user"),
         page.request.delete("/api/admin/logs", { data: {} }),
         page.request.patch("/api/admin/tools/calculator-ranking", { data: {} }),
-        page.request.patch("/api/admin/tools/calculator-ranking/translations", {
-          data: {},
-        }),
         page.request.put("/api/admin/tools/city-parameters", { data: {} }),
         page.request.put("/api/admin/tools/ranking", { data: {} }),
         page.request.put("/api/admin/tools/templars", { data: {} }),
