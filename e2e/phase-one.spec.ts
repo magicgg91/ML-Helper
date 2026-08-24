@@ -263,6 +263,36 @@ test("the clan temple bonus adds the confirmed base to the entered contribution"
   await expect(line2).toContainText("Vit 310% (0% + 0% + 310%)");
 });
 
+test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in light theme", async ({
+  page,
+}) => {
+  // Point 2: a wide desktop viewport — not just mobile/tablet — must still
+  // split the skill summary 5/5 across two rows instead of one scrollable
+  // line.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/tools/villes");
+  await page.getByText("Paramètres du joueur", { exact: true }).click();
+
+  const groups = page.locator(".player-summary-skill-group");
+  await expect(groups).toHaveCount(2);
+  const [firstBox, secondBox] = await Promise.all([
+    groups.nth(0).boundingBox(),
+    groups.nth(1).boundingBox(),
+  ]);
+  expect(secondBox!.y).toBeGreaterThan(firstBox!.y + firstBox!.height / 2);
+
+  // Point 1: in light theme, the résumé's total color must meet WCAG AA
+  // (>= 4.5:1) against the panel background — asserted here as the exact
+  // raised color, with the ratio itself covered by
+  // responsive-styles.test.ts.
+  await page.getByRole("button", { name: /Activer le mode clair/ }).click();
+  const totalColor = await page
+    .locator(".player-summary-line2 .sk-value")
+    .first()
+    .evaluate((el) => getComputedStyle(el).color);
+  expect(totalColor).toBe("rgb(130, 44, 23)");
+});
+
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   await page.goto("/tools/combat");
   await expect(page.getByTestId(/xp-range-/)).toHaveCount(5);
