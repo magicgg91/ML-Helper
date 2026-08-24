@@ -16,8 +16,13 @@ describe("gems", () => {
   it("accepts administrator-provided named gem parameters", () => {
     expect(
       gemValue("prosperous", "legend", {
-        skillFactor: { ...defaultGemParameters.skillFactor, prosperous: 2 },
-        leagueFactor: defaultGemParameters.leagueFactor,
+        skillLeagueValue: {
+          ...defaultGemParameters.skillLeagueValue,
+          prosperous: {
+            ...defaultGemParameters.skillLeagueValue.prosperous,
+            legend: 12,
+          },
+        },
         gemPrice: defaultGemParameters.gemPrice,
       }),
     ).toBe(12);

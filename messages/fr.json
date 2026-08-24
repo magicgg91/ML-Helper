@@ -884,11 +884,9 @@
       "percentage": "X (% des remparts)"
     },
     "gems": {
-      "formula": "Valeur de gemme = facteur de compétence × facteur de ligue",
-      "skill-factor": "Facteur par compétence",
-      "skill-factor-field": "Facteur {skill}",
-      "league-factor": "Facteur par ligue",
-      "league-factor-field": "Facteur {league}",
+      "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
+      "value": "Valeur de base par compétence et par ligue",
+      "value-field": "{skill} · {league}",
       "price": "Prix d’achat (saphirs)",
       "price-field": "Prix {league}"
     },

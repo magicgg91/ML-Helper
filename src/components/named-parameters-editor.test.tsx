@@ -98,32 +98,32 @@ describe("named formula parameter editors", () => {
     expect(saved.bronze).toBe(100);
   });
 
-  it("edits the gem skill/league factors and purchase prices", async () => {
+  it("edits the per-skill/per-league gem values and purchase prices", async () => {
     const request = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     render(<GemParametersEditor initial={defaultGemParameters} />);
     expect(
-      screen.getByRole("spinbutton", { name: "Facteur Vitesse" }),
-    ).toHaveValue(2.5);
+      screen.getByRole("spinbutton", { name: "Vitesse · Légende" }),
+    ).toHaveValue(15);
     expect(
-      screen.getByRole("spinbutton", { name: "Facteur Légende" }),
-    ).toHaveValue(6);
+      screen.getByRole("spinbutton", { name: "Vitesse · Bronze" }),
+    ).toHaveValue(2.5);
     expect(
       screen.getByRole("spinbutton", { name: "Prix Légende" }),
     ).toHaveValue(7000);
 
     fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Facteur Vitesse" }),
-      { target: { value: "3" } },
+      screen.getByRole("spinbutton", { name: "Vitesse · Légende" }),
+      { target: { value: "20" } },
     );
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer les paramètres" }),
     );
     await waitFor(() => expect(request).toHaveBeenCalled());
     const saved = JSON.parse(String(request.mock.calls[0][1]?.body));
-    expect(saved.skillFactor.rusher).toBe(3);
-    expect(saved.leagueFactor.legend).toBe(6);
+    expect(saved.skillLeagueValue.rusher.legend).toBe(20);
+    expect(saved.skillLeagueValue.rusher.bronze).toBe(2.5);
     expect(saved.gemPrice.legend).toBe(7000);
   });
 });

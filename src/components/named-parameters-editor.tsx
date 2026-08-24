@@ -493,15 +493,13 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
   const game = useTranslations("game");
   const [value, setValue] = useState(initial);
   const { status, save } = useToolSave("/api/admin/tools/gems", value);
-  const updateSkillFactor = (skill: SkillKey, next: number) =>
+  const updateValue = (skill: SkillKey, league: League, next: number) =>
     setValue((current) => ({
       ...current,
-      skillFactor: { ...current.skillFactor, [skill]: next },
-    }));
-  const updateLeagueFactor = (league: League, next: number) =>
-    setValue((current) => ({
-      ...current,
-      leagueFactor: { ...current.leagueFactor, [league]: next },
+      skillLeagueValue: {
+        ...current.skillLeagueValue,
+        [skill]: { ...current.skillLeagueValue[skill], [league]: next },
+      },
     }));
   const updatePrice = (league: GemLeague, next: number) =>
     setValue((current) => ({
@@ -521,35 +519,46 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
       </EditorActionBar>
       <p>{t("formula")}</p>
       <section className="admin-panel">
-        <h2>{t("skill-factor")}</h2>
-        <div className="calculator-fields">
-          {skillKeys.map((skill) => (
-            <NumericField
-              key={skill}
-              label={t("skill-factor-field", {
-                skill: game(`skills.${skill}`),
-              })}
-              value={value.skillFactor[skill]}
-              step={0.5}
-              onChange={(next) => updateSkillFactor(skill, next)}
-            />
-          ))}
-        </div>
-      </section>
-      <section className="admin-panel">
-        <h2>{t("league-factor")}</h2>
-        <div className="calculator-fields">
-          {leagues.map((league) => (
-            <NumericField
-              key={league}
-              label={t("league-factor-field", {
-                league: game(`leagues.${league}`),
-              })}
-              value={value.leagueFactor[league]}
-              step={1}
-              onChange={(next) => updateLeagueFactor(league, next)}
-            />
-          ))}
+        <h2>{t("value")}</h2>
+        <div className="table-scroll">
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                <th></th>
+                {leagues.map((league) => (
+                  <th key={league}>{game(`leagues.${league}`)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {skillKeys.map((skill) => (
+                <tr key={skill}>
+                  <td>{game(`skills.${skill}`)}</td>
+                  {leagues.map((league) => (
+                    <td key={league}>
+                      <input
+                        aria-label={t("value-field", {
+                          skill: game(`skills.${skill}`),
+                          league: game(`leagues.${league}`),
+                        })}
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={value.skillLeagueValue[skill][league]}
+                        onChange={(event) =>
+                          updateValue(
+                            skill,
+                            league,
+                            Number(event.target.value),
+                          )
+                        }
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
       <section className="admin-panel">

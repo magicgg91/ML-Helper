@@ -7,19 +7,17 @@ describe("gem parameters", () => {
     expect(parseGemParameters("not an object")).toEqual(defaultGemParameters);
   });
 
-  it("keeps unaffected keys at their default when only some are overridden", () => {
+  it("keeps unaffected cells at their default when only some are overridden", () => {
     const parsed = parseGemParameters({
-      skillFactor: { rusher: 3 },
-      leagueFactor: { legend: 10 },
+      skillLeagueValue: { rusher: { legend: 20 } },
       gemPrice: { legend: 9000 },
     });
-    expect(parsed.skillFactor.rusher).toBe(3);
-    expect(parsed.skillFactor.striker).toBe(
-      defaultGemParameters.skillFactor.striker,
+    expect(parsed.skillLeagueValue.rusher.legend).toBe(20);
+    expect(parsed.skillLeagueValue.rusher.bronze).toBe(
+      defaultGemParameters.skillLeagueValue.rusher.bronze,
     );
-    expect(parsed.leagueFactor.legend).toBe(10);
-    expect(parsed.leagueFactor.bronze).toBe(
-      defaultGemParameters.leagueFactor.bronze,
+    expect(parsed.skillLeagueValue.striker.legend).toBe(
+      defaultGemParameters.skillLeagueValue.striker.legend,
     );
     expect(parsed.gemPrice.legend).toBe(9000);
     expect(parsed.gemPrice.silver).toBe(defaultGemParameters.gemPrice.silver);
@@ -27,10 +25,21 @@ describe("gem parameters", () => {
 
   it("ignores non-numeric overrides and keeps the default", () => {
     const parsed = parseGemParameters({
-      skillFactor: { rusher: "not a number" },
+      skillLeagueValue: { rusher: { legend: "not a number" } },
     });
-    expect(parsed.skillFactor.rusher).toBe(
-      defaultGemParameters.skillFactor.rusher,
+    expect(parsed.skillLeagueValue.rusher.legend).toBe(
+      defaultGemParameters.skillLeagueValue.rusher.legend,
     );
+  });
+
+  it("rejects non-positive values and prices to avoid division by zero", () => {
+    const parsed = parseGemParameters({
+      skillLeagueValue: { rusher: { legend: 0 } },
+      gemPrice: { legend: -100 },
+    });
+    expect(parsed.skillLeagueValue.rusher.legend).toBe(
+      defaultGemParameters.skillLeagueValue.rusher.legend,
+    );
+    expect(parsed.gemPrice.legend).toBe(defaultGemParameters.gemPrice.legend);
   });
 });

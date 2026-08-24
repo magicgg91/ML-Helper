@@ -883,11 +883,9 @@
       "percentage": "X (% of walls)"
     },
     "gems": {
-      "formula": "Gem value = skill factor × league factor",
-      "skill-factor": "Skill factor",
-      "skill-factor-field": "{skill} factor",
-      "league-factor": "League factor",
-      "league-factor-field": "{league} factor",
+      "formula": "Gem value = base value (per skill and per league)",
+      "value": "Base value per skill and per league",
+      "value-field": "{skill} · {league}",
       "price": "Purchase price (sapphires)",
       "price-field": "{league} price"
     },

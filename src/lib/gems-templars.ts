@@ -21,7 +21,7 @@ export function gemValue(
   league: League,
   parameters: GemParameters = defaultGemParameters,
 ): number {
-  return parameters.skillFactor[skill] * parameters.leagueFactor[league];
+  return parameters.skillLeagueValue[skill][league];
 }
 
 export type GemDistribution = {
