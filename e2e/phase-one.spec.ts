@@ -125,11 +125,15 @@ test("the admin tools table shows categories, hides Edit with nothing to edit, a
   }
 
   // Point 3: a tool with no editable numeric parameter has no Modifier
-  // button — only activate/deactivate remains available.
-  const gemsRow = page.getByRole("row", { name: "Gemmes" });
-  await expect(gemsRow.getByRole("link", { name: "Modifier" })).toHaveCount(0);
+  // button — only activate/deactivate remains available. Stuff Comparison
+  // only reads the Combat Equipment reference (already editable from
+  // Guides), so it has nothing of its own to edit.
+  const comparisonRow = page.getByRole("row", { name: "Comparaison de stuff" });
   await expect(
-    gemsRow.getByRole("button", { name: "Désactiver" }),
+    comparisonRow.getByRole("link", { name: "Modifier" }),
+  ).toHaveCount(0);
+  await expect(
+    comparisonRow.getByRole("button", { name: "Désactiver" }),
   ).toBeVisible();
 
   // Point 1: the old "Textes multilingues" editor is gone entirely — its
@@ -765,8 +769,8 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("link", { name: "Modifier" })
     .click();
   await expect(
-    page.getByRole("spinbutton", { name: "Facteur Vitesse" }),
-  ).toHaveValue("2.5");
+    page.getByRole("spinbutton", { name: "Vitesse · Légende" }),
+  ).toHaveValue("15");
   await page.getByRole("spinbutton", { name: "Prix Légende" }).fill("5000");
   await page
     .locator(".editor-action-bar")
