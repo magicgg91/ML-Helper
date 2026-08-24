@@ -404,6 +404,9 @@ main.public-main.contact-page {
   color: var(--muted);
   font-weight: 500;
 }
+#player-settings-title + small {
+  margin-left: 0.6rem;
+}
 .player-summary-row1 {
   display: flex;
   justify-content: space-between;
