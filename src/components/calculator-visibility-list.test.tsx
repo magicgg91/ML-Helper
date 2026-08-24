@@ -58,7 +58,7 @@ describe("CalculatorVisibilityList", () => {
     expect(screen.getByText("Classement", { selector: "td" })).toBeVisible();
   });
 
-  it("hides the edit button for a tool with no editable numeric parameter", () => {
+  it("hides the edit button for the Stuff simulator, which has no editable numeric parameter", () => {
     render(
       <CalculatorVisibilityList
         rows={[

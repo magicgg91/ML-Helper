@@ -83,7 +83,7 @@ test("the legal notice admin reuses the live Markdown workspace", async ({
   ).toBeVisible();
 });
 
-test("the admin tools table shows categories, hides Edit with nothing to edit, and shares one Villes editor", async ({
+test("the admin tools table shows categories, hides Edit for Stuff, and shares one Villes editor", async ({
   page,
 }) => {
   test.setTimeout(60_000);
