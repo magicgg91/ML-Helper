@@ -235,7 +235,7 @@ test("tool routes alone expose persistent player settings", async ({
     }),
   ).toHaveValue("12.5");
   await page.goto("/guides/guide-visible");
-  await expect(page).toHaveTitle("Guide visible");
+  await expect(page).toHaveTitle("Guides — Guide visible");
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();
