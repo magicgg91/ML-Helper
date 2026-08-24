@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
+import { pageTitle } from "@/lib/page-title";
 
 export async function generateMetadata({
   params,
@@ -16,7 +17,10 @@ export async function generateMetadata({
     where: { slug, status: "published", active: true },
   });
   if (!guide) return {};
-  return { title: localizedText(guide.title, locale) || slug };
+  const t = await getTranslations("Public");
+  return {
+    title: pageTitle(t("guides"), localizedText(guide.title, locale) || slug),
+  };
 }
 
 export default async function GuidePage({

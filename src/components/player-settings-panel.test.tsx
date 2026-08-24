@@ -13,6 +13,7 @@ import {
   playerStorageKey,
   safePlayerSettings,
 } from "./player-settings-panel";
+import { templarRates } from "../lib/gems-templars";
 
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
@@ -170,6 +171,16 @@ describe("PlayerSettingsPanel", () => {
     expect(line2).toHaveTextContent("Atq 20% (0% + 0% + 20%)");
     // Bravoure is not a temple skill: just the total, no breakdown.
     expect(line2).not.toHaveTextContent("Bra 0% (");
+    expect(line2.querySelectorAll(".player-summary-skill-group")).toHaveLength(
+      2,
+    );
+    expect(
+      line2.querySelectorAll(".player-summary-skill-group")[0]?.children,
+    ).toHaveLength(5);
+    expect(
+      line2.querySelectorAll(".player-summary-skill-group")[1]?.children,
+    ).toHaveLength(5);
+    expect(line2.querySelector(".sk-value")).toHaveClass("component-total");
   });
 
   it("updates the collapsed summary's per-skill total after editing equipment and points", async () => {
@@ -335,8 +346,18 @@ describe("PlayerSettingsPanel", () => {
 
     expect(attack).toHaveValue(0);
     expect(speed).toHaveValue(0);
-    expect(attack).toHaveAttribute("step", "1");
-    expect(speed).toHaveAttribute("step", "1");
+    expect(attack).toHaveAttribute("step", String(templarRates.striker));
+    expect(speed).toHaveAttribute("step", String(templarRates.rusher));
+
+    expect(
+      screen.getByLabelText("Temple Défense", { selector: "input" }),
+    ).toHaveAttribute("step", String(templarRates.guardian));
+    expect(
+      screen.getByLabelText("Temple Or", { selector: "input" }),
+    ).toHaveAttribute("step", String(templarRates.prosperous));
+    expect(
+      screen.getByLabelText("Temple Recruteur", { selector: "input" }),
+    ).toHaveAttribute("step", String(templarRates.recruiter));
 
     // A player entering only the clan's Templar contribution never goes
     // below 0, even before any confirmed contribution is known.

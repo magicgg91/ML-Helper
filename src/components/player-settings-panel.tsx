@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { NumberStepper } from "./number-stepper";
+import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
   allocatedSkillPoints,
@@ -170,44 +171,52 @@ export function PlayerSettingsPanel() {
             className="player-summary-line2"
             data-testid="player-summary-line2"
           >
-            {skillKeys.map((key, index) => {
-              const format = (value: number) =>
-                value.toLocaleString(locale, { maximumFractionDigits: 2 });
-              const breakdown = isTemplarKey(key)
-                ? templeSkillBreakdown(key, settings)
-                : null;
-              const total = breakdown
-                ? breakdown.total
-                : combinedSkillPercent(key, settings);
-              return (
-                <span key={key}>
-                  {index > 0 ? " · " : ""}
-                  <span className="sk-name">
-                    {game(`skills-short.${key}`)}
-                  </span>{" "}
-                  <span className="sk-value">
-                    {format(total)}%
-                    {breakdown && (
-                      <span className="sk-breakdown">
-                        {" ("}
-                        <span className="component-equipment">
-                          {format(breakdown.equipment)}%
+            {[skillKeys.slice(0, 5), skillKeys.slice(5)].map(
+              (skillGroup, groupIndex) => (
+                <span className="player-summary-skill-group" key={groupIndex}>
+                  {skillGroup.map((key, index) => {
+                    const format = (value: number) =>
+                      value.toLocaleString(locale, {
+                        maximumFractionDigits: 2,
+                      });
+                    const breakdown = isTemplarKey(key)
+                      ? templeSkillBreakdown(key, settings)
+                      : null;
+                    const total = breakdown
+                      ? breakdown.total
+                      : combinedSkillPercent(key, settings);
+                    return (
+                      <span key={key}>
+                        {index > 0 ? " · " : ""}
+                        <span className="sk-name">
+                          {game(`skills-short.${key}`)}
+                        </span>{" "}
+                        <span className="sk-value component-total">
+                          {format(total)}%
+                          {breakdown && (
+                            <span className="sk-breakdown">
+                              {" ("}
+                              <span className="component-equipment">
+                                {format(breakdown.equipment)}%
+                              </span>
+                              {" + "}
+                              <span className="component-points">
+                                {format(breakdown.points)}%
+                              </span>
+                              {" + "}
+                              <span className="component-temple">
+                                {format(breakdown.temple)}%
+                              </span>
+                              {")"}
+                            </span>
+                          )}
                         </span>
-                        {" + "}
-                        <span className="component-points">
-                          {format(breakdown.points)}%
-                        </span>
-                        {" + "}
-                        <span className="component-temple">
-                          {format(breakdown.temple)}%
-                        </span>
-                        {")"}
                       </span>
-                    )}
-                  </span>
+                    );
+                  })}
                 </span>
-              );
-            })}
+              ),
+            )}
           </small>
         </summary>
         <div className="player-settings-body">
@@ -387,39 +396,41 @@ export function PlayerSettingsPanel() {
           >
             <p className="settings-help">{t("clan-temple.help")}</p>
             <div className="settings-grid">
-              {templarKeys.map((key) => (
-                <label key={key}>
-                  <span>
-                    {t("clan-temple.field", {
-                      templar: game(`templars.${key}`),
-                    })}{" "}
-                    <output
-                      className="component-temple"
-                      data-testid={`clan-temple-total-${key}`}
-                    >
-                      {templePercent(key, settings.clanTemple).toLocaleString(
-                        locale,
-                        { maximumFractionDigits: 2 },
-                      )}
-                      %
-                    </output>
-                  </span>
-                  <NumberStepper
-                    label={t("clan-temple.field", {
-                      templar: game(`templars.${key}`),
-                    })}
-                    value={settings.clanTemple[key]}
-                    min={0}
-                    step={1}
-                    onChange={(value) =>
-                      setSettings((current) => ({
-                        ...current,
-                        clanTemple: { ...current.clanTemple, [key]: value },
-                      }))
-                    }
-                  />
-                </label>
-              ))}
+              {templarKeys.map((key) => {
+                return (
+                  <label key={key}>
+                    <span>
+                      {t("clan-temple.field", {
+                        templar: game(`templars.${key}`),
+                      })}{" "}
+                      <output
+                        className="component-temple"
+                        data-testid={`clan-temple-total-${key}`}
+                      >
+                        {templePercent(key, settings.clanTemple).toLocaleString(
+                          locale,
+                          { maximumFractionDigits: 2 },
+                        )}
+                        %
+                      </output>
+                    </span>
+                    <NumberStepper
+                      label={t("clan-temple.field", {
+                        templar: game(`templars.${key}`),
+                      })}
+                      value={settings.clanTemple[key]}
+                      min={0}
+                      step={templarRates[key]}
+                      onChange={(value) =>
+                        setSettings((current) => ({
+                          ...current,
+                          clanTemple: { ...current.clanTemple, [key]: value },
+                        }))
+                      }
+                    />
+                  </label>
+                );
+              })}
             </div>
           </SettingsSection>
         </div>
