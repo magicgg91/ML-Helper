@@ -94,8 +94,6 @@ describe("admin page translations", () => {
 
   it("falls back recursively to English for a missing French admin key", async () => {
     const { fr } = await translators();
-    expect(fr("admin.tools.translations-error")).toBe(
-      "Unable to save translations.",
-    );
+    expect(fr("Navigation.admin")).toBe("Admin area");
   });
 });

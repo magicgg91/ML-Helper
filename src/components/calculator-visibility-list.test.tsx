@@ -17,6 +17,7 @@ describe("CalculatorVisibilityList", () => {
             id: "calculator-ranking",
             slug: "ranking",
             label: "Ranking",
+            category: "classement",
             active: true,
             editHref: "/admin/tools/ranking",
           },
@@ -36,6 +37,46 @@ describe("CalculatorVisibilityList", () => {
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
+  it("shows the tool's category next to its name", () => {
+    render(
+      <CalculatorVisibilityList
+        rows={[
+          {
+            id: "calculator-ranking",
+            slug: "ranking",
+            label: "Ranking",
+            category: "classement",
+            active: true,
+            editHref: "/admin/tools/ranking",
+          },
+        ]}
+      />,
+    );
+    expect(
+      screen.getByRole("columnheader", { name: "Catégorie" }),
+    ).toBeVisible();
+    expect(screen.getByText("Classement", { selector: "td" })).toBeVisible();
+  });
+
+  it("hides the edit button for a tool with no editable numeric parameter", () => {
+    render(
+      <CalculatorVisibilityList
+        rows={[
+          {
+            id: "calculator-gems",
+            slug: "gems",
+            label: "Gemmes",
+            category: "competences",
+            active: true,
+            editHref: undefined,
+          },
+        ]}
+      />,
+    );
+    expect(screen.queryByRole("link", { name: "Modifier" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Désactiver" })).toBeVisible();
+  });
+
   it("disables an active calculator and reflects the saved state", async () => {
     const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
@@ -53,6 +94,7 @@ describe("CalculatorVisibilityList", () => {
             id: "calculator-ranking",
             slug: "ranking",
             label: "Ranking",
+            category: "classement",
             active: true,
             editHref: "/admin/tools/ranking",
           },
@@ -88,6 +130,7 @@ describe("CalculatorVisibilityList", () => {
             id: "calculator-ranking",
             slug: "ranking",
             label: "Ranking",
+            category: "classement",
             active: true,
             editHref: "/admin/tools/ranking",
           },
