@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { requireCapability } from "@/auth/require-session";
-import { CalculatorTranslationsEditor } from "@/components/calculator-translations-editor";
 import {
   CityParametersEditor,
   TemplarParametersEditor,
@@ -10,9 +9,7 @@ import {
   getCityParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
-import { prisma } from "@/lib/prisma";
 import { getRankingConfig } from "@/lib/ranking";
-import { translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 
 export default async function EditToolPage({
@@ -35,27 +32,9 @@ export default async function EditToolPage({
       <TemplarParametersEditor initial={await getTemplarParameters()} />
     );
   } else {
-    const tool = await prisma.calculator.findFirst({
-      where: { OR: [{ id }, { slug: id }] },
-    });
-    if (
-      !tool ||
-      ["combat-equipment", "expedition-equipment", "level-up"].includes(
-        tool.slug,
-      )
-    )
-      notFound();
-    title = t("edit-tool", { tool: tool.slug });
-    content = (
-      <CalculatorTranslationsEditor
-        id={tool.id}
-        label={tool.slug}
-        initial={{
-          description: translationRecord(tool.description),
-          tips: translationRecord(tool.tips),
-        }}
-      />
-    );
+    // Every other tool has no named numeric parameter to edit (cdc section
+    // 8): the admin table doesn't link here for them, so this is defensive.
+    notFound();
   }
   return (
     <main className="admin-main">

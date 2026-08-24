@@ -25,8 +25,9 @@ export default async function ToolsAdminPage() {
           id: tool.id,
           slug: tool.slug,
           label: messages(`${tool.slug}.name`),
+          category: tool.category,
           active: tool.active,
-          editHref: adminToolEditHref(tool.id, tool.slug),
+          editHref: adminToolEditHref(tool.slug),
         }))}
       />
     </main>

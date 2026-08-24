@@ -264,7 +264,7 @@
     "maximum": "Troupes maximum ({percentage} %)"
   },
   "ranking": {
-    "name": "Ranking",
+    "name": "Classement",
     "fields": {
       "league": "Ligue",
       "percentage": "Ton pourcentage actuel",
@@ -755,8 +755,18 @@
       "eyebrow": "Contenu fonctionnel",
       "title": "Outils",
       "edit-ranking": "Éditer les seuils du classement",
-      "translations-label": "Traductions des outils",
-      "columns": { "tool": "Outil", "status": "Statut", "action": "Action" },
+      "columns": {
+        "tool": "Outil",
+        "category": "Catégorie",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "category-values": {
+        "villes": "Villes",
+        "combat": "Combat",
+        "classement": "Classement",
+        "competences": "Compétences"
+      },
       "active": "Actif",
       "inactive": "Inactif",
       "enable": "Activer",
@@ -766,18 +776,11 @@
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "state-saved": "{tool} est maintenant {state}.",
       "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
-      "translations-summary": "Textes multilingues — {tool}",
-      "translations-language": "Langue du contenu",
       "name": "Nom",
-      "description-field": "Description",
-      "tip": "Astuce",
-      "save-translations": "Enregistrer les traductions",
-      "translations-saved": "Traductions enregistrées.",
       "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
       "ranking-editor": "Seuils du classement",
-      "templar-parameters": "Paramètres de coût des Templiers",
-      "edit-tool": "Modifier l’outil — {tool}"
+      "templar-parameters": "Paramètres de coût des Templiers"
     },
     "ranking": {
       "title": "Classement",

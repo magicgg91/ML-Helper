@@ -19,8 +19,9 @@ type CalculatorRow = {
   id: string;
   slug: string;
   label: string;
+  category: string;
   active: boolean;
-  editHref: string;
+  editHref?: string;
 };
 
 export function CalculatorVisibilityList({
@@ -76,6 +77,7 @@ export function CalculatorVisibilityList({
             <TableHeader>
               <TableRow>
                 <TableHead>{t("columns.tool")}</TableHead>
+                <TableHead>{t("columns.category")}</TableHead>
                 <TableHead>{t("columns.status")}</TableHead>
                 <TableHead className="text-right">
                   {t("columns.action")}
@@ -90,6 +92,7 @@ export function CalculatorVisibilityList({
                   title={row.active ? undefined : t("disabled-tooltip")}
                 >
                   <TableCell className="font-medium">{row.label}</TableCell>
+                  <TableCell>{t(`category-values.${row.category}`)}</TableCell>
                   <TableCell
                     className={
                       row.active ? "text-success" : "text-muted-foreground"
@@ -99,7 +102,7 @@ export function CalculatorVisibilityList({
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
-                      {canEdit && (
+                      {canEdit && row.editHref && (
                         <Button
                           asChild
                           size="icon"

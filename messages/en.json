@@ -754,8 +754,18 @@
       "eyebrow": "Functional content",
       "title": "Tools",
       "edit-ranking": "Edit ranking thresholds",
-      "translations-label": "Tool translations",
-      "columns": { "tool": "Tool", "status": "Status", "action": "Action" },
+      "columns": {
+        "tool": "Tool",
+        "category": "Category",
+        "status": "Status",
+        "action": "Action"
+      },
+      "category-values": {
+        "villes": "Cities",
+        "combat": "Combat",
+        "classement": "Ranking",
+        "competences": "Skills"
+      },
       "active": "Enabled",
       "inactive": "Disabled",
       "enable": "Enable",
@@ -765,19 +775,11 @@
       "save-error": "Save failed (HTTP {status}).",
       "state-saved": "{tool} is now {state}.",
       "server-error": "Unable to reach the server. Try again later.",
-      "translations-summary": "Localized content — {tool}",
-      "translations-language": "Content language",
       "name": "Name",
-      "description-field": "Description",
-      "tip": "Tip",
-      "save-translations": "Save translations",
-      "translations-saved": "Translations saved.",
-      "translations-error": "Unable to save translations.",
       "edit": "Edit",
       "city-parameters": "Shared City parameters",
       "ranking-editor": "Ranking thresholds",
-      "templar-parameters": "Templar cost parameters",
-      "edit-tool": "Edit tool — {tool}"
+      "templar-parameters": "Templar cost parameters"
     },
     "ranking": {
       "title": "Ranking",
