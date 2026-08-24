@@ -87,6 +87,7 @@ test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
   await page.goto("/");
+  await expect(page).toHaveTitle("ML Helper");
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
@@ -116,6 +117,7 @@ test("tool routes alone expose persistent player settings", async ({
     page.getByRole("heading", { name: "Plan your next progression." }),
   ).toBeVisible();
   await page.goto("/guides");
+  await expect(page).toHaveTitle("Guides");
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
@@ -131,6 +133,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 
   await page.goto("/tools");
+  await expect(page).toHaveTitle("Outils");
   await expect(page.locator(".tool-category-card")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(
@@ -147,6 +150,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
   await page.getByRole("link", { name: "Ouvrir la catégorie" }).first().click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
+  await expect(page).toHaveTitle("Villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
@@ -175,6 +179,7 @@ test("tool routes alone expose persistent player settings", async ({
     }),
   ).toHaveValue("12.5");
   await page.goto("/guides/guide-visible");
+  await expect(page).toHaveTitle("Guide visible");
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();
