@@ -1,6 +1,8 @@
 import { combatEquipmentData } from "./equipment-data";
 import { gemValue } from "./gems-templars";
+import { defaultGemParameters, type GemParameters } from "./gem-parameters";
 import type { LeagueSelection, SkillKey } from "./player-settings";
+import type { CombatReferenceRow } from "./reference-equipment";
 
 export const equipmentBlocks = ["attack", "defense", "gold", "speed"] as const;
 export type EquipmentBlock = (typeof equipmentBlocks)[number];
@@ -148,9 +150,13 @@ export function equipmentValueAtStar(
   );
 }
 
-export function equipmentOptions(block: EquipmentBlock, slot: EquipmentSlot) {
+export function equipmentOptions(
+  block: EquipmentBlock,
+  slot: EquipmentSlot,
+  rows: readonly CombatReferenceRow[] = combatEquipmentData,
+) {
   const families = equipmentBlockDefinitions[block].families;
-  return combatEquipmentData
+  return rows
     .filter(
       (item) =>
         item.slot_type === slot &&
@@ -163,18 +169,17 @@ export function equipmentOptions(block: EquipmentBlock, slot: EquipmentSlot) {
     );
 }
 
-export function equipmentLabel(
-  item: (typeof combatEquipmentData)[number],
-): string {
+export function equipmentLabel(item: CombatReferenceRow): string {
   return `${item.rarity} — ${item.set_name} (${item.family})`;
 }
 
 export function findEquipment(
   slot: EquipmentSlot,
   selection: EquipmentSelection | null,
+  rows: readonly CombatReferenceRow[] = combatEquipmentData,
 ) {
   if (!selection) return undefined;
-  return combatEquipmentData.find(
+  return rows.find(
     (item) =>
       item.slot_type === slot &&
       item.rarity === selection.rarity &&
@@ -194,9 +199,11 @@ export function computeEquipmentSlot(
   block: EquipmentBlock,
   slot: EquipmentSlot,
   state: EquipmentSlotState,
+  rows: readonly CombatReferenceRow[] = combatEquipmentData,
+  gemParameters: GemParameters = defaultGemParameters,
 ) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
-  const item = findEquipment(slot, state.equipment);
+  const item = findEquipment(slot, state.equipment, rows);
   if (item) {
     for (const index of [1, 2, 3, 4] as const) {
       const skill = item[`skill_${index}`];
@@ -218,7 +225,8 @@ export function computeEquipmentSlot(
       add(
         total,
         gem.skill,
-        gem.star * gemValue(skillKeyByLabel[gem.skill], gem.league),
+        gem.star *
+          gemValue(skillKeyByLabel[gem.skill], gem.league, gemParameters),
       );
     }
   }
@@ -228,22 +236,28 @@ export function computeEquipmentSlot(
 export function computeStuffBlock(
   block: EquipmentBlock,
   slots: EquipmentSlotState[],
+  rows: readonly CombatReferenceRow[] = combatEquipmentData,
+  gemParameters: GemParameters = defaultGemParameters,
 ) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
   equipmentSlotLayout.forEach((slot, index) => {
-    Object.entries(computeEquipmentSlot(block, slot, slots[index])).forEach(
-      ([skill, value]) => add(total, skill as EquipmentSkill, value),
-    );
+    Object.entries(
+      computeEquipmentSlot(block, slot, slots[index], rows, gemParameters),
+    ).forEach(([skill, value]) => add(total, skill as EquipmentSkill, value));
   });
   return total;
 }
 
-export function computeStuffGlobal(state: StuffState) {
+export function computeStuffGlobal(
+  state: StuffState,
+  rows: readonly CombatReferenceRow[] = combatEquipmentData,
+  gemParameters: GemParameters = defaultGemParameters,
+) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
   equipmentBlocks.forEach((block) => {
-    Object.entries(computeStuffBlock(block, state[block])).forEach(
-      ([skill, value]) => add(total, skill as EquipmentSkill, value),
-    );
+    Object.entries(
+      computeStuffBlock(block, state[block], rows, gemParameters),
+    ).forEach(([skill, value]) => add(total, skill as EquipmentSkill, value));
   });
   return total;
 }

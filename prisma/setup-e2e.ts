@@ -165,6 +165,42 @@ async function main() {
       formulaParams: { base: 150, ratio: 1.3 },
     },
   });
+  await prisma.formula.create({
+    data: {
+      id: "formula-gem-parameters",
+      calculatorId: "calculator-gems",
+      key: "gem_parameters",
+      formulaParams: {
+        skillFactor: {
+          striker: 1,
+          brave: 1,
+          scavenger: 1,
+          guardian: 1.5,
+          fearless: 1,
+          prosperous: 1.5,
+          recruiter: 1.5,
+          cautious: 0.5,
+          salvager: 0.5,
+          rusher: 2.5,
+        },
+        leagueFactor: {
+          bronze: 1,
+          silver: 2,
+          gold: 3,
+          platinum: 4,
+          diamond: 5,
+          legend: 6,
+        },
+        gemPrice: {
+          silver: 3000,
+          gold: 4000,
+          platinum: 5000,
+          diamond: 6000,
+          legend: 7000,
+        },
+      },
+    },
+  });
   await prisma.guide.create({
     data: {
       id: "guide-visibility-test",

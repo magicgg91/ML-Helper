@@ -5,15 +5,19 @@ import { useMemo, useState } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
 import {
   gemFamilies,
-  gemPrice,
   gemValue,
   optimizeGemBudget,
   optimizeGemTarget,
   templarRates,
   templarUpgradeCost,
   type GemFamily,
-  type GemLeague,
 } from "../lib/gems-templars";
+import {
+  defaultGemParameters,
+  gemLeagues,
+  type GemLeague,
+  type GemParameters,
+} from "../lib/gem-parameters";
 import {
   defaultTemplarParameters,
   templarLevelCost,
@@ -25,16 +29,9 @@ import {
   type SkillKey,
   type TemplarKey,
 } from "../lib/player-settings";
+import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { NumberStepper } from "./number-stepper";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
-
-const gemLeagues: GemLeague[] = [
-  "silver",
-  "gold",
-  "platinum",
-  "diamond",
-  "legend",
-];
 
 type GemRow = {
   id: number;
@@ -59,6 +56,8 @@ function gemDistributionLabel(
 
 export function SkillsCalculators({
   templarParameters = defaultTemplarParameters,
+  combatRows,
+  gemParameters = defaultGemParameters,
   availability = {
     simulator: true,
     comparison: true,
@@ -67,6 +66,8 @@ export function SkillsCalculators({
   },
 }: {
   templarParameters?: TemplarParameters;
+  combatRows: readonly CombatReferenceRow[];
+  gemParameters?: GemParameters;
   availability?: Record<
     "simulator" | "comparison" | "gems" | "templars",
     boolean
@@ -144,11 +145,14 @@ export function SkillsCalculators({
         </button>
       </nav>
       {active === "simulator" ? (
-        <StuffSimulator />
+        <StuffSimulator combatRows={combatRows} gemParameters={gemParameters} />
       ) : active === "comparison" ? (
-        <StuffComparison />
+        <StuffComparison
+          combatRows={combatRows}
+          gemParameters={gemParameters}
+        />
       ) : active === "gems" ? (
-        <GemsCalculator />
+        <GemsCalculator parameters={gemParameters} />
       ) : active === "templars" ? (
         <TemplarsCalculator parameters={templarParameters} />
       ) : (
@@ -158,7 +162,7 @@ export function SkillsCalculators({
   );
 }
 
-function GemsCalculator() {
+function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const [mode, setMode] = useState<"optimize" | "budget">("optimize");
   return (
@@ -187,12 +191,16 @@ function GemsCalculator() {
           </button>
         </div>
       </section>
-      {mode === "optimize" ? <GemOptimization /> : <GemBudget />}
+      {mode === "optimize" ? (
+        <GemOptimization parameters={parameters} />
+      ) : (
+        <GemBudget parameters={parameters} />
+      )}
     </div>
   );
 }
 
-function GemOptimization() {
+function GemOptimization({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
   const common = useTranslations("common");
@@ -259,10 +267,14 @@ function GemOptimization() {
     .map((row) => {
       const result = optimizeGemTarget(
         row.target,
-        gemValue(row.skill, row.league),
+        gemValue(row.skill, row.league, parameters),
         row.slots,
       );
-      return { ...row, result, cost: result.baseGems * gemPrice[row.league] };
+      return {
+        ...row,
+        result,
+        cost: result.baseGems * parameters.gemPrice[row.league],
+      };
     });
   const totalCost = results.reduce((sum, row) => sum + row.cost, 0);
   const hasMissingLeague = rows.some((row) => row.slots > 0 && !row.league);
@@ -441,7 +453,7 @@ function GemOptimization() {
   );
 }
 
-function GemBudget() {
+function GemBudget({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
   const common = useTranslations("common");
@@ -452,8 +464,8 @@ function GemBudget() {
   const result = league
     ? optimizeGemBudget(
         budget,
-        gemPrice[league],
-        gemValue(skill, league),
+        parameters.gemPrice[league],
+        gemValue(skill, league, parameters),
         slots,
       )
     : null;

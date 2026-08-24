@@ -4,6 +4,11 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import messages from "../../messages/fr.json";
 import { SkillsCalculators } from "./skills-calculators";
+import { combatEquipmentData } from "../lib/equipment-data";
+import type { CombatReferenceRow } from "../lib/reference-equipment";
+import { defaultGemParameters } from "../lib/gem-parameters";
+
+const combatRows = combatEquipmentData as readonly CombatReferenceRow[];
 
 function renderWithIntl(node: ReactNode) {
   return render(
@@ -16,7 +21,7 @@ function renderWithIntl(node: ReactNode) {
 describe("SkillsCalculators", () => {
   afterEach(cleanup);
   it("caps mixed optimization rows at the available socket count", () => {
-    renderWithIntl(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     expect(screen.getByRole("combobox", { name: "Ligue ligne 1" })).toHaveValue(
       "",
@@ -36,7 +41,7 @@ describe("SkillsCalculators", () => {
     ).toHaveValue(2);
   });
   it("shows the budget distribution as the primary result", () => {
-    renderWithIntl(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
     const league = screen.getByRole("combobox", { name: "Ligue" });
@@ -60,7 +65,7 @@ describe("SkillsCalculators", () => {
     expect(obtainedStat).toHaveClass("value", "emerald");
   });
   it("keeps the five Templar types independent", () => {
-    renderWithIntl(<SkillsCalculators />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau Templier cible" }),
@@ -74,7 +79,10 @@ describe("SkillsCalculators", () => {
   });
   it("uses the administrator-provided named Templar parameters", () => {
     renderWithIntl(
-      <SkillsCalculators templarParameters={{ base: 999, ratio: 1.3 }} />,
+      <SkillsCalculators
+        templarParameters={{ base: 999, ratio: 1.3 }}
+        combatRows={combatRows}
+      />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
@@ -84,5 +92,33 @@ describe("SkillsCalculators", () => {
     expect(screen.getByTestId("templar-cost")).toHaveTextContent(
       "3.99k Pouciel",
     );
+  });
+  it("uses the administrator-provided named Gem parameters", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        gemParameters={{
+          ...defaultGemParameters,
+          gemPrice: { ...defaultGemParameters.gemPrice, legend: 5000 },
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 1" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
+      { target: { value: "5" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Stat cible ligne 1" }),
+      { target: { value: "10" } },
+    );
+    // striker factor 1 × legend factor 6 = value 6; round(10 / 6) = 2 gems.
+    // At the default 7000/gem this would show 14k — the overridden 5000
+    // price must be the one actually used, giving 10k instead.
+    expect(screen.getAllByText("10k").length).toBeGreaterThan(0);
+    expect(screen.queryByText("14k")).not.toBeInTheDocument();
   });
 });

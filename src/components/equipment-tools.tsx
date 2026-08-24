@@ -34,7 +34,12 @@ import {
   equipmentSkillColors,
   gemImagePath,
 } from "../lib/game-images";
+import {
+  defaultGemParameters,
+  type GemParameters,
+} from "../lib/gem-parameters";
 import type { League } from "../lib/player-settings";
+import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { RarityBadge } from "./rarity-badge";
 
@@ -190,23 +195,25 @@ function SlotCell({
   state,
   active,
   onClick,
+  combatRows,
 }: {
   slot: EquipmentSlot;
   state: EquipmentSlotState;
   active: boolean;
   onClick: () => void;
+  combatRows: readonly CombatReferenceRow[];
 }) {
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
   const rarity = state.equipment?.rarity;
-  const item = findEquipment(slot, state.equipment ?? null);
+  const item = findEquipment(slot, state.equipment ?? null, combatRows);
   const activeGems = state.gems.filter(
-    (
-      gem,
-    ): gem is EquipmentGem & { skill: EquipmentSkill; league: League } =>
+    (gem): gem is EquipmentGem & { skill: EquipmentSkill; league: League } =>
       gem.skill !== "none" && Boolean(gem.league),
   );
-  const rarityVar = rarity ? `var(--rarity-${rarityClassName(rarity)})` : undefined;
+  const rarityVar = rarity
+    ? `var(--rarity-${rarityClassName(rarity)})`
+    : undefined;
   return (
     <button
       type="button"
@@ -281,17 +288,19 @@ function SlotEditor({
   state,
   namespace,
   onChange,
+  combatRows,
 }: {
   block: EquipmentBlock;
   slot: EquipmentSlot;
   state: EquipmentSlotState;
   namespace: "stuff-simulator" | "stuff-comparison";
   onChange: (state: EquipmentSlotState) => void;
+  combatRows: readonly CombatReferenceRow[];
 }) {
   const t = useTranslations(namespace);
   const game = useTranslations("game");
-  const options = equipmentOptions(block, slot);
-  const selected = findEquipment(slot, state.equipment);
+  const options = equipmentOptions(block, slot, combatRows);
+  const selected = findEquipment(slot, state.equipment, combatRows);
   function choose(value: string) {
     if (!value) return onChange({ equipment: null, star: 1, gems: [] });
     const [rarity, setName] = value.split("|") as [
@@ -382,7 +391,13 @@ function SlotEditor({
   );
 }
 
-export function StuffSimulator() {
+export function StuffSimulator({
+  combatRows,
+  gemParameters = defaultGemParameters,
+}: {
+  combatRows: readonly CombatReferenceRow[];
+  gemParameters?: GemParameters;
+}) {
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
   const [state, setState] = useState<StuffState>(createEmptyStuffState);
@@ -403,7 +418,10 @@ export function StuffSimulator() {
   useEffect(() => {
     if (loaded) localStorage.setItem(storageKey, JSON.stringify(state));
   }, [loaded, state]);
-  const global = useMemo(() => computeStuffGlobal(state), [state]);
+  const global = useMemo(
+    () => computeStuffGlobal(state, combatRows, gemParameters),
+    [state, combatRows, gemParameters],
+  );
   function update(
     block: EquipmentBlock,
     index: number,
@@ -428,7 +446,12 @@ export function StuffSimulator() {
       </section>
       {equipmentBlocks.map((block) => {
         const activeIndex = active[block];
-        const totals = computeStuffBlock(block, state[block]);
+        const totals = computeStuffBlock(
+          block,
+          state[block],
+          combatRows,
+          gemParameters,
+        );
         const selected =
           activeIndex === undefined
             ? undefined
@@ -436,6 +459,8 @@ export function StuffSimulator() {
                 block,
                 equipmentSlotLayout[activeIndex],
                 state[block][activeIndex],
+                combatRows,
+                gemParameters,
               );
         return (
           <section className="calculator-card stuff-block" key={block}>
@@ -454,6 +479,7 @@ export function StuffSimulator() {
                         [block]: current[block] === index ? undefined : index,
                       }))
                     }
+                    combatRows={combatRows}
                   />
                 ))}
               </div>
@@ -467,6 +493,7 @@ export function StuffSimulator() {
                     state={state[block][activeIndex]}
                     namespace="stuff-simulator"
                     onChange={(slot) => update(block, activeIndex, slot)}
+                    combatRows={combatRows}
                   />
                 )}
               </div>
@@ -480,8 +507,12 @@ export function StuffSimulator() {
 }
 
 type CompareSide = EquipmentSlotState;
-function defaultSide(block: EquipmentBlock, slot: EquipmentSlot): CompareSide {
-  const item = equipmentOptions(block, slot)[0];
+function defaultSide(
+  block: EquipmentBlock,
+  slot: EquipmentSlot,
+  combatRows: readonly CombatReferenceRow[],
+): CompareSide {
+  const item = equipmentOptions(block, slot, combatRows)[0];
   if (!item) return { equipment: null, star: 1, gems: [] };
   return {
     equipment: {
@@ -502,12 +533,14 @@ function CompareSideEditor({
   slot,
   state,
   onChange,
+  combatRows,
 }: {
   name: string;
   block: EquipmentBlock;
   slot: EquipmentSlot;
   state: CompareSide;
   onChange: (side: CompareSide) => void;
+  combatRows: readonly CombatReferenceRow[];
 }) {
   const t = useTranslations("stuff-comparison");
   return (
@@ -519,12 +552,19 @@ function CompareSideEditor({
         state={state}
         namespace="stuff-comparison"
         onChange={onChange}
+        combatRows={combatRows}
       />
     </div>
   );
 }
 
-export function StuffComparison() {
+export function StuffComparison({
+  combatRows,
+  gemParameters = defaultGemParameters,
+}: {
+  combatRows: readonly CombatReferenceRow[];
+  gemParameters?: GemParameters;
+}) {
   const locale = useLocale();
   const t = useTranslations("stuff-comparison");
   const game = useTranslations("game");
@@ -533,19 +573,31 @@ export function StuffComparison() {
   const [block, setBlock] = useState<EquipmentBlock>("attack");
   const [slot, setSlot] = useState<EquipmentSlot>("Amulette");
   const [a, setA] = useState<CompareSide>(() =>
-    defaultSide("attack", "Amulette"),
+    defaultSide("attack", "Amulette", combatRows),
   );
   const [b, setB] = useState<CompareSide>(() =>
-    defaultSide("attack", "Amulette"),
+    defaultSide("attack", "Amulette", combatRows),
   );
   function changeContext(nextBlock: EquipmentBlock, nextSlot: EquipmentSlot) {
     setBlock(nextBlock);
     setSlot(nextSlot);
-    setA(defaultSide(nextBlock, nextSlot));
-    setB(defaultSide(nextBlock, nextSlot));
+    setA(defaultSide(nextBlock, nextSlot, combatRows));
+    setB(defaultSide(nextBlock, nextSlot, combatRows));
   }
-  const totalsA = computeEquipmentSlot(block, slot, a);
-  const totalsB = computeEquipmentSlot(block, slot, b);
+  const totalsA = computeEquipmentSlot(
+    block,
+    slot,
+    a,
+    combatRows,
+    gemParameters,
+  );
+  const totalsB = computeEquipmentSlot(
+    block,
+    slot,
+    b,
+    combatRows,
+    gemParameters,
+  );
   return (
     <div className="calculator-stack" data-testid="stuff-comparison">
       <Link
@@ -590,6 +642,7 @@ export function StuffComparison() {
           slot={slot}
           state={a}
           onChange={setA}
+          combatRows={combatRows}
         />
         <CompareSideEditor
           name="B"
@@ -597,6 +650,7 @@ export function StuffComparison() {
           slot={slot}
           state={b}
           onChange={setB}
+          combatRows={combatRows}
         />
       </section>
       <section className="calculator-card">

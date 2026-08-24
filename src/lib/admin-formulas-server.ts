@@ -11,6 +11,7 @@ import {
   parseXpTiers,
 } from "./combat-calculators";
 import { defaultLevelUpParameters, parseLevelUpParameters } from "./level-up";
+import { defaultGemParameters, parseGemParameters } from "./gem-parameters";
 
 async function formulaParams(calculatorSlug: string, key: string) {
   return prisma.formula.findFirst({
@@ -48,9 +49,33 @@ export async function getCombatParameters() {
   };
 }
 
+export async function getXpGainTiers() {
+  const formula = await formulaParams("xp-gain-rate", "xp_gain_tiers");
+  return formula
+    ? parseXpTiers(formula.formulaParams)
+    : structuredClone(defaultXpTiers);
+}
+
+export async function getDemoPercentages() {
+  const formula = await formulaParams(
+    "demo-attack-troops",
+    "demo_attack_percentages",
+  );
+  return formula
+    ? parseDemoPercentages(formula.formulaParams)
+    : { ...defaultDemoPercentages };
+}
+
 export async function getLevelUpParameters() {
   const formula = await formulaParams("level-up", "level_up_parameters");
   return formula
     ? parseLevelUpParameters(formula.formulaParams)
     : structuredClone(defaultLevelUpParameters);
+}
+
+export async function getGemParameters() {
+  const formula = await formulaParams("gems", "gem_parameters");
+  return formula
+    ? parseGemParameters(formula.formulaParams)
+    : structuredClone(defaultGemParameters);
 }

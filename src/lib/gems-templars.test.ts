@@ -6,11 +6,21 @@ import {
   templarCumulativeCost,
   templarUpgradeCost,
 } from "./gems-templars";
+import { defaultGemParameters } from "./gem-parameters";
 
 describe("gems", () => {
   it("uses the confirmed per-skill and per-league values", () => {
     expect(gemValue("prosperous", "legend")).toBe(9);
     expect(gemValue("cautious", "silver")).toBe(1);
+  });
+  it("accepts administrator-provided named gem parameters", () => {
+    expect(
+      gemValue("prosperous", "legend", {
+        skillFactor: { ...defaultGemParameters.skillFactor, prosperous: 2 },
+        leagueFactor: defaultGemParameters.leagueFactor,
+        gemPrice: defaultGemParameters.gemPrice,
+      }),
+    ).toBe(12);
   });
   it("distributes target units as uniformly as possible", () => {
     expect(optimizeGemTarget(60, 6, 3)).toMatchObject({

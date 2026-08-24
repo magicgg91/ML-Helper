@@ -1,7 +1,12 @@
 import type { League, SkillKey, TemplarKey } from "./player-settings";
-import { defaultTemplarParameters, templarLevelCost, type TemplarParameters } from "./templar-parameters";
+import {
+  defaultTemplarParameters,
+  templarLevelCost,
+  type TemplarParameters,
+} from "./templar-parameters";
+import { defaultGemParameters, type GemParameters } from "./gem-parameters";
 
-export type GemLeague = Exclude<League, "bronze">;
+export type { GemLeague } from "./gem-parameters";
 export type GemFamily = "attack" | "defense" | "gold" | "speed";
 
 export const gemFamilies: Record<GemFamily, SkillKey[]> = {
@@ -11,38 +16,13 @@ export const gemFamilies: Record<GemFamily, SkillKey[]> = {
   speed: ["rusher"],
 };
 
-const leagueFactor: Record<League, number> = {
-  bronze: 1,
-  silver: 2,
-  gold: 3,
-  platinum: 4,
-  diamond: 5,
-  legend: 6,
-};
-const skillFactor: Record<SkillKey, number> = {
-  striker: 1,
-  brave: 1,
-  scavenger: 1,
-  guardian: 1.5,
-  fearless: 1,
-  prosperous: 1.5,
-  recruiter: 1.5,
-  cautious: 0.5,
-  salvager: 0.5,
-  rusher: 2.5,
-};
-
-export function gemValue(skill: SkillKey, league: League): number {
-  return skillFactor[skill] * leagueFactor[league];
+export function gemValue(
+  skill: SkillKey,
+  league: League,
+  parameters: GemParameters = defaultGemParameters,
+): number {
+  return parameters.skillFactor[skill] * parameters.leagueFactor[league];
 }
-
-export const gemPrice: Record<GemLeague, number> = {
-  silver: 3000,
-  gold: 4000,
-  platinum: 5000,
-  diamond: 6000,
-  legend: 7000,
-};
 
 export type GemDistribution = {
   baseGems: number;
@@ -155,8 +135,9 @@ export function templarCumulativeCost(
   level: number,
   parameters: TemplarParameters = defaultTemplarParameters,
 ): number {
-  return Array.from({ length: Math.max(0, Math.min(20, Math.floor(level))) }, (_, index) =>
-    templarLevelCost(index + 1, parameters),
+  return Array.from(
+    { length: Math.max(0, Math.min(20, Math.floor(level))) },
+    (_, index) => templarLevelCost(index + 1, parameters),
   ).reduce((sum, cost) => sum + cost, 0);
 }
 
@@ -166,6 +147,7 @@ export function templarUpgradeCost(
   parameters: TemplarParameters = defaultTemplarParameters,
 ): number {
   return Math.abs(
-    templarCumulativeCost(target, parameters) - templarCumulativeCost(start, parameters),
+    templarCumulativeCost(target, parameters) -
+      templarCumulativeCost(start, parameters),
   );
 }

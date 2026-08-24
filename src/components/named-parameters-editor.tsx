@@ -8,6 +8,18 @@ import {
   confirmedLevelUpLeagues,
   type LevelUpParameters,
 } from "../lib/level-up";
+import type { XpTier } from "../lib/combat-calculators";
+import {
+  gemLeagues,
+  type GemLeague,
+  type GemParameters,
+} from "../lib/gem-parameters";
+import {
+  leagues,
+  skillKeys,
+  type League,
+  type SkillKey,
+} from "../lib/player-settings";
 import { EditorActionBar } from "./editor-action-bar";
 
 function useToolSave(endpoint: string, payload: unknown) {
@@ -318,6 +330,242 @@ export function LevelUpParametersEditor({
         endpoint="/api/admin/guides/references/level-up"
         payload={value}
       />
+    </div>
+  );
+}
+
+export function XpGainRateEditor({ initial }: { initial: XpTier[] }) {
+  const t = useTranslations("admin.xp-gain-rate");
+  const tCommon = useTranslations("admin.parameters");
+  const [tiers, setTiers] = useState(initial);
+  const { status, save } = useToolSave("/api/admin/tools/xp-gain-rate", {
+    tiers,
+  });
+
+  // A tier's upper bound is the next tier's lower bound: editing one input
+  // updates both sides, so the 5 tiers can never end up with a gap or an
+  // overlap between them.
+  const updateBoundary = (index: number, next: number) =>
+    setTiers((current) =>
+      current.map((tier, i) => {
+        if (i === index) return { ...tier, high: next };
+        if (i === index + 1) return { ...tier, low: next };
+        return tier;
+      }),
+    );
+  const updateRate = (index: number, next: number) =>
+    setTiers((current) =>
+      current.map((tier, i) => (i === index ? { ...tier, rate: next } : tier)),
+    );
+
+  return (
+    <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/tools" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {tCommon("save")}
+        </button>
+      </EditorActionBar>
+      <p>{t("formula")}</p>
+      <section className="admin-panel">
+        <div className="table-scroll">
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                <th>{t("tier")}</th>
+                <th>{t("upper-bound")}</th>
+                <th>{t("rate")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tiers.map((tier, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    {tier.high === null ? (
+                      "∞"
+                    ) : (
+                      <input
+                        aria-label={t("upper-bound-field", {
+                          tier: index + 1,
+                        })}
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={tier.high}
+                        onChange={(event) =>
+                          updateBoundary(index, Number(event.target.value))
+                        }
+                      />
+                    )}
+                  </td>
+                  <td>
+                    <input
+                      aria-label={t("rate-field", { tier: index + 1 })}
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={tier.rate}
+                      onChange={(event) =>
+                        updateRate(index, Number(event.target.value))
+                      }
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function DemoAttackTroopsEditor({
+  initial,
+}: {
+  initial: Record<League, number>;
+}) {
+  const t = useTranslations("admin.demo-attack-troops");
+  const tCommon = useTranslations("admin.parameters");
+  const gameLeagues = useTranslations("game.leagues");
+  const [value, setValue] = useState(initial);
+  const { status, save } = useToolSave("/api/admin/tools/demo-attack-troops", {
+    percentages: value,
+  });
+  return (
+    <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/tools" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {tCommon("save")}
+        </button>
+      </EditorActionBar>
+      <p>{t("formula")}</p>
+      <section className="admin-panel">
+        <div className="table-scroll">
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                <th>{tCommon("league")}</th>
+                <th>{t("percentage")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leagues.map((league) => (
+                <tr key={league}>
+                  <td>{gameLeagues(league)}</td>
+                  <td>
+                    <input
+                      aria-label={`${gameLeagues(league)} ${t("percentage")}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={value[league]}
+                      onChange={(event) =>
+                        setValue((current) => ({
+                          ...current,
+                          [league]: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function GemParametersEditor({ initial }: { initial: GemParameters }) {
+  const t = useTranslations("admin.gems");
+  const tCommon = useTranslations("admin.parameters");
+  const game = useTranslations("game");
+  const [value, setValue] = useState(initial);
+  const { status, save } = useToolSave("/api/admin/tools/gems", value);
+  const updateSkillFactor = (skill: SkillKey, next: number) =>
+    setValue((current) => ({
+      ...current,
+      skillFactor: { ...current.skillFactor, [skill]: next },
+    }));
+  const updateLeagueFactor = (league: League, next: number) =>
+    setValue((current) => ({
+      ...current,
+      leagueFactor: { ...current.leagueFactor, [league]: next },
+    }));
+  const updatePrice = (league: GemLeague, next: number) =>
+    setValue((current) => ({
+      ...current,
+      gemPrice: { ...current.gemPrice, [league]: next },
+    }));
+  return (
+    <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/tools" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {tCommon("save")}
+        </button>
+      </EditorActionBar>
+      <p>{t("formula")}</p>
+      <section className="admin-panel">
+        <h2>{t("skill-factor")}</h2>
+        <div className="calculator-fields">
+          {skillKeys.map((skill) => (
+            <NumericField
+              key={skill}
+              label={t("skill-factor-field", {
+                skill: game(`skills.${skill}`),
+              })}
+              value={value.skillFactor[skill]}
+              step={0.5}
+              onChange={(next) => updateSkillFactor(skill, next)}
+            />
+          ))}
+        </div>
+      </section>
+      <section className="admin-panel">
+        <h2>{t("league-factor")}</h2>
+        <div className="calculator-fields">
+          {leagues.map((league) => (
+            <NumericField
+              key={league}
+              label={t("league-factor-field", {
+                league: game(`leagues.${league}`),
+              })}
+              value={value.leagueFactor[league]}
+              step={1}
+              onChange={(next) => updateLeagueFactor(league, next)}
+            />
+          ))}
+        </div>
+      </section>
+      <section className="admin-panel">
+        <h2>{t("price")}</h2>
+        <div className="calculator-fields">
+          {gemLeagues.map((league) => (
+            <NumericField
+              key={league}
+              label={t("price-field", { league: game(`leagues.${league}`) })}
+              value={value.gemPrice[league]}
+              step={100}
+              onChange={(next) => updatePrice(league, next)}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
