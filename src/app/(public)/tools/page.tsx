@@ -67,6 +67,7 @@ export default async function ToolsPage() {
                   src={category.image}
                   alt=""
                   fill
+                  loading={category.slug === "villes" ? "eager" : "lazy"}
                   sizes="(max-width: 760px) 100vw, 33vw"
                 />
               </div>
