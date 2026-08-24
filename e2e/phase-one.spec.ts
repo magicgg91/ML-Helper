@@ -126,10 +126,14 @@ test("the admin tools table shows categories, hides Edit with nothing to edit, a
 
   // Point 3: a tool with no editable numeric parameter has no Modifier
   // button — only activate/deactivate remains available.
-  const gemsRow = page.getByRole("row", { name: "Gemmes" });
-  await expect(gemsRow.getByRole("link", { name: "Modifier" })).toHaveCount(0);
+  const stuffSimulatorRow = page.getByRole("row", {
+    name: "Simulateur de Stuff",
+  });
   await expect(
-    gemsRow.getByRole("button", { name: "Désactiver" }),
+    stuffSimulatorRow.getByRole("link", { name: "Modifier" }),
+  ).toHaveCount(0);
+  await expect(
+    stuffSimulatorRow.getByRole("button", { name: "Désactiver" }),
   ).toBeVisible();
 
   // Point 1: the old "Textes multilingues" editor is gone entirely — its

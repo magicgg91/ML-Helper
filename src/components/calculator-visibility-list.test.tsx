@@ -63,9 +63,9 @@ describe("CalculatorVisibilityList", () => {
       <CalculatorVisibilityList
         rows={[
           {
-            id: "calculator-gems",
-            slug: "gems",
-            label: "Gemmes",
+            id: "calculator-stuff-simulator",
+            slug: "stuff-simulator",
+            label: "Simulateur de Stuff",
             category: "competences",
             active: true,
             editHref: undefined,
