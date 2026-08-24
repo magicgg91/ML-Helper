@@ -15,6 +15,7 @@ import {
   skillKeys,
   skillPercent,
   templarKeys,
+  templeBase,
   templePercent,
   templeSkillBreakdown,
   type LeagueSelection,
@@ -26,6 +27,12 @@ import {
 export const playerStorageKey = "mlhelper_player_params";
 export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
 
+// v1 stored the clan-temple field as the full temple total (base + clan
+// contribution); v2 stores only the clan contribution and adds the
+// confirmed base automatically. Bump this and extend the migration below
+// whenever the persisted shape changes again.
+const currentSettingsVersion = 2;
+
 function isTemplarKey(key: SkillKey): key is TemplarKey {
   return (templarKeys as readonly string[]).includes(key);
 }
@@ -33,8 +40,16 @@ function isTemplarKey(key: SkillKey): key is TemplarKey {
 export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
   try {
-    const parsed = JSON.parse(raw) as Partial<PlayerSettings>;
+    const parsed = JSON.parse(raw) as Partial<PlayerSettings> & {
+      v?: number;
+    };
     if (!("equipmentSkills" in parsed)) return fallback;
+    const clanTemple = { ...fallback.clanTemple, ...parsed.clanTemple };
+    if ((parsed.v ?? 1) < currentSettingsVersion && parsed.clanTemple) {
+      for (const key of templarKeys) {
+        clanTemple[key] = Math.max(0, clanTemple[key] - templeBase[key]);
+      }
+    }
     return {
       ...fallback,
       ...parsed,
@@ -44,7 +59,7 @@ export function safePlayerSettings(raw: string): PlayerSettings {
       },
       skillPoints: { ...fallback.skillPoints, ...parsed.skillPoints },
       templars: { ...fallback.templars, ...parsed.templars },
-      clanTemple: { ...fallback.clanTemple, ...parsed.clanTemple },
+      clanTemple,
     };
   } catch {
     return fallback;
@@ -69,7 +84,10 @@ export function PlayerSettingsPanel() {
 
   useEffect(() => {
     if (loaded) {
-      window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+      window.localStorage.setItem(
+        playerStorageKey,
+        JSON.stringify({ ...settings, v: currentSettingsVersion }),
+      );
       window.dispatchEvent(
         new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
       );

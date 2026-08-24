@@ -8,7 +8,11 @@ import {
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
-import { PlayerSettingsPanel, playerStorageKey } from "./player-settings-panel";
+import {
+  PlayerSettingsPanel,
+  playerStorageKey,
+  safePlayerSettings,
+} from "./player-settings-panel";
 
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
@@ -83,6 +87,62 @@ describe("PlayerSettingsPanel", () => {
     );
     expect(screen.getByLabelText("Attaque avec équipement")).toHaveValue(7.5);
     expect(screen.getByLabelText("Unité des VP")).toHaveValue("1000000");
+  });
+
+  it("migrates a pre-v2 clan-temple total into a clan-only contribution", () => {
+    // Saved by a previous release, where clanTemple held the full temple
+    // total (base + clan contribution): 50% for Vitesse was the base
+    // alone, with no clan contribution entered.
+    const migrated = safePlayerSettings(
+      JSON.stringify({
+        level: 1,
+        league: "",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: {},
+        clanTemple: { rusher: 50 },
+      }),
+    );
+    expect(migrated.clanTemple.rusher).toBe(0);
+  });
+
+  it("does not re-subtract the temple base from an already-migrated (v2) save", () => {
+    const settings = safePlayerSettings(
+      JSON.stringify({
+        level: 1,
+        league: "",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: {},
+        clanTemple: { rusher: 260 },
+        v: 2,
+      }),
+    );
+    expect(settings.clanTemple.rusher).toBe(260);
+  });
+
+  it("shows the migrated clan-temple total for a returning player", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        level: 1,
+        league: "",
+        vp: 0,
+        vpUnit: 1,
+        equipmentSkills: {},
+        clanTemple: { rusher: 50 },
+      }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
+        "Vit 50% (0% + 0% + 50%)",
+      ),
+    );
   });
 
   it("keeps the two-line summary visible while the panel stays collapsed", () => {

@@ -325,7 +325,13 @@ describe("CityCalculators", () => {
     // temple pour Prospérité (30%, cdc section 7.1) s'ajoute automatiquement
     // pour un bonus de temple total de 50%.
     settings.clanTemple.prosperous = 20;
-    window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+    // v: 2 marks this as already-current-format data (clan contribution
+    // only), so safePlayerSettings doesn't treat it as a pre-migration
+    // full-total save and subtract the base back out.
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({ ...settings, v: 2 }),
+    );
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <CityCalculators />
