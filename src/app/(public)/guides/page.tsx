@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
 import { getLocale } from "next-intl/server";
@@ -5,6 +6,11 @@ import { localizedText } from "@/lib/translations";
 import { GuidesHub } from "@/components/guides-hub";
 import { getTranslations } from "next-intl/server";
 import { parseGuideCategories } from "@/lib/guide-categories";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Public");
+  return { title: t("guides") };
+}
 
 export default async function GuidesPage() {
   await connection();

@@ -11,7 +11,7 @@ import {
   formatGameNumber,
   maximumReachableLevel,
 } from "../lib/city-calculators";
-import { type PlayerSettings } from "../lib/player-settings";
+import { templePercent, type PlayerSettings } from "../lib/player-settings";
 import {
   defaultCityParameters,
   type CityParameters,
@@ -121,13 +121,12 @@ function CostCalculator({
   const start = cityStatsAt(startLevel, league || "bronze", parameters);
   const target = cityStatsAt(targetLevel, league || "bronze", parameters);
   const cost = cityUpgradeCost(startLevel, targetLevel, parameters);
+  const prosperousTemple = templePercent("prosperous", settings.clanTemple);
+  const recruiterTemple = templePercent("recruiter", settings.clanTemple);
   const goldBonus =
-    1 +
-    (settings.equipmentSkills.prosperous + settings.clanTemple.prosperous) /
-      100;
+    1 + (settings.equipmentSkills.prosperous + prosperousTemple) / 100;
   const armyBonus =
-    1 +
-    (settings.equipmentSkills.recruiter + settings.clanTemple.recruiter) / 100;
+    1 + (settings.equipmentSkills.recruiter + recruiterTemple) / 100;
 
   return (
     <div className="calculator-stack">
@@ -186,7 +185,7 @@ function CostCalculator({
                   values={bonusBreakdown(
                     start.gold,
                     settings.equipmentSkills.prosperous,
-                    settings.clanTemple.prosperous,
+                    prosperousTemple,
                   )}
                 />
                 <Breakdown
@@ -195,7 +194,7 @@ function CostCalculator({
                   values={bonusBreakdown(
                     start.army,
                     settings.equipmentSkills.recruiter,
-                    settings.clanTemple.recruiter,
+                    recruiterTemple,
                   )}
                 />
               </div>
@@ -210,7 +209,7 @@ function CostCalculator({
                   values={bonusBreakdown(
                     target.gold,
                     settings.equipmentSkills.prosperous,
-                    settings.clanTemple.prosperous,
+                    prosperousTemple,
                   )}
                 />
                 <Breakdown
@@ -219,7 +218,7 @@ function CostCalculator({
                   values={bonusBreakdown(
                     target.army,
                     settings.equipmentSkills.recruiter,
-                    settings.clanTemple.recruiter,
+                    recruiterTemple,
                   )}
                 />
               </div>
@@ -287,13 +286,12 @@ function MaxLevelCalculator({
   );
   const start = cityStatsAt(startLevel, league || "bronze", parameters);
   const target = cityStatsAt(result.level, league || "bronze", parameters);
+  const prosperousTemple = templePercent("prosperous", settings.clanTemple);
+  const recruiterTemple = templePercent("recruiter", settings.clanTemple);
   const goldBonus =
-    1 +
-    (settings.equipmentSkills.prosperous + settings.clanTemple.prosperous) /
-      100;
+    1 + (settings.equipmentSkills.prosperous + prosperousTemple) / 100;
   const armyBonus =
-    1 +
-    (settings.equipmentSkills.recruiter + settings.clanTemple.recruiter) / 100;
+    1 + (settings.equipmentSkills.recruiter + recruiterTemple) / 100;
 
   return (
     <div className="calculator-stack">
@@ -354,7 +352,7 @@ function MaxLevelCalculator({
               values={bonusBreakdown(
                 target.gold,
                 settings.equipmentSkills.prosperous,
-                settings.clanTemple.prosperous,
+                prosperousTemple,
               )}
             />
             <Breakdown
@@ -363,7 +361,7 @@ function MaxLevelCalculator({
               values={bonusBreakdown(
                 target.army,
                 settings.equipmentSkills.recruiter,
-                settings.clanTemple.recruiter,
+                recruiterTemple,
               )}
             />
           </section>
@@ -446,8 +444,8 @@ function ProductionCalculator({
           league: league || "bronze",
           prosperousEquipment: settings.equipmentSkills.prosperous,
           recruiterEquipment: settings.equipmentSkills.recruiter,
-          prosperousTemple: settings.clanTemple.prosperous,
-          recruiterTemple: settings.clanTemple.recruiter,
+          prosperousTemple: templePercent("prosperous", settings.clanTemple),
+          recruiterTemple: templePercent("recruiter", settings.clanTemple),
         },
         parameters,
       ),

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import type { CalculatorSlug } from "@/lib/calculator-catalog";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Public");
+  return { title: t("tools") };
+}
 
 const categories: Array<{
   label: "cities" | "combat" | "ranking" | "skills";

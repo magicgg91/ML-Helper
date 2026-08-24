@@ -131,7 +131,10 @@ export const emptyTemplars = (): NumberMap<TemplarKey> =>
     templarKeys.map((key) => [key, 0]),
   ) as NumberMap<TemplarKey>;
 
-export const clanTempleMinimums: NumberMap<TemplarKey> = {
+// Base de temple confirmée par statistique (cdc section 7.1). Ce bonus
+// s'applique automatiquement, en plus de la contribution des Templiers
+// du clan saisie par le joueur : Bonus_total = base + clan saisi.
+export const templeBase: NumberMap<TemplarKey> = {
   striker: 20,
   guardian: 30,
   prosperous: 30,
@@ -158,7 +161,7 @@ export const defaultPlayerSettings = (): PlayerSettings => ({
   equipmentSkills: emptySkills(),
   skillPoints: emptySkills(),
   templars: emptyTemplars(),
-  clanTemple: { ...clanTempleMinimums },
+  clanTemple: emptyTemplars(),
 });
 
 export function availableSkillPoints(
@@ -285,4 +288,44 @@ export function combinedSkillPercent(
     skillPercent(key, settings.skillPoints, settings.league);
   const cap = skillCapForLeague(key, settings.league);
   return cap === undefined ? total : Math.min(total, cap);
+}
+
+// The clan-temple field only holds the clan's Templar contribution;
+// the confirmed per-skill temple base (cdc section 7.1) is added
+// automatically to get the actual temple bonus for that skill.
+export function templePercent(
+  key: TemplarKey,
+  clanTemple: NumberMap<TemplarKey>,
+): number {
+  return templeBase[key] + clanTemple[key];
+}
+
+export type TempleSkillBreakdown = {
+  equipment: number;
+  points: number;
+  temple: number;
+  total: number;
+};
+
+// The 5 temple-affected skills add a third component (temple base +
+// clan contribution) before the league cap is applied to the final
+// total — never to the individual components.
+export function templeSkillBreakdown(
+  key: TemplarKey,
+  settings: Pick<
+    PlayerSettings,
+    "equipmentSkills" | "skillPoints" | "clanTemple" | "league"
+  >,
+): TempleSkillBreakdown {
+  const equipment = settings.equipmentSkills[key];
+  const points = skillPercent(key, settings.skillPoints, settings.league);
+  const temple = templePercent(key, settings.clanTemple);
+  const rawTotal = equipment + points + temple;
+  const cap = skillCapForLeague(key, settings.league);
+  return {
+    equipment,
+    points,
+    temple,
+    total: cap === undefined ? rawTotal : Math.min(rawTotal, cap),
+  };
 }

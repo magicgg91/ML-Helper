@@ -87,6 +87,8 @@ test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
   await page.goto("/");
+  await expect(page).toHaveTitle("ML Helper");
+  await expect(page.getByPlaceholder("Rechercher")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
@@ -116,6 +118,7 @@ test("tool routes alone expose persistent player settings", async ({
     page.getByRole("heading", { name: "Plan your next progression." }),
   ).toBeVisible();
   await page.goto("/guides");
+  await expect(page).toHaveTitle("Guides");
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
@@ -131,6 +134,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 
   await page.goto("/tools");
+  await expect(page).toHaveTitle("Outils");
   await expect(page.locator(".tool-category-card")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(
@@ -147,6 +151,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
   await page.getByRole("link", { name: "Ouvrir la catégorie" }).first().click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
+  await expect(page).toHaveTitle("Villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
@@ -175,12 +180,32 @@ test("tool routes alone expose persistent player settings", async ({
     }),
   ).toHaveValue("12.5");
   await page.goto("/guides/guide-visible");
+  await expect(page).toHaveTitle("Guide visible");
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
+});
+
+test("the clan temple bonus adds the confirmed base to the entered contribution", async ({
+  page,
+}) => {
+  await page.goto("/tools/villes");
+  await page.getByText("Paramètres du joueur", { exact: true }).click();
+  await page.getByText("Bonus de temple (clan)", { exact: true }).click();
+
+  const line2 = page.getByTestId("player-summary-line2");
+  // No clan contribution entered yet: only the confirmed temple base (50%
+  // for Vitesse) shows up in the total.
+  await expect(line2).toContainText("Vit 50% (0% + 0% + 50%)");
+
+  await page
+    .getByRole("spinbutton", { name: "Temple Vitesse", exact: true })
+    .fill("260");
+  await expect(page.getByTestId("clan-temple-total-rusher")).toHaveText("310%");
+  await expect(line2).toContainText("Vit 310% (0% + 0% + 310%)");
 });
 
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {

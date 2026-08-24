@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
@@ -12,6 +13,16 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpReference } from "@/components/level-up-reference";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/guides/referentiels/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const reference = referenceCatalog.find((item) => item.slug === slug);
+  if (!reference) return {};
+  const t = await getTranslations("references");
+  return { title: t(`catalog.${reference.slug}`) };
+}
 
 export default async function ReferencePage({
   params,

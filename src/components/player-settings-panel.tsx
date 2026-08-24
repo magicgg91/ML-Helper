@@ -7,7 +7,6 @@ import {
   allocateSkillPoints,
   allocatedSkillPoints,
   availableSkillPoints,
-  clanTempleMinimums,
   combinedSkillPercent,
   defaultPlayerSettings,
   fitSkillPointsToBudget,
@@ -16,19 +15,41 @@ import {
   skillKeys,
   skillPercent,
   templarKeys,
+  templeBase,
+  templePercent,
+  templeSkillBreakdown,
   type LeagueSelection,
   type PlayerSettings,
   type SkillKey,
+  type TemplarKey,
 } from "../lib/player-settings";
 
 export const playerStorageKey = "mlhelper_player_params";
 export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
 
+// v1 stored the clan-temple field as the full temple total (base + clan
+// contribution); v2 stores only the clan contribution and adds the
+// confirmed base automatically. Bump this and extend the migration below
+// whenever the persisted shape changes again.
+const currentSettingsVersion = 2;
+
+function isTemplarKey(key: SkillKey): key is TemplarKey {
+  return (templarKeys as readonly string[]).includes(key);
+}
+
 export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
   try {
-    const parsed = JSON.parse(raw) as Partial<PlayerSettings>;
+    const parsed = JSON.parse(raw) as Partial<PlayerSettings> & {
+      v?: number;
+    };
     if (!("equipmentSkills" in parsed)) return fallback;
+    const clanTemple = { ...fallback.clanTemple, ...parsed.clanTemple };
+    if ((parsed.v ?? 1) < currentSettingsVersion && parsed.clanTemple) {
+      for (const key of templarKeys) {
+        clanTemple[key] = Math.max(0, clanTemple[key] - templeBase[key]);
+      }
+    }
     return {
       ...fallback,
       ...parsed,
@@ -38,7 +59,7 @@ export function safePlayerSettings(raw: string): PlayerSettings {
       },
       skillPoints: { ...fallback.skillPoints, ...parsed.skillPoints },
       templars: { ...fallback.templars, ...parsed.templars },
-      clanTemple: { ...fallback.clanTemple, ...parsed.clanTemple },
+      clanTemple,
     };
   } catch {
     return fallback;
@@ -63,7 +84,10 @@ export function PlayerSettingsPanel() {
 
   useEffect(() => {
     if (loaded) {
-      window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+      window.localStorage.setItem(
+        playerStorageKey,
+        JSON.stringify({ ...settings, v: currentSettingsVersion }),
+      );
       window.dispatchEvent(
         new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
       );
@@ -146,20 +170,44 @@ export function PlayerSettingsPanel() {
             className="player-summary-line2"
             data-testid="player-summary-line2"
           >
-            {skillKeys.map((key, index) => (
-              <span key={key}>
-                {index > 0 ? " · " : ""}
-                <span className="sk-name">
-                  {game(`skills-short.${key}`)}
-                </span>{" "}
-                <span className="sk-value">
-                  {combinedSkillPercent(key, settings).toLocaleString(locale, {
-                    maximumFractionDigits: 2,
-                  })}
-                  %
+            {skillKeys.map((key, index) => {
+              const format = (value: number) =>
+                value.toLocaleString(locale, { maximumFractionDigits: 2 });
+              const breakdown = isTemplarKey(key)
+                ? templeSkillBreakdown(key, settings)
+                : null;
+              const total = breakdown
+                ? breakdown.total
+                : combinedSkillPercent(key, settings);
+              return (
+                <span key={key}>
+                  {index > 0 ? " · " : ""}
+                  <span className="sk-name">
+                    {game(`skills-short.${key}`)}
+                  </span>{" "}
+                  <span className="sk-value">
+                    {format(total)}%
+                    {breakdown && (
+                      <span className="sk-breakdown">
+                        {" ("}
+                        <span className="component-equipment">
+                          {format(breakdown.equipment)}%
+                        </span>
+                        {" + "}
+                        <span className="component-points">
+                          {format(breakdown.points)}%
+                        </span>
+                        {" + "}
+                        <span className="component-temple">
+                          {format(breakdown.temple)}%
+                        </span>
+                        {")"}
+                      </span>
+                    )}
+                  </span>
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </small>
         </summary>
         <div className="player-settings-body">
@@ -222,8 +270,10 @@ export function PlayerSettingsPanel() {
             </label>
           </div>
 
-          <SettingsSection title={t("equipment-skills.title")}>
-            <p className="settings-help">{t("equipment-skills.help")}</p>
+          <SettingsSection
+            title={t("equipment-skills.title")}
+            className="settings-section-equipment"
+          >
             <div className="settings-grid">
               {skillKeys.map((key) => (
                 <label key={key}>
@@ -251,8 +301,10 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title={t("skill-points.title")}>
-            <p className="settings-help">{t("skill-points.help")}</p>
+          <SettingsSection
+            title={t("skill-points.title")}
+            className="settings-section-points"
+          >
             <div className="points-summary">
               <span>
                 {t("skill-points.available")}:{" "}
@@ -329,21 +381,35 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title={t("clan-temple.title")}>
+          <SettingsSection
+            title={t("clan-temple.title")}
+            className="settings-section-temple"
+          >
             <p className="settings-help">{t("clan-temple.help")}</p>
             <div className="settings-grid">
               {templarKeys.map((key) => (
                 <label key={key}>
-                  {t("clan-temple.field", {
-                    templar: game(`templars.${key}`),
-                  })}{" "}
-                  %
+                  <span>
+                    {t("clan-temple.field", {
+                      templar: game(`templars.${key}`),
+                    })}{" "}
+                    <output
+                      className="component-temple"
+                      data-testid={`clan-temple-total-${key}`}
+                    >
+                      {templePercent(key, settings.clanTemple).toLocaleString(
+                        locale,
+                        { maximumFractionDigits: 2 },
+                      )}
+                      %
+                    </output>
+                  </span>
                   <NumberStepper
                     label={t("clan-temple.field", {
                       templar: game(`templars.${key}`),
                     })}
                     value={settings.clanTemple[key]}
-                    min={clanTempleMinimums[key]}
+                    min={0}
                     step={1}
                     onChange={(value) =>
                       setSettings((current) => ({
@@ -364,10 +430,19 @@ export function PlayerSettingsPanel() {
 
 function SettingsSection({
   title,
+  className,
   children,
-}: Readonly<{ title: string; children: React.ReactNode }>) {
+}: Readonly<{
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}>) {
   return (
-    <details className="settings-section">
+    <details
+      className={
+        className ? `settings-section ${className}` : "settings-section"
+      }
+    >
       <summary>{title}</summary>
       <div className="settings-section-body">{children}</div>
     </details>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { CityCalculators } from "../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../components/ranking-calculator";
@@ -11,6 +12,23 @@ import {
   getCombatParameters,
 } from "../../../../lib/admin-formulas-server";
 import { getTranslations } from "next-intl/server";
+
+const toolTitleKeys: Record<string, string> = {
+  villes: "cities",
+  combat: "combat",
+  classement: "ranking",
+  competences: "skills",
+};
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/tools/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const key = toolTitleKeys[slug];
+  if (!key) return {};
+  const tools = await getTranslations("tools");
+  return { title: tools(key) };
+}
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;

@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { hasSuperAdmin } from "../../services/setup-superadmin";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
+
+export const metadata: Metadata = { title: "ML Helper" };
 
 const slides = [
   ["/visual-kingdom.svg", "carouselKingdom"],

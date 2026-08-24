@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
@@ -5,6 +6,18 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/guides/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const guide = await prisma.guide.findFirst({
+    where: { slug, status: "published", active: true },
+  });
+  if (!guide) return {};
+  return { title: localizedText(guide.title, locale) || slug };
+}
 
 export default async function GuidePage({
   params,
