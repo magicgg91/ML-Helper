@@ -47,16 +47,20 @@
   --gold: #9b6f1e;
   --gold-bright: #704b0e;
   --emerald: #35735f;
-  --emerald-bright: #19513f;
+  /* Bloc 25/3rd pass: earlier attempts (Blocs 22/24) only tuned lightness —
+     the summary colors already measured 8:1 WCAG AA but still read as dull
+     and hard to tell apart. These swap in vivid/saturated variants of the
+     same hues instead of desaturated darks, at a similar or better contrast. */
+  --emerald-bright: #065f36;
   --ember: #a7432e;
   --violet: #75549d;
-  --violet-bright: #5a397e;
+  --violet-bright: #5b21b6;
   --text: #20242b;
   --text-dim: #626976;
   --text-faint: #858b95;
   --sapphire: #3d63b0;
-  --sapphire-bright: #264688;
-  --summary-total: #822c17;
+  --sapphire-bright: #1e40af;
+  --summary-total: #8f3210;
   --background: var(--bg);
   --foreground: var(--text);
   --surface: var(--bg-panel);
