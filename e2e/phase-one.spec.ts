@@ -294,7 +294,7 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
     .locator(".player-summary-line2 .sk-value")
     .first()
     .evaluate((el) => getComputedStyle(el).color);
-  expect(totalColor).toBe("rgb(130, 44, 23)");
+  expect(totalColor).toBe("rgb(143, 50, 16)");
 });
 
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
