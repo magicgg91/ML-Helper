@@ -10,7 +10,9 @@ import {
   getCityParameters,
   getTemplarParameters,
   getCombatParameters,
+  getGemParameters,
 } from "../../../../lib/admin-formulas-server";
+import { getCombatReferenceRows } from "../../../../lib/reference-equipment-server";
 import { getTranslations } from "next-intl/server";
 import { pageTitle } from "../../../../lib/page-title";
 
@@ -63,6 +65,8 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         <h1 className="sr-only">{tools("skills")}</h1>
         <SkillsCalculators
           templarParameters={await getTemplarParameters()}
+          combatRows={await getCombatReferenceRows()}
+          gemParameters={await getGemParameters()}
           availability={{
             simulator: active["stuff-simulator"],
             comparison: active["stuff-comparison"],

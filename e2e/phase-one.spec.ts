@@ -125,15 +125,15 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
   }
 
   // Point 3: a tool with no editable numeric parameter has no Modifier
-  // button — only activate/deactivate remains available.
-  const stuffSimulatorRow = page.getByRole("row", {
-    name: "Simulateur de Stuff",
-  });
+  // button — only activate/deactivate remains available. Stuff Comparison
+  // only reads the Combat Equipment reference (already editable from
+  // Guides), so it has nothing of its own to edit.
+  const comparisonRow = page.getByRole("row", { name: "Comparaison de stuff" });
   await expect(
-    stuffSimulatorRow.getByRole("link", { name: "Modifier" }),
+    comparisonRow.getByRole("link", { name: "Modifier" }),
   ).toHaveCount(0);
   await expect(
-    stuffSimulatorRow.getByRole("button", { name: "Désactiver" }),
+    comparisonRow.getByRole("button", { name: "Désactiver" }),
   ).toBeVisible();
 
   // Point 1: the old "Textes multilingues" editor is gone entirely — its
@@ -628,6 +628,7 @@ test("Reference tables filter combat and flag expedition hypotheses", async ({
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.goto("/login");
   await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
   await page
@@ -722,6 +723,62 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     "Paramètres enregistrés.",
     { timeout: 15_000 },
   );
+
+  await adminNav.getByRole("link", { name: "Outils" }).click();
+  await page
+    .getByRole("row", { name: /Taux de gain d’XP/ })
+    .getByRole("link", { name: "Modifier" })
+    .click();
+  await expect(
+    page.getByRole("spinbutton", { name: "Seuil haut du palier 1" }),
+  ).toHaveValue("40");
+  await expect(page.getByText("∞")).toBeVisible();
+  await page
+    .getByRole("spinbutton", { name: "Taux XP du palier 3" })
+    .fill("110");
+  await page
+    .locator(".editor-action-bar")
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(
+    page.locator(".editor-action-bar").getByRole("status"),
+  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+
+  await adminNav.getByRole("link", { name: "Outils" }).click();
+  await page
+    .getByRole("row", { name: /Troupes en attaque démo/ })
+    .getByRole("link", { name: "Modifier" })
+    .click();
+  await expect(
+    page.getByRole("spinbutton", { name: "Bronze X (% des remparts)" }),
+  ).toHaveValue("100");
+  await page
+    .getByRole("spinbutton", { name: "Or X (% des remparts)" })
+    .fill("45");
+  await page
+    .locator(".editor-action-bar")
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(
+    page.locator(".editor-action-bar").getByRole("status"),
+  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+
+  await adminNav.getByRole("link", { name: "Outils" }).click();
+  await page
+    .getByRole("row", { name: /Gemmes/ })
+    .getByRole("link", { name: "Modifier" })
+    .click();
+  await expect(
+    page.getByRole("spinbutton", { name: "Vitesse · Légende" }),
+  ).toHaveValue("15");
+  await page.getByRole("spinbutton", { name: "Prix Légende" }).fill("5000");
+  await page
+    .locator(".editor-action-bar")
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(
+    page.locator(".editor-action-bar").getByRole("status"),
+  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
 });
 
 test("deactivating a user blocks sign-in until reactivated", async ({
@@ -1080,6 +1137,11 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
         page.request.put("/api/admin/tools/city-parameters", { data: {} }),
         page.request.put("/api/admin/tools/ranking", { data: {} }),
         page.request.put("/api/admin/tools/templars", { data: {} }),
+        page.request.put("/api/admin/tools/xp-gain-rate", { data: {} }),
+        page.request.put("/api/admin/tools/demo-attack-troops", {
+          data: {},
+        }),
+        page.request.put("/api/admin/tools/gems", { data: {} }),
         page.request.patch(
           "/api/admin/guides/references/combat-equipment/active",
           { data: {} },

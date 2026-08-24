@@ -9,6 +9,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
+import { combatEquipmentData } from "../lib/equipment-data";
+import type { CombatReferenceRow } from "../lib/reference-equipment";
+
+const combatRows = combatEquipmentData as readonly CombatReferenceRow[];
 
 function renderTool(tool: React.ReactNode) {
   return render(
@@ -23,7 +27,7 @@ describe("equipment tools", () => {
   afterEach(cleanup);
 
   it("toggles a simulator slot and persists an exact set", async () => {
-    renderTool(<StuffSimulator />);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
     expect(
       screen.getByRole("link", { name: "Voir le référentiel complet" }),
     ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
@@ -52,7 +56,7 @@ describe("equipment tools", () => {
   });
 
   it("colors the slot cell by rarity and attempts the real equipment image", () => {
-    renderTool(<StuffSimulator />);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
     const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
     fireEvent.click(amulet);
     fireEvent.change(
@@ -71,7 +75,7 @@ describe("equipment tools", () => {
   });
 
   it("shows the real gem image, falling back to the colored badge only once it fails to load", () => {
-    renderTool(<StuffSimulator />);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
     const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
     fireEvent.click(amulet);
     fireEvent.change(
@@ -86,10 +90,7 @@ describe("equipment tools", () => {
       target: { value: "legend" },
     });
     const gemImage = amulet.querySelector("img.gem-badge-image")!;
-    expect(gemImage).toHaveAttribute(
-      "src",
-      "/gems/gemme-attaque-legende.png",
-    );
+    expect(gemImage).toHaveAttribute("src", "/gems/gemme-attaque-legende.png");
     expect(amulet.querySelector(".gem-badge")).toBeNull();
 
     fireEvent.error(gemImage);
@@ -98,8 +99,41 @@ describe("equipment tools", () => {
     expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
   });
 
+  it("renders whichever combatRows it's given, not the bundled static catalog", () => {
+    // Proves the admin-edited reference table actually reaches this
+    // calculator: a caller-supplied row must show up in the equipment
+    // dropdown even though it isn't part of equipment-data.ts.
+    const overrideRow = {
+      rarity: "Commun",
+      set_name: "Overridden Set",
+      family: "Attaque",
+      skydust: "10",
+      gem_slots: "0",
+      slot_type: "Amulette",
+      slot_name: "",
+      skill_1: "Attaque",
+      value_1_pct: "999",
+      skill_2: "",
+      value_2_pct: "",
+      skill_3: "",
+      value_3_pct: "",
+      skill_4: "",
+      value_4_pct: "",
+    };
+    renderTool(<StuffSimulator combatRows={[overrideRow]} />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    const select = screen.getByRole("combobox", {
+      name: "Équipement Attaque Amulette",
+    });
+    expect(select.querySelectorAll("option")).toHaveLength(2);
+    expect(select.querySelectorAll("option")[1]).toHaveTextContent(
+      /Overridden Set/,
+    );
+  });
+
   it("compares explicit sets and colors a positive difference", () => {
-    renderTool(<StuffComparison />);
+    renderTool(<StuffComparison combatRows={combatRows} />);
     expect(
       screen.getAllByRole("combobox", { name: "Ligue gemme 1" })[0],
     ).toHaveValue("");

@@ -780,7 +780,10 @@
       "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
       "ranking-editor": "Seuils du classement",
-      "templar-parameters": "Paramètres de coût des Templiers"
+      "templar-parameters": "Paramètres de coût des Templiers",
+      "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
+      "demo-attack-troops-editor": "Pourcentages d’attaque démo",
+      "gems-editor": "Paramètres des Gemmes"
     },
     "ranking": {
       "title": "Classement",
@@ -867,6 +870,25 @@
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
       "base": "Base",
       "ratio": "Ratio"
+    },
+    "xp-gain-rate": {
+      "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",
+      "tier": "Palier",
+      "upper-bound": "Seuil haut (%)",
+      "upper-bound-field": "Seuil haut du palier {tier}",
+      "rate": "Taux XP (%)",
+      "rate-field": "Taux XP du palier {tier}"
+    },
+    "demo-attack-troops": {
+      "formula": "TroupesMax = (X % / 100) × Remparts(niveau de la ville visée)",
+      "percentage": "X (% des remparts)"
+    },
+    "gems": {
+      "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
+      "value": "Valeur de base par compétence et par ligue",
+      "value-field": "{skill} · {league}",
+      "price": "Prix d’achat (saphirs)",
+      "price-field": "Prix {league}"
     },
     "users": {
       "title": "Utilisateurs administrateurs",

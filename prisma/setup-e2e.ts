@@ -165,6 +165,76 @@ async function main() {
       formulaParams: { base: 150, ratio: 1.3 },
     },
   });
+  await prisma.formula.create({
+    data: {
+      id: "formula-gem-parameters",
+      calculatorId: "calculator-gems",
+      key: "gem_parameters",
+      formulaParams: {
+        skillLeagueValue: {
+          striker: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          brave: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          scavenger: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          guardian: {
+            bronze: 1.5,
+            silver: 3,
+            gold: 4.5,
+            platinum: 6,
+            diamond: 7.5,
+            legend: 9,
+          },
+          fearless: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          prosperous: {
+            bronze: 1.5,
+            silver: 3,
+            gold: 4.5,
+            platinum: 6,
+            diamond: 7.5,
+            legend: 9,
+          },
+          recruiter: {
+            bronze: 1.5,
+            silver: 3,
+            gold: 4.5,
+            platinum: 6,
+            diamond: 7.5,
+            legend: 9,
+          },
+          cautious: {
+            bronze: 0.5,
+            silver: 1,
+            gold: 1.5,
+            platinum: 2,
+            diamond: 2.5,
+            legend: 3,
+          },
+          salvager: {
+            bronze: 0.5,
+            silver: 1,
+            gold: 1.5,
+            platinum: 2,
+            diamond: 2.5,
+            legend: 3,
+          },
+          rusher: {
+            bronze: 2.5,
+            silver: 5,
+            gold: 7.5,
+            platinum: 10,
+            diamond: 12.5,
+            legend: 15,
+          },
+        },
+        gemPrice: {
+          silver: 3000,
+          gold: 4000,
+          platinum: 5000,
+          diamond: 6000,
+          legend: 7000,
+        },
+      },
+    },
+  });
   await prisma.guide.create({
     data: {
       id: "guide-visibility-test",

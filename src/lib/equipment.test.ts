@@ -38,4 +38,36 @@ describe("shared equipment model", () => {
       computeEquipmentSlot("speed", equipmentSlotLayout[0], state),
     ).toEqual({ Vitesse: 5 });
   });
+
+  it("reads an explicit rows override instead of the static catalog when given one", () => {
+    // Simulates an admin-edited reference table: a caller passing its own
+    // rows must see exactly that data, not the bundled equipment-data.ts
+    // defaults — this is what makes admin overrides on the Combat Equipment
+    // reference table actually reach the Stuff calculators.
+    const overrideRow = {
+      rarity: "Commun",
+      set_name: "Overridden Set",
+      family: "Attaque",
+      skydust: "10",
+      gem_slots: "0",
+      slot_type: "Amulette",
+      slot_name: "",
+      skill_1: "Attaque",
+      value_1_pct: "999",
+      skill_2: "",
+      value_2_pct: "",
+      skill_3: "",
+      value_3_pct: "",
+      skill_4: "",
+      value_4_pct: "",
+    };
+    const options = equipmentOptions("attack", "Amulette", [overrideRow]);
+    expect(options).toEqual([overrideRow]);
+
+    const state = createEmptyStuffState().attack[0];
+    state.equipment = { rarity: "Commun", setName: "Overridden Set" };
+    expect(
+      computeEquipmentSlot("attack", "Amulette", state, [overrideRow]),
+    ).toEqual({ Attaque: 999 });
+  });
 });

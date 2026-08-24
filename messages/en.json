@@ -779,7 +779,10 @@
       "edit": "Edit",
       "city-parameters": "Shared City parameters",
       "ranking-editor": "Ranking thresholds",
-      "templar-parameters": "Templar cost parameters"
+      "templar-parameters": "Templar cost parameters",
+      "xp-gain-rate-editor": "XP gain rate tiers",
+      "demo-attack-troops-editor": "Demo attack percentages",
+      "gems-editor": "Gem parameters"
     },
     "ranking": {
       "title": "Ranking",
@@ -866,6 +869,25 @@
       "formula": "Cost(n) = round(base × ratio^(n-1))",
       "base": "Base",
       "ratio": "Ratio"
+    },
+    "xp-gain-rate": {
+      "formula": "XP gain rate = f(target VP / attacker VP ratio)",
+      "tier": "Tier",
+      "upper-bound": "Upper bound (%)",
+      "upper-bound-field": "Tier {tier} upper bound",
+      "rate": "XP rate (%)",
+      "rate-field": "Tier {tier} XP rate"
+    },
+    "demo-attack-troops": {
+      "formula": "MaxTroops = (X% / 100) × Walls(target city level)",
+      "percentage": "X (% of walls)"
+    },
+    "gems": {
+      "formula": "Gem value = base value (per skill and per league)",
+      "value": "Base value per skill and per league",
+      "value-field": "{skill} · {league}",
+      "price": "Purchase price (sapphires)",
+      "price-field": "{league} price"
     },
     "users": {
       "title": "Admin users",
