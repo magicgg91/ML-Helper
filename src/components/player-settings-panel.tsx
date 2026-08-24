@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { NumberStepper } from "./number-stepper";
+import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
   allocatedSkillPoints,
@@ -396,12 +397,6 @@ export function PlayerSettingsPanel() {
             <p className="settings-help">{t("clan-temple.help")}</p>
             <div className="settings-grid">
               {templarKeys.map((key) => {
-                const step =
-                  key === "striker" || key === "guardian"
-                    ? 0.25
-                    : key === "rusher"
-                      ? 1
-                      : 0.5;
                 return (
                   <label key={key}>
                     <span>
@@ -425,7 +420,7 @@ export function PlayerSettingsPanel() {
                       })}
                       value={settings.clanTemple[key]}
                       min={0}
-                      step={step}
+                      step={templarRates[key]}
                       onChange={(value) =>
                         setSettings((current) => ({
                           ...current,

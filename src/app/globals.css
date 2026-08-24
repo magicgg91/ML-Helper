@@ -435,11 +435,11 @@ main.public-main.contact-page {
   font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
   line-height: 1.6;
-}
-.player-summary-skill-group {
-  display: block;
   white-space: nowrap;
   overflow-x: auto;
+}
+.player-summary-skill-group {
+  display: inline;
 }
 .player-summary-line2 .sk-name {
   color: var(--text-dim);
@@ -1135,11 +1135,12 @@ select {
     padding-left: 1.1rem;
   }
   .player-summary-line2 {
+    white-space: normal;
     overflow-x: visible;
   }
   .player-summary-skill-group {
+    display: block;
     white-space: normal;
-    overflow-x: visible;
   }
   .tool-category-grid,
   nav.calculator-tabs:not(.compact) {

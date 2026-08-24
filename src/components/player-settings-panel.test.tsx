@@ -13,6 +13,7 @@ import {
   playerStorageKey,
   safePlayerSettings,
 } from "./player-settings-panel";
+import { templarRates } from "../lib/gems-templars";
 
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
@@ -345,18 +346,18 @@ describe("PlayerSettingsPanel", () => {
 
     expect(attack).toHaveValue(0);
     expect(speed).toHaveValue(0);
-    expect(attack).toHaveAttribute("step", "0.25");
-    expect(speed).toHaveAttribute("step", "1");
+    expect(attack).toHaveAttribute("step", String(templarRates.striker));
+    expect(speed).toHaveAttribute("step", String(templarRates.rusher));
 
     expect(
       screen.getByLabelText("Temple Défense", { selector: "input" }),
-    ).toHaveAttribute("step", "0.25");
+    ).toHaveAttribute("step", String(templarRates.guardian));
     expect(
       screen.getByLabelText("Temple Or", { selector: "input" }),
-    ).toHaveAttribute("step", "0.5");
+    ).toHaveAttribute("step", String(templarRates.prosperous));
     expect(
       screen.getByLabelText("Temple Recruteur", { selector: "input" }),
-    ).toHaveAttribute("step", "0.5");
+    ).toHaveAttribute("step", String(templarRates.recruiter));
 
     // A player entering only the clan's Templar contribution never goes
     // below 0, even before any confirmed contribution is known.
