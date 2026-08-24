@@ -189,6 +189,25 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 });
 
+test("the clan temple bonus adds the confirmed base to the entered contribution", async ({
+  page,
+}) => {
+  await page.goto("/tools/villes");
+  await page.getByText("Paramètres du joueur", { exact: true }).click();
+  await page.getByText("Bonus de temple (clan)", { exact: true }).click();
+
+  const line2 = page.getByTestId("player-summary-line2");
+  // No clan contribution entered yet: only the confirmed temple base (50%
+  // for Vitesse) shows up in the total.
+  await expect(line2).toContainText("Vit 50% (0% + 0% + 50%)");
+
+  await page
+    .getByRole("spinbutton", { name: "Temple Vitesse", exact: true })
+    .fill("260");
+  await expect(page.getByTestId("clan-temple-total-rusher")).toHaveText("310%");
+  await expect(line2).toContainText("Vit 310% (0% + 0% + 310%)");
+});
+
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   await page.goto("/tools/combat");
   await expect(page.getByTestId(/xp-range-/)).toHaveCount(5);

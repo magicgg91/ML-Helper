@@ -4,8 +4,12 @@ import {
   availableSkillPoints,
   combinedSkillPercent,
   emptySkills,
+  emptyTemplars,
   skillCapForLeague,
   skillPercent,
+  templeBase,
+  templePercent,
+  templeSkillBreakdown,
 } from "./player-settings";
 
 describe("player skill-point planning", () => {
@@ -145,5 +149,56 @@ describe("combinedSkillPercent", () => {
         league: "gold",
       }),
     ).toBe(20);
+  });
+});
+
+describe("templePercent", () => {
+  it("adds the confirmed temple base to the clan's Templar contribution", () => {
+    const clanTemple = { ...emptyTemplars(), rusher: 260 };
+    expect(templePercent("rusher", clanTemple)).toBe(templeBase.rusher + 260);
+  });
+
+  it("still returns the temple base alone when no clan contribution is entered", () => {
+    expect(templePercent("striker", emptyTemplars())).toBe(templeBase.striker);
+  });
+});
+
+describe("templeSkillBreakdown", () => {
+  it("combines equipment, points and temple (base + clan) into a single total", () => {
+    const equipmentSkills = { ...emptySkills(), striker: 12 };
+    const skillPoints = allocateSkillPoints(
+      emptySkills(),
+      "striker",
+      5,
+      6,
+      "gold",
+    );
+    const clanTemple = { ...emptyTemplars(), striker: 260 };
+    const breakdown = templeSkillBreakdown("striker", {
+      equipmentSkills,
+      skillPoints,
+      clanTemple,
+      league: "gold",
+    });
+    expect(breakdown.equipment).toBe(12);
+    expect(breakdown.points).toBe(skillPercent("striker", skillPoints, "gold"));
+    expect(breakdown.temple).toBe(templeBase.striker + 260);
+    expect(breakdown.total).toBe(
+      breakdown.equipment + breakdown.points + breakdown.temple,
+    );
+  });
+
+  it("applies the league cap to the final total, not to the individual components", () => {
+    // None of the 5 temple skills has a confirmed cap today, but the
+    // breakdown must still cap the total (not equipment/points/temple
+    // individually) so a future cap can't be bypassed by componentizing.
+    const breakdown = templeSkillBreakdown("striker", {
+      equipmentSkills: { ...emptySkills(), striker: 500 },
+      skillPoints: emptySkills(),
+      clanTemple: emptyTemplars(),
+      league: "gold",
+    });
+    expect(skillCapForLeague("striker", "gold")).toBeUndefined();
+    expect(breakdown.total).toBe(500 + templeBase.striker);
   });
 });

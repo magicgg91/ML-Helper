@@ -135,12 +135,10 @@
     "vp-unit": "Unité des VP",
     "equipment-skills": {
       "title": "Compétences avec équipement",
-      "help": "Valeurs réellement utilisées par les outils. Elles restent indépendantes de la distribution des points.",
       "field": "{skill} avec équipement"
     },
     "skill-points": {
       "title": "Distribution des points",
-      "help": "Outil de planification uniquement : il ne modifie jamais les compétences avec équipement.",
       "available": "Disponibles",
       "allocated": "Alloués",
       "remaining": "Restants",
@@ -148,12 +146,12 @@
       "field": "Points {skill}"
     },
     "templars": {
-      "title": "Templiers personnels",
+      "title": "Templiers",
       "field": "Templiers {templar}"
     },
     "clan-temple": {
-      "title": "Bonus de Temple du Clan",
-      "help": "Bonus total actif du clan, saisi directement. Le stepper utilise un pas uniforme et ne dérive pas du taux des Templiers personnels.",
+      "title": "Bonus de temple (clan)",
+      "help": "Saisis uniquement la contribution des Templiers du clan (ex : 260 pour Vitesse). La base de temple confirmée par statistique s’ajoute automatiquement au total affiché.",
       "field": "Temple {templar}"
     }
   },

@@ -308,8 +308,8 @@ describe("CityCalculators", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
       target: { value: "legend" },
     });
-    // Le temple de clan a un minimum garanti de 30% pour Prospérité même
-    // sans configuration jointeur (voir clanTempleMinimums).
+    // La base de temple pour Prospérité (30%, cdc section 7.1) s'applique
+    // automatiquement même sans contribution de clan saisie (voir templeBase).
     const breakdown = screen.getByTestId("city-cost-single-gold-start");
     expect(breakdown).toHaveTextContent("Base200/h");
     expect(breakdown).toHaveTextContent("Stuff0/h");
@@ -321,6 +321,9 @@ describe("CityCalculators", () => {
     const settings = defaultPlayerSettings();
     settings.league = "legend";
     settings.equipmentSkills.prosperous = 10;
+    // Contribution des Templiers du clan uniquement (20%) ; la base de
+    // temple pour Prospérité (30%, cdc section 7.1) s'ajoute automatiquement
+    // pour un bonus de temple total de 50%.
     settings.clanTemple.prosperous = 20;
     window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
     render(
@@ -331,8 +334,8 @@ describe("CityCalculators", () => {
     const start = screen.getByTestId("city-cost-single-gold-start");
     expect(start).toHaveTextContent("Base200/h");
     expect(start).toHaveTextContent("Stuff20/h");
-    expect(start).toHaveTextContent("Temple40/h");
-    expect(start).toHaveTextContent("Or/h260/h");
+    expect(start).toHaveTextContent("Temple100/h");
+    expect(start).toHaveTextContent("Or/h320/h");
 
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
@@ -340,7 +343,7 @@ describe("CityCalculators", () => {
     const single = screen.getByTestId("city-max-level-single-gold");
     expect(single).toHaveTextContent("Base200/h");
     expect(single).toHaveTextContent("Stuff20/h");
-    expect(single).toHaveTextContent("Temple40/h");
-    expect(single).toHaveTextContent("Or/h260/h");
+    expect(single).toHaveTextContent("Temple100/h");
+    expect(single).toHaveTextContent("Or/h320/h");
   });
 });

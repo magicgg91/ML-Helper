@@ -94,8 +94,22 @@ describe("PlayerSettingsPanel", () => {
     expect(screen.queryByRole("combobox", { name: "Ligue" })).not.toBeVisible();
     const line2 = screen.getByTestId("player-summary-line2");
     expect(line2).toBeVisible();
-    expect(line2).toHaveTextContent("Atq 0%");
-    expect(line2).toHaveTextContent("Vit 0%");
+    // Attaque and Vitesse are temple skills: even with no input yet, their
+    // total already includes the confirmed temple base (20% / 50%).
+    expect(line2).toHaveTextContent("Atq 20%");
+    expect(line2).toHaveTextContent("Vit 50%");
+  });
+
+  it("shows the equipment/points/temple breakdown for a temple skill in the collapsed summary", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const line2 = screen.getByTestId("player-summary-line2");
+    expect(line2).toHaveTextContent("Atq 20% (0% + 0% + 20%)");
+    // Bravoure is not a temple skill: just the total, no breakdown.
+    expect(line2).not.toHaveTextContent("Bra 0% (");
   });
 
   it("updates the collapsed summary's per-skill total after editing equipment and points", async () => {
@@ -118,7 +132,9 @@ describe("PlayerSettingsPanel", () => {
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );
     const line2 = screen.getByTestId("player-summary-line2");
-    await waitFor(() => expect(line2).toHaveTextContent("Atq 2,5%"));
+    // 0.5 (equipment) + 2 (1 point × bonus 2) + 20 (temple base, no clan
+    // contribution entered) = 22.5.
+    await waitFor(() => expect(line2).toHaveTextContent("Atq 22,5%"));
   });
 
   it("caps the collapsed summary's Bravoure/Intrépide total at 90% even if equipment plus points exceed it", async () => {
@@ -244,7 +260,7 @@ describe("PlayerSettingsPanel", () => {
     ).toHaveLength(10);
   });
 
-  it("enforces clan temple minimums with a uniform step", () => {
+  it("starts the clan Temple contribution at 0 and adds the confirmed base to the displayed total", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <PlayerSettingsPanel />
@@ -257,15 +273,26 @@ describe("PlayerSettingsPanel", () => {
       selector: "input",
     });
 
+    expect(attack).toHaveValue(0);
+    expect(speed).toHaveValue(0);
     expect(attack).toHaveAttribute("step", "1");
     expect(speed).toHaveAttribute("step", "1");
+
+    // A player entering only the clan's Templar contribution never goes
+    // below 0, even before any confirmed contribution is known.
     fireEvent.click(
       screen.getByRole("button", { name: "Diminuer Temple Attaque" }),
     );
+    expect(attack).toHaveValue(0);
+
     fireEvent.click(
-      screen.getByRole("button", { name: "Diminuer Temple Vitesse" }),
+      screen.getByRole("button", { name: "Augmenter Temple Vitesse" }),
     );
-    expect(attack).toHaveValue(20);
-    expect(speed).toHaveValue(50);
+    expect(speed).toHaveValue(1);
+    // Vitesse's confirmed temple base is 50%, so entering 1% of clan
+    // contribution shows a 51% total right next to the field.
+    expect(screen.getByTestId("clan-temple-total-rusher")).toHaveTextContent(
+      "51%",
+    );
   });
 });

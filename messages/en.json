@@ -135,12 +135,10 @@
     "vp-unit": "VP unit",
     "equipment-skills": {
       "title": "Skills with equipment",
-      "help": "Values actually used by the tools. They remain independent from the skill point distribution.",
       "field": "{skill} with equipment"
     },
     "skill-points": {
       "title": "Skill point distribution",
-      "help": "Planning tool only: it never changes skills with equipment.",
       "available": "Available",
       "allocated": "Allocated",
       "remaining": "Remaining",
@@ -148,12 +146,12 @@
       "field": "{skill} points"
     },
     "templars": {
-      "title": "Personal templars",
+      "title": "Templars",
       "field": "{templar} templars"
     },
     "clan-temple": {
-      "title": "Clan Temple bonuses",
-      "help": "Enter the clan's active total bonus directly. The stepper uses a uniform step and does not derive from personal templar rates.",
+      "title": "Temple bonus (clan)",
+      "help": "Enter only the clan's Templar contribution (e.g. 260 for Speed). The confirmed per-stat temple base is added automatically to the displayed total.",
       "field": "{templar} Temple"
     }
   },

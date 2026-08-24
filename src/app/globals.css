@@ -24,6 +24,8 @@
   --rarity-epique: #5b8bc9;
   --rarity-mythique: #a678d4;
   --rarity-legendaire: #d4a13a;
+  --sapphire: #4a72c9;
+  --sapphire-bright: #7fa3e6;
   --background: var(--bg);
   --foreground: var(--text);
   --surface: var(--bg-panel);
@@ -51,6 +53,8 @@
   --text: #20242b;
   --text-dim: #626976;
   --text-faint: #858b95;
+  --sapphire: #3d63b0;
+  --sapphire-bright: #2c4a87;
   --background: var(--bg);
   --foreground: var(--text);
   --surface: var(--bg-panel);
@@ -437,6 +441,31 @@ main.public-main.contact-page {
 }
 .player-summary-line2 .sk-value {
   color: var(--success);
+}
+.sk-breakdown {
+  color: var(--text-faint);
+}
+
+/* Component color coding shared between the input sections (Équipement /
+   Points / Temple clan) and the collapsed summary breakdown — same
+   component, same color, in both places. */
+.component-equipment {
+  color: var(--emerald-bright);
+}
+.component-points {
+  color: var(--accent-strong);
+}
+.component-temple {
+  color: var(--sapphire-bright);
+}
+.settings-section-equipment > summary {
+  color: var(--emerald-bright);
+}
+.settings-section-points > summary {
+  color: var(--accent-strong);
+}
+.settings-section-temple > summary {
+  color: var(--sapphire-bright);
 }
 .player-settings-body {
   padding: 0 1.2rem 1.2rem;
