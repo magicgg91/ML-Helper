@@ -58,14 +58,14 @@ describe("CalculatorVisibilityList", () => {
     expect(screen.getByText("Classement", { selector: "td" })).toBeVisible();
   });
 
-  it("hides the edit button for a tool with no editable numeric parameter", () => {
+  it("hides the edit button for the Stuff simulator, which has no editable numeric parameter", () => {
     render(
       <CalculatorVisibilityList
         rows={[
           {
-            id: "calculator-gems",
-            slug: "gems",
-            label: "Gemmes",
+            id: "calculator-stuff-simulator",
+            slug: "stuff-simulator",
+            label: "Simulateur de Stuff",
             category: "competences",
             active: true,
             editHref: undefined,
