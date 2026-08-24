@@ -114,6 +114,35 @@ describe("buildSiteSearchResults", () => {
     ]);
   });
 
+  it("keeps the Templars tool and its cost reference independently searchable", () => {
+    const toolResults = buildSiteSearchResults({
+      query: "templiers",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(toolResults).toContainEqual({
+      type: "tool",
+      id: "tool-templars",
+      label: "Templiers",
+      href: "/tools/competences",
+    });
+    const referenceResults = buildSiteSearchResults({
+      query: "coût des templiers",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(referenceResults).toEqual([
+      {
+        type: "reference",
+        id: "reference-templiers",
+        label: "Coût des Templiers",
+        href: "/guides/referentiels/templiers",
+      },
+    ]);
+  });
+
   it("groups results as guides, then references, then tools", () => {
     const results = buildSiteSearchResults({
       query: "e",
