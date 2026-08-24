@@ -26,14 +26,19 @@ const variable = (block: string, name: string) =>
   block.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
 
 describe("public responsive styles", () => {
-  it("keeps one scrollable skill row on desktop and splits it 5/5 on mobile", () => {
+  it("always splits the skill summary 5/5 across two rows, on every viewport width", () => {
+    // Unconditional — not gated behind any @media breakpoint, so desktop
+    // gets the same 2-row split as mobile/tablet instead of one long
+    // horizontally-scrolling line.
     expect(css).toMatch(
-      /\.player-summary-line2\s*{[\s\S]*?white-space: nowrap;[\s\S]*?overflow-x: auto;/,
+      /\.player-summary-skill-group\s*{\s*display: block;\s*white-space: normal;/,
     );
-    expect(css).toMatch(/\.player-summary-skill-group\s*{\s*display: inline;/);
-    expect(css).toMatch(
-      /@media \(max-width: 42rem\)[\s\S]*?\.player-summary-skill-group\s*{\s*display: block;/,
-    );
+    const mediaBlock = css.match(
+      /@media \(max-width: 42rem\)\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).not.toMatch(/\.player-summary-skill-group/);
+    expect(mediaBlock).not.toMatch(/\.player-summary-line2/);
   });
 
   it("uses a two-column mobile grid for tool categories and category tabs", () => {

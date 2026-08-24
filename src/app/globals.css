@@ -435,11 +435,14 @@ main.public-main.contact-page {
   font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
   line-height: 1.6;
-  white-space: nowrap;
-  overflow-x: auto;
+  white-space: normal;
+  overflow-x: visible;
 }
+/* Always 2 rows of 5 skills, regardless of viewport width — not just below
+   the mobile/tablet breakpoint. */
 .player-summary-skill-group {
-  display: inline;
+  display: block;
+  white-space: normal;
 }
 .player-summary-line2 .sk-name {
   color: var(--text-dim);
@@ -1133,14 +1136,6 @@ select {
   }
   .player-settings summary small {
     padding-left: 1.1rem;
-  }
-  .player-summary-line2 {
-    white-space: normal;
-    overflow-x: visible;
-  }
-  .player-summary-skill-group {
-    display: block;
-    white-space: normal;
   }
   .tool-category-grid,
   nav.calculator-tabs:not(.compact) {
