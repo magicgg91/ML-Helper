@@ -44,14 +44,63 @@ export function gemImagePath(skill: EquipmentSkill, league: League): string {
   return `/gems/gemme-${slugify(skill)}-${leagueFileSlug[league]}.png`;
 }
 
-// Convention actée cdc section 12 : {famille-slug}-{rarete-slug}-{emplacement-slug}.webp
-// Couvre Combat ET Expédition (vocabulaires famille/emplacement différents,
-// même convention de nommage) — types larges volontairement, les deux
-// référentiels stockent leurs lignes en `string`.
+// Convention actée cdc section 12 : {family}-{rarity}-{slot}.webp.
+// The catalogs retain their French domain labels, while static asset names use
+// stable English slugs. The slot unambiguously identifies the catalog.
+const rarityFileSlugs: Record<string, string> = {
+  Commun: "common",
+  Rare: "rare",
+  Épique: "epic",
+  Mythique: "mythic",
+  Légendaire: "legendary",
+};
+
+const combatFamilyFileSlugs: Record<string, string> = {
+  Attaque: "attack",
+  Défense: "defense",
+  Or: "gold",
+  "Troupes/Vitesse": "troops-speed",
+};
+
+const combatSlotFileSlugs: Record<string, string> = {
+  Arme: "weapon",
+  Bouclier: "shield",
+  Ceinture: "belt",
+  Anneau: "ring",
+  Bracelet: "bracelet",
+  Amulette: "amulet",
+  Casque: "helmet",
+  Gantelet: "gauntlet",
+  Bottes: "boots",
+};
+
+const expeditionFamilyFileSlugs: Record<string, string> = {
+  Or: "gold",
+  Équipement: "equipment",
+  Consommables: "consumables",
+  Troupes: "troops",
+};
+
+const expeditionSlotFileSlugs: Record<string, string> = {
+  Cape: "cape",
+  "Longue-vue": "spyglass",
+  Sacoche: "pouch",
+  Boussole: "compass",
+  Torche: "torch",
+  Pioche: "pickaxe",
+};
+
 export function equipmentImagePath(
   family: string,
   rarity: string,
   slot: string,
 ): string {
-  return `/equipment/${slugify(family)}-${slugify(rarity)}-${slugify(slot)}.webp`;
+  const isCombat = slot in combatSlotFileSlugs;
+  const directory = isCombat ? "combat" : "expedition";
+  const familySlugs = isCombat
+    ? combatFamilyFileSlugs
+    : expeditionFamilyFileSlugs;
+  const slotSlugs = isCombat ? combatSlotFileSlugs : expeditionSlotFileSlugs;
+
+  return `/equipment/${directory}/${familySlugs[family] ?? slugify(family)}-${rarityFileSlugs[rarity] ?? slugify(rarity)}-${slotSlugs[slot] ?? slugify(slot)}.webp`;
 }

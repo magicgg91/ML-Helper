@@ -2,39 +2,76 @@
 
 ML-Helper is the administration foundation for the future community site. Phase 1 contains the Prisma data model, admin authentication, user management, and audit logs; it does not expose any public calculator yet.
 
-## Quick Docker test
+## Deployment with Docker Compose
 
-1. Copy the environment template, set the public URL of the instance and replace `NEXTAUTH_SECRET` with a secure random value.
+### Configuration
 
-   ```sh
-   cp .env.example .env
-   ```
+Copy the environment template and replace every example secret before starting
+the service:
 
-   Both settings are deliberately visible in the `environment:` section of `docker-compose.yml`, with development defaults/examples:
+```sh
+cp .env.example .env
+```
 
-   - `NEXTAUTH_URL` is the external URL used by NextAuth for authentication callbacks and cookies. Set it to the exact address used to access the application, including its port, or to the HTTPS URL exposed by your reverse proxy (for example `http://192.168.10.145:43000` or `https://ml-helper.example.com`).
-   - `NEXTAUTH_SECRET` signs and encrypts authentication data and sessions. Replace the example value with a long, random, private value and keep it stable between container restarts.
+The application and Compose deployment use the following variables:
 
-   You can edit the defaults directly in `docker-compose.yml`, or define `NEXTAUTH_URL` and `NEXTAUTH_SECRET` in `.env`. Compose interpolation gives values from `.env` (or the shell environment) priority over the defaults written in the Compose file.
+| Variable          | Required                        | Description                                                                                                                                                                                                               |
+| ----------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Yes outside the published image | Prisma SQLite connection URL. `.env.example` uses `file:./dev.db` for local development. Compose deliberately overrides it with `file:/app/data/database.db`; do not point a container at a database outside `/app/data`. |
+| `NEXTAUTH_URL`    | Yes                             | Exact public origin used for authentication callbacks and cookies, including the port (for example `http://192.168.10.145:3000`) or the HTTPS reverse-proxy URL.                                                          |
+| `NEXTAUTH_SECRET` | Yes                             | Long, random, stable secret that signs sessions and derives the TOTP encryption key. Generate one with `openssl rand -base64 32`; changing it invalidates sessions and existing TOTP enrollment data.                     |
+| `SMTP_HOST`       | Required for contact sending    | SMTP server hostname. The code uses separate host and port values; it does **not** read an SMTP URL variable.                                                                                                             |
+| `SMTP_PORT`       | Required for contact sending    | Numeric SMTP port. Port `465` enables implicit TLS; other ports use the transport defaults (commonly STARTTLS on `587`).                                                                                                  |
+| `SMTP_USER`       | Required for contact sending    | SMTP account and sender address.                                                                                                                                                                                          |
+| `SMTP_PASSWORD`   | Required for contact sending    | Password or provider-issued credential for `SMTP_USER`.                                                                                                                                                                   |
+| `CONTACT_EMAIL`   | Required for contact sending    | Destination mailbox that receives messages submitted through `/contact`.                                                                                                                                                  |
+| `ML_HELPER_IMAGE` | Compose only                    | Container image reference. It defaults to `ghcr.io/magicgg91/ml-helper:dev`; set `ghcr.io/magicgg91/ml-helper:latest` for the stable deployment channel or another fully qualified image tag for local testing.           |
 
-2. Pull and start the `ghcr.io/magicgg91/ml-helper:dev` image. The container applies all committed Prisma migrations automatically.
+When any SMTP value is absent, the contact form reports that sending is not
+configured instead of failing the rest of the site. Keep `.env` private; only
+`.env.example` belongs in version control.
 
-   ```sh
-   docker compose up
-   ```
+There are intentionally **no Super Admin username or password environment
+variables**. Create the first administrator through the one-time `/admin/setup`
+flow. After that account exists, the setup route redirects to login. Do not add
+bootstrap credentials to `.env`, Compose, or container images.
 
-3. Open [http://localhost:3000/admin](http://localhost:3000/admin). At first launch, create the initial Super Admin directly in the one-time setup form, then sign in.
+### Start and persistence
 
-SQLite always uses `/app/data/database.db` inside the image; `DATABASE_URL` is therefore not configurable and is not needed in `.env`. By default, data persists in the local `./data` directory. To store it elsewhere, change only the host side of the bind mount in `docker-compose.yml` (the value before `:/app/data`). Later starts retain the database and apply only pending migrations. Once a Super Admin exists, the setup form is disabled and redirects to the login page.
+Pull and start the configured image; the entrypoint applies all committed Prisma
+migrations automatically:
 
-When upgrading an existing installation that still has `data/ml-helper.db`, stop the container and rename that file to `data/database.db` before starting the new image. Otherwise the application correctly creates a new, empty database under the new fixed name.
+```sh
+docker compose pull
+docker compose up -d
+```
 
-Docker Compose checks the internal URL `http://127.0.0.1:3000/api/health`
-every 30 seconds with a small Node.js script included in the image. The check
-does not depend on `curl`, `wget`, `NEXTAUTH_URL`, or the host port mapping. A
-60-second startup grace period leaves time for Prisma migrations and the
-application startup. The container is reported healthy only when the
-application responds and Prisma can query the SQLite database.
+Open [http://localhost:3000/admin](http://localhost:3000/admin), or the origin
+configured in `NEXTAUTH_URL`. On first launch, use `/admin/setup` to create the
+initial Super Admin.
+
+Compose bind-mounts the host `./data` directory at `/app/data`. The SQLite file
+is `/app/data/database.db`, so both the database and any data-directory content
+(such as future persisted uploads) survive container replacement. The current
+application does not read a separate upload-path variable. To relocate storage,
+change only the host side of `./data:/app/data`; keep the container path fixed.
+
+When upgrading an installation that still has `data/ml-helper.db`, stop the
+container and rename it to `data/database.db` before starting the new image.
+Otherwise the application creates a new, empty database at the fixed path.
+
+Docker Compose checks `http://127.0.0.1:3000/api/health` every 30 seconds with
+the Node.js script included in the image. It does not depend on `curl`, `wget`,
+`NEXTAUTH_URL`, or the host port mapping. A 60-second startup grace period
+allows migrations and application startup to complete. The container is only
+reported healthy after the application responds and Prisma can query SQLite.
+
+### Build the image locally
+
+```sh
+docker build -t ml-helper:local .
+ML_HELPER_IMAGE=ml-helper:local docker compose up -d
+```
 
 ## Administration security
 

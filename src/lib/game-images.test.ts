@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { equipmentImagePath, equipmentSkillColors, gemImagePath } from "./game-images";
+import {
+  equipmentImagePath,
+  equipmentSkillColors,
+  gemImagePath,
+} from "./game-images";
 
 describe("gemImagePath", () => {
   it("matches the confirmed gem manifest naming convention", () => {
@@ -18,22 +22,22 @@ describe("gemImagePath", () => {
 describe("equipmentImagePath", () => {
   it("matches the confirmed combat equipment manifest naming convention", () => {
     expect(equipmentImagePath("Or", "Légendaire", "Arme")).toBe(
-      "/equipment/or-legendaire-arme.webp",
+      "/equipment/combat/gold-legendary-weapon.webp",
     );
-    expect(
-      equipmentImagePath("Troupes/Vitesse", "Commun", "Amulette"),
-    ).toBe("/equipment/troupes-vitesse-commun-amulette.webp");
+    expect(equipmentImagePath("Troupes/Vitesse", "Commun", "Amulette")).toBe(
+      "/equipment/combat/troops-speed-common-amulet.webp",
+    );
     expect(equipmentImagePath("Attaque", "Épique", "Bottes")).toBe(
-      "/equipment/attaque-epique-bottes.webp",
+      "/equipment/combat/attack-epic-boots.webp",
     );
   });
 
   it("also matches the expedition equipment manifest (different vocabulary, same convention)", () => {
     expect(equipmentImagePath("Équipement", "Épique", "Longue-vue")).toBe(
-      "/equipment/equipement-epique-longue-vue.webp",
+      "/equipment/expedition/equipment-epic-spyglass.webp",
     );
     expect(equipmentImagePath("Troupes", "Rare", "Sacoche")).toBe(
-      "/equipment/troupes-rare-sacoche.webp",
+      "/equipment/expedition/troops-rare-pouch.webp",
     );
   });
 });

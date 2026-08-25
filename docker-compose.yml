@@ -1,10 +1,12 @@
 services:
   app:
-    image: ghcr.io/magicgg91/ml-helper:dev
+    image: "${ML_HELPER_IMAGE:-ghcr.io/magicgg91/ml-helper:dev}"
     pull_policy: always
     env_file:
       - .env
     environment:
+      # Fixed container path backed by the /app/data bind mount below.
+      DATABASE_URL: "file:/app/data/database.db"
       # URL publique utilisée pour les cookies et callbacks NextAuth.
       # Exemple derrière un reverse proxy : https://ml-helper.example.com
       NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"

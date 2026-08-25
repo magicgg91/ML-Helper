@@ -47,7 +47,7 @@ describe("ReferenceTables", () => {
     expect(images.length).toBe(9);
     expect(
       Array.from(images).map((image) => image.getAttribute("src")),
-    ).toContain("/equipment/attaque-legendaire-arme.webp");
+    ).toContain("/equipment/combat/attack-legendary-weapon.webp");
   });
 
   it("attempts the manifest image path for each expedition equipment row", () => {
@@ -59,7 +59,7 @@ describe("ReferenceTables", () => {
       ".reference-equipment-image",
     )!;
     expect(image.getAttribute("src")).toMatch(
-      /^\/equipment\/[a-z-]+-(commun|rare|epique|mythique|legendaire)-[a-z-]+\.webp$/,
+      /^\/equipment\/expedition\/[a-z-]+-(common|rare|epic|mythic|legendary)-[a-z-]+\.webp$/,
     );
   });
 

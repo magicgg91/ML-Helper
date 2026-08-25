@@ -1,4 +1,10 @@
 # Equipment images
 
-Place combat and expedition equipment images in this directory using the
-`{family-slug}-{rarity-slug}-{slot-slug}.webp` naming convention.
+Equipment images use the English
+`{family}-{rarity}-{slot}.webp` naming convention and live in their catalog
+subdirectory:
+
+- `combat/` for combat equipment (for example,
+  `attack-legendary-weapon.webp`);
+- `expedition/` for expedition equipment (for example,
+  `equipment-epic-spyglass.webp`).
