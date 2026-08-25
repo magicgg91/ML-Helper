@@ -1141,12 +1141,8 @@ select {
   .player-settings summary small {
     padding-left: 1.1rem;
   }
-  .tool-category-grid,
   nav.calculator-tabs:not(.compact) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .tool-category-grid,
-  nav.calculator-tabs:not(.compact) {
     display: grid;
   }
   .city-comparison {
@@ -2167,6 +2163,18 @@ body > main h1 {
   grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
   gap: 1rem;
   margin-top: 2rem;
+}
+@media (max-width: 42rem) {
+  /* Bloc 25 found and fixed this exact cascade-order bug for
+     .category-nav: the responsive override must come textually AFTER the
+     unconditional base rule above, or the base rule wins the cascade at
+     equal specificity regardless of whether the media query matches. The
+     old override lived earlier in the file (before the base rule) and was
+     a silent no-op — confirmed via computed styles in a real browser. */
+  .tool-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .tool-category-card {
   display: block;

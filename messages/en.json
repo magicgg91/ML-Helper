@@ -264,7 +264,7 @@
       "percentage": "Your current percentage",
       "rank": "Your current rank"
     },
-    "undefined-suffix": " — to be defined",
+    "undefined": "To be defined in the administration",
     "total-players": "Total players (deduced)",
     "errors": {
       "select-league": "Choose a league to calculate.",
@@ -278,6 +278,16 @@
       "rank": "Range rank",
       "target-league": "Target league",
       "reward": "Reward"
+    },
+    "movements": {
+      "promotion": "Promotion to {league}",
+      "stay": "Stay in {league}",
+      "relegation": "Relegation to {league}"
+    },
+    "reward-types": {
+      "sapphires": "{count, plural, one {# sapphire} other {# sapphires}}",
+      "speedups": "{count} speedup",
+      "gems": "{count, plural, one {# gem} other {# gems}}"
     },
     "scale-label": "Ranking scale from 100% to 0%",
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
@@ -795,11 +805,25 @@
       "add": "Add range",
       "threshold": "Threshold (%)",
       "target": "Target league",
+      "movement": "Movement",
       "reward": "Reward",
       "action": "Action",
       "remove": "Delete",
       "row-label": "{league} row {row} {field}",
+      "unconfirmed-option": "Not confirmed",
+      "movements": {
+        "promotion": "Promotion",
+        "stay": "Stay",
+        "relegation": "Relegation"
+      },
+      "reward-types": {
+        "sapphires": "Sapphires",
+        "speedups": "Speedups",
+        "gems": "Gems"
+      },
       "range-error": "A value between 0 and 100 is required.",
+      "pairing-error": "Movement and target league must be confirmed together.",
+      "integer-error": "A whole number is required.",
       "required": "This field is required.",
       "empty": "No confirmed range.",
       "save": "Save ranking",
@@ -939,6 +963,7 @@
     "content": {
       "eyebrow": "Institutional page",
       "title": "Legal notice",
+      "language-label": "Content language",
       "field": "Markdown",
       "preview": "Live preview",
       "save": "Save",

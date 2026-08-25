@@ -41,10 +41,27 @@ describe("public responsive styles", () => {
     expect(mediaBlock).not.toMatch(/\.player-summary-line2/);
   });
 
-  it("uses a two-column mobile grid for tool categories and category tabs", () => {
+  it("uses a two-column mobile grid for category tabs", () => {
     expect(css).toMatch(
-      /\.tool-category-grid,\s*nav\.calculator-tabs:not\(\.compact\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+      /nav\.calculator-tabs:not\(\.compact\)\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
     );
+  });
+
+  it("uses a two-column mobile grid for the tool category cards, after the base rule", () => {
+    // Bloc 27/4: same cascade-order bug Bloc 25 fixed for .category-nav,
+    // confirmed present here too — the override must come textually AFTER
+    // the unconditional `.tool-category-grid { display: grid; ... }` base
+    // rule, or the base rule's grid-template-columns wins at equal
+    // specificity regardless of the media query matching.
+    const baseRuleIndex = css.indexOf(
+      ".tool-category-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit,",
+    );
+    const overrideRuleIndex = css.indexOf(
+      ".tool-category-grid {\n    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));",
+    );
+    expect(baseRuleIndex).toBeGreaterThan(-1);
+    expect(overrideRuleIndex).toBeGreaterThan(-1);
+    expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
   });
 
   it("also uniformly splits the Outils category nav 2-per-row on mobile", () => {

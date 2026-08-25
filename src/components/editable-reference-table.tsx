@@ -15,8 +15,8 @@ export type EditableColumn<Row> = {
   readOnly?: boolean;
 };
 
-type FieldErrors = Record<string, string>;
-const errorKey = (row: number, field: string) => `${row}:${field}`;
+export type FieldErrors = Record<string, string>;
+export const errorKey = (row: number, field: string) => `${row}:${field}`;
 
 export function EditableDataTable<Row extends Record<string, string>>({
   rows,
@@ -27,6 +27,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
   addLabel,
   removeLabel,
   emptyLabel,
+  errors,
 }: {
   rows: Row[];
   columns: EditableColumn<Row>[];
@@ -36,6 +37,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
   addLabel?: string;
   removeLabel?: string;
   emptyLabel?: string;
+  errors?: FieldErrors;
 }) {
   return (
     <>
@@ -53,8 +55,10 @@ export function EditableDataTable<Row extends Record<string, string>>({
                 <tr key={rowIndex}>
                   {columns.map((column) => {
                     const label = column.inputLabel?.(rowIndex) ?? `${column.label} ${rowIndex + 1}`;
+                    const errorMessage = errors?.[errorKey(rowIndex, column.key)];
                     const shared = {
                       "aria-label": label,
+                      "aria-invalid": Boolean(errorMessage),
                       value: row[column.key],
                       disabled: column.readOnly,
                       onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -64,7 +68,9 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <select {...shared}>{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
                     ) : (
                       <input {...shared} type={column.type ?? "text"} min={column.min} step={column.step} readOnly={column.readOnly} />
-                    )}</td>;
+                    )}
+                    {errorMessage && <small className="field-error">{errorMessage}</small>}
+                    </td>;
                   })}
                   {onRemove && <td><button className="secondary-action" type="button" onClick={() => onRemove(rowIndex)}>{removeLabel}</button></td>}
                 </tr>

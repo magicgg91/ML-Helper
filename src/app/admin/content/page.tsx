@@ -1,8 +1,8 @@
 import { requireCapability } from "@/auth/require-session";
 import { LegalNoticeEditor } from "@/components/legal-notice-editor";
-import { defaultFrenchLegalNotice, legalNoticeKey } from "@/lib/legal-notice";
+import { defaultLegalNoticeContent, legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
-import { localizedText } from "@/lib/translations";
+import { translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 
 export default async function StaticContentAdminPage() {
@@ -11,13 +11,15 @@ export default async function StaticContentAdminPage() {
   const legalNotice = await prisma.staticContent.findUnique({
     where: { key: legalNoticeKey },
   });
+  const content = translationRecord(legalNotice?.content);
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <LegalNoticeEditor
-        initialContent={
-          localizedText(legalNotice?.content, "fr") || defaultFrenchLegalNotice
-        }
+        initialContent={{
+          fr: content.fr || defaultLegalNoticeContent.fr,
+          en: content.en || defaultLegalNoticeContent.en,
+        }}
       />
     </main>
   );

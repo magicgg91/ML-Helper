@@ -1055,7 +1055,14 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     }
     const legalUpdate = await page.request.patch(
       "/api/admin/content/legal-notice",
-      { data: { content: "## Mentions test\n\nContenu légal public." } },
+      {
+        data: {
+          content: {
+            fr: "## Mentions test\n\nContenu légal public.",
+            en: "## Legal test\n\nPublic legal content.",
+          },
+        },
+      },
     );
     expect(legalUpdate.status(), `${roleCase.username} legal update`).toBe(
       roleCase.username === "rootadmin" ? 200 : 403,

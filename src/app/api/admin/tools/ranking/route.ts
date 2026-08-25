@@ -23,7 +23,7 @@ export async function PUT(request: Request) {
         where: { key: "ranking_leagues" },
         create: {
           key: "ranking_leagues",
-          columns: ["threshold", "target", "reward"],
+          columns: ["threshold", "movement", "league", "rewards"],
           rows: config,
         },
         update: { rows: config },

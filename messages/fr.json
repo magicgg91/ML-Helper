@@ -270,7 +270,7 @@
       "percentage": "Ton pourcentage actuel",
       "rank": "Ton rang actuel"
     },
-    "undefined-suffix": " — à définir",
+    "undefined": "À définir dans l’administration",
     "total-players": "Nombre total de joueurs (déduit)",
     "errors": {
       "select-league": "Choisis une ligue pour calculer.",
@@ -284,6 +284,16 @@
       "rank": "Rang de plage",
       "target-league": "Ligue cible",
       "reward": "Récompense"
+    },
+    "movements": {
+      "promotion": "Montée {league}",
+      "stay": "Maintien {league}",
+      "relegation": "Descente {league}"
+    },
+    "reward-types": {
+      "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
+      "speedups": "{count} speedup",
+      "gems": "{count, plural, one {# gemme} other {# gemmes}}"
     },
     "scale-label": "Échelle de classement de 100% à 0%",
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
@@ -796,11 +806,25 @@
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
+      "movement": "Mouvement",
       "reward": "Récompense",
       "action": "Action",
       "remove": "Supprimer",
       "row-label": "{league} ligne {row} {field}",
+      "unconfirmed-option": "Non confirmé",
+      "movements": {
+        "promotion": "Montée",
+        "stay": "Maintien",
+        "relegation": "Descente"
+      },
+      "reward-types": {
+        "sapphires": "Saphirs",
+        "speedups": "Speedups",
+        "gems": "Gemmes"
+      },
       "range-error": "Entre 0 et 100 requis.",
+      "pairing-error": "Mouvement et ligue cible doivent être confirmés ensemble.",
+      "integer-error": "Nombre entier requis.",
       "required": "Ce champ est obligatoire.",
       "empty": "Aucune plage confirmée.",
       "save": "Enregistrer le classement",
@@ -940,6 +964,7 @@
     "content": {
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
+      "language-label": "Langue du contenu",
       "field": "Markdown",
       "preview": "Aperçu en direct",
       "save": "Enregistrer",

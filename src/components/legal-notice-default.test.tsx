@@ -1,8 +1,12 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { MarkdownRenderer } from "./markdown-renderer";
-import { defaultFrenchLegalNotice } from "../lib/legal-notice";
+import {
+  defaultEnglishLegalNotice,
+  defaultFrenchLegalNotice,
+} from "../lib/legal-notice";
 
+afterEach(cleanup);
 describe("default French legal notice", () => {
   it("renders its Markdown and keeps every explicit placeholder", () => {
     render(<MarkdownRenderer markdown={defaultFrenchLegalNotice} />);
@@ -49,5 +53,49 @@ describe("default French legal notice", () => {
     expect(
       screen.queryByText(/SI FORMULAIRE DE CONTACT/),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("default English legal notice", () => {
+  it("renders its Markdown and keeps every explicit placeholder", () => {
+    render(<MarkdownRenderer markdown={defaultEnglishLegalNotice} />);
+
+    expect(
+      screen.getByRole("heading", { name: "Legal Notice", level: 1 }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("heading", {
+        name: "Development and reliability of the data",
+        level: 2,
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getAllByText("[PUBLISHER NAME — TO BE COMPLETED]"),
+    ).toHaveLength(2);
+    expect(document.body).toHaveTextContent(
+      "[CONTACT EMAIL ADDRESS — TO BE COMPLETED]",
+    );
+    expect(document.body).toHaveTextContent("[HOST NAME — TO BE COMPLETED]");
+    expect(document.body).toHaveTextContent(
+      "[HOST ADDRESS — TO BE COMPLETED]",
+    );
+    expect(document.body).toHaveTextContent(
+      "[HOST CONTACT — TO BE COMPLETED]",
+    );
+    expect(screen.getAllByText("Million Lords")).toHaveLength(2);
+    expect(
+      screen
+        .getAllByText("Million Lords")
+        .every((node) => node.tagName === "EM"),
+    ).toBe(true);
+    expect(
+      screen.getByText("verified by direct in-game observation").tagName,
+    ).toBe("STRONG");
+    expect(document.body).toHaveTextContent(
+      "The contact form collects your email address, the subject you select, and the message you write.",
+    );
+    expect(document.body).toHaveTextContent(
+      "sent by email to the editorial team and is never kept in this site's database.",
+    );
   });
 });

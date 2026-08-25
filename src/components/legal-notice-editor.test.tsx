@@ -1,16 +1,24 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LegalNoticeEditor } from "./legal-notice-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
 describe("LegalNoticeEditor", () => {
+  afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
-  it("edits and submits one raw Markdown field", async () => {
+  it("edits and submits the French field by default", async () => {
     const fetch = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 200 }));
-    render(<LegalNoticeEditor initialContent="## Ancien texte" />);
+    render(
+      <LegalNoticeEditor
+        initialContent={{
+          fr: "## Ancien texte",
+          en: "## Old text",
+        }}
+      />,
+    );
 
     const editor = screen.getByLabelText("Markdown");
     expect(editor).toHaveValue("## Ancien texte");
@@ -34,10 +42,37 @@ describe("LegalNoticeEditor", () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
-      content: "## Nouveau\n\nTexte légal",
+      content: { fr: "## Nouveau\n\nTexte légal", en: "## Old text" },
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Mentions légales enregistrées.",
     );
+  });
+
+  it("edits the English field without replacing the French field", async () => {
+    const fetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 200 }));
+    render(
+      <LegalNoticeEditor
+        initialContent={{
+          fr: "## Ancien texte",
+          en: "## Old text",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Langue du contenu"), {
+      target: { value: "en" },
+    });
+    const editor = screen.getByLabelText("Markdown");
+    expect(editor).toHaveValue("## Old text");
+    fireEvent.change(editor, { target: { value: "## Updated legal text" } });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
+      content: { fr: "## Ancien texte", en: "## Updated legal text" },
+    });
   });
 });
