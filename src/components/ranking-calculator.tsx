@@ -4,15 +4,31 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   calculateRanking,
-  rankCategory,
   rankCategoryShade,
-  type RankCategory,
+  type RankingBand,
   type RankingConfig,
   type RankingLeague,
+  type RankMovement,
 } from "../lib/ranking";
 import { NumberStepper } from "./number-stepper";
 import { LeagueSelect } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
+
+type Translator = ReturnType<typeof useTranslations>;
+
+function targetLabel(band: RankingBand, t: Translator, game: Translator) {
+  if (!band.movement || !band.league) return t("undefined");
+  return t(`movements.${band.movement}`, {
+    league: game(`leagues.${band.league}`),
+  });
+}
+
+function rewardLabel(band: RankingBand, t: Translator) {
+  if (!band.rewards.length) return t("undefined");
+  return band.rewards
+    .map((item) => t(`reward-types.${item.type}`, { count: item.quantity }))
+    .join(", ");
+}
 
 export function RankingCalculator({ config }: { config: RankingConfig }) {
   const locale = useLocale();
@@ -107,21 +123,19 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
                       </td>
                       <td
                         className={
-                          range.target.startsWith("À définir")
+                          !range.movement || !range.league
                             ? "ranking-unknown"
                             : ""
                         }
                       >
-                        {range.target}
+                        {targetLabel(range, t, game)}
                       </td>
                       <td
                         className={
-                          range.reward.startsWith("À définir")
-                            ? "ranking-unknown"
-                            : ""
+                          !range.rewards.length ? "ranking-unknown" : ""
                         }
                       >
-                        {range.reward}
+                        {rewardLabel(range, t)}
                       </td>
                     </tr>
                   ))}
@@ -143,9 +157,10 @@ function RankingScale({
   percentage: number;
 }) {
   const t = useTranslations("ranking");
+  const game = useTranslations("game");
   const locale = useLocale();
   const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
-  const categoryCounters: Record<RankCategory, number> = {
+  const categoryCounters: Record<RankMovement, number> = {
     montee: 0,
     maintien: 0,
     descente: 0,
@@ -176,7 +191,7 @@ function RankingScale({
         const start = index === 0 ? 0 : sorted[index - 1].threshold;
         const left = 100 - band.threshold;
         const width = band.threshold - start;
-        const category = rankCategory(band.target);
+        const category = band.movement ?? "maintien";
         const color = rankCategoryShade(category, categoryCounters[category]);
         categoryCounters[category] += 1;
         const side = index % 2 === 0 ? "above" : "below";
@@ -188,8 +203,8 @@ function RankingScale({
               title={t("segment-tooltip", {
                 threshold: band.threshold,
                 start,
-                target: band.target,
-                reward: band.reward,
+                target: targetLabel(band, t, game),
+                reward: rewardLabel(band, t),
               })}
             />
             <div
@@ -200,7 +215,9 @@ function RankingScale({
                 <div className="ranking-scale-range">
                   {band.threshold}–{start}%
                 </div>
-                <div className="ranking-scale-target">{band.target}</div>
+                <div className="ranking-scale-target">
+                  {targetLabel(band, t, game)}
+                </div>
               </div>
             </div>
           </div>

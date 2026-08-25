@@ -270,7 +270,7 @@
       "percentage": "Ton pourcentage actuel",
       "rank": "Ton rang actuel"
     },
-    "undefined-suffix": " — à définir",
+    "undefined": "À définir dans l’administration",
     "total-players": "Nombre total de joueurs (déduit)",
     "errors": {
       "select-league": "Choisis une ligue pour calculer.",
@@ -284,6 +284,16 @@
       "rank": "Rang de plage",
       "target-league": "Ligue cible",
       "reward": "Récompense"
+    },
+    "movements": {
+      "montee": "Montée {league}",
+      "maintien": "Maintien {league}",
+      "descente": "Descente {league}"
+    },
+    "reward-types": {
+      "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
+      "speedups": "{count} speedup",
+      "gems": "{count, plural, one {# gemme} other {# gemmes}}"
     },
     "scale-label": "Échelle de classement de 100% à 0%",
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
@@ -796,10 +806,22 @@
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
+      "movement": "Mouvement",
       "reward": "Récompense",
       "action": "Action",
       "remove": "Supprimer",
       "row-label": "{league} ligne {row} {field}",
+      "unconfirmed-option": "Non confirmé",
+      "movements": {
+        "montee": "Montée",
+        "maintien": "Maintien",
+        "descente": "Descente"
+      },
+      "reward-types": {
+        "sapphires": "Saphirs",
+        "speedups": "Speedups",
+        "gems": "Gemmes"
+      },
       "range-error": "Entre 0 et 100 requis.",
       "required": "Ce champ est obligatoire.",
       "empty": "Aucune plage confirmée.",
