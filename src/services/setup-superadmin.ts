@@ -2,7 +2,11 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { auditMessage } from "../lib/audit-message";
-import { defaultFrenchLegalNotice, legalNoticeKey } from "../lib/legal-notice";
+import {
+  defaultEnglishLegalNotice,
+  defaultFrenchLegalNotice,
+  legalNoticeKey,
+} from "../lib/legal-notice";
 
 const setupSchema = z.object({
   username: z
@@ -36,7 +40,10 @@ export async function createInitialSuperAdmin(input: unknown) {
     await tx.staticContent.create({
       data: {
         key: legalNoticeKey,
-        content: { fr: defaultFrenchLegalNotice },
+        content: {
+          fr: defaultFrenchLegalNotice,
+          en: defaultEnglishLegalNotice,
+        },
         updatedBy: user.id,
       },
     });

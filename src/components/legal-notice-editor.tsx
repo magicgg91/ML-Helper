@@ -4,13 +4,18 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
 import { EditorActionBar } from "./editor-action-bar";
+import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
 
 export function LegalNoticeEditor({
   initialContent,
 }: {
-  initialContent: string;
+  initialContent: Record<EditorialLocale, string>;
 }) {
   const t = useTranslations("admin.content");
+  const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [content, setContent] = useState(initialContent);
   const [message, setMessage] = useState("");
 
@@ -35,11 +40,18 @@ export function LegalNoticeEditor({
           {t("save")}
         </button>
       </EditorActionBar>
+      <EditorialLocaleSelect
+        label={t("language-label")}
+        value={locale}
+        onChange={setLocale}
+      />
       <section className="admin-panel guide-simple-fields">
         <GuideMarkdownEditor
           label={t("field")}
-          value={content}
-          onChange={setContent}
+          value={content[locale]}
+          onChange={(value) =>
+            setContent((current) => ({ ...current, [locale]: value }))
+          }
         />
       </section>
     </div>

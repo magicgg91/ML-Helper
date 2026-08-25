@@ -940,6 +940,7 @@
     "content": {
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
+      "language-label": "Langue du contenu",
       "field": "Markdown",
       "preview": "Aperçu en direct",
       "save": "Enregistrer",

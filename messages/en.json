@@ -939,6 +939,7 @@
     "content": {
       "eyebrow": "Institutional page",
       "title": "Legal notice",
+      "language-label": "Content language",
       "field": "Markdown",
       "preview": "Live preview",
       "save": "Save",

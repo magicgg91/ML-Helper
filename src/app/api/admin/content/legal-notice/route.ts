@@ -5,7 +5,10 @@ import { auditMessage } from "@/lib/audit-message";
 import { legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
 
-const schema = z.object({ content: z.string().trim().min(1).max(100_000) });
+const localeContent = z.string().trim().min(1).max(100_000);
+const schema = z.object({
+  content: z.object({ fr: localeContent, en: localeContent }),
+});
 
 export async function PATCH(request: Request) {
   const session = await authorizedSession("content.write");
@@ -17,7 +20,7 @@ export async function PATCH(request: Request) {
   const before = await prisma.staticContent.findUnique({
     where: { key: legalNoticeKey },
   });
-  const content = { fr: parsed.data.content };
+  const content = parsed.data.content;
   const updated = await prisma.$transaction(async (tx) => {
     const item = await tx.staticContent.upsert({
       where: { key: legalNoticeKey },
