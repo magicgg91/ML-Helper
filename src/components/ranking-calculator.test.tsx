@@ -1,15 +1,19 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
-import messages from "../../messages/fr.json";
+import frMessages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import { defaultRankingConfig } from "../lib/ranking";
 import { RankingCalculator } from "./ranking-calculator";
 
 describe("RankingCalculator", () => {
   afterEach(cleanup);
-  const renderCalculator = () =>
+  const renderCalculator = (
+    locale: "fr" | "en" = "fr",
+    messages: typeof frMessages | typeof enMessages = frMessages,
+  ) =>
     render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <RankingCalculator config={defaultRankingConfig} />
       </NextIntlClientProvider>,
     );
@@ -24,6 +28,27 @@ describe("RankingCalculator", () => {
     ).toHaveLength(2);
     expect(
       screen.getByText("6 gemmes", { selector: "td" }),
+    ).toBeInTheDocument();
+  });
+  it("joins multiple typed rewards into one localized list", () => {
+    renderCalculator();
+    fireEvent.change(screen.getByLabelText("Ligue"), {
+      target: { value: "silver" },
+    });
+    expect(
+      screen.getByText("100 saphirs, 7 speedup, 6 gemmes", { selector: "td" }),
+    ).toBeInTheDocument();
+  });
+  it("renders the target league and rewards translated in English", () => {
+    renderCalculator("en", enMessages);
+    fireEvent.change(screen.getByLabelText("League"), {
+      target: { value: "diamond" },
+    });
+    expect(
+      screen.getAllByText("Promotion to Legend", { selector: "td" }),
+    ).toHaveLength(2);
+    expect(
+      screen.getByText("6 gems", { selector: "td" }),
     ).toBeInTheDocument();
   });
   it("shows the editable placeholder for an unknown league", () => {
