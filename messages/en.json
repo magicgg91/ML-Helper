@@ -280,9 +280,9 @@
       "reward": "Reward"
     },
     "movements": {
-      "montee": "Promotion to {league}",
-      "maintien": "Stay in {league}",
-      "descente": "Relegation to {league}"
+      "promotion": "Promotion to {league}",
+      "stay": "Stay in {league}",
+      "relegation": "Relegation to {league}"
     },
     "reward-types": {
       "sapphires": "{count, plural, one {# sapphire} other {# sapphires}}",
@@ -812,9 +812,9 @@
       "row-label": "{league} row {row} {field}",
       "unconfirmed-option": "Not confirmed",
       "movements": {
-        "montee": "Promotion",
-        "maintien": "Stay",
-        "descente": "Relegation"
+        "promotion": "Promotion",
+        "stay": "Stay",
+        "relegation": "Relegation"
       },
       "reward-types": {
         "sapphires": "Sapphires",
@@ -822,6 +822,8 @@
         "gems": "Gems"
       },
       "range-error": "A value between 0 and 100 is required.",
+      "pairing-error": "Movement and target league must be confirmed together.",
+      "integer-error": "A whole number is required.",
       "required": "This field is required.",
       "empty": "No confirmed range.",
       "save": "Save ranking",

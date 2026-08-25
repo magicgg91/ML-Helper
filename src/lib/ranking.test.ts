@@ -48,7 +48,7 @@ describe("ranking calculator", () => {
       bronze: [
         {
           threshold: 50,
-          movement: "maintien",
+          movement: "stay",
           league: "bronze",
           rewards: [{ type: "gems", quantity: 1 }],
         },
@@ -56,7 +56,7 @@ describe("ranking calculator", () => {
     });
     expect(config.bronze[0]).toEqual({
       threshold: 50,
-      movement: "maintien",
+      movement: "stay",
       league: "bronze",
       rewards: [{ type: "gems", quantity: 1 }],
     });
@@ -86,11 +86,74 @@ describe("ranking calculator", () => {
     });
   });
 
+  it("drops a fractional reward quantity instead of rounding it silently", () => {
+    const config = parseRankingConfig({
+      bronze: [
+        {
+          threshold: 50,
+          movement: "promotion",
+          league: "silver",
+          rewards: [
+            { type: "gems", quantity: 1.5 },
+            { type: "sapphires", quantity: 3 },
+          ],
+        },
+      ],
+    });
+    expect(config.bronze[0].rewards).toEqual([{ type: "sapphires", quantity: 3 }]);
+  });
+
+  it("converts a pre-Bloc-27 row's free-text target/reward into the new shape", () => {
+    const config = parseRankingConfig({
+      bronze: [
+        {
+          threshold: 50,
+          target: "Montée Or",
+          reward: "100 saphirs, 7 speedup, 6 gemmes",
+        },
+        {
+          threshold: 75,
+          target: "Descente Argent",
+          reward: "1 gemme",
+        },
+        {
+          threshold: 90,
+          target: "À définir dans l’administration",
+          reward: "À définir dans l’administration",
+        },
+      ],
+    });
+    expect(config.bronze).toEqual([
+      {
+        threshold: 50,
+        movement: "promotion",
+        league: "gold",
+        rewards: [
+          { type: "sapphires", quantity: 100 },
+          { type: "speedups", quantity: 7 },
+          { type: "gems", quantity: 6 },
+        ],
+      },
+      {
+        threshold: 75,
+        movement: "relegation",
+        league: "silver",
+        rewards: [{ type: "gems", quantity: 1 }],
+      },
+      {
+        threshold: 90,
+        movement: null,
+        league: null,
+        rewards: [],
+      },
+    ]);
+  });
+
   it("allows confirmed ranking rows to be edited too", () => {
     const edited = structuredClone(defaultRankingConfig);
     edited.legend[0] = {
       threshold: 2,
-      movement: "descente",
+      movement: "relegation",
       league: "diamond",
       rewards: [{ type: "sapphires", quantity: 10 }],
     };
@@ -100,11 +163,11 @@ describe("ranking calculator", () => {
 
 describe("rankCategoryShade", () => {
   it("goes from light to dark as the index grows within a category", () => {
-    expect(rankCategoryShade("montee", 0)).toBe("#a8dcb8");
-    expect(rankCategoryShade("montee", 1)).toBe("#7ec99a");
-    expect(rankCategoryShade("descente", 0)).toBe("#f0b088");
+    expect(rankCategoryShade("promotion", 0)).toBe("#a8dcb8");
+    expect(rankCategoryShade("promotion", 1)).toBe("#7ec99a");
+    expect(rankCategoryShade("relegation", 0)).toBe("#f0b088");
   });
   it("cycles back to the lightest shade past the palette length", () => {
-    expect(rankCategoryShade("maintien", 5)).toBe(rankCategoryShade("maintien", 0));
+    expect(rankCategoryShade("stay", 5)).toBe(rankCategoryShade("stay", 0));
   });
 });

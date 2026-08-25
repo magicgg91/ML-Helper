@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   EditableDataTable,
+  errorKey,
   type EditableColumn,
+  type FieldErrors,
 } from "./editable-reference-table";
 import {
   rankingLeagues,
@@ -56,7 +58,15 @@ export function RankingAdminEditor({
       ) as Record<RankingLeague, RankingEditRow[]>,
   );
   const [message, setMessage] = useState("");
-  const [hasValidationError, setHasValidationError] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<RankingLeague, FieldErrors>
+  >(
+    () =>
+      Object.fromEntries(rankingLeagues.map((league) => [league, {}])) as Record<
+        RankingLeague,
+        FieldErrors
+      >,
+  );
   const leagueOptions = [
     { value: "", label: t("unconfirmed-option") },
     ...rankingLeagues.map((league) => ({ value: league, label: leagues(league) })),
@@ -100,24 +110,33 @@ export function RankingAdminEditor({
     { key: "gems", label: t("reward-types.gems"), type: "number", min: 0, step: 1 },
   ];
   async function save() {
-    const invalid = rankingLeagues.some((league) =>
-      config[league].some((row) => {
+    const errors = Object.fromEntries(
+      rankingLeagues.map((league) => [league, {} as FieldErrors]),
+    ) as Record<RankingLeague, FieldErrors>;
+    let invalid = false;
+    for (const league of rankingLeagues)
+      config[league].forEach((row, index) => {
         const threshold = Number(row.threshold);
-        if (
-          !Number.isFinite(threshold) ||
-          threshold <= 0 ||
-          threshold > 100
-        )
-          return true;
+        if (!Number.isFinite(threshold) || threshold <= 0 || threshold > 100) {
+          errors[league][errorKey(index, "threshold")] = t("range-error");
+          invalid = true;
+        }
         // Movement and target league are confirmed together, or not at all.
-        return Boolean(row.movement) !== Boolean(row.league);
-      }),
-    );
-    if (invalid) {
-      setHasValidationError(true);
-      return setMessage(t("validation"));
-    }
-    setHasValidationError(false);
+        if (Boolean(row.movement) !== Boolean(row.league)) {
+          errors[league][errorKey(index, "movement")] = t("pairing-error");
+          errors[league][errorKey(index, "league")] = t("pairing-error");
+          invalid = true;
+        }
+        for (const type of rankRewardTypes) {
+          const quantity = Number(row[type]);
+          if (!Number.isInteger(quantity) || quantity < 0) {
+            errors[league][errorKey(index, type)] = t("integer-error");
+            invalid = true;
+          }
+        }
+      });
+    setFieldErrors(errors);
+    if (invalid) return setMessage(t("validation"));
     setMessage(t("saving"));
     try {
       const payload = Object.fromEntries(
@@ -156,7 +175,6 @@ export function RankingAdminEditor({
           {t("save")}
         </button>
       </EditorActionBar>
-      {hasValidationError && <p className="field-error">{t("range-error")}</p>}
       <p>{t("description")}</p>
       {rankingLeagues.map((league) => {
         const columns = baseColumns.map((column) => ({
@@ -204,6 +222,7 @@ export function RankingAdminEditor({
               addLabel={t("add")}
               removeLabel={t("remove")}
               emptyLabel={t("empty")}
+              errors={fieldErrors[league]}
             />
           </section>
         );

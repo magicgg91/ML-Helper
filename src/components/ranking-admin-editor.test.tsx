@@ -16,7 +16,7 @@ describe("RankingAdminEditor", () => {
       screen.queryByRole("textbox", { name: "Configuration Ranking" }),
     ).not.toBeInTheDocument();
     expect(screen.getByLabelText("Argent ligne 1 Mouvement")).toHaveValue(
-      "montee",
+      "promotion",
     );
     expect(screen.getByLabelText("Argent ligne 1 Ligue cible")).toHaveValue(
       "gold",
@@ -47,7 +47,7 @@ describe("RankingAdminEditor", () => {
     const payload = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(payload.diamond[0]).toEqual({
       threshold: 1,
-      movement: "montee",
+      movement: "promotion",
       league: "legend",
       rewards: [{ type: "gems", quantity: 9 }],
     });
@@ -69,16 +69,34 @@ describe("RankingAdminEditor", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("rejects a row with only a movement or only a target league set", () => {
+  it("reports a movement/league pairing error distinctly from the threshold error", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     render(<RankingAdminEditor initialConfig={defaultRankingConfig} />);
     fireEvent.change(screen.getByLabelText("Platine ligne 1 Mouvement"), {
-      target: { value: "montee" },
+      target: { value: "promotion" },
     });
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer le classement" }),
     );
-    expect(screen.getByText("Entre 0 et 100 requis.")).toBeVisible();
+    expect(
+      screen.getAllByText(
+        "Mouvement et ligue cible doivent être confirmés ensemble.",
+      ),
+    ).toHaveLength(2);
+    expect(screen.queryByText("Entre 0 et 100 requis.")).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a fractional reward quantity", () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    render(<RankingAdminEditor initialConfig={defaultRankingConfig} />);
+    fireEvent.change(screen.getByLabelText("Argent ligne 1 Gemmes"), {
+      target: { value: "1.5" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer le classement" }),
+    );
+    expect(screen.getByText("Nombre entier requis.")).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

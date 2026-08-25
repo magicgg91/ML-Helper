@@ -161,9 +161,9 @@ function RankingScale({
   const locale = useLocale();
   const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
   const categoryCounters: Record<RankMovement, number> = {
-    montee: 0,
-    maintien: 0,
-    descente: 0,
+    promotion: 0,
+    stay: 0,
+    relegation: 0,
   };
   const playerLeft = 100 - percentage;
   return (
@@ -191,7 +191,7 @@ function RankingScale({
         const start = index === 0 ? 0 : sorted[index - 1].threshold;
         const left = 100 - band.threshold;
         const width = band.threshold - start;
-        const category = band.movement ?? "maintien";
+        const category = band.movement ?? "stay";
         const color = rankCategoryShade(category, categoryCounters[category]);
         categoryCounters[category] += 1;
         const side = index % 2 === 0 ? "above" : "below";

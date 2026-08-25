@@ -286,9 +286,9 @@
       "reward": "Récompense"
     },
     "movements": {
-      "montee": "Montée {league}",
-      "maintien": "Maintien {league}",
-      "descente": "Descente {league}"
+      "promotion": "Montée {league}",
+      "stay": "Maintien {league}",
+      "relegation": "Descente {league}"
     },
     "reward-types": {
       "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
@@ -813,9 +813,9 @@
       "row-label": "{league} ligne {row} {field}",
       "unconfirmed-option": "Non confirmé",
       "movements": {
-        "montee": "Montée",
-        "maintien": "Maintien",
-        "descente": "Descente"
+        "promotion": "Montée",
+        "stay": "Maintien",
+        "relegation": "Descente"
       },
       "reward-types": {
         "sapphires": "Saphirs",
@@ -823,6 +823,8 @@
         "gems": "Gemmes"
       },
       "range-error": "Entre 0 et 100 requis.",
+      "pairing-error": "Mouvement et ligue cible doivent être confirmés ensemble.",
+      "integer-error": "Nombre entier requis.",
       "required": "Ce champ est obligatoire.",
       "empty": "Aucune plage confirmée.",
       "save": "Enregistrer le classement",
