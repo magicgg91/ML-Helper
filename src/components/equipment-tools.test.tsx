@@ -69,7 +69,7 @@ describe("equipment tools", () => {
     expect(badge).toHaveTextContent("Légendaire");
     expect(amulet.querySelector("img.stuff-slot-image")).toHaveAttribute(
       "src",
-      "/equipment/attaque-legendaire-amulette.webp",
+      "/equipment/combat/attack-legendary-amulet.webp",
     );
     expect(amulet.querySelector(".gem-badge")).toBeNull();
   });
