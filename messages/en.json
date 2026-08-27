@@ -293,7 +293,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Combat Equipment Simulator",
+    "name": "Combat Equipment",
     "view-reference": "View full reference table",
     "global-summary": "Equipment skills summary",
     "empty-summary": "No equipment configured",
@@ -315,36 +315,10 @@
       "league": "Gem league {index}"
     }
   },
-  "stuff-comparison": {
-    "name": "Combat Equipment Comparator",
-    "view-reference": "View full reference table",
-    "side-title": "Equipment {side}",
-    "slot": "Slot",
-    "comparison-title": "Comparison by skill",
-    "columns": {
-      "skill": "Skill",
-      "side-a": "Equipment A",
-      "side-b": "Equipment B",
-      "difference": "Difference"
-    },
-    "equipment-label": "Equipment ({slot})",
-    "equipment-aria": "{block} equipment {slot}",
-    "equipment-option": "{rarity} — {name} ({family})",
-    "none": "None",
-    "star-level": "Star level",
-    "equipment-stars-aria": "{block} equipment stars {slot}",
-    "no-gem-slot": "No gem slot at this rarity",
-    "gem": {
-      "row": "Gem {index}",
-      "skill": "Gem skill {index}",
-      "stars": "Gem stars {index}",
-      "league": "Gem league {index}"
-    }
-  },
   "expedition-equipment-simulator": {
-    "name": "Expedition Equipment Simulator",
+    "name": "Expedition Equipment",
     "view-reference": "View the full reference",
-    "summary-title": "Expedition stats summary",
+    "summary-title": "Expedition skills summary",
     "empty-summary": "No equipment configured",
     "empty-slot": "Empty",
     "select-slot": "Click a slot to configure it.",
@@ -353,7 +327,15 @@
     "equipment-option": "{rarity} — {name} ({family})",
     "none": "None",
     "star-level": "Star level",
-    "equipment-stars-aria": "Expedition equipment stars {slot}"
+    "equipment-stars-aria": "Expedition equipment stars {slot}",
+    "filters": {
+      "label": "Filter by equipment type",
+      "custom": "Custom",
+      "gold": "Gold",
+      "equipment": "Combat Equipment",
+      "consumables": "Consumables",
+      "troops": "Troops"
+    }
   },
   "gems": {
     "name": "Gems",
