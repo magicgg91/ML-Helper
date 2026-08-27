@@ -126,6 +126,32 @@ describe("GuideStatusList", () => {
     expect(screen.queryByText("Premiers pas")).toBeNull();
   });
 
+  it("hides the toggle button for a reference whose active state is controlled elsewhere (Templars)", () => {
+    const templarsRow: GuideAdminRow = {
+      ...referenceRow,
+      id: "templars",
+      slug: "templars",
+      title: "Templiers",
+      editHref: "/admin/tools/templars",
+      canToggle: false,
+    };
+    render(
+      <GuideStatusList
+        rows={[templarsRow]}
+        canPublish={false}
+        canDelete={true}
+        canWrite={true}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Éditer" })).toHaveAttribute(
+      "href",
+      "/admin/tools/templars",
+    );
+    expect(
+      screen.queryByRole("button", { name: "Désactiver" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("asks for confirmation before deleting a guide", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
     const fetchMock = vi.spyOn(globalThis, "fetch");

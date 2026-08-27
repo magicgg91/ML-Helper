@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireCapability } from "@/auth/require-session";
+import { can } from "@/auth/permissions";
 import {
   CityParametersEditor,
   DemoAttackTroopsEditor,
@@ -26,7 +27,7 @@ export default async function EditToolPage({
   // reference (cdc section 6, décision Bloc 3): a guides_manager reaching
   // this same editor from the Guides admin table has references.write but
   // not calculators.write, so this one destination accepts either.
-  await requireCapability(
+  const session = await requireCapability(
     id === "templars"
       ? (["calculators.write", "references.write"] as const)
       : "calculators.write",
@@ -43,7 +44,17 @@ export default async function EditToolPage({
   } else if (id === "templars") {
     title = t("templar-parameters");
     content = (
-      <TemplarParametersEditor initial={await getTemplarParameters()} />
+      <TemplarParametersEditor
+        initial={await getTemplarParameters()}
+        // A guides_manager reaches this page via references.write, not
+        // calculators.read, so /admin/tools would be a 403 dead end for
+        // them — send them back to the table they actually opened it from.
+        backHref={
+          can(session.user.role, "calculators.read")
+            ? "/admin/tools"
+            : "/admin/guides"
+        }
+      />
     );
   } else if (id === "xp-gain-rate") {
     title = t("xp-gain-rate-editor");

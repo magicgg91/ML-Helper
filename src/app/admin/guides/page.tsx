@@ -51,22 +51,29 @@ export default async function GuidesAdminPage() {
               active: guide.active,
               type: "guide" as const,
             })),
-            ...references.map((reference) => ({
-              id: reference.slug,
-              slug: reference.slug,
-              title: t(`references.${reference.slug}`),
-              author: "—",
-              createdAt: "—",
-              updatedAt: "—",
-              status: "reference",
-              active: reference.active,
-              type: "reference" as const,
-              editHref: (formulaGuideReferenceSlugs as readonly string[]).includes(
-                reference.slug,
-              )
-                ? adminToolEditHref(reference.slug)
-                : `/admin/guides/reference-${reference.slug}`,
-            })),
+            ...references.map((reference) => {
+              const isFormulaBased = (
+                formulaGuideReferenceSlugs as readonly string[]
+              ).includes(reference.slug);
+              return {
+                id: reference.slug,
+                slug: reference.slug,
+                title: t(`references.${reference.slug}`),
+                author: "—",
+                createdAt: "—",
+                updatedAt: "—",
+                status: "reference",
+                active: reference.active,
+                type: "reference" as const,
+                editHref: isFormulaBased
+                  ? adminToolEditHref(reference.slug)
+                  : `/admin/guides/reference-${reference.slug}`,
+                // Formula-based references (Templars) share their active
+                // state with an Outils calculator, toggled there instead
+                // (calculators.toggle) — no independent control here.
+                canToggle: !isFormulaBased,
+              };
+            }),
           ]}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}

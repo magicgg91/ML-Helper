@@ -43,6 +43,22 @@ describe("named formula parameter editors", () => {
     expect(screen.getByRole("spinbutton", { name: "Base" })).toHaveValue(150);
     expect(screen.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(1.3);
     expect(screen.queryByText(/JSON/i)).toBeNull();
+    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
+      "href",
+      "/admin/tools",
+    );
+  });
+  it("sends a guides_manager reaching this editor from Guides back to Guides, not the Outils table they can't view", () => {
+    render(
+      <TemplarParametersEditor
+        initial={{ base: 150, ratio: 1.3 }}
+        backHref="/admin/guides"
+      />,
+    );
+    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
+      "href",
+      "/admin/guides",
+    );
   });
 
   it("keeps the 5 XP tiers contiguous when a shared boundary is edited", async () => {

@@ -737,11 +737,14 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await adminNav.getByRole("link", { name: "Guides" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
   // must open the same TemplarParametersEditor as the calculator tool
-  // (cdc section 6, décision Bloc 3), not a dead or separate screen.
-  await page
-    .getByRole("row", { name: /Templiers/ })
-    .getByRole("link", { name: "Éditer" })
-    .click();
+  // (cdc section 6, décision Bloc 3), not a dead or separate screen. Its
+  // active state is controlled from the Outils table instead, so this row
+  // has no independent toggle button.
+  const templarsGuideRow = page.getByRole("row", { name: /Templiers/ });
+  await expect(
+    templarsGuideRow.getByRole("button", { name: "Désactiver" }),
+  ).toHaveCount(0);
+  await templarsGuideRow.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/tools\/templars$/);
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
