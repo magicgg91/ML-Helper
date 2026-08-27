@@ -18,11 +18,11 @@ describe("ranking calculator", () => {
         range.rankEnd,
       ]),
     ).toEqual([
-      [0, 1, 0, 10],
-      [1, 6, 10, 60],
-      [6, 25, 60, 250],
-      [25, 60, 250, 600],
-      [60, 100, 600, 1000],
+      [0, 1, 1, 10],
+      [1, 6, 11, 60],
+      [6, 25, 61, 250],
+      [25, 60, 251, 600],
+      [60, 100, 601, 1000],
     ]);
   });
 
@@ -34,8 +34,19 @@ describe("ranking calculator", () => {
       100,
       189,
     );
-    expect(result.ranges[0].rankStart).toBe(0);
+    expect(result.ranges[0].rankStart).toBe(1);
     expect(result.ranges[0].rankEnd).toBe(94);
+  });
+
+  it("never lets the same rank appear in two adjacent ranges (Bloc 31/J)", () => {
+    // 1-6% covers places 1-10; 6-25% must start at 11, never restate 10.
+    const result = calculateRanking(defaultRankingConfig.diamond, 1, 10);
+    for (let i = 1; i < result.ranges.length; i++) {
+      expect(result.ranges[i].rankStart).toBe(
+        result.ranges[i - 1].rankEnd + 1,
+      );
+    }
+    expect(result.ranges[0].rankStart).toBe(1);
   });
 
   it("rejects zero percent and keeps unknown leagues empty", () => {

@@ -124,16 +124,20 @@ export function calculateRanking(
   if (percentage <= 0) return { total: null, ranges: [] as RankingRange[] };
   const total = Math.max(1, rank) / (percentage / 100);
   const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
+  // Only rankEnd is derived from this band's own percentage. rankStart
+  // chains off the previous range's rankEnd (+1) instead of being
+  // recomputed from this band's own starting percentage — otherwise the
+  // same floored rank could land at both the end of one range and the
+  // start of the next (Bloc 31/J).
+  let previousRankEnd = 0;
   return {
     total,
     ranges: sorted.map((band, index) => {
       const rangeStart = index === 0 ? 0 : sorted[index - 1].threshold;
-      return {
-        ...band,
-        rangeStart,
-        rankStart: Math.floor((total * rangeStart) / 100),
-        rankEnd: Math.floor((total * band.threshold) / 100),
-      };
+      const rankEnd = Math.floor((total * band.threshold) / 100);
+      const rankStart = previousRankEnd + 1;
+      previousRankEnd = rankEnd;
+      return { ...band, rangeStart, rankStart, rankEnd };
     }),
   };
 }
