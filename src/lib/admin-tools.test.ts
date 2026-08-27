@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { adminToolEditHref } from "./admin-tools";
+import {
+  adminToolEditHref,
+  formulaGuideReferenceSlugs,
+  guideReferenceSlugs,
+  referenceToolSlugs,
+} from "./admin-tools";
 
 describe("admin tool editor routing", () => {
+  it("lists Templars as a Guides reference without excluding it from the Outils table", () => {
+    expect(guideReferenceSlugs).toEqual([
+      ...referenceToolSlugs,
+      ...formulaGuideReferenceSlugs,
+    ]);
+    expect(referenceToolSlugs).not.toContain("templars");
+    expect(guideReferenceSlugs).toContain("templars");
+  });
   it("points all three City tools to one shared editor", () => {
     for (const slug of ["city-cost", "city-max-level", "city-production"])
       expect(adminToolEditHref(slug)).toBe("/admin/tools/city-parameters");

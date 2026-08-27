@@ -636,7 +636,7 @@ test("Reference tables filter combat and expedition equipment", async ({
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
   page,
 }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   await page.goto("/login");
   await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
   await page
@@ -734,13 +734,44 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.reload();
   await expect(page.getByLabel("Ligne 1 Commun")).toHaveValue("700");
 
+  await adminNav.getByRole("link", { name: "Guides" }).click();
+  // Bloc 30: Templars has no lookup_table of its own — its reference row
+  // must open the same TemplarParametersEditor as the calculator tool
+  // (cdc section 6, décision Bloc 3), not a dead or separate screen.
+  await page
+    .getByRole("row", { name: /Templiers/ })
+    .getByRole("link", { name: "Éditer" })
+    .click();
+  await expect(page).toHaveURL(/\/admin\/tools\/templars$/);
+  await expect(
+    page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
+  ).toBeVisible();
+  await page.getByRole("spinbutton", { name: "Base" }).fill("200");
+  await page
+    .locator(".editor-action-bar")
+    .getByRole("button", { name: "Enregistrer les paramètres" })
+    .click();
+  await expect(
+    page.locator(".editor-action-bar").getByRole("status"),
+  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  // Single shared data source (cdc section 6): the same edit reaches both
+  // the public reference and the Templars calculator.
+  await page.goto("/guides/referentiels/templiers");
+  await expect(page.locator("tbody tr").first()).toContainText("200");
+  await page.goto("/tools/competences");
+  await page.getByRole("tab", { name: "Templiers" }).click();
+  await expect(page.getByTestId("templar-cost")).toContainText("200");
+
+  await page.goto("/admin");
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Templiers/ })
     .getByRole("link", { name: "Modifier" })
     .click();
+  // Base was changed to 200 above, from the Guides admin reference row —
+  // same shared parameters, reached from either admin table.
   await expect(page.getByRole("spinbutton", { name: "Base" })).toHaveValue(
-    "150",
+    "200",
   );
   await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
     "1.3",

@@ -11,8 +11,11 @@ export async function requireAdminSession() {
   if (!isAdminRole(session.user.role)) forbidden();
   return session;
 }
-export async function requireCapability(capability: AdminCapability) {
+export async function requireCapability(
+  capability: AdminCapability | readonly AdminCapability[],
+) {
   const session = await requireAdminSession();
-  if (!can(session.user.role, capability)) forbidden();
+  const capabilities = Array.isArray(capability) ? capability : [capability];
+  if (!capabilities.some((item) => can(session.user.role, item))) forbidden();
   return session;
 }

@@ -730,7 +730,8 @@
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipement d’Expédition",
-        "level-up": "Level Up"
+        "level-up": "Level Up",
+        "templars": "Templiers"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",

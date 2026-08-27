@@ -21,8 +21,16 @@ import { getTranslations } from "next-intl/server";
 export default async function EditToolPage({
   params,
 }: PageProps<"/admin/tools/[id]">) {
-  await requireCapability("calculators.write");
   const { id } = await params;
+  // Templars' formula parameters are also the "Coût des Templiers" Guides
+  // reference (cdc section 6, décision Bloc 3): a guides_manager reaching
+  // this same editor from the Guides admin table has references.write but
+  // not calculators.write, so this one destination accepts either.
+  await requireCapability(
+    id === "templars"
+      ? (["calculators.write", "references.write"] as const)
+      : "calculators.write",
+  );
   const t = await getTranslations("admin.tools");
   let content: React.ReactNode;
   let title: string;

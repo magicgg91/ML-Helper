@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { localizedText } from "@/lib/translations";
 import { getLocale, getTranslations } from "next-intl/server";
-import { referenceToolSlugs } from "@/lib/admin-tools";
+import {
+  adminToolEditHref,
+  formulaGuideReferenceSlugs,
+  guideReferenceSlugs,
+} from "@/lib/admin-tools";
 
 export default async function GuidesAdminPage() {
   const session = await requireCapability("guides.read");
@@ -16,7 +20,7 @@ export default async function GuidesAdminPage() {
   const [guides, references] = await Promise.all([
     prisma.guide.findMany({ orderBy: { updatedAt: "desc" } }),
     prisma.calculator.findMany({
-      where: { slug: { in: [...referenceToolSlugs] } },
+      where: { slug: { in: [...guideReferenceSlugs] } },
       orderBy: { slug: "asc" },
     }),
   ]);
@@ -57,7 +61,11 @@ export default async function GuidesAdminPage() {
               status: "reference",
               active: reference.active,
               type: "reference" as const,
-              editHref: `/admin/guides/reference-${reference.slug}`,
+              editHref: (formulaGuideReferenceSlugs as readonly string[]).includes(
+                reference.slug,
+              )
+                ? adminToolEditHref(reference.slug)
+                : `/admin/guides/reference-${reference.slug}`,
             })),
           ]}
           canPublish={can(session.user.role, "guides.publish")}
