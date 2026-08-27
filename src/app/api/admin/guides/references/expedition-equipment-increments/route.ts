@@ -11,12 +11,14 @@ export async function PUT(request: Request) {
   const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
   const raw = await request.json().catch(() => null);
-  if (!raw || typeof raw !== "object")
+  // The admin editor is a 1-row EditableReferenceTable, which always
+  // submits an array (e.g. [{ Or: "0.5", ... }]), never the bare record.
+  if (!Array.isArray(raw) || raw.length !== 1)
     return NextResponse.json(
       { error: "invalid_star_increments" },
       { status: 400 },
     );
-  const increments = parseExpeditionStarIncrements(raw);
+  const increments = parseExpeditionStarIncrements(raw[0]);
   await saveReferenceTable({
     key: referenceKeys.expeditionIncrements,
     target: "les incréments par étoile de l’Équipement d’Expédition",

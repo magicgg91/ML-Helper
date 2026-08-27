@@ -110,13 +110,12 @@ test("translates expedition equipment filters, columns and status", async ({
 }) => {
   await page.goto("/guides/referentiels/expedition-equipment");
   await switchLocale(page, "fr");
-  await expect(page.getByText(/hypothèse non confirmée/)).toBeVisible();
   await expect(
     page.getByText("Stat secondaire", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Or" })).toBeVisible();
 
   await switchLocale(page, "en");
-  await expect(page.getByText(/unconfirmed assumption/)).toBeVisible();
   await expect(page.getByText("Secondary stat", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Equipment" })).toBeVisible();
 });
