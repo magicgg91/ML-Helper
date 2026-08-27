@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
+import { filterButtonColor } from "../lib/game-images";
 import {
   gemFamilies,
   gemValue,
@@ -31,7 +32,7 @@ import type {
 } from "../lib/reference-equipment";
 import { defaultExpeditionStarIncrements } from "../lib/reference-equipment";
 import { NumberStepper } from "./number-stepper";
-import { StuffComparison, StuffSimulator } from "./equipment-tools";
+import { StuffSimulator } from "./equipment-tools";
 import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
 
 type GemRow = {
@@ -63,7 +64,6 @@ export function SkillsCalculators({
   gemParameters = defaultGemParameters,
   availability = {
     simulator: true,
-    comparison: true,
     gems: true,
     templars: true,
     expedition: true,
@@ -74,22 +74,19 @@ export function SkillsCalculators({
   expeditionRows: readonly ExpeditionReferenceRow[];
   expeditionIncrements?: ExpeditionStarIncrements;
   gemParameters?: GemParameters;
-  availability?: Record<
-    "simulator" | "comparison" | "gems" | "templars" | "expedition",
-    boolean
-  >;
+  availability?: Record<"simulator" | "gems" | "templars" | "expedition", boolean>;
 }) {
   const tools = useTranslations("tools");
   const simulator = useTranslations("stuff-simulator");
-  const comparison = useTranslations("stuff-comparison");
   const gems = useTranslations("gems");
   const templars = useTranslations("templars");
   const expedition = useTranslations("expedition-equipment-simulator");
+  // Order (Bloc 31/C): Combat Equipment, Expedition Equipment, Gems, Templars.
   const firstAvailable = (
-    ["simulator", "comparison", "gems", "templars", "expedition"] as const
+    ["simulator", "expedition", "gems", "templars"] as const
   ).find((key) => availability[key]);
   const [active, setActive] = useState<
-    "simulator" | "comparison" | "gems" | "templars" | "expedition" | undefined
+    "simulator" | "gems" | "templars" | "expedition" | undefined
   >(firstAvailable);
   return (
     <div className="city-calculators">
@@ -115,16 +112,16 @@ export function SkillsCalculators({
         <button
           type="button"
           role="tab"
-          aria-selected={active === "comparison"}
-          disabled={!availability.comparison}
+          aria-selected={active === "expedition"}
+          disabled={!availability.expedition}
           title={
-            !availability.comparison
+            !availability.expedition
               ? tools("calculator-unavailable")
               : undefined
           }
-          onClick={() => setActive("comparison")}
+          onClick={() => setActive("expedition")}
         >
-          {comparison("name")}
+          {expedition("name")}
         </button>
         <button
           type="button"
@@ -150,37 +147,18 @@ export function SkillsCalculators({
         >
           {templars("name")}
         </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={active === "expedition"}
-          disabled={!availability.expedition}
-          title={
-            !availability.expedition
-              ? tools("calculator-unavailable")
-              : undefined
-          }
-          onClick={() => setActive("expedition")}
-        >
-          {expedition("name")}
-        </button>
       </nav>
       {active === "simulator" ? (
         <StuffSimulator combatRows={combatRows} gemParameters={gemParameters} />
-      ) : active === "comparison" ? (
-        <StuffComparison
-          combatRows={combatRows}
-          gemParameters={gemParameters}
-        />
-      ) : active === "gems" ? (
-        <GemsCalculator parameters={gemParameters} />
-      ) : active === "templars" ? (
-        <TemplarsCalculator parameters={templarParameters} />
       ) : active === "expedition" ? (
         <ExpeditionEquipmentSimulator
           rows={expeditionRows}
           increments={expeditionIncrements}
         />
+      ) : active === "gems" ? (
+        <GemsCalculator parameters={gemParameters} />
+      ) : active === "templars" ? (
+        <TemplarsCalculator parameters={templarParameters} />
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
@@ -310,16 +288,22 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
         <h3>{t("optimization.title")}</h3>
         <div className="family-buttons" aria-label={t("family-label")}>
           {(["attack", "defense", "gold", "speed"] as GemFamily[]).map(
-            (key) => (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={family === key}
-                onClick={() => changeFamily(key)}
-              >
-                {game(`families.${key}`)}
-              </button>
-            ),
+            (key) => {
+              const color = filterButtonColor(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={family === key}
+                  style={
+                    color ? ({ "--pill-color": color } as CSSProperties) : undefined
+                  }
+                  onClick={() => changeFamily(key)}
+                >
+                  {game(`families.${key}`)}
+                </button>
+              );
+            },
           )}
         </div>
         <label className="calculator-field gem-total-slots">

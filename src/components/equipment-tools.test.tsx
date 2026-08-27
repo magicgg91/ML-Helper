@@ -7,7 +7,7 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { StuffComparison, StuffSimulator } from "./equipment-tools";
+import { StuffSimulator } from "./equipment-tools";
 import { playerStorageKey } from "./player-settings-panel";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
@@ -166,6 +166,34 @@ describe("equipment tools", () => {
     expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
   });
 
+  it("lays a configured cell out in 2 columns — image+star left, gems stacked right (Bloc 31/G)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    const body = amulet.querySelector(".stuff-slot-body")!;
+    expect(body).toBeInTheDocument();
+    const main = body.querySelector(".stuff-slot-main")!;
+    expect(main.querySelector("img.stuff-slot-image")).toBeInTheDocument();
+    expect(main).toHaveTextContent("1★");
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence gemme 1" }),
+      { target: { value: "Attaque" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 1" }), {
+      target: { value: "legend" },
+    });
+    const gems = body.querySelector(".gem-badges")!;
+    expect(gems).toBeInTheDocument();
+    // Both columns live inside the same 2-column body, siblings of each
+    // other, not nested inside one another.
+    expect(main.contains(gems)).toBe(false);
+    expect(gems.contains(main)).toBe(false);
+  });
+
   it("renders whichever combatRows it's given, not the bundled static catalog", () => {
     // Proves the admin-edited reference table actually reaches this
     // calculator: a caller-supplied row must show up in the equipment
@@ -204,6 +232,20 @@ describe("equipment tools", () => {
     expect(
       screen.getByRole("heading", {
         name: "Récapitulatif des compétences d’équipement",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("puts the transfer button on the same heading row as the summary title, not below it (Bloc 31/I)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const heading = screen.getByRole("heading", {
+      name: "Récapitulatif des compétences d’équipement",
+    });
+    const headingRow = heading.closest<HTMLElement>(".stuff-summary-heading")!;
+    expect(headingRow).toBeInTheDocument();
+    expect(
+      within(headingRow).getByRole("button", {
+        name: "Transférer vers les Paramètres du joueur",
       }),
     ).toBeInTheDocument();
   });
@@ -297,24 +339,5 @@ describe("equipment tools", () => {
     );
     const saved = JSON.parse(localStorage.getItem(playerStorageKey)!);
     expect(saved.equipmentSkills.striker).toBe(0);
-  });
-
-  it("compares explicit sets and colors a positive difference", () => {
-    renderTool(<StuffComparison combatRows={combatRows} />);
-    expect(
-      screen.getAllByRole("combobox", { name: "Ligue gemme 1" })[0],
-    ).toHaveValue("");
-    expect(
-      screen.getByRole("link", { name: "Voir le référentiel complet" }),
-    ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
-    const [a, b] = screen.getAllByRole("combobox", {
-      name: /Équipement Attaque Amulette/,
-    });
-    fireEvent.change(a, { target: { value: "Commun|Barbarian" } });
-    fireEvent.change(b, { target: { value: "Légendaire|Spirit Fyra" } });
-    const attackRow = screen
-      .getByRole("cell", { name: "Attaque" })
-      .closest("tr")!;
-    expect(attackRow.querySelector(".diff-positive")).toBeTruthy();
   });
 });

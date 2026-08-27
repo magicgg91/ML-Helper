@@ -34,19 +34,16 @@ function renderWithIntl(
 describe("SkillsCalculators", () => {
   afterEach(cleanup);
 
-  it("renames the Combat equipment tabs to distinguish them from Expedition, in FR and EN", () => {
+  it("labels the tabs plainly (Bloc 31/A) in the Combat, Expedition, Gems, Templars order (Bloc 31/C), with no Comparator (Bloc 31/B)", () => {
     renderWithIntl(
       <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
     );
     expect(
-      screen.getByRole("tab", { name: "Simulateur d’Équipement de Combat" }),
-    ).toBeInTheDocument();
+      screen.getAllByRole("tab").map((tab) => tab.textContent),
+    ).toEqual(["Équipement de Combat", "Équipement d’Expédition", "Gemmes", "Templiers"]);
     expect(
-      screen.getByRole("tab", { name: "Comparateur d’Équipement de Combat" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: "Simulateur d’Équipement d’Expédition" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("tab", { name: /Comparateur/ }),
+    ).not.toBeInTheDocument();
     cleanup();
 
     renderWithIntl(
@@ -55,14 +52,21 @@ describe("SkillsCalculators", () => {
       enMessages,
     );
     expect(
-      screen.getByRole("tab", { name: "Combat Equipment Simulator" }),
-    ).toBeInTheDocument();
+      screen.getAllByRole("tab").map((tab) => tab.textContent),
+    ).toEqual(["Combat Equipment", "Expedition Equipment", "Gems", "Templars"]);
     expect(
-      screen.getByRole("tab", { name: "Combat Equipment Comparator" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: "Expedition Equipment Simulator" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("tab", { name: /Comparator/ }),
+    ).not.toBeInTheDocument();
+  });
+  it("colors the Gems family buttons to match the equivalent Combat equipment/skill colors (Bloc 31/H)", () => {
+    renderWithIntl(
+      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    const attack = screen.getByRole("button", { name: "Attaque" });
+    expect(attack.style.getPropertyValue("--pill-color")).toBe("#c0392b");
+    const gold = screen.getByRole("button", { name: "Or" });
+    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
   });
   it("caps mixed optimization rows at the available socket count", () => {
     renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);

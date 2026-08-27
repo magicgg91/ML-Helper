@@ -299,7 +299,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Simulateur d’Équipement de Combat",
+    "name": "Équipement de Combat",
     "view-reference": "Voir le référentiel complet",
     "global-summary": "Récapitulatif des compétences d’équipement",
     "empty-summary": "Aucun équipement configuré",
@@ -321,36 +321,10 @@
       "league": "Ligue gemme {index}"
     }
   },
-  "stuff-comparison": {
-    "name": "Comparateur d’Équipement de Combat",
-    "view-reference": "Voir le référentiel complet",
-    "side-title": "Équipement {side}",
-    "slot": "Emplacement",
-    "comparison-title": "Comparaison par compétence",
-    "columns": {
-      "skill": "Compétence",
-      "side-a": "Équipement A",
-      "side-b": "Équipement B",
-      "difference": "Différence"
-    },
-    "equipment-label": "Équipement ({slot})",
-    "equipment-aria": "Équipement {block} {slot}",
-    "equipment-option": "{rarity} — {name} ({family})",
-    "none": "Aucun",
-    "star-level": "Niveau d’étoile",
-    "equipment-stars-aria": "Étoiles équipement {block} {slot}",
-    "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
-    "gem": {
-      "row": "Gemme {index}",
-      "skill": "Compétence gemme {index}",
-      "stars": "Étoiles gemme {index}",
-      "league": "Ligue gemme {index}"
-    }
-  },
   "expedition-equipment-simulator": {
-    "name": "Simulateur d’Équipement d’Expédition",
+    "name": "Équipement d’Expédition",
     "view-reference": "Voir le référentiel complet",
-    "summary-title": "Récapitulatif des statistiques d’expédition",
+    "summary-title": "Récapitulatif des compétences d’expédition",
     "empty-summary": "Aucun équipement configuré",
     "empty-slot": "Vide",
     "select-slot": "Clique sur un emplacement pour le configurer.",
@@ -359,7 +333,15 @@
     "equipment-option": "{rarity} — {name} ({family})",
     "none": "Aucun",
     "star-level": "Niveau d’étoile",
-    "equipment-stars-aria": "Étoiles équipement d’expédition {slot}"
+    "equipment-stars-aria": "Étoiles équipement d’expédition {slot}",
+    "filters": {
+      "label": "Filtrer par type d’équipement",
+      "custom": "Personnalisé",
+      "gold": "Or",
+      "equipment": "Équipement combat",
+      "consumables": "Consommables",
+      "troops": "Troupes"
+    }
   },
   "gems": {
     "name": "Gemmes",

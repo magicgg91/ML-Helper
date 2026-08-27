@@ -44,10 +44,9 @@ const categories: Array<{
     slug: "competences",
     calculators: [
       "stuff-simulator",
-      "stuff-comparison",
+      "expedition-equipment-simulator",
       "gems",
       "templars",
-      "expedition-equipment-simulator",
     ],
     image: "/category-skills.svg",
   },

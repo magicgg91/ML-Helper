@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   computeExpeditionSlot,
   computeExpeditionTotal,
+  createEmptyExpeditionConfigs,
   createEmptyExpeditionState,
+  expeditionFamilyFilters,
+  expeditionFilterOrder,
   expeditionOptions,
   expeditionSlotLayout,
   findExpeditionEquipment,
@@ -92,6 +95,30 @@ describe("expedition equipment", () => {
     expect(total.Vitesse).toBeCloseTo(23.8);
     expect(total.Esquive).toBeCloseTo(5.7);
     expect(total.Chance).toBeCloseTo(47.5);
+  });
+
+  it("restricts a slot's catalog to one primary-stat family when a filter is active (Bloc 31/E.1)", () => {
+    const unfiltered = expeditionOptions("Cape", expeditionReferenceRows);
+    expect(unfiltered.length).toBeGreaterThan(5);
+    for (const family of expeditionFamilyFilters) {
+      const filtered = expeditionOptions(
+        "Cape",
+        expeditionReferenceRows,
+        family,
+      );
+      expect(filtered.length).toBeGreaterThan(0);
+      expect(filtered.every((item) => item.family === family)).toBe(true);
+    }
+  });
+
+  it("keeps 5 independent, empty-by-default configs — one per filter", () => {
+    const configs = createEmptyExpeditionConfigs();
+    expect(Object.keys(configs).sort()).toEqual(
+      [...expeditionFilterOrder].sort(),
+    );
+    for (const filter of expeditionFilterOrder) {
+      expect(configs[filter]).toEqual(createEmptyExpeditionState());
+    }
   });
 
   it("drops a rarity's secondary stat below Épique instead of inventing one", () => {

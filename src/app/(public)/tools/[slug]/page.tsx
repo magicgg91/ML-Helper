@@ -75,7 +75,6 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
           gemParameters={await getGemParameters()}
           availability={{
             simulator: active["stuff-simulator"],
-            comparison: active["stuff-comparison"],
             gems: active.gems,
             templars: active.templars,
             expedition: active["expedition-equipment-simulator"],

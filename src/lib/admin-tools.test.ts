@@ -29,7 +29,7 @@ describe("admin tool editor routing", () => {
     expect(adminToolEditHref("gems")).toBe("/admin/tools/gems");
   });
   it("has no edit destination for a tool with no named numeric parameters", () => {
-    for (const slug of ["stuff-simulator", "stuff-comparison", "city-rewards"])
+    for (const slug of ["stuff-simulator", "city-rewards"])
       expect(adminToolEditHref(slug)).toBeUndefined();
   });
 });

@@ -18,7 +18,7 @@ export default async function ToolDetailLayout({
     classement: active.ranking,
     competences:
       active["stuff-simulator"] ||
-      active["stuff-comparison"] ||
+      active["expedition-equipment-simulator"] ||
       active.gems ||
       active.templars,
   };

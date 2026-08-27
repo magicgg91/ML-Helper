@@ -29,7 +29,7 @@ vi.mock("../lib/calculators-server", () => ({
     "city-production": true,
     ranking: true,
     "stuff-simulator": true,
-    "stuff-comparison": true,
+    "expedition-equipment-simulator": true,
     gems: true,
     templars: true,
     "combat-equipment": true,

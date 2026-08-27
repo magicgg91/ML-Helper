@@ -65,17 +65,14 @@ function Summary({
   totals,
   selected,
   league,
-  onTransfer,
 }: {
   totals: Partial<Record<string, number>>;
   selected?: Partial<Record<string, number>>;
   league?: LeagueSelection;
-  onTransfer?: () => void;
 }) {
   const locale = useLocale();
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
-  const [transferred, setTransferred] = useState(false);
   const pct = (value: number) =>
     value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const entries = Object.entries(totals)
@@ -84,66 +81,38 @@ function Summary({
         typeof entry[1] === "number" && entry[1] > 0,
     )
     .sort(([a], [b]) => a.localeCompare(b, locale));
-  const transferSection = onTransfer ? (
-    <div className="stuff-transfer">
-      <button
-        type="button"
-        className="secondary-action"
-        onClick={() => {
-          onTransfer();
-          setTransferred(true);
-        }}
-      >
-        {t("transfer")}
-      </button>
-      {transferred ? (
-        <span role="status" className="form-success">
-          {t("transferred")}
-        </span>
-      ) : null}
-    </div>
-  ) : null;
-  if (!entries.length)
-    return (
-      <div>
-        <p className="stuff-empty">{t("empty-summary")}</p>
-        {transferSection}
-      </div>
-    );
+  if (!entries.length) return <p className="stuff-empty">{t("empty-summary")}</p>;
   return (
-    <div>
-      <div className="stuff-summary-grid">
-        {entries.map(([skill, value]) => {
-          // league !== undefined (not a truthiness check): "" is a valid,
-          // meaningful LeagueSelection meaning "no league chosen yet", and
-          // several caps (Récupération's flat 50%) apply regardless of
-          // league — only an omitted prop (per-block Summary calls) should
-          // skip cap handling entirely.
-          const cap =
-            league !== undefined
-              ? skillCapForLeague(skillKeyByLabel[skill as EquipmentSkill], league)
-              : undefined;
-          const displayValue = cap === undefined ? value : Math.min(value, cap);
-          return (
-            <div className="stuff-total total-box" key={skill}>
-              <span className="label">
-                {game(
-                  `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
-                )}
-              </span>
-              <strong className="value emerald">
-                +{pct(displayValue)}%{" "}
-                {cap !== undefined && value > cap ? (
-                  <small>({pct(value)}%)</small>
-                ) : selected?.[skill] ? (
-                  <small>({pct(selected[skill]!)}%)</small>
-                ) : null}
-              </strong>
-            </div>
-          );
-        })}
-      </div>
-      {transferSection}
+    <div className="stuff-summary-grid">
+      {entries.map(([skill, value]) => {
+        // league !== undefined (not a truthiness check): "" is a valid,
+        // meaningful LeagueSelection meaning "no league chosen yet", and
+        // several caps (Récupération's flat 50%) apply regardless of
+        // league — only an omitted prop (per-block Summary calls) should
+        // skip cap handling entirely.
+        const cap =
+          league !== undefined
+            ? skillCapForLeague(skillKeyByLabel[skill as EquipmentSkill], league)
+            : undefined;
+        const displayValue = cap === undefined ? value : Math.min(value, cap);
+        return (
+          <div className="stuff-total total-box" key={skill}>
+            <span className="label">
+              {game(
+                `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
+              )}
+            </span>
+            <strong className="value emerald">
+              +{pct(displayValue)}%{" "}
+              {cap !== undefined && value > cap ? (
+                <small>({pct(value)}%)</small>
+              ) : selected?.[skill] ? (
+                <small>({pct(selected[skill]!)}%)</small>
+              ) : null}
+            </strong>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -151,15 +120,13 @@ function Summary({
 function GemEditor({
   block,
   gems,
-  namespace,
   onChange,
 }: {
   block: EquipmentBlock;
   gems: EquipmentGem[];
-  namespace: "stuff-simulator" | "stuff-comparison";
   onChange: (gems: EquipmentGem[]) => void;
 }) {
-  const t = useTranslations(namespace);
+  const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
   const common = useTranslations("common");
   const skills = allowedSkills(block);
@@ -283,16 +250,20 @@ function SlotCell({
     >
       <span>{game(`slots.${equipmentSlotTranslationKeys[slot]}`)}</span>
       {rarity ? (
-        <>
-          {item ? (
-            <GameImage
-              src={equipmentImagePath(item.family, rarity, slot)}
-              alt={item.set_name}
-              className="stuff-slot-image"
-              fallback={null}
-            />
-          ) : null}
-          <small>{state.star}★</small>
+        // Bloc 31/G: 2 internal columns — image + star on the left, up to 3
+        // stacked gems (per rarity) on the right.
+        <div className="stuff-slot-body">
+          <div className="stuff-slot-main">
+            {item ? (
+              <GameImage
+                src={equipmentImagePath(item.family, rarity, slot)}
+                alt={item.set_name}
+                className="stuff-slot-image"
+                fallback={null}
+              />
+            ) : null}
+            <small>{state.star}★</small>
+          </div>
           {activeGems.length ? (
             <div className="gem-badges">
               {activeGems.map((gem, index) => {
@@ -317,7 +288,7 @@ function SlotCell({
               })}
             </div>
           ) : null}
-        </>
+        </div>
       ) : (
         <small>{t("empty-slot")}</small>
       )}
@@ -333,18 +304,16 @@ function SlotEditor({
   block,
   slot,
   state,
-  namespace,
   onChange,
   combatRows,
 }: {
   block: EquipmentBlock;
   slot: EquipmentSlot;
   state: EquipmentSlotState;
-  namespace: "stuff-simulator" | "stuff-comparison";
   onChange: (state: EquipmentSlotState) => void;
   combatRows: readonly CombatReferenceRow[];
 }) {
-  const t = useTranslations(namespace);
+  const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
   const options = equipmentOptions(block, slot, combatRows);
   const selected = findEquipment(slot, state.equipment, combatRows);
@@ -423,7 +392,6 @@ function SlotEditor({
             <GemEditor
               block={block}
               gems={state.gems}
-              namespace={namespace}
               onChange={(gems) => onChange({ ...state, gems })}
             />
           ) : (
@@ -450,6 +418,7 @@ export function StuffSimulator({
   const [active, setActive] = useState<Partial<Record<EquipmentBlock, number>>>(
     {},
   );
+  const [transferred, setTransferred] = useState(false);
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
@@ -496,12 +465,27 @@ export function StuffSimulator({
         {t("view-reference")}
       </Link>
       <section className="calculator-card">
-        <h3>{t("global-summary")}</h3>
-        <Summary
-          totals={global}
-          league={playerSettings.league}
-          onTransfer={transferToPlayerSettings}
-        />
+        <div className="stuff-summary-heading">
+          <h3>{t("global-summary")}</h3>
+          <div className="stuff-transfer">
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => {
+                transferToPlayerSettings();
+                setTransferred(true);
+              }}
+            >
+              {t("transfer")}
+            </button>
+            {transferred ? (
+              <span role="status" className="form-success">
+                {t("transferred")}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <Summary totals={global} league={playerSettings.league} />
       </section>
       {equipmentBlocks.map((block) => {
         const activeIndex = active[block];
@@ -556,7 +540,6 @@ export function StuffSimulator({
                     block={block}
                     slot={equipmentSlotLayout[activeIndex]}
                     state={state[block][activeIndex]}
-                    namespace="stuff-simulator"
                     onChange={(slot) => update(block, activeIndex, slot)}
                     combatRows={combatRows}
                   />
@@ -567,200 +550,6 @@ export function StuffSimulator({
           </section>
         );
       })}
-    </div>
-  );
-}
-
-type CompareSide = EquipmentSlotState;
-function defaultSide(
-  block: EquipmentBlock,
-  slot: EquipmentSlot,
-  combatRows: readonly CombatReferenceRow[],
-): CompareSide {
-  const item = equipmentOptions(block, slot, combatRows)[0];
-  if (!item) return { equipment: null, star: 1, gems: [] };
-  return {
-    equipment: {
-      rarity: item.rarity as EquipmentSelection["rarity"],
-      setName: item.set_name,
-    },
-    star: 1,
-    gems: Array.from(
-      { length: gemSlotsByRarity[item.rarity as EquipmentSelection["rarity"]] },
-      () => ({ skill: "none", star: 1, league: "" }),
-    ),
-  };
-}
-
-function CompareSideEditor({
-  name,
-  block,
-  slot,
-  state,
-  onChange,
-  combatRows,
-}: {
-  name: string;
-  block: EquipmentBlock;
-  slot: EquipmentSlot;
-  state: CompareSide;
-  onChange: (side: CompareSide) => void;
-  combatRows: readonly CombatReferenceRow[];
-}) {
-  const t = useTranslations("stuff-comparison");
-  return (
-    <div className="compare-side">
-      <h3>{t("side-title", { side: name })}</h3>
-      <SlotEditor
-        block={block}
-        slot={slot}
-        state={state}
-        namespace="stuff-comparison"
-        onChange={onChange}
-        combatRows={combatRows}
-      />
-    </div>
-  );
-}
-
-export function StuffComparison({
-  combatRows,
-  gemParameters = defaultGemParameters,
-}: {
-  combatRows: readonly CombatReferenceRow[];
-  gemParameters?: GemParameters;
-}) {
-  const locale = useLocale();
-  const t = useTranslations("stuff-comparison");
-  const game = useTranslations("game");
-  const pct = (value: number) =>
-    value.toLocaleString(locale, { maximumFractionDigits: 2 });
-  const [block, setBlock] = useState<EquipmentBlock>("attack");
-  const [slot, setSlot] = useState<EquipmentSlot>("Amulette");
-  const [a, setA] = useState<CompareSide>(() =>
-    defaultSide("attack", "Amulette", combatRows),
-  );
-  const [b, setB] = useState<CompareSide>(() =>
-    defaultSide("attack", "Amulette", combatRows),
-  );
-  function changeContext(nextBlock: EquipmentBlock, nextSlot: EquipmentSlot) {
-    setBlock(nextBlock);
-    setSlot(nextSlot);
-    setA(defaultSide(nextBlock, nextSlot, combatRows));
-    setB(defaultSide(nextBlock, nextSlot, combatRows));
-  }
-  const totalsA = computeEquipmentSlot(
-    block,
-    slot,
-    a,
-    combatRows,
-    gemParameters,
-  );
-  const totalsB = computeEquipmentSlot(
-    block,
-    slot,
-    b,
-    combatRows,
-    gemParameters,
-  );
-  return (
-    <div className="calculator-stack" data-testid="stuff-comparison">
-      <Link
-        className="reference-cross-link"
-        href="/guides/referentiels/combat-equipment"
-      >
-        {t("view-reference")}
-      </Link>
-      <section className="calculator-card">
-        <div className="family-buttons">
-          {equipmentBlocks.map((key) => (
-            <button
-              type="button"
-              key={key}
-              aria-pressed={block === key}
-              onClick={() => changeContext(key, slot)}
-            >
-              {game(`families.${key}`)}
-            </button>
-          ))}
-        </div>
-        <label className="calculator-field">
-          {t("slot")}
-          <select
-            value={slot}
-            onChange={(event) =>
-              changeContext(block, event.target.value as EquipmentSlot)
-            }
-          >
-            {equipmentSlotLayout.map((item) => (
-              <option key={item} value={item}>
-                {game(`slots.${equipmentSlotTranslationKeys[item]}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </section>
-      <section className="calculator-card compare-equipment-grid">
-        <CompareSideEditor
-          name="A"
-          block={block}
-          slot={slot}
-          state={a}
-          onChange={setA}
-          combatRows={combatRows}
-        />
-        <CompareSideEditor
-          name="B"
-          block={block}
-          slot={slot}
-          state={b}
-          onChange={setB}
-          combatRows={combatRows}
-        />
-      </section>
-      <section className="calculator-card">
-        <h3>{t("comparison-title")}</h3>
-        <div className="ranking-table-wrap">
-          <table className="ranking-table">
-            <thead>
-              <tr>
-                <th>{t("columns.skill")}</th>
-                <th>{t("columns.side-a")}</th>
-                <th>{t("columns.side-b")}</th>
-                <th>{t("columns.difference")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allowedSkills(block).map((skill) => {
-                const va = totalsA[skill] ?? 0,
-                  vb = totalsB[skill] ?? 0,
-                  diff = vb - va;
-                return (
-                  <tr key={skill}>
-                    <td>
-                      {game(`skills.${equipmentSkillTranslationKeys[skill]}`)}
-                    </td>
-                    <td>{pct(va)}%</td>
-                    <td>{pct(vb)}%</td>
-                    <td
-                      className={
-                        diff > 0
-                          ? "diff-positive"
-                          : diff < 0
-                            ? "diff-negative"
-                            : ""
-                      }
-                    >
-                      {diff > 0 ? "+" : ""}
-                      {pct(diff)}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   );
 }

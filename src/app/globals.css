@@ -777,11 +777,15 @@ select {
   overflow-x: auto;
 }
 
+/* Bloc 31/F+G: the summary column is reduced to about half its former share
+   of the row (0.8fr of 2.8fr total before -> 1fr of 7fr, i.e. ~14% instead
+   of ~29%), freeing width for the grid and the config panel, which grow to
+   fill it. min-width keeps the summary's % values from truncating. */
 .stuff-block-columns {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(
-      220px,
-      0.8fr
+  grid-template-columns: minmax(280px, 3fr) minmax(280px, 3fr) minmax(
+      170px,
+      1fr
     );
   gap: 1rem;
   align-items: start;
@@ -812,6 +816,22 @@ select {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 0.25rem;
+}
+
+/* Bloc 31/G: 2 internal columns inside a configured Combat slot cell —
+   image + star level on the left, up to 3 stacked gems on the right. */
+.stuff-slot-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 0.5rem;
+  width: 100%;
+}
+.stuff-slot-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0.25rem;
 }
 
@@ -847,9 +867,10 @@ select {
   object-fit: contain;
 }
 .gem-badges {
+  /* Bloc 31/G: stacked in the cell's right column, not wrapped. */
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 0.2rem;
 }
 .gem-badge-image {
@@ -907,6 +928,37 @@ select {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
+}
+
+/* Bloc 31/I: the transfer button sits on the same line as the summary
+   title, aligned to its right, instead of below the summary content. */
+.stuff-summary-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.stuff-summary-heading h3 {
+  margin: 0;
+}
+.stuff-transfer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Bloc 31/E.4: Expedition's summary always shows all 10 skills, laid out
+   as a fixed 5-column x 2-row grid on desktop. */
+.expedition-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (max-width: 900px) {
+  .expedition-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .stuff-total {
@@ -1058,12 +1110,15 @@ select {
   margin: 1rem 0 0;
 }
 .family-buttons {
+  /* Bloc 31/H: always one line, never wraps — a narrow viewport scrolls
+     horizontally instead of pushing buttons to a second row. */
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.35rem;
   margin: 1rem 0;
+  padding-bottom: 0.2rem;
 }
-.family-buttons button,
 .secondary-action {
   padding: 0.6rem 0.85rem;
   border: 1px solid var(--border);
@@ -1072,10 +1127,29 @@ select {
   color: var(--foreground);
   cursor: pointer;
 }
+.family-buttons button {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
 .family-buttons button[aria-pressed="true"] {
-  border-color: var(--accent-strong);
-  color: var(--accent-strong);
-  box-shadow: inset 0 0 0 1px var(--accent-strong);
+  /* --pill-color (set inline per family/rarity/skill) reuses the same
+     color already identifying that value elsewhere; falls back to the
+     neutral accent when no such color is established (e.g. "Personnalisé"). */
+  border-color: var(--pill-color, var(--accent-strong));
+  color: var(--pill-color, var(--accent-strong));
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--accent-strong)) 16%,
+    var(--surface-muted)
+  );
+  box-shadow: inset 0 0 0 1px var(--pill-color, var(--accent-strong));
 }
 .gem-total-slots {
   max-width: 18rem;

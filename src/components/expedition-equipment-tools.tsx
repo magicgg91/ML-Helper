@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   equipmentRarityTranslationKeys,
   expeditionFamilyTranslationKeys,
@@ -10,18 +10,21 @@ import {
   expeditionStatTranslationKeys,
 } from "../i18n/game-translation-keys";
 import {
+  computeExpeditionSlot,
   computeExpeditionTotal,
-  createEmptyExpeditionState,
+  createEmptyExpeditionConfigs,
+  expeditionFilterOrder,
   expeditionOptions,
   expeditionSlotLayout,
   findExpeditionEquipment,
+  type ExpeditionConfigs,
+  type ExpeditionFilter,
   type ExpeditionSelection,
   type ExpeditionSlot,
   type ExpeditionSlotState,
-  type ExpeditionState,
 } from "../lib/expedition-equipment";
 import { rarityClassName } from "../lib/equipment-rarity";
-import { equipmentImagePath } from "../lib/game-images";
+import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
 import {
   defaultExpeditionStarIncrements,
   type ExpeditionReferenceRow,
@@ -31,7 +34,22 @@ import { GameImage } from "./game-image";
 
 const storageKey = "mlhelper_expedition_equipment_simulator";
 
-function isValidExpeditionState(value: unknown): value is ExpeditionState {
+// Bloc 31/E.2: fixed summary order, distinct from expeditionStatKeys' own
+// admin/reference order — display-only, doesn't affect stored data.
+const summaryStatOrder = [
+  "Équipement",
+  "Consommables",
+  "Or",
+  "Troupes",
+  "Esquive",
+  "Chance",
+  "Perception",
+  "Récupération",
+  "Vitesse",
+  "Vitalité",
+] as const;
+
+function isValidExpeditionState(value: unknown): value is ExpeditionSlotState[] {
   if (!Array.isArray(value) || value.length !== expeditionSlotLayout.length)
     return false;
   return value.every((slot: unknown) => {
@@ -48,6 +66,17 @@ function isValidExpeditionState(value: unknown): value is ExpeditionState {
   });
 }
 
+// Bloc 31/E.1: each filter keeps its own independent, separately persisted
+// loadout — a malformed or stale-shape saved value must not crash the
+// simulator, and one filter's bad data shouldn't discard the other 4.
+function isValidExpeditionConfigs(value: unknown): value is ExpeditionConfigs {
+  if (!value || typeof value !== "object") return false;
+  const source = value as Record<string, unknown>;
+  return expeditionFilterOrder.every((filter) =>
+    isValidExpeditionState(source[filter]),
+  );
+}
+
 function statLabel(
   stat: string,
   game: ReturnType<typeof useTranslations>,
@@ -57,28 +86,72 @@ function statLabel(
   return game(`stats.${expeditionStatTranslationKeys[stat]}`);
 }
 
-function Summary({ totals }: { totals: Partial<Record<string, number>> }) {
-  const locale = useLocale();
+const filterTranslationKeys: Record<ExpeditionFilter, string> = {
+  custom: "custom",
+  Or: "gold",
+  Équipement: "equipment",
+  Consommables: "consumables",
+  Troupes: "troops",
+};
+
+function FilterButtons({
+  filter,
+  onChange,
+}: {
+  filter: ExpeditionFilter;
+  onChange: (filter: ExpeditionFilter) => void;
+}) {
   const t = useTranslations("expedition-equipment-simulator");
+  return (
+    <div className="family-buttons" aria-label={t("filters.label")}>
+      {expeditionFilterOrder.map((key) => {
+        const color = filterButtonColor(key);
+        return (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={filter === key}
+            style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+            onClick={() => onChange(key)}
+          >
+            {t(`filters.${filterTranslationKeys[key]}`)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Summary({
+  totals,
+  selected,
+}: {
+  totals: Partial<Record<string, number>>;
+  selected?: Partial<Record<string, number>>;
+}) {
+  const locale = useLocale();
   const game = useTranslations("game");
   const pct = (value: number) =>
     value.toLocaleString(locale, { maximumFractionDigits: 2 });
-  const entries = Object.entries(totals)
-    .filter(
-      (entry): entry is [string, number] =>
-        typeof entry[1] === "number" && entry[1] > 0,
-    )
-    .sort(([a], [b]) => a.localeCompare(b, locale));
-  if (!entries.length)
-    return <p className="stuff-empty">{t("empty-summary")}</p>;
+  // Bloc 31/E.3: always show all 10 stats, including when every one of
+  // them is still at 0% (a fresh loadout, or an unused filter) — unlike
+  // Combat's summary, which hides zero-contribution skills entirely. Kept
+  // specific to Expedition; do not port this to Combat.
   return (
-    <div className="stuff-summary-grid">
-      {entries.map(([stat, value]) => (
-        <div className="stuff-total total-box" key={stat}>
-          <span className="label">{statLabel(stat, game)}</span>
-          <strong className="value emerald">+{pct(value)}%</strong>
-        </div>
-      ))}
+    <div className="expedition-summary-grid">
+      {summaryStatOrder.map((stat) => {
+        const value = totals[stat] ?? 0;
+        const contribution = selected?.[stat];
+        return (
+          <div className="stuff-total total-box" key={stat}>
+            <span className="label">{statLabel(stat, game)}</span>
+            <strong className="value emerald">
+              +{pct(value)}%{" "}
+              {contribution ? <small>({pct(contribution)}%)</small> : null}
+            </strong>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -147,16 +220,22 @@ function SlotEditor({
   slot,
   state,
   rows,
+  filter,
   onChange,
 }: {
   slot: ExpeditionSlot;
   state: ExpeditionSlotState;
   rows: readonly ExpeditionReferenceRow[];
+  filter: ExpeditionFilter;
   onChange: (state: ExpeditionSlotState) => void;
 }) {
   const t = useTranslations("expedition-equipment-simulator");
   const game = useTranslations("game");
-  const options = expeditionOptions(slot, rows);
+  const options = expeditionOptions(
+    slot,
+    rows,
+    filter === "custom" ? undefined : filter,
+  );
   const selected = findExpeditionEquipment(slot, state.equipment, rows);
   function choose(value: string) {
     if (!value) return onChange({ equipment: null, star: 1 });
@@ -227,7 +306,10 @@ export function ExpeditionEquipmentSimulator({
   increments?: ExpeditionStarIncrements;
 }) {
   const t = useTranslations("expedition-equipment-simulator");
-  const [state, setState] = useState<ExpeditionState>(createEmptyExpeditionState);
+  const [filter, setFilter] = useState<ExpeditionFilter>("custom");
+  const [configs, setConfigs] = useState<ExpeditionConfigs>(
+    createEmptyExpeditionConfigs,
+  );
   const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<number>();
   useEffect(() => {
@@ -238,8 +320,8 @@ export function ExpeditionEquipmentSimulator({
           const parsed: unknown = JSON.parse(saved);
           // Malformed or stale-shape data (an incompatible earlier version,
           // manual tampering) must not crash the simulator: fall back to
-          // the default empty state instead of trusting an unvalidated value.
-          if (isValidExpeditionState(parsed)) setState(parsed);
+          // the default empty configs instead of trusting an unvalidated value.
+          if (isValidExpeditionConfigs(parsed)) setConfigs(parsed);
         }
       } catch {}
       setLoaded(true);
@@ -247,13 +329,28 @@ export function ExpeditionEquipmentSimulator({
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
-    if (loaded) localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [loaded, state]);
+    if (loaded) localStorage.setItem(storageKey, JSON.stringify(configs));
+  }, [loaded, configs]);
+  const state = configs[filter];
   const totals = computeExpeditionTotal(state, rows, increments);
+  const selected =
+    active === undefined
+      ? undefined
+      : computeExpeditionSlot(
+          expeditionSlotLayout[active],
+          state[active],
+          rows,
+          increments,
+        );
   function update(index: number, slot: ExpeditionSlotState) {
-    setState((current) =>
-      current.map((item, i) => (i === index ? slot : item)),
-    );
+    setConfigs((current) => ({
+      ...current,
+      [filter]: current[filter].map((item, i) => (i === index ? slot : item)),
+    }));
+  }
+  function changeFilter(next: ExpeditionFilter) {
+    setFilter(next);
+    setActive(undefined);
   }
   return (
     <div className="calculator-stack" data-testid="expedition-equipment-simulator">
@@ -265,9 +362,10 @@ export function ExpeditionEquipmentSimulator({
       </Link>
       <section className="calculator-card">
         <h3>{t("summary-title")}</h3>
-        <Summary totals={totals} />
+        <Summary totals={totals} selected={selected} />
       </section>
       <section className="calculator-card stuff-block">
+        <FilterButtons filter={filter} onChange={changeFilter} />
         <div className="expedition-slot-columns">
           <div className="stuff-slot-grid">
             {expeditionSlotLayout.map((slot, index) => (
@@ -297,6 +395,7 @@ export function ExpeditionEquipmentSimulator({
                 slot={expeditionSlotLayout[active]}
                 state={state[active]}
                 rows={rows}
+                filter={filter}
                 onChange={(slot) => update(active, slot)}
               />
             )}

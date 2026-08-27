@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   combatSlotNameTranslationKeys,
   equipmentFamilyTranslationKeys,
@@ -19,7 +19,7 @@ import {
   type EquipmentSkill,
   type EquipmentSlot,
 } from "../lib/equipment";
-import { equipmentImagePath } from "../lib/game-images";
+import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
 import {
   combatValueAtStar,
   defaultExpeditionStarIncrements,
@@ -67,33 +67,41 @@ function Filters({
       <div>
         <span className="filter-label">{t("filters.family")}</span>
         <div className="family-buttons">
-          {families.map((item) => (
-            <button
-              type="button"
-              aria-pressed={family === item}
-              key={item}
-              onClick={() => setFamily(item)}
-            >
-              {familyLabel(item)}
-            </button>
-          ))}
+          {families.map((item) => {
+            const color = filterButtonColor(item);
+            return (
+              <button
+                type="button"
+                aria-pressed={family === item}
+                key={item}
+                style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+                onClick={() => setFamily(item)}
+              >
+                {familyLabel(item)}
+              </button>
+            );
+          })}
         </div>
       </div>
       <div>
         <span className="filter-label">{t("filters.rarity")}</span>
         <div className="family-buttons">
-          {rarityOrder.map((item) => (
-            <button
-              type="button"
-              aria-pressed={rarities.has(item)}
-              key={item}
-              onClick={() => toggleRarity(item)}
-            >
-              {game(
-                `rarities.${equipmentRarityTranslationKeys[item as EquipmentRarity]}`,
-              )}
-            </button>
-          ))}
+          {rarityOrder.map((item) => {
+            const color = filterButtonColor(item);
+            return (
+              <button
+                type="button"
+                aria-pressed={rarities.has(item)}
+                key={item}
+                style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+                onClick={() => toggleRarity(item)}
+              >
+                {game(
+                  `rarities.${equipmentRarityTranslationKeys[item as EquipmentRarity]}`,
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
       <label>

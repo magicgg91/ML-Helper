@@ -53,19 +53,16 @@ test("renders every tool category in French and English", async ({ page }) => {
 
   await page.goto("/tools/competences");
   await expect(
-    page.getByRole("tab", { name: "Combat Equipment Simulator", exact: true }),
+    page.getByRole("tab", { name: "Combat Equipment", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("tab", { name: "Expedition Equipment Simulator" }),
+    page.getByRole("tab", { name: "Expedition Equipment" }),
   ).toBeVisible();
   await selectLanguage(page, "fr");
   await expect(
-    page.getByRole("tab", {
-      name: "Simulateur d’Équipement de Combat",
-      exact: true,
-    }),
+    page.getByRole("tab", { name: "Équipement de Combat", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("tab", { name: "Simulateur d’Équipement d’Expédition" }),
+    page.getByRole("tab", { name: "Équipement d’Expédition" }),
   ).toBeVisible();
 });
