@@ -26,6 +26,18 @@ describe("ranking calculator", () => {
     ]);
   });
 
+  it("floors a non-integer rank instead of rounding it up past the real cutoff", () => {
+    // total = 189, threshold 50% -> 94.5 places. Rounding to 95 would tell a
+    // player they're safe when the 95th player has actually been relegated.
+    const result = calculateRanking(
+      [{ threshold: 50, movement: null, league: null, rewards: [] }],
+      100,
+      189,
+    );
+    expect(result.ranges[0].rankStart).toBe(0);
+    expect(result.ranges[0].rankEnd).toBe(94);
+  });
+
   it("rejects zero percent and keeps unknown leagues empty", () => {
     expect(calculateRanking(defaultRankingConfig.legend, 0, 1)).toEqual({
       total: null,

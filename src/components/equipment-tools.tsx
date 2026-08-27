@@ -17,9 +17,11 @@ import {
   createEmptyStuffState,
   equipmentBlocks,
   equipmentOptions,
+  equipmentSkillLabels,
   equipmentSlotLayout,
   findEquipment,
   gemSlotsByRarity,
+  skillKeyByLabel,
   type EquipmentBlock,
   type EquipmentGem,
   type EquipmentSelection,
@@ -38,10 +40,16 @@ import {
   defaultGemParameters,
   type GemParameters,
 } from "../lib/gem-parameters";
-import type { League } from "../lib/player-settings";
+import {
+  emptySkills,
+  skillCapForLeague,
+  type League,
+  type LeagueSelection,
+} from "../lib/player-settings";
+import { replaceEquipmentSkills } from "./player-settings-panel";
+import { usePlayerSettings } from "./use-player-settings";
 import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
-import { RarityBadge } from "./rarity-badge";
 
 const storageKey = "mlhelper_stuff_simulator";
 const leagueOptions = [
@@ -56,13 +64,18 @@ const leagueOptions = [
 function Summary({
   totals,
   selected,
+  league,
+  onTransfer,
 }: {
   totals: Partial<Record<string, number>>;
   selected?: Partial<Record<string, number>>;
+  league?: LeagueSelection;
+  onTransfer?: () => void;
 }) {
   const locale = useLocale();
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
+  const [transferred, setTransferred] = useState(false);
   const pct = (value: number) =>
     value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const entries = Object.entries(totals)
@@ -71,25 +84,66 @@ function Summary({
         typeof entry[1] === "number" && entry[1] > 0,
     )
     .sort(([a], [b]) => a.localeCompare(b, locale));
+  const transferSection = onTransfer ? (
+    <div className="stuff-transfer">
+      <button
+        type="button"
+        className="secondary-action"
+        onClick={() => {
+          onTransfer();
+          setTransferred(true);
+        }}
+      >
+        {t("transfer")}
+      </button>
+      {transferred ? (
+        <span role="status" className="form-success">
+          {t("transferred")}
+        </span>
+      ) : null}
+    </div>
+  ) : null;
   if (!entries.length)
-    return <p className="stuff-empty">{t("empty-summary")}</p>;
+    return (
+      <div>
+        <p className="stuff-empty">{t("empty-summary")}</p>
+        {transferSection}
+      </div>
+    );
   return (
-    <div className="stuff-summary-grid">
-      {entries.map(([skill, value]) => (
-        <div className="stuff-total total-box" key={skill}>
-          <span className="label">
-            {game(
-              `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
-            )}
-          </span>
-          <strong className="value emerald">
-            +{pct(value)}%{" "}
-            {selected?.[skill] ? (
-              <small>({pct(selected[skill]!)}%)</small>
-            ) : null}
-          </strong>
-        </div>
-      ))}
+    <div>
+      <div className="stuff-summary-grid">
+        {entries.map(([skill, value]) => {
+          // league !== undefined (not a truthiness check): "" is a valid,
+          // meaningful LeagueSelection meaning "no league chosen yet", and
+          // several caps (Récupération's flat 50%) apply regardless of
+          // league — only an omitted prop (per-block Summary calls) should
+          // skip cap handling entirely.
+          const cap =
+            league !== undefined
+              ? skillCapForLeague(skillKeyByLabel[skill as EquipmentSkill], league)
+              : undefined;
+          const displayValue = cap === undefined ? value : Math.min(value, cap);
+          return (
+            <div className="stuff-total total-box" key={skill}>
+              <span className="label">
+                {game(
+                  `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
+                )}
+              </span>
+              <strong className="value emerald">
+                +{pct(displayValue)}%{" "}
+                {cap !== undefined && value > cap ? (
+                  <small>({pct(value)}%)</small>
+                ) : selected?.[skill] ? (
+                  <small>({pct(selected[skill]!)}%)</small>
+                ) : null}
+              </strong>
+            </div>
+          );
+        })}
+      </div>
+      {transferSection}
     </div>
   );
 }
@@ -241,10 +295,6 @@ function SlotCell({
               fallback={null}
             />
           ) : null}
-          <RarityBadge
-            rarity={rarity}
-            label={game(`rarities.${equipmentRarityTranslationKeys[rarity]}`)}
-          />
           <small>{state.star}★</small>
           {activeGems.length ? (
             <div className="gem-badges">
@@ -400,6 +450,7 @@ export function StuffSimulator({
 }) {
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
+  const playerSettings = usePlayerSettings();
   const [state, setState] = useState<StuffState>(createEmptyStuffState);
   const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<Partial<Record<EquipmentBlock, number>>>(
@@ -422,6 +473,16 @@ export function StuffSimulator({
     () => computeStuffGlobal(state, combatRows, gemParameters),
     [state, combatRows, gemParameters],
   );
+  function transferToPlayerSettings() {
+    const equipmentSkills = emptySkills();
+    for (const skill of equipmentSkillLabels) {
+      const key = skillKeyByLabel[skill];
+      const raw = global[skill] ?? 0;
+      const cap = skillCapForLeague(key, playerSettings.league);
+      equipmentSkills[key] = cap === undefined ? raw : Math.min(raw, cap);
+    }
+    replaceEquipmentSkills(equipmentSkills);
+  }
   function update(
     block: EquipmentBlock,
     index: number,
@@ -442,7 +503,11 @@ export function StuffSimulator({
       </Link>
       <section className="calculator-card">
         <h3>{t("global-summary")}</h3>
-        <Summary totals={global} />
+        <Summary
+          totals={global}
+          league={playerSettings.league}
+          onTransfer={transferToPlayerSettings}
+        />
       </section>
       {equipmentBlocks.map((block) => {
         const activeIndex = active[block];
@@ -483,7 +548,13 @@ export function StuffSimulator({
                   />
                 ))}
               </div>
-              <div>
+              <div
+                className={
+                  activeIndex === undefined
+                    ? "stuff-editor-panel"
+                    : "stuff-editor-panel stuff-editor-panel-active"
+                }
+              >
                 {activeIndex === undefined ? (
                   <p className="stuff-empty">{t("select-slot")}</p>
                 ) : (
