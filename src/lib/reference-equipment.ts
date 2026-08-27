@@ -121,7 +121,17 @@ export function expeditionValueAtStar(
 // (a uniform ×2 per rarity tier), K does NOT double at a constant ratio
 // between rarities here — load these 5 as independent confirmed constants,
 // never recompute or generalize them from a ratio.
-export const expeditionMergeCostBase: Record<string, number> = {
+export const mergeCostRarityKeys = [
+  "Commun",
+  "Rare",
+  "Épique",
+  "Mythique",
+  "Légendaire",
+] as const;
+export type MergeCostRarityKey = (typeof mergeCostRarityKeys)[number];
+export type ExpeditionMergeCostBase = Record<MergeCostRarityKey, number>;
+
+export const defaultExpeditionMergeCostBase: ExpeditionMergeCostBase = {
   Commun: 600,
   Rare: 1100,
   Épique: 2000,
@@ -129,10 +139,34 @@ export const expeditionMergeCostBase: Record<string, number> = {
   Légendaire: 8000,
 };
 
-export function expeditionMergeCost(rarity: string, star: number): number | null {
-  const base = expeditionMergeCostBase[rarity];
-  if (base === undefined) return null;
-  return base * 2 ** (Math.max(1, star) - 1);
+export function parseExpeditionMergeCostBase(
+  value: unknown,
+): ExpeditionMergeCostBase {
+  const source =
+    value && typeof value === "object"
+      ? (value as Partial<ExpeditionMergeCostBase>)
+      : {};
+  return Object.fromEntries(
+    mergeCostRarityKeys.map((key) => {
+      const parsed = Number(source[key]);
+      return [
+        key,
+        Number.isFinite(parsed) && parsed >= 0
+          ? parsed
+          : defaultExpeditionMergeCostBase[key],
+      ];
+    }),
+  ) as ExpeditionMergeCostBase;
+}
+
+export function expeditionMergeCost(
+  rarity: string,
+  star: number,
+  base: ExpeditionMergeCostBase = defaultExpeditionMergeCostBase,
+): number | null {
+  const rarityBase = base[rarity as MergeCostRarityKey];
+  if (rarityBase === undefined) return null;
+  return rarityBase * 2 ** (Math.max(1, star) - 1);
 }
 
 export function missingCombatRows(

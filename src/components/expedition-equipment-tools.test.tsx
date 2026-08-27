@@ -98,4 +98,21 @@ describe("ExpeditionEquipmentSimulator", () => {
     expect(cape.querySelector(".rarity-badge")).toBeNull();
     expect(cape).toHaveStyle({ borderColor: "var(--rarity-legendaire)" });
   });
+
+  it("falls back to the default empty state instead of crashing on a malformed saved value", async () => {
+    localStorage.setItem(
+      "mlhelper_expedition_equipment_simulator",
+      JSON.stringify({ not: "an expedition state" }),
+    );
+    renderTool();
+    await waitFor(() =>
+      expect(
+        screen.getByText("Clique sur un emplacement pour le configurer."),
+      ).toBeInTheDocument(),
+    );
+    for (const slot of ["Cape", "Longue-vue", "Bourse", "Boussole", "Torche", "Pioche"])
+      expect(
+        screen.getByRole("button", { name: new RegExp(slot) }),
+      ).toHaveTextContent("Vide");
+  });
 });

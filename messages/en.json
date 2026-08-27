@@ -857,6 +857,7 @@
       "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
       "expedition-description": "All 120 Expedition rows can be edited.",
   "expedition-increments-description": "Per-star increments for the 10 Expedition Equipment stats, confirmed at Legendary (Or also verified at Common) and applied by default to the other 4 rarities — editable if a rarity turns out to differ.",
+  "expedition-merge-cost-description": "Terradust merge cost per rarity (Cost = K × 2^(n-1)) — 5 independent confirmed constants, not derived from a common ratio.",
       "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",

@@ -2,10 +2,13 @@ import { prisma } from "./prisma";
 import {
   applyCombatOverrides,
   combatReferenceRows,
+  defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionReferenceRows,
+  parseExpeditionMergeCostBase,
   parseExpeditionStarIncrements,
   type CombatReferenceRow,
+  type ExpeditionMergeCostBase,
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "./reference-equipment";
@@ -14,6 +17,7 @@ export const referenceKeys = {
   combat: "combat_equipment",
   expedition: "expedition_equipment",
   expeditionIncrements: "expedition_equipment_star_increments",
+  expeditionMergeCost: "expedition_equipment_merge_cost",
 } as const;
 
 async function rowsFor<T>(key: string, fallback: readonly T[]): Promise<T[]> {
@@ -57,4 +61,14 @@ export async function getExpeditionStarIncrements(): Promise<ExpeditionStarIncre
   return stored
     ? parseExpeditionStarIncrements(stored)
     : { ...defaultExpeditionStarIncrements };
+}
+
+export async function getExpeditionMergeCostBase(): Promise<ExpeditionMergeCostBase> {
+  const table = await prisma.referenceTable.findUnique({
+    where: { key: referenceKeys.expeditionMergeCost },
+  });
+  const stored = Array.isArray(table?.rows) ? table.rows[0] : undefined;
+  return stored
+    ? parseExpeditionMergeCostBase(stored)
+    : { ...defaultExpeditionMergeCostBase };
 }

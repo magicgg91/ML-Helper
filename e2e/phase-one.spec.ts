@@ -701,10 +701,38 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("row", { name: /Équipement d’Expédition/ })
     .getByRole("link", { name: "Éditer" })
     .click();
-  await expect(page.locator("tbody tr")).toHaveCount(120);
+  // The page also renders the (single-row) star-increments editor above
+  // this table (Bloc 29/A), so scope to the last table on the page rather
+  // than every tbody row.
+  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
+    120,
+  );
   await expect(
     page.getByLabel("Expédition ligne 1 Nom du set"),
   ).not.toHaveValue("");
+  // Regression check: saving the star-increments editor above this table
+  // must actually persist the edit, not silently keep the defaults.
+  await page.getByLabel("Ligne 1 Or").fill("0.5");
+  await page
+    .getByRole("button", { name: "Enregistrer toute la table" })
+    .first()
+    .click();
+  // Wait for the async save to actually complete before reloading, or the
+  // reload can race ahead of the PUT request and read back stale defaults.
+  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
+  // Same regression check for the Terradust merge-cost editor (2nd of the
+  // 3 "Enregistrer toute la table" buttons on this page: increments,
+  // merge-cost, then the 120-row reference table).
+  await page.getByLabel("Ligne 1 Commun").fill("700");
+  await page
+    .getByRole("button", { name: "Enregistrer toute la table" })
+    .nth(1)
+    .click();
+  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Ligne 1 Commun")).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page

@@ -858,6 +858,7 @@
       "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
       "expedition-description": "Les 120 lignes Expédition sont intégralement éditables.",
     "expedition-increments-description": "Incréments par étoile des 10 statistiques d’Équipement d’Expédition, confirmés en Légendaire (Or vérifié également en Commun) et appliqués par défaut aux 4 autres raretés — éditables si une rareté s’avère différente.",
+    "expedition-merge-cost-description": "Coût de fusion en Terradust par rareté (Coût = K × 2^(n-1)) — 5 constantes indépendantes confirmées, non déduites d’un ratio commun.",
       "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
         "set-name": "Nom du set",

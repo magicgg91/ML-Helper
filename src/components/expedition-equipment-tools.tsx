@@ -31,6 +31,23 @@ import { GameImage } from "./game-image";
 
 const storageKey = "mlhelper_expedition_equipment_simulator";
 
+function isValidExpeditionState(value: unknown): value is ExpeditionState {
+  if (!Array.isArray(value) || value.length !== expeditionSlotLayout.length)
+    return false;
+  return value.every((slot: unknown) => {
+    if (typeof slot !== "object" || slot === null) return false;
+    const { equipment, star } = slot as Partial<ExpeditionSlotState>;
+    if (typeof star !== "number") return false;
+    if (equipment === null) return true;
+    return (
+      typeof equipment === "object" &&
+      equipment !== null &&
+      typeof (equipment as Partial<ExpeditionSelection>).rarity === "string" &&
+      typeof (equipment as Partial<ExpeditionSelection>).setName === "string"
+    );
+  });
+}
+
 function statLabel(
   stat: string,
   game: ReturnType<typeof useTranslations>,
@@ -217,7 +234,13 @@ export function ExpeditionEquipmentSimulator({
     const timer = window.setTimeout(() => {
       try {
         const saved = localStorage.getItem(storageKey);
-        if (saved) setState(JSON.parse(saved));
+        if (saved) {
+          const parsed: unknown = JSON.parse(saved);
+          // Malformed or stale-shape data (an incompatible earlier version,
+          // manual tampering) must not crash the simulator: fall back to
+          // the default empty state instead of trusting an unvalidated value.
+          if (isValidExpeditionState(parsed)) setState(parsed);
+        }
       } catch {}
       setLoaded(true);
     }, 0);

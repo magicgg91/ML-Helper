@@ -2,12 +2,14 @@ import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   combatReferenceRows,
+  defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
 import {
   CombatReferenceAdmin,
   ExpeditionIncrementsAdmin,
+  ExpeditionMergeCostAdmin,
   ExpeditionReferenceAdmin,
 } from "./reference-admin-editors";
 import { renderWithIntl as render } from "../test/render-with-intl";
@@ -66,6 +68,30 @@ describe("complete lookup table administration", () => {
     expect(body).toHaveLength(1);
     expect(body[0].Or).toBe("0.5");
     expect(body[0].Chance).toBe(String(defaultExpeditionStarIncrements.Chance));
+  });
+
+  it("edits and submits the 5 Terradust merge-cost constants as one row", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <ExpeditionMergeCostAdmin initial={defaultExpeditionMergeCostBase} />,
+    );
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(1);
+    expect(
+      container.querySelector('input[aria-label="Ligne 1 Commun"]'),
+    ).toHaveValue(600);
+    fireEvent.change(
+      container.querySelector('input[aria-label="Ligne 1 Commun"]')!,
+      { target: { value: "700" } },
+    );
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toHaveLength(1);
+    expect(body[0].Commun).toBe("700");
+    expect(body[0].Légendaire).toBe(
+      String(defaultExpeditionMergeCostBase.Légendaire),
+    );
   });
 
   it("derives read-only skydust and gem slots from rarity", () => {

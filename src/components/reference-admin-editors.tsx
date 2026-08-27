@@ -6,7 +6,9 @@ import { equipmentRarityValues, derivedEquipmentValues } from "../lib/equipment-
 import { equipmentSkillLabels, equipmentSlotLayout } from "../lib/equipment";
 import {
   expeditionStatKeys,
+  mergeCostRarityKeys,
   type CombatReferenceRow,
+  type ExpeditionMergeCostBase,
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
@@ -94,6 +96,37 @@ export function ExpeditionIncrementsAdmin({
       columns={columns}
       endpoint="/api/admin/guides/references/expedition-equipment-increments"
       description={t("expedition-increments-description")}
+    />
+  );
+}
+
+export function ExpeditionMergeCostAdmin({
+  initial,
+}: {
+  initial: ExpeditionMergeCostBase;
+}) {
+  const t = useTranslations("admin.references");
+  const game = useTranslations("game");
+  const columns: EditableColumn<Record<string, string>>[] =
+    mergeCostRarityKeys.map((key) => ({
+      key,
+      label: game(`rarities.${rarityKeys[key]}`),
+      type: "number",
+      min: 0,
+      step: 1,
+      required: true,
+    }));
+  const initialRows = [
+    Object.fromEntries(
+      mergeCostRarityKeys.map((key) => [key, String(initial[key])]),
+    ),
+  ];
+  return (
+    <EditableReferenceTable
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
+      description={t("expedition-merge-cost-description")}
     />
   );
 }

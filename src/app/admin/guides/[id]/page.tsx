@@ -9,10 +9,12 @@ import { AdminBackLink } from "@/components/admin-back-link";
 import {
   CombatReferenceAdmin,
   ExpeditionIncrementsAdmin,
+  ExpeditionMergeCostAdmin,
   ExpeditionReferenceAdmin,
 } from "@/components/reference-admin-editors";
 import {
   getCombatReferenceRows,
+  getExpeditionMergeCostBase,
   getExpeditionReferenceRows,
   getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
@@ -52,6 +54,9 @@ export default async function EditGuidePage({
           <>
             <ExpeditionIncrementsAdmin
               initial={await getExpeditionStarIncrements()}
+            />
+            <ExpeditionMergeCostAdmin
+              initial={await getExpeditionMergeCostBase()}
             />
             <ExpeditionReferenceAdmin
               initialRows={await getExpeditionReferenceRows()}

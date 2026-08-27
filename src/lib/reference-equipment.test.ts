@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   combatReferenceRows,
   combatValueAtStar,
+  defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionMergeCost,
   expeditionReferenceRows,
   expeditionStatKeys,
   expeditionValueAtStar,
+  mergeCostRarityKeys,
   missingCombatRows,
+  parseExpeditionMergeCostBase,
   parseExpeditionStarIncrements,
 } from "./reference-equipment";
 
@@ -83,6 +86,23 @@ describe("reference equipment", () => {
     expect(expeditionMergeCost("Commun", 2)).toBe(1200);
     expect(expeditionMergeCost("Commun", 3)).toBe(2400);
     expect(expeditionMergeCost("Inconnue", 1)).toBeNull();
+  });
+
+  it("lets an admin override the Terradust merge-cost base, falling back per-rarity", () => {
+    const overridden = parseExpeditionMergeCostBase({ Commun: 700 });
+    expect(overridden.Commun).toBe(700);
+    expect(overridden.Légendaire).toBe(
+      defaultExpeditionMergeCostBase.Légendaire,
+    );
+    expect(expeditionMergeCost("Commun", 1, overridden)).toBe(700);
+    expect(parseExpeditionMergeCostBase(null)).toEqual(
+      defaultExpeditionMergeCostBase,
+    );
+    expect(
+      parseExpeditionMergeCostBase({ Commun: "not-a-number" }),
+    ).toEqual(defaultExpeditionMergeCostBase);
+    for (const key of mergeCostRarityKeys)
+      expect(defaultExpeditionMergeCostBase[key]).toBeGreaterThan(0);
   });
 
   it("keeps the same primary-stat value across all 6 slots of a set, per rarity and family", () => {
