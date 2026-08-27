@@ -8,11 +8,13 @@ import { getTranslations } from "next-intl/server";
 import { AdminBackLink } from "@/components/admin-back-link";
 import {
   CombatReferenceAdmin,
+  ExpeditionIncrementsAdmin,
   ExpeditionReferenceAdmin,
 } from "@/components/reference-admin-editors";
 import {
   getCombatReferenceRows,
   getExpeditionReferenceRows,
+  getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
@@ -47,9 +49,14 @@ export default async function EditGuidePage({
         {combat ? (
           <CombatReferenceAdmin initialRows={await getCombatReferenceRows()} />
         ) : (
-          <ExpeditionReferenceAdmin
-            initialRows={await getExpeditionReferenceRows()}
-          />
+          <>
+            <ExpeditionIncrementsAdmin
+              initial={await getExpeditionStarIncrements()}
+            />
+            <ExpeditionReferenceAdmin
+              initialRows={await getExpeditionReferenceRows()}
+            />
+          </>
         )}
       </main>
     );

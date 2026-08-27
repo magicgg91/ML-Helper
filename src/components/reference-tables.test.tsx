@@ -63,16 +63,14 @@ describe("ReferenceTables", () => {
     );
   });
 
-  it("keeps the expedition fallback visibly unconfirmed", () => {
+  it("no longer shows the stale unconfirmed-assumption banner now that all 10 stats are confirmed", () => {
     renderTables();
     fireEvent.click(
       screen.getByRole("tab", { name: "Équipement d’Expédition" }),
     );
-    expect(screen.getByText(/projection par étoile est une/)).toHaveTextContent(
-      "hypothèse non confirmée",
-    );
     expect(
-      screen.getAllByText("Hypothèse non confirmée").length,
-    ).toBeGreaterThan(0);
+      screen.queryByText(/projection par étoile est une/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Hypothèse non confirmée")).not.toBeInTheDocument();
   });
 });

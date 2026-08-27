@@ -3,6 +3,7 @@ import { gemValue } from "./gems-templars";
 import { defaultGemParameters, type GemParameters } from "./gem-parameters";
 import type { LeagueSelection, SkillKey } from "./player-settings";
 import type { CombatReferenceRow } from "./reference-equipment";
+import { valueAtStar } from "./star-progression";
 
 export const equipmentBlocks = ["attack", "defense", "gold", "speed"] as const;
 export type EquipmentBlock = (typeof equipmentBlocks)[number];
@@ -145,9 +146,7 @@ export function equipmentValueAtStar(
   base: number,
   star: number,
 ): number {
-  return (
-    base + equipmentStarIncrement[skill] * (Math.max(1, Math.min(8, star)) - 1)
-  );
+  return valueAtStar(base, equipmentStarIncrement[skill], star);
 }
 
 export function equipmentOptions(

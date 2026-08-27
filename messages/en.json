@@ -565,8 +565,6 @@
   },
   "expedition-equipment": {
     "name": "Expedition Equipment",
-    "notice": "For stats other than Equipment and Vitality, the star projection is an {status}.",
-    "unconfirmed-assumption": "unconfirmed assumption",
     "unconfirmed-label": "Unconfirmed assumption",
     "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No expedition equipment matches these filters.",
@@ -843,7 +841,8 @@
       "templars-detail": "20 exact editable costs",
       "page-title": "Reference table — {name}",
       "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
-      "expedition-description": "All 120 Expedition rows can be edited. Confirmation rules remain visible on the public site.",
+      "expedition-description": "All 120 Expedition rows can be edited.",
+  "expedition-increments-description": "Per-star increments for the 10 Expedition Equipment stats, confirmed at Legendary (Or also verified at Common) and applied by default to the other 4 rarities — editable if a rarity turns out to differ.",
       "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",
