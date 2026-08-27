@@ -10,6 +10,7 @@ import { referenceCatalog } from "@/lib/reference-catalog";
 import {
   getCombatReferenceRows,
   getExpeditionReferenceRows,
+  getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
 import { LevelUpReference } from "@/components/level-up-reference";
 import { TemplarsReferenceTable } from "@/components/templars-reference";
@@ -49,7 +50,10 @@ export default async function ReferencePage({
         ) : slug === "templiers" ? (
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
         ) : (
-          <ExpeditionReferenceTable rows={await getExpeditionReferenceRows()} />
+          <ExpeditionReferenceTable
+            rows={await getExpeditionReferenceRows()}
+            increments={await getExpeditionStarIncrements()}
+          />
         )
       ) : (
         <p className="empty-state">{t("single-unavailable")}</p>

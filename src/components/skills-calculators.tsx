@@ -24,9 +24,15 @@ import {
   type TemplarParameters,
 } from "../lib/templar-parameters";
 import { skillKeys, templarKeys, type SkillKey } from "../lib/player-settings";
-import type { CombatReferenceRow } from "../lib/reference-equipment";
+import type {
+  CombatReferenceRow,
+  ExpeditionReferenceRow,
+  ExpeditionStarIncrements,
+} from "../lib/reference-equipment";
+import { defaultExpeditionStarIncrements } from "../lib/reference-equipment";
 import { NumberStepper } from "./number-stepper";
 import { StuffComparison, StuffSimulator } from "./equipment-tools";
+import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
 
 type GemRow = {
   id: number;
@@ -52,19 +58,24 @@ function gemDistributionLabel(
 export function SkillsCalculators({
   templarParameters = defaultTemplarParameters,
   combatRows,
+  expeditionRows,
+  expeditionIncrements = defaultExpeditionStarIncrements,
   gemParameters = defaultGemParameters,
   availability = {
     simulator: true,
     comparison: true,
     gems: true,
     templars: true,
+    expedition: true,
   },
 }: {
   templarParameters?: TemplarParameters;
   combatRows: readonly CombatReferenceRow[];
+  expeditionRows: readonly ExpeditionReferenceRow[];
+  expeditionIncrements?: ExpeditionStarIncrements;
   gemParameters?: GemParameters;
   availability?: Record<
-    "simulator" | "comparison" | "gems" | "templars",
+    "simulator" | "comparison" | "gems" | "templars" | "expedition",
     boolean
   >;
 }) {
@@ -73,11 +84,12 @@ export function SkillsCalculators({
   const comparison = useTranslations("stuff-comparison");
   const gems = useTranslations("gems");
   const templars = useTranslations("templars");
+  const expedition = useTranslations("expedition-equipment-simulator");
   const firstAvailable = (
-    ["simulator", "comparison", "gems", "templars"] as const
+    ["simulator", "comparison", "gems", "templars", "expedition"] as const
   ).find((key) => availability[key]);
   const [active, setActive] = useState<
-    "simulator" | "comparison" | "gems" | "templars" | undefined
+    "simulator" | "comparison" | "gems" | "templars" | "expedition" | undefined
   >(firstAvailable);
   return (
     <div className="city-calculators">
@@ -138,6 +150,20 @@ export function SkillsCalculators({
         >
           {templars("name")}
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === "expedition"}
+          disabled={!availability.expedition}
+          title={
+            !availability.expedition
+              ? tools("calculator-unavailable")
+              : undefined
+          }
+          onClick={() => setActive("expedition")}
+        >
+          {expedition("name")}
+        </button>
       </nav>
       {active === "simulator" ? (
         <StuffSimulator combatRows={combatRows} gemParameters={gemParameters} />
@@ -150,6 +176,11 @@ export function SkillsCalculators({
         <GemsCalculator parameters={gemParameters} />
       ) : active === "templars" ? (
         <TemplarsCalculator parameters={templarParameters} />
+      ) : active === "expedition" ? (
+        <ExpeditionEquipmentSimulator
+          rows={expeditionRows}
+          increments={expeditionIncrements}
+        />
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}

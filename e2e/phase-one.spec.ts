@@ -128,7 +128,9 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
   // button — only activate/deactivate remains available. Stuff Comparison
   // only reads the Combat Equipment reference (already editable from
   // Guides), so it has nothing of its own to edit.
-  const comparisonRow = page.getByRole("row", { name: "Comparaison de stuff" });
+  const comparisonRow = page.getByRole("row", {
+    name: "Comparateur d’Équipement de Combat",
+  });
   await expect(
     comparisonRow.getByRole("link", { name: "Modifier" }),
   ).toHaveCount(0);
@@ -548,7 +550,9 @@ test("Skills exposes gem distributions and exact templar costs", async ({
     page.getByRole("link", { name: "Voir le référentiel complet" }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
-  await page.getByRole("tab", { name: "Comparaison de stuff" }).click();
+  await page
+    .getByRole("tab", { name: "Comparateur d’Équipement de Combat" })
+    .click();
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
@@ -589,7 +593,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+2%");
 });
 
-test("Reference tables filter combat and flag expedition hypotheses", async ({
+test("Reference tables filter combat and expedition equipment", async ({
   page,
 }) => {
   await page.goto("/guides");
@@ -618,9 +622,12 @@ test("Reference tables filter combat and flag expedition hypotheses", async ({
   await expect(page.getByText("18%").first()).toBeVisible();
 
   await page.goto("/guides/referentiels/expedition-equipment");
-  await expect(page.getByText(/projection par étoile est une/)).toContainText(
-    "hypothèse non confirmée",
-  );
+  // All 10 expedition stats are confirmed (Bloc 29): no more stale
+  // "unconfirmed assumption" banner on this page.
+  await expect(
+    page.getByText(/projection par étoile est une/),
+  ).toHaveCount(0);
+  await expect(page.getByText("Hypothèse non confirmée")).toHaveCount(0);
 
   await page.goto("/tools/referentiels");
   await expect(page).toHaveURL(/\/guides#references$/);
@@ -694,10 +701,38 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("row", { name: /Équipement d’Expédition/ })
     .getByRole("link", { name: "Éditer" })
     .click();
-  await expect(page.locator("tbody tr")).toHaveCount(120);
+  // The page also renders the (single-row) star-increments editor above
+  // this table (Bloc 29/A), so scope to the last table on the page rather
+  // than every tbody row.
+  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
+    120,
+  );
   await expect(
     page.getByLabel("Expédition ligne 1 Nom du set"),
   ).not.toHaveValue("");
+  // Regression check: saving the star-increments editor above this table
+  // must actually persist the edit, not silently keep the defaults.
+  await page.getByLabel("Ligne 1 Or").fill("0.5");
+  await page
+    .getByRole("button", { name: "Enregistrer toute la table" })
+    .first()
+    .click();
+  // Wait for the async save to actually complete before reloading, or the
+  // reload can race ahead of the PUT request and read back stale defaults.
+  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
+  // Same regression check for the Terradust merge-cost editor (2nd of the
+  // 3 "Enregistrer toute la table" buttons on this page: increments,
+  // merge-cost, then the 120-row reference table).
+  await page.getByLabel("Ligne 1 Commun").fill("700");
+  await page
+    .getByRole("button", { name: "Enregistrer toute la table" })
+    .nth(1)
+    .click();
+  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Ligne 1 Commun")).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page

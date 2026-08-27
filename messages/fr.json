@@ -85,7 +85,7 @@
       "shield": "Bouclier",
       "cloak": "Cape",
       "spyglass": "Longue-vue",
-      "pouch": "Sacoche",
+      "pouch": "Bourse",
       "compass": "Boussole",
       "torch": "Torche",
       "pickaxe": "Pioche"
@@ -299,7 +299,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Simulateur de Stuff",
+    "name": "Simulateur d’Équipement de Combat",
     "view-reference": "Voir le référentiel complet",
     "global-summary": "Récapitulatif des compétences d’équipement",
     "empty-summary": "Aucun équipement configuré",
@@ -313,16 +313,16 @@
     "none": "Aucun",
     "star-level": "Niveau d’étoile",
     "equipment-stars-aria": "Étoiles équipement {block} {slot}",
-    "gems-count": "Gemmes ({count})",
     "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
     "gem": {
+      "row": "Gemme {index}",
       "skill": "Compétence gemme {index}",
       "stars": "Étoiles gemme {index}",
       "league": "Ligue gemme {index}"
     }
   },
   "stuff-comparison": {
-    "name": "Comparaison de stuff",
+    "name": "Comparateur d’Équipement de Combat",
     "view-reference": "Voir le référentiel complet",
     "side-title": "Équipement {side}",
     "slot": "Emplacement",
@@ -339,13 +339,27 @@
     "none": "Aucun",
     "star-level": "Niveau d’étoile",
     "equipment-stars-aria": "Étoiles équipement {block} {slot}",
-    "gems-count": "Gemmes ({count})",
     "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
     "gem": {
+      "row": "Gemme {index}",
       "skill": "Compétence gemme {index}",
       "stars": "Étoiles gemme {index}",
       "league": "Ligue gemme {index}"
     }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Simulateur d’Équipement d’Expédition",
+    "view-reference": "Voir le référentiel complet",
+    "summary-title": "Récapitulatif des statistiques d’expédition",
+    "empty-summary": "Aucun équipement configuré",
+    "empty-slot": "Vide",
+    "select-slot": "Clique sur un emplacement pour le configurer.",
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement d’expédition {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement d’expédition {slot}"
   },
   "gems": {
     "name": "Gemmes",
@@ -570,8 +584,6 @@
   },
   "expedition-equipment": {
     "name": "Équipement d’Expédition",
-    "notice": "Pour les statistiques autres qu’Équipement et Vitalité, la projection par étoile est une {status}.",
-    "unconfirmed-assumption": "hypothèse non confirmée",
     "unconfirmed-label": "Hypothèse non confirmée",
     "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
     "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
@@ -844,7 +856,9 @@
       "templars-detail": "20 coûts exacts éditables",
       "page-title": "Référentiel — {name}",
       "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
-      "expedition-description": "Les 120 lignes Expédition sont intégralement éditables. Les règles de confirmation restent affichées côté public.",
+      "expedition-description": "Les 120 lignes Expédition sont intégralement éditables.",
+    "expedition-increments-description": "Incréments par étoile des 10 statistiques d’Équipement d’Expédition, confirmés en Légendaire (Or vérifié également en Commun) et appliqués par défaut aux 4 autres raretés — éditables si une rareté s’avère différente.",
+    "expedition-merge-cost-description": "Coût de fusion en Terradust par rareté (Coût = K × 2^(n-1)) — 5 constantes indépendantes confirmées, non déduites d’un ratio commun.",
       "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
         "set-name": "Nom du set",

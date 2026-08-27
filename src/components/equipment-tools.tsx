@@ -167,77 +167,74 @@ function GemEditor({
     <div className="stuff-gems">
       {gems.map((gem, index) => (
         <div className="stuff-gem-row" key={index}>
-          <label>
-            {t("gem.skill", { index: index + 1 })}
-            <select
-              value={gem.skill}
-              onChange={(event) =>
-                onChange(
-                  gems.map((item, i) =>
-                    i === index
-                      ? {
-                          ...item,
-                          skill: event.target.value as EquipmentGem["skill"],
-                        }
-                      : item,
-                  ),
-                )
-              }
-            >
-              <option value="none">{t("none")}</option>
-              {skills.map((skill) => (
-                <option key={skill} value={skill}>
-                  {game(`skills.${equipmentSkillTranslationKeys[skill]}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("gem.stars", { index: index + 1 })}
-            <select
-              value={gem.star}
-              onChange={(event) =>
-                onChange(
-                  gems.map((item, i) =>
-                    i === index
-                      ? { ...item, star: Number(event.target.value) }
-                      : item,
-                  ),
-                )
-              }
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((star) => (
-                <option key={star} value={star}>
-                  {star}★
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("gem.league", { index: index + 1 })}
-            <select
-              value={gem.league}
-              onChange={(event) =>
-                onChange(
-                  gems.map((item, i) =>
-                    i === index
-                      ? {
-                          ...item,
-                          league: event.target.value as EquipmentGem["league"],
-                        }
-                      : item,
-                  ),
-                )
-              }
-            >
-              <option value="">{common("choose")}</option>
-              {leagueOptions.map((value) => (
-                <option value={value} key={value}>
-                  {game(`leagues.${value}`)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <span className="stuff-gem-row-label">
+            {t("gem.row", { index: index + 1 })}
+          </span>
+          <select
+            aria-label={t("gem.skill", { index: index + 1 })}
+            value={gem.skill}
+            onChange={(event) =>
+              onChange(
+                gems.map((item, i) =>
+                  i === index
+                    ? {
+                        ...item,
+                        skill: event.target.value as EquipmentGem["skill"],
+                      }
+                    : item,
+                ),
+              )
+            }
+          >
+            <option value="none">{t("none")}</option>
+            {skills.map((skill) => (
+              <option key={skill} value={skill}>
+                {game(`skills.${equipmentSkillTranslationKeys[skill]}`)}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label={t("gem.stars", { index: index + 1 })}
+            value={gem.star}
+            onChange={(event) =>
+              onChange(
+                gems.map((item, i) =>
+                  i === index
+                    ? { ...item, star: Number(event.target.value) }
+                    : item,
+                ),
+              )
+            }
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((star) => (
+              <option key={star} value={star}>
+                {star}★
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label={t("gem.league", { index: index + 1 })}
+            value={gem.league}
+            onChange={(event) =>
+              onChange(
+                gems.map((item, i) =>
+                  i === index
+                    ? {
+                        ...item,
+                        league: event.target.value as EquipmentGem["league"],
+                      }
+                    : item,
+                ),
+              )
+            }
+          >
+            <option value="">{common("choose")}</option>
+            {leagueOptions.map((value) => (
+              <option value={value} key={value}>
+                {game(`leagues.${value}`)}
+              </option>
+            ))}
+          </select>
         </div>
       ))}
     </div>
@@ -423,15 +420,12 @@ function SlotEditor({
             </select>
           </label>
           {state.gems.length ? (
-            <>
-              <h4>{t("gems-count", { count: state.gems.length })}</h4>
-              <GemEditor
-                block={block}
-                gems={state.gems}
-                namespace={namespace}
-                onChange={(gems) => onChange({ ...state, gems })}
-              />
-            </>
+            <GemEditor
+              block={block}
+              gems={state.gems}
+              namespace={namespace}
+              onChange={(gems) => onChange({ ...state, gems })}
+            />
           ) : (
             <p className="stuff-empty">{t("no-gem-slot")}</p>
           )}

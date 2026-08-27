@@ -2,17 +2,30 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import messages from "../../messages/fr.json";
+import frMessages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import { SkillsCalculators } from "./skills-calculators";
-import { combatEquipmentData } from "../lib/equipment-data";
-import type { CombatReferenceRow } from "../lib/reference-equipment";
+import {
+  combatEquipmentData,
+  expeditionEquipmentData,
+} from "../lib/equipment-data";
+import type {
+  CombatReferenceRow,
+  ExpeditionReferenceRow,
+} from "../lib/reference-equipment";
 import { defaultGemParameters } from "../lib/gem-parameters";
 
 const combatRows = combatEquipmentData as readonly CombatReferenceRow[];
+const expeditionRows =
+  expeditionEquipmentData as readonly ExpeditionReferenceRow[];
 
-function renderWithIntl(node: ReactNode) {
+function renderWithIntl(
+  node: ReactNode,
+  locale: "fr" | "en" = "fr",
+  localeMessages: typeof frMessages | typeof enMessages = frMessages,
+) {
   return render(
-    <NextIntlClientProvider locale="fr" messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={localeMessages}>
       {node}
     </NextIntlClientProvider>,
   );
@@ -20,8 +33,39 @@ function renderWithIntl(node: ReactNode) {
 
 describe("SkillsCalculators", () => {
   afterEach(cleanup);
+
+  it("renames the Combat equipment tabs to distinguish them from Expedition, in FR and EN", () => {
+    renderWithIntl(
+      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Simulateur d’Équipement de Combat" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Comparateur d’Équipement de Combat" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Simulateur d’Équipement d’Expédition" }),
+    ).toBeInTheDocument();
+    cleanup();
+
+    renderWithIntl(
+      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+      "en",
+      enMessages,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Combat Equipment Simulator" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Combat Equipment Comparator" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Expedition Equipment Simulator" }),
+    ).toBeInTheDocument();
+  });
   it("caps mixed optimization rows at the available socket count", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     expect(screen.getByRole("combobox", { name: "Ligue ligne 1" })).toHaveValue(
       "",
@@ -41,7 +85,7 @@ describe("SkillsCalculators", () => {
     ).toHaveValue(2);
   });
   it("shows the budget distribution as the primary result", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
     const league = screen.getByRole("combobox", { name: "Ligue" });
@@ -65,7 +109,7 @@ describe("SkillsCalculators", () => {
     expect(obtainedStat).toHaveClass("value", "emerald");
   });
   it("applies one shared level range to all five Templar skills at once", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} />);
+    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Niveau cible" }),
@@ -92,6 +136,7 @@ describe("SkillsCalculators", () => {
       <SkillsCalculators
         templarParameters={{ base: 999, ratio: 1.3 }}
         combatRows={combatRows}
+        expeditionRows={expeditionRows}
       />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
@@ -107,6 +152,7 @@ describe("SkillsCalculators", () => {
     renderWithIntl(
       <SkillsCalculators
         combatRows={combatRows}
+        expeditionRows={expeditionRows}
         gemParameters={{
           ...defaultGemParameters,
           gemPrice: { ...defaultGemParameters.gemPrice, legend: 5000 },

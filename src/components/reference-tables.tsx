@@ -22,9 +22,11 @@ import {
 import { equipmentImagePath } from "../lib/game-images";
 import {
   combatValueAtStar,
+  defaultExpeditionStarIncrements,
   expeditionValueAtStar,
   type CombatReferenceRow,
   type ExpeditionReferenceRow,
+  type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { RarityBadge } from "./rarity-badge";
@@ -274,8 +276,10 @@ export function CombatReferenceTable({
 
 export function ExpeditionReferenceTable({
   rows,
+  increments = defaultExpeditionStarIncrements,
 }: {
   rows: readonly ExpeditionReferenceRow[];
+  increments?: ExpeditionStarIncrements;
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
@@ -310,9 +314,6 @@ export function ExpeditionReferenceTable({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <p className="unconfirmed-notice">
-          {t("notice", { status: t("unconfirmed-assumption") })}
-        </p>
         <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
       <p className="reference-count">
@@ -338,6 +339,7 @@ export function ExpeditionReferenceTable({
                   row.family,
                   row.type_stat_pct,
                   filters.star,
+                  increments,
                 );
                 const secondaryName = row.secondary_stat_name.replace(
                   "_expé",
@@ -347,6 +349,7 @@ export function ExpeditionReferenceTable({
                   secondaryName,
                   row.secondary_stat_pct,
                   filters.star,
+                  increments,
                 );
                 const value = (
                   result: ReturnType<typeof expeditionValueAtStar>,
@@ -413,10 +416,12 @@ export function ExpeditionReferenceTable({
 export function ReferenceTables({
   combatRows,
   expeditionRows,
+  expeditionIncrements,
   availability = { combat: true, expedition: true },
 }: {
   combatRows: readonly CombatReferenceRow[];
   expeditionRows: readonly ExpeditionReferenceRow[];
+  expeditionIncrements?: ExpeditionStarIncrements;
   availability?: Record<"combat" | "expedition", boolean>;
 }) {
   const t = useTranslations("references");
@@ -458,7 +463,10 @@ export function ReferenceTables({
       {active === "combat" ? (
         <CombatReferenceTable rows={combatRows} />
       ) : active === "expedition" ? (
-        <ExpeditionReferenceTable rows={expeditionRows} />
+        <ExpeditionReferenceTable
+          rows={expeditionRows}
+          increments={expeditionIncrements}
+        />
       ) : (
         <p className="empty-state">{t("unavailable")}</p>
       )}

@@ -4,7 +4,14 @@ import { useTranslations } from "next-intl";
 import { EditableReferenceTable, type EditableColumn } from "./editable-reference-table";
 import { equipmentRarityValues, derivedEquipmentValues } from "../lib/equipment-rarity";
 import { equipmentSkillLabels, equipmentSlotLayout } from "../lib/equipment";
-import type { CombatReferenceRow, ExpeditionReferenceRow } from "../lib/reference-equipment";
+import {
+  expeditionStatKeys,
+  mergeCostRarityKeys,
+  type CombatReferenceRow,
+  type ExpeditionMergeCostBase,
+  type ExpeditionReferenceRow,
+  type ExpeditionStarIncrements,
+} from "../lib/reference-equipment";
 
 const rarityKeys: Record<string, string> = { Commun: "common", Rare: "rare", Épique: "epic", Mythique: "mythic", Légendaire: "legendary" };
 const familyKeys: Record<string, string> = { Attaque: "attack", Défense: "defense", Or: "gold", "Troupes/Vitesse": "troops-speed", Équipement: "equipment", Consommables: "consumables", Troupes: "troops" };
@@ -43,4 +50,83 @@ export function ExpeditionReferenceAdmin({ initialRows }: { initialRows: Expedit
   const t = useTranslations("admin.references"), equipment = useTranslations("expedition-equipment.columns"), options = useOptions();
   const columns: EditableColumn<ExpeditionReferenceRow>[] = ([select("rarity", equipment("rarity"), options.rarities), text("set_name", t("columns.set-name")), select("family", equipment("family"), options.expeditionFamilies), select("slot", equipment("slot"), options.expeditionSlots), number("type_stat_pct", t("columns.type-value")), select("secondary_stat_name", equipment("secondary-stat"), options.stats), number("secondary_stat_pct", t("columns.secondary-value"))] as EditableColumn<ExpeditionReferenceRow>[]).map((column) => ({ ...column, inputLabel: (index) => t("expedition-row-label", { row: index + 1, field: column.label }) }));
   return <EditableReferenceTable initialRows={initialRows} columns={columns} endpoint="/api/admin/guides/references/expedition-equipment" description={t("expedition-description")} filters={[{ key: "rarity", label: equipment("rarity"), options: options.rarities }, { key: "family", label: equipment("family"), options: options.expeditionFamilies }, { key: "slot", label: equipment("slot"), options: options.expeditionSlots }, { key: "secondary_stat_name", label: equipment("secondary-stat"), options: options.stats }]} />;
+}
+
+const expeditionStatLabelKeys: Record<
+  (typeof expeditionStatKeys)[number],
+  string
+> = {
+  Or: "families.gold",
+  Troupes: "families.troops",
+  Équipement: "families.equipment",
+  Consommables: "families.consumables",
+  Vitalité: "stats.vitality",
+  Perception: "stats.perception",
+  Récupération: "stats.recovery",
+  Vitesse: "stats.speed",
+  Esquive: "stats.dodge",
+  Chance: "stats.luck",
+};
+
+export function ExpeditionIncrementsAdmin({
+  initial,
+}: {
+  initial: ExpeditionStarIncrements;
+}) {
+  const t = useTranslations("admin.references");
+  const game = useTranslations("game");
+  const columns: EditableColumn<Record<string, string>>[] = expeditionStatKeys.map(
+    (key) => ({
+      key,
+      label: game(expeditionStatLabelKeys[key]),
+      type: "number",
+      min: 0,
+      step: 0.01,
+      required: true,
+    }),
+  );
+  const initialRows = [
+    Object.fromEntries(
+      expeditionStatKeys.map((key) => [key, String(initial[key])]),
+    ),
+  ];
+  return (
+    <EditableReferenceTable
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/expedition-equipment-increments"
+      description={t("expedition-increments-description")}
+    />
+  );
+}
+
+export function ExpeditionMergeCostAdmin({
+  initial,
+}: {
+  initial: ExpeditionMergeCostBase;
+}) {
+  const t = useTranslations("admin.references");
+  const game = useTranslations("game");
+  const columns: EditableColumn<Record<string, string>>[] =
+    mergeCostRarityKeys.map((key) => ({
+      key,
+      label: game(`rarities.${rarityKeys[key]}`),
+      type: "number",
+      min: 0,
+      step: 1,
+      required: true,
+    }));
+  const initialRows = [
+    Object.fromEntries(
+      mergeCostRarityKeys.map((key) => [key, String(initial[key])]),
+    ),
+  ];
+  return (
+    <EditableReferenceTable
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
+      description={t("expedition-merge-cost-description")}
+    />
+  );
 }

@@ -293,7 +293,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Equipment Simulator",
+    "name": "Combat Equipment Simulator",
     "view-reference": "View full reference table",
     "global-summary": "Equipment skills summary",
     "empty-summary": "No equipment configured",
@@ -307,16 +307,16 @@
     "none": "None",
     "star-level": "Star level",
     "equipment-stars-aria": "{block} equipment stars {slot}",
-    "gems-count": "Gems ({count})",
     "no-gem-slot": "No gem slot at this rarity",
     "gem": {
+      "row": "Gem {index}",
       "skill": "Gem skill {index}",
       "stars": "Gem stars {index}",
       "league": "Gem league {index}"
     }
   },
   "stuff-comparison": {
-    "name": "Equipment Comparison",
+    "name": "Combat Equipment Comparator",
     "view-reference": "View full reference table",
     "side-title": "Equipment {side}",
     "slot": "Slot",
@@ -333,13 +333,27 @@
     "none": "None",
     "star-level": "Star level",
     "equipment-stars-aria": "{block} equipment stars {slot}",
-    "gems-count": "Gems ({count})",
     "no-gem-slot": "No gem slot at this rarity",
     "gem": {
+      "row": "Gem {index}",
       "skill": "Gem skill {index}",
       "stars": "Gem stars {index}",
       "league": "Gem league {index}"
     }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Expedition Equipment Simulator",
+    "view-reference": "View the full reference",
+    "summary-title": "Expedition stats summary",
+    "empty-summary": "No equipment configured",
+    "empty-slot": "Empty",
+    "select-slot": "Click a slot to configure it.",
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "Expedition equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "Expedition equipment stars {slot}"
   },
   "gems": {
     "name": "Gems",
@@ -565,8 +579,6 @@
   },
   "expedition-equipment": {
     "name": "Expedition Equipment",
-    "notice": "For stats other than Equipment and Vitality, the star projection is an {status}.",
-    "unconfirmed-assumption": "unconfirmed assumption",
     "unconfirmed-label": "Unconfirmed assumption",
     "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No expedition equipment matches these filters.",
@@ -843,7 +855,9 @@
       "templars-detail": "20 exact editable costs",
       "page-title": "Reference table — {name}",
       "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
-      "expedition-description": "All 120 Expedition rows can be edited. Confirmation rules remain visible on the public site.",
+      "expedition-description": "All 120 Expedition rows can be edited.",
+  "expedition-increments-description": "Per-star increments for the 10 Expedition Equipment stats, confirmed at Legendary (Or also verified at Common) and applied by default to the other 4 rarities — editable if a rarity turns out to differ.",
+  "expedition-merge-cost-description": "Terradust merge cost per rarity (Cost = K × 2^(n-1)) — 5 independent confirmed constants, not derived from a common ratio.",
       "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",
