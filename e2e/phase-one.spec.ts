@@ -124,19 +124,19 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
     ).toHaveAttribute("href", "/admin/tools/city-parameters");
   }
 
-  // Point 3: a tool with no editable numeric parameter has no Modifier
-  // button — only activate/deactivate remains available. Stuff Comparison
-  // only reads the Combat Equipment reference (already editable from
-  // Guides), so it has nothing of its own to edit.
-  const comparisonRow = page.getByRole("row", {
-    name: "Comparateur d’Équipement de Combat",
-  });
+  // Bloc 31/B: the Combat Equipment Comparator is removed entirely — no
+  // row, no route, nothing left to assert here.
   await expect(
-    comparisonRow.getByRole("link", { name: "Modifier" }),
+    page.getByRole("row", { name: /Comparateur/ }),
   ).toHaveCount(0);
-  await expect(
-    comparisonRow.getByRole("button", { name: "Désactiver" }),
-  ).toBeVisible();
+
+  // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
+  // in the confirmed Combat, Expedition, Gems, Templars order.
+  const toolLabels = await page.locator("td.font-medium").allTextContents();
+  const competencesLabels = ["Équipement de Combat", "Équipement d’Expédition", "Gemmes", "Templiers"];
+  expect(toolLabels.filter((label) => competencesLabels.includes(label))).toEqual(
+    competencesLabels,
+  );
 
   // Point 1: the old "Textes multilingues" editor is gone entirely — its
   // route now 404s instead of rendering an empty/dead block.
@@ -549,18 +549,6 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
-
-  await page
-    .getByRole("tab", { name: "Comparateur d’Équipement de Combat" })
-    .click();
-  await expect(
-    page.getByRole("link", { name: "Voir le référentiel complet" }),
-  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
-  const comparisonStars = page.getByRole("combobox", {
-    name: "Étoiles équipement Attaque Amulette",
-  });
-  await comparisonStars.nth(1).selectOption("8");
-  await expect(page.locator(".diff-positive").first()).toBeVisible();
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   await page.getByRole("tab", { name: "Budget disponible" }).click();

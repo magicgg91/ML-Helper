@@ -2,6 +2,7 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { CalculatorVisibilityList } from "@/components/calculator-visibility-list";
 import { adminToolEditHref, referenceToolSlugs } from "@/lib/admin-tools";
+import { byCalculatorCatalogOrder } from "@/lib/calculator-catalog";
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 
@@ -11,10 +12,11 @@ export default async function ToolsAdminPage() {
     getTranslations("admin.tools"),
     getTranslations(),
   ]);
-  const tools = await prisma.calculator.findMany({
-    where: { slug: { notIn: [...referenceToolSlugs] } },
-    orderBy: { slug: "asc" },
-  });
+  const tools = (
+    await prisma.calculator.findMany({
+      where: { slug: { notIn: [...referenceToolSlugs] } },
+    })
+  ).sort(byCalculatorCatalogOrder);
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>

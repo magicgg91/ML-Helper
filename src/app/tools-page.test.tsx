@@ -12,7 +12,7 @@ vi.mock("@/lib/calculators-server", () => ({
     "city-production": true,
     ranking: false,
     "stuff-simulator": true,
-    "stuff-comparison": true,
+    "expedition-equipment-simulator": true,
     gems: true,
     templars: true,
     "xp-gain-rate": false,
