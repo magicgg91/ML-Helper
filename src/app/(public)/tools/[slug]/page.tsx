@@ -12,7 +12,11 @@ import {
   getCombatParameters,
   getGemParameters,
 } from "../../../../lib/admin-formulas-server";
-import { getCombatReferenceRows } from "../../../../lib/reference-equipment-server";
+import {
+  getCombatReferenceRows,
+  getExpeditionReferenceRows,
+  getExpeditionStarIncrements,
+} from "../../../../lib/reference-equipment-server";
 import { getTranslations } from "next-intl/server";
 import { pageTitle } from "../../../../lib/page-title";
 
@@ -66,12 +70,15 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
         <SkillsCalculators
           templarParameters={await getTemplarParameters()}
           combatRows={await getCombatReferenceRows()}
+          expeditionRows={await getExpeditionReferenceRows()}
+          expeditionIncrements={await getExpeditionStarIncrements()}
           gemParameters={await getGemParameters()}
           availability={{
             simulator: active["stuff-simulator"],
             comparison: active["stuff-comparison"],
             gems: active.gems,
             templars: active.templars,
+            expedition: active["expedition-equipment-simulator"],
           }}
         />
       </main>

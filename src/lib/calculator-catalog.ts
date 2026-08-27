@@ -31,6 +31,11 @@ export const calculatorCatalog = [
   { slug: "gems", category: "competences", label: "Gemmes" },
   { slug: "templars", category: "competences", label: "Templiers" },
   {
+    slug: "expedition-equipment-simulator",
+    category: "competences",
+    label: "Simulateur d’Équipement d’Expédition",
+  },
+  {
     slug: "combat-equipment",
     category: "referentiels",
     label: "Équipements de Combat",

@@ -793,6 +793,15 @@ select {
   gap: 0.5rem;
 }
 
+/* Expedition Equipment Simulator: grid + config panel only, no third
+   per-block summary column (its summary is a single card above instead). */
+.expedition-slot-columns {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
 .stuff-slot-grid button {
   min-height: 76px;
   padding: 0.5rem;
@@ -932,7 +941,8 @@ select {
 
 @media (max-width: 900px) {
   .stuff-block-columns,
-  .compare-equipment-grid {
+  .compare-equipment-grid,
+  .expedition-slot-columns {
     grid-template-columns: 1fr;
   }
 }
