@@ -29,12 +29,45 @@ export function createEmptyExpeditionState(): ExpeditionState {
   return expeditionSlotLayout.map(() => ({ equipment: null, star: 1 }));
 }
 
+// Bloc 31/E.1: "Personnalisé" (custom) keeps the full mixed-family catalog;
+// the other 4 filters restrict every slot selector's catalog to a single
+// primary-stat family at a time.
+export const expeditionFamilyFilters = [
+  "Or",
+  "Équipement",
+  "Consommables",
+  "Troupes",
+] as const;
+export type ExpeditionFamilyFilter = (typeof expeditionFamilyFilters)[number];
+export const expeditionFilterOrder = [
+  "custom",
+  ...expeditionFamilyFilters,
+] as const;
+export type ExpeditionFilter = (typeof expeditionFilterOrder)[number];
+
+// Each filter keeps its own independent loadout (5 separate configurations)
+// so switching filters never overwrites another filter's saved choices.
+export type ExpeditionConfigs = Record<ExpeditionFilter, ExpeditionState>;
+
+export function createEmptyExpeditionConfigs(): ExpeditionConfigs {
+  return Object.fromEntries(
+    expeditionFilterOrder.map((filter) => [
+      filter,
+      createEmptyExpeditionState(),
+    ]),
+  ) as ExpeditionConfigs;
+}
+
 export function expeditionOptions(
   slot: ExpeditionSlot,
   rows: readonly ExpeditionReferenceRow[],
+  familyFilter?: ExpeditionFamilyFilter,
 ) {
   return rows
-    .filter((item) => item.slot === slot)
+    .filter(
+      (item) =>
+        item.slot === slot && (!familyFilter || item.family === familyFilter),
+    )
     .sort(
       (a, b) =>
         rarityOrder.indexOf(a.rarity as EquipmentRarity) -
