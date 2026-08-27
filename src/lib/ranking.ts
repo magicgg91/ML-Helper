@@ -131,8 +131,8 @@ export function calculateRanking(
       return {
         ...band,
         rangeStart,
-        rankStart: Math.round((total * rangeStart) / 100),
-        rankEnd: Math.round((total * band.threshold) / 100),
+        rankStart: Math.floor((total * rangeStart) / 100),
+        rankEnd: Math.floor((total * band.threshold) / 100),
       };
     }),
   };
