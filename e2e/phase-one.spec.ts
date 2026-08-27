@@ -128,7 +128,9 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
   // button — only activate/deactivate remains available. Stuff Comparison
   // only reads the Combat Equipment reference (already editable from
   // Guides), so it has nothing of its own to edit.
-  const comparisonRow = page.getByRole("row", { name: "Comparaison de stuff" });
+  const comparisonRow = page.getByRole("row", {
+    name: "Comparateur d’Équipement de Combat",
+  });
   await expect(
     comparisonRow.getByRole("link", { name: "Modifier" }),
   ).toHaveCount(0);
@@ -548,7 +550,9 @@ test("Skills exposes gem distributions and exact templar costs", async ({
     page.getByRole("link", { name: "Voir le référentiel complet" }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
-  await page.getByRole("tab", { name: "Comparaison de stuff" }).click();
+  await page
+    .getByRole("tab", { name: "Comparateur d’Équipement de Combat" })
+    .click();
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
@@ -589,7 +593,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+2%");
 });
 
-test("Reference tables filter combat and flag expedition hypotheses", async ({
+test("Reference tables filter combat and expedition equipment", async ({
   page,
 }) => {
   await page.goto("/guides");
@@ -618,9 +622,12 @@ test("Reference tables filter combat and flag expedition hypotheses", async ({
   await expect(page.getByText("18%").first()).toBeVisible();
 
   await page.goto("/guides/referentiels/expedition-equipment");
-  await expect(page.getByText(/projection par étoile est une/)).toContainText(
-    "hypothèse non confirmée",
-  );
+  // All 10 expedition stats are confirmed (Bloc 29): no more stale
+  // "unconfirmed assumption" banner on this page.
+  await expect(
+    page.getByText(/projection par étoile est une/),
+  ).toHaveCount(0);
+  await expect(page.getByText("Hypothèse non confirmée")).toHaveCount(0);
 
   await page.goto("/tools/referentiels");
   await expect(page).toHaveURL(/\/guides#references$/);
