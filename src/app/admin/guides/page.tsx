@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { localizedText } from "@/lib/translations";
 import { getLocale, getTranslations } from "next-intl/server";
-import { referenceToolSlugs } from "@/lib/admin-tools";
+import {
+  adminToolEditHref,
+  formulaGuideReferenceSlugs,
+  guideReferenceSlugs,
+} from "@/lib/admin-tools";
 
 export default async function GuidesAdminPage() {
   const session = await requireCapability("guides.read");
@@ -16,7 +20,7 @@ export default async function GuidesAdminPage() {
   const [guides, references] = await Promise.all([
     prisma.guide.findMany({ orderBy: { updatedAt: "desc" } }),
     prisma.calculator.findMany({
-      where: { slug: { in: [...referenceToolSlugs] } },
+      where: { slug: { in: [...guideReferenceSlugs] } },
       orderBy: { slug: "asc" },
     }),
   ]);
@@ -47,18 +51,29 @@ export default async function GuidesAdminPage() {
               active: guide.active,
               type: "guide" as const,
             })),
-            ...references.map((reference) => ({
-              id: reference.slug,
-              slug: reference.slug,
-              title: t(`references.${reference.slug}`),
-              author: "—",
-              createdAt: "—",
-              updatedAt: "—",
-              status: "reference",
-              active: reference.active,
-              type: "reference" as const,
-              editHref: `/admin/guides/reference-${reference.slug}`,
-            })),
+            ...references.map((reference) => {
+              const isFormulaBased = (
+                formulaGuideReferenceSlugs as readonly string[]
+              ).includes(reference.slug);
+              return {
+                id: reference.slug,
+                slug: reference.slug,
+                title: t(`references.${reference.slug}`),
+                author: "—",
+                createdAt: "—",
+                updatedAt: "—",
+                status: "reference",
+                active: reference.active,
+                type: "reference" as const,
+                editHref: isFormulaBased
+                  ? adminToolEditHref(reference.slug)
+                  : `/admin/guides/reference-${reference.slug}`,
+                // Formula-based references (Templars) share their active
+                // state with an Outils calculator, toggled there instead
+                // (calculators.toggle) — no independent control here.
+                canToggle: !isFormulaBased,
+              };
+            }),
           ]}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}

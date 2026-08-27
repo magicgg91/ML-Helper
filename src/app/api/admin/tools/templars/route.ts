@@ -4,7 +4,12 @@ import { parseTemplarParameters } from "@/lib/templar-parameters";
 import { saveFormulaParameters } from "@/services/formula-parameters-admin";
 
 export async function PUT(request: Request) {
-  const session = await authorizedSession("calculators.write");
+  // Also reachable from the Guides admin table's "Coût des Templiers"
+  // reference row (guides_manager: references.write, no calculators.write).
+  const session = await authorizedSession([
+    "calculators.write",
+    "references.write",
+  ]);
   if (!session) return forbiddenResponse();
   const raw = await request.json().catch(() => null);
   const base = Number(raw?.base),

@@ -190,8 +190,10 @@ export function CityParametersEditor({ initial }: { initial: CityParameters }) {
 
 export function TemplarParametersEditor({
   initial,
+  backHref = "/admin/tools",
 }: {
   initial: TemplarParameters;
+  backHref?: string;
 }) {
   const t = useTranslations("admin.templar-parameters");
   const tCommon = useTranslations("admin.parameters");
@@ -199,7 +201,7 @@ export function TemplarParametersEditor({
   const { status, save } = useToolSave("/api/admin/tools/templars", value);
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/tools" message={status}>
+      <EditorActionBar backHref={backHref} message={status}>
         <button
           className="editor-action editor-action-primary"
           type="button"

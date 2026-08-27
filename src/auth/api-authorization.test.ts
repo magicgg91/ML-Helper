@@ -34,4 +34,21 @@ describe("API role authorization", () => {
       message: expect.stringContaining("rôle"),
     });
   });
+
+  it("grants access when the role has any capability in a list (Templars: shared with Guides)", async () => {
+    mockedSession.mockResolvedValue({
+      user: { id: "guide", role: "guides_manager" },
+      expires: "2099-01-01",
+    });
+    await expect(
+      authorizedSession(["calculators.write", "references.write"]),
+    ).resolves.not.toBeNull();
+    mockedSession.mockResolvedValue({
+      user: { id: "read-only", role: "read_only" },
+      expires: "2099-01-01",
+    });
+    await expect(
+      authorizedSession(["calculators.write", "references.write"]),
+    ).resolves.toBeNull();
+  });
 });

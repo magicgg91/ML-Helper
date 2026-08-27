@@ -26,6 +26,9 @@ export type GuideAdminRow = {
   active: boolean;
   type?: "guide" | "reference";
   editHref?: string;
+  // Templars' active state is the same Calculator row already toggled from
+  // the Outils table (calculators.toggle) — no independent control here.
+  canToggle?: boolean;
 };
 export function GuideStatusList({
   rows,
@@ -193,7 +196,7 @@ export function GuideStatusList({
                             </Link>
                           </Button>
                         )}
-                        {canWrite && (
+                        {canWrite && (guide.canToggle ?? true) && (
                           <Button
                             size="icon"
                             variant="outline"
