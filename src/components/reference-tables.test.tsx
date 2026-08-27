@@ -63,6 +63,21 @@ describe("ReferenceTables", () => {
     );
   });
 
+  it("colors family and rarity filter buttons to match their equipment cell / Gems colors (Bloc 31/H)", () => {
+    renderTables();
+    const attack = screen.getByRole("button", { name: "Attaque" });
+    expect(attack.style.getPropertyValue("--pill-color")).toBe("#c0392b");
+    const legendary = screen.getByRole("button", { name: "Légendaire" });
+    expect(legendary.style.getPropertyValue("--pill-color")).toBe(
+      "var(--rarity-legendaire)",
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipement d’Expédition" }),
+    );
+    const gold = screen.getAllByRole("button", { name: "Or" })[0];
+    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+  });
+
   it("no longer shows the stale unconfirmed-assumption banner now that all 10 stats are confirmed", () => {
     renderTables();
     fireEvent.click(

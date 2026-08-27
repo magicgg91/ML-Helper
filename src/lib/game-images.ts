@@ -1,4 +1,5 @@
 import type { EquipmentSkill } from "./equipment";
+import { rarityClassName } from "./equipment-rarity";
 import type { League } from "./player-settings";
 
 const diacritics = /\p{Diacritic}/gu;
@@ -27,6 +28,43 @@ export const equipmentSkillColors: Record<EquipmentSkill, string> = {
   Attaque: "#c0392b",
   Défense: "#3a6ea8",
 };
+
+const equipmentRarityValues = ["Commun", "Rare", "Épique", "Mythique", "Légendaire"];
+
+// Bloc 31/H: filter/type buttons (family, rarity, Gems family, Expedition
+// equipment type) reuse whichever color already identifies the same
+// family/skill elsewhere — rarity/family on the equipment cells, skill
+// colors in the Gems visualisations — so a button visually recalls what it
+// filters. Returns undefined for a value with no established color (e.g.
+// the "Personnalisé"/custom filter), which keeps the neutral default style.
+export function filterButtonColor(key: string): string | undefined {
+  switch (key) {
+    // Combat equipment families and their equivalent Gems families.
+    case "Attaque":
+    case "attack":
+      return equipmentSkillColors.Attaque;
+    case "Défense":
+    case "defense":
+      return equipmentSkillColors.Défense;
+    case "Or":
+    case "gold":
+      return "var(--gold)";
+    case "Troupes/Vitesse":
+    case "speed":
+      return equipmentSkillColors.Vitesse;
+    // Expedition equipment families.
+    case "Équipement":
+      return "var(--sapphire)";
+    case "Consommables":
+      return "var(--emerald)";
+    case "Troupes":
+      return equipmentSkillColors.Vitesse;
+    default:
+      return equipmentRarityValues.includes(key)
+        ? `var(--rarity-${rarityClassName(key)})`
+        : undefined;
+  }
+}
 
 // Slug français de chaque ligue tel qu'utilisé dans les noms de fichiers du
 // manifeste (cdc section 11) — distinct des clés techniques anglaises.
