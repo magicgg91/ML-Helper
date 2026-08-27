@@ -253,6 +253,25 @@ describe("equipment tools", () => {
     expect(saved.clanTemple).toEqual(seeded.clanTemple);
   });
 
+  it("keeps the transfer button available with no equipment configured, to clear a stale transfer", () => {
+    const seeded = {
+      ...defaultPlayerSettings(),
+      equipmentSkills: { ...emptySkills(), striker: 40 },
+    };
+    localStorage.setItem(playerStorageKey, JSON.stringify(seeded));
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const section = globalSummarySection();
+    expect(within(section).getByText("Aucun équipement configuré"))
+      .toBeInTheDocument();
+    fireEvent.click(
+      within(section).getByRole("button", {
+        name: "Transférer vers les Paramètres du joueur",
+      }),
+    );
+    const saved = JSON.parse(localStorage.getItem(playerStorageKey)!);
+    expect(saved.equipmentSkills.striker).toBe(0);
+  });
+
   it("compares explicit sets and colors a positive difference", () => {
     renderTool(<StuffComparison combatRows={combatRows} />);
     expect(

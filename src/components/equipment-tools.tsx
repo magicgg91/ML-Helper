@@ -84,8 +84,32 @@ function Summary({
         typeof entry[1] === "number" && entry[1] > 0,
     )
     .sort(([a], [b]) => a.localeCompare(b, locale));
+  const transferSection = onTransfer ? (
+    <div className="stuff-transfer">
+      <button
+        type="button"
+        className="secondary-action"
+        onClick={() => {
+          onTransfer();
+          setTransferred(true);
+        }}
+      >
+        {t("transfer")}
+      </button>
+      {transferred ? (
+        <span role="status" className="form-success">
+          {t("transferred")}
+        </span>
+      ) : null}
+    </div>
+  ) : null;
   if (!entries.length)
-    return <p className="stuff-empty">{t("empty-summary")}</p>;
+    return (
+      <div>
+        <p className="stuff-empty">{t("empty-summary")}</p>
+        {transferSection}
+      </div>
+    );
   return (
     <div>
       <div className="stuff-summary-grid">
@@ -119,25 +143,7 @@ function Summary({
           );
         })}
       </div>
-      {onTransfer ? (
-        <div className="stuff-transfer">
-          <button
-            type="button"
-            className="secondary-action"
-            onClick={() => {
-              onTransfer();
-              setTransferred(true);
-            }}
-          >
-            {t("transfer")}
-          </button>
-          {transferred ? (
-            <span role="status" className="form-success">
-              {t("transferred")}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
+      {transferSection}
     </div>
   );
 }
