@@ -132,13 +132,20 @@ export function calculateRanking(
   let previousRankEnd = 0;
   return {
     total,
-    ranges: sorted.map((band, index) => {
-      const rangeStart = index === 0 ? 0 : sorted[index - 1].threshold;
-      const rankEnd = Math.floor((total * band.threshold) / 100);
-      const rankStart = previousRankEnd + 1;
-      previousRankEnd = rankEnd;
-      return { ...band, rangeStart, rankStart, rankEnd };
-    }),
+    // A small enough population can leave a band with no integer rank in
+    // it at all (its own rankEnd still floors to the previous band's
+    // rankEnd or lower) — chaining still advances previousRankEnd for the
+    // next band, but a band with rankStart > rankEnd holds zero players
+    // and is dropped rather than shown as a nonsensical reversed range.
+    ranges: sorted
+      .map((band, index) => {
+        const rangeStart = index === 0 ? 0 : sorted[index - 1].threshold;
+        const rankEnd = Math.floor((total * band.threshold) / 100);
+        const rankStart = previousRankEnd + 1;
+        previousRankEnd = rankEnd;
+        return { ...band, rangeStart, rankStart, rankEnd };
+      })
+      .filter((range) => range.rankStart <= range.rankEnd),
   };
 }
 

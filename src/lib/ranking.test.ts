@@ -38,6 +38,24 @@ describe("ranking calculator", () => {
     expect(result.ranges[0].rankEnd).toBe(94);
   });
 
+  it("drops a band that holds no integer rank instead of showing a reversed range", () => {
+    // total = 1 (rank 1 at 100%): every Diamond threshold below 100% floors
+    // to rank 0, so those bands would show as the impossible "rankStart 1 >
+    // rankEnd 0" — they must be omitted, leaving only the band that
+    // actually contains rank 1.
+    const result = calculateRanking(defaultRankingConfig.diamond, 100, 1);
+    expect(result.total).toBe(1);
+    expect(result.ranges.every((range) => range.rankStart <= range.rankEnd)).toBe(
+      true,
+    );
+    expect(result.ranges).toHaveLength(1);
+    expect(result.ranges[0]).toMatchObject({
+      threshold: 100,
+      rankStart: 1,
+      rankEnd: 1,
+    });
+  });
+
   it("never lets the same rank appear in two adjacent ranges (Bloc 31/J)", () => {
     // 1-6% covers places 1-10; 6-25% must start at 11, never restate 10.
     const result = calculateRanking(defaultRankingConfig.diamond, 1, 10);

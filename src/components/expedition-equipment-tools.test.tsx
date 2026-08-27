@@ -28,6 +28,15 @@ describe("ExpeditionEquipmentSimulator", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 
+  it("shows the 10-stat grid at 0% for a completely empty loadout, not an empty-summary message (E.3)", () => {
+    renderTool();
+    const summary = summarySection();
+    expect(
+      within(summary).queryByText("Aucun équipement configuré"),
+    ).not.toBeInTheDocument();
+    expect(within(summary).getAllByText("+0%")).toHaveLength(10);
+  });
+
   it("shows the cross-link to the full expedition equipment reference", () => {
     renderTool();
     expect(

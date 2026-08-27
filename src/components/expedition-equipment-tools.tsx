@@ -130,15 +130,13 @@ function Summary({
   selected?: Partial<Record<string, number>>;
 }) {
   const locale = useLocale();
-  const t = useTranslations("expedition-equipment-simulator");
   const game = useTranslations("game");
   const pct = (value: number) =>
     value.toLocaleString(locale, { maximumFractionDigits: 2 });
-  // Bloc 31/E.3: always show all 10 stats, including those at 0% — unlike
-  // Combat's summary, which hides zero-contribution skills. Kept specific
-  // to Expedition; do not port this to Combat.
-  const hasAny = summaryStatOrder.some((stat) => (totals[stat] ?? 0) > 0);
-  if (!hasAny) return <p className="stuff-empty">{t("empty-summary")}</p>;
+  // Bloc 31/E.3: always show all 10 stats, including when every one of
+  // them is still at 0% (a fresh loadout, or an unused filter) — unlike
+  // Combat's summary, which hides zero-contribution skills entirely. Kept
+  // specific to Expedition; do not port this to Combat.
   return (
     <div className="expedition-summary-grid">
       {summaryStatOrder.map((stat) => {
