@@ -90,6 +90,33 @@ describe("equipment tools", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows one compact 'Gemme N' label per row and no separate gem-count heading", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    expect(
+      screen.queryByRole("heading", { name: /Gemmes/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Gemme 1")).toBeInTheDocument();
+    expect(screen.getByText("Gemme 2")).toBeInTheDocument();
+    expect(screen.getByText("Gemme 3")).toBeInTheDocument();
+    // The 3 selects for one row are still individually addressable by
+    // their accessible name, just without a separately rendered label.
+    expect(
+      screen.getByRole("combobox", { name: "Compétence gemme 1" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("combobox", { name: "Étoiles gemme 1" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("combobox", { name: "Ligue gemme 1" }),
+    ).toBeVisible();
+  });
+
   it("colors the slot cell by rarity without a redundant rarity text badge", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];

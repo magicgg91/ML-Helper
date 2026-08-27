@@ -21,12 +21,12 @@ export const calculatorCatalog = [
   {
     slug: "stuff-simulator",
     category: "competences",
-    label: "Simulateur de Stuff",
+    label: "Simulateur d’Équipement de Combat",
   },
   {
     slug: "stuff-comparison",
     category: "competences",
-    label: "Comparaison de stuff",
+    label: "Comparateur d’Équipement de Combat",
   },
   { slug: "gems", category: "competences", label: "Gemmes" },
   { slug: "templars", category: "competences", label: "Templiers" },

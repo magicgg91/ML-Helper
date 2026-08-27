@@ -293,7 +293,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Equipment Simulator",
+    "name": "Combat Equipment Simulator",
     "view-reference": "View full reference table",
     "global-summary": "Equipment skills summary",
     "empty-summary": "No equipment configured",
@@ -307,16 +307,16 @@
     "none": "None",
     "star-level": "Star level",
     "equipment-stars-aria": "{block} equipment stars {slot}",
-    "gems-count": "Gems ({count})",
     "no-gem-slot": "No gem slot at this rarity",
     "gem": {
+      "row": "Gem {index}",
       "skill": "Gem skill {index}",
       "stars": "Gem stars {index}",
       "league": "Gem league {index}"
     }
   },
   "stuff-comparison": {
-    "name": "Equipment Comparison",
+    "name": "Combat Equipment Comparator",
     "view-reference": "View full reference table",
     "side-title": "Equipment {side}",
     "slot": "Slot",
@@ -333,13 +333,27 @@
     "none": "None",
     "star-level": "Star level",
     "equipment-stars-aria": "{block} equipment stars {slot}",
-    "gems-count": "Gems ({count})",
     "no-gem-slot": "No gem slot at this rarity",
     "gem": {
+      "row": "Gem {index}",
       "skill": "Gem skill {index}",
       "stars": "Gem stars {index}",
       "league": "Gem league {index}"
     }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Expedition Equipment Simulator",
+    "view-reference": "View the full reference",
+    "summary-title": "Expedition stats summary",
+    "empty-summary": "No equipment configured",
+    "empty-slot": "Empty",
+    "select-slot": "Click a slot to configure it.",
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "Expedition equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "Expedition equipment stars {slot}"
   },
   "gems": {
     "name": "Gems",

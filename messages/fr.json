@@ -85,7 +85,7 @@
       "shield": "Bouclier",
       "cloak": "Cape",
       "spyglass": "Longue-vue",
-      "pouch": "Sacoche",
+      "pouch": "Bourse",
       "compass": "Boussole",
       "torch": "Torche",
       "pickaxe": "Pioche"
@@ -299,7 +299,7 @@
     "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
   },
   "stuff-simulator": {
-    "name": "Simulateur de Stuff",
+    "name": "Simulateur d’Équipement de Combat",
     "view-reference": "Voir le référentiel complet",
     "global-summary": "Récapitulatif des compétences d’équipement",
     "empty-summary": "Aucun équipement configuré",
@@ -313,16 +313,16 @@
     "none": "Aucun",
     "star-level": "Niveau d’étoile",
     "equipment-stars-aria": "Étoiles équipement {block} {slot}",
-    "gems-count": "Gemmes ({count})",
     "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
     "gem": {
+      "row": "Gemme {index}",
       "skill": "Compétence gemme {index}",
       "stars": "Étoiles gemme {index}",
       "league": "Ligue gemme {index}"
     }
   },
   "stuff-comparison": {
-    "name": "Comparaison de stuff",
+    "name": "Comparateur d’Équipement de Combat",
     "view-reference": "Voir le référentiel complet",
     "side-title": "Équipement {side}",
     "slot": "Emplacement",
@@ -339,13 +339,27 @@
     "none": "Aucun",
     "star-level": "Niveau d’étoile",
     "equipment-stars-aria": "Étoiles équipement {block} {slot}",
-    "gems-count": "Gemmes ({count})",
     "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
     "gem": {
+      "row": "Gemme {index}",
       "skill": "Compétence gemme {index}",
       "stars": "Étoiles gemme {index}",
       "league": "Ligue gemme {index}"
     }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Simulateur d’Équipement d’Expédition",
+    "view-reference": "Voir le référentiel complet",
+    "summary-title": "Récapitulatif des statistiques d’expédition",
+    "empty-summary": "Aucun équipement configuré",
+    "empty-slot": "Vide",
+    "select-slot": "Clique sur un emplacement pour le configurer.",
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement d’expédition {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement d’expédition {slot}"
   },
   "gems": {
     "name": "Gemmes",
