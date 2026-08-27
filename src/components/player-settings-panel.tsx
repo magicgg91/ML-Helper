@@ -20,6 +20,7 @@ import {
   templePercent,
   templeSkillBreakdown,
   type LeagueSelection,
+  type NumberMap,
   type PlayerSettings,
   type SkillKey,
   type TemplarKey,
@@ -67,6 +68,24 @@ export function safePlayerSettings(raw: string): PlayerSettings {
   }
 }
 
+// Overwrites only the "Statistiques données par l'équipement" block —
+// never skillPoints (Points de compétence) or clanTemple (Bonus de
+// temple), which stay independent per cdc section 7.1. Used by the Stuff
+// simulator's transfer button so the two features never need to know
+// about each other's shape beyond this one map.
+export function replaceEquipmentSkills(equipmentSkills: NumberMap<SkillKey>) {
+  const saved = window.localStorage.getItem(playerStorageKey);
+  const current = saved ? safePlayerSettings(saved) : defaultPlayerSettings();
+  const next: PlayerSettings = { ...current, equipmentSkills };
+  window.localStorage.setItem(
+    playerStorageKey,
+    JSON.stringify({ ...next, v: currentSettingsVersion }),
+  );
+  window.dispatchEvent(
+    new CustomEvent(playerSettingsChangedEvent, { detail: next }),
+  );
+}
+
 export function PlayerSettingsPanel() {
   const locale = useLocale();
   const t = useTranslations("player-settings");
@@ -81,6 +100,29 @@ export function PlayerSettingsPanel() {
       if (saved) setSettings(safePlayerSettings(saved));
       setLoaded(true);
     });
+  }, []);
+
+  // Picks up a write from another source (e.g. the Stuff simulator's
+  // transfer button) while this panel is already mounted. Guarded by a
+  // content comparison, not just re-parsing on every event: this panel's
+  // own persistence effect below also dispatches this same event on every
+  // local edit, and replacing state with a new-but-identical object on
+  // every keystroke would re-trigger that effect indefinitely.
+  useEffect(() => {
+    function syncFromStorage() {
+      const saved = window.localStorage.getItem(playerStorageKey);
+      if (!saved) return;
+      const next = safePlayerSettings(saved);
+      setSettings((current) =>
+        JSON.stringify(current) === JSON.stringify(next) ? current : next,
+      );
+    }
+    window.addEventListener(playerSettingsChangedEvent, syncFromStorage);
+    window.addEventListener("storage", syncFromStorage);
+    return () => {
+      window.removeEventListener(playerSettingsChangedEvent, syncFromStorage);
+      window.removeEventListener("storage", syncFromStorage);
+    };
   }, []);
 
   useEffect(() => {

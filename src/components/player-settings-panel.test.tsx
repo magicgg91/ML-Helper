@@ -11,6 +11,7 @@ import messages from "../../messages/fr.json";
 import {
   PlayerSettingsPanel,
   playerStorageKey,
+  replaceEquipmentSkills,
   safePlayerSettings,
 } from "./player-settings-panel";
 import { templarRates } from "../lib/gems-templars";
@@ -329,6 +330,67 @@ describe("PlayerSettingsPanel", () => {
     expect(
       container.querySelectorAll(".settings-grid output.stat-highlight"),
     ).toHaveLength(10);
+  });
+
+  it("reflects an external equipment-skills transfer live, without touching points or clan temple", async () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "gold" },
+    });
+    fireEvent.change(
+      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
+      { target: { value: "10" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Augmenter Points Attaque" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Augmenter Temple Attaque" }),
+    );
+    // Wait for the panel's own persistence effect to land before the
+    // external transfer reads localStorage — otherwise the transfer (based
+    // on a not-yet-written snapshot) would appear to wipe these edits.
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).toContain(
+        '"striker":1',
+      ),
+    );
+    replaceEquipmentSkills({
+      striker: 12.5,
+      brave: 0,
+      scavenger: 0,
+      guardian: 0,
+      fearless: 0,
+      prosperous: 0,
+      recruiter: 0,
+      cautious: 0,
+      salvager: 0,
+      rusher: 0,
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Attaque avec équipement")).toHaveValue(
+        12.5,
+      ),
+    );
+    // The transfer only replaced equipmentSkills: the point already spent
+    // and the clan-temple contribution entered just before it are intact.
+    expect(screen.getByLabelText("Points Attaque")).toHaveValue(1);
+    expect(
+      screen.getByLabelText("Temple Attaque", { selector: "input" }),
+    ).toHaveValue(0.25);
+    // The panel keeps working normally afterwards (no feedback loop wedged
+    // it into a stale or broken state).
+    fireEvent.change(
+      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
+      { target: { value: "5" } },
+    );
+    expect(
+      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
+    ).toHaveValue(5);
   });
 
   it("starts the clan Temple contribution at 0 and adds the confirmed base to the displayed total", () => {

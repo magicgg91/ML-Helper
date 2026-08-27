@@ -295,8 +295,10 @@
   "stuff-simulator": {
     "name": "Equipment Simulator",
     "view-reference": "View full reference table",
-    "global-summary": "Summary — all families combined",
+    "global-summary": "Equipment skills summary",
     "empty-summary": "No equipment configured",
+    "transfer": "Transfer to Player Settings",
+    "transferred": "Transferred to Player Settings!",
     "empty-slot": "Empty",
     "select-slot": "Click a slot to configure it.",
     "equipment-label": "Equipment ({slot})",

@@ -301,8 +301,10 @@
   "stuff-simulator": {
     "name": "Simulateur de Stuff",
     "view-reference": "Voir le référentiel complet",
-    "global-summary": "Récapitulatif — toutes familles confondues",
+    "global-summary": "Récapitulatif des compétences d’équipement",
     "empty-summary": "Aucun équipement configuré",
+    "transfer": "Transférer vers les Paramètres du joueur",
+    "transferred": "Transféré dans les Paramètres du joueur !",
     "empty-slot": "Vide",
     "select-slot": "Clique sur un emplacement pour le configurer.",
     "equipment-label": "Équipement ({slot})",

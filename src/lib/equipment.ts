@@ -91,7 +91,7 @@ const allowlist: Record<
   speed: { "Troupes/Vitesse": ["Vitesse"] },
 };
 
-const skillKeyByLabel: Record<EquipmentSkill, SkillKey> = {
+export const skillKeyByLabel: Record<EquipmentSkill, SkillKey> = {
   Attaque: "striker",
   Charognard: "scavenger",
   Intrépide: "fearless",
