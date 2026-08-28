@@ -79,8 +79,17 @@ describe("GuidesHub", () => {
       }),
     ).toBeNull();
     expect(screen.getByText("Équipements de Combat")).toBeVisible();
-    expect(screen.getByText("Équipement d’Expédition")).toBeVisible();
+    expect(screen.getByText("Équipements d’Expédition")).toBeVisible();
     expect(screen.getByText("Level Up")).toBeVisible();
+  });
+
+  it("Bloc35 1.1: no longer shows a 'consulter le référentiel' CTA text on reference tiles", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <GuidesHub guides={[]} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByText("Consulter le référentiel")).toBeNull();
   });
 
   it("renders the guide category filter as directly clickable chips, no dropdown", () => {
@@ -274,7 +283,7 @@ describe("GuidesHub", () => {
       screen.getByRole("link", { name: /Équipements de Combat/ }),
     ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
     expect(
-      screen.getByRole("link", { name: /Équipement d’Expédition/ }),
+      screen.getByRole("link", { name: /Équipements d’Expédition/ }),
     ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
   });
 });

@@ -3,7 +3,7 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { referenceKeys } from "@/lib/reference-equipment-server";
 import {
   mergeCostRarityKeys,
-  parseExpeditionMergeCostBase,
+  parseExpeditionDismantleBase,
 } from "@/lib/reference-equipment";
 import { saveReferenceTable } from "@/services/reference-table-admin";
 
@@ -12,16 +12,16 @@ export async function PUT(request: Request) {
   if (!session) return forbiddenResponse();
   const raw = await request.json().catch(() => null);
   // The admin editor is a 1-row EditableReferenceTable, which always
-  // submits an array (e.g. [{ Commun: "700", ... }]), never the bare record.
+  // submits an array (e.g. [{ Commun: "0", ... }]), never the bare record.
   if (!Array.isArray(raw) || raw.length !== 1)
     return NextResponse.json(
-      { error: "invalid_merge_cost_base" },
+      { error: "invalid_dismantle_base" },
       { status: 400 },
     );
-  const base = parseExpeditionMergeCostBase(raw[0]);
+  const base = parseExpeditionDismantleBase(raw[0]);
   await saveReferenceTable({
-    key: referenceKeys.expeditionMergeCost,
-    target: "le coût de fusion en Terradust des Équipements d’Expédition",
+    key: referenceKeys.expeditionDismantle,
+    target: "le Terradust à la destruction des Équipements d’Expédition",
     columns: [...mergeCostRarityKeys],
     rows: [base],
     userId: session.user.id,

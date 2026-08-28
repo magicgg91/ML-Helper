@@ -133,7 +133,7 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
   // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
   // in the confirmed Combat, Expedition, Gems, Templars order.
   const toolLabels = await page.locator("td.font-medium").allTextContents();
-  const competencesLabels = ["Équipement de Combat", "Équipement d’Expédition", "Gemmes", "Templiers"];
+  const competencesLabels = ["Équipement de Combat", "Équipements d’Expédition", "Gemmes", "Templiers"];
   expect(toolLabels.filter((label) => competencesLabels.includes(label))).toEqual(
     competencesLabels,
   );
@@ -613,7 +613,7 @@ test("Reference tables filter combat and expedition equipment", async ({
     page.getByRole("link", { name: /Équipements de Combat/ }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
   await expect(
-    page.getByRole("link", { name: /Équipement d’Expédition/ }),
+    page.getByRole("link", { name: /Équipements d’Expédition/ }),
   ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
 
   await page.goto("/guides/referentiels/combat-equipment");
@@ -697,14 +697,17 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "Éditer les Équipements de Combat",
     }),
   ).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator("tbody tr")).toHaveCount(180, {
+  // Bloc 35/6.1: the page also renders the Pouciel/gem-slots-per-rarity
+  // editors below the main table, so scope to the first (main) table
+  // rather than every tbody row on the page.
+  await expect(page.locator("table").first().locator("tbody tr")).toHaveCount(180, {
     timeout: 15_000,
   });
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
   await page
-    .getByRole("row", { name: /Équipement d’Expédition/ })
+    .getByRole("row", { name: /Équipements d’Expédition/ })
     .getByRole("link", { name: "Éditer" })
     .click();
   // The page also renders the (single-row) star-increments editor above
@@ -729,16 +732,27 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.reload();
   await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
   // Same regression check for the Terradust merge-cost editor (2nd of the
-  // 3 "Enregistrer toute la table" buttons on this page: increments,
-  // merge-cost, then the 120-row reference table).
-  await page.getByLabel("Ligne 1 Commun").fill("700");
-  await page
+  // 4 "Enregistrer toute la table" instances on this page: increments,
+  // merge-cost, dismantle (Bloc 35/5.2), then the 120-row reference table).
+  // Bloc 35/5.1 renders increments as a field grid, not a <table> — so
+  // <table> elements on the page no longer line up 1:1 with these 4
+  // instances. Bloc 35/5.2's dismantle table also has a "Commun" rarity
+  // column. Scope by each instance's own .editable-reference container
+  // (present regardless of table/grid layout) instead of counting
+  // <table>/button elements, so this stays correct however either layout
+  // changes in the future.
+  const mergeCostSection = page.locator(".editable-reference").nth(1);
+  await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
+  await mergeCostSection
     .getByRole("button", { name: "Enregistrer toute la table" })
-    .nth(1)
     .click();
-  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await expect(
+    mergeCostSection.getByText("Référentiel enregistré."),
+  ).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Ligne 1 Commun")).toHaveValue("700");
+  await expect(
+    page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
+  ).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
@@ -763,7 +777,13 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .click();
   await expect(templarsGuideRowAfterReload).toContainText("Actif");
   await templarsGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
-  await expect(page).toHaveURL(/\/admin\/tools\/templars$/);
+  // Bloc 35/7.1: opened from the Guides admin row, so the URL carries
+  // ?from=guides — the editor's own "Retour" now goes back to Guides,
+  // not Tools, for this exact same shared edit point.
+  await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=guides$/);
+  await expect(
+    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+  ).toHaveAttribute("href", "/admin/guides");
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();

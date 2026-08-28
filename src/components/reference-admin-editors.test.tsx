@@ -2,12 +2,18 @@ import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   combatReferenceRows,
+  defaultCombatGemSlotsBase,
+  defaultCombatSkydustBase,
+  defaultExpeditionDismantleBase,
   defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
 import {
+  CombatGemSlotsAdmin,
   CombatReferenceAdmin,
+  CombatSkydustAdmin,
+  ExpeditionDismantleAdmin,
   ExpeditionIncrementsAdmin,
   ExpeditionMergeCostAdmin,
   ExpeditionReferenceAdmin,
@@ -43,10 +49,12 @@ describe("complete lookup table administration", () => {
       <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
     );
     expect(screen.getAllByRole("row")).toHaveLength(121);
-    expect(screen.getByLabelText("Expédition ligne 1 Valeur type (%)")).toHaveValue(
-      5.4,
-    );
-    expect(screen.getAllByRole("combobox", { name: "Rareté" })[0]).toBeVisible();
+    expect(
+      screen.getByLabelText("Expédition ligne 1 Valeur type (%)"),
+    ).toHaveValue(5.4);
+    expect(
+      screen.getAllByRole("combobox", { name: "Rareté" })[0],
+    ).toBeVisible();
     unmount();
   });
   it("edits and submits the 10 expedition star increments as one row", async () => {
@@ -56,18 +64,44 @@ describe("complete lookup table administration", () => {
     const { container } = render(
       <ExpeditionIncrementsAdmin initial={defaultExpeditionStarIncrements} />,
     );
-    expect(container.querySelectorAll("tbody tr")).toHaveLength(1);
     expect(
       container.querySelector('input[aria-label="Ligne 1 Or"]'),
     ).toHaveValue(0.3);
-    fireEvent.change(container.querySelector('input[aria-label="Ligne 1 Or"]')!, {
-      target: { value: "0.5" },
-    });
+    fireEvent.change(
+      container.querySelector('input[aria-label="Ligne 1 Or"]')!,
+      {
+        target: { value: "0.5" },
+      },
+    );
     fireEvent.click(container.querySelector("button.primary-button")!);
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(body).toHaveLength(1);
     expect(body[0].Or).toBe("0.5");
     expect(body[0].Chance).toBe(String(defaultExpeditionStarIncrements.Chance));
+  });
+
+  it("Bloc35 5.1: lays out the expedition star increments as a field grid, not a wide table", () => {
+    const { container } = render(
+      <ExpeditionIncrementsAdmin initial={defaultExpeditionStarIncrements} />,
+    );
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(0);
+    expect(
+      container.querySelectorAll(".reference-admin-grid-row"),
+    ).toHaveLength(1);
+    expect(
+      container.querySelectorAll(".reference-admin-grid-field"),
+    ).toHaveLength(10);
+  });
+
+  it("Bloc35 5.5: gives the increments and merge-cost tables a dedicated title, not a page-level sentence", () => {
+    render(
+      <ExpeditionIncrementsAdmin initial={defaultExpeditionStarIncrements} />,
+    );
+    expect(
+      screen.getByRole("heading", {
+        name: "Incréments par étoile des statistiques d’Équipements d’Expédition",
+      }),
+    ).toBeVisible();
   });
 
   it("edits and submits the 5 Terradust merge-cost constants as one row", async () => {
@@ -94,12 +128,116 @@ describe("complete lookup table administration", () => {
     );
   });
 
-  it("derives read-only skydust and gem slots from rarity", () => {
-    const { container } = render(<CombatReferenceAdmin initialRows={[...combatReferenceRows]} />);
-    const rarity = container.querySelector('select[aria-label="Ligne 1 Rareté"]')!;
-    fireEvent.change(rarity, { target: { value: "Rare" } });
-    expect(container.querySelector('input[aria-label="Ligne 1 Pouciel"]')).toHaveValue(10);
-    expect(container.querySelector('input[aria-label="Ligne 1 Gemmes"]')).toHaveValue(0);
-    expect(container.querySelector('input[aria-label="Ligne 1 Pouciel"]')).toHaveAttribute("readonly");
+  it("Bloc35 6.1: no longer shows Pouciel/Gemmes as per-row columns on the main combat table", () => {
+    render(<CombatReferenceAdmin initialRows={[...combatReferenceRows]} />);
+    expect(screen.queryByText("Pouciel")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gemmes")).not.toBeInTheDocument();
+  });
+
+  it("Bloc35 6.2: orders the combat table's columns Famille, Rareté, Nom du set, Emplacement, then skills", () => {
+    render(<CombatReferenceAdmin initialRows={[...combatReferenceRows]} />);
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((cell) => cell.textContent);
+    expect(headers.slice(0, 5)).toEqual([
+      "Famille",
+      "Rareté",
+      "Nom du set",
+      "Type d’emplacement",
+      "Nom d’emplacement",
+    ]);
+  });
+
+  it("Bloc35 6.3: narrows the Valeur 1-4 columns on the combat table", () => {
+    const { container } = render(
+      <CombatReferenceAdmin initialRows={[...combatReferenceRows]} />,
+    );
+    const valueCell = container
+      .querySelector('input[aria-label="Ligne 1 Valeur 1 (%)"]')!
+      .closest("td");
+    expect(valueCell).toHaveClass("reference-admin-narrow");
+    const setNameCell = container
+      .querySelector('input[aria-label="Ligne 1 Nom du set"]')!
+      .closest("td");
+    expect(setNameCell).not.toHaveClass("reference-admin-narrow");
+  });
+
+  it("Bloc35 5.4: orders the expedition table's columns Famille, Rareté, Nom du set, Emplacement, then stats", () => {
+    render(
+      <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
+    );
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((cell) => cell.textContent);
+    expect(headers).toEqual([
+      "Famille",
+      "Rareté",
+      "Nom du set",
+      "Emplacement",
+      "Valeur type (%)",
+      "Stat secondaire",
+      "Valeur secondaire (%)",
+    ]);
+  });
+
+  it("Bloc35 6.1: edits and submits Combat's Pouciel-per-rarity as a dedicated admin table", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatSkydustAdmin initial={defaultCombatSkydustBase} />,
+    );
+    expect(
+      container.querySelector('input[aria-label="Ligne 1 Commun"]'),
+    ).toHaveValue(3);
+    fireEvent.change(
+      container.querySelector('input[aria-label="Ligne 1 Commun"]')!,
+      { target: { value: "5" } },
+    );
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].Commun).toBe("5");
+    expect(body[0].Légendaire).toBe(
+      String(defaultCombatSkydustBase.Légendaire),
+    );
+  });
+
+  it("Bloc35 6.1: edits and submits Combat's gem-slots-per-rarity as a dedicated admin table", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatGemSlotsAdmin initial={defaultCombatGemSlotsBase} />,
+    );
+    expect(
+      container.querySelector('input[aria-label="Ligne 1 Épique"]'),
+    ).toHaveValue(1);
+    fireEvent.change(
+      container.querySelector('input[aria-label="Ligne 1 Épique"]')!,
+      { target: { value: "2" } },
+    );
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].Épique).toBe("2");
+  });
+
+  it("Bloc35 5.2: edits and submits Expedition's Terradust-on-dismantle per rarity, defaulting to 0", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <ExpeditionDismantleAdmin initial={defaultExpeditionDismantleBase} />,
+    );
+    expect(
+      container.querySelector('input[aria-label="Ligne 1 Rare"]'),
+    ).toHaveValue(0);
+    fireEvent.change(
+      container.querySelector('input[aria-label="Ligne 1 Rare"]')!,
+      { target: { value: "42" } },
+    );
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].Rare).toBe("42");
+    expect(body[0].Commun).toBe("0");
   });
 });

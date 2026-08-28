@@ -29,7 +29,9 @@ describe("RankingAdminEditor", () => {
   it("leaves an unconfirmed row's movement/league as the not-confirmed option", () => {
     render(<RankingAdminEditor initialConfig={defaultRankingConfig} />);
     expect(screen.getByLabelText("Platine ligne 1 Mouvement")).toHaveValue("");
-    expect(screen.getByLabelText("Platine ligne 1 Ligue cible")).toHaveValue("");
+    expect(screen.getByLabelText("Platine ligne 1 Ligue cible")).toHaveValue(
+      "",
+    );
   });
 
   it("saves a structured payload with typed rewards", async () => {
@@ -83,8 +85,32 @@ describe("RankingAdminEditor", () => {
         "Mouvement et ligue cible doivent être confirmés ensemble.",
       ),
     ).toHaveLength(2);
-    expect(screen.queryByText("Entre 0 et 100 requis.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Entre 0 et 100 requis."),
+    ).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("Bloc35 9.1: narrows the numeric value columns to what they actually contain", () => {
+    render(<RankingAdminEditor initialConfig={defaultRankingConfig} />);
+    expect(
+      screen.getByLabelText("Argent ligne 1 Seuil (%)").closest("td"),
+    ).toHaveClass("reference-admin-narrow");
+    expect(
+      screen.getByLabelText("Argent ligne 1 Saphirs").closest("td"),
+    ).toHaveClass("reference-admin-narrow");
+    expect(
+      screen.getByLabelText("Argent ligne 1 Speedups").closest("td"),
+    ).toHaveClass("reference-admin-narrow");
+    expect(
+      screen.getByLabelText("Argent ligne 1 Gemmes").closest("td"),
+    ).toHaveClass("reference-admin-narrow");
+    expect(
+      screen.getByLabelText("Argent ligne 1 Mouvement").closest("td"),
+    ).not.toHaveClass("reference-admin-narrow");
+    expect(
+      screen.getByLabelText("Argent ligne 1 Ligue cible").closest("td"),
+    ).not.toHaveClass("reference-admin-narrow");
   });
 
   it("rejects a fractional reward quantity", () => {

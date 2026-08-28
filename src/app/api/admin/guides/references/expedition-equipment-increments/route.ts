@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
   const increments = parseExpeditionStarIncrements(raw[0]);
   await saveReferenceTable({
     key: referenceKeys.expeditionIncrements,
-    target: "les incréments par étoile de l’Équipement d’Expédition",
+    target: "les incréments par étoile des Équipements d’Expédition",
     columns: [...expeditionStatKeys],
     rows: [increments],
     userId: session.user.id,

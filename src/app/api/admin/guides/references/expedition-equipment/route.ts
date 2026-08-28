@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
     });
     await saveReferenceTable({
       key: referenceKeys.expedition,
-      target: "le référentiel Équipement d’Expédition",
+      target: "le référentiel Équipements d’Expédition",
       columns: Object.keys(rows[0]),
       rows,
       userId: session.user.id,

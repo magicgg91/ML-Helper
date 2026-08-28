@@ -499,7 +499,6 @@
       "clan": "Clan & collective strategy"
     },
     "read-guide": "Read guide",
-    "open-reference": "Open reference table",
     "empty": "No published guide yet.",
     "no-results": "No guide matches these filters.",
     "detail": {
@@ -536,6 +535,7 @@
     "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No combat equipment matches these filters.",
     "columns": {
+      "image": "Image",
       "rarity": "Rarity",
       "set": "Set",
       "skydust": "Skydust",
@@ -551,12 +551,14 @@
     "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No expedition equipment matches these filters.",
     "columns": {
+      "image": "Image",
       "rarity": "Rarity",
       "set": "Set",
       "family": "Family",
       "slot": "Slot",
       "type-stat": "Type stat",
-      "secondary-stat": "Secondary stat"
+      "secondary-stat": "Secondary stat",
+      "dismantle-terradust": "Terradust on dismantle"
     }
   },
   "level-up": {
@@ -824,9 +826,12 @@
       "templars-detail": "20 exact editable costs",
       "page-title": "Reference table — {name}",
       "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
-      "expedition-description": "All 120 Expedition rows can be edited.",
-  "expedition-increments-description": "Per-star increments for the 10 Expedition Equipment stats, confirmed at Legendary (Or also verified at Common) and applied by default to the other 4 rarities — editable if a rarity turns out to differ.",
-  "expedition-merge-cost-description": "Terradust merge cost per rarity (Cost = K × 2^(n-1)) — 5 independent confirmed constants, not derived from a common ratio.",
+      "combat-skydust-description": "Skydust on dismantle, per rarity (shared by every set of that rarity).",
+      "combat-gem-slots-description": "Gem slots, per rarity (shared by every set of that rarity).",
+      "expedition-description": "Expedition equipment detail",
+      "expedition-increments-description": "Per-star increments for the Expedition Equipment stats",
+      "expedition-merge-cost-description": "Terradust merge cost per rarity (Cost = K × 2^(n-1))",
+      "expedition-dismantle-description": "Terradust on dismantle per rarity",
       "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",
@@ -900,7 +905,7 @@
       "formula": "Gem value = base value (per skill and per league)",
       "value": "Base value per skill and per league",
       "value-field": "{skill} · {league}",
-      "price": "Purchase price (sapphires)",
+      "price": "Gem purchase price per league (in sapphires)",
       "price-field": "{league} price"
     },
     "users": {

@@ -13,6 +13,12 @@ export type EditableColumn<Row> = {
   min?: number;
   required?: boolean;
   readOnly?: boolean;
+  // Bloc 35/5.3, 6.3, 8.1, 9.1: narrows this column's cell — for values that
+  // never exceed 100% (or another short, bounded range) and don't need the
+  // table's default input width, so those columns stop forcing a horizontal
+  // scroll. Left off (the default) for columns that can hold larger numbers
+  // (e.g. Ranking's reward quantities).
+  narrow?: boolean;
 };
 
 export type FieldErrors = Record<string, string>;
@@ -49,36 +55,97 @@ export function EditableDataTable<Row extends Record<string, string>>({
       {rows.length ? (
         <div className="ranking-table-wrap">
           <table className="ranking-table reference-admin-table">
-            <thead><tr>{columns.map((column) => <th key={column.key}>{column.label}</th>)}{onRemove && <th>{removeLabel}</th>}</tr></thead>
+            <thead>
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={
+                      column.narrow ? "reference-admin-narrow" : undefined
+                    }
+                  >
+                    {column.label}
+                  </th>
+                ))}
+                {onRemove && <th>{removeLabel}</th>}
+              </tr>
+            </thead>
             <tbody>
               {rows.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {columns.map((column) => {
-                    const label = column.inputLabel?.(rowIndex) ?? `${column.label} ${rowIndex + 1}`;
-                    const errorMessage = errors?.[errorKey(rowIndex, column.key)];
+                    const label =
+                      column.inputLabel?.(rowIndex) ??
+                      `${column.label} ${rowIndex + 1}`;
+                    const errorMessage =
+                      errors?.[errorKey(rowIndex, column.key)];
                     const shared = {
                       "aria-label": label,
                       "aria-invalid": Boolean(errorMessage),
                       value: row[column.key],
                       disabled: column.readOnly,
-                      onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-                        onChange(rows.map((item, index) => index === rowIndex ? { ...item, [column.key]: event.target.value } : item)),
+                      onChange: (
+                        event: ChangeEvent<
+                          HTMLInputElement | HTMLSelectElement
+                        >,
+                      ) =>
+                        onChange(
+                          rows.map((item, index) =>
+                            index === rowIndex
+                              ? { ...item, [column.key]: event.target.value }
+                              : item,
+                          ),
+                        ),
                     };
-                    return <td key={column.key}>{column.type === "select" ? (
-                      <select {...shared}>{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
-                    ) : (
-                      <input {...shared} type={column.type ?? "text"} min={column.min} step={column.step} readOnly={column.readOnly} />
-                    )}
-                    {errorMessage && <small className="field-error">{errorMessage}</small>}
-                    </td>;
+                    return (
+                      <td
+                        key={column.key}
+                        className={
+                          column.narrow ? "reference-admin-narrow" : undefined
+                        }
+                      >
+                        {column.type === "select" ? (
+                          <select {...shared}>
+                            {column.options?.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            {...shared}
+                            type={column.type ?? "text"}
+                            min={column.min}
+                            step={column.step}
+                            readOnly={column.readOnly}
+                          />
+                        )}
+                        {errorMessage && (
+                          <small className="field-error">{errorMessage}</small>
+                        )}
+                      </td>
+                    );
                   })}
-                  {onRemove && <td><button className="secondary-action" type="button" onClick={() => onRemove(rowIndex)}>{removeLabel}</button></td>}
+                  {onRemove && (
+                    <td>
+                      <button
+                        className="secondary-action"
+                        type="button"
+                        onClick={() => onRemove(rowIndex)}
+                      >
+                        {removeLabel}
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : <p className="admin-empty">{emptyLabel}</p>}
+      ) : (
+        <p className="admin-empty">{emptyLabel}</p>
+      )}
     </>
   );
 }
@@ -88,19 +155,38 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
   columns,
   endpoint,
   description,
+  descriptionAsTitle = false,
   saveLabel,
   serialize = (rows) => rows,
   onRowsChange,
   filters = [],
+  layout = "table",
 }: {
   initialRows: Row[];
   columns: EditableColumn<Row>[];
   endpoint: string;
   description: string;
+  // Bloc 35/5.5: a dedicated heading for tables that share a page with
+  // other editable tables (Expedition's 4), instead of a paragraph
+  // explaining what the whole page does.
+  descriptionAsTitle?: boolean;
   saveLabel?: string;
   serialize?: (rows: Row[]) => unknown;
-  onRowsChange?: (rows: Row[], index: number, field: keyof Row & string) => Row[];
-  filters?: Array<{ key: keyof Row & string; label: string; options: Array<{ value: string; label: string }> }>;
+  onRowsChange?: (
+    rows: Row[],
+    index: number,
+    field: keyof Row & string,
+  ) => Row[];
+  filters?: Array<{
+    key: keyof Row & string;
+    label: string;
+    options: Array<{ value: string; label: string }>;
+  }>;
+  // Bloc 35/5.1: "grid" wraps each column as a labelled field in a
+  // responsive CSS grid instead of a wide table row — meant for a
+  // single-row table with many columns (e.g. per-star increments), where a
+  // real table forces a horizontal scroll a field grid doesn't need.
+  layout?: "table" | "grid";
 }) {
   const t = useTranslations("admin.references");
   const [rows, setRows] = useState(initialRows);
@@ -108,7 +194,15 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [success, setSuccess] = useState(false);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
-  const visibleRows = rows.map((row, index) => ({ row, index })).filter(({ row }) => filters.every((filter) => !filterValues[filter.key] || row[filter.key] === filterValues[filter.key]));
+  const visibleRows = rows
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) =>
+      filters.every(
+        (filter) =>
+          !filterValues[filter.key] ||
+          row[filter.key] === filterValues[filter.key],
+      ),
+    );
 
   function update(index: number, field: keyof Row & string, value: string) {
     setRows((current) => {
@@ -132,12 +226,10 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
       columns.forEach((column) => {
         const value = row[column.key];
         const key = errorKey(rowIndex, column.key);
-        if (column.required && !value.trim())
-          next[key] = t("required");
+        if (column.required && !value.trim()) next[key] = t("required");
         if (column.type === "number" && (value !== "" || column.required)) {
           const parsed = Number(value);
-          if (!Number.isFinite(parsed))
-            next[key] = t("number");
+          if (!Number.isFinite(parsed)) next[key] = t("number");
           else if (column.min !== undefined && parsed < column.min)
             next[key] = t("minimum", { min: column.min });
         }
@@ -172,73 +264,140 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
     }
   }
 
+  function field(row: Row, rowIndex: number, column: EditableColumn<Row>) {
+    const key = errorKey(rowIndex, column.key);
+    const label =
+      column.inputLabel?.(rowIndex) ??
+      t("row-label", { row: rowIndex + 1, field: column.label });
+    return (
+      <>
+        {column.type === "select" ? (
+          <select
+            aria-label={label}
+            value={row[column.key]}
+            disabled={column.readOnly}
+            onChange={(event) =>
+              update(rowIndex, column.key, event.target.value)
+            }
+          >
+            {column.options?.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            aria-label={label}
+            aria-invalid={Boolean(errors[key])}
+            aria-describedby={errors[key] ? `${key}-error` : undefined}
+            className={errors[key] ? "field-invalid" : undefined}
+            type={column.type ?? "text"}
+            value={row[column.key]}
+            min={column.min}
+            step={column.step}
+            readOnly={column.readOnly}
+            onChange={(event) =>
+              update(rowIndex, column.key, event.target.value)
+            }
+          />
+        )}
+        {errors[key] && (
+          <small className="field-error" id={`${key}-error`}>
+            {errors[key]}
+          </small>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="calculator-stack editable-reference">
-      <p>{description}</p>
-      {filters.length > 0 && <div className="reference-filters">{filters.map((filter) => <label key={filter.key}>{filter.label}<select aria-label={filter.label} value={filterValues[filter.key] ?? ""} onChange={(event) => setFilterValues((current) => ({ ...current, [filter.key]: event.target.value }))}><option value="">{t("all")}</option>{filter.options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>)}</div>}
-      <div className="ranking-table-wrap">
-        <table className="ranking-table reference-admin-table">
-          <thead>
-            <tr>
+      {descriptionAsTitle ? (
+        <h2 className="editable-reference-title">{description}</h2>
+      ) : (
+        <p>{description}</p>
+      )}
+      {filters.length > 0 && (
+        <div className="reference-filters">
+          {filters.map((filter) => (
+            <label key={filter.key}>
+              {filter.label}
+              <select
+                aria-label={filter.label}
+                value={filterValues[filter.key] ?? ""}
+                onChange={(event) =>
+                  setFilterValues((current) => ({
+                    ...current,
+                    [filter.key]: event.target.value,
+                  }))
+                }
+              >
+                <option value="">{t("all")}</option>
+                {filter.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+      )}
+      {layout === "grid" ? (
+        <div className="reference-admin-grid">
+          {visibleRows.map(({ row, index: rowIndex }) => (
+            <div className="reference-admin-grid-row" key={rowIndex}>
               {columns.map((column) => (
-                <th key={column.key}>{column.label}</th>
+                <label key={column.key} className="reference-admin-grid-field">
+                  <span>{column.label}</span>
+                  {field(row, rowIndex, column)}
+                </label>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map(({ row, index: rowIndex }) => (
-              <tr key={rowIndex}>
-                {columns.map((column) => {
-                  const key = errorKey(rowIndex, column.key);
-                  const label =
-                    column.inputLabel?.(rowIndex) ??
-                    t("row-label", { row: rowIndex + 1, field: column.label });
-                  return (
-                    <td key={column.key}>
-                      {column.type === "select" ? <select
-                        aria-label={label}
-                        value={row[column.key]}
-                        disabled={column.readOnly}
-                        onChange={(event) => update(rowIndex, column.key, event.target.value)}
-                      >{column.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input
-                        aria-label={label}
-                        aria-invalid={Boolean(errors[key])}
-                        aria-describedby={
-                          errors[key] ? `${key}-error` : undefined
-                        }
-                        className={errors[key] ? "field-invalid" : undefined}
-                        type={column.type ?? "text"}
-                        value={row[column.key]}
-                        min={column.min}
-                        step={column.step}
-                        readOnly={column.readOnly}
-                        onChange={(event) =>
-                          update(rowIndex, column.key, event.target.value)
-                        }
-                      />}
-                      {errors[key] && (
-                        <small className="field-error" id={`${key}-error`}>
-                          {errors[key]}
-                        </small>
-                      )}
-                    </td>
-                  );
-                })}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="ranking-table-wrap">
+          <table className="ranking-table reference-admin-table">
+            <thead>
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={
+                      column.narrow ? "reference-admin-narrow" : undefined
+                    }
+                  >
+                    {column.label}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {visibleRows.map(({ row, index: rowIndex }) => (
+                <tr key={rowIndex}>
+                  {columns.map((column) => (
+                    <td
+                      key={column.key}
+                      className={
+                        column.narrow ? "reference-admin-narrow" : undefined
+                      }
+                    >
+                      {field(row, rowIndex, column)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <button className="primary-button" type="button" onClick={save}>
         {saveLabel ?? t("save")}
       </button>
       {status && (
-        <p
-          className={
-            success ? "form-success" : "form-status"
-          }
-          role="status"
-        >
+        <p className={success ? "form-success" : "form-status"} role="status">
           {status}
         </p>
       )}

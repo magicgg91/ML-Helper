@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { referenceKeys } from "@/lib/reference-equipment-server";
-import { derivedEquipmentValues } from "@/lib/equipment-rarity";
+import {
+  getCombatGemSlotsBase,
+  getCombatSkydustBase,
+  referenceKeys,
+} from "@/lib/reference-equipment-server";
+import type { MergeCostRarityKey } from "@/lib/reference-equipment";
 import {
   numericString,
   saveReferenceTable,
@@ -15,15 +19,23 @@ export async function PUT(request: Request) {
     const body = await request.json();
     if (!Array.isArray(body) || body.length !== 180)
       throw new Error("invalid rows");
+    // Bloc 35/6.1: Pouciel/gem-slots per rarity are now admin-editable
+    // config (no longer a hardcoded lookup) — every saved row is stamped
+    // from the current config, never from whatever the client submitted,
+    // so the main table can't drift out of sync with it.
+    const [skydustBase, gemSlotsBase] = await Promise.all([
+      getCombatSkydustBase(),
+      getCombatGemSlotsBase(),
+    ]);
     const rows = body.map((raw) => {
       if (!raw || typeof raw !== "object") throw new Error("invalid row");
       const source = raw as Record<string, unknown>;
       const rarity = stringField(source.rarity);
-      const derived = derivedEquipmentValues(rarity);
+      const rarityKey = rarity as MergeCostRarityKey;
       const row: Record<string, string> = {
         rarity,
-        skydust: String(derived.skydust),
-        gem_slots: String(derived.gemSlots),
+        skydust: String(skydustBase[rarityKey] ?? 0),
+        gem_slots: String(gemSlotsBase[rarityKey] ?? 0),
       };
       for (const field of [
         "set_name",

@@ -7,10 +7,12 @@ import {
   defaultXpTiers,
 } from "../lib/combat-calculators";
 import { defaultGemParameters } from "../lib/gem-parameters";
+import { defaultLevelUpParameters } from "../lib/level-up";
 import {
   CityParametersEditor,
   DemoAttackTroopsEditor,
   GemParametersEditor,
+  LevelUpParametersEditor,
   TemplarParametersEditor,
   XpGainRateEditor,
 } from "./named-parameters-editor";
@@ -141,5 +143,58 @@ describe("named formula parameter editors", () => {
     expect(saved.skillLeagueValue.rusher.legend).toBe(20);
     expect(saved.skillLeagueValue.rusher.bronze).toBe(2.5);
     expect(saved.gemPrice.legend).toBe(7000);
+  });
+
+  it("Bloc35 10.2/10.3: LevelUpParametersEditor uses the same EditorActionBar save banner as the other editors", async () => {
+    const request = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    render(<LevelUpParametersEditor initial={defaultLevelUpParameters} />);
+    expect(screen.getByRole("link", { name: /Retour/ })).toHaveClass(
+      "editor-back-action",
+    );
+    const saveButton = screen.getByRole("button", {
+      name: "Enregistrer les paramètres",
+    });
+    expect(saveButton).toHaveClass("editor-action-primary");
+    fireEvent.click(saveButton);
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    expect(request).toHaveBeenCalledWith(
+      "/api/admin/guides/references/level-up",
+      expect.objectContaining({ method: "PUT" }),
+    );
+    expect(await screen.findByText("Paramètres enregistrés.")).toBeVisible();
+  });
+
+  it("Bloc35 8.1: narrows the per-skill/per-league value columns (never exceed 100%)", () => {
+    render(<GemParametersEditor initial={defaultGemParameters} />);
+    const valueCell = screen
+      .getByRole("spinbutton", { name: "Vitesse · Légende" })
+      .closest("td");
+    expect(valueCell).toHaveClass("reference-admin-narrow");
+    const priceCell = screen
+      .getByRole("spinbutton", { name: "Prix Légende" })
+      .closest("td");
+    expect(priceCell).not.toHaveClass("reference-admin-narrow");
+  });
+
+  it("Bloc35 8.2/8.3: shows the purchase-price fields as a real table with plain league-name headers", () => {
+    render(<GemParametersEditor initial={defaultGemParameters} />);
+    const priceInput = screen.getByRole("spinbutton", {
+      name: "Prix Légende",
+    });
+    const priceTable = priceInput.closest("table")!;
+    expect(priceTable).not.toBeNull();
+    const headers = Array.from(priceTable.querySelectorAll("th")).map(
+      (th) => th.textContent,
+    );
+    expect(headers).toEqual(["Argent", "Or", "Platine", "Diamant", "Légende"]);
+  });
+
+  it("Bloc35 8.4: renames the purchase-price table's title", () => {
+    render(<GemParametersEditor initial={defaultGemParameters} />);
+    expect(
+      screen.getByText("Prix d’achat des gemmes par ligue (en saphirs)"),
+    ).toBeVisible();
   });
 });

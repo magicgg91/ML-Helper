@@ -44,29 +44,6 @@ function useToolSave(endpoint: string, payload: unknown) {
   return { status, save };
 }
 
-function SaveButton({
-  endpoint,
-  payload,
-}: {
-  endpoint: string;
-  payload: unknown;
-}) {
-  const t = useTranslations("admin.parameters");
-  const { status, save } = useToolSave(endpoint, payload);
-  return (
-    <>
-      <button className="primary-button" type="button" onClick={save}>
-        {t("save")}
-      </button>
-      {status && (
-        <p role="status" className="form-status">
-          {status}
-        </p>
-      )}
-    </>
-  );
-}
-
 function NumericField({
   label,
   value,
@@ -239,6 +216,10 @@ export function LevelUpParametersEditor({
   const t = useTranslations("admin.parameters"),
     leagues = useTranslations("game.leagues");
   const [value, setValue] = useState(initial);
+  const { status, save } = useToolSave(
+    "/api/admin/guides/references/level-up",
+    value,
+  );
   const updateTroops = (
     league: (typeof confirmedLevelUpLeagues)[number],
     field: "coefficient" | "ratio",
@@ -253,6 +234,15 @@ export function LevelUpParametersEditor({
     }));
   return (
     <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/guides" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={save}
+        >
+          {t("save")}
+        </button>
+      </EditorActionBar>
       <section className="admin-panel">
         <div className="calculator-fields">
           <NumericField
@@ -333,10 +323,6 @@ export function LevelUpParametersEditor({
           {leagues("silver")} — {t("unconfirmed")}
         </p>
       </section>
-      <SaveButton
-        endpoint="/api/admin/guides/references/level-up"
-        payload={value}
-      />
     </div>
   );
 }
@@ -536,7 +522,9 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
               <tr>
                 <th></th>
                 {leagues.map((league) => (
-                  <th key={league}>{game(`leagues.${league}`)}</th>
+                  <th key={league} className="reference-admin-narrow">
+                    {game(`leagues.${league}`)}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -545,7 +533,7 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
                 <tr key={skill}>
                   <td>{game(`skills.${skill}`)}</td>
                   {leagues.map((league) => (
-                    <td key={league}>
+                    <td key={league} className="reference-admin-narrow">
                       <input
                         aria-label={t("value-field", {
                           skill: game(`skills.${skill}`),
@@ -556,11 +544,7 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
                         step="0.5"
                         value={value.skillLeagueValue[skill][league]}
                         onChange={(event) =>
-                          updateValue(
-                            skill,
-                            league,
-                            Number(event.target.value),
-                          )
+                          updateValue(skill, league, Number(event.target.value))
                         }
                         onFocus={selectOnFocus}
                       />
@@ -574,16 +558,37 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
       </section>
       <section className="admin-panel">
         <h2>{t("price")}</h2>
-        <div className="calculator-fields">
-          {gemLeagues.map((league) => (
-            <NumericField
-              key={league}
-              label={t("price-field", { league: game(`leagues.${league}`) })}
-              value={value.gemPrice[league]}
-              step={100}
-              onChange={(next) => updatePrice(league, next)}
-            />
-          ))}
+        <div className="table-scroll">
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                {gemLeagues.map((league) => (
+                  <th key={league}>{game(`leagues.${league}`)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {gemLeagues.map((league) => (
+                  <td key={league}>
+                    <input
+                      aria-label={t("price-field", {
+                        league: game(`leagues.${league}`),
+                      })}
+                      type="number"
+                      min="0"
+                      step="100"
+                      value={value.gemPrice[league]}
+                      onChange={(event) =>
+                        updatePrice(league, Number(event.target.value))
+                      }
+                      onFocus={selectOnFocus}
+                    />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

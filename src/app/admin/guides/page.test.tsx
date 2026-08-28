@@ -73,7 +73,7 @@ describe("GuidesAdminPage", () => {
       slug: "templiers",
       active: true,
       type: "reference",
-      editHref: "/admin/tools/templars",
+      editHref: "/admin/tools/templars?from=guides",
     });
     // No more special-casing: Templiers is toggled the same generic way
     // as combat-equipment/expedition-equipment/level-up now — no

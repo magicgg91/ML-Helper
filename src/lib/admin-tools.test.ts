@@ -20,7 +20,13 @@ describe("admin tool editor routing", () => {
     expect(adminToolEditHref("gems")).toBe("/admin/tools/gems");
   });
   it("points Templiers' reference to the same shared formula editor as the Templars tool (Bloc 33/G)", () => {
-    expect(adminToolEditHref("templiers")).toBe("/admin/tools/templars");
+    expect(adminToolEditHref("templiers")).toBe(
+      "/admin/tools/templars?from=guides",
+    );
+  });
+  it("Bloc35 7.1: carries provenance so the editor knows which table it was opened from", () => {
+    expect(adminToolEditHref("templars")).not.toContain("from=guides");
+    expect(adminToolEditHref("templiers")).toContain("from=guides");
   });
   it("has no edit destination for a tool with no named numeric parameters", () => {
     for (const slug of ["stuff-simulator", "city-rewards"])
