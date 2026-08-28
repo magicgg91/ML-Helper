@@ -33,6 +33,52 @@ describe("Bloc35 10.1: .primary-button has a real, visible base style", () => {
   });
 });
 
+describe("Bloc37/A: numeric % columns are sized to their content, not the wide default", () => {
+  it("narrows .reference-admin-narrow to a 2-4 character width, tighter than the Bloc 35 pass", () => {
+    const rule = css.match(
+      /\.reference-admin-narrow input,\s*\n\.reference-admin-narrow select\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 3\.25rem;/);
+  });
+});
+
+describe("Bloc37/F: the Gems admin value grid is sized independently, ~50% bigger", () => {
+  it("gives .gems-admin-narrow its own width, decoupled from .reference-admin-narrow", () => {
+    const rule = css.match(
+      /\.gems-admin-narrow input,\s*\n\.gems-admin-narrow select\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 6\.75rem;/);
+  });
+});
+
+describe("Bloc37/B, D: the admin filter row sizes selects to their content", () => {
+  it("does not stretch .reference-admin-filters selects to fill the row (no width: 100%)", () => {
+    const rule = css.match(
+      /\.reference-admin-filters select\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: auto;/);
+    expect(rule).toMatch(/max-width:/);
+  });
+
+  it("keeps the public reference-filters row's own 3-column layout (family/rarity/star) unaffected", () => {
+    const rule = css.match(/^\.reference-filters\s*{([\s\S]*?)\n}/m)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: 1fr 1fr 20%;/);
+  });
+});
+
+describe("Bloc37/C: the increments field grid lays out exactly 2 rows, no overlap", () => {
+  it("uses a fixed 5-column grid for the 10 increment fields, not auto-fill", () => {
+    const rule = css.match(/\.reference-admin-grid-row\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/repeat\(5,/);
+    expect(rule).not.toMatch(/auto-fill/);
+  });
+});
+
 describe("Bloc35 10.4: admin select/numeric-value fields are horizontally centered", () => {
   it("centers every <select> and numeric <input> under .admin-main", () => {
     const rule = css.match(

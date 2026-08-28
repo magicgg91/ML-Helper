@@ -1703,6 +1703,31 @@ body > main h1 {
 .reference-admin-table {
   min-width: max-content;
 }
+/* Bloc 37/B, D: the admin editors' own filter row — decoupled from
+   .reference-filters (the public page's family/rarity/star-level row,
+   sized to a completely different layout) so its selects size to their
+   content instead of stretching to fill a wide grid column. */
+.reference-admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.reference-admin-filters label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.reference-admin-filters select {
+  width: auto;
+  max-width: 14rem;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
 /* Bloc 35/5.5: dedicated per-table title on pages that stack several
    editable tables (Expedition), instead of one page-level description. */
 .editable-reference-title {
@@ -1728,11 +1753,19 @@ main.admin-main input[type="number"] {
 }
 /* Bloc 35/5.1: field-grid alternative to the wide table, for a single-row
    table with many columns (per-star increments) — wraps instead of
-   scrolling horizontally. */
+   scrolling horizontally.
+   Bloc 37/C: `auto-fill` computed a column count that made fields overlap —
+   replaced with a fixed 5-column grid, which lays the 10 increment fields
+   out as exactly 2 rows, deterministically, at any container width. */
 .reference-admin-grid-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
+}
+@media (max-width: 700px) {
+  .reference-admin-grid-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .reference-admin-grid-field {
   display: grid;
@@ -1746,11 +1779,22 @@ main.admin-main input[type="number"] {
 }
 /* Bloc 35/5.3, 6.3, 8.1, 9.1: narrow columns whose values never exceed 100%
    (or another short, bounded range) — the wide default min-width above is
-   what forces those tables into horizontal scroll unnecessarily. */
+   what forces those tables into horizontal scroll unnecessarily.
+   Bloc 37/A: still too wide after the first pass — sized down to what a
+   2-4 character percentage actually needs. */
 .reference-admin-narrow input,
 .reference-admin-narrow select {
   min-width: 0;
-  width: 4.5rem;
+  width: 3.25rem;
+}
+/* Bloc 37/F: Gems' skill×league value grid is its own case, decoupled from
+   .reference-admin-narrow above — its cells shrank too far once the
+   horizontal scroll was fixed (Bloc 35/8.1), so they're sized up ~50%
+   from that original 4.5rem instead of following A's further reduction. */
+.gems-admin-narrow input,
+.gems-admin-narrow select {
+  min-width: 0;
+  width: 6.75rem;
 }
 /* Bloc 35/10.1, 10.3: .primary-button had no base style at all — relying on
    unstyled browser defaults — so it was invisible on every screen using it
