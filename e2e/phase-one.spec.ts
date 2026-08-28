@@ -725,37 +725,22 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByLabel("Expédition ligne 1 Nom du set"),
   ).not.toHaveValue("");
-  // Regression check: saving the star-increments editor above this table
-  // must actually persist the edit, not silently keep the defaults.
+  // Regression check: Bloc 37/E replaced this page's per-table save
+  // buttons with a single top action bar that saves every table (star
+  // increments, merge-cost, dismantle, main reference) in one click — edit
+  // two of them and confirm one save persists both, not just the last one
+  // touched.
   await page.getByLabel("Ligne 1 Or").fill("0.5");
-  await page
-    .getByRole("button", { name: "Enregistrer toute la table" })
-    .first()
-    .click();
-  // Wait for the async save to actually complete before reloading, or the
-  // reload can race ahead of the PUT request and read back stale defaults.
-  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
-  await page.reload();
-  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
-  // Same regression check for the Terradust merge-cost editor (2nd of the
-  // 4 "Enregistrer toute la table" instances on this page: increments,
-  // merge-cost, dismantle (Bloc 35/5.2), then the 120-row reference table).
-  // Bloc 35/5.1 renders increments as a field grid, not a <table> — so
-  // <table> elements on the page no longer line up 1:1 with these 4
-  // instances. Bloc 35/5.2's dismantle table also has a "Commun" rarity
-  // column. Scope by each instance's own .editable-reference container
-  // (present regardless of table/grid layout) instead of counting
-  // <table>/button elements, so this stays correct however either layout
-  // changes in the future.
   const mergeCostSection = page.locator(".editable-reference").nth(1);
   await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
-  await mergeCostSection
-    .getByRole("button", { name: "Enregistrer toute la table" })
+  await page
+    .getByRole("button", { name: "Enregistrer toute la page" })
     .click();
-  await expect(
-    mergeCostSection.getByText("Référentiel enregistré."),
-  ).toBeVisible();
+  // Wait for the async save to actually complete before reloading, or the
+  // reload can race ahead of the PUT requests and read back stale defaults.
+  await expect(page.getByText("Référentiel enregistré.")).toBeVisible();
   await page.reload();
+  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
   await expect(
     page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
   ).toHaveValue("700");
