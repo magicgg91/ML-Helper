@@ -22,9 +22,16 @@ import {
 import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
 import {
   combatValueAtStar,
+  defaultCombatGemSlotsBase,
+  defaultCombatSkydustBase,
+  defaultExpeditionDismantleBase,
   defaultExpeditionStarIncrements,
   expeditionValueAtStar,
+  mergeCostRarityKeys,
+  type CombatGemSlotsBase,
   type CombatReferenceRow,
+  type CombatSkydustBase,
+  type ExpeditionDismantleBase,
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
@@ -35,6 +42,46 @@ function formatPercent(value: number | null, locale: string) {
   return value === null
     ? "—"
     : `${value.toLocaleString(locale, { maximumFractionDigits: 2 })}%`;
+}
+
+// Bloc 35/2.2: the destruction-currency value is constant per rarity, so a
+// 5-column rarity-indexed table replaces what used to be a redundant column
+// on every row of the main table — one row of values, rarity as columns,
+// same layout as the admin config table it's sourced from.
+function RarityValueTable({
+  title,
+  rarityColumnLabel,
+  base,
+  rarityLabel,
+}: {
+  title: string;
+  rarityColumnLabel: string;
+  base: Record<string, number>;
+  rarityLabel: (value: string) => string;
+}) {
+  return (
+    <section className="calculator-card ranking-table-wrap reference-rarity-table">
+      <h2>{title}</h2>
+      <table className="ranking-table">
+        <thead>
+          <tr>
+            <th>{rarityColumnLabel}</th>
+            {mergeCostRarityKeys.map((key) => (
+              <th key={key}>{rarityLabel(key)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">{title}</th>
+            {mergeCostRarityKeys.map((key) => (
+              <td key={key}>{base[key]}</td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  );
 }
 
 function Filters({
@@ -48,6 +95,7 @@ function Filters({
   star,
   setStar,
   familyLabel,
+  wideFamilyColumn = false,
 }: {
   families: readonly string[];
   family: string;
@@ -59,11 +107,23 @@ function Filters({
   star: number;
   setStar: (value: number) => void;
   familyLabel: (value: string) => string;
+  // Bloc 35/4.1: Expedition's family labels ("Équipement", "Consommables", …)
+  // run wider than Combat's, so its filter row needs a bit more of the grid
+  // — taken from the rarity column, which has room to spare — to stay on
+  // one line instead of falling back to horizontal scroll.
+  wideFamilyColumn?: boolean;
 }) {
   const t = useTranslations("references");
   const game = useTranslations("game");
   return (
-    <div className="reference-filters" aria-label={t("filters.label")}>
+    <div
+      className={
+        wideFamilyColumn
+          ? "reference-filters reference-filters-wide-family"
+          : "reference-filters"
+      }
+      aria-label={t("filters.label")}
+    >
       <div>
         <span className="filter-label">{t("filters.family")}</span>
         <div className="family-buttons">
@@ -74,7 +134,11 @@ function Filters({
                 type="button"
                 aria-pressed={family === item}
                 key={item}
-                style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+                style={
+                  color
+                    ? ({ "--pill-color": color } as CSSProperties)
+                    : undefined
+                }
                 onClick={() => setFamily(item)}
               >
                 {familyLabel(item)}
@@ -93,7 +157,11 @@ function Filters({
                 type="button"
                 aria-pressed={rarities.has(item)}
                 key={item}
-                style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+                style={
+                  color
+                    ? ({ "--pill-color": color } as CSSProperties)
+                    : undefined
+                }
                 onClick={() => toggleRarity(item)}
               >
                 {game(
@@ -156,8 +224,12 @@ function useFilters(families: readonly string[]) {
 
 export function CombatReferenceTable({
   rows,
+  skydustBase = defaultCombatSkydustBase,
+  gemSlotsBase = defaultCombatGemSlotsBase,
 }: {
   rows: readonly CombatReferenceRow[];
+  skydustBase?: CombatSkydustBase;
+  gemSlotsBase?: CombatGemSlotsBase;
 }) {
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
@@ -176,7 +248,7 @@ export function CombatReferenceTable({
     value ? game(`weapon-types.${combatSlotNameTranslationKeys[value]}`) : "";
   const skillLabel = (value: string) =>
     game(`skills.${equipmentSkillTranslationKeys[value as EquipmentSkill]}`);
-  const filters = useFilters(["Or", "Troupes/Vitesse", "Défense", "Attaque"]);
+  const filters = useFilters(["Attaque", "Défense", "Or", "Troupes/Vitesse"]);
   const filtered = useMemo(
     () =>
       rows.filter(
@@ -196,7 +268,7 @@ export function CombatReferenceTable({
     <div className="calculator-stack">
       <section className="calculator-card">
         <Filters
-          families={["Or", "Troupes/Vitesse", "Défense", "Attaque"]}
+          families={["Attaque", "Défense", "Or", "Troupes/Vitesse"]}
           familyLabel={familyLabel}
           {...filters}
         />
@@ -210,10 +282,9 @@ export function CombatReferenceTable({
           <table className="ranking-table reference-table">
             <thead>
               <tr>
+                <th>{t("columns.image")}</th>
                 <th>{t("columns.rarity")}</th>
                 <th>{t("columns.set")}</th>
-                <th>{t("columns.skydust")}</th>
-                <th>{t("columns.gems")}</th>
                 <th>{t("columns.slot")}</th>
                 {[1, 2, 3, 4].map((i) => (
                   <th key={i}>{t("columns.skill", { number: i })}</th>
@@ -236,14 +307,14 @@ export function CombatReferenceTable({
                       className="reference-equipment-image"
                       fallback={null}
                     />
+                  </td>
+                  <td>
                     <RarityBadge
                       rarity={row.rarity}
                       label={rarityLabel(row.rarity)}
                     />
                   </td>
                   <td>{row.set_name}</td>
-                  <td>{row.skydust}</td>
-                  <td>{row.gem_slots}</td>
                   <td>
                     {slotLabel(row.slot_type)}
                     {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
@@ -278,6 +349,18 @@ export function CombatReferenceTable({
           </table>
         </section>
       ) : null}
+      <RarityValueTable
+        title={t("columns.skydust")}
+        rarityColumnLabel={t("columns.rarity")}
+        base={skydustBase}
+        rarityLabel={rarityLabel}
+      />
+      <RarityValueTable
+        title={t("columns.gems")}
+        rarityColumnLabel={t("columns.rarity")}
+        base={gemSlotsBase}
+        rarityLabel={rarityLabel}
+      />
     </div>
   );
 }
@@ -285,9 +368,11 @@ export function CombatReferenceTable({
 export function ExpeditionReferenceTable({
   rows,
   increments = defaultExpeditionStarIncrements,
+  dismantleBase = defaultExpeditionDismantleBase,
 }: {
   rows: readonly ExpeditionReferenceRow[];
   increments?: ExpeditionStarIncrements;
+  dismantleBase?: ExpeditionDismantleBase;
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
@@ -322,7 +407,12 @@ export function ExpeditionReferenceTable({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <Filters families={families} familyLabel={familyLabel} {...filters} />
+        <Filters
+          families={families}
+          familyLabel={familyLabel}
+          wideFamilyColumn
+          {...filters}
+        />
       </section>
       <p className="reference-count">
         {t("row-count", { count: filtered.length, star: filters.star })}
@@ -333,6 +423,7 @@ export function ExpeditionReferenceTable({
           <table className="ranking-table reference-table">
             <thead>
               <tr>
+                <th>{t("columns.image")}</th>
                 <th>{t("columns.rarity")}</th>
                 <th>{t("columns.set")}</th>
                 <th>{t("columns.family")}</th>
@@ -368,7 +459,7 @@ export function ExpeditionReferenceTable({
                     </strong>
                     {result.value !== null && !result.confirmed ? (
                       <small className="unconfirmed">
-                      {t("unconfirmed-label")}
+                        {t("unconfirmed-label")}
                       </small>
                     ) : null}
                   </>
@@ -388,6 +479,8 @@ export function ExpeditionReferenceTable({
                         className="reference-equipment-image"
                         fallback={null}
                       />
+                    </td>
+                    <td>
                       <RarityBadge
                         rarity={row.rarity}
                         label={rarityLabel(row.rarity)}
@@ -417,6 +510,12 @@ export function ExpeditionReferenceTable({
           </table>
         </section>
       ) : null}
+      <RarityValueTable
+        title={t("columns.dismantle-terradust")}
+        rarityColumnLabel={t("columns.rarity")}
+        base={dismantleBase}
+        rarityLabel={rarityLabel}
+      />
     </div>
   );
 }

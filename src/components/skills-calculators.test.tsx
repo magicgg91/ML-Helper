@@ -36,31 +36,46 @@ describe("SkillsCalculators", () => {
 
   it("labels the tabs plainly (Bloc 31/A) in the Combat, Expedition, Gems, Templars order (Bloc 31/C), with no Comparator (Bloc 31/B)", () => {
     renderWithIntl(
-      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
     );
-    expect(
-      screen.getAllByRole("tab").map((tab) => tab.textContent),
-    ).toEqual(["Équipement de Combat", "Équipement d’Expédition", "Gemmes", "Templiers"]);
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Équipement de Combat",
+      "Équipements d’Expédition",
+      "Gemmes",
+      "Templiers",
+    ]);
     expect(
       screen.queryByRole("tab", { name: /Comparateur/ }),
     ).not.toBeInTheDocument();
     cleanup();
 
     renderWithIntl(
-      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
       "en",
       enMessages,
     );
-    expect(
-      screen.getAllByRole("tab").map((tab) => tab.textContent),
-    ).toEqual(["Combat Equipment", "Expedition Equipment", "Gems", "Templars"]);
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Combat Equipment",
+      "Expedition Equipment",
+      "Gems",
+      "Templars",
+    ]);
     expect(
       screen.queryByRole("tab", { name: /Comparator/ }),
     ).not.toBeInTheDocument();
   });
   it("colors the Gems family buttons to match the equivalent Combat equipment/skill colors (Bloc 31/H)", () => {
     renderWithIntl(
-      <SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />,
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     const attack = screen.getByRole("button", { name: "Attaque" });
@@ -69,7 +84,12 @@ describe("SkillsCalculators", () => {
     expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
   });
   it("caps mixed optimization rows at the available socket count", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     expect(screen.getByRole("combobox", { name: "Ligue ligne 1" })).toHaveValue(
       "",
@@ -89,7 +109,12 @@ describe("SkillsCalculators", () => {
     ).toHaveValue(2);
   });
   it("shows the budget distribution as the primary result", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
     const league = screen.getByRole("combobox", { name: "Ligue" });
@@ -113,12 +138,16 @@ describe("SkillsCalculators", () => {
     expect(obtainedStat).toHaveClass("value", "emerald");
   });
   it("applies one shared level range to all five Templar skills at once", () => {
-    renderWithIntl(<SkillsCalculators combatRows={combatRows} expeditionRows={expeditionRows} />);
-    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
-    fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Niveau cible" }),
-      { target: { value: "3" } },
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
     );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Niveau cible" }), {
+      target: { value: "3" },
+    });
     expect(screen.getByTestId("templar-cost")).toHaveTextContent("599 Pouciel");
     const rows = screen.getAllByRole("row").slice(1);
     expect(rows).toHaveLength(5);
@@ -144,10 +173,9 @@ describe("SkillsCalculators", () => {
       />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
-    fireEvent.change(
-      screen.getByRole("spinbutton", { name: "Niveau cible" }),
-      { target: { value: "3" } },
-    );
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Niveau cible" }), {
+      target: { value: "3" },
+    });
     expect(screen.getByTestId("templar-cost")).toHaveTextContent(
       "3.99k Pouciel",
     );
