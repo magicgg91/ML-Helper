@@ -519,8 +519,7 @@
       "family": "Family",
       "rarity": "Rarity",
       "slot": "Slot",
-      "skill": "Skill",
-      "dimmed-hint": "doesn't match the active filters"
+      "skill": "Skill"
     },
     "catalog": {
       "combat": "Combat",

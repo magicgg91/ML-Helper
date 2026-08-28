@@ -92,21 +92,25 @@ function RarityValueTable({
   );
 }
 
-// Bloc 39: family/rarity still filter, but as a navigation aid over the
-// full tile grid rather than a hide-filter — every set stays on screen, a
-// non-matching one is just dimmed (see matchesFilters below). The star-level
-// filter is gone entirely: tiles only ever show the base 1★ value.
+// Bloc 40/D-E-F: reverses Bloc 39's dim-not-hide design — family and rarity
+// both start with everything selected (so every tile shows at load, in its
+// normal rarity color, no dim/highlight), both are cumulative multi-select
+// (toggling one family or rarity on/off doesn't affect the others), and
+// deselecting one now actually removes the matching tiles from the grid
+// instead of just dimming them (see the filter in CombatReferenceTable/
+// ExpeditionReferenceTable below). The star-level filter is still gone
+// entirely: tiles only ever show the base 1★ value.
 function Filters({
   families,
-  family,
-  setFamily,
+  selectedFamilies,
+  toggleFamily,
   rarities,
   toggleRarity,
   familyLabel,
 }: {
   families: readonly string[];
-  family: string;
-  setFamily: (value: string) => void;
+  selectedFamilies: Set<string>;
+  toggleFamily: (value: string) => void;
   rarities: Set<string>;
   toggleRarity: (value: string) => void;
   familyLabel: (value: string) => string;
@@ -123,14 +127,14 @@ function Filters({
             return (
               <button
                 type="button"
-                aria-pressed={family === item}
+                aria-pressed={selectedFamilies.has(item)}
                 key={item}
                 style={
                   color
                     ? ({ "--pill-color": color } as CSSProperties)
                     : undefined
                 }
-                onClick={() => setFamily(item)}
+                onClick={() => toggleFamily(item)}
               >
                 {familyLabel(item)}
               </button>
@@ -167,19 +171,24 @@ function Filters({
   );
 }
 
-function useFilters(families: readonly string[]) {
-  const [family, setFamily] = useState(families[0]);
-  const [rarities, setRarities] = useState(() => new Set<string>(rarityOrder));
-  const toggleRarity = (value: string) =>
-    setRarities((current) => {
+function useToggleSet(initial: readonly string[]) {
+  const [values, setValues] = useState(() => new Set(initial));
+  const toggle = (value: string) =>
+    setValues((current) => {
       const next = new Set(current);
       if (next.has(value)) next.delete(value);
       else next.add(value);
       return next;
     });
+  return [values, toggle] as const;
+}
+
+function useFilters(families: readonly string[]) {
+  const [selectedFamilies, toggleFamily] = useToggleSet(families);
+  const [rarities, toggleRarity] = useToggleSet(rarityOrder);
   return {
-    family,
-    setFamily,
+    selectedFamilies,
+    toggleFamily,
     rarities,
     toggleRarity,
   };
@@ -187,9 +196,11 @@ function useFilters(families: readonly string[]) {
 
 function matchesFilters(
   set: { family: string; rarity: string },
-  filters: { family: string; rarities: Set<string> },
+  filters: { selectedFamilies: Set<string>; rarities: Set<string> },
 ) {
-  return set.family === filters.family && filters.rarities.has(set.rarity);
+  return (
+    filters.selectedFamilies.has(set.family) && filters.rarities.has(set.rarity)
+  );
 }
 
 // Bloc 39: one tile block per equipment set, tiles in the same slot order
@@ -340,7 +351,6 @@ export function CombatReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
-  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(
@@ -362,56 +372,47 @@ export function CombatReferenceTable({
     () => groupBySet(rows, (row) => row.slot_type, equipmentSlotLayout),
     [rows],
   );
+  const filteredSets = useMemo(
+    () => sets.filter((set) => matchesFilters(set, filters)),
+    [sets, filters],
+  );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
-      {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
-      {sets.length ? (
+      {!filteredSets.length ? (
+        <p className="empty-state">{t("empty")}</p>
+      ) : null}
+      {filteredSets.length ? (
         <div className="reference-tile-blocks">
-          {sets.map((set) => {
-            const matches = matchesFilters(set, filters);
-            return (
-              <section
-                className={
-                  matches
-                    ? "reference-tile-block"
-                    : "reference-tile-block reference-tile-block-dim"
-                }
-                key={`${set.rarity}-${set.family}-${set.set_name}`}
-                data-family={set.family}
-                data-rarity={set.rarity}
-              >
-                <h3 className="reference-tile-block-title">
-                  {set.set_name}
-                  {matches ? null : (
-                    <span className="sr-only">
-                      {" "}
-                      — {referencesT("filters.dimmed-hint")}
-                    </span>
-                  )}
-                </h3>
-                <div className="reference-tile-grid">
-                  {set.rows.map((row) => (
-                    <CombatTile
-                      key={row.slot_type}
-                      row={row}
-                      rarityLabel={rarityLabel}
-                      familyLabel={familyLabel}
-                      slotLabel={slotLabel}
-                      slotNameLabel={slotNameLabel}
-                      skillLabel={skillLabel}
-                      familyColor={filterButtonColor(row.family)}
-                      gemSlotsBase={gemSlotsBase}
-                      locale={locale}
-                      t={t}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+          {filteredSets.map((set) => (
+            <section
+              className="reference-tile-block"
+              key={`${set.rarity}-${set.family}-${set.set_name}`}
+              data-family={set.family}
+              data-rarity={set.rarity}
+            >
+              <h3 className="reference-tile-block-title">{set.set_name}</h3>
+              <div className="reference-tile-grid">
+                {set.rows.map((row) => (
+                  <CombatTile
+                    key={row.slot_type}
+                    row={row}
+                    rarityLabel={rarityLabel}
+                    familyLabel={familyLabel}
+                    slotLabel={slotLabel}
+                    slotNameLabel={slotNameLabel}
+                    skillLabel={skillLabel}
+                    familyColor={filterButtonColor(row.family)}
+                    gemSlotsBase={gemSlotsBase}
+                    locale={locale}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       ) : null}
       <RarityValueTable
@@ -535,7 +536,6 @@ export function ExpeditionReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
-  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(`families.${expeditionFamilyTranslationKeys[value]}`);
@@ -553,55 +553,46 @@ export function ExpeditionReferenceTable({
     () => groupBySet(rows, (row) => row.slot, expeditionSlotLayout),
     [rows],
   );
+  const filteredSets = useMemo(
+    () => sets.filter((set) => matchesFilters(set, filters)),
+    [sets, filters],
+  );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
         <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
-      {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
-      {sets.length ? (
+      {!filteredSets.length ? (
+        <p className="empty-state">{t("empty")}</p>
+      ) : null}
+      {filteredSets.length ? (
         <div className="reference-tile-blocks">
-          {sets.map((set) => {
-            const matches = matchesFilters(set, filters);
-            return (
-              <section
-                className={
-                  matches
-                    ? "reference-tile-block"
-                    : "reference-tile-block reference-tile-block-dim"
-                }
-                key={`${set.rarity}-${set.family}-${set.set_name}`}
-                data-family={set.family}
-                data-rarity={set.rarity}
-              >
-                <h3 className="reference-tile-block-title">
-                  {set.set_name}
-                  {matches ? null : (
-                    <span className="sr-only">
-                      {" "}
-                      — {referencesT("filters.dimmed-hint")}
-                    </span>
-                  )}
-                </h3>
-                <div className="reference-tile-grid">
-                  {set.rows.map((row) => (
-                    <ExpeditionTile
-                      key={row.slot}
-                      row={row}
-                      rarityLabel={rarityLabel}
-                      slotLabel={slotLabel}
-                      familyLabel={familyLabel}
-                      statLabel={statLabel}
-                      familyColor={filterButtonColor(row.family)}
-                      increments={increments}
-                      locale={locale}
-                      t={t}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+          {filteredSets.map((set) => (
+            <section
+              className="reference-tile-block"
+              key={`${set.rarity}-${set.family}-${set.set_name}`}
+              data-family={set.family}
+              data-rarity={set.rarity}
+            >
+              <h3 className="reference-tile-block-title">{set.set_name}</h3>
+              <div className="reference-tile-grid">
+                {set.rows.map((row) => (
+                  <ExpeditionTile
+                    key={row.slot}
+                    row={row}
+                    rarityLabel={rarityLabel}
+                    slotLabel={slotLabel}
+                    familyLabel={familyLabel}
+                    statLabel={statLabel}
+                    familyColor={filterButtonColor(row.family)}
+                    increments={increments}
+                    locale={locale}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       ) : null}
       <RarityValueTable

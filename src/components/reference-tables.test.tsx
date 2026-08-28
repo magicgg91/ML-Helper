@@ -181,19 +181,77 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     );
   });
 
-  it("Codex review (PR #61): dimmed (filtered-out) blocks carry a screen-reader-only hint, matching ones don't", () => {
+  it("Bloc40/D: every tile is visible by default, none highlighted or dimmed", () => {
     renderTables();
-    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
-    const dimmedTitle = combatBlock("Spirit Fyra").querySelector("h3")!;
-    expect(dimmedTitle.querySelector(".sr-only")).toHaveTextContent(
-      "ne correspond pas aux filtres actifs",
-    );
-    const defenseBlock = Array.from(
+    const blocks = document.querySelectorAll(".reference-tile-block");
+    expect(blocks.length).toBe(20); // all 20 combat sets
+    for (const block of blocks) {
+      expect(block.className).not.toMatch(/dim|highlight/);
+    }
+  });
+
+  it("Bloc40/E: family and rarity filters both start with every option selected", () => {
+    renderTables();
+    for (const family of ["Attaque", "Défense", "Or", "Troupes/Vitesse"]) {
+      expect(
+        screen.getByRole("button", { name: family }),
+      ).toHaveAttribute("aria-pressed", "true");
+    }
+    for (const rarity of [
+      "Légendaire",
+      "Mythique",
+      "Épique",
+      "Rare",
+      "Commun",
+    ]) {
+      expect(
+        screen.getByRole("button", { name: rarity }),
+      ).toHaveAttribute("aria-pressed", "true");
+    }
+  });
+
+  it("Bloc40/E: rarity filter is cumulative multi-select — 2 rarities selected together show both", () => {
+    renderTables();
+    for (const rarity of ["Mythique", "Épique", "Rare", "Commun"])
+      fireEvent.click(screen.getByRole("button", { name: rarity }));
+    // Only Légendaire left selected — re-select Rare alongside it.
+    fireEvent.click(screen.getByRole("button", { name: "Rare" }));
+    const rarities = Array.from(
       document.querySelectorAll<HTMLElement>(".reference-tile-block"),
-    ).find((block) => block.dataset.family === "Défense")!;
+    ).map((block) => block.dataset.rarity);
+    expect(new Set(rarities)).toEqual(new Set(["Légendaire", "Rare"]));
+  });
+
+  it("Bloc40/F: deselecting a family removes its tiles from the DOM instead of dimming them", () => {
+    renderTables();
+    const totalBefore = document.querySelectorAll(
+      ".reference-tile-block",
+    ).length;
+    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
+    const blocks = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    );
+    expect(blocks.length).toBeLessThan(totalBefore);
     expect(
-      defenseBlock.querySelector("h3")!.querySelector(".sr-only"),
-    ).toBeNull();
+      blocks.some((block) => block.dataset.family === "Défense"),
+    ).toBe(false);
+    expect(
+      blocks.some((block) => block.dataset.family === "Attaque"),
+    ).toBe(true);
+  });
+
+  it("Bloc40/F: deselecting a rarity removes its tiles from the DOM instead of dimming them", () => {
+    renderTables();
+    fireEvent.click(screen.getByRole("button", { name: "Commun" }));
+    const blocks = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    );
+    expect(blocks.some((block) => block.dataset.rarity === "Commun")).toBe(
+      false,
+    );
+    expect(
+      blocks.some((block) => block.dataset.rarity === "Légendaire"),
+    ).toBe(true);
   });
 
   it("never shows a gem count on Expedition tiles", () => {
@@ -244,28 +302,6 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     );
     const gold = screen.getAllByRole("button", { name: "Or" })[0];
     expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
-  });
-
-  it("Bloc39: filters dim non-matching sets instead of hiding them — the full grid stays on screen", () => {
-    renderTables();
-    const totalBefore = document.querySelectorAll(
-      ".reference-tile-block",
-    ).length;
-    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
-    expect(document.querySelectorAll(".reference-tile-block").length).toBe(
-      totalBefore,
-    );
-    const attaqueBlocks = Array.from(
-      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
-    ).filter((block) => block.dataset.family === "Attaque");
-    expect(attaqueBlocks.length).toBeGreaterThan(0);
-    for (const block of attaqueBlocks)
-      expect(block.className).toContain("reference-tile-block-dim");
-    const defenseBlocks = Array.from(
-      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
-    ).filter((block) => block.dataset.family === "Défense");
-    for (const block of defenseBlocks)
-      expect(block.className).not.toContain("reference-tile-block-dim");
   });
 
   it("Bloc39: no star-level filter and no search box anywhere on either reference", () => {

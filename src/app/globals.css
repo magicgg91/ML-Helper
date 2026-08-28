@@ -1489,11 +1489,6 @@ select,
   flex: 1 1 calc(50% - 0.625rem);
   min-width: 0;
 }
-/* Filters no longer hide sets (Bloc 39: "aide à naviguer, ne masque pas le
-   reste") — a non-matching block just dims instead of disappearing. */
-.reference-tile-block-dim {
-  opacity: 0.4;
-}
 .reference-tile-block-title {
   margin: 0 0 0.6rem;
   font-size: 0.95rem;
@@ -1544,8 +1539,16 @@ select,
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 0.74rem;
+  /* Bloc 40/H: "Consommables" (Expedition's longest stat name) + its %
+     wrapped to 2 lines at 0.74rem — em, per the precise instruction. */
+  font-size: 0.69em;
   min-width: 0;
+}
+/* Bloc 40/G: each skill/stat line centers within the skills column, instead
+   of hugging its left edge — scoped to the tile so the shared
+   .skill-value-row class (Gemmes, admin) keeps its own left alignment. */
+.reference-tile-skills .skill-value-row {
+  justify-content: center;
 }
 @media (max-width: 900px) {
   .reference-tile-block {
