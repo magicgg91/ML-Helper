@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { formatGameNumber } from "../lib/city-calculators";
 import { gemImagePath } from "../lib/game-images";
 import type { GemParameters } from "../lib/gem-parameters";
 import { leagues, skillKeys } from "../lib/player-settings";
@@ -35,7 +34,7 @@ export function GemsReferenceTable({
     <div className="calculator-stack">
       <section className="calculator-card ranking-table-wrap">
         <div className="table-scroll">
-          <table className="ranking-table reference-table">
+          <table className="ranking-table reference-table gems-reference-table reference-simple-table">
             <thead>
               <tr>
                 <th></th>
@@ -51,7 +50,11 @@ export function GemsReferenceTable({
                   <td key={league} className="value">
                     {league === "bronze"
                       ? "—"
-                      : formatGameNumber(parameters.gemPrice[league])}
+                      : // Bloc 38/E: this reference shows the exact price, never
+                        // compacted to k/M like formatGameNumber does elsewhere —
+                        // values stay at most 4 digits, so compaction only hurts
+                        // readability here.
+                        Math.round(parameters.gemPrice[league])}
                   </td>
                 ))}
               </tr>
@@ -62,16 +65,23 @@ export function GemsReferenceTable({
                     const label = `${game(`skills.${skill}`)} ${game(`leagues.${league}`)}`;
                     return (
                       <td key={league} className="value">
-                        <GameImage
-                          src={gemImagePath(skill, league)}
-                          alt={label}
-                          className="reference-equipment-image"
-                          fallback={null}
-                        />
-                        {formatPercent(
-                          parameters.skillLeagueValue[skill][league],
-                          locale,
-                        )}
+                        {/* Bloc 38/C: image and % side by side, not stacked —
+                            .reference-equipment-image's own display:block
+                            (needed when it's alone in its column on the
+                            Combat/Expedition tables) would otherwise push the
+                            percentage onto its own line here. */}
+                        <span className="gems-value-row">
+                          <GameImage
+                            src={gemImagePath(skill, league)}
+                            alt={label}
+                            className="reference-equipment-image"
+                            fallback={null}
+                          />
+                          {formatPercent(
+                            parameters.skillLeagueValue[skill][league],
+                            locale,
+                          )}
+                        </span>
                       </td>
                     );
                   })}
