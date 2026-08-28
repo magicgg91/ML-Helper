@@ -986,21 +986,15 @@ select {
   }
 }
 
-/* Bloc 37/I: no more search column — family and rarity share the row
-   equally, star level takes a narrow 20% and sits flush right. */
+/* Bloc 39: family and rarity, evenly split — the star-level column is gone
+   (tiles only ever show the base 1★ value, no selector), so both filters
+   get equal room instead of Combat/Expedition needing different splits to
+   dodge a 3rd column. */
 .reference-filters {
   display: grid;
-  grid-template-columns: 1fr 1fr 20%;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: end;
-}
-/* Bloc 35/4.1: widen the family column — Expedition's family labels are
-   longer and otherwise force the family row into horizontal scroll.
-   Bloc 37/I: rarity holds the exact same 5 pills as Combat's, which needs
-   its ~40% to avoid clipping (verified visually) — so the extra room for
-   family instead comes out of the star column, not rarity. */
-.reference-filters-wide-family {
-  grid-template-columns: 1.15fr 1fr 15%;
 }
 .reference-filters label,
 .reference-filters > div {
@@ -1020,27 +1014,11 @@ select {
   background: var(--background);
   color: var(--foreground);
 }
-/* Bloc 37/I: right-align the star-level control, and match the family/
-   rarity pill buttons' height instead of the taller default select padding. */
-.reference-star-filter {
-  justify-self: end;
-  text-align: right;
-}
-.reference-star-filter select {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.78rem;
-}
-.reference-count {
-  color: var(--muted);
-}
-.reference-table {
-  min-width: 1100px;
-}
 /* Bloc 38/A, D: the Gemmes reference only — 6 league columns of strictly
    equal width (table-layout: fixed splits the remainder evenly once the
    1st, row-label column gets an explicit width), title and content
-   centered. Scoped to this table alone, not the shared .reference-table
-   used by Combat/Expedition. */
+   centered. Gemmes is the only reference still in table form (Bloc 39
+   moved Combat/Expedition to a tile grid — see .reference-tile-*). */
 .gems-reference-table {
   table-layout: fixed;
   min-width: 900px;
@@ -1081,32 +1059,6 @@ select {
   padding: 0.75rem;
   border-left: 3px solid var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, var(--surface));
-}
-.rarity-badge {
-  display: inline-block;
-  padding: 0.2rem 0.45rem;
-  border-radius: 999px;
-  font-weight: 700;
-}
-.rarity-legendaire {
-  color: #5f4300;
-  background: #f3d16f;
-}
-.rarity-mythique {
-  color: #fff;
-  background: #7850a8;
-}
-.rarity-epique {
-  color: #fff;
-  background: #2f6db0;
-}
-.rarity-rare {
-  color: #103f24;
-  background: #8bd49f;
-}
-.rarity-commun {
-  color: #26302c;
-  background: #c8cdca;
 }
 @media (max-width: 900px) {
   .reference-filters {
@@ -1369,8 +1321,7 @@ select,
 .total-box .value,
 .result-highlight strong,
 .budget-result-main strong,
-.ranking-table td,
-.reference-count {
+.ranking-table td {
   font-family: "JetBrains Mono", monospace;
 }
 .public-main,
@@ -1524,13 +1475,6 @@ select,
   box-shadow: inset 0 0 0 1px rgb(139 107 184 / 40%);
 }
 
-.rarity-badge {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 12px;
-  font-size: 10.5px;
-  font-weight: 600;
-}
 /* Bloc 38/B, G: bumped from 2.2rem to 3rem — Combat and Expedition's
    equipment images now match Gemmes' own image size for visual consistency
    across all 3 equipment/gem référentiels. */
@@ -1541,25 +1485,92 @@ select,
   margin-bottom: 0.3rem;
   object-fit: contain;
 }
-.rarity-commun {
-  background: rgb(138 143 152 / 15%);
-  color: var(--rarity-commun);
+
+/* Bloc 39: Combat/Expedition tile grid — replaces the old per-row table for
+   these 2 references only (Gemmes/Templiers/Level Up keep their table).
+   Two set-blocks side by side make up the required "6 tiles wide" — each
+   block is its own self-contained 3-column grid, so a row of tiles never
+   mixes two different sets (a flat 6-col grid across the whole catalog
+   would, since 9 doesn't divide evenly by 6). */
+.reference-tile-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem 1.25rem;
+  margin-top: 1.25rem;
 }
-.rarity-rare {
-  background: rgb(74 145 121 / 15%);
-  color: var(--rarity-rare);
+.reference-tile-block {
+  flex: 1 1 calc(50% - 0.625rem);
+  min-width: 0;
 }
-.rarity-epique {
-  background: rgb(91 139 201 / 15%);
-  color: var(--rarity-epique);
+/* Filters no longer hide sets (Bloc 39: "aide à naviguer, ne masque pas le
+   reste") — a non-matching block just dims instead of disappearing. */
+.reference-tile-block-dim {
+  opacity: 0.4;
 }
-.rarity-mythique {
-  background: rgb(166 120 212 / 15%);
-  color: var(--rarity-mythique);
+.reference-tile-block-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--foreground);
 }
-.rarity-legendaire {
-  background: rgb(212 161 58 / 15%);
-  color: var(--rarity-legendaire);
+.reference-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+.reference-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem;
+  border: 2px solid;
+  border-radius: 0.6rem;
+}
+.reference-tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem;
+}
+/* Slot name in the equipment's family color, not a rarity/family icon —
+   avoids visual ambiguity between similarly-shaped slots (bracelet/belt…). */
+.reference-tile-slot {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.reference-tile-gems {
+  color: var(--muted);
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+.reference-tile-body {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.reference-tile-body .reference-equipment-image {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+.reference-tile-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.74rem;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .reference-tile-block {
+    flex: 1 1 100%;
+  }
+  /* Bloc 39: tried both 1 and 2 columns on mobile per the task's "à tester
+     empiriquement" instruction (see the PR report) — 2 columns stays
+     legible (4 skill lines still fit a ~185px tile without wrapping badly)
+     and roughly halves the scroll length of a 180-tile catalog, so it won. */
+  .reference-tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 body > main {

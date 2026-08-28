@@ -519,8 +519,7 @@
       "family": "Family",
       "rarity": "Rarity",
       "slot": "Slot",
-      "skill": "Skill",
-      "star-level": "Star level"
+      "skill": "Skill"
     },
     "catalog": {
       "combat": "Combat",
@@ -538,15 +537,12 @@
   },
   "combat-equipment": {
     "name": "Combat Equipment",
-    "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No combat equipment matches these filters.",
+    "gem-count": "{count, plural, one {# gem} other {# gems}}",
     "columns": {
-      "image": "Image",
       "rarity": "Rarity",
-      "set": "Set",
       "skydust": "Skydust",
       "gems": "Gems",
-      "slot": "Slot",
       "skill": "Skill {number}"
     },
     "complete-in-admin": "Complete in administration"
@@ -554,15 +550,11 @@
   "expedition-equipment": {
     "name": "Expedition Equipment",
     "unconfirmed-label": "Unconfirmed assumption",
-    "row-count": "{count, plural, one {# row} other {# rows}} — values at {star}★",
     "empty": "No expedition equipment matches these filters.",
     "columns": {
-      "image": "Image",
       "rarity": "Rarity",
-      "set": "Set",
       "family": "Family",
       "slot": "Slot",
-      "type-stat": "Type stat",
       "secondary-stat": "Secondary stat",
       "dismantle-terradust": "Terradust on dismantle"
     }
