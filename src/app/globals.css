@@ -1603,6 +1603,13 @@ button:disabled,
   gap: 8px;
   flex-wrap: wrap;
 }
+/* Bloc 41/C: the référentiels switcher (same category-nav/category-btn
+   structure as the /tools banner, Bloc 40/A) sat right against the tables/
+   tiles below it with no breathing room — scoped to .reference-switcher
+   only, not .category-nav generally, so the /tools banner is untouched. */
+.reference-switcher {
+  margin-bottom: 1.5rem;
+}
 .category-btn {
   flex: 1;
   min-width: 100px;

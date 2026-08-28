@@ -157,4 +157,10 @@ describe("Bloc 41: referentiel fixes", () => {
     // rule is gone, on desktop and mobile alike.
     expect(css).not.toMatch(/\.reference-tile-block\s*{\s*flex:/);
   });
+
+  it("C: adds breathing room under the référentiels switcher specifically, not the shared category-nav (so /tools' banner is untouched)", () => {
+    expect(css).toMatch(
+      /\.reference-switcher\s*{\s*margin-bottom: 1\.5rem;\s*}/,
+    );
+  });
 });
