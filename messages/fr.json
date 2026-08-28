@@ -525,7 +525,7 @@
       "rarity": "Rareté",
       "slot": "Emplacement",
       "skill": "Compétence",
-      "star-level": "Niveau d’étoile"
+      "dimmed-hint": "ne correspond pas aux filtres actifs"
     },
     "catalog": {
       "combat": "Combat",
@@ -543,15 +543,12 @@
   },
   "combat-equipment": {
     "name": "Équipements de Combat",
-    "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
     "empty": "Aucun équipement de combat ne correspond à ces filtres.",
+    "gem-count": "{count, plural, one {# gemme} other {# gemmes}}",
     "columns": {
-      "image": "Image",
       "rarity": "Rareté",
-      "set": "Set",
       "skydust": "Pouciel",
       "gems": "Gemmes",
-      "slot": "Emplacement",
       "skill": "Compétence {number}"
     },
     "complete-in-admin": "À compléter en admin"
@@ -559,15 +556,11 @@
   "expedition-equipment": {
     "name": "Équipements d’Expédition",
     "unconfirmed-label": "Hypothèse non confirmée",
-    "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
     "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
     "columns": {
-      "image": "Image",
       "rarity": "Rareté",
-      "set": "Set",
       "family": "Famille",
       "slot": "Emplacement",
-      "type-stat": "Stat de type",
       "secondary-stat": "Stat secondaire",
       "dismantle-terradust": "Terradust à la destruction"
     }

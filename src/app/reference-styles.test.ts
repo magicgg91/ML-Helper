@@ -7,16 +7,16 @@ const css = readFileSync("src/app/globals.css", "utf8");
 
 describe("Bloc 38 public reference/homepage styles", () => {
   it("A, D: sizes the Gemmes table's 6 league columns identically and centers them", () => {
-    expect(css).toMatch(
-      /\.gems-reference-table\s*{\s*table-layout: fixed;/,
-    );
+    expect(css).toMatch(/\.gems-reference-table\s*{\s*table-layout: fixed;/);
     expect(css).toMatch(
       /\.gems-reference-table th,\s*\n\.gems-reference-table td\s*{\s*text-align: center;/,
     );
   });
 
   it("B, G: Combat/Expedition equipment images and Gemmes' image now share a single 3rem size", () => {
-    expect(css).toMatch(/\.reference-equipment-image\s*{\s*display: block;\s*width: 3rem;\s*height: 3rem;/);
+    expect(css).toMatch(
+      /\.reference-equipment-image\s*{\s*display: block;\s*width: 3rem;\s*height: 3rem;/,
+    );
   });
 
   it("C: wraps the Gemmes image and its % value in one inline-flex row", () => {
@@ -24,12 +24,18 @@ describe("Bloc 38 public reference/homepage styles", () => {
   });
 
   it("H: the shared category/reference tile image is a strict square", () => {
-    expect(css).toMatch(/\.tool-category-image\s*{\s*position: relative;\s*aspect-ratio: 1;/);
+    expect(css).toMatch(
+      /\.tool-category-image\s*{\s*position: relative;\s*aspect-ratio: 1;/,
+    );
   });
 
   it("I: halves .home-tools' own top margin, leaving .home-guides' untouched", () => {
-    expect(css).toMatch(/\.home-tools\s*{\s*margin-top: clamp\(1\.5rem, 4vw, 3\.5rem\);\s*}/);
-    expect(css).toMatch(/\.home-guides\s*{\s*margin-top: clamp\(3rem, 8vw, 7rem\);\s*}/);
+    expect(css).toMatch(
+      /\.home-tools\s*{\s*margin-top: clamp\(1\.5rem, 4vw, 3\.5rem\);\s*}/,
+    );
+    expect(css).toMatch(
+      /\.home-guides\s*{\s*margin-top: clamp\(3rem, 8vw, 7rem\);\s*}/,
+    );
   });
 
   it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
@@ -76,5 +82,50 @@ describe("Bloc 38 public reference/homepage styles", () => {
     expect(css).toMatch(
       /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: 12rem;/,
     );
+  });
+});
+
+describe("Bloc 39: Combat/Expedition reference tile grid", () => {
+  it("stacks set-blocks 2 per row (6 tiles wide) — each block flex-basis ~50%, own 3-column tile grid", () => {
+    expect(css).toMatch(
+      /\.reference-tile-blocks\s*{\s*display: flex;\s*flex-wrap: wrap;/,
+    );
+    expect(css).toMatch(
+      /\.reference-tile-block\s*{\s*flex: 1 1 calc\(50% - 0\.625rem\);/,
+    );
+    expect(css).toMatch(
+      /\.reference-tile-grid\s*{\s*display: grid;\s*grid-template-columns: repeat\(3, 1fr\);/,
+    );
+  });
+
+  it("dims a non-matching block instead of hiding it — filters are a navigation aid, not a hide-filter", () => {
+    expect(css).toMatch(/\.reference-tile-block-dim\s*{\s*opacity: 0\.4;\s*}/);
+  });
+
+  it("settles on 2 tile-wide on mobile (tried empirically against 1, see PR report) with a full-width block", () => {
+    expect(css).toMatch(
+      /\.reference-tile-block\s*{\s*flex: 1 1 100%;\s*}\s*\/\*[\s\S]*?\*\/\s*\.reference-tile-grid\s*{\s*grid-template-columns: repeat\(2, 1fr\);/,
+    );
+  });
+
+  it("drops the star-level filter column — family/rarity now split the filter row evenly", () => {
+    expect(css).toMatch(
+      /\.reference-filters\s*{\s*display: grid;\s*grid-template-columns: 1fr 1fr;/,
+    );
+    expect(css).not.toMatch(/\.reference-star-filter/);
+    expect(css).not.toMatch(/\.reference-filters-wide-family/);
+  });
+
+  it("no longer defines the old per-row .rarity-badge pill (rarity is now the tile's own bg/border)", () => {
+    expect(css).not.toMatch(/\.rarity-badge/);
+  });
+
+  it("drops the star-level filter and row-count strings from both references' messages", () => {
+    for (const messages of [frMessages, enMessages]) {
+      expect(messages.references.filters).not.toHaveProperty("star-level");
+      expect(messages["combat-equipment"]).not.toHaveProperty("row-count");
+      expect(messages["expedition-equipment"]).not.toHaveProperty("row-count");
+      expect(messages["combat-equipment"]).toHaveProperty("gem-count");
+    }
   });
 });

@@ -13,12 +13,15 @@ import {
   expeditionStatTranslationKeys,
 } from "../i18n/game-translation-keys";
 import {
+  equipmentSlotLayout,
   rarityOrder,
   type EquipmentFamily,
   type EquipmentRarity,
   type EquipmentSkill,
   type EquipmentSlot,
 } from "../lib/equipment";
+import { expeditionSlotLayout } from "../lib/expedition-equipment";
+import { rarityClassName } from "../lib/equipment-rarity";
 import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
 import { formatGameNumber } from "../lib/city-calculators";
 import {
@@ -37,7 +40,11 @@ import {
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
-import { RarityBadge } from "./rarity-badge";
+
+// Bloc 39: every equipment item now renders as a tile (base 1★ value, no
+// star selector) instead of a table row — 1★ is a fixed constant here, not
+// user-selectable state.
+const TILE_STAR = 1;
 
 export function formatPercent(value: number | null, locale: string) {
   return value === null
@@ -85,42 +92,29 @@ function RarityValueTable({
   );
 }
 
+// Bloc 39: family/rarity still filter, but as a navigation aid over the
+// full tile grid rather than a hide-filter — every set stays on screen, a
+// non-matching one is just dimmed (see matchesFilters below). The star-level
+// filter is gone entirely: tiles only ever show the base 1★ value.
 function Filters({
   families,
   family,
   setFamily,
   rarities,
   toggleRarity,
-  star,
-  setStar,
   familyLabel,
-  wideFamilyColumn = false,
 }: {
   families: readonly string[];
   family: string;
   setFamily: (value: string) => void;
   rarities: Set<string>;
   toggleRarity: (value: string) => void;
-  star: number;
-  setStar: (value: number) => void;
   familyLabel: (value: string) => string;
-  // Bloc 35/4.1: Expedition's family labels ("Équipement", "Consommables", …)
-  // run wider than Combat's, so its filter row needs a bit more of the grid
-  // — taken from the rarity column, which has room to spare — to stay on
-  // one line instead of falling back to horizontal scroll.
-  wideFamilyColumn?: boolean;
 }) {
   const t = useTranslations("references");
   const game = useTranslations("game");
   return (
-    <div
-      className={
-        wideFamilyColumn
-          ? "reference-filters reference-filters-wide-family"
-          : "reference-filters"
-      }
-      aria-label={t("filters.label")}
-    >
+    <div className="reference-filters" aria-label={t("filters.label")}>
       <div>
         <span className="filter-label">{t("filters.family")}</span>
         <div className="family-buttons">
@@ -169,19 +163,6 @@ function Filters({
           })}
         </div>
       </div>
-      <label className="reference-star-filter">
-        {t("filters.star-level")}
-        <select
-          value={star}
-          onChange={(event) => setStar(Number(event.target.value))}
-        >
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-            <option value={item} key={item}>
-              {item}★
-            </option>
-          ))}
-        </select>
-      </label>
     </div>
   );
 }
@@ -189,7 +170,6 @@ function Filters({
 function useFilters(families: readonly string[]) {
   const [family, setFamily] = useState(families[0]);
   const [rarities, setRarities] = useState(() => new Set<string>(rarityOrder));
-  const [star, setStar] = useState(1);
   const toggleRarity = (value: string) =>
     setRarities((current) => {
       const next = new Set(current);
@@ -202,9 +182,151 @@ function useFilters(families: readonly string[]) {
     setFamily,
     rarities,
     toggleRarity,
-    star,
-    setStar,
   };
+}
+
+function matchesFilters(
+  set: { family: string; rarity: string },
+  filters: { family: string; rarities: Set<string> },
+) {
+  return set.family === filters.family && filters.rarities.has(set.rarity);
+}
+
+// Bloc 39: one tile block per equipment set, tiles in the same slot order
+// as the Combat/Expedition Equipment Simulators (equipmentSlotLayout /
+// expeditionSlotLayout) so the two stay cross-referenceable. Sets are
+// grouped in the order their rows first appear — the underlying data file
+// is already laid out set-by-set, complete (every set has all 9/6 slots),
+// so this never splits a set across two groups.
+function groupBySet<
+  Row extends { rarity: string; family: string; set_name: string },
+>(
+  rows: readonly Row[],
+  slotOf: (row: Row) => string,
+  slotLayout: readonly string[],
+) {
+  const bySet = new Map<
+    string,
+    { rarity: string; family: string; set_name: string; rows: Row[] }
+  >();
+  for (const row of rows) {
+    const key = `${row.rarity}|${row.family}|${row.set_name}`;
+    let set = bySet.get(key);
+    if (!set) {
+      set = {
+        rarity: row.rarity,
+        family: row.family,
+        set_name: row.set_name,
+        rows: [],
+      };
+      bySet.set(key, set);
+    }
+    set.rows.push(row);
+  }
+  for (const set of bySet.values())
+    set.rows.sort(
+      (a, b) => slotLayout.indexOf(slotOf(a)) - slotLayout.indexOf(slotOf(b)),
+    );
+  return Array.from(bySet.values());
+}
+
+function CombatTile({
+  row,
+  rarityLabel,
+  familyLabel,
+  slotLabel,
+  slotNameLabel,
+  skillLabel,
+  familyColor,
+  gemSlotsBase,
+  locale,
+  t,
+}: {
+  row: CombatReferenceRow;
+  rarityLabel: (value: string) => string;
+  familyLabel: (value: string) => string;
+  slotLabel: (value: string) => string;
+  slotNameLabel: (value: string) => string;
+  skillLabel: (value: string) => string;
+  familyColor: string | undefined;
+  gemSlotsBase: CombatGemSlotsBase;
+  locale: string;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const rarityVar = `var(--rarity-${rarityClassName(row.rarity)})`;
+  // Codex review (PR #61): read the gem count from the same admin-editable
+  // source as the Gemmes rarity summary below, not the static per-row
+  // gem_slots field — the two can drift once an admin edits gemSlotsBase.
+  const gemCount = gemSlotsBase[row.rarity as keyof CombatGemSlotsBase] ?? 0;
+  return (
+    <div
+      className="reference-tile"
+      style={
+        {
+          borderColor: rarityVar,
+          background: `color-mix(in srgb, ${rarityVar} 14%, var(--surface))`,
+        } as CSSProperties
+      }
+      data-rarity={row.rarity}
+      data-slot={row.slot_type}
+      aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot_type)}`}
+    >
+      <div className="reference-tile-head">
+        <span
+          className="reference-tile-slot"
+          style={familyColor ? { color: familyColor } : undefined}
+        >
+          {slotLabel(row.slot_type)}
+          {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
+        </span>
+        {gemCount > 0 ? (
+          <span className="reference-tile-gems">
+            {t("gem-count", { count: gemCount })}
+          </span>
+        ) : null}
+      </div>
+      <div className="reference-tile-body">
+        <GameImage
+          src={equipmentImagePath(row.family, row.rarity, row.slot_type)}
+          alt={row.set_name}
+          className="reference-equipment-image"
+          fallback={null}
+        />
+        <div className="reference-tile-skills">
+          {([1, 2, 3, 4] as const).map((number) => {
+            const skill = row[`skill_${number}`];
+            const value = combatValueAtStar(
+              skill,
+              row[`value_${number}_pct`],
+              TILE_STAR,
+            );
+            return (
+              <span
+                className="skill-value-row"
+                key={number}
+                data-skill={number}
+              >
+                {skill === "none" ? (
+                  // Bloc 37/G: explicitly no skill at this slot — distinct
+                  // from "still needs data" below.
+                  "—"
+                ) : skill && skill !== "Inconnu" ? (
+                  <>
+                    {skillLabel(skill)}
+                    <strong className="reference-value">
+                      {formatPercent(value, locale)}
+                    </strong>
+                  </>
+                ) : (
+                  <span className="unconfirmed">{t("complete-in-admin")}</span>
+                )}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function CombatReferenceTable({
@@ -218,6 +340,7 @@ export function CombatReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
+  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(
@@ -233,103 +356,63 @@ export function CombatReferenceTable({
     value ? game(`weapon-types.${combatSlotNameTranslationKeys[value]}`) : "";
   const skillLabel = (value: string) =>
     game(`skills.${equipmentSkillTranslationKeys[value as EquipmentSkill]}`);
-  const filters = useFilters(["Attaque", "Défense", "Or", "Troupes/Vitesse"]);
-  const filtered = useMemo(
-    () =>
-      rows.filter(
-        (row) =>
-          filters.rarities.has(row.rarity) && row.family === filters.family,
-      ),
-    [rows, filters.rarities, filters.family],
+  const families = ["Attaque", "Défense", "Or", "Troupes/Vitesse"] as const;
+  const filters = useFilters(families);
+  const sets = useMemo(
+    () => groupBySet(rows, (row) => row.slot_type, equipmentSlotLayout),
+    [rows],
   );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <Filters
-          families={["Attaque", "Défense", "Or", "Troupes/Vitesse"]}
-          familyLabel={familyLabel}
-          {...filters}
-        />
+        <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
-      <p className="reference-count">
-        {t("row-count", { count: filtered.length, star: filters.star })}
-      </p>
-      {!filtered.length ? <p className="empty-state">{t("empty")}</p> : null}
-      {filtered.length ? (
-        <section className="calculator-card ranking-table-wrap">
-          <table className="ranking-table reference-table">
-            <thead>
-              <tr>
-                <th>{t("columns.image")}</th>
-                <th>{t("columns.rarity")}</th>
-                <th>{t("columns.set")}</th>
-                <th>{t("columns.slot")}</th>
-                {[1, 2, 3, 4].map((i) => (
-                  <th key={i}>{t("columns.skill", { number: i })}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row, index) => (
-                <tr
-                  key={`${row.rarity}-${row.set_name}-${row.slot_type}-${index}`}
-                >
-                  <td>
-                    <GameImage
-                      src={equipmentImagePath(
-                        row.family,
-                        row.rarity,
-                        row.slot_type,
-                      )}
-                      alt={row.set_name}
-                      className="reference-equipment-image"
-                      fallback={null}
+      {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
+      {sets.length ? (
+        <div className="reference-tile-blocks">
+          {sets.map((set) => {
+            const matches = matchesFilters(set, filters);
+            return (
+              <section
+                className={
+                  matches
+                    ? "reference-tile-block"
+                    : "reference-tile-block reference-tile-block-dim"
+                }
+                key={`${set.rarity}-${set.family}-${set.set_name}`}
+                data-family={set.family}
+                data-rarity={set.rarity}
+              >
+                <h3 className="reference-tile-block-title">
+                  {set.set_name}
+                  {matches ? null : (
+                    <span className="sr-only">
+                      {" "}
+                      — {referencesT("filters.dimmed-hint")}
+                    </span>
+                  )}
+                </h3>
+                <div className="reference-tile-grid">
+                  {set.rows.map((row) => (
+                    <CombatTile
+                      key={row.slot_type}
+                      row={row}
+                      rarityLabel={rarityLabel}
+                      familyLabel={familyLabel}
+                      slotLabel={slotLabel}
+                      slotNameLabel={slotNameLabel}
+                      skillLabel={skillLabel}
+                      familyColor={filterButtonColor(row.family)}
+                      gemSlotsBase={gemSlotsBase}
+                      locale={locale}
+                      t={t}
                     />
-                  </td>
-                  <td>
-                    <RarityBadge
-                      rarity={row.rarity}
-                      label={rarityLabel(row.rarity)}
-                    />
-                  </td>
-                  <td>{row.set_name}</td>
-                  <td>
-                    {slotLabel(row.slot_type)}
-                    {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
-                  </td>
-                  {([1, 2, 3, 4] as const).map((number) => {
-                    const skill = row[`skill_${number}`];
-                    const value = combatValueAtStar(
-                      skill,
-                      row[`value_${number}_pct`],
-                      filters.star,
-                    );
-                    return (
-                      <td key={number}>
-                        {skill === "none" ? (
-                          // Bloc 37/G: explicitly no skill at this slot —
-                          // distinct from "still needs data" below.
-                          "—"
-                        ) : skill && skill !== "Inconnu" ? (
-                          <span className="skill-value-row">
-                            {skillLabel(skill)}
-                            <strong className="reference-value">
-                              {formatPercent(value, locale)}
-                            </strong>
-                          </span>
-                        ) : (
-                          <span className="unconfirmed">
-                            {t("complete-in-admin")}
-                          </span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       ) : null}
       <RarityValueTable
         title={t("columns.skydust")}
@@ -347,6 +430,100 @@ export function CombatReferenceTable({
   );
 }
 
+function ExpeditionTile({
+  row,
+  rarityLabel,
+  slotLabel,
+  familyLabel,
+  statLabel,
+  familyColor,
+  increments,
+  locale,
+  t,
+}: {
+  row: ExpeditionReferenceRow;
+  rarityLabel: (value: string) => string;
+  slotLabel: (value: string) => string;
+  familyLabel: (value: string) => string;
+  statLabel: (value: string) => string;
+  familyColor: string | undefined;
+  increments: ExpeditionStarIncrements;
+  locale: string;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const rarityVar = `var(--rarity-${rarityClassName(row.rarity)})`;
+  const primary = expeditionValueAtStar(
+    row.family,
+    row.type_stat_pct,
+    TILE_STAR,
+    increments,
+  );
+  const secondaryName = row.secondary_stat_name.replace("_expé", "");
+  const secondary = expeditionValueAtStar(
+    secondaryName,
+    row.secondary_stat_pct,
+    TILE_STAR,
+    increments,
+  );
+  const value = (result: ReturnType<typeof expeditionValueAtStar>) => (
+    <>
+      <strong className="reference-value">
+        {formatPercent(result.value, locale)}
+      </strong>
+      {result.value !== null && !result.confirmed ? (
+        <small className="unconfirmed">{t("unconfirmed-label")}</small>
+      ) : null}
+    </>
+  );
+  return (
+    <div
+      className="reference-tile"
+      style={
+        {
+          borderColor: rarityVar,
+          background: `color-mix(in srgb, ${rarityVar} 14%, var(--surface))`,
+        } as CSSProperties
+      }
+      data-rarity={row.rarity}
+      data-slot={row.slot}
+      aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot)}`}
+    >
+      <div className="reference-tile-head">
+        <span
+          className="reference-tile-slot"
+          style={familyColor ? { color: familyColor } : undefined}
+        >
+          {slotLabel(row.slot)}
+        </span>
+      </div>
+      <div className="reference-tile-body">
+        <GameImage
+          src={equipmentImagePath(row.family, row.rarity, row.slot)}
+          alt={row.set_name}
+          className="reference-equipment-image"
+          fallback={null}
+        />
+        <div className="reference-tile-skills">
+          <span className="skill-value-row">
+            {familyLabel(row.family)}
+            {value(primary)}
+          </span>
+          <span className="skill-value-row">
+            {secondaryName ? (
+              <>
+                {statLabel(secondaryName)}
+                {value(secondary)}
+              </>
+            ) : (
+              "—"
+            )}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ExpeditionReferenceTable({
   rows,
   increments = defaultExpeditionStarIncrements,
@@ -358,6 +535,7 @@ export function ExpeditionReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
+  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(`families.${expeditionFamilyTranslationKeys[value]}`);
@@ -371,121 +549,60 @@ export function ExpeditionReferenceTable({
     game(`stats.${expeditionStatTranslationKeys[value]}`);
   const families = ["Or", "Équipement", "Consommables", "Troupes"] as const;
   const filters = useFilters(families);
-  const filtered = useMemo(
-    () =>
-      rows.filter(
-        (row) =>
-          filters.rarities.has(row.rarity) && row.family === filters.family,
-      ),
-    [rows, filters.rarities, filters.family],
+  const sets = useMemo(
+    () => groupBySet(rows, (row) => row.slot, expeditionSlotLayout),
+    [rows],
   );
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <Filters
-          families={families}
-          familyLabel={familyLabel}
-          wideFamilyColumn
-          {...filters}
-        />
+        <Filters families={families} familyLabel={familyLabel} {...filters} />
       </section>
-      <p className="reference-count">
-        {t("row-count", { count: filtered.length, star: filters.star })}
-      </p>
-      {!filtered.length ? <p className="empty-state">{t("empty")}</p> : null}
-      {filtered.length ? (
-        <section className="calculator-card ranking-table-wrap">
-          <table className="ranking-table reference-table">
-            <thead>
-              <tr>
-                <th>{t("columns.image")}</th>
-                <th>{t("columns.rarity")}</th>
-                <th>{t("columns.set")}</th>
-                <th>{t("columns.family")}</th>
-                <th>{t("columns.slot")}</th>
-                <th>{t("columns.type-stat")}</th>
-                <th>{t("columns.secondary-stat")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row, index) => {
-                const primary = expeditionValueAtStar(
-                  row.family,
-                  row.type_stat_pct,
-                  filters.star,
-                  increments,
-                );
-                const secondaryName = row.secondary_stat_name.replace(
-                  "_expé",
-                  "",
-                );
-                const secondary = expeditionValueAtStar(
-                  secondaryName,
-                  row.secondary_stat_pct,
-                  filters.star,
-                  increments,
-                );
-                const value = (
-                  result: ReturnType<typeof expeditionValueAtStar>,
-                ) => (
-                  <>
-                    <strong className="reference-value">
-                      {formatPercent(result.value, locale)}
-                    </strong>
-                    {result.value !== null && !result.confirmed ? (
-                      <small className="unconfirmed">
-                        {t("unconfirmed-label")}
-                      </small>
-                    ) : null}
-                  </>
-                );
-                return (
-                  <tr
-                    key={`${row.rarity}-${row.set_name}-${row.slot}-${index}`}
-                  >
-                    <td>
-                      <GameImage
-                        src={equipmentImagePath(
-                          row.family,
-                          row.rarity,
-                          row.slot,
-                        )}
-                        alt={row.set_name}
-                        className="reference-equipment-image"
-                        fallback={null}
-                      />
-                    </td>
-                    <td>
-                      <RarityBadge
-                        rarity={row.rarity}
-                        label={rarityLabel(row.rarity)}
-                      />
-                    </td>
-                    <td>{row.set_name}</td>
-                    <td>{familyLabel(row.family)}</td>
-                    <td>{slotLabel(row.slot)}</td>
-                    <td>
-                      <span className="skill-value-row">
-                        {familyLabel(row.family)}
-                        {value(primary)}
-                      </span>
-                    </td>
-                    <td>
-                      {secondaryName ? (
-                        <span className="skill-value-row">
-                          {statLabel(secondaryName)}
-                          {value(secondary)}
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
+      {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
+      {sets.length ? (
+        <div className="reference-tile-blocks">
+          {sets.map((set) => {
+            const matches = matchesFilters(set, filters);
+            return (
+              <section
+                className={
+                  matches
+                    ? "reference-tile-block"
+                    : "reference-tile-block reference-tile-block-dim"
+                }
+                key={`${set.rarity}-${set.family}-${set.set_name}`}
+                data-family={set.family}
+                data-rarity={set.rarity}
+              >
+                <h3 className="reference-tile-block-title">
+                  {set.set_name}
+                  {matches ? null : (
+                    <span className="sr-only">
+                      {" "}
+                      — {referencesT("filters.dimmed-hint")}
+                    </span>
+                  )}
+                </h3>
+                <div className="reference-tile-grid">
+                  {set.rows.map((row) => (
+                    <ExpeditionTile
+                      key={row.slot}
+                      row={row}
+                      rarityLabel={rarityLabel}
+                      slotLabel={slotLabel}
+                      familyLabel={familyLabel}
+                      statLabel={statLabel}
+                      familyColor={filterButtonColor(row.family)}
+                      increments={increments}
+                      locale={locale}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       ) : null}
       <RarityValueTable
         title={t("columns.dismantle-terradust")}

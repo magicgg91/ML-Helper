@@ -119,12 +119,15 @@ test("translates expedition equipment filters, columns and status", async ({
 }) => {
   await page.goto("/guides/referentiels/expedition-equipment");
   await switchLocale(page, "fr");
-  await expect(
-    page.getByText("Stat secondaire", { exact: true }),
-  ).toBeVisible();
+  // Bloc 39: the "Stat secondaire" column header is gone (table -> tile
+  // grid) — assert the same translation coverage through a stat name that
+  // actually renders on a tile instead (Vanna's Bourse: secondary stat
+  // "Récupération"). Not `exact` — the stat name is a bare text node
+  // sharing its tile line with the % value, not its own element.
+  await expect(page.getByText("Récupération").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Or" })).toBeVisible();
 
   await switchLocale(page, "en");
-  await expect(page.getByText("Secondary stat", { exact: true })).toBeVisible();
+  await expect(page.getByText("Recovery").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Equipment" })).toBeVisible();
 });

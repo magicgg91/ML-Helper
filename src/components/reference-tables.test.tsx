@@ -1,21 +1,17 @@
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  within,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
 import { CombatReferenceTable, ReferenceTables } from "./reference-tables";
+import { equipmentSlotLayout } from "../lib/equipment";
+import { expeditionSlotLayout } from "../lib/expedition-equipment";
 import {
   combatReferenceRows,
   defaultCombatGemSlotsBase,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
 
-describe("ReferenceTables", () => {
+describe("ReferenceTables — Bloc 39: tile grid", () => {
   afterEach(cleanup);
   const renderTables = () =>
     render(
@@ -27,39 +23,202 @@ describe("ReferenceTables", () => {
       </NextIntlClientProvider>,
     );
 
-  // Bloc 37/I: the free-search box is gone — isolate a single set (all 9
-  // Légendaire Attaque rows, same subset the old "Spirit Fyra" search used
-  // to reach) via the rarity pills instead.
-  function isolateToLegendary() {
-    for (const rarity of ["Mythique", "Épique", "Rare", "Commun"])
-      fireEvent.click(screen.getByRole("button", { name: rarity }));
+  function combatBlock(setName: string) {
+    return Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).find((block) =>
+      // startsWith, not ===: a dimmed block's h3 also carries a trailing
+      // sr-only hint (Codex review, PR #61) that's part of the same text
+      // content in jsdom even though it's visually hidden.
+      block.querySelector("h3")?.textContent?.startsWith(setName),
+    )!;
   }
 
-  it("filters combat equipment and applies additive stars", () => {
+  it("groups every set into one block of 9 tiles (Combat) in the same slot order as the Combat Equipment Simulator", () => {
     renderTables();
-    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    isolateToLegendary();
-    fireEvent.change(
-      screen.getByRole("combobox", { name: "Niveau d’étoile" }),
-      { target: { value: "5" } },
-    );
-    expect(screen.getByText("9 lignes — valeurs à 5★")).toBeInTheDocument();
-    expect(screen.getAllByText("18%").length).toBeGreaterThan(0);
-  });
-  it("attempts the manifest image path for each combat equipment row", () => {
-    renderTables();
-    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    isolateToLegendary();
-    const images = document.querySelectorAll<HTMLImageElement>(
-      ".reference-equipment-image",
-    );
-    expect(images.length).toBe(9);
-    expect(
-      Array.from(images).map((image) => image.getAttribute("src")),
-    ).toContain("/equipment/combat/attack-legendary-weapon.webp");
+    const block = combatBlock("Spirit Fyra");
+    const tiles = block.querySelectorAll<HTMLElement>(".reference-tile");
+    expect(tiles.length).toBe(9);
+    expect(Array.from(tiles).map((tile) => tile.dataset.slot)).toEqual([
+      ...equipmentSlotLayout,
+    ]);
   });
 
-  it("attempts the manifest image path for each expedition equipment row", () => {
+  it("groups every set into one block of 6 tiles (Expedition) in the same slot order as the Expedition Equipment Simulator", () => {
+    renderTables();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    const block = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    )[0];
+    const tiles = block.querySelectorAll<HTMLElement>(".reference-tile");
+    expect(tiles.length).toBe(6);
+    expect(Array.from(tiles).map((tile) => tile.dataset.slot)).toEqual([
+      ...expeditionSlotLayout,
+    ]);
+  });
+
+  it("never splits a single set's tiles across two blocks (each .reference-tile-grid belongs to exactly one set)", () => {
+    renderTables();
+    for (const block of document.querySelectorAll<HTMLElement>(
+      ".reference-tile-block",
+    )) {
+      const rarities = new Set(
+        Array.from(block.querySelectorAll<HTMLElement>(".reference-tile")).map(
+          (tile) => tile.dataset.rarity,
+        ),
+      );
+      expect(rarities.size).toBe(1);
+      expect(block.dataset.rarity).toBe([...rarities][0]);
+    }
+  });
+
+  it("colors each tile's border with its own rarity, not a fixed one", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const tile = block.querySelector<HTMLElement>(".reference-tile")!;
+    expect(tile.style.borderColor).toBe("var(--rarity-legendaire)");
+  });
+
+  it("colors the slot label with the equipment's family color (Bloc 31/H palette), readable on every rarity tile", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const slotLabels = block.querySelectorAll<HTMLElement>(
+      ".reference-tile-slot",
+    );
+    // Spirit Fyra is family "Attaque" — same red used for the Attaque filter
+    // pill (Bloc 31/H). jsdom normalizes the inline hex to rgb().
+    for (const label of slotLabels)
+      expect(label.style.color).toBe("rgb(192, 57, 43)");
+  });
+
+  it("every tile sets an explicit slot-label color across all 5 rarities (never falls back to inherited text color)", () => {
+    renderTables();
+    for (const label of document.querySelectorAll<HTMLElement>(
+      ".reference-tile-slot",
+    )) {
+      expect(label.style.color).not.toBe("");
+    }
+  });
+
+  // The riskiest pairing readability-wise: the "Or" family's slot-label
+  // color (var(--gold)) sits on a tile whose border/background come from
+  // var(--rarity-legendaire) — a near-identical gold-family hex by design
+  // (both are intentionally gold-branded, cdc 7.1). They stay two distinct
+  // CSS custom properties rather than collapsing to the same value, which
+  // is what keeps a future palette tweak from silently breaking one without
+  // the other — actual on-screen contrast is checked visually (PR report).
+  it("keeps the Or family's slot-label color and the Légendaire rarity's tile color as independent tokens", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows.filter(
+            (row) => row.family === "Or" && row.rarity === "Légendaire",
+          )}
+        />
+      </NextIntlClientProvider>,
+    );
+    const tile = document.querySelector<HTMLElement>(".reference-tile")!;
+    expect(tile.style.borderColor).toBe("var(--rarity-legendaire)");
+    const label = tile.querySelector<HTMLElement>(".reference-tile-slot")!;
+    expect(label.style.color).toBe("var(--gold)");
+  });
+
+  it("shows only the base 1★ value on a tile, with no way to change it", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const weaponTile = Array.from(
+      block.querySelectorAll<HTMLElement>(".reference-tile"),
+    ).find((tile) => tile.dataset.slot === "Arme")!;
+    // skill_1 "Attaque" value_1_pct "10" for Spirit Fyra's weapon — the raw
+    // base value, since valueAtStar(base, increment, 1) === base.
+    expect(weaponTile.textContent).toContain("10%");
+    expect(
+      screen.queryByRole("combobox", { name: "Niveau d’étoile" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+  });
+
+  it("shows the gem count only on Combat tiles whose rarity actually has gem slots", () => {
+    renderTables();
+    const legendary = combatBlock("Spirit Fyra"); // gem_slots: "3"
+    expect(legendary.querySelectorAll(".reference-tile-gems").length).toBe(9);
+    const commun = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).find((block) => block.dataset.rarity === "Commun")!;
+    // Commun has 0 gem slots (defaultCombatGemSlotsBase.Commun) everywhere.
+    expect(commun.querySelectorAll(".reference-tile-gems").length).toBe(0);
+  });
+
+  it("Codex review (PR #61): reads the tile gem count from gemSlotsBase, not the static row.gem_slots field", () => {
+    // Spirit Fyra's rows all carry gem_slots: "3" in the default catalog —
+    // override gemSlotsBase.Légendaire to a different value and confirm the
+    // tile follows the admin-editable config, the same source the Gemmes
+    // rarity summary table below already reads from.
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          gemSlotsBase={{ ...defaultCombatGemSlotsBase, Légendaire: 7 }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const block = combatBlock("Spirit Fyra");
+    const gemLabels = block.querySelectorAll(".reference-tile-gems");
+    expect(gemLabels.length).toBe(9);
+    for (const label of gemLabels) expect(label.textContent).toContain("7");
+  });
+
+  it("Codex review (PR #61): exposes family alongside rarity in each tile's accessible name", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const tile = block.querySelector<HTMLElement>(
+      '.reference-tile[data-slot="Arme"]',
+    )!;
+    expect(tile.getAttribute("aria-label")).toBe(
+      "Légendaire — Attaque — Spirit Fyra — Arme",
+    );
+  });
+
+  it("Codex review (PR #61): dimmed (filtered-out) blocks carry a screen-reader-only hint, matching ones don't", () => {
+    renderTables();
+    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
+    const dimmedTitle = combatBlock("Spirit Fyra").querySelector("h3")!;
+    expect(dimmedTitle.querySelector(".sr-only")).toHaveTextContent(
+      "ne correspond pas aux filtres actifs",
+    );
+    const defenseBlock = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).find((block) => block.dataset.family === "Défense")!;
+    expect(
+      defenseBlock.querySelector("h3")!.querySelector(".sr-only"),
+    ).toBeNull();
+  });
+
+  it("never shows a gem count on Expedition tiles", () => {
+    renderTables();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    expect(document.querySelectorAll(".reference-tile-gems").length).toBe(0);
+  });
+
+  it("attempts the manifest image path for a combat equipment tile", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const weaponTile = Array.from(
+      block.querySelectorAll<HTMLElement>(".reference-tile"),
+    ).find((tile) => tile.dataset.slot === "Arme")!;
+    const image = weaponTile.querySelector<HTMLImageElement>(
+      ".reference-equipment-image",
+    )!;
+    expect(image.getAttribute("src")).toBe(
+      "/equipment/combat/attack-legendary-weapon.webp",
+    );
+  });
+
+  it("attempts the manifest image path for an expedition equipment tile", () => {
     renderTables();
     fireEvent.click(
       screen.getByRole("tab", { name: "Équipements d’Expédition" }),
@@ -72,7 +231,7 @@ describe("ReferenceTables", () => {
     );
   });
 
-  it("colors family and rarity filter buttons to match their equipment cell / Gems colors (Bloc 31/H)", () => {
+  it("colors family and rarity filter buttons to match their equipment tile / Gems colors (Bloc 31/H)", () => {
     renderTables();
     const attack = screen.getByRole("button", { name: "Attaque" });
     expect(attack.style.getPropertyValue("--pill-color")).toBe("#c0392b");
@@ -87,79 +246,62 @@ describe("ReferenceTables", () => {
     expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
   });
 
-  it("Bloc35 4.1: widens Expedition's family filter column but leaves Combat's untouched", () => {
+  it("Bloc39: filters dim non-matching sets instead of hiding them — the full grid stays on screen", () => {
     renderTables();
-    const combatFilters = document.querySelector(".reference-filters")!;
-    expect(combatFilters.className).not.toMatch(
-      /reference-filters-wide-family/,
+    const totalBefore = document.querySelectorAll(
+      ".reference-tile-block",
+    ).length;
+    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
+    expect(document.querySelectorAll(".reference-tile-block").length).toBe(
+      totalBefore,
     );
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
-    );
-    const expeditionFilters = document.querySelector(".reference-filters")!;
-    expect(expeditionFilters.className).toMatch(
-      /reference-filters-wide-family/,
-    );
+    const attaqueBlocks = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).filter((block) => block.dataset.family === "Attaque");
+    expect(attaqueBlocks.length).toBeGreaterThan(0);
+    for (const block of attaqueBlocks)
+      expect(block.className).toContain("reference-tile-block-dim");
+    const defenseBlocks = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).filter((block) => block.dataset.family === "Défense");
+    for (const block of defenseBlocks)
+      expect(block.className).not.toContain("reference-tile-block-dim");
   });
 
-  it("Bloc35 3.1: orders combat family buttons Attaque/Défense/Or/Vitesse", () => {
+  it("Bloc39: no star-level filter and no search box anywhere on either reference", () => {
     renderTables();
-    const familyButtons = document
-      .querySelectorAll<HTMLButtonElement>(
-        ".reference-filters .family-buttons",
-      )[0]
-      .querySelectorAll("button");
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
     expect(
-      Array.from(familyButtons).map((button) => button.textContent),
-    ).toEqual(["Attaque", "Défense", "Or", "Troupes/Vitesse"]);
-  });
-
-  it("Bloc35 2.1: puts the image column before the rarity column on the combat table, as two separate columns", () => {
-    renderTables();
-    const headers = screen
-      .getAllByRole("columnheader")
-      .map((cell) => cell.textContent);
-    expect(headers.slice(0, 2)).toEqual(["Image", "Rareté"]);
-    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    isolateToLegendary();
-    const firstRow = screen.getAllByRole("row")[1];
-    const cells = firstRow.querySelectorAll("td");
-    expect(cells[0].querySelector(".reference-equipment-image")).not.toBeNull();
-    expect(cells[0].querySelector(".rarity-badge")).toBeNull();
-    expect(cells[1].querySelector(".rarity-badge")).not.toBeNull();
-  });
-
-  it("Bloc35 2.1: puts the image column before the rarity column on the expedition table too", () => {
-    renderTables();
+      screen.queryByRole("combobox", { name: "Niveau d’étoile" }),
+    ).not.toBeInTheDocument();
     fireEvent.click(
       screen.getByRole("tab", { name: "Équipements d’Expédition" }),
     );
-    const headers = screen
-      .getAllByRole("columnheader")
-      .map((cell) => cell.textContent);
-    expect(headers.slice(0, 2)).toEqual(["Image", "Rareté"]);
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: "Niveau d’étoile" }),
+    ).not.toBeInTheDocument();
   });
 
-  it("Bloc35 2.2: removes Pouciel/Gemmes from the combat table's per-row columns, replaced by rarity-indexed tables", () => {
+  it("Bloc35 2.2 (kept): still shows the Pouciel/Gemmes/Terradust rarity-indexed tables", () => {
     renderTables();
-    const mainHeaders = screen
-      .getAllByRole("columnheader")
-      .map((cell) => cell.textContent);
-    expect(mainHeaders).not.toContain("Pouciel");
-    expect(mainHeaders).not.toContain("Gemmes");
-    // The cdc-confirmed Légendaire values, now shown in a small table
-    // indexed by rarity instead of repeated on every row.
     const skydustTable = screen
       .getByRole("heading", { name: "Pouciel" })
       .closest("section")!;
-    expect(within(skydustTable).getByText("160")).toBeVisible();
+    expect(skydustTable.textContent).toContain("160");
     const gemsTable = screen
       .getByRole("heading", { name: "Gemmes" })
       .closest("section")!;
-    expect(within(gemsTable).getByText("3")).toBeVisible();
+    expect(gemsTable.textContent).toContain("3");
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "Terradust à la destruction" }),
+    ).toBeInTheDocument();
   });
 
-  it("PR #57 review: formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {
+  it("PR #57 review (kept): formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable
@@ -171,92 +313,55 @@ describe("ReferenceTables", () => {
     const gemsTable = screen
       .getByRole("heading", { name: "Gemmes" })
       .closest("section")!;
-    expect(within(gemsTable).getByText("1.2k")).toBeVisible();
-    expect(within(gemsTable).queryByText("1200")).not.toBeInTheDocument();
-  });
-
-  it("Bloc35 2.2: shows the Terradust-at-destruction rarity table on the expedition side, defaulting to 0", () => {
-    renderTables();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
-    );
-    const dismantleTable = screen
-      .getByRole("heading", { name: "Terradust à la destruction" })
-      .closest("section")!;
-    expect(within(dismantleTable).getAllByText("0")).toHaveLength(5);
-  });
-
-  it("no longer shows the stale unconfirmed-assumption banner now that all 10 stats are confirmed", () => {
-    renderTables();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
-    );
-    expect(
-      screen.queryByText(/projection par étoile est une/),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Hypothèse non confirmée"),
-    ).not.toBeInTheDocument();
-  });
-
-  it("Bloc37/I: drops the free-search box, sizes family/rarity/star-level 1fr/1fr/20% and right-aligns star-level", () => {
-    renderTables();
-    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
-    const starLabel = screen
-      .getByRole("combobox", { name: "Niveau d’étoile" })
-      .closest("label")!;
-    expect(starLabel).toHaveClass("reference-star-filter");
-
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
-    );
-    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
-  });
-
-  it("Bloc37/H: shows the skill/stat name and its % value on the same line, not stacked", () => {
-    renderTables();
-    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    isolateToLegendary();
-    const row = screen.getAllByRole("row")[1];
-    const pair = row.querySelector(".skill-value-row")!;
-    expect(pair).toBeInTheDocument();
-    expect(pair.querySelector(".reference-value")).not.toBeNull();
+    expect(gemsTable.textContent).toContain("1.2k");
+    expect(gemsTable.textContent).not.toContain("1200");
   });
 });
 
-describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-filled-in", () => {
+describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-filled-in (kept)", () => {
   afterEach(cleanup);
-  const baseRow = combatReferenceRows[0];
+  const baseSet = (() => {
+    const first = combatReferenceRows.find(
+      (row) => row.set_name === "Spirit Fyra",
+    )!;
+    return combatReferenceRows.filter(
+      (row) => row.set_name === first.set_name && row.rarity === first.rarity,
+    );
+  })();
 
   it('shows "—" when the admin explicitly picked "Rien" for a skill slot', () => {
-    const rows = [
-      { ...baseRow, family: "Attaque", skill_2: "none", value_2_pct: "" },
-    ];
+    const rows = baseSet.map((row) =>
+      row.slot_type === "Arme"
+        ? { ...row, skill_2: "none", value_2_pct: "" }
+        : row,
+    );
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable rows={rows} />
       </NextIntlClientProvider>,
     );
-    const row = screen.getAllByRole("row")[1];
-    const cells = row.querySelectorAll("td");
-    // Column order: image, rarity, set name, slot, skill1..4 — skill_2 is
-    // the 6th cell.
-    expect(cells[5]).toHaveTextContent("—");
-    expect(cells[5].querySelector(".unconfirmed")).toBeNull();
+    const tile = document.querySelector<HTMLElement>(
+      '.reference-tile[data-slot="Arme"]',
+    )!;
+    const skill2 = tile.querySelector('[data-skill="2"]')!;
+    expect(skill2.textContent).toBe("—");
+    expect(skill2.querySelector(".unconfirmed")).toBeNull();
   });
 
   it('still shows "À compléter en admin" when a skill slot is genuinely not filled in yet', () => {
-    const rows = [
-      { ...baseRow, family: "Attaque", skill_2: "", value_2_pct: "" },
-    ];
+    const rows = baseSet.map((row) =>
+      row.slot_type === "Arme" ? { ...row, skill_2: "", value_2_pct: "" } : row,
+    );
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable rows={rows} />
       </NextIntlClientProvider>,
     );
-    const row = screen.getAllByRole("row")[1];
-    const cells = row.querySelectorAll("td");
-    expect(cells[5].querySelector(".unconfirmed")).toHaveTextContent(
+    const tile = document.querySelector<HTMLElement>(
+      '.reference-tile[data-slot="Arme"]',
+    )!;
+    const skill2 = tile.querySelector('[data-skill="2"]')!;
+    expect(skill2.querySelector(".unconfirmed")).toHaveTextContent(
       "À compléter en admin",
     );
   });
