@@ -732,20 +732,26 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.reload();
   await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
   // Same regression check for the Terradust merge-cost editor (2nd of the
-  // 4 "Enregistrer toute la table" buttons on this page: increments,
+  // 4 "Enregistrer toute la table" instances on this page: increments,
   // merge-cost, dismantle (Bloc 35/5.2), then the 120-row reference table).
-  // Bloc 35/5.2: the new dismantle table also has a "Commun" rarity column,
-  // so scope to the merge-cost table (2nd table on the page) to disambiguate.
-  const mergeCostTable = page.locator("table").nth(1);
-  await mergeCostTable.getByLabel("Ligne 1 Commun").fill("700");
-  await page
+  // Bloc 35/5.1 renders increments as a field grid, not a <table> — so
+  // <table> elements on the page no longer line up 1:1 with these 4
+  // instances. Bloc 35/5.2's dismantle table also has a "Commun" rarity
+  // column. Scope by each instance's own .editable-reference container
+  // (present regardless of table/grid layout) instead of counting
+  // <table>/button elements, so this stays correct however either layout
+  // changes in the future.
+  const mergeCostSection = page.locator(".editable-reference").nth(1);
+  await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
+  await mergeCostSection
     .getByRole("button", { name: "Enregistrer toute la table" })
-    .nth(1)
     .click();
-  await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
+  await expect(
+    mergeCostSection.getByText("Référentiel enregistré."),
+  ).toBeVisible();
   await page.reload();
   await expect(
-    page.locator("table").nth(1).getByLabel("Ligne 1 Commun"),
+    page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
   ).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
