@@ -97,6 +97,19 @@ describe("public responsive styles", () => {
     expect(mediaBlock).toMatch(/repeat\(2, minmax\(0, 1fr\)\)/);
   });
 
+  it("wraps Combat/Expedition's family buttons to a 2nd row on mobile instead of scrolling horizontally (Bloc 34/B)", () => {
+    const rule = css.match(/\.family-buttons\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    // Desktop still never wraps (Bloc 31/H) — the family-buttons rule
+    // itself keeps flex-wrap: nowrap outside any media query.
+    expect(rule).toMatch(/flex-wrap: nowrap;/);
+    const mobileOverride = css.match(
+      /@media \(max-width: 900px\)\s*{\s*\.family-buttons\s*{([\s\S]*?)\n\s*}/,
+    )?.[1];
+    expect(mobileOverride).toBeDefined();
+    expect(mobileOverride).toMatch(/flex-wrap: wrap;/);
+  });
+
   it("keeps all four summary colors at readable contrast in both themes", () => {
     const dark = css.match(
       /:root,\s*:root\[data-theme="dark"\]\s*{([\s\S]*?)\n}/,

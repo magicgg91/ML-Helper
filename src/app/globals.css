@@ -1090,14 +1090,21 @@ select {
   margin: 1rem 0 0;
 }
 .family-buttons {
-  /* Bloc 31/H: always one line, never wraps — a narrow viewport scrolls
-     horizontally instead of pushing buttons to a second row. */
+  /* Bloc 31/H: one line on desktop, never wraps there. Bloc 34/B: mobile
+     wraps to a 2nd row instead — the horizontal scroll this used to fall
+     back to was easy to miss and awkward to trigger by touch. */
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
   gap: 0.35rem;
   margin: 1rem 0;
   padding-bottom: 0.2rem;
+}
+@media (max-width: 900px) {
+  .family-buttons {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 .secondary-action {
   padding: 0.6rem 0.85rem;
