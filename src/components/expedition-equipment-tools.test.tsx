@@ -174,8 +174,19 @@ describe("ExpeditionEquipmentSimulator", () => {
     renderTool();
     const gold = screen.getByRole("button", { name: "Or" });
     expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+  });
+
+  it("gives 'Personnalisé' its own color, distinct from all 4 family colors (Bloc 33/J)", () => {
+    renderTool();
     const custom = screen.getByRole("button", { name: "Personnalisé" });
-    expect(custom.style.getPropertyValue("--pill-color")).toBe("");
+    const customColor = custom.style.getPropertyValue("--pill-color");
+    expect(customColor).not.toBe("");
+    for (const family of ["Or", "Équipement combat", "Consommables", "Troupes"]) {
+      const familyColor = screen
+        .getByRole("button", { name: family })
+        .style.getPropertyValue("--pill-color");
+      expect(customColor).not.toBe(familyColor);
+    }
   });
 
   it("keeps each filter's loadout independent — switching filters never overwrites another one's saved config", () => {

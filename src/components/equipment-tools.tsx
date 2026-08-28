@@ -456,6 +456,14 @@ export function StuffSimulator({
     }
     replaceEquipmentSkills(equipmentSkills);
   }
+  // Bloc 33/K: the confirmation clears itself instead of staying forever —
+  // well under the 5s cap. Bloc 33/H reuses the same flag to also
+  // highlight the transfer button for as long as the message is shown.
+  useEffect(() => {
+    if (!transferred) return;
+    const timer = window.setTimeout(() => setTransferred(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [transferred]);
   function update(
     block: EquipmentBlock,
     index: number,
@@ -514,10 +522,17 @@ export function StuffSimulator({
             </button>
           );
         })}
-        {/* Bloc 32/D.7: joins the family row instead of the summary title
-            row, same size/style as the family buttons themselves. */}
+        {/* Bloc 32/D.7 + Bloc 33/H: joins the family row (same size as the
+            family buttons) instead of the summary title row, but right-
+            aligned, in a distinct violet accent, and briefly highlighted
+            on click. */}
         <button
           type="button"
+          className={
+            transferred
+              ? "transfer-action transfer-action-active"
+              : "transfer-action"
+          }
           onClick={() => {
             transferToPlayerSettings();
             setTransferred(true);
