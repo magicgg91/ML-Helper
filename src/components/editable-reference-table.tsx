@@ -1,7 +1,22 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  type ChangeEvent,
+  type ForwardedRef,
+} from "react";
 import { useTranslations } from "next-intl";
+
+// Bloc 37/E: lets a page hosting several of these tables (Combat,
+// Expedition) drive them from one shared save button instead of each table
+// keeping its own — the page calls validate()/save() on every table's
+// handle and combines the results into a single status message.
+export type ReferenceTableHandle = {
+  validate: () => boolean;
+  save: () => Promise<boolean>;
+};
 
 export type EditableColumn<Row> = {
   key: keyof Row & string;
@@ -150,18 +165,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
   );
 }
 
-export function EditableReferenceTable<Row extends Record<string, string>>({
-  initialRows,
-  columns,
-  endpoint,
-  description,
-  descriptionAsTitle = false,
-  saveLabel,
-  serialize = (rows) => rows,
-  onRowsChange,
-  filters = [],
-  layout = "table",
-}: {
+export type EditableReferenceTableProps<Row extends Record<string, string>> = {
   initialRows: Row[];
   columns: EditableColumn<Row>[];
   endpoint: string;
@@ -187,7 +191,28 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
   // single-row table with many columns (e.g. per-star increments), where a
   // real table forces a horizontal scroll a field grid doesn't need.
   layout?: "table" | "grid";
-}) {
+  // Bloc 37/E: when false, this table renders no save button/status of its
+  // own — a page hosting several tables (Combat, Expedition) drives them
+  // all from ref.validate()/ref.save() instead, behind one shared button.
+  standalone?: boolean;
+};
+
+function EditableReferenceTableInner<Row extends Record<string, string>>(
+  {
+    initialRows,
+    columns,
+    endpoint,
+    description,
+    descriptionAsTitle = false,
+    saveLabel,
+    serialize = (rows) => rows,
+    onRowsChange,
+    filters = [],
+    layout = "table",
+    standalone = true,
+  }: EditableReferenceTableProps<Row>,
+  ref: ForwardedRef<ReferenceTableHandle>,
+) {
   const t = useTranslations("admin.references");
   const [rows, setRows] = useState(initialRows);
   const [status, setStatus] = useState("");
@@ -243,16 +268,20 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
     return true;
   }
 
+  function performSave(): Promise<Response> {
+    return fetch(endpoint, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(serialize(rows)),
+    });
+  }
+
   async function save() {
     if (!validate()) return;
     setStatus(t("saving"));
     setSuccess(false);
     try {
-      const response = await fetch(endpoint, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(serialize(rows)),
-      });
+      const response = await performSave();
       if (!response.ok) {
         setStatus(t("save-error", { status: response.status }));
         return;
@@ -263,6 +292,19 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
       setStatus(t("server-error"));
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    validate,
+    async save() {
+      if (!validate()) return false;
+      try {
+        const response = await performSave();
+        return response.ok;
+      } catch {
+        return false;
+      }
+    },
+  }));
 
   function field(row: Row, rowIndex: number, column: EditableColumn<Row>) {
     const key = errorKey(rowIndex, column.key);
@@ -319,7 +361,7 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
         <p>{description}</p>
       )}
       {filters.length > 0 && (
-        <div className="reference-filters">
+        <div className="reference-admin-filters">
           {filters.map((filter) => (
             <label key={filter.key}>
               {filter.label}
@@ -393,14 +435,29 @@ export function EditableReferenceTable<Row extends Record<string, string>>({
           </table>
         </div>
       )}
-      <button className="primary-button" type="button" onClick={save}>
-        {saveLabel ?? t("save")}
-      </button>
-      {status && (
-        <p className={success ? "form-success" : "form-status"} role="status">
-          {status}
-        </p>
+      {standalone && (
+        <>
+          <button className="primary-button" type="button" onClick={save}>
+            {saveLabel ?? t("save")}
+          </button>
+          {status && (
+            <p
+              className={success ? "form-success" : "form-status"}
+              role="status"
+            >
+              {status}
+            </p>
+          )}
+        </>
       )}
     </div>
   );
 }
+
+export const EditableReferenceTable = forwardRef(
+  EditableReferenceTableInner,
+) as <Row extends Record<string, string>>(
+  props: EditableReferenceTableProps<Row> & {
+    ref?: ForwardedRef<ReferenceTableHandle>;
+  },
+) => ReturnType<typeof EditableReferenceTableInner>;

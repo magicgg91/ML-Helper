@@ -23,13 +23,6 @@ vi.mock("@/lib/reference-equipment-server", () => ({
   getExpeditionMergeCostBase: async () => ({}),
   getExpeditionDismantleBase: async () => ({}),
 }));
-vi.mock("@/components/admin-back-link", () => ({
-  AdminBackLink: ({ href }: { href: string }) => (
-    <Link className="editor-back-action admin-back-link" href={href}>
-      back
-    </Link>
-  ),
-}));
 vi.mock("@/components/named-parameters-editor", () => ({
   LevelUpParametersEditor: () => (
     <div className="calculator-stack">
@@ -41,15 +34,24 @@ vi.mock("@/components/named-parameters-editor", () => ({
     </div>
   ),
 }));
-vi.mock("@/components/reference-admin-editors", () => ({
-  CombatReferenceAdmin: () => <div data-testid="combat-table" />,
-  CombatSkydustAdmin: () => <div data-testid="combat-skydust" />,
-  CombatGemSlotsAdmin: () => <div data-testid="combat-gem-slots" />,
-  ExpeditionIncrementsAdmin: () => <div data-testid="expedition-increments" />,
-  ExpeditionMergeCostAdmin: () => <div data-testid="expedition-merge-cost" />,
-  ExpeditionDismantleAdmin: () => <div data-testid="expedition-dismantle" />,
-  ExpeditionReferenceAdmin: () => <div data-testid="expedition-table" />,
-}));
+// Bloc 37/E: each screen now owns a single EditorActionBar internally
+// (real component tested in reference-admin-editors.test.tsx) — this mock
+// only stands in for it here, to keep this page-wiring test isolated.
+vi.mock("@/components/reference-admin-editors", () => {
+  const Screen = () => (
+    <div className="calculator-stack">
+      <div className="editor-action-bar">
+        <Link className="editor-back-action" href="/admin/guides">
+          back
+        </Link>
+      </div>
+    </div>
+  );
+  return {
+    CombatReferenceScreen: Screen,
+    ExpeditionReferenceScreen: Screen,
+  };
+});
 
 afterEach(cleanup);
 
@@ -63,7 +65,6 @@ describe("Bloc35 10.2/10.3: EditGuidePage's back-link consistency", () => {
     );
     const backLinks = container.querySelectorAll(".editor-back-action");
     expect(backLinks).toHaveLength(1);
-    expect(container.querySelector(".admin-back-link")).toBeNull();
   });
 
   it("styles the Combat/Expedition admin page's back link like every EditorActionBar back link", async () => {

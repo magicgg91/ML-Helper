@@ -1,10 +1,13 @@
 "use client";
 
+import { forwardRef, useRef, useState, type RefObject } from "react";
 import { useTranslations } from "next-intl";
 import {
   EditableReferenceTable,
   type EditableColumn,
+  type ReferenceTableHandle,
 } from "./editable-reference-table";
+import { EditorActionBar } from "./editor-action-bar";
 import { equipmentRarityValues } from "../lib/equipment-rarity";
 import { equipmentSkillLabels, equipmentSlotLayout } from "../lib/equipment";
 import {
@@ -139,7 +142,17 @@ function useOptions() {
     ),
     combatSlots: map(equipmentSlotLayout, slotKeys, "slots"),
     expeditionSlots: map(expeditionSlots, slotKeys, "slots"),
-    skills: map(["", ...equipmentSkillLabels], skillKeys, "skills"),
+    // Bloc 37/G: "Aucune" is distinct from "" (not yet filled in) — an admin
+    // picks it to explicitly mark a skill slot as never having one, so the
+    // public side shows "—" instead of the "still needs data" placeholder.
+    skills: [
+      { value: "", label: common("choose") },
+      { value: "Aucune", label: common("none") },
+      ...equipmentSkillLabels.map((value) => ({
+        value,
+        label: game(`skills.${skillKeys[value]}`),
+      })),
+    ],
     stats: expeditionStats.map((value) => ({
       value,
       label: value
@@ -158,11 +171,10 @@ function useOptions() {
 // Bloc 35/6.2: Famille, Rareté, Nom du set, Emplacement, then Compétence/Valeur
 // ×4. Bloc 35/6.1: Pouciel and gem-slots are no longer per-row columns here —
 // see CombatSkydustAdmin/CombatGemSlotsAdmin below.
-export function CombatReferenceAdmin({
-  initialRows,
-}: {
-  initialRows: CombatReferenceRow[];
-}) {
+export const CombatReferenceAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initialRows: CombatReferenceRow[]; standalone?: boolean }
+>(function CombatReferenceAdmin({ initialRows, standalone }, ref) {
   const t = useTranslations("admin.references"),
     equipment = useTranslations("combat-equipment.columns"),
     options = useOptions();
@@ -193,6 +205,8 @@ export function CombatReferenceAdmin({
   }));
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/combat-equipment"
@@ -217,7 +231,7 @@ export function CombatReferenceAdmin({
       ]}
     />
   );
-}
+});
 
 function useRarityBaseColumns(step = 1) {
   const game = useTranslations("game");
@@ -243,46 +257,47 @@ function rarityBaseInitialRows(initial: Record<string, number>) {
 // Bloc 35/6.1: Combat's Pouciel-at-destruction, promoted from a hardcoded
 // per-rarity lookup to genuine admin config — same pattern as
 // ExpeditionMergeCostAdmin (1 row, 5 rarity columns).
-export function CombatSkydustAdmin({
-  initial,
-}: {
-  initial: CombatSkydustBase;
-}) {
+export const CombatSkydustAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: CombatSkydustBase; standalone?: boolean }
+>(function CombatSkydustAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/combat-equipment-skydust"
       description={t("combat-skydust-description")}
     />
   );
-}
+});
 
 // Bloc 35/6.1: same treatment for Combat's gem slots per rarity.
-export function CombatGemSlotsAdmin({
-  initial,
-}: {
-  initial: CombatGemSlotsBase;
-}) {
+export const CombatGemSlotsAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: CombatGemSlotsBase; standalone?: boolean }
+>(function CombatGemSlotsAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/combat-equipment-gem-slots"
       description={t("combat-gem-slots-description")}
     />
   );
-}
+});
 
 // Bloc 35/5.4: Famille, Rareté, Nom du set, Emplacement, Valeur stat
 // primaire, Stat secondaire, Valeur stat secondaire.
-export function ExpeditionReferenceAdmin({
-  initialRows,
-}: {
-  initialRows: ExpeditionReferenceRow[];
-}) {
+export const ExpeditionReferenceAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initialRows: ExpeditionReferenceRow[]; standalone?: boolean }
+>(function ExpeditionReferenceAdmin({ initialRows, standalone }, ref) {
   const t = useTranslations("admin.references"),
     equipment = useTranslations("expedition-equipment.columns"),
     options = useOptions();
@@ -292,9 +307,11 @@ export function ExpeditionReferenceAdmin({
       select("rarity", equipment("rarity"), options.rarities),
       text("set_name", t("columns.set-name")),
       select("slot", equipment("slot"), options.expeditionSlots),
-      number("type_stat_pct", t("columns.type-value")),
+      // Bloc 37/A: these two never exceed 100%, same as Combat's Valeur
+      // columns — narrowed too, previously left at the wide default.
+      number("type_stat_pct", t("columns.type-value"), true),
       select("secondary_stat_name", equipment("secondary-stat"), options.stats),
-      number("secondary_stat_pct", t("columns.secondary-value")),
+      number("secondary_stat_pct", t("columns.secondary-value"), true),
     ] as EditableColumn<ExpeditionReferenceRow>[]
   ).map((column) => ({
     ...column,
@@ -303,6 +320,8 @@ export function ExpeditionReferenceAdmin({
   }));
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/expedition-equipment"
@@ -332,7 +351,7 @@ export function ExpeditionReferenceAdmin({
       ]}
     />
   );
-}
+});
 
 const expeditionStatLabelKeys: Record<
   (typeof expeditionStatKeys)[number],
@@ -351,11 +370,10 @@ const expeditionStatLabelKeys: Record<
 };
 
 // Bloc 35/5.1, 5.3, 5.5: grid layout (CSS), narrow % columns, dedicated title.
-export function ExpeditionIncrementsAdmin({
-  initial,
-}: {
-  initial: ExpeditionStarIncrements;
-}) {
+export const ExpeditionIncrementsAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: ExpeditionStarIncrements; standalone?: boolean }
+>(function ExpeditionIncrementsAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
   const game = useTranslations("game");
   const columns: EditableColumn<Record<string, string>>[] =
@@ -375,6 +393,8 @@ export function ExpeditionIncrementsAdmin({
   ];
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/expedition-equipment-increments"
@@ -383,16 +403,17 @@ export function ExpeditionIncrementsAdmin({
       layout="grid"
     />
   );
-}
+});
 
-export function ExpeditionMergeCostAdmin({
-  initial,
-}: {
-  initial: ExpeditionMergeCostBase;
-}) {
+export const ExpeditionMergeCostAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: ExpeditionMergeCostBase; standalone?: boolean }
+>(function ExpeditionMergeCostAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
@@ -400,24 +421,160 @@ export function ExpeditionMergeCostAdmin({
       descriptionAsTitle
     />
   );
-}
+});
 
 // Bloc 35/5.2: Expedition's Terradust-on-dismantle per rarity — unconfirmed
 // in the cdc, so it defaults to 0 for every rarity (AskUserQuestion
 // resolution) and is fully admin-editable, same pattern as merge-cost.
-export function ExpeditionDismantleAdmin({
-  initial,
-}: {
-  initial: ExpeditionDismantleBase;
-}) {
+export const ExpeditionDismantleAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: ExpeditionDismantleBase; standalone?: boolean }
+>(function ExpeditionDismantleAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
   return (
     <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-dismantle"
       description={t("expedition-dismantle-description")}
       descriptionAsTitle
     />
+  );
+});
+
+// Bloc 37/E: a single EditorActionBar at the top of the page, with one
+// button that saves every table on this screen in one action — replaces
+// the old layout, where every table (main + Pouciel + Gemmes, or
+// increments + merge-cost + dismantle + main) rendered its own back link
+// and its own save button repeated down the page.
+function useCombinedSave(refs: Array<RefObject<ReferenceTableHandle | null>>) {
+  const t = useTranslations("admin.references");
+  const [status, setStatus] = useState("");
+  const [success, setSuccess] = useState(false);
+  async function saveAll() {
+    const valid = refs.every((r) => r.current?.validate() ?? true);
+    if (!valid) {
+      setStatus(t("validation"));
+      setSuccess(false);
+      return;
+    }
+    setStatus(t("saving"));
+    setSuccess(false);
+    const results = await Promise.all(
+      refs.map((r) => r.current?.save() ?? Promise.resolve(true)),
+    );
+    if (results.every(Boolean)) {
+      setStatus(t("saved"));
+      setSuccess(true);
+    } else {
+      setStatus(t("save-all-error"));
+      setSuccess(false);
+    }
+  }
+  return { status, success, saveAll, saveAllLabel: t("save-all") };
+}
+
+export function CombatReferenceScreen({
+  initialRows,
+  skydustInitial,
+  gemSlotsInitial,
+}: {
+  initialRows: CombatReferenceRow[];
+  skydustInitial: CombatSkydustBase;
+  gemSlotsInitial: CombatGemSlotsBase;
+}) {
+  const mainRef = useRef<ReferenceTableHandle>(null);
+  const skydustRef = useRef<ReferenceTableHandle>(null);
+  const gemSlotsRef = useRef<ReferenceTableHandle>(null);
+  const { status, saveAll, saveAllLabel } = useCombinedSave([
+    mainRef,
+    skydustRef,
+    gemSlotsRef,
+  ]);
+  return (
+    <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/guides" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={saveAll}
+        >
+          {saveAllLabel}
+        </button>
+      </EditorActionBar>
+      <CombatReferenceAdmin
+        ref={mainRef}
+        initialRows={initialRows}
+        standalone={false}
+      />
+      <CombatSkydustAdmin
+        ref={skydustRef}
+        initial={skydustInitial}
+        standalone={false}
+      />
+      <CombatGemSlotsAdmin
+        ref={gemSlotsRef}
+        initial={gemSlotsInitial}
+        standalone={false}
+      />
+    </div>
+  );
+}
+
+export function ExpeditionReferenceScreen({
+  initialRows,
+  incrementsInitial,
+  mergeCostInitial,
+  dismantleInitial,
+}: {
+  initialRows: ExpeditionReferenceRow[];
+  incrementsInitial: ExpeditionStarIncrements;
+  mergeCostInitial: ExpeditionMergeCostBase;
+  dismantleInitial: ExpeditionDismantleBase;
+}) {
+  const incrementsRef = useRef<ReferenceTableHandle>(null);
+  const mergeCostRef = useRef<ReferenceTableHandle>(null);
+  const dismantleRef = useRef<ReferenceTableHandle>(null);
+  const mainRef = useRef<ReferenceTableHandle>(null);
+  const { status, saveAll, saveAllLabel } = useCombinedSave([
+    incrementsRef,
+    mergeCostRef,
+    dismantleRef,
+    mainRef,
+  ]);
+  return (
+    <div className="calculator-stack">
+      <EditorActionBar backHref="/admin/guides" message={status}>
+        <button
+          className="editor-action editor-action-primary"
+          type="button"
+          onClick={saveAll}
+        >
+          {saveAllLabel}
+        </button>
+      </EditorActionBar>
+      <ExpeditionIncrementsAdmin
+        ref={incrementsRef}
+        initial={incrementsInitial}
+        standalone={false}
+      />
+      <ExpeditionMergeCostAdmin
+        ref={mergeCostRef}
+        initial={mergeCostInitial}
+        standalone={false}
+      />
+      <ExpeditionDismantleAdmin
+        ref={dismantleRef}
+        initial={dismantleInitial}
+        standalone={false}
+      />
+      <ExpeditionReferenceAdmin
+        ref={mainRef}
+        initialRows={initialRows}
+        standalone={false}
+      />
+    </div>
   );
 }

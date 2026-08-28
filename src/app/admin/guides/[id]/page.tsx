@@ -5,15 +5,9 @@ import { GuideEditor } from "@/components/guide-editor";
 import { prisma } from "@/lib/prisma";
 import { translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
-import { AdminBackLink } from "@/components/admin-back-link";
 import {
-  CombatGemSlotsAdmin,
-  CombatReferenceAdmin,
-  CombatSkydustAdmin,
-  ExpeditionDismantleAdmin,
-  ExpeditionIncrementsAdmin,
-  ExpeditionMergeCostAdmin,
-  ExpeditionReferenceAdmin,
+  CombatReferenceScreen,
+  ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
 import {
   getCombatGemSlotsBase,
@@ -54,31 +48,20 @@ export default async function EditGuidePage({
     const combat = id === "reference-combat-equipment";
     return (
       <main className="admin-main">
-        <AdminBackLink href="/admin/guides" />
         <h1>{combat ? t("reference-combat") : t("reference-expedition")}</h1>
         {combat ? (
-          <>
-            <CombatReferenceAdmin
-              initialRows={await getCombatReferenceRows()}
-            />
-            <CombatSkydustAdmin initial={await getCombatSkydustBase()} />
-            <CombatGemSlotsAdmin initial={await getCombatGemSlotsBase()} />
-          </>
+          <CombatReferenceScreen
+            initialRows={await getCombatReferenceRows()}
+            skydustInitial={await getCombatSkydustBase()}
+            gemSlotsInitial={await getCombatGemSlotsBase()}
+          />
         ) : (
-          <>
-            <ExpeditionIncrementsAdmin
-              initial={await getExpeditionStarIncrements()}
-            />
-            <ExpeditionMergeCostAdmin
-              initial={await getExpeditionMergeCostBase()}
-            />
-            <ExpeditionDismantleAdmin
-              initial={await getExpeditionDismantleBase()}
-            />
-            <ExpeditionReferenceAdmin
-              initialRows={await getExpeditionReferenceRows()}
-            />
-          </>
+          <ExpeditionReferenceScreen
+            initialRows={await getExpeditionReferenceRows()}
+            incrementsInitial={await getExpeditionStarIncrements()}
+            mergeCostInitial={await getExpeditionMergeCostBase()}
+            dismantleInitial={await getExpeditionDismantleBase()}
+          />
         )}
       </main>
     );
