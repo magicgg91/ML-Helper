@@ -1,19 +1,10 @@
 import { describe, expect, it } from "vitest";
-import {
-  adminToolEditHref,
-  formulaGuideReferenceSlugs,
-  guideReferenceSlugs,
-  referenceToolSlugs,
-} from "./admin-tools";
+import { adminToolEditHref, referenceToolSlugs } from "./admin-tools";
 
 describe("admin tool editor routing", () => {
-  it("lists Templars as a Guides reference without excluding it from the Outils table", () => {
-    expect(guideReferenceSlugs).toEqual([
-      ...referenceToolSlugs,
-      ...formulaGuideReferenceSlugs,
-    ]);
+  it("lists Templiers among the independent references, not excluded from the Outils table (Bloc 33/G)", () => {
+    expect(referenceToolSlugs).toContain("templiers");
     expect(referenceToolSlugs).not.toContain("templars");
-    expect(guideReferenceSlugs).toContain("templars");
   });
   it("points all three City tools to one shared editor", () => {
     for (const slug of ["city-cost", "city-max-level", "city-production"])
@@ -27,6 +18,9 @@ describe("admin tool editor routing", () => {
       "/admin/tools/demo-attack-troops",
     );
     expect(adminToolEditHref("gems")).toBe("/admin/tools/gems");
+  });
+  it("points Templiers' reference to the same shared formula editor as the Templars tool (Bloc 33/G)", () => {
+    expect(adminToolEditHref("templiers")).toBe("/admin/tools/templars");
   });
   it("has no edit destination for a tool with no named numeric parameters", () => {
     for (const slug of ["stuff-simulator", "city-rewards"])

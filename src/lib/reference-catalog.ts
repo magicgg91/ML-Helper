@@ -21,7 +21,7 @@ export const referenceCatalog = [
   },
   {
     slug: "templiers",
-    calculatorSlug: "templars" satisfies CalculatorSlug,
+    calculatorSlug: "templiers" satisfies CalculatorSlug,
     category: "competences",
     image: "/category-skills.svg",
   },

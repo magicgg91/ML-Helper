@@ -1,18 +1,13 @@
+// Bloc 33/G: Templars' reference ("templiers") now has its own row and its
+// own independent active flag, same as the other 3 — deactivating the
+// reference no longer deactivates the shared public Templars tool, and
+// vice versa. Only the formula params (base/ratio) and their edit point
+// stay shared, via adminToolEditHref below.
 export const referenceToolSlugs = [
   "combat-equipment",
   "expedition-equipment",
   "level-up",
-] as const;
-// Templars (cdc section 6, décision Bloc 3) has no lookup_table of its own:
-// its reference is the same 2 formula_params (base, ratio) already edited
-// via the calculator's own tool editor. It still needs a row in the Guides
-// admin reference list, but — unlike the 3 slugs above — must stay listed
-// (and editable) in the Outils admin table too, so it's tracked separately
-// rather than folded into referenceToolSlugs.
-export const formulaGuideReferenceSlugs = ["templars"] as const;
-export const guideReferenceSlugs = [
-  ...referenceToolSlugs,
-  ...formulaGuideReferenceSlugs,
+  "templiers",
 ] as const;
 export const cityToolSlugs = [
   "city-cost",
@@ -27,7 +22,8 @@ export function adminToolEditHref(slug: string): string | undefined {
   if (cityToolSlugs.includes(slug as (typeof cityToolSlugs)[number]))
     return "/admin/tools/city-parameters";
   if (slug === "ranking") return "/admin/tools/ranking";
-  if (slug === "templars") return "/admin/tools/templars";
+  if (slug === "templars" || slug === "templiers")
+    return "/admin/tools/templars";
   if (slug === "xp-gain-rate") return "/admin/tools/xp-gain-rate";
   if (slug === "demo-attack-troops") return "/admin/tools/demo-attack-troops";
   if (slug === "gems") return "/admin/tools/gems";

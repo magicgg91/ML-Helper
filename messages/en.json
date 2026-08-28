@@ -706,7 +706,7 @@
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
         "level-up": "Level Up",
-        "templars": "Templars"
+        "templiers": "Templars"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
