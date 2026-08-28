@@ -79,8 +79,10 @@ describe("Bloc 38 public reference/homepage styles", () => {
     expect(css).toMatch(
       /\.reference-admin-wide-inputs \.reference-admin-table input\s*{\s*min-width: 18rem;\s*}/,
     );
+    // Bloc 40 Codex fix (PR #62): min() caps the floor at the grid cell's
+    // own width so the row never overflows at intermediate/phone widths.
     expect(css).toMatch(
-      /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: 12rem;/,
+      /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: min\(12rem, 100%\);/,
     );
   });
 });
@@ -98,8 +100,8 @@ describe("Bloc 39: Combat/Expedition reference tile grid", () => {
     );
   });
 
-  it("dims a non-matching block instead of hiding it — filters are a navigation aid, not a hide-filter", () => {
-    expect(css).toMatch(/\.reference-tile-block-dim\s*{\s*opacity: 0\.4;\s*}/);
+  it("Bloc 40/D-F: no longer defines a dim/opacity class for filtered-out blocks — they're removed from the DOM instead", () => {
+    expect(css).not.toMatch(/\.reference-tile-block-dim/);
   });
 
   it("settles on 2 tile-wide on mobile (tried empirically against 1, see PR report) with a full-width block", () => {
@@ -126,6 +128,25 @@ describe("Bloc 39: Combat/Expedition reference tile grid", () => {
       expect(messages["combat-equipment"]).not.toHaveProperty("row-count");
       expect(messages["expedition-equipment"]).not.toHaveProperty("row-count");
       expect(messages["combat-equipment"]).toHaveProperty("gem-count");
+      // Bloc 40/D-F: the "dimmed, doesn't match filters" hint no longer
+      // applies now that filtering hides tiles outright.
+      expect(messages.references.filters).not.toHaveProperty("dimmed-hint");
     }
+  });
+});
+
+describe("Bloc 40: reference tile fixes", () => {
+  it("G: centers each skill/stat line within the skills column, scoped to the tile", () => {
+    expect(css).toMatch(
+      /\.reference-tile-skills \.skill-value-row\s*{\s*justify-content: center;\s*}/,
+    );
+  });
+
+  it("H: sizes .reference-tile-skills at 0.69em so \"Consommables\" + its % fit on one line", () => {
+    const rule = css.match(
+      /\.reference-tile-skills\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/font-size: 0\.69em;/);
   });
 });

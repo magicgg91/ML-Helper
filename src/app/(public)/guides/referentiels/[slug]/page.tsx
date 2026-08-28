@@ -49,16 +49,20 @@ export default async function ReferencePage({
       <p className="eyebrow">{t("eyebrow")}</p>
       <h1 className="reference-page-title">{t(`catalog.${reference.slug}`)}</h1>
       {/* Bloc 35/1.2: switch directly between references without a detour
-          through /guides — same pill-row pattern as the family filters
-          used just below on every reference page. */}
+          through /guides. Bloc 40/A: reuses the exact same container/button
+          classes as the /tools category banner (category-nav/category-btn)
+          instead of just visually similar family-buttons pills — the pill
+          row never grows past its content width, so it fell short of the
+          tools banner's full-width layout. */}
       <nav
-        className="reference-switcher family-buttons"
+        className="reference-switcher category-nav"
         aria-label={t("tabs-label")}
       >
         {referenceCatalog
           .filter((item) => active[item.calculatorSlug])
           .map((item) => (
             <Link
+              className="category-btn"
               key={item.slug}
               href={referenceHref(item.slug)}
               aria-current={item.slug === reference.slug ? "page" : undefined}

@@ -409,6 +409,11 @@ export const ExpeditionIncrementsAdmin = forwardRef<
   );
 });
 
+// Bloc 40/B: switched to the grid layout (same one ExpeditionIncrementsAdmin
+// already uses) — the table layout's wideInputs rule (min-width: 18rem ×
+// 5 fixed columns = 90rem) always overflowed the page, forcing horizontal
+// scroll no matter the viewport. The grid's 5 equal 1fr columns (still
+// floored at 12rem via wideInputs) fill the available width instead.
 export const ExpeditionMergeCostAdmin = forwardRef<
   ReferenceTableHandle,
   { initial: ExpeditionMergeCostBase; standalone?: boolean }
@@ -419,6 +424,7 @@ export const ExpeditionMergeCostAdmin = forwardRef<
       ref={ref}
       standalone={standalone}
       wideInputs
+      layout="grid"
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
@@ -431,6 +437,7 @@ export const ExpeditionMergeCostAdmin = forwardRef<
 // Bloc 35/5.2: Expedition's Terradust-on-dismantle per rarity — unconfirmed
 // in the cdc, so it defaults to 0 for every rarity (AskUserQuestion
 // resolution) and is fully admin-editable, same pattern as merge-cost.
+// Bloc 40/B: same grid-layout fix as merge-cost, above.
 export const ExpeditionDismantleAdmin = forwardRef<
   ReferenceTableHandle,
   { initial: ExpeditionDismantleBase; standalone?: boolean }
@@ -441,6 +448,7 @@ export const ExpeditionDismantleAdmin = forwardRef<
       ref={ref}
       standalone={standalone}
       wideInputs
+      layout="grid"
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-dismantle"

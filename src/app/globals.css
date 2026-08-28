@@ -1147,19 +1147,6 @@ select {
   cursor: pointer;
   text-decoration: none;
 }
-/* Bloc 35/1.2: the reference cross-nav reuses the family-buttons pill row,
-   marking the current reference the same way an active family is marked. */
-.reference-switcher a[aria-current="page"] {
-  border-color: var(--accent-strong);
-  color: var(--accent-strong);
-  background: color-mix(
-    in srgb,
-    var(--accent-strong) 16%,
-    var(--surface-muted)
-  );
-  box-shadow: inset 0 0 0 1px var(--accent-strong);
-  cursor: default;
-}
 .family-buttons button[aria-pressed="true"] {
   /* --pill-color (set inline per family/rarity/skill) reuses the same
      color already identifying that value elsewhere; falls back to the
@@ -1502,11 +1489,6 @@ select,
   flex: 1 1 calc(50% - 0.625rem);
   min-width: 0;
 }
-/* Filters no longer hide sets (Bloc 39: "aide à naviguer, ne masque pas le
-   reste") — a non-matching block just dims instead of disappearing. */
-.reference-tile-block-dim {
-  opacity: 0.4;
-}
 .reference-tile-block-title {
   margin: 0 0 0.6rem;
   font-size: 0.95rem;
@@ -1557,8 +1539,16 @@ select,
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: 0.74rem;
+  /* Bloc 40/H: "Consommables" (Expedition's longest stat name) + its %
+     wrapped to 2 lines at 0.74rem — em, per the precise instruction. */
+  font-size: 0.69em;
   min-width: 0;
+}
+/* Bloc 40/G: each skill/stat line centers within the skills column, instead
+   of hugging its left edge — scoped to the tile so the shared
+   .skill-value-row class (Gemmes, admin) keeps its own left alignment. */
+.reference-tile-skills .skill-value-row {
+  justify-content: center;
 }
 @media (max-width: 900px) {
   .reference-tile-block {
@@ -1823,9 +1813,15 @@ body > main h1 {
 .reference-admin-wide-inputs .reference-admin-table input {
   min-width: 18rem;
 }
+/* Codex review (PR #62): a bare 12rem floor forced the row wider than its
+   container at intermediate/phone widths (5 x 12rem doesn't fit until
+   ~63rem, well above the 700px breakpoint that drops to 2 columns; 2 x
+   12rem doesn't fit every phone either) — min() caps the floor at the
+   grid cell's own available width instead, so the row never overflows,
+   at any viewport, without needing exact breakpoint math. */
 .reference-admin-wide-inputs .reference-admin-grid-field input {
   width: 100%;
-  min-width: 12rem;
+  min-width: min(12rem, 100%);
 }
 .reference-admin-table input[readonly] {
   color: var(--text-faint);
@@ -1879,11 +1875,14 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
    (or another short, bounded range) — the wide default min-width above is
    what forces those tables into horizontal scroll unnecessarily.
    Bloc 37/A: still too wide after the first pass — sized down to what a
-   2-4 character percentage actually needs. */
+   2-4 character percentage actually needs.
+   Bloc 40/C: doubled again — the stat/skill value columns specifically
+   (Combat's Valeur 1-4, Expedition's Valeur type/secondaire) still read as
+   too cramped at 3.25rem. */
 .reference-admin-narrow input,
 .reference-admin-narrow select {
   min-width: 0;
-  width: 3.25rem;
+  width: 6.5rem;
 }
 /* Bloc 37/F: Gems' skill×league value grid is its own case, decoupled from
    .reference-admin-narrow above — its cells shrank too far once the

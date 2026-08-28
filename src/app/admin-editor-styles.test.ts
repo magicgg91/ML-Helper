@@ -39,7 +39,8 @@ describe("Bloc37/A: numeric % columns are sized to their content, not the wide d
       /\.reference-admin-narrow input,\s*\n\.reference-admin-narrow select\s*{([\s\S]*?)\n}/,
     )?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/width: 3\.25rem;/);
+    // Bloc 40/C: doubled again from Bloc 37/A's 3.25rem.
+    expect(rule).toMatch(/width: 6\.5rem;/);
   });
 });
 

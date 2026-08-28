@@ -524,8 +524,7 @@
       "family": "Famille",
       "rarity": "Rareté",
       "slot": "Emplacement",
-      "skill": "Compétence",
-      "dimmed-hint": "ne correspond pas aux filtres actifs"
+      "skill": "Compétence"
     },
     "catalog": {
       "combat": "Combat",
