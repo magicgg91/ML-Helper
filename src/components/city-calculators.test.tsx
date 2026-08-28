@@ -29,7 +29,7 @@ describe("CityCalculators", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
       target: { value: "legend" },
     });
-    expect(screen.getByTestId("city-cost-one")).toHaveTextContent("10 or");
+    expect(screen.getByTestId("city-cost-total")).toHaveTextContent("10 or");
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
@@ -351,5 +351,84 @@ describe("CityCalculators", () => {
     expect(single).toHaveTextContent("Stuff20/h");
     expect(single).toHaveTextContent("Temple100/h");
     expect(single).toHaveTextContent("Or/h320/h");
+  });
+
+  it("merges Coût de Ville's 2 result blocks into a single Total block (Bloc 33/C)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    // Only one result heading now — the old separate "Pour 1 ville" title
+    // is gone.
+    expect(screen.queryByText("Pour 1 ville")).not.toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const section = heading.closest("section")!;
+    for (const testId of [
+      "city-cost-total",
+      "city-cost-wall",
+      "city-cost-vp",
+      "city-cost-gold",
+      "city-cost-army",
+      "city-cost-single-gold-start",
+      "city-cost-single-army-start",
+      "city-cost-single-gold-target",
+      "city-cost-single-army-target",
+    ])
+      expect(within(section).getByTestId(testId)).toBeInTheDocument();
+  });
+
+  it("keeps Remparts as plain start/target levels, never multiplied by the city count (Bloc 33/C)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    const wallAtOne = screen.getByTestId("city-cost-wall").textContent;
+    const totalAtOne = screen.getByTestId("city-cost-total").textContent;
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Nombre de villes" }),
+      { target: { value: "5" } },
+    );
+    // Coût scales with the city count...
+    expect(screen.getByTestId("city-cost-total").textContent).not.toBe(
+      totalAtOne,
+    );
+    // ...Remparts (a level, identical for every upgraded city) does not.
+    expect(screen.getByTestId("city-cost-wall").textContent).toBe(wallAtOne);
+  });
+
+  it("merges Niveau Max Atteignable's 2 result blocks into a single Total block, verified against the real component (Bloc 33/L)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    expect(
+      screen.queryByText("Ville seule (niveau atteint)"),
+    ).not.toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const section = heading.closest("section")!;
+    for (const testId of [
+      "max-level-result",
+      "city-max-level-wall",
+      "city-max-level-gold",
+      "city-max-level-army",
+      "city-max-level-single-gold",
+      "city-max-level-single-army",
+    ])
+      expect(within(section).getByTestId(testId)).toBeInTheDocument();
   });
 });
