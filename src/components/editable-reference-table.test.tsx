@@ -138,4 +138,31 @@ describe("EditableReferenceTable", () => {
     );
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   });
+
+  it("Bloc38/Q: adds the wide-inputs modifier class only when the wideInputs prop is set", () => {
+    const { container, unmount } = render(
+      <EditableReferenceTable
+        initialRows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        endpoint="/api/admin/guides/references/example"
+        description="Table de test"
+      />,
+    );
+    expect(
+      container.querySelector(".reference-admin-wide-inputs"),
+    ).toBeNull();
+    unmount();
+    const { container: wideContainer } = render(
+      <EditableReferenceTable
+        initialRows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        endpoint="/api/admin/guides/references/example"
+        description="Table de test"
+        wideInputs
+      />,
+    );
+    expect(
+      wideContainer.querySelector(".reference-admin-wide-inputs"),
+    ).not.toBeNull();
+  });
 });

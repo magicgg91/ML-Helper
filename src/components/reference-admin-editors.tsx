@@ -267,6 +267,7 @@ export const CombatSkydustAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
+      wideInputs
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/combat-equipment-skydust"
@@ -285,6 +286,7 @@ export const CombatGemSlotsAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
+      wideInputs
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/combat-equipment-gem-slots"
@@ -396,6 +398,7 @@ export const ExpeditionIncrementsAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
+      wideInputs
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/expedition-equipment-increments"
@@ -415,6 +418,7 @@ export const ExpeditionMergeCostAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
+      wideInputs
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
@@ -436,6 +440,7 @@ export const ExpeditionDismantleAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
+      wideInputs
       initialRows={rarityBaseInitialRows(initial)}
       columns={useRarityBaseColumns()}
       endpoint="/api/admin/guides/references/expedition-equipment-dismantle"

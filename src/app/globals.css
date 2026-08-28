@@ -1804,6 +1804,18 @@ body > main h1 {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;
 }
+/* Bloc 38/Q: Combat's and Expedition's auxiliary numeric tables (Pouciel,
+   gem-slots, star increments, merge-cost, Terradust-at-destruction) get
+   roughly double their input width — never the 180/120-row main tables'
+   narrow skill/stat % columns from Bloc 35/37, which don't carry this
+   modifier class. */
+.reference-admin-wide-inputs .reference-admin-table input {
+  min-width: 18rem;
+}
+.reference-admin-wide-inputs .reference-admin-grid-field input {
+  width: 100%;
+  min-width: 12rem;
+}
 .reference-admin-table input[readonly] {
   color: var(--text-faint);
   cursor: not-allowed;
@@ -1815,6 +1827,16 @@ main.admin-main select,
 main.admin-main input[type="number"] {
   text-align: center;
   text-align-last: center;
+}
+/* Bloc 38/P: no browser increment/decrement arrows on any admin numeric
+   field (tools and references alike) — keyboard entry only. */
+main.admin-main input[type="number"] {
+  appearance: textfield;
+}
+main.admin-main input[type="number"]::-webkit-inner-spin-button,
+main.admin-main input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 /* Bloc 35/5.1: field-grid alternative to the wide table, for a single-row
    table with many columns (per-star increments) — wraps instead of

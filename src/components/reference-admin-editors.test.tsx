@@ -355,7 +355,9 @@ describe("complete lookup table administration", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
     resolvers[2]();
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
-  });
+  }, 15000); // above the 5s default — under full-suite parallel load this
+  // render-heavy test has been observed to occasionally exceed it, even
+  // though the awaited work itself finishes in well under a second.
 
   it("Bloc37/E: a validation error in any Combat table blocks the whole combined save", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
@@ -407,5 +409,37 @@ describe("complete lookup table administration", () => {
     );
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
+  });
+
+  it("Bloc38/Q: widens Combat's Pouciel/gem-slots and Expedition's increments/merge-cost/dismantle inputs, never the main tables' narrow % columns", () => {
+    const { container: combatContainer } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    const [combatMain, skydust, gemSlots] = Array.from(
+      combatContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(combatMain).not.toHaveClass("reference-admin-wide-inputs");
+    expect(skydust).toHaveClass("reference-admin-wide-inputs");
+    expect(gemSlots).toHaveClass("reference-admin-wide-inputs");
+
+    const { container: expeditionContainer } = render(
+      <ExpeditionReferenceScreen
+        initialRows={[...expeditionReferenceRows]}
+        incrementsInitial={defaultExpeditionStarIncrements}
+        mergeCostInitial={defaultExpeditionMergeCostBase}
+        dismantleInitial={defaultExpeditionDismantleBase}
+      />,
+    );
+    const [increments, mergeCost, dismantle, expeditionMain] = Array.from(
+      expeditionContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(increments).toHaveClass("reference-admin-wide-inputs");
+    expect(mergeCost).toHaveClass("reference-admin-wide-inputs");
+    expect(dismantle).toHaveClass("reference-admin-wide-inputs");
+    expect(expeditionMain).not.toHaveClass("reference-admin-wide-inputs");
   });
 });
