@@ -97,7 +97,6 @@ export default async function HomePage() {
               </div>
               <div className="tool-category-copy">
                 <h3>{references(`catalog.${reference.slug}`)}</h3>
-                <span>{guidesT("open-reference")}</span>
               </div>
             </Link>
           ))}

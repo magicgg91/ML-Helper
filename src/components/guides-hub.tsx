@@ -114,7 +114,6 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
               </div>
               <div className="tool-category-copy">
                 <h3>{references(`catalog.${reference.slug}`)}</h3>
-                <span>{t("open-reference")}</span>
               </div>
             </Link>
           ))}

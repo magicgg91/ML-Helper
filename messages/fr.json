@@ -318,7 +318,7 @@
     }
   },
   "expedition-equipment-simulator": {
-    "name": "Équipement d’Expédition",
+    "name": "Équipements d’Expédition",
     "view-reference": "Voir le référentiel complet",
     "summary-title": "Récapitulatif des compétences d’expédition",
     "empty-summary": "Aucun équipement configuré",
@@ -504,7 +504,6 @@
       "clan": "Clan & stratégie collective"
     },
     "read-guide": "Lire le guide",
-    "open-reference": "Consulter le référentiel",
     "empty": "Aucun guide publié pour le moment.",
     "no-results": "Aucun guide ne correspond à ces filtres.",
     "detail": {
@@ -527,7 +526,7 @@
       "combat": "Combat",
       "expedition": "Expédition",
       "combat-equipment": "Équipements de Combat",
-      "expedition-equipment": "Équipement d’Expédition",
+      "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
       "templiers": "Coût des Templiers"
     },
@@ -541,6 +540,7 @@
     "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
     "empty": "Aucun équipement de combat ne correspond à ces filtres.",
     "columns": {
+      "image": "Image",
       "rarity": "Rareté",
       "set": "Set",
       "skydust": "Pouciel",
@@ -551,17 +551,19 @@
     "complete-in-admin": "À compléter en admin"
   },
   "expedition-equipment": {
-    "name": "Équipement d’Expédition",
+    "name": "Équipements d’Expédition",
     "unconfirmed-label": "Hypothèse non confirmée",
     "row-count": "{count, plural, one {# ligne} other {# lignes}} — valeurs à {star}★",
     "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
     "columns": {
+      "image": "Image",
       "rarity": "Rareté",
       "set": "Set",
       "family": "Famille",
       "slot": "Emplacement",
       "type-stat": "Stat de type",
-      "secondary-stat": "Stat secondaire"
+      "secondary-stat": "Stat secondaire",
+      "dismantle-terradust": "Terradust à la destruction"
     }
   },
   "level-up": {
@@ -693,11 +695,11 @@
         "inactive": "Inactif"
       },
       "reference-combat": "Éditer les Équipements de Combat",
-      "reference-expedition": "Éditer l’Équipement d’Expédition",
+      "reference-expedition": "Éditer les Équipements d’Expédition",
       "reference-level-up": "Éditer Level Up",
       "references": {
         "combat-equipment": "Équipements de Combat",
-        "expedition-equipment": "Équipement d’Expédition",
+        "expedition-equipment": "Équipements d’Expédition",
         "level-up": "Level Up",
         "templiers": "Templiers"
       },
@@ -825,9 +827,12 @@
       "templars-detail": "20 coûts exacts éditables",
       "page-title": "Référentiel — {name}",
       "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
-      "expedition-description": "Les 120 lignes Expédition sont intégralement éditables.",
-    "expedition-increments-description": "Incréments par étoile des 10 statistiques d’Équipement d’Expédition, confirmés en Légendaire (Or vérifié également en Commun) et appliqués par défaut aux 4 autres raretés — éditables si une rareté s’avère différente.",
-    "expedition-merge-cost-description": "Coût de fusion en Terradust par rareté (Coût = K × 2^(n-1)) — 5 constantes indépendantes confirmées, non déduites d’un ratio commun.",
+      "combat-skydust-description": "Pouciel à la destruction, par rareté (valeur commune à tous les sets de cette rareté).",
+      "combat-gem-slots-description": "Emplacements de gemmes, par rareté (valeur commune à tous les sets de cette rareté).",
+      "expedition-description": "Détail des équipements d’expédition",
+      "expedition-increments-description": "Incréments par étoile des statistiques d’Équipements d’Expédition",
+      "expedition-merge-cost-description": "Coût de fusion en Terradust par rareté (Coût = K × 2^(n-1))",
+      "expedition-dismantle-description": "Terradust à la destruction par rareté",
       "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
         "set-name": "Nom du set",
@@ -901,7 +906,7 @@
       "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
       "value": "Valeur de base par compétence et par ligue",
       "value-field": "{skill} · {league}",
-      "price": "Prix d’achat (saphirs)",
+      "price": "Prix d’achat des gemmes par ligue (en saphirs)",
       "price-field": "Prix {league}"
     },
     "users": {

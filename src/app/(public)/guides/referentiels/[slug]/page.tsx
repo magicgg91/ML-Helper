@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
@@ -6,9 +7,12 @@ import {
   ExpeditionReferenceTable,
 } from "@/components/reference-tables";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
-import { referenceCatalog } from "@/lib/reference-catalog";
+import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 import {
+  getCombatGemSlotsBase,
   getCombatReferenceRows,
+  getCombatSkydustBase,
+  getExpeditionDismantleBase,
   getExpeditionReferenceRows,
   getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
@@ -41,10 +45,33 @@ export default async function ReferencePage({
   return (
     <main className="public-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t(`catalog.${reference.slug}`)}</h1>
+      <h1 className="reference-page-title">{t(`catalog.${reference.slug}`)}</h1>
+      {/* Bloc 35/1.2: switch directly between references without a detour
+          through /guides — same pill-row pattern as the family filters
+          used just below on every reference page. */}
+      <nav
+        className="reference-switcher family-buttons"
+        aria-label={t("tabs-label")}
+      >
+        {referenceCatalog
+          .filter((item) => active[item.calculatorSlug])
+          .map((item) => (
+            <Link
+              key={item.slug}
+              href={referenceHref(item.slug)}
+              aria-current={item.slug === reference.slug ? "page" : undefined}
+            >
+              {t(`catalog.${item.slug}`)}
+            </Link>
+          ))}
+      </nav>
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
-          <CombatReferenceTable rows={await getCombatReferenceRows()} />
+          <CombatReferenceTable
+            rows={await getCombatReferenceRows()}
+            skydustBase={await getCombatSkydustBase()}
+            gemSlotsBase={await getCombatGemSlotsBase()}
+          />
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />
         ) : slug === "templiers" ? (
@@ -53,6 +80,7 @@ export default async function ReferencePage({
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}
             increments={await getExpeditionStarIncrements()}
+            dismantleBase={await getExpeditionDismantleBase()}
           />
         )
       ) : (
