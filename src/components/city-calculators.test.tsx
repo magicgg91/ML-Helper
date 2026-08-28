@@ -52,7 +52,27 @@ describe("CityCalculators", () => {
     expect(screen.getByTestId("max-level-result")).toHaveTextContent("3");
   });
 
-  it("keeps the target level strictly above the starting level from either input", () => {
+  it("Bloc 34/C: lets the target level be typed digit by digit without a premature reset", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const target = screen.getByRole("spinbutton", { name: "Niveau cible" });
+    // Regression test: target starts at 2 with an effective min of 2 — the
+    // pre-Bloc-34 bug clamped on every keystroke, so typing "100" got reset
+    // to "2" right after the leading "1" and could never progress further.
+    fireEvent.change(target, { target: { value: "1" } });
+    expect(target).toHaveValue(1);
+    fireEvent.change(target, { target: { value: "10" } });
+    expect(target).toHaveValue(10);
+    fireEvent.change(target, { target: { value: "100" } });
+    expect(target).toHaveValue(100);
+    fireEvent.blur(target);
+    expect(target).toHaveValue(100);
+  });
+
+  it("keeps the target level strictly above the starting level, enforced on blur — not on every keystroke", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <CityCalculators />
@@ -65,9 +85,15 @@ describe("CityCalculators", () => {
 
     fireEvent.change(start, { target: { value: "12" } });
     expect(start).toHaveValue(12);
+    // Bloc 34/C: the push-up only happens once start is committed (blur) —
+    // not while the user is still typing into it.
+    expect(target).toHaveValue(2);
+    fireEvent.blur(start);
     expect(target).toHaveValue(13);
 
     fireEvent.change(target, { target: { value: "8" } });
+    expect(target).toHaveValue(8);
+    fireEvent.blur(target);
     expect(start).toHaveValue(12);
     expect(target).toHaveValue(13);
   });

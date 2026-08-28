@@ -450,15 +450,7 @@
     "error-not-configured": "Email sending isn't configured right now, please try again later."
   },
   "Home": {
-    "eyebrow": "Million Lords · Community tools",
-    "title": "Plan your next progression.",
-    "description": "Simulate your progression, compare equipment and browse useful game data. Your player settings remain in this browser only.",
-    "guides": "Browse guides",
-    "carouselLabel": "Million Lords universe preview",
-    "carouselKingdom": "Fortified kingdom in the Million Lords universe",
-    "carouselBattle": "Battlefield in the Million Lords universe",
-    "carouselMap": "Strategic map in the Million Lords universe",
-    "guidesImageAlt": "Illustration of strategy guides",
+    "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
     "toolsEyebrow": "Simulate",
     "toolsTitle": "Make decisions with the right numbers",
     "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",

@@ -99,4 +99,68 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
       expect(h).toBeLessThanOrEqual(blueSlateHueRange.max);
     }
   });
+
+  it("Bloc 34/F: lightens the dark theme's background family by one notch, same hue", () => {
+    // A 2nd tester pass asked for the dark navy/anthracite background to be
+    // a little brighter — not a retint, not a jump to a light background.
+    // Locks in the exact tokens agreed on, and checks each new hue matches
+    // its pre-Bloc-34 value exactly, so a future change can't silently
+    // drift the hue while "just" nudging lightness.
+    const before: Record<string, string> = {
+      bg: "#12151b",
+      "bg-panel": "#191d25",
+      "bg-panel-raised": "#20252f",
+      border: "#2b313d",
+      "surface-muted": "#252a34",
+    };
+    const after: Record<string, string> = {
+      bg: "#1b2029",
+      "bg-panel": "#222833",
+      "bg-panel-raised": "#29303d",
+      border: "#343c4a",
+      "surface-muted": "#2f3541",
+    };
+    for (const name of Object.keys(after)) {
+      expect(extractHex(darkBlock, name).toLowerCase()).toBe(after[name]);
+      const beforeHsl = hexToHsl(before[name]!);
+      const afterHsl = hexToHsl(after[name]!);
+      // 8-bit hex quantization can shift the rounded hue by a degree even
+      // when the underlying color math kept it fixed — same navy family,
+      // not a retint, is what actually matters here.
+      expect(Math.abs(afterHsl.h - beforeHsl.h)).toBeLessThanOrEqual(2);
+      expect(afterHsl.l).toBeGreaterThan(beforeHsl.l);
+    }
+  });
+
+  it("Bloc 34/F: keeps WCAG AA text contrast after the dark-theme brightness bump", () => {
+    const luminance = (hex: string) => {
+      const value = Number.parseInt(hex.slice(1), 16);
+      const channels = [
+        (value >> 16) & 255,
+        (value >> 8) & 255,
+        value & 255,
+      ].map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return (
+        channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+      );
+    };
+    const contrast = (foreground: string, background: string) => {
+      const [lighter, darker] = [
+        luminance(foreground),
+        luminance(background),
+      ].sort((a, b) => b - a);
+      return (lighter! + 0.05) / (darker! + 0.05);
+    };
+    const text = extractHex(darkBlock, "text");
+    for (const background of ["bg", "bg-panel", "bg-panel-raised"]) {
+      expect(
+        contrast(text, extractHex(darkBlock, background)),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
 });

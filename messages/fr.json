@@ -455,15 +455,7 @@
     "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard."
   },
   "Home": {
-    "eyebrow": "Million Lords · Outils communautaires",
-    "title": "Prépare ta prochaine progression.",
-    "description": "Simule ta progression, compare ton équipement et consulte les données utiles. Tes paramètres joueur restent uniquement dans ce navigateur.",
-    "guides": "Parcourir les guides",
-    "carouselLabel": "Aperçu de l’univers Million Lords",
-    "carouselKingdom": "Royaume fortifié dans l’univers Million Lords",
-    "carouselBattle": "Champ de bataille dans l’univers Million Lords",
-    "carouselMap": "Carte stratégique dans l’univers Million Lords",
-    "guidesImageAlt": "Illustration des guides stratégiques",
+    "intro": "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
     "toolsEyebrow": "Simuler",
     "toolsTitle": "Décide avec les bons chiffres",
     "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
