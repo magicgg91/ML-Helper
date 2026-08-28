@@ -46,6 +46,10 @@ export const calculatorCatalog = [
   // "templars" tool row above — same formula params/edit point, but its
   // own active flag (see admin-tools.ts/referenceToolSlugs).
   { slug: "templiers", category: "referentiels", label: "Templiers" },
+  // Bloc 36/A: same pattern as "templiers" above — "gemmes" is the Gems
+  // reference's own row, independent from the "gems" tool row, sharing
+  // only the formula params/edit point.
+  { slug: "gemmes", category: "referentiels", label: "Gemmes" },
 ] as const;
 
 export type CalculatorSlug = (typeof calculatorCatalog)[number]["slug"];
@@ -61,7 +65,10 @@ export const defaultCalculatorAvailability = Object.fromEntries(
 const catalogOrder = new Map(
   calculatorCatalog.map(({ slug }, index) => [slug, index]),
 );
-export function byCalculatorCatalogOrder(a: { slug: string }, b: { slug: string }) {
+export function byCalculatorCatalogOrder(
+  a: { slug: string },
+  b: { slug: string },
+) {
   return (
     (catalogOrder.get(a.slug as CalculatorSlug) ?? Infinity) -
     (catalogOrder.get(b.slug as CalculatorSlug) ?? Infinity)

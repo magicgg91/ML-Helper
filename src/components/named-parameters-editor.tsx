@@ -483,7 +483,13 @@ export function DemoAttackTroopsEditor({
   );
 }
 
-export function GemParametersEditor({ initial }: { initial: GemParameters }) {
+export function GemParametersEditor({
+  initial,
+  backHref = "/admin/tools",
+}: {
+  initial: GemParameters;
+  backHref?: string;
+}) {
   const t = useTranslations("admin.gems");
   const tCommon = useTranslations("admin.parameters");
   const game = useTranslations("game");
@@ -504,7 +510,7 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
     }));
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/tools" message={status}>
+      <EditorActionBar backHref={backHref} message={status}>
         <button
           className="editor-action editor-action-primary"
           type="button"

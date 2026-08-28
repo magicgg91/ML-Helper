@@ -1,6 +1,6 @@
 import type { EquipmentSkill } from "./equipment";
 import { rarityClassName } from "./equipment-rarity";
-import type { League } from "./player-settings";
+import type { League, SkillKey } from "./player-settings";
 
 const diacritics = /\p{Diacritic}/gu;
 
@@ -29,7 +29,13 @@ export const equipmentSkillColors: Record<EquipmentSkill, string> = {
   Défense: "#3a6ea8",
 };
 
-const equipmentRarityValues = ["Commun", "Rare", "Épique", "Mythique", "Légendaire"];
+const equipmentRarityValues = [
+  "Commun",
+  "Rare",
+  "Épique",
+  "Mythique",
+  "Légendaire",
+];
 
 // Bloc 31/H: filter/type buttons (family, rarity, Gems family, Expedition
 // equipment type) reuse whichever color already identifies the same
@@ -84,9 +90,24 @@ export const leagueFileSlug: Record<League, string> = {
   legend: "legende",
 };
 
-// Convention actée cdc section 11 : gemme-{competence-slug}-{ligue-slug}.png
-export function gemImagePath(skill: EquipmentSkill, league: League): string {
-  return `/gems/gemme-${slugify(skill)}-${leagueFileSlug[league]}.png`;
+// League slug as used by the 60 gem files actually delivered (Bloc 36) —
+// English, distinct from leagueFileSlug above (equipment images use the
+// French convention). Only "legend" differs from the technical League key.
+const gemLeagueFileSlug: Record<League, string> = {
+  bronze: "bronze",
+  silver: "silver",
+  gold: "gold",
+  platinum: "platinum",
+  diamond: "diamond",
+  legend: "legendary",
+};
+
+// Convention confirmed by the 60 delivered files (Bloc 36):
+// gem-{skill-key}-{league}.webp — skill is the SkillKey technical slug
+// directly (already a stable English key, cdc "clés techniques" rule), no
+// further slugification needed.
+export function gemImagePath(skill: SkillKey, league: League): string {
+  return `/gems/gem-${skill}-${gemLeagueFileSlug[league]}.webp`;
 }
 
 // Convention actée cdc section 12 : {family}-{rarity}-{slot}.webp.

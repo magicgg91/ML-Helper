@@ -18,7 +18,9 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpReference } from "@/components/level-up-reference";
 import { TemplarsReferenceTable } from "@/components/templars-reference";
+import { GemsReferenceTable } from "@/components/gems-reference";
 import {
+  getGemParameters,
   getLevelUpParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
@@ -76,6 +78,8 @@ export default async function ReferencePage({
           <LevelUpReference parameters={await getLevelUpParameters()} />
         ) : slug === "templiers" ? (
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
+        ) : slug === "gemmes" ? (
+          <GemsReferenceTable parameters={await getGemParameters()} />
         ) : (
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}

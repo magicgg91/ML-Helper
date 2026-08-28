@@ -61,11 +61,30 @@ describe("SiteSearch", () => {
     renderSearch();
     fireEvent.change(
       screen.getByRole("searchbox", { name: "Rechercher sur le site" }),
+      // Bloc36/A: "classement" has no referentiel counterpart, so it stays
+      // a single unambiguous match (unlike "gemmes", now shared with the
+      // new Gems reference — see the dedicated Bloc36/A test below).
+      { target: { value: "classement" } },
+    );
+    const link = screen.getByRole("link", { name: /Classement/ });
+    expect(link).toHaveAttribute("href", "/tools/classement");
+    expect(link).toHaveTextContent("Outil");
+  });
+
+  it("Bloc36/A: lists both the Gems tool and its reference, sharing the exact same label", () => {
+    renderSearch();
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Rechercher sur le site" }),
       { target: { value: "gemmes" } },
     );
-    const link = screen.getByRole("link", { name: /Gemmes/ });
-    expect(link).toHaveAttribute("href", "/tools/competences");
-    expect(link).toHaveTextContent("Outil");
+    const links = screen.getAllByRole("link", { name: /Gemmes/ });
+    expect(links).toHaveLength(2);
+    expect(links.map((link) => link.getAttribute("href"))).toEqual(
+      expect.arrayContaining([
+        "/tools/competences",
+        "/guides/referentiels/gemmes",
+      ]),
+    );
   });
 
   it("lists a referentiel calculator only once, as a reference, never as a tool", () => {
@@ -95,8 +114,10 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "gemmes" } });
-    fireEvent.click(screen.getByRole("link", { name: /Gemmes/ }));
+    // Bloc36/A: "level up" (not "gemmes", now shared by 2 results) keeps
+    // this generic dropdown-behavior test to a single unambiguous match.
+    fireEvent.change(input, { target: { value: "level up" } });
+    fireEvent.click(screen.getByRole("link", { name: /Level Up/ }));
     expect(input).toHaveValue("");
     expect(screen.queryByRole("list")).toBeNull();
   });
@@ -106,14 +127,14 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "gemmes" } });
-    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+    fireEvent.change(input, { target: { value: "level up" } });
+    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
 
     fireEvent.mouseDown(document.body);
 
-    expect(screen.queryByRole("link", { name: /Gemmes/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Level Up/ })).toBeNull();
     expect(screen.queryByRole("status")).toBeNull();
-    expect(input).toHaveValue("gemmes");
+    expect(input).toHaveValue("level up");
   });
 
   it("does not close when clicking inside the search box or its results", () => {
@@ -121,12 +142,12 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "gemmes" } });
+    fireEvent.change(input, { target: { value: "level up" } });
     fireEvent.mouseDown(input);
-    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
 
-    fireEvent.mouseDown(screen.getByRole("link", { name: /Gemmes/ }));
-    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+    fireEvent.mouseDown(screen.getByRole("link", { name: /Level Up/ }));
+    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
   });
 
   it("reopens the results when the search box regains focus after an outside click", () => {
@@ -134,11 +155,11 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "gemmes" } });
+    fireEvent.change(input, { target: { value: "level up" } });
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByRole("link", { name: /Gemmes/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Level Up/ })).toBeNull();
 
     fireEvent.focus(input);
-    expect(screen.getByRole("link", { name: /Gemmes/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
   });
 });

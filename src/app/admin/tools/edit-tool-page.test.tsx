@@ -7,6 +7,7 @@ vi.mock("next-intl/server", () => ({
 }));
 vi.mock("@/lib/admin-formulas-server", () => ({
   getTemplarParameters: async () => ({ base: 100, ratio: 1.1 }),
+  getGemParameters: async () => ({ skillLeagueValue: {}, gemPrice: {} }),
 }));
 vi.mock("@/components/named-parameters-editor", () => ({
   TemplarParametersEditor: ({ backHref }: { backHref: string }) => (
@@ -16,7 +17,11 @@ vi.mock("@/components/named-parameters-editor", () => ({
   ),
   CityParametersEditor: () => null,
   DemoAttackTroopsEditor: () => null,
-  GemParametersEditor: () => null,
+  GemParametersEditor: ({ backHref }: { backHref: string }) => (
+    <a className="editor-back-action" href={backHref}>
+      back
+    </a>
+  ),
   XpGainRateEditor: () => null,
 }));
 
@@ -58,6 +63,39 @@ describe("Bloc35 7.1: EditToolPage's contextual back link for the shared Templar
     render(
       await EditToolPage({
         params: Promise.resolve({ id: "templars" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+  });
+});
+
+describe("Bloc36/A: EditToolPage's contextual back link for the shared Gems editor", () => {
+  it("goes back to Guides when opened from the Guides reference table (?from=guides)", async () => {
+    render(
+      await EditToolPage({
+        params: Promise.resolve({ id: "gems" }),
+        searchParams: Promise.resolve({ from: "guides" }),
+      }),
+    );
+    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+  });
+
+  it("goes back to Tools when opened from the Tools table (no from param)", async () => {
+    render(
+      await EditToolPage({
+        params: Promise.resolve({ id: "gems" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/tools");
+  });
+
+  it("falls back to Guides for a guides_manager without calculators.read, even with no from param", async () => {
+    sessionRole = "guides_manager";
+    render(
+      await EditToolPage({
+        params: Promise.resolve({ id: "gems" }),
         searchParams: Promise.resolve({}),
       }),
     );

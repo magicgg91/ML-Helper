@@ -26,11 +26,12 @@ export default async function EditToolPage({
   const { id } = await params;
   const { from } = await searchParams;
   // Templars' formula parameters are also the "Coût des Templiers" Guides
-  // reference (cdc section 6, décision Bloc 3): a guides_manager reaching
-  // this same editor from the Guides admin table has references.write but
-  // not calculators.write, so this one destination accepts either.
+  // reference (cdc section 6, décision Bloc 3), and Gems' are also the
+  // "Gemmes" Guides reference (Bloc 36/A) — a guides_manager reaching
+  // either editor from the Guides admin table has references.write but
+  // not calculators.write, so these two destinations accept either.
   const session = await requireCapability(
-    id === "templars"
+    id === "templars" || id === "gems"
       ? (["calculators.write", "references.write"] as const)
       : "calculators.write",
   );
@@ -72,7 +73,22 @@ export default async function EditToolPage({
     content = <DemoAttackTroopsEditor initial={await getDemoPercentages()} />;
   } else if (id === "gems") {
     title = t("gems-editor");
-    content = <GemParametersEditor initial={await getGemParameters()} />;
+    content = (
+      <GemParametersEditor
+        initial={await getGemParameters()}
+        // Bloc 36/A: same contextual back button as Templars — carries
+        // provenance via ?from=guides (set by adminToolEditHref for the
+        // "gemmes" reference row) so "Retour" returns to Guides, not Tools,
+        // for this same shared edit point.
+        backHref={
+          from === "guides"
+            ? "/admin/guides"
+            : can(session.user.role, "calculators.read")
+              ? "/admin/tools"
+              : "/admin/guides"
+        }
+      />
+    );
   } else {
     // Every other tool has no named numeric parameter to edit (cdc section
     // 8): the admin table doesn't link here for them, so this is defensive.

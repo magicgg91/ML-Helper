@@ -145,6 +145,26 @@ describe("named formula parameter editors", () => {
     expect(saved.gemPrice.legend).toBe(7000);
   });
 
+  it("Bloc36/A: defaults the Gems editor's back link to Tools", () => {
+    render(<GemParametersEditor initial={defaultGemParameters} />);
+    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
+      "href",
+      "/admin/tools",
+    );
+  });
+  it("Bloc36/A: sends a guides_manager reaching the Gems editor from Guides back to Guides, not the Outils table they can't view", () => {
+    render(
+      <GemParametersEditor
+        initial={defaultGemParameters}
+        backHref="/admin/guides"
+      />,
+    );
+    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
+      "href",
+      "/admin/guides",
+    );
+  });
+
   it("Bloc35 10.2/10.3: LevelUpParametersEditor uses the same EditorActionBar save banner as the other editors", async () => {
     const request = vi
       .spyOn(globalThis, "fetch")
