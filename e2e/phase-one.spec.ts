@@ -622,9 +622,11 @@ test("Reference tables filter combat and expedition equipment", async ({
 
   await page.goto("/guides/referentiels/combat-equipment");
   await page.getByRole("button", { name: "Attaque" }).click();
-  await page
-    .getByRole("searchbox", { name: "Recherche libre" })
-    .fill("Spirit Fyra");
+  // Bloc 37/I: the free-search box is gone — isolate the same 9-row
+  // Légendaire subset via the rarity pills instead.
+  for (const rarity of ["Mythique", "Épique", "Rare", "Commun"]) {
+    await page.getByRole("button", { name: rarity }).click();
+  }
   await page
     .getByRole("combobox", { name: "Niveau d’étoile" })
     .selectOption("5");
