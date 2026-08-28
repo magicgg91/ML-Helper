@@ -52,6 +52,8 @@ import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 
 const storageKey = "mlhelper_stuff_simulator";
+// Bloc 33/K: confirmation clears itself well under the 5s cap.
+const TRANSFER_CONFIRMATION_TIMEOUT_MS = 3000;
 const leagueOptions = [
   "bronze",
   "silver",
@@ -461,7 +463,10 @@ export function StuffSimulator({
   // highlight the transfer button for as long as the message is shown.
   useEffect(() => {
     if (!transferred) return;
-    const timer = window.setTimeout(() => setTransferred(false), 3000);
+    const timer = window.setTimeout(
+      () => setTransferred(false),
+      TRANSFER_CONFIRMATION_TIMEOUT_MS,
+    );
     return () => window.clearTimeout(timer);
   }, [transferred]);
   function update(
