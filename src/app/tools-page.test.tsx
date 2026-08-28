@@ -27,8 +27,21 @@ afterEach(cleanup);
 describe("ToolsPage", () => {
   it("makes the whole card a link for an available category", async () => {
     render(await ToolsPage());
-    const link = screen.getByRole("link", { name: /cities.*open/ });
+    const link = screen.getByRole("link", { name: /cities/ });
     expect(link).toHaveAttribute("href", "/tools/villes");
+  });
+
+  it("drops the redundant 'open category' text — the whole tile is already clickable (Bloc 33/E)", async () => {
+    render(await ToolsPage());
+    expect(screen.queryByText("open")).not.toBeInTheDocument();
+  });
+
+  it("removes the page title and shows only the one-line subtitle (Bloc 33/F)", async () => {
+    render(await ToolsPage());
+    expect(screen.queryByText("eyebrow")).not.toBeInTheDocument();
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toHaveTextContent("title");
+    expect(heading).toHaveClass("tools-page-title");
   });
 
   it("keeps an unavailable category as a non-interactive card", async () => {
