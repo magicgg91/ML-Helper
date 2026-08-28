@@ -113,7 +113,12 @@ describe("complete lookup table administration", () => {
     const { container } = render(
       <ExpeditionMergeCostAdmin initial={defaultExpeditionMergeCostBase} />,
     );
-    expect(container.querySelectorAll("tbody tr")).toHaveLength(1);
+    // Bloc 40/B: switched to the grid layout (no more <table>) — a fixed
+    // 5-col table always overflowed the page and forced horizontal scroll.
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(0);
+    expect(
+      container.querySelectorAll(".reference-admin-grid-row"),
+    ).toHaveLength(1);
     expect(
       container.querySelector('input[aria-label="Ligne 1 Commun"]'),
     ).toHaveValue(600);
@@ -265,6 +270,11 @@ describe("complete lookup table administration", () => {
     const { container } = render(
       <ExpeditionDismantleAdmin initial={defaultExpeditionDismantleBase} />,
     );
+    // Bloc 40/B: grid layout here too, same reasoning as merge-cost above.
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(0);
+    expect(
+      container.querySelectorAll(".reference-admin-grid-row"),
+    ).toHaveLength(1);
     expect(
       container.querySelector('input[aria-label="Ligne 1 Rare"]'),
     ).toHaveValue(0);
