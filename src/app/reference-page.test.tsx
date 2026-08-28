@@ -91,10 +91,12 @@ describe("ReferencePage", () => {
       "href",
       "/guides/referentiels/expedition-equipment",
     );
-    // Bloc 37/K: same rendering as the family-buttons pill row used inside
-    // a tool (e.g. Attaque/Défense/Or/Vitesse) — not the /tools category
-    // tiles.
-    expect(nav).toHaveClass("family-buttons");
+    // Bloc 40/A: reverses Bloc 37/K — the switcher now reuses the /tools
+    // category banner's own container/button classes (full width, grows to
+    // fill the row) instead of the family-buttons pill row (content width).
+    expect(nav).toHaveClass("category-nav");
+    expect(nav).not.toHaveClass("family-buttons");
+    expect(currentLink).toHaveClass("category-btn");
     expect(otherLink).not.toHaveAttribute("aria-current");
   });
 
