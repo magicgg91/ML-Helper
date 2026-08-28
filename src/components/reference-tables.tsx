@@ -306,7 +306,7 @@ export function CombatReferenceTable({
                     );
                     return (
                       <td key={number}>
-                        {skill === "Aucune" ? (
+                        {skill === "none" ? (
                           // Bloc 37/G: explicitly no skill at this slot —
                           // distinct from "still needs data" below.
                           "—"

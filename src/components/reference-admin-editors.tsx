@@ -142,12 +142,13 @@ function useOptions() {
     ),
     combatSlots: map(equipmentSlotLayout, slotKeys, "slots"),
     expeditionSlots: map(expeditionSlots, slotKeys, "slots"),
-    // Bloc 37/G: "Aucune" is distinct from "" (not yet filled in) — an admin
+    // Bloc 37/G: "none" is distinct from "" (not yet filled in) — an admin
     // picks it to explicitly mark a skill slot as never having one, so the
     // public side shows "—" instead of the "still needs data" placeholder.
+    // Stored as an English technical key (AGENTS.md), translated for display.
     skills: [
       { value: "", label: common("choose") },
-      { value: "Aucune", label: common("none") },
+      { value: "none", label: common("none") },
       ...equipmentSkillLabels.map((value) => ({
         value,
         label: game(`skills.${skillKeys[value]}`),

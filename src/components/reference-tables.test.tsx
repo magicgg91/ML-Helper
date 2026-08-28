@@ -230,7 +230,7 @@ describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-fi
 
   it('shows "—" when the admin explicitly picked "Rien" for a skill slot', () => {
     const rows = [
-      { ...baseRow, family: "Attaque", skill_2: "Aucune", value_2_pct: "" },
+      { ...baseRow, family: "Attaque", skill_2: "none", value_2_pct: "" },
     ];
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
