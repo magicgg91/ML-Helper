@@ -621,10 +621,11 @@ test("Reference tables filter combat and expedition equipment", async ({
   ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
 
   await page.goto("/guides/referentiels/combat-equipment");
-  // Bloc 39: table rows became tiles grouped into per-set blocks. Family/
-  // rarity filters no longer hide sets — a non-matching one just dims — and
-  // there's no star-level selector any more (tiles always show the base 1★
-  // value).
+  // Bloc 39: table rows became tiles grouped into per-set blocks — no
+  // star-level selector any more (tiles always show the base 1★ value).
+  // Bloc 40/D-F: family/rarity filters are back to a real hide-filter (both
+  // start fully selected) — deselecting a family removes its sets from the
+  // page instead of just dimming them.
   await expect(
     page.getByRole("combobox", { name: "Niveau d’étoile" }),
   ).toHaveCount(0);
@@ -634,9 +635,11 @@ test("Reference tables filter combat and expedition equipment", async ({
   const orBlock = page.locator(".reference-tile-block", {
     hasText: "Spirit Fulgur",
   });
-  await page.getByRole("button", { name: "Attaque" }).click();
-  await expect(attaqueBlock).not.toHaveClass(/reference-tile-block-dim/);
-  await expect(orBlock).toHaveClass(/reference-tile-block-dim/);
+  await expect(attaqueBlock).toBeVisible();
+  await expect(orBlock).toBeVisible();
+  await page.getByRole("button", { name: "Or" }).click();
+  await expect(attaqueBlock).toBeVisible();
+  await expect(orBlock).toHaveCount(0);
   await expect(attaqueBlock.getByText("10%").first()).toBeVisible();
 
   await page.goto("/guides/referentiels/expedition-equipment");

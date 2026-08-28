@@ -1813,9 +1813,15 @@ body > main h1 {
 .reference-admin-wide-inputs .reference-admin-table input {
   min-width: 18rem;
 }
+/* Codex review (PR #62): a bare 12rem floor forced the row wider than its
+   container at intermediate/phone widths (5 x 12rem doesn't fit until
+   ~63rem, well above the 700px breakpoint that drops to 2 columns; 2 x
+   12rem doesn't fit every phone either) — min() caps the floor at the
+   grid cell's own available width instead, so the row never overflows,
+   at any viewport, without needing exact breakpoint math. */
 .reference-admin-wide-inputs .reference-admin-grid-field input {
   width: 100%;
-  min-width: 12rem;
+  min-width: min(12rem, 100%);
 }
 .reference-admin-table input[readonly] {
   color: var(--text-faint);

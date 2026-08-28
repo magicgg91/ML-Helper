@@ -79,8 +79,10 @@ describe("Bloc 38 public reference/homepage styles", () => {
     expect(css).toMatch(
       /\.reference-admin-wide-inputs \.reference-admin-table input\s*{\s*min-width: 18rem;\s*}/,
     );
+    // Bloc 40 Codex fix (PR #62): min() caps the floor at the grid cell's
+    // own width so the row never overflows at intermediate/phone widths.
     expect(css).toMatch(
-      /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: 12rem;/,
+      /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: min\(12rem, 100%\);/,
     );
   });
 });
