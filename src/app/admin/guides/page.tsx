@@ -2,6 +2,7 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideStatusList } from "@/components/guide-status-list";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import { localizedText } from "@/lib/translations";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
@@ -24,6 +25,9 @@ export default async function GuidesAdminPage() {
     }),
   ]);
   const canToggleCalculators = can(session.user.role, "calculators.toggle");
+  const newHref = can(session.user.role, "guides.write")
+    ? "/admin/guides/new"
+    : undefined;
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
@@ -74,14 +78,20 @@ export default async function GuidesAdminPage() {
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}
           canWrite={can(session.user.role, "guides.write")}
-          newHref={
-            can(session.user.role, "guides.write")
-              ? "/admin/guides/new"
-              : undefined
-          }
+          newHref={newHref}
         />
       ) : (
-        <p className="admin-empty">{t("empty")}</p>
+        <div className="admin-section-heading">
+          <p className="admin-empty">{t("empty")}</p>
+          {newHref && (
+            <Link
+              className="editor-action editor-action-primary"
+              href={newHref}
+            >
+              {t("new")}
+            </Link>
+          )}
+        </div>
       )}
     </main>
   );

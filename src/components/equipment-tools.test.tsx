@@ -11,6 +11,7 @@ import { StuffSimulator } from "./equipment-tools";
 import { playerStorageKey } from "./player-settings-panel";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import { combatEquipmentData } from "../lib/equipment-data";
 import {
   defaultPlayerSettings,
@@ -52,14 +53,14 @@ function selectFamily(name: string) {
   fireEvent.click(within(familyButtonsGroup()).getByRole("button", { name }));
 }
 
-function capTestRow(valuePct: string) {
+function capTestRow(valuePct: string, slot = "Amulette") {
   return {
     rarity: "Commun",
     set_name: "Cap Test",
     family: "Or",
     skydust: "10",
     gem_slots: "0",
-    slot_type: "Amulette",
+    slot_type: slot,
     slot_name: "",
     skill_1: "Récupération",
     value_1_pct: valuePct,
@@ -275,6 +276,36 @@ describe("equipment tools", () => {
     expect(within(summary).getAllByText("+0%").length).toBe(10);
   });
 
+  it("sorts the global summary by the displayed label, not the internal French key (Codex P2 on Bloc 32/D.5)", () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <StuffSimulator combatRows={combatRows} />
+      </NextIntlClientProvider>,
+    );
+    const summary = screen
+      .getByRole("heading", { name: "Equipment skills summary" })
+      .closest("section")!;
+    const labels = Array.from(
+      summary.querySelectorAll(".stuff-total .label"),
+    ).map((node) => node.textContent);
+    // Sorting the French internal keys (Attaque, Bravoure, Charognard,
+    // Défense, Intrépide, Prospérité, Recruteur, Récupération, Recycleur,
+    // Vitesse) and translating afterward would produce a different, wrong
+    // order here — this must be alphabetical in the displayed language.
+    expect(labels).toEqual([
+      "Attack",
+      "Bravery",
+      "Defense",
+      "Fearless",
+      "Prosperity",
+      "Recovery",
+      "Recruiter",
+      "Salvager",
+      "Scavenger",
+      "Speed",
+    ]);
+  });
+
   it("shows only one family's grid+panel at a time via colored family buttons, Attaque selected by default (Bloc 32/D.2)", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     const group = familyButtonsGroup();
@@ -381,6 +412,38 @@ describe("equipment tools", () => {
       .closest(".stuff-total")!;
     expect(box).toHaveTextContent("+50%");
     expect(box).toHaveTextContent("(60%)");
+  });
+
+  it("prioritizes the selected slot's own contribution over the cap-overflow value when they differ (Codex P2 on Bloc 32/D.5)", () => {
+    // 2 different slots each contributing 30% Récupération: the sum (60%)
+    // exceeds the 50% cap, but the currently selected slot (Amulette) only
+    // contributes 30% itself — D.5 requires that per-slot figure, not the
+    // uncapped total, once a slot is selected.
+    renderTool(
+      <StuffSimulator
+        combatRows={[capTestRow("30", "Amulette"), capTestRow("30", "Casque")]}
+      />,
+    );
+    selectFamily("Défense");
+    fireEvent.click(screen.getByRole("button", { name: /Casque/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Casque" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
+    fireEvent.click(defenseAmulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    // Amulette (30%) is the slot currently selected; total is 60%, capped
+    // to 50%.
+    const box = within(globalSummarySection())
+      .getByText("Récupération")
+      .closest(".stuff-total")!;
+    expect(box).toHaveTextContent("+50%");
+    expect(box).toHaveTextContent("(30%)");
+    expect(box).not.toHaveTextContent("(60%)");
   });
 
   it("shows the real value alone, with no parentheses, once nothing is selected and the value stays under the cap", () => {

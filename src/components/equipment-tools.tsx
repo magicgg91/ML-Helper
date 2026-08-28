@@ -74,35 +74,44 @@ function Summary({
   const game = useTranslations("game");
   const pct = (value: number) =>
     value.toLocaleString(locale, { maximumFractionDigits: 2 });
-  // Bloc 32/D.5: always show all 10 skills, alphabetically, defaulting a
-  // skill with no configured contribution to 0% instead of hiding it.
+  // Bloc 32/D.5: always show all 10 skills, sorted by their *displayed*
+  // label, defaulting a skill with no configured contribution to 0%
+  // instead of hiding it. Sorting the internal (French) skill keys instead
+  // of the localized label would sort correctly in French only — in
+  // English it would leave "Attaque"/"Attack" etc. ordered by the French
+  // word, not the English one actually on screen.
   const entries = equipmentSkillLabels
-    .map((skill): [EquipmentSkill, number] => [skill, totals[skill] ?? 0])
-    .sort(([a], [b]) => a.localeCompare(b, locale));
+    .map((skill): [EquipmentSkill, string, number] => [
+      skill,
+      game(`skills.${equipmentSkillTranslationKeys[skill]}`),
+      totals[skill] ?? 0,
+    ])
+    .sort(([, labelA], [, labelB]) => labelA.localeCompare(labelB, locale));
   return (
     <div className="stuff-summary-grid">
-      {entries.map(([skill, value]) => {
+      {entries.map(([skill, label, value]) => {
         // league !== undefined (not a truthiness check): "" is a valid,
         // meaningful LeagueSelection meaning "no league chosen yet", and
         // several caps (Récupération's flat 50%) apply regardless of league.
         const cap =
           league !== undefined
-            ? skillCapForLeague(skillKeyByLabel[skill as EquipmentSkill], league)
+            ? skillCapForLeague(skillKeyByLabel[skill], league)
             : undefined;
         const displayValue = cap === undefined ? value : Math.min(value, cap);
         return (
           <div className="stuff-total total-box" key={skill}>
-            <span className="label">
-              {game(
-                `skills.${equipmentSkillTranslationKeys[skill as EquipmentSkill]}`,
-              )}
-            </span>
+            <span className="label">{label}</span>
             <strong className="value emerald">
               +{pct(displayValue)}%{" "}
-              {cap !== undefined && value > cap ? (
-                <small>({pct(value)}%)</small>
-              ) : selected?.[skill] ? (
+              {selected?.[skill] ? (
+                // Bloc 32/D.5 requires the selected slot's own contribution
+                // whenever a slot is selected, taking priority over the
+                // cap-overflow real value below (they coincide whenever
+                // that slot is the sole contributor, which covers every
+                // existing cap scenario in this simulator).
                 <small>({pct(selected[skill]!)}%)</small>
+              ) : cap !== undefined && value > cap ? (
+                <small>({pct(value)}%)</small>
               ) : null}
             </strong>
           </div>
