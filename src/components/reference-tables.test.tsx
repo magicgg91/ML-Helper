@@ -254,6 +254,33 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).toBe(true);
   });
 
+  it("Bloc41/A: orders Combat's set blocks by family (Attaque, Défense, Or, Troupes/Vitesse), not data insertion order", () => {
+    renderTables();
+    const families = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).map((block) => block.dataset.family);
+    expect(families).toEqual([
+      ...["Attaque", "Défense", "Or", "Troupes/Vitesse"].flatMap((family) =>
+        Array(5).fill(family),
+      ),
+    ]);
+  });
+
+  it("Bloc41/A: orders Expedition's set blocks by family (Or, Équipement, Consommables, Troupes)", () => {
+    renderTables();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    const families = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).map((block) => block.dataset.family);
+    expect(families).toEqual([
+      ...["Or", "Équipement", "Consommables", "Troupes"].flatMap((family) =>
+        Array(5).fill(family),
+      ),
+    ]);
+  });
+
   it("never shows a gem count on Expedition tiles", () => {
     renderTables();
     fireEvent.click(
