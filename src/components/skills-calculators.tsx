@@ -34,6 +34,7 @@ import { defaultExpeditionStarIncrements } from "../lib/reference-equipment";
 import { NumberStepper } from "./number-stepper";
 import { StuffSimulator } from "./equipment-tools";
 import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
+import { TabLabel } from "./tab-label";
 
 type GemRow = {
   id: number;
@@ -74,7 +75,10 @@ export function SkillsCalculators({
   expeditionRows: readonly ExpeditionReferenceRow[];
   expeditionIncrements?: ExpeditionStarIncrements;
   gemParameters?: GemParameters;
-  availability?: Record<"simulator" | "gems" | "templars" | "expedition", boolean>;
+  availability?: Record<
+    "simulator" | "gems" | "templars" | "expedition",
+    boolean
+  >;
 }) {
   const tools = useTranslations("tools");
   const simulator = useTranslations("stuff-simulator");
@@ -107,7 +111,14 @@ export function SkillsCalculators({
           }
           onClick={() => setActive("simulator")}
         >
-          {simulator("name")}
+          <TabLabel
+            label={simulator("name")}
+            badge={
+              !availability.simulator
+                ? tools("calculator-unavailable")
+                : undefined
+            }
+          />
         </button>
         <button
           type="button"
@@ -121,7 +132,14 @@ export function SkillsCalculators({
           }
           onClick={() => setActive("expedition")}
         >
-          {expedition("name")}
+          <TabLabel
+            label={expedition("name")}
+            badge={
+              !availability.expedition
+                ? tools("calculator-unavailable")
+                : undefined
+            }
+          />
         </button>
         <button
           type="button"
@@ -133,7 +151,12 @@ export function SkillsCalculators({
           }
           onClick={() => setActive("gems")}
         >
-          {gems("name")}
+          <TabLabel
+            label={gems("name")}
+            badge={
+              !availability.gems ? tools("calculator-unavailable") : undefined
+            }
+          />
         </button>
         <button
           type="button"
@@ -145,7 +168,14 @@ export function SkillsCalculators({
           }
           onClick={() => setActive("templars")}
         >
-          {templars("name")}
+          <TabLabel
+            label={templars("name")}
+            badge={
+              !availability.templars
+                ? tools("calculator-unavailable")
+                : undefined
+            }
+          />
         </button>
       </nav>
       {active === "simulator" ? (
@@ -296,7 +326,9 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
                   type="button"
                   aria-pressed={family === key}
                   style={
-                    color ? ({ "--pill-color": color } as CSSProperties) : undefined
+                    color
+                      ? ({ "--pill-color": color } as CSSProperties)
+                      : undefined
                   }
                   onClick={() => changeFamily(key)}
                 >
@@ -597,7 +629,8 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const game = useTranslations("game");
   const [start, setStart] = useState(0);
   const [target, setTarget] = useState(1);
-  const clampLevel = (value: number) => Math.max(0, Math.min(20, Math.floor(value)));
+  const clampLevel = (value: number) =>
+    Math.max(0, Math.min(20, Math.floor(value)));
   const cost = templarUpgradeCost(start, target, parameters);
   return (
     <div className="calculator-stack">

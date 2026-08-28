@@ -37,8 +37,8 @@ describe("CombatCalculators", () => {
       screen.getByRole("tablist", { name: "Outils Combat" }),
     ).getAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
-      "Combat",
-      "Troupes ennemies",
+      "Combat Bientôt disponible",
+      "Troupes ennemies Bientôt disponible",
       "Taux de gain d’XP",
       "Troupes en attaque démo",
     ]);
@@ -49,6 +49,14 @@ describe("CombatCalculators", () => {
     expect(enemyTroops).toHaveAttribute("title", "Bientôt disponible");
     fireEvent.click(combat);
     expect(combat).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("shows the 'coming soon' text permanently, not only on hover (Bloc 33/N)", () => {
+    view();
+    const combat = screen.getByRole("tab", { name: /^Combat/ });
+    expect(combat.querySelector(".tab-coming-soon")).toHaveTextContent(
+      "Bientôt disponible",
+    );
   });
 
   it("calculates demo troops from the shared wall parameters", () => {

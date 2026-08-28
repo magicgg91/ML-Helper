@@ -606,6 +606,13 @@ select {
   background: var(--accent-strong);
   color: var(--surface);
 }
+/* Bloc 33/N: always visible, not only on hover — a disabled tab otherwise
+   gives no clue why clicking it does nothing, especially on touch devices
+   where a title tooltip never shows at all. */
+.tab-coming-soon {
+  color: var(--text-faint);
+  font-weight: 600;
+}
 .calculator-stack {
   display: grid;
   gap: 1rem;
