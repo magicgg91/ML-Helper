@@ -150,37 +150,38 @@ test("tool routes alone expose persistent player settings", async ({
   await page.goto("/");
   await expect(page).toHaveTitle("ML Helper");
   await expect(page.getByPlaceholder("Rechercher")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
-  ).toBeVisible();
-  await expect(page.locator(".home-carousel-track figure")).toHaveCount(3);
-  // Bloc 33/A: the homepage now gives 1-click access to a tool category
-  // directly (the same ToolCategoryGrid as /tools) instead of a "Voir les
-  // outils" teaser link — only the guides teaser still uses .home-feature.
-  await expect(page.locator(".home-feature")).toHaveCount(1);
+  // Bloc 34/D: the carousel/hero is gone — a short intro sentence in its
+  // place, the tool category grid as the actual homepage content.
+  await expect(page.locator(".home-carousel")).toHaveCount(0);
+  await expect(page.locator(".home-intro p")).toHaveText(
+    "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
+  );
+  // Bloc 33/A: the homepage gives 1-click access to a tool category
+  // directly (the same ToolCategoryGrid as /tools).
   await expect(
     page.getByRole("link", { name: /Villes/ }),
   ).toHaveAttribute("href", "/tools/villes");
+  // Bloc 34/E: the most recent guides + the built references are directly
+  // clickable from the homepage, no detour via /guides.
   await expect(
-    page.getByRole("link", { name: "Parcourir les guides" }),
-  ).toHaveAttribute("href", "/guides");
+    page.getByRole("link", { name: /Guide visible/ }),
+  ).toHaveAttribute("href", "/guides/guide-visible");
+  await expect(
+    page.getByRole("link", { name: /Coût des Templiers/ }),
+  ).toHaveAttribute("href", "/guides/referentiels/templiers");
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
   });
   await expect(publicThemeToggle).toHaveText("☀");
   await publicThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  const lightOverlay = await page
-    .locator(".home-carousel")
-    .evaluate((node) => getComputedStyle(node, "::after").backgroundImage);
-  expect(lightOverlay).toContain("240, 242, 245");
   await page
     .getByRole("group", { name: /Language|Langue/ })
     .getByRole("button", { name: "EN" })
     .click();
-  await expect(
-    page.getByRole("heading", { name: "Plan your next progression." }),
-  ).toBeVisible();
+  await expect(page.locator(".home-intro p")).toHaveText(
+    "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
+  );
   await page.goto("/guides");
   await expect(page).toHaveTitle("Guides");
   await expect(
