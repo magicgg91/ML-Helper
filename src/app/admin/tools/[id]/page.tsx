@@ -21,8 +21,10 @@ import { getTranslations } from "next-intl/server";
 
 export default async function EditToolPage({
   params,
+  searchParams,
 }: PageProps<"/admin/tools/[id]">) {
   const { id } = await params;
+  const { from } = await searchParams;
   // Templars' formula parameters are also the "Coût des Templiers" Guides
   // reference (cdc section 6, décision Bloc 3): a guides_manager reaching
   // this same editor from the Guides admin table has references.write but
@@ -46,13 +48,19 @@ export default async function EditToolPage({
     content = (
       <TemplarParametersEditor
         initial={await getTemplarParameters()}
-        // A guides_manager reaches this page via references.write, not
-        // calculators.read, so /admin/tools would be a 403 dead end for
-        // them — send them back to the table they actually opened it from.
+        // Bloc 35/7.1: this edit point is shared between the "templars"
+        // tool row (Tools) and the "templiers" reference row (Guides) — the
+        // ?from query param (set by adminToolEditHref per the slug that
+        // linked here) says which table the admin actually opened it from,
+        // so "Retour" goes back there. A guides_manager (references.write
+        // but not calculators.read) always arrives with from=guides, so the
+        // role check only matters as a fallback for a link without it.
         backHref={
-          can(session.user.role, "calculators.read")
-            ? "/admin/tools"
-            : "/admin/guides"
+          from === "guides"
+            ? "/admin/guides"
+            : can(session.user.role, "calculators.read")
+              ? "/admin/tools"
+              : "/admin/guides"
         }
       />
     );
