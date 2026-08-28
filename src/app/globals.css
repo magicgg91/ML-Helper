@@ -1866,11 +1866,14 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
    (or another short, bounded range) — the wide default min-width above is
    what forces those tables into horizontal scroll unnecessarily.
    Bloc 37/A: still too wide after the first pass — sized down to what a
-   2-4 character percentage actually needs. */
+   2-4 character percentage actually needs.
+   Bloc 40/C: doubled again — the stat/skill value columns specifically
+   (Combat's Valeur 1-4, Expedition's Valeur type/secondaire) still read as
+   too cramped at 3.25rem. */
 .reference-admin-narrow input,
 .reference-admin-narrow select {
   min-width: 0;
-  width: 3.25rem;
+  width: 6.5rem;
 }
 /* Bloc 37/F: Gems' skill×league value grid is its own case, decoupled from
    .reference-admin-narrow above — its cells shrank too far once the
