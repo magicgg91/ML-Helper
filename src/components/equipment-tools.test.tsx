@@ -11,6 +11,7 @@ import { StuffSimulator } from "./equipment-tools";
 import { playerStorageKey } from "./player-settings-panel";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import { combatEquipmentData } from "../lib/equipment-data";
 import {
   defaultPlayerSettings,
@@ -21,6 +22,21 @@ import type { CombatReferenceRow } from "../lib/reference-equipment";
 
 const combatRows = combatEquipmentData as readonly CombatReferenceRow[];
 
+// Bloc 32/D.5: fixed alphabetical order of the 10 equipment skills, as
+// rendered by the (now sole) global summary.
+const skillsAlphabeticalOrder = [
+  "Attaque",
+  "Bravoure",
+  "Charognard",
+  "Défense",
+  "Intrépide",
+  "Prospérité",
+  "Recruteur",
+  "Récupération",
+  "Recycleur",
+  "Vitesse",
+];
+
 function globalSummarySection() {
   return screen
     .getByRole("heading", {
@@ -29,14 +45,22 @@ function globalSummarySection() {
     .closest("section")!;
 }
 
-function capTestRow(valuePct: string) {
+function familyButtonsGroup() {
+  return screen.getByRole("group", { name: "Filtrer par famille" });
+}
+
+function selectFamily(name: string) {
+  fireEvent.click(within(familyButtonsGroup()).getByRole("button", { name }));
+}
+
+function capTestRow(valuePct: string, slot = "Amulette") {
   return {
     rarity: "Commun",
     set_name: "Cap Test",
     family: "Or",
     skydust: "10",
     gem_slots: "0",
-    slot_type: "Amulette",
+    slot_type: slot,
     slot_name: "",
     skill_1: "Récupération",
     value_1_pct: valuePct,
@@ -66,7 +90,7 @@ describe("equipment tools", () => {
     expect(
       screen.getByRole("link", { name: "Voir le référentiel complet" }),
     ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {
       name: "Équipement Attaque Amulette",
@@ -92,7 +116,7 @@ describe("equipment tools", () => {
 
   it("shows one compact 'Gemme N' label per row and no separate gem-count heading", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
@@ -104,8 +128,6 @@ describe("equipment tools", () => {
     expect(screen.getByText("Gemme 1")).toBeInTheDocument();
     expect(screen.getByText("Gemme 2")).toBeInTheDocument();
     expect(screen.getByText("Gemme 3")).toBeInTheDocument();
-    // The 3 selects for one row are still individually addressable by
-    // their accessible name, just without a separately rendered label.
     expect(
       screen.getByRole("combobox", { name: "Compétence gemme 1" }),
     ).toBeVisible();
@@ -119,14 +141,11 @@ describe("equipment tools", () => {
 
   it("colors the slot cell by rarity without a redundant rarity text badge", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {
       name: "Équipement Attaque Amulette",
     });
-    // The config panel's own equipment selector keeps its rarity-prefixed
-    // option labels (e.g. "Légendaire — ... (Attaque)") — only the grid
-    // cell's redundant text badge is removed, not this selector.
     expect(select.querySelectorAll("option")[1]).toHaveTextContent(
       /Légendaire.*Attaque/,
     );
@@ -143,7 +162,7 @@ describe("equipment tools", () => {
 
   it("shows the real gem image, falling back to the colored badge only once it fails to load", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
@@ -166,19 +185,19 @@ describe("equipment tools", () => {
     expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
   });
 
-  it("lays a configured cell out in 2 columns — image+star left, gems stacked right (Bloc 31/G)", () => {
+  it("lays a configured cell out on a single stacked line — name, image, star, gems below, no internal columns (Bloc 32/D.1)", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
       { target: { value: "Légendaire|Spirit Fyra" } },
     );
-    const body = amulet.querySelector(".stuff-slot-body")!;
-    expect(body).toBeInTheDocument();
-    const main = body.querySelector(".stuff-slot-main")!;
-    expect(main.querySelector("img.stuff-slot-image")).toBeInTheDocument();
-    expect(main).toHaveTextContent("1★");
+    // The Bloc 31 2-column wrapper is gone entirely.
+    expect(amulet.querySelector(".stuff-slot-body")).toBeNull();
+    expect(amulet.querySelector(".stuff-slot-main")).toBeNull();
+    const image = amulet.querySelector("img.stuff-slot-image")!;
+    expect(image).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("combobox", { name: "Compétence gemme 1" }),
       { target: { value: "Attaque" } },
@@ -186,18 +205,29 @@ describe("equipment tools", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 1" }), {
       target: { value: "legend" },
     });
-    const gems = body.querySelector(".gem-badges")!;
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence gemme 2" }),
+      { target: { value: "Charognard" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 2" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence gemme 3" }),
+      { target: { value: "Intrépide" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 3" }), {
+      target: { value: "legend" },
+    });
+    const gems = amulet.querySelector(".gem-badges")!;
     expect(gems).toBeInTheDocument();
-    // Both columns live inside the same 2-column body, siblings of each
-    // other, not nested inside one another.
-    expect(main.contains(gems)).toBe(false);
-    expect(gems.contains(main)).toBe(false);
+    // All 3 gems sit as direct siblings in one row, never nested/wrapped.
+    expect(gems.children).toHaveLength(3);
+    for (const child of Array.from(gems.children))
+      expect(child.parentElement).toBe(gems);
   });
 
   it("renders whichever combatRows it's given, not the bundled static catalog", () => {
-    // Proves the admin-edited reference table actually reaches this
-    // calculator: a caller-supplied row must show up in the equipment
-    // dropdown even though it isn't part of equipment-data.ts.
     const overrideRow = {
       rarity: "Commun",
       set_name: "Overridden Set",
@@ -216,7 +246,7 @@ describe("equipment tools", () => {
       value_4_pct: "",
     };
     renderTool(<StuffSimulator combatRows={[overrideRow]} />);
-    const amulet = screen.getAllByRole("button", { name: /Amulette/ })[0];
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {
       name: "Équipement Attaque Amulette",
@@ -236,31 +266,142 @@ describe("equipment tools", () => {
     ).toBeInTheDocument();
   });
 
-  it("puts the transfer button on the same heading row as the summary title, not below it (Bloc 31/I)", () => {
+  it("always shows all 10 skills in the global summary, alphabetically sorted, at 0% by default (Bloc 32/D.5)", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const heading = screen.getByRole("heading", {
-      name: "Récapitulatif des compétences d’équipement",
-    });
-    const headingRow = heading.closest<HTMLElement>(".stuff-summary-heading")!;
-    expect(headingRow).toBeInTheDocument();
+    const summary = globalSummarySection();
+    const labels = Array.from(
+      summary.querySelectorAll(".stuff-total .label"),
+    ).map((node) => node.textContent);
+    expect(labels).toEqual(skillsAlphabeticalOrder);
+    expect(within(summary).getAllByText("+0%").length).toBe(10);
+  });
+
+  it("sorts the global summary by the displayed label, not the internal French key (Codex P2 on Bloc 32/D.5)", () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <StuffSimulator combatRows={combatRows} />
+      </NextIntlClientProvider>,
+    );
+    const summary = screen
+      .getByRole("heading", { name: "Equipment skills summary" })
+      .closest("section")!;
+    const labels = Array.from(
+      summary.querySelectorAll(".stuff-total .label"),
+    ).map((node) => node.textContent);
+    // Sorting the French internal keys (Attaque, Bravoure, Charognard,
+    // Défense, Intrépide, Prospérité, Recruteur, Récupération, Recycleur,
+    // Vitesse) and translating afterward would produce a different, wrong
+    // order here — this must be alphabetical in the displayed language.
+    expect(labels).toEqual([
+      "Attack",
+      "Bravery",
+      "Defense",
+      "Fearless",
+      "Prosperity",
+      "Recovery",
+      "Recruiter",
+      "Salvager",
+      "Scavenger",
+      "Speed",
+    ]);
+  });
+
+  it("shows only one family's grid+panel at a time via colored family buttons, Attaque selected by default (Bloc 32/D.2)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const group = familyButtonsGroup();
+    const attaque = within(group).getByRole("button", { name: "Attaque" });
+    const defense = within(group).getByRole("button", { name: "Défense" });
+    const or = within(group).getByRole("button", { name: "Or" });
+    const vitesse = within(group).getByRole("button", { name: "Vitesse" });
+    expect(attaque).toHaveAttribute("aria-pressed", "true");
+    expect(defense).toHaveAttribute("aria-pressed", "false");
+    expect(attaque.style.getPropertyValue("--pill-color")).toBe("#c0392b");
+    expect(defense.style.getPropertyValue("--pill-color")).toBe("#3a6ea8");
+    expect(or.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+    expect(vitesse.style.getPropertyValue("--pill-color")).toBe("#9b59b6");
+    // Only the active family's 9 slots are on screen.
+    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(
+      1,
+    );
+    selectFamily("Défense");
+    expect(defense).toHaveAttribute("aria-pressed", "true");
+    expect(attaque).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(
+      1,
+    );
+  });
+
+  it("removes the per-family summary entirely — only the global recap section exists (Bloc 32/D.4)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    expect(document.querySelectorAll(".stuff-summary-grid")).toHaveLength(1);
     expect(
-      within(headingRow).getByRole("button", {
+      screen.queryByRole("heading", { name: "Attaque" }),
+    ).not.toBeInTheDocument();
+    selectFamily("Or");
+    expect(document.querySelectorAll(".stuff-summary-grid")).toHaveLength(1);
+  });
+
+  it("keeps each family's own configuration independent while the global summary always aggregates all 4 (Bloc 32/D.2-D.3)", () => {
+    renderTool(<StuffSimulator combatRows={[capTestRow("30")]} />);
+    // Configure Défense's Amulette (family "Or" is one of Défense's 2
+    // allowed families).
+    selectFamily("Défense");
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
+    fireEvent.click(defenseAmulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    expect(defenseAmulet).toHaveTextContent("1★");
+    let box = within(globalSummarySection())
+      .getByText("Récupération")
+      .closest(".stuff-total")!;
+    expect(box).toHaveTextContent("+30%");
+    // Switch to Attaque: its own Amulette starts empty — the Défense
+    // config isn't shared or overwritten.
+    selectFamily("Attaque");
+    const attaqueAmulet = screen.getByRole("button", { name: /Amulette/ });
+    expect(attaqueAmulet).toHaveTextContent("Vide");
+    // The global aggregate still reflects Défense's contribution even
+    // though Défense's block isn't the one on screen right now.
+    box = within(globalSummarySection())
+      .getByText("Récupération")
+      .closest(".stuff-total")!;
+    expect(box).toHaveTextContent("+30%");
+    // Switching back to Défense shows the earlier selection untouched.
+    selectFamily("Défense");
+    expect(screen.getByRole("button", { name: /Amulette/ })).toHaveTextContent(
+      "1★",
+    );
+  });
+
+  it("puts the transfer button in the family-button row, same size/style, not the summary heading (Bloc 32/D.6-D.7)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const group = familyButtonsGroup();
+    const transfer = within(group).getByRole("button", {
+      name: "Transférer vers les Paramètres du joueur",
+    });
+    expect(transfer).toBeInTheDocument();
+    expect(transfer.parentElement).toHaveClass("family-buttons");
+    expect(
+      within(globalSummarySection()).queryByRole("button", {
         name: "Transférer vers les Paramètres du joueur",
       }),
-    ).toBeInTheDocument();
+    ).not.toBeInTheDocument();
   });
 
   it("links the active cell's config panel to it via a shared active class", () => {
     const { container } = renderTool(<StuffSimulator combatRows={combatRows} />);
     const panel = container.querySelector(".stuff-editor-panel")!;
     expect(panel).not.toHaveClass("stuff-editor-panel-active");
-    fireEvent.click(screen.getAllByRole("button", { name: /Amulette/ })[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Amulette/ }));
     expect(panel).toHaveClass("stuff-editor-panel-active");
   });
 
   it("shows the cap and the real value in parentheses once the real value exceeds it", () => {
     renderTool(<StuffSimulator combatRows={[capTestRow("60")]} />);
-    const defenseAmulet = screen.getAllByRole("button", { name: /Amulette/ })[1];
+    selectFamily("Défense");
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(defenseAmulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
@@ -273,9 +414,61 @@ describe("equipment tools", () => {
     expect(box).toHaveTextContent("(60%)");
   });
 
-  it("shows the real value alone, with no parentheses, when it doesn't exceed the cap", () => {
+  it("prioritizes the selected slot's own contribution over the cap-overflow value when they differ (Codex P2 on Bloc 32/D.5)", () => {
+    // 2 different slots each contributing 30% Récupération: the sum (60%)
+    // exceeds the 50% cap, but the currently selected slot (Amulette) only
+    // contributes 30% itself — D.5 requires that per-slot figure, not the
+    // uncapped total, once a slot is selected.
+    renderTool(
+      <StuffSimulator
+        combatRows={[capTestRow("30", "Amulette"), capTestRow("30", "Casque")]}
+      />,
+    );
+    selectFamily("Défense");
+    fireEvent.click(screen.getByRole("button", { name: /Casque/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Casque" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
+    fireEvent.click(defenseAmulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    // Amulette (30%) is the slot currently selected; total is 60%, capped
+    // to 50%.
+    const box = within(globalSummarySection())
+      .getByText("Récupération")
+      .closest(".stuff-total")!;
+    expect(box).toHaveTextContent("+50%");
+    expect(box).toHaveTextContent("(30%)");
+    expect(box).not.toHaveTextContent("(60%)");
+  });
+
+  it("shows the real value alone, with no parentheses, once nothing is selected and the value stays under the cap", () => {
     renderTool(<StuffSimulator combatRows={[capTestRow("30")]} />);
-    const defenseAmulet = screen.getAllByRole("button", { name: /Amulette/ })[1];
+    selectFamily("Défense");
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
+    fireEvent.click(defenseAmulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
+      { target: { value: "Commun|Cap Test" } },
+    );
+    // Close the slot's panel again — with nothing selected, the global
+    // summary has no per-slot contribution left to show.
+    fireEvent.click(defenseAmulet);
+    const box = within(globalSummarySection())
+      .getByText("Récupération")
+      .closest(".stuff-total")!;
+    expect(box).toHaveTextContent("+30%");
+    expect(box.querySelector("small")).toBeNull();
+  });
+
+  it("shows the selected slot's own contribution in parentheses, to the right of the total on the same line (Bloc 32/D.5)", () => {
+    renderTool(<StuffSimulator combatRows={[capTestRow("60")]} />);
+    selectFamily("Défense");
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(defenseAmulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
@@ -284,8 +477,11 @@ describe("equipment tools", () => {
     const box = within(globalSummarySection())
       .getByText("Récupération")
       .closest(".stuff-total")!;
-    expect(box).toHaveTextContent("+30%");
-    expect(box.querySelector("small")).toBeNull();
+    const value = box.querySelector("strong.value")!;
+    const small = value.querySelector("small")!;
+    // The parenthesised contribution is a child of the same <strong> line
+    // as the total, not a separately positioned block sibling.
+    expect(value.contains(small)).toBe(true);
   });
 
   it("transfers computed equipment skills without touching skill points or clan temple", () => {
@@ -299,14 +495,15 @@ describe("equipment tools", () => {
     };
     localStorage.setItem(playerStorageKey, JSON.stringify(seeded));
     renderTool(<StuffSimulator combatRows={[capTestRow("30")]} />);
-    const defenseAmulet = screen.getAllByRole("button", { name: /Amulette/ })[1];
+    selectFamily("Défense");
+    const defenseAmulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(defenseAmulet);
     fireEvent.change(
       screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
       { target: { value: "Commun|Cap Test" } },
     );
     fireEvent.click(
-      screen.getByRole("button", {
+      within(familyButtonsGroup()).getByRole("button", {
         name: "Transférer vers les Paramètres du joueur",
       }),
     );
@@ -315,8 +512,6 @@ describe("equipment tools", () => {
     ).toBeInTheDocument();
     const saved = JSON.parse(localStorage.getItem(playerStorageKey)!);
     expect(saved.equipmentSkills.cautious).toBe(30);
-    // Overwritten to 0, not left at its stale pre-transfer value: no
-    // equipment grants "striker" in this test's single override row.
     expect(saved.equipmentSkills.striker).toBe(0);
     expect(saved.skillPoints).toEqual(seeded.skillPoints);
     expect(saved.clanTemple).toEqual(seeded.clanTemple);
@@ -329,11 +524,10 @@ describe("equipment tools", () => {
     };
     localStorage.setItem(playerStorageKey, JSON.stringify(seeded));
     renderTool(<StuffSimulator combatRows={combatRows} />);
-    const section = globalSummarySection();
-    expect(within(section).getByText("Aucun équipement configuré"))
-      .toBeInTheDocument();
+    const summary = globalSummarySection();
+    expect(within(summary).getAllByText("+0%").length).toBe(10);
     fireEvent.click(
-      within(section).getByRole("button", {
+      within(familyButtonsGroup()).getByRole("button", {
         name: "Transférer vers les Paramètres du joueur",
       }),
     );

@@ -24,19 +24,13 @@ export default async function GuidesAdminPage() {
       orderBy: { slug: "asc" },
     }),
   ]);
+  const canToggleCalculators = can(session.user.role, "calculators.toggle");
+  const newHref = can(session.user.role, "guides.write")
+    ? "/admin/guides/new"
+    : undefined;
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      <div className="admin-section-heading">
-        {can(session.user.role, "guides.write") && (
-          <Link
-            className="editor-action editor-action-primary"
-            href="/admin/guides/new"
-          >
-            {t("new")}
-          </Link>
-        )}
-      </div>
       {guides.length || references.length ? (
         <GuideStatusList
           rows={[
@@ -69,18 +63,35 @@ export default async function GuidesAdminPage() {
                   ? adminToolEditHref(reference.slug)
                   : `/admin/guides/reference-${reference.slug}`,
                 // Formula-based references (Templars) share their active
-                // state with an Outils calculator, toggled there instead
-                // (calculators.toggle) — no independent control here.
-                canToggle: !isFormulaBased,
+                // state with the same Calculator row shown in the Outils
+                // table, so the toggle here is routed through the
+                // calculators.toggle-gated /admin/tools endpoint (by id,
+                // not slug) instead of the guides/references route below,
+                // which stays scoped to referenceToolSlugs on purpose.
+                canToggle: isFormulaBased ? canToggleCalculators : true,
+                toggleHref: isFormulaBased
+                  ? `/api/admin/tools/${reference.id}`
+                  : undefined,
               };
             }),
           ]}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}
           canWrite={can(session.user.role, "guides.write")}
+          newHref={newHref}
         />
       ) : (
-        <p className="admin-empty">{t("empty")}</p>
+        <div className="admin-section-heading">
+          <p className="admin-empty">{t("empty")}</p>
+          {newHref && (
+            <Link
+              className="editor-action editor-action-primary"
+              href={newHref}
+            >
+              {t("new")}
+            </Link>
+          )}
+        </div>
       )}
     </main>
   );

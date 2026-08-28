@@ -38,6 +38,11 @@ describe("LegalNoticeEditor", () => {
     expect(actionBar).toContainElement(
       screen.getByRole("button", { name: "Enregistrer" }),
     );
+    // Bloc 32/B: the language selector moved into the action bar instead of
+    // sitting below it.
+    expect(actionBar).toContainElement(
+      screen.getByLabelText("Langue du contenu"),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());

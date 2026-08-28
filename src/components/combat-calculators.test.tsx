@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
@@ -23,6 +29,26 @@ describe("CombatCalculators", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Je suis la cible" }));
     expect(screen.getAllByTestId(/xp-range-/)).toHaveLength(5);
     expect(screen.getByTestId("xp-range-200")).toHaveTextContent("< 500k");
+  });
+
+  it("shows the 2 not-yet-implemented Combat placeholders, disabled, ahead of the 2 working tools, in the fixed order (Bloc 32/C)", () => {
+    view();
+    const tabs = within(
+      screen.getByRole("tablist", { name: "Outils Combat" }),
+    ).getAllByRole("tab");
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      "Combat",
+      "Troupes ennemies",
+      "Taux de gain d’XP",
+      "Troupes en attaque démo",
+    ]);
+    const [combat, enemyTroops] = tabs;
+    expect(combat).toBeDisabled();
+    expect(combat).toHaveAttribute("title", "Bientôt disponible");
+    expect(enemyTroops).toBeDisabled();
+    expect(enemyTroops).toHaveAttribute("title", "Bientôt disponible");
+    fireEvent.click(combat);
+    expect(combat).toHaveAttribute("aria-selected", "false");
   });
 
   it("calculates demo troops from the shared wall parameters", () => {

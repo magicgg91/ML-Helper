@@ -777,16 +777,11 @@ select {
   overflow-x: auto;
 }
 
-/* Bloc 31/F+G: the summary column is reduced to about half its former share
-   of the row (0.8fr of 2.8fr total before -> 1fr of 7fr, i.e. ~14% instead
-   of ~29%), freeing width for the grid and the config panel, which grow to
-   fill it. min-width keeps the summary's % values from truncating. */
+/* Bloc 32/D.4: grid + config panel only, no third per-family summary
+   column — the sole remaining summary is the global card above. */
 .stuff-block-columns {
   display: grid;
-  grid-template-columns: minmax(280px, 3fr) minmax(280px, 3fr) minmax(
-      170px,
-      1fr
-    );
+  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
   gap: 1rem;
   align-items: start;
 }
@@ -816,22 +811,6 @@ select {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.25rem;
-}
-
-/* Bloc 31/G: 2 internal columns inside a configured Combat slot cell —
-   image + star level on the left, up to 3 stacked gems on the right. */
-.stuff-slot-body {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: 0.5rem;
-  width: 100%;
-}
-.stuff-slot-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 0.25rem;
 }
 
@@ -867,10 +846,12 @@ select {
   object-fit: contain;
 }
 .gem-badges {
-  /* Bloc 31/G: stacked in the cell's right column, not wrapped. */
+  /* Bloc 32/D.1: single row below the star, never wraps even at 3 gems. */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: center;
   gap: 0.2rem;
 }
 .gem-badge-image {
@@ -930,24 +911,6 @@ select {
   gap: 0.5rem;
 }
 
-/* Bloc 31/I: the transfer button sits on the same line as the summary
-   title, aligned to its right, instead of below the summary content. */
-.stuff-summary-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.stuff-summary-heading h3 {
-  margin: 0;
-}
-.stuff-transfer {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
 /* Bloc 31/E.4: Expedition's summary always shows all 10 skills, laid out
    as a fixed 5-column x 2-row grid on desktop. */
 .expedition-summary-grid {
@@ -974,6 +937,15 @@ select {
 }
 .stuff-total small {
   color: var(--violet-bright);
+}
+/* Bloc 32/D.5+E.2: the selected slot's own contribution must sit to the
+   right of the total, on the same line — .total-box small below (line
+   ~1405) defaults to display:block for other calculators, so this needs
+   the extra specificity of both classes together to win. */
+.stuff-total.total-box small {
+  display: inline;
+  margin-top: 0;
+  margin-left: 0.35em;
 }
 
 .compare-equipment-grid {
