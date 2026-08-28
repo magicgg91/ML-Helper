@@ -189,6 +189,26 @@ export function CombatCalculators({
         role="tablist"
         aria-label={tools("combat-tabs")}
       >
+        {/* Bloc 32/C: not-yet-implemented placeholders, ordered ahead of the
+            2 working tools — permanently disabled, no Calculator DB row. */}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          disabled
+          title={tools("comingSoon")}
+        >
+          {tools("combat-simulator")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          disabled
+          title={tools("comingSoon")}
+        >
+          {tools("enemy-troops")}
+        </button>
         <button
           type="button"
           role="tab"
