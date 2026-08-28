@@ -2392,7 +2392,12 @@ main.admin-main input[type="number"] {
    reused .tool-category-grid (1-click access, no /tools detour). Bloc
    34/E: the guides/référentiels section below reuses the exact same
    header treatment. */
-.home-tools,
+/* Bloc 38/I: .home-tools sits right below the intro sentence, which
+   already carries its own spacing — halved from .home-guides' unchanged
+   clamp so the gap above the tool grid isn't excessive. */
+.home-tools {
+  margin-top: clamp(1.5rem, 4vw, 3.5rem);
+}
 .home-guides {
   margin-top: clamp(3rem, 8vw, 7rem);
 }
@@ -2427,9 +2432,14 @@ main.admin-main input[type="number"] {
   white-space: nowrap;
 }
 
+/* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
+   count based on how many tiles there are — each column's floor is either
+   13.5rem or a quarter of the row (minus its 3 gaps), whichever is larger,
+   so auto-fit can still drop to 3/2/1 on a narrower row but never exceeds
+   4 on a wide one. */
 .tool-category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(max(13.5rem, calc((100% - 3 * 1rem) / 4)), 1fr));
   gap: 1rem;
   margin-top: 2rem;
 }
@@ -2461,9 +2471,12 @@ main.admin-main input[type="number"] {
   border-color: var(--accent);
   transform: translateY(-2px);
 }
+/* Bloc 38/H: a strict square, regardless of the source file's native
+   ratio — consistent across every category/reference tile whatever image
+   is dropped in. */
 .tool-category-image {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1;
   border-bottom: 1px solid var(--border);
 }
 .tool-category-copy {

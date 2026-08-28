@@ -110,7 +110,8 @@
     }
   },
   "tools": {
-    "title": "Choose your tool",
+    "title": "Make decisions with the right numbers",
+    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "cities": "Cities",
     "combat": "Combat",
     "combat-simulator": "Combat",

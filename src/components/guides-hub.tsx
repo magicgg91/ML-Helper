@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
+import { ReferenceCatalogGrid } from "./reference-catalog-grid";
 
 export type PublicGuideCard = {
   id: string;
@@ -97,27 +96,7 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
         aria-labelledby="reference-section-title"
       >
         <h2 id="reference-section-title">{t("sections.references")}</h2>
-        <div className="tool-category-grid">
-          {referenceCatalog.map((reference) => (
-            <Link
-              className="tool-category-card reference-category-card"
-              href={referenceHref(reference.slug)}
-              key={reference.slug}
-            >
-              <div className="tool-category-image">
-                <Image
-                  src={reference.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 760px) 100vw, 50vw"
-                />
-              </div>
-              <div className="tool-category-copy">
-                <h3>{references(`catalog.${reference.slug}`)}</h3>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ReferenceCatalogGrid t={references} />
       </section>
     </>
   );

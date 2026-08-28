@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { hasSuperAdmin } from "../../services/setup-superadmin";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { ToolCategoryGrid } from "@/components/tool-category-grid";
-import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
+import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 
@@ -80,27 +79,7 @@ export default async function HomePage() {
             ))}
           </div>
         )}
-        <div className="tool-category-grid">
-          {referenceCatalog.map((reference) => (
-            <Link
-              className="tool-category-card reference-category-card"
-              href={referenceHref(reference.slug)}
-              key={reference.slug}
-            >
-              <div className="tool-category-image">
-                <Image
-                  src={reference.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 760px) 100vw, 50vw"
-                />
-              </div>
-              <div className="tool-category-copy">
-                <h3>{references(`catalog.${reference.slug}`)}</h3>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ReferenceCatalogGrid t={references} />
       </section>
     </main>
   );
