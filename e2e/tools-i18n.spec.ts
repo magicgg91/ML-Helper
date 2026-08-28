@@ -63,6 +63,6 @@ test("renders every tool category in French and English", async ({ page }) => {
     page.getByRole("tab", { name: "Équipement de Combat", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("tab", { name: "Équipement d’Expédition" }),
+    page.getByRole("tab", { name: "Équipements d’Expédition" }),
   ).toBeVisible();
 });

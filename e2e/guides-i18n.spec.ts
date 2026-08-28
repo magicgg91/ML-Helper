@@ -23,7 +23,7 @@ test("shows every reference table with no category filter on the guides hub", as
     page.getByRole("navigation", { name: /référentiels/i }),
   ).toHaveCount(0);
   await expect(page.getByText("Équipements de Combat")).toBeVisible();
-  await expect(page.getByText("Équipement d’Expédition")).toBeVisible();
+  await expect(page.getByText("Équipements d’Expédition")).toBeVisible();
 
   await switchLocale(page, "en");
   await expect(
@@ -96,11 +96,18 @@ test("translates combat equipment filters and result columns", async ({
 }) => {
   await page.goto("/guides/referentiels/combat-equipment");
   await switchLocale(page, "fr");
-  await expect(page.getByText("Pouciel", { exact: true })).toBeVisible();
+  // Bloc 35/2.2: Pouciel is no longer a per-row column — it's the title of
+  // its own small rarity-indexed table, so it now appears twice (heading +
+  // row label); scope to the heading to disambiguate.
+  await expect(
+    page.getByRole("heading", { name: "Pouciel", exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Famille", { exact: true })).toBeVisible();
 
   await switchLocale(page, "en");
-  await expect(page.getByText("Skydust", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Skydust", exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Family", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Attack" })).toBeVisible();
 });

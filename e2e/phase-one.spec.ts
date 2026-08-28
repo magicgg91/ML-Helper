@@ -133,7 +133,7 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
   // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
   // in the confirmed Combat, Expedition, Gems, Templars order.
   const toolLabels = await page.locator("td.font-medium").allTextContents();
-  const competencesLabels = ["Équipement de Combat", "Équipement d’Expédition", "Gemmes", "Templiers"];
+  const competencesLabels = ["Équipement de Combat", "Équipements d’Expédition", "Gemmes", "Templiers"];
   expect(toolLabels.filter((label) => competencesLabels.includes(label))).toEqual(
     competencesLabels,
   );
@@ -613,7 +613,7 @@ test("Reference tables filter combat and expedition equipment", async ({
     page.getByRole("link", { name: /Équipements de Combat/ }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
   await expect(
-    page.getByRole("link", { name: /Équipement d’Expédition/ }),
+    page.getByRole("link", { name: /Équipements d’Expédition/ }),
   ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
 
   await page.goto("/guides/referentiels/combat-equipment");
@@ -697,14 +697,17 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "Éditer les Équipements de Combat",
     }),
   ).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator("tbody tr")).toHaveCount(180, {
+  // Bloc 35/6.1: the page also renders the Pouciel/gem-slots-per-rarity
+  // editors below the main table, so scope to the first (main) table
+  // rather than every tbody row on the page.
+  await expect(page.locator("table").first().locator("tbody tr")).toHaveCount(180, {
     timeout: 15_000,
   });
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
   await page
-    .getByRole("row", { name: /Équipement d’Expédition/ })
+    .getByRole("row", { name: /Équipements d’Expédition/ })
     .getByRole("link", { name: "Éditer" })
     .click();
   // The page also renders the (single-row) star-increments editor above
