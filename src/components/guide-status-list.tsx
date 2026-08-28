@@ -26,20 +26,25 @@ export type GuideAdminRow = {
   active: boolean;
   type?: "guide" | "reference";
   editHref?: string;
-  // Templars' active state is the same Calculator row already toggled from
-  // the Outils table (calculators.toggle) — no independent control here.
+  // Templars' active state is the same Calculator row shown in the Outils
+  // table — its toggle button is gated on calculators.toggle (canToggle)
+  // and, when shown, submitted through toggleHref (the /admin/tools route,
+  // by calculator id) instead of the guides/references route below.
   canToggle?: boolean;
+  toggleHref?: string;
 };
 export function GuideStatusList({
   rows,
   canPublish,
   canDelete,
   canWrite,
+  newHref,
 }: {
   rows: GuideAdminRow[];
   canPublish: boolean;
   canDelete: boolean;
   canWrite: boolean;
+  newHref?: string;
 }) {
   const t = useTranslations("admin.guides");
   const [guides, setGuides] = useState(rows);
@@ -63,15 +68,13 @@ export function GuideStatusList({
     );
     setMessage(t("status-saved"));
   }
-  async function toggle(
-    id: string,
-    active: boolean,
-    type?: "guide" | "reference",
-  ) {
+  async function toggle(guide: GuideAdminRow) {
+    const active = !guide.active;
     const response = await fetch(
-      type === "reference"
-        ? `/api/admin/guides/references/${id}/active`
-        : `/api/admin/guides/${id}/active`,
+      guide.toggleHref ??
+        (guide.type === "reference"
+          ? `/api/admin/guides/references/${guide.id}/active`
+          : `/api/admin/guides/${guide.id}/active`),
       {
         method: "PATCH",
         headers: { "content-type": "application/json" },
@@ -80,7 +83,9 @@ export function GuideStatusList({
     );
     if (!response.ok) return setMessage(t("visibility-error"));
     setGuides((current) =>
-      current.map((guide) => (guide.id === id ? { ...guide, active } : guide)),
+      current.map((item) =>
+        item.id === guide.id ? { ...item, active } : item,
+      ),
     );
     setMessage(t(active ? "enabled" : "disabled"));
   }
@@ -95,23 +100,28 @@ export function GuideStatusList({
   }
   return (
     <>
-      <div
-        role="group"
-        aria-label={t("filter-type-label")}
-        className="mb-2 flex items-center gap-2"
-      >
-        {(["all", "guide", "reference"] as const).map((type) => (
-          <Button
-            key={type}
-            type="button"
-            size="sm"
-            variant={typeFilter === type ? "secondary" : "outline"}
-            aria-pressed={typeFilter === type}
-            onClick={() => setTypeFilter(type)}
-          >
-            {t(`types.${type}`)}
-          </Button>
-        ))}
+      <div className="admin-section-heading">
+        <div
+          role="group"
+          aria-label={t("filter-type-label")}
+          className="family-buttons"
+        >
+          {(["all", "guide", "reference"] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              aria-pressed={typeFilter === type}
+              onClick={() => setTypeFilter(type)}
+            >
+              {t(`types.${type}`)}
+            </button>
+          ))}
+        </div>
+        {newHref && (
+          <Link className="editor-action editor-action-primary" href={newHref}>
+            {t("new")}
+          </Link>
+        )}
       </div>
       {visibleGuides.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("no-results")}</p>
@@ -200,9 +210,7 @@ export function GuideStatusList({
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() =>
-                              toggle(guide.id, !guide.active, guide.type)
-                            }
+                            onClick={() => toggle(guide)}
                             title={t(guide.active ? "disable" : "enable")}
                             aria-label={t(guide.active ? "disable" : "enable")}
                           >
