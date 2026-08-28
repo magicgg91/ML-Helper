@@ -55,4 +55,72 @@ describe("NumberStepper", () => {
     });
     expect(onChange).toHaveBeenCalledWith(0);
   });
+
+  it("Bloc 34/C: does not clamp while typing, only on blur", () => {
+    const onChange = vi.fn();
+    render(
+      <NumberStepper
+        label="Niveau"
+        value={2}
+        min={2}
+        max={200}
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByLabelText("Niveau");
+    // Regression test: typing "100" over a min-2 field used to clamp on
+    // every keystroke, resetting to "2" right after the leading "1" and
+    // making it impossible to type any value starting below the minimum.
+    fireEvent.change(input, { target: { value: "1" } });
+    expect(onChange).toHaveBeenLastCalledWith(1);
+    fireEvent.change(input, { target: { value: "10" } });
+    expect(onChange).toHaveBeenLastCalledWith(10);
+    fireEvent.change(input, { target: { value: "100" } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    expect(onChange).not.toHaveBeenCalledWith(2);
+
+    fireEvent.blur(input, { target: { value: "100" } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+  });
+
+  it("Bloc 34/C: clamps to min/max on blur", () => {
+    const onChange = vi.fn();
+    render(
+      <NumberStepper
+        label="Niveau"
+        value={2}
+        min={2}
+        max={200}
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByLabelText("Niveau");
+    fireEvent.change(input, { target: { value: "1" } });
+    fireEvent.blur(input, { target: { value: "1" } });
+    expect(onChange).toHaveBeenLastCalledWith(2);
+  });
+
+  it("Bloc 34/C: calls onCommit with the clamped value on blur and on +/- clicks, never while typing", () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(
+      <NumberStepper
+        label="Niveau"
+        value={5}
+        min={2}
+        max={200}
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByLabelText("Niveau");
+    fireEvent.change(input, { target: { value: "1" } });
+    expect(onCommit).not.toHaveBeenCalled();
+
+    fireEvent.blur(input, { target: { value: "1" } });
+    expect(onCommit).toHaveBeenCalledWith(2);
+
+    fireEvent.click(screen.getByLabelText("Augmenter Niveau"));
+    expect(onCommit).toHaveBeenLastCalledWith(6);
+  });
 });

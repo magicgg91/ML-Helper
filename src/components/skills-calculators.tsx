@@ -629,8 +629,6 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const game = useTranslations("game");
   const [start, setStart] = useState(0);
   const [target, setTarget] = useState(1);
-  const clampLevel = (value: number) =>
-    Math.max(0, Math.min(20, Math.floor(value)));
   const cost = templarUpgradeCost(start, target, parameters);
   return (
     <div className="calculator-stack">
@@ -649,7 +647,7 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               value={start}
               min={0}
               max={20}
-              onChange={(value) => setStart(clampLevel(value))}
+              onChange={(value) => setStart(Math.floor(value))}
             />
           </label>
           <label className="calculator-field">
@@ -659,7 +657,7 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               value={target}
               min={0}
               max={20}
-              onChange={(value) => setTarget(clampLevel(value))}
+              onChange={(value) => setTarget(Math.floor(value))}
             />
           </label>
         </div>

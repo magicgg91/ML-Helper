@@ -366,14 +366,24 @@ test("the Cities category exposes its three working calculators", async ({
   // "city-cost-total" testid (cityCount defaults to 1, same figure).
   await expect(page.getByTestId("city-cost-total")).toHaveText("10 or");
 
-  await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("12");
-  await expect(
-    page.getByRole("spinbutton", { name: "Niveau cible" }),
-  ).toHaveValue("13");
-  await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("8");
-  await expect(
-    page.getByRole("spinbutton", { name: "Niveau cible" }),
-  ).toHaveValue("13");
+  // Bloc 34/C: the target-level floor is enforced on blur/commit, not on
+  // every keystroke — typing "100" over a min-2 field must not reset to
+  // "2" after the leading "1".
+  const startLevelField = page.getByRole("spinbutton", {
+    name: "Niveau de départ",
+  });
+  const targetLevelField = page.getByRole("spinbutton", {
+    name: "Niveau cible",
+  });
+  await startLevelField.fill("12");
+  await startLevelField.blur();
+  await expect(targetLevelField).toHaveValue("13");
+  await targetLevelField.fill("100");
+  await expect(targetLevelField).toHaveValue("100");
+  await targetLevelField.fill("8");
+  await expect(targetLevelField).toHaveValue("8");
+  await targetLevelField.blur();
+  await expect(targetLevelField).toHaveValue("13");
 
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
   await page

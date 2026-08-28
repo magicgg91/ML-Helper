@@ -40,6 +40,7 @@ function Field({
   label,
   value,
   onChange,
+  onCommit,
   min = 1,
   max,
   step,
@@ -47,6 +48,7 @@ function Field({
   label: string;
   value: number;
   onChange: (value: number) => void;
+  onCommit?: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -58,6 +60,7 @@ function Field({
         label={label}
         value={value}
         onChange={onChange}
+        onCommit={onCommit}
         min={min}
         max={max}
         step={step}
@@ -147,7 +150,12 @@ function CostCalculator({
             label={t("fields.start-level")}
             value={startLevel}
             max={199}
-            onChange={(v) => {
+            onChange={(v) => setStartLevel(Math.floor(v))}
+            // Bloc 34/C: the target-level push-up only happens once the
+            // user commits (blur/±buttons), not on every keystroke — doing
+            // it live made target visibly jump around while start was still
+            // being typed.
+            onCommit={(v) => {
               const nextStart = Math.floor(v);
               setStartLevel(nextStart);
               setTargetLevel((current) =>
@@ -160,7 +168,12 @@ function CostCalculator({
             value={targetLevel}
             min={2}
             max={200}
-            onChange={(v) => {
+            onChange={(v) => setTargetLevel(Math.floor(v))}
+            // Bloc 34/C: the "must be > start" floor only applies at
+            // commit time — validating on every keystroke made it
+            // impossible to type a multi-digit value starting with a digit
+            // at or below start's level (e.g. "100" over start level 1).
+            onCommit={(v) => {
               const nextTarget = Math.floor(v);
               setTargetLevel(
                 nextTarget <= startLevel ? startLevel + 1 : nextTarget,
