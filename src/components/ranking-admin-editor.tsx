@@ -62,15 +62,22 @@ export function RankingAdminEditor({
     Record<RankingLeague, FieldErrors>
   >(
     () =>
-      Object.fromEntries(rankingLeagues.map((league) => [league, {}])) as Record<
-        RankingLeague,
-        FieldErrors
-      >,
+      Object.fromEntries(
+        rankingLeagues.map((league) => [league, {}]),
+      ) as Record<RankingLeague, FieldErrors>,
   );
   const leagueOptions = [
     { value: "", label: t("unconfirmed-option") },
-    ...rankingLeagues.map((league) => ({ value: league, label: leagues(league) })),
+    ...rankingLeagues.map((league) => ({
+      value: league,
+      label: leagues(league),
+    })),
   ];
+  // Bloc 35/9.1: threshold and the reward quantities are all short numbers
+  // in practice (threshold is a 0-100 percentage, rewards top out around a
+  // few hundred) — narrowed to what they actually contain. movement/league
+  // stay full width: they're selects showing translated league/movement
+  // names, not numbers.
   const baseColumns: EditableColumn<RankingEditRow>[] = [
     {
       key: "threshold",
@@ -79,6 +86,7 @@ export function RankingAdminEditor({
       min: 0.01,
       step: 0.01,
       required: true,
+      narrow: true,
     },
     {
       key: "movement",
@@ -92,13 +100,19 @@ export function RankingAdminEditor({
         })),
       ],
     },
-    { key: "league", label: t("target"), type: "select", options: leagueOptions },
+    {
+      key: "league",
+      label: t("target"),
+      type: "select",
+      options: leagueOptions,
+    },
     {
       key: "sapphires",
       label: t("reward-types.sapphires"),
       type: "number",
       min: 0,
       step: 1,
+      narrow: true,
     },
     {
       key: "speedups",
@@ -106,8 +120,16 @@ export function RankingAdminEditor({
       type: "number",
       min: 0,
       step: 1,
+      narrow: true,
     },
-    { key: "gems", label: t("reward-types.gems"), type: "number", min: 0, step: 1 },
+    {
+      key: "gems",
+      label: t("reward-types.gems"),
+      type: "number",
+      min: 0,
+      step: 1,
+      narrow: true,
+    },
   ];
   async function save() {
     const errors = Object.fromEntries(
