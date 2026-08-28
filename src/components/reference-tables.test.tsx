@@ -26,7 +26,12 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
   function combatBlock(setName: string) {
     return Array.from(
       document.querySelectorAll<HTMLElement>(".reference-tile-block"),
-    ).find((block) => block.querySelector("h3")?.textContent === setName)!;
+    ).find((block) =>
+      // startsWith, not ===: a dimmed block's h3 also carries a trailing
+      // sr-only hint (Codex review, PR #61) that's part of the same text
+      // content in jsdom even though it's visually hidden.
+      block.querySelector("h3")?.textContent?.startsWith(setName),
+    )!;
   }
 
   it("groups every set into one block of 9 tiles (Combat) in the same slot order as the Combat Equipment Simulator", () => {
@@ -144,6 +149,51 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).find((block) => block.dataset.rarity === "Commun")!;
     // Commun has 0 gem slots (defaultCombatGemSlotsBase.Commun) everywhere.
     expect(commun.querySelectorAll(".reference-tile-gems").length).toBe(0);
+  });
+
+  it("Codex review (PR #61): reads the tile gem count from gemSlotsBase, not the static row.gem_slots field", () => {
+    // Spirit Fyra's rows all carry gem_slots: "3" in the default catalog —
+    // override gemSlotsBase.Légendaire to a different value and confirm the
+    // tile follows the admin-editable config, the same source the Gemmes
+    // rarity summary table below already reads from.
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          gemSlotsBase={{ ...defaultCombatGemSlotsBase, Légendaire: 7 }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const block = combatBlock("Spirit Fyra");
+    const gemLabels = block.querySelectorAll(".reference-tile-gems");
+    expect(gemLabels.length).toBe(9);
+    for (const label of gemLabels) expect(label.textContent).toContain("7");
+  });
+
+  it("Codex review (PR #61): exposes family alongside rarity in each tile's accessible name", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    const tile = block.querySelector<HTMLElement>(
+      '.reference-tile[data-slot="Arme"]',
+    )!;
+    expect(tile.getAttribute("aria-label")).toBe(
+      "Légendaire — Attaque — Spirit Fyra — Arme",
+    );
+  });
+
+  it("Codex review (PR #61): dimmed (filtered-out) blocks carry a screen-reader-only hint, matching ones don't", () => {
+    renderTables();
+    fireEvent.click(screen.getByRole("button", { name: "Défense" }));
+    const dimmedTitle = combatBlock("Spirit Fyra").querySelector("h3")!;
+    expect(dimmedTitle.querySelector(".sr-only")).toHaveTextContent(
+      "ne correspond pas aux filtres actifs",
+    );
+    const defenseBlock = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).find((block) => block.dataset.family === "Défense")!;
+    expect(
+      defenseBlock.querySelector("h3")!.querySelector(".sr-only"),
+    ).toBeNull();
   });
 
   it("never shows a gem count on Expedition tiles", () => {

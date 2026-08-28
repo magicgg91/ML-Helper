@@ -233,24 +233,31 @@ function groupBySet<
 function CombatTile({
   row,
   rarityLabel,
+  familyLabel,
   slotLabel,
   slotNameLabel,
   skillLabel,
   familyColor,
+  gemSlotsBase,
   locale,
   t,
 }: {
   row: CombatReferenceRow;
   rarityLabel: (value: string) => string;
+  familyLabel: (value: string) => string;
   slotLabel: (value: string) => string;
   slotNameLabel: (value: string) => string;
   skillLabel: (value: string) => string;
   familyColor: string | undefined;
+  gemSlotsBase: CombatGemSlotsBase;
   locale: string;
   t: ReturnType<typeof useTranslations>;
 }) {
   const rarityVar = `var(--rarity-${rarityClassName(row.rarity)})`;
-  const gemCount = Number(row.gem_slots);
+  // Codex review (PR #61): read the gem count from the same admin-editable
+  // source as the Gemmes rarity summary below, not the static per-row
+  // gem_slots field — the two can drift once an admin edits gemSlotsBase.
+  const gemCount = gemSlotsBase[row.rarity as keyof CombatGemSlotsBase] ?? 0;
   return (
     <div
       className="reference-tile"
@@ -262,7 +269,7 @@ function CombatTile({
       }
       data-rarity={row.rarity}
       data-slot={row.slot_type}
-      aria-label={`${rarityLabel(row.rarity)} — ${row.set_name} — ${slotLabel(row.slot_type)}`}
+      aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot_type)}`}
     >
       <div className="reference-tile-head">
         <span
@@ -333,6 +340,7 @@ export function CombatReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
+  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(
@@ -362,35 +370,48 @@ export function CombatReferenceTable({
       {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
       {sets.length ? (
         <div className="reference-tile-blocks">
-          {sets.map((set) => (
-            <section
-              className={
-                matchesFilters(set, filters)
-                  ? "reference-tile-block"
-                  : "reference-tile-block reference-tile-block-dim"
-              }
-              key={`${set.rarity}-${set.family}-${set.set_name}`}
-              data-family={set.family}
-              data-rarity={set.rarity}
-            >
-              <h3 className="reference-tile-block-title">{set.set_name}</h3>
-              <div className="reference-tile-grid">
-                {set.rows.map((row) => (
-                  <CombatTile
-                    key={row.slot_type}
-                    row={row}
-                    rarityLabel={rarityLabel}
-                    slotLabel={slotLabel}
-                    slotNameLabel={slotNameLabel}
-                    skillLabel={skillLabel}
-                    familyColor={filterButtonColor(row.family)}
-                    locale={locale}
-                    t={t}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          {sets.map((set) => {
+            const matches = matchesFilters(set, filters);
+            return (
+              <section
+                className={
+                  matches
+                    ? "reference-tile-block"
+                    : "reference-tile-block reference-tile-block-dim"
+                }
+                key={`${set.rarity}-${set.family}-${set.set_name}`}
+                data-family={set.family}
+                data-rarity={set.rarity}
+              >
+                <h3 className="reference-tile-block-title">
+                  {set.set_name}
+                  {matches ? null : (
+                    <span className="sr-only">
+                      {" "}
+                      — {referencesT("filters.dimmed-hint")}
+                    </span>
+                  )}
+                </h3>
+                <div className="reference-tile-grid">
+                  {set.rows.map((row) => (
+                    <CombatTile
+                      key={row.slot_type}
+                      row={row}
+                      rarityLabel={rarityLabel}
+                      familyLabel={familyLabel}
+                      slotLabel={slotLabel}
+                      slotNameLabel={slotNameLabel}
+                      skillLabel={skillLabel}
+                      familyColor={filterButtonColor(row.family)}
+                      gemSlotsBase={gemSlotsBase}
+                      locale={locale}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       ) : null}
       <RarityValueTable
@@ -465,7 +486,7 @@ function ExpeditionTile({
       }
       data-rarity={row.rarity}
       data-slot={row.slot}
-      aria-label={`${rarityLabel(row.rarity)} — ${row.set_name} — ${slotLabel(row.slot)}`}
+      aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot)}`}
     >
       <div className="reference-tile-head">
         <span
@@ -514,6 +535,7 @@ export function ExpeditionReferenceTable({
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
+  const referencesT = useTranslations("references");
   const game = useTranslations("game");
   const familyLabel = (value: string) =>
     game(`families.${expeditionFamilyTranslationKeys[value]}`);
@@ -539,36 +561,47 @@ export function ExpeditionReferenceTable({
       {!sets.length ? <p className="empty-state">{t("empty")}</p> : null}
       {sets.length ? (
         <div className="reference-tile-blocks">
-          {sets.map((set) => (
-            <section
-              className={
-                matchesFilters(set, filters)
-                  ? "reference-tile-block"
-                  : "reference-tile-block reference-tile-block-dim"
-              }
-              key={`${set.rarity}-${set.family}-${set.set_name}`}
-              data-family={set.family}
-              data-rarity={set.rarity}
-            >
-              <h3 className="reference-tile-block-title">{set.set_name}</h3>
-              <div className="reference-tile-grid">
-                {set.rows.map((row) => (
-                  <ExpeditionTile
-                    key={row.slot}
-                    row={row}
-                    rarityLabel={rarityLabel}
-                    slotLabel={slotLabel}
-                    familyLabel={familyLabel}
-                    statLabel={statLabel}
-                    familyColor={filterButtonColor(row.family)}
-                    increments={increments}
-                    locale={locale}
-                    t={t}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          {sets.map((set) => {
+            const matches = matchesFilters(set, filters);
+            return (
+              <section
+                className={
+                  matches
+                    ? "reference-tile-block"
+                    : "reference-tile-block reference-tile-block-dim"
+                }
+                key={`${set.rarity}-${set.family}-${set.set_name}`}
+                data-family={set.family}
+                data-rarity={set.rarity}
+              >
+                <h3 className="reference-tile-block-title">
+                  {set.set_name}
+                  {matches ? null : (
+                    <span className="sr-only">
+                      {" "}
+                      — {referencesT("filters.dimmed-hint")}
+                    </span>
+                  )}
+                </h3>
+                <div className="reference-tile-grid">
+                  {set.rows.map((row) => (
+                    <ExpeditionTile
+                      key={row.slot}
+                      row={row}
+                      rarityLabel={rarityLabel}
+                      slotLabel={slotLabel}
+                      familyLabel={familyLabel}
+                      statLabel={statLabel}
+                      familyColor={filterButtonColor(row.family)}
+                      increments={increments}
+                      locale={locale}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       ) : null}
       <RarityValueTable
