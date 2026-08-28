@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   combatReferenceRows,
@@ -12,11 +12,13 @@ import {
 import {
   CombatGemSlotsAdmin,
   CombatReferenceAdmin,
+  CombatReferenceScreen,
   CombatSkydustAdmin,
   ExpeditionDismantleAdmin,
   ExpeditionIncrementsAdmin,
   ExpeditionMergeCostAdmin,
   ExpeditionReferenceAdmin,
+  ExpeditionReferenceScreen,
 } from "./reference-admin-editors";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
@@ -162,6 +164,17 @@ describe("complete lookup table administration", () => {
     expect(setNameCell).not.toHaveClass("reference-admin-narrow");
   });
 
+  it("Bloc37/D: sizes the combat filter row's selects to their content, not .reference-filters (the public page's row)", () => {
+    const { container } = render(
+      <CombatReferenceAdmin initialRows={[...combatReferenceRows]} />,
+    );
+    const filters = container.querySelector(".reference-admin-filters")!;
+    expect(filters).toBeInTheDocument();
+    expect(container.querySelector(".reference-filters")).toBeNull();
+    const familySelect = screen.getByRole("combobox", { name: "Famille" });
+    expect(familySelect.closest(".reference-admin-filters")).toBe(filters);
+  });
+
   it("Bloc35 5.4: orders the expedition table's columns Famille, Rareté, Nom du set, Emplacement, then stats", () => {
     render(
       <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
@@ -178,6 +191,30 @@ describe("complete lookup table administration", () => {
       "Stat secondaire",
       "Valeur secondaire (%)",
     ]);
+  });
+
+  it("Bloc37/B: sizes the expedition filter row's selects to their content too", () => {
+    const { container } = render(
+      <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
+    );
+    expect(
+      container.querySelector(".reference-admin-filters"),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".reference-filters")).toBeNull();
+  });
+
+  it("Bloc37/A: narrows the expedition table's percentage columns too (previously left at full width)", () => {
+    const { container } = render(
+      <ExpeditionReferenceAdmin initialRows={[...expeditionReferenceRows]} />,
+    );
+    const typeValueCell = container
+      .querySelector('input[aria-label="Expédition ligne 1 Valeur type (%)"]')!
+      .closest("td");
+    expect(typeValueCell).toHaveClass("reference-admin-narrow");
+    const setNameCell = container
+      .querySelector('input[aria-label="Expédition ligne 1 Nom du set"]')!
+      .closest("td");
+    expect(setNameCell).not.toHaveClass("reference-admin-narrow");
   });
 
   it("Bloc35 6.1: edits and submits Combat's Pouciel-per-rarity as a dedicated admin table", async () => {
@@ -239,5 +276,136 @@ describe("complete lookup table administration", () => {
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(body[0].Rare).toBe("42");
     expect(body[0].Commun).toBe("0");
+  });
+
+  it("Bloc37/E: combines Combat's 3 tables under one top EditorActionBar, saved in a single action", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    expect(container.querySelectorAll(".editor-action-bar")).toHaveLength(1);
+    expect(container.querySelectorAll("button.primary-button")).toHaveLength(
+      0,
+    );
+    expect(
+      screen.getByRole("link", { name: /Retour/ }),
+    ).toHaveAttribute("href", "/admin/guides");
+
+    const [main, skydust, gemSlots] = Array.from(
+      container.querySelectorAll(".editable-reference"),
+    );
+    fireEvent.change(
+      main.querySelector('input[aria-label="Ligne 1 Nom du set"]')!,
+      { target: { value: "Set modifié" } },
+    );
+    fireEvent.change(
+      skydust.querySelector('input[aria-label="Ligne 1 Commun"]')!,
+      { target: { value: "5" } },
+    );
+    fireEvent.change(
+      gemSlots.querySelector('input[aria-label="Ligne 1 Épique"]')!,
+      { target: { value: "2" } },
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    const bodies = fetchMock.mock.calls.map(([, init]) =>
+      JSON.parse(String(init?.body)),
+    );
+    // Bloc 37/E fix (Codex review): Pouciel and gem-slots save before the
+    // main table, since its endpoint reads those bases and stamps them
+    // into every row — so they must land first, not race it.
+    expect(bodies[0][0].Commun).toBe("5");
+    expect(bodies[1][0].Épique).toBe("2");
+    expect(bodies[2][0].set_name).toBe("Set modifié");
+    expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
+  });
+
+  it("Bloc37/E fix: the Combat main table only saves after Pouciel and gem-slots have finished (no race on the stamped bases)", async () => {
+    const resolvers: Array<() => void> = [];
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvers.push(() => resolve(new Response("{}", { status: 200 })));
+        }),
+    );
+    render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    // Only Pouciel + gem-slots (the base tables) should have been sent so
+    // far — the main table's request must wait for them to resolve first.
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    resolvers.forEach((resolve) => resolve());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    resolvers[2]();
+    expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
+  });
+
+  it("Bloc37/E: a validation error in any Combat table blocks the whole combined save", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    const { container } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    const [, skydust] = Array.from(
+      container.querySelectorAll(".editable-reference"),
+    );
+    fireEvent.change(
+      skydust.querySelector('input[aria-label="Ligne 1 Commun"]')!,
+      { target: { value: "" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    expect(
+      await screen.findByText(
+        "Corrige les champs signalés avant l’enregistrement.",
+      ),
+    ).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("Bloc37/E: combines Expedition's 4 tables under one top EditorActionBar, saved in a single action", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <ExpeditionReferenceScreen
+        initialRows={[...expeditionReferenceRows]}
+        incrementsInitial={defaultExpeditionStarIncrements}
+        mergeCostInitial={defaultExpeditionMergeCostBase}
+        dismantleInitial={defaultExpeditionDismantleBase}
+      />,
+    );
+    expect(container.querySelectorAll(".editor-action-bar")).toHaveLength(1);
+    expect(container.querySelectorAll("button.primary-button")).toHaveLength(
+      0,
+    );
+    expect(container.querySelectorAll(".editable-reference")).toHaveLength(4);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+    expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   });
 });

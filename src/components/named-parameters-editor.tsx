@@ -528,7 +528,7 @@ export function GemParametersEditor({
               <tr>
                 <th></th>
                 {leagues.map((league) => (
-                  <th key={league} className="reference-admin-narrow">
+                  <th key={league} className="gems-admin-narrow">
                     {game(`leagues.${league}`)}
                   </th>
                 ))}
@@ -539,7 +539,7 @@ export function GemParametersEditor({
                 <tr key={skill}>
                   <td>{game(`skills.${skill}`)}</td>
                   {leagues.map((league) => (
-                    <td key={league} className="reference-admin-narrow">
+                    <td key={league} className="gems-admin-narrow">
                       <input
                         aria-label={t("value-field", {
                           skill: game(`skills.${skill}`),

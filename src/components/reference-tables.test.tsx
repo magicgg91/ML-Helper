@@ -27,13 +27,18 @@ describe("ReferenceTables", () => {
       </NextIntlClientProvider>,
     );
 
+  // Bloc 37/I: the free-search box is gone — isolate a single set (all 9
+  // Légendaire Attaque rows, same subset the old "Spirit Fyra" search used
+  // to reach) via the rarity pills instead.
+  function isolateToLegendary() {
+    for (const rarity of ["Mythique", "Épique", "Rare", "Commun"])
+      fireEvent.click(screen.getByRole("button", { name: rarity }));
+  }
+
   it("filters combat equipment and applies additive stars", () => {
     renderTables();
     fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    fireEvent.change(
-      screen.getByRole("searchbox", { name: "Recherche libre" }),
-      { target: { value: "Spirit Fyra" } },
-    );
+    isolateToLegendary();
     fireEvent.change(
       screen.getByRole("combobox", { name: "Niveau d’étoile" }),
       { target: { value: "5" } },
@@ -44,10 +49,7 @@ describe("ReferenceTables", () => {
   it("attempts the manifest image path for each combat equipment row", () => {
     renderTables();
     fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    fireEvent.change(
-      screen.getByRole("searchbox", { name: "Recherche libre" }),
-      { target: { value: "Spirit Fyra" } },
-    );
+    isolateToLegendary();
     const images = document.querySelectorAll<HTMLImageElement>(
       ".reference-equipment-image",
     );
@@ -119,10 +121,7 @@ describe("ReferenceTables", () => {
       .map((cell) => cell.textContent);
     expect(headers.slice(0, 2)).toEqual(["Image", "Rareté"]);
     fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
-    fireEvent.change(
-      screen.getByRole("searchbox", { name: "Recherche libre" }),
-      { target: { value: "Spirit Fyra" } },
-    );
+    isolateToLegendary();
     const firstRow = screen.getAllByRole("row")[1];
     const cells = firstRow.querySelectorAll("td");
     expect(cells[0].querySelector(".reference-equipment-image")).not.toBeNull();
@@ -198,5 +197,67 @@ describe("ReferenceTables", () => {
     expect(
       screen.queryByText("Hypothèse non confirmée"),
     ).not.toBeInTheDocument();
+  });
+
+  it("Bloc37/I: drops the free-search box, sizes family/rarity/star-level 1fr/1fr/20% and right-aligns star-level", () => {
+    renderTables();
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+    const starLabel = screen
+      .getByRole("combobox", { name: "Niveau d’étoile" })
+      .closest("label")!;
+    expect(starLabel).toHaveClass("reference-star-filter");
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+  });
+
+  it("Bloc37/H: shows the skill/stat name and its % value on the same line, not stacked", () => {
+    renderTables();
+    fireEvent.click(screen.getByRole("button", { name: "Attaque" }));
+    isolateToLegendary();
+    const row = screen.getAllByRole("row")[1];
+    const pair = row.querySelector(".skill-value-row")!;
+    expect(pair).toBeInTheDocument();
+    expect(pair.querySelector(".reference-value")).not.toBeNull();
+  });
+});
+
+describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-filled-in", () => {
+  afterEach(cleanup);
+  const baseRow = combatReferenceRows[0];
+
+  it('shows "—" when the admin explicitly picked "Rien" for a skill slot', () => {
+    const rows = [
+      { ...baseRow, family: "Attaque", skill_2: "none", value_2_pct: "" },
+    ];
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={rows} />
+      </NextIntlClientProvider>,
+    );
+    const row = screen.getAllByRole("row")[1];
+    const cells = row.querySelectorAll("td");
+    // Column order: image, rarity, set name, slot, skill1..4 — skill_2 is
+    // the 6th cell.
+    expect(cells[5]).toHaveTextContent("—");
+    expect(cells[5].querySelector(".unconfirmed")).toBeNull();
+  });
+
+  it('still shows "À compléter en admin" when a skill slot is genuinely not filled in yet', () => {
+    const rows = [
+      { ...baseRow, family: "Attaque", skill_2: "", value_2_pct: "" },
+    ];
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={rows} />
+      </NextIntlClientProvider>,
+    );
+    const row = screen.getAllByRole("row")[1];
+    const cells = row.querySelectorAll("td");
+    expect(cells[5].querySelector(".unconfirmed")).toHaveTextContent(
+      "À compléter en admin",
+    );
   });
 });

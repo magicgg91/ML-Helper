@@ -191,11 +191,13 @@ describe("named formula parameter editors", () => {
     const valueCell = screen
       .getByRole("spinbutton", { name: "Vitesse · Légende" })
       .closest("td");
-    expect(valueCell).toHaveClass("reference-admin-narrow");
+    // Bloc 37/F: decoupled from .reference-admin-narrow so its own cells
+    // could grow ~50% without narrowing every other admin table with them.
+    expect(valueCell).toHaveClass("gems-admin-narrow");
     const priceCell = screen
       .getByRole("spinbutton", { name: "Prix Légende" })
       .closest("td");
-    expect(priceCell).not.toHaveClass("reference-admin-narrow");
+    expect(priceCell).not.toHaveClass("gems-admin-narrow");
   });
 
   it("Bloc35 8.2/8.3: shows the purchase-price fields as a real table with plain league-name headers", () => {

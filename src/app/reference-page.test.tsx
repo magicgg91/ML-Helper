@@ -91,6 +91,10 @@ describe("ReferencePage", () => {
       "href",
       "/guides/referentiels/expedition-equipment",
     );
+    // Bloc 37/K: same rendering as the family-buttons pill row used inside
+    // a tool (e.g. Attaque/Défense/Or/Vitesse) — not the /tools category
+    // tiles.
+    expect(nav).toHaveClass("family-buttons");
     expect(otherLink).not.toHaveAttribute("aria-current");
   });
 

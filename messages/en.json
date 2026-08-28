@@ -1,6 +1,7 @@
 {
   "common": {
     "choose": "— Choose —",
+    "none": "None",
     "decrease": "Decrease {label}",
     "increase": "Increase {label}",
     "select-league": "Choose a league to calculate.",
@@ -518,8 +519,6 @@
       "rarity": "Rarity",
       "slot": "Slot",
       "skill": "Skill",
-      "search": "Free search",
-      "search-placeholder": "Set or slot…",
       "star-level": "Star level"
     },
     "catalog": {
@@ -856,12 +855,14 @@
       "templar-level-label": "Templar level {level}",
       "templar-cost-label": "Templar level {level} cost",
       "save": "Save entire table",
+      "save-all": "Save the whole page",
       "required": "This field is required.",
       "number": "Enter a valid numeric value.",
       "minimum": "The minimum value is {min}.",
       "validation": "Fix the highlighted fields before saving.",
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
+      "save-all-error": "Failed to save one or more tables on this page.",
       "saved": "Reference table saved.",
       "server-error": "Unable to reach the server. Check the connection and try again.",
       "all": "All",
