@@ -255,8 +255,15 @@ select {
   max-width: 50rem;
   padding: clamp(2rem, 6vw, 5rem) 0;
 }
+/* Bloc 38/L: this generic hero-title rule was silently overriding
+   .tools-page-title's and .reference-page-title's own (deliberately much
+   smaller) font-size clamp — `.public-main > h1` (a class + a type
+   selector) outranks a lone class selector, so only their `white-space:
+   nowrap` was actually landing, on text sized for this rule's huge
+   clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
+   Bloc 33/35's narrower clamps needed all along to actually apply. */
 .hero h1,
-.public-main > h1,
+.public-main > h1:not(.tools-page-title):not(.reference-page-title),
 .guide-shell h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
@@ -1029,6 +1036,32 @@ select {
 .reference-table {
   min-width: 1100px;
 }
+/* Bloc 38/A, D: the Gemmes reference only — 6 league columns of strictly
+   equal width (table-layout: fixed splits the remainder evenly once the
+   1st, row-label column gets an explicit width), title and content
+   centered. Scoped to this table alone, not the shared .reference-table
+   used by Combat/Expedition. */
+.gems-reference-table {
+  table-layout: fixed;
+  min-width: 900px;
+}
+.gems-reference-table th,
+.gems-reference-table td {
+  text-align: center;
+}
+.gems-reference-table th:first-child,
+.gems-reference-table td:first-child {
+  width: 9rem;
+  text-align: left;
+}
+/* Bloc 38/C: image and % on the same line — see the component comment for
+   why .reference-equipment-image's own display:block would otherwise stack
+   them. */
+.gems-value-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
 .reference-value {
   color: var(--success);
 }
@@ -1094,6 +1127,15 @@ select {
   color: var(--muted);
   font-size: 0.72rem;
   text-transform: uppercase;
+}
+/* Bloc 38/M: Level Up now reuses Templiers'/Gemmes' exact table look
+   (border + background already came from wrapping it in
+   .calculator-card.ranking-table-wrap, same as those 2) — this adds the
+   3rd piece, alternating row color, shared by all 3 rather than every
+   .ranking-table (Ranking's own calculator/admin tables keep their
+   current look, unaffected). */
+.reference-simple-table tbody tr:nth-child(even) {
+  background: var(--bg-panel-raised);
 }
 .ranking-unknown {
   color: var(--muted);
@@ -1489,10 +1531,13 @@ select,
   font-size: 10.5px;
   font-weight: 600;
 }
+/* Bloc 38/B, G: bumped from 2.2rem to 3rem — Combat and Expedition's
+   equipment images now match Gemmes' own image size for visual consistency
+   across all 3 equipment/gem référentiels. */
 .reference-equipment-image {
   display: block;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 3rem;
+  height: 3rem;
   margin-bottom: 0.3rem;
   object-fit: contain;
 }
@@ -1759,6 +1804,18 @@ body > main h1 {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;
 }
+/* Bloc 38/Q: Combat's and Expedition's auxiliary numeric tables (Pouciel,
+   gem-slots, star increments, merge-cost, Terradust-at-destruction) get
+   roughly double their input width — never the 180/120-row main tables'
+   narrow skill/stat % columns from Bloc 35/37, which don't carry this
+   modifier class. */
+.reference-admin-wide-inputs .reference-admin-table input {
+  min-width: 18rem;
+}
+.reference-admin-wide-inputs .reference-admin-grid-field input {
+  width: 100%;
+  min-width: 12rem;
+}
 .reference-admin-table input[readonly] {
   color: var(--text-faint);
   cursor: not-allowed;
@@ -1770,6 +1827,16 @@ main.admin-main select,
 main.admin-main input[type="number"] {
   text-align: center;
   text-align-last: center;
+}
+/* Bloc 38/P: no browser increment/decrement arrows on any admin numeric
+   field (tools and references alike) — keyboard entry only. */
+main.admin-main input[type="number"] {
+  appearance: textfield;
+}
+main.admin-main input[type="number"]::-webkit-inner-spin-button,
+main.admin-main input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 /* Bloc 35/5.1: field-grid alternative to the wide table, for a single-row
    table with many columns (per-star increments) — wraps instead of
@@ -2347,7 +2414,12 @@ main.admin-main input[type="number"] {
    reused .tool-category-grid (1-click access, no /tools detour). Bloc
    34/E: the guides/référentiels section below reuses the exact same
    header treatment. */
-.home-tools,
+/* Bloc 38/I: .home-tools sits right below the intro sentence, which
+   already carries its own spacing — halved from .home-guides' unchanged
+   clamp so the gap above the tool grid isn't excessive. */
+.home-tools {
+  margin-top: clamp(1.5rem, 4vw, 3.5rem);
+}
 .home-guides {
   margin-top: clamp(3rem, 8vw, 7rem);
 }
@@ -2382,9 +2454,14 @@ main.admin-main input[type="number"] {
   white-space: nowrap;
 }
 
+/* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
+   count based on how many tiles there are — each column's floor is either
+   13.5rem or a quarter of the row (minus its 3 gaps), whichever is larger,
+   so auto-fit can still drop to 3/2/1 on a narrower row but never exceeds
+   4 on a wide one. */
 .tool-category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(max(13.5rem, calc((100% - 3 * 1rem) / 4)), 1fr));
   gap: 1rem;
   margin-top: 2rem;
 }
@@ -2416,9 +2493,12 @@ main.admin-main input[type="number"] {
   border-color: var(--accent);
   transform: translateY(-2px);
 }
+/* Bloc 38/H: a strict square, regardless of the source file's native
+   ratio — consistent across every category/reference tile whatever image
+   is dropped in. */
 .tool-category-image {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1;
   border-bottom: 1px solid var(--border);
 }
 .tool-category-copy {

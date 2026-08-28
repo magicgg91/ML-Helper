@@ -195,6 +195,12 @@ export type EditableReferenceTableProps<Row extends Record<string, string>> = {
   // own — a page hosting several tables (Combat, Expedition) drives them
   // all from ref.validate()/ref.save() instead, behind one shared button.
   standalone?: boolean;
+  // Bloc 38/Q: roughly doubles this table's (non-narrow) numeric input
+  // fields — for Combat's/Expedition's auxiliary tables (Pouciel,
+  // gem-slots, star increments, merge-cost, Terradust-at-destruction)
+  // specifically, never the 180/120-row main tables' narrow skill/stat %
+  // columns from Bloc 35/37, which this prop is never set on.
+  wideInputs?: boolean;
 };
 
 function EditableReferenceTableInner<Row extends Record<string, string>>(
@@ -210,6 +216,7 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
     filters = [],
     layout = "table",
     standalone = true,
+    wideInputs = false,
   }: EditableReferenceTableProps<Row>,
   ref: ForwardedRef<ReferenceTableHandle>,
 ) {
@@ -354,7 +361,13 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
   }
 
   return (
-    <div className="calculator-stack editable-reference">
+    <div
+      className={
+        wideInputs
+          ? "calculator-stack editable-reference reference-admin-wide-inputs"
+          : "calculator-stack editable-reference"
+      }
+    >
       {descriptionAsTitle ? (
         <h2 className="editable-reference-title">{description}</h2>
       ) : (

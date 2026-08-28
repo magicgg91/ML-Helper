@@ -53,6 +53,13 @@ describe("ToolsPage", () => {
     expect(disabledCard).toHaveAttribute("data-disabled");
   });
 
+  it("Bloc38/K: shows the same intro sentence as the homepage's tools section, right under the title", async () => {
+    render(await ToolsPage());
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading.nextElementSibling?.tagName).toBe("P");
+    expect(heading.nextElementSibling).toHaveTextContent("subtitle");
+  });
+
   it("Bloc36/B: shows the real category illustration for every tile, on /tools too", async () => {
     render(await ToolsPage());
     for (const src of [

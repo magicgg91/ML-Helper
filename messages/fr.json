@@ -110,7 +110,8 @@
     }
   },
   "tools": {
-    "title": "Choisis ton outil",
+    "title": "Décide avec les bons chiffres",
+    "subtitle": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "cities": "Villes",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -467,7 +468,7 @@
     "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "guidesEyebrow": "Apprendre",
     "guidesTitle": "Affûte ta stratégie",
-    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
+    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
   },
   "ToolsPage": {
     "eyebrow": "Outils",

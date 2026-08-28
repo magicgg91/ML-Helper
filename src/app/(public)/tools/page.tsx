@@ -14,6 +14,10 @@ export default async function ToolsPage() {
   return (
     <main className="public-main">
       <h1 className="tools-page-title">{t("title")}</h1>
+      {/* Bloc 38/K: same title and intro sentence as the homepage's tools
+          section, so /tools reads as the same entry point reached a
+          different way. */}
+      <p>{t("subtitle")}</p>
       <ToolCategoryGrid active={active} t={t} />
     </main>
   );

@@ -293,17 +293,20 @@ describe("equipment tools", () => {
     // Défense, Intrépide, Prospérité, Recruteur, Récupération, Recycleur,
     // Vitesse) and translating afterward would produce a different, wrong
     // order here — this must be alphabetical in the displayed language.
+    // Bloc 38/F: English labels fixed to the cdc's exact mapping (Striker,
+    // Guardian, Brave, Prosperous, Rusher, Cautious, Fearless, Recruiter,
+    // Scavenger, Salvager), which reorders this alphabetical list too.
     expect(labels).toEqual([
-      "Attack",
-      "Bravery",
-      "Defense",
+      "Brave",
+      "Cautious",
       "Fearless",
-      "Prosperity",
-      "Recovery",
+      "Guardian",
+      "Prosperous",
       "Recruiter",
+      "Rusher",
       "Salvager",
       "Scavenger",
-      "Speed",
+      "Striker",
     ]);
   });
 

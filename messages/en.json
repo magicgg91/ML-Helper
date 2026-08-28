@@ -11,16 +11,16 @@
   },
   "game": {
     "skills": {
-      "striker": "Attack",
-      "brave": "Bravery",
+      "striker": "Striker",
+      "brave": "Brave",
       "scavenger": "Scavenger",
-      "guardian": "Defense",
+      "guardian": "Guardian",
       "fearless": "Fearless",
-      "prosperous": "Prosperity",
+      "prosperous": "Prosperous",
       "recruiter": "Recruiter",
-      "cautious": "Recovery",
+      "cautious": "Cautious",
       "salvager": "Salvager",
-      "rusher": "Speed"
+      "rusher": "Rusher"
     },
     "skills-short": {
       "striker": "Atk",
@@ -110,7 +110,8 @@
     }
   },
   "tools": {
-    "title": "Choose your tool",
+    "title": "Make decisions with the right numbers",
+    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "cities": "Cities",
     "combat": "Combat",
     "combat-simulator": "Combat",
