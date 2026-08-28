@@ -732,16 +732,21 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.reload();
   await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
   // Same regression check for the Terradust merge-cost editor (2nd of the
-  // 3 "Enregistrer toute la table" buttons on this page: increments,
-  // merge-cost, then the 120-row reference table).
-  await page.getByLabel("Ligne 1 Commun").fill("700");
+  // 4 "Enregistrer toute la table" buttons on this page: increments,
+  // merge-cost, dismantle (Bloc 35/5.2), then the 120-row reference table).
+  // Bloc 35/5.2: the new dismantle table also has a "Commun" rarity column,
+  // so scope to the merge-cost table (2nd table on the page) to disambiguate.
+  const mergeCostTable = page.locator("table").nth(1);
+  await mergeCostTable.getByLabel("Ligne 1 Commun").fill("700");
   await page
     .getByRole("button", { name: "Enregistrer toute la table" })
     .nth(1)
     .click();
   await expect(page.getByText("Référentiel enregistré.").first()).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Ligne 1 Commun")).toHaveValue("700");
+  await expect(
+    page.locator("table").nth(1).getByLabel("Ligne 1 Commun"),
+  ).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
