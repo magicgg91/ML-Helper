@@ -320,9 +320,40 @@ describe("complete lookup table administration", () => {
     const bodies = fetchMock.mock.calls.map(([, init]) =>
       JSON.parse(String(init?.body)),
     );
-    expect(bodies[0][0].set_name).toBe("Set modifié");
-    expect(bodies[1][0].Commun).toBe("5");
-    expect(bodies[2][0].Épique).toBe("2");
+    // Bloc 37/E fix (Codex review): Pouciel and gem-slots save before the
+    // main table, since its endpoint reads those bases and stamps them
+    // into every row — so they must land first, not race it.
+    expect(bodies[0][0].Commun).toBe("5");
+    expect(bodies[1][0].Épique).toBe("2");
+    expect(bodies[2][0].set_name).toBe("Set modifié");
+    expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
+  });
+
+  it("Bloc37/E fix: the Combat main table only saves after Pouciel and gem-slots have finished (no race on the stamped bases)", async () => {
+    const resolvers: Array<() => void> = [];
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvers.push(() => resolve(new Response("{}", { status: 200 })));
+        }),
+    );
+    render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    // Only Pouciel + gem-slots (the base tables) should have been sent so
+    // far — the main table's request must wait for them to resolve first.
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    resolvers.forEach((resolve) => resolve());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    resolvers[2]();
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   });
 

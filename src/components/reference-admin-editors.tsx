@@ -450,10 +450,18 @@ export const ExpeditionDismantleAdmin = forwardRef<
 // the old layout, where every table (main + Pouciel + Gemmes, or
 // increments + merge-cost + dismantle + main) rendered its own back link
 // and its own save button repeated down the page.
-function useCombinedSave(refs: Array<RefObject<ReferenceTableHandle | null>>) {
+// `refGroups` saves are sequenced group by group (refs within a group save
+// in parallel) — needed because Combat's main table PUT reads the
+// currently-persisted Pouciel/gem-slots bases and stamps them into every
+// row, so those two base tables must finish saving before the main table's
+// request is sent, or it can stamp stale values (Codex review, PR #59).
+function useCombinedSave(
+  refGroups: Array<Array<RefObject<ReferenceTableHandle | null>>>,
+) {
   const t = useTranslations("admin.references");
   const [status, setStatus] = useState("");
   const [success, setSuccess] = useState(false);
+  const refs = refGroups.flat();
   async function saveAll() {
     const valid = refs.every((r) => r.current?.validate() ?? true);
     if (!valid) {
@@ -463,10 +471,14 @@ function useCombinedSave(refs: Array<RefObject<ReferenceTableHandle | null>>) {
     }
     setStatus(t("saving"));
     setSuccess(false);
-    const results = await Promise.all(
-      refs.map((r) => r.current?.save() ?? Promise.resolve(true)),
-    );
-    if (results.every(Boolean)) {
+    let allOk = true;
+    for (const group of refGroups) {
+      const results = await Promise.all(
+        group.map((r) => r.current?.save() ?? Promise.resolve(true)),
+      );
+      if (!results.every(Boolean)) allOk = false;
+    }
+    if (allOk) {
       setStatus(t("saved"));
       setSuccess(true);
     } else {
@@ -490,9 +502,8 @@ export function CombatReferenceScreen({
   const skydustRef = useRef<ReferenceTableHandle>(null);
   const gemSlotsRef = useRef<ReferenceTableHandle>(null);
   const { status, saveAll, saveAllLabel } = useCombinedSave([
-    mainRef,
-    skydustRef,
-    gemSlotsRef,
+    [skydustRef, gemSlotsRef],
+    [mainRef],
   ]);
   return (
     <div className="calculator-stack">
@@ -540,10 +551,7 @@ export function ExpeditionReferenceScreen({
   const dismantleRef = useRef<ReferenceTableHandle>(null);
   const mainRef = useRef<ReferenceTableHandle>(null);
   const { status, saveAll, saveAllLabel } = useCombinedSave([
-    incrementsRef,
-    mergeCostRef,
-    dismantleRef,
-    mainRef,
+    [incrementsRef, mergeCostRef, dismantleRef, mainRef],
   ]);
   return (
     <div className="calculator-stack">
