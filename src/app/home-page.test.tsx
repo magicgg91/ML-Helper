@@ -98,6 +98,17 @@ describe("HomePage", () => {
     expect(screen.queryByRole("link", { name: "guides" })).toBeNull();
   });
 
+  it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {
+    render(await HomePage());
+    for (const src of [
+      "/tools/cities.webp",
+      "/tools/fight.webp",
+      "/tools/ranking.webp",
+      "/tools/skills.webp",
+    ])
+      expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
+  });
+
   it("keeps the tools section above the guides section", async () => {
     const { container } = render(await HomePage());
     const main = container.querySelector("main")!;

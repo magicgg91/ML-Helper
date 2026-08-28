@@ -32,6 +32,27 @@ describe("GameImage", () => {
     expect(screen.getByText("repli")).toBeVisible();
   });
 
+  it("Bloc36/B: loads lazily by default, eagerly only when told to (LCP tiles)", () => {
+    const { rerender } = render(
+      <GameImage
+        src="/tools/cities.webp"
+        alt="Villes"
+        fallback={<span>repli</span>}
+      />,
+    );
+    expect(screen.getByRole("img")).toHaveAttribute("loading", "lazy");
+
+    rerender(
+      <GameImage
+        src="/tools/cities.webp"
+        alt="Villes"
+        fallback={<span>repli</span>}
+        eager
+      />,
+    );
+    expect(screen.getByRole("img")).toHaveAttribute("loading", "eager");
+  });
+
   it("retries automatically once src changes, as if the file had just been deposited", () => {
     const { rerender } = render(
       <GameImage

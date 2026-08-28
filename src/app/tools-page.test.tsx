@@ -52,4 +52,15 @@ describe("ToolsPage", () => {
     const disabledCard = screen.getByText("combat").closest("article")!;
     expect(disabledCard).toHaveAttribute("data-disabled");
   });
+
+  it("Bloc36/B: shows the real category illustration for every tile, on /tools too", async () => {
+    render(await ToolsPage());
+    for (const src of [
+      "/tools/cities.webp",
+      "/tools/fight.webp",
+      "/tools/ranking.webp",
+      "/tools/skills.webp",
+    ])
+      expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
+  });
 });

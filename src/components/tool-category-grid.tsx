@@ -1,19 +1,24 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { getTranslations } from "next-intl/server";
 import type {
   CalculatorAvailability,
   CalculatorSlug,
 } from "@/lib/calculator-catalog";
+import { GameImage } from "./game-image";
 
 // Bloc 33/A: shared between /tools (unchanged) and the homepage (now a
 // direct 1-click entry point instead of a marketing teaser linking to
 // /tools) — same categories/layout, reused rather than duplicated.
+// Bloc 36/B: `image` is the real AI-generated illustration delivered for
+// each category (single source of truth for both pages); `fallbackImage`
+// is the previous placeholder icon, shown instead if the file is ever
+// missing (GameImage) instead of a broken-image icon.
 export const toolCategories: Array<{
   label: "cities" | "combat" | "ranking" | "skills";
   slug: string;
   calculators: CalculatorSlug[];
   image: string;
+  fallbackImage: string;
 }> = [
   {
     label: "cities",
@@ -24,19 +29,22 @@ export const toolCategories: Array<{
       "city-production",
       "city-rewards",
     ],
-    image: "/category-cities.svg",
+    image: "/tools/cities.webp",
+    fallbackImage: "/category-cities.svg",
   },
   {
     label: "combat",
     slug: "combat",
     calculators: ["xp-gain-rate", "demo-attack-troops"],
-    image: "/category-combat.svg",
+    image: "/tools/fight.webp",
+    fallbackImage: "/category-combat.svg",
   },
   {
     label: "ranking",
     slug: "classement",
     calculators: ["ranking"],
-    image: "/category-ranking.svg",
+    image: "/tools/ranking.webp",
+    fallbackImage: "/category-ranking.svg",
   },
   {
     label: "skills",
@@ -47,7 +55,8 @@ export const toolCategories: Array<{
       "gems",
       "templars",
     ],
-    image: "/category-skills.svg",
+    image: "/tools/skills.webp",
+    fallbackImage: "/category-skills.svg",
   },
 ];
 
@@ -68,12 +77,14 @@ export function ToolCategoryGrid({
         const content = (
           <>
             <div className="tool-category-image">
-              <Image
+              <GameImage
                 src={category.image}
                 alt=""
-                fill
-                loading={category.slug === "villes" ? "eager" : "lazy"}
-                sizes="(max-width: 760px) 100vw, 33vw"
+                eager={category.slug === "villes"}
+                fallback={
+                  // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
+                  <img src={category.fallbackImage} alt="" />
+                }
               />
             </div>
             <div className="tool-category-copy">
