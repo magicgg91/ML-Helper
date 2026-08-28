@@ -155,6 +155,13 @@ describe("reference equipment", () => {
     );
   });
 
+  it("PR #57 review: rounds absolute per-rarity quantities to an integer (AGENTS.md — no decimals outside percentages)", () => {
+    expect(parseCombatSkydustBase({ Commun: 42.6 }).Commun).toBe(43);
+    expect(parseCombatGemSlotsBase({ Épique: 1.5 }).Épique).toBe(2);
+    expect(parseExpeditionDismantleBase({ Rare: 7.4 }).Rare).toBe(7);
+    expect(parseExpeditionMergeCostBase({ Commun: 700.2 }).Commun).toBe(700);
+  });
+
   it("keeps the same primary-stat value across all 6 slots of a set, per rarity and family", () => {
     const bySet = new Map<string, Set<string>>();
     for (const row of expeditionReferenceRows) {

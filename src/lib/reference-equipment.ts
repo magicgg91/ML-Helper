@@ -152,9 +152,14 @@ function parseRarityBase<T extends Record<MergeCostRarityKey, number>>(
   return Object.fromEntries(
     mergeCostRarityKeys.map((key) => {
       const parsed = Number(source[key]);
+      // AGENTS.md: absolute quantities (Terradust/Pouciel/gem-slots costs,
+      // not percentages) round to an integer — the input's step=1 is only
+      // a soft browser hint, not enforced against a submitted payload.
       return [
         key,
-        Number.isFinite(parsed) && parsed >= 0 ? parsed : defaults[key],
+        Number.isFinite(parsed) && parsed >= 0
+          ? Math.round(parsed)
+          : defaults[key],
       ];
     }),
   ) as T;

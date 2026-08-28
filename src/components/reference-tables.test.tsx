@@ -8,9 +8,10 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
-import { ReferenceTables } from "./reference-tables";
+import { CombatReferenceTable, ReferenceTables } from "./reference-tables";
 import {
   combatReferenceRows,
+  defaultCombatGemSlotsBase,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
 
@@ -157,6 +158,22 @@ describe("ReferenceTables", () => {
       .getByRole("heading", { name: "Gemmes" })
       .closest("section")!;
     expect(within(gemsTable).getByText("3")).toBeVisible();
+  });
+
+  it("PR #57 review: formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          gemSlotsBase={{ ...defaultCombatGemSlotsBase, Légendaire: 1200 }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const gemsTable = screen
+      .getByRole("heading", { name: "Gemmes" })
+      .closest("section")!;
+    expect(within(gemsTable).getByText("1.2k")).toBeVisible();
+    expect(within(gemsTable).queryByText("1200")).not.toBeInTheDocument();
   });
 
   it("Bloc35 2.2: shows the Terradust-at-destruction rarity table on the expedition side, defaulting to 0", () => {

@@ -20,6 +20,7 @@ import {
   type EquipmentSlot,
 } from "../lib/equipment";
 import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
+import { formatGameNumber } from "../lib/city-calculators";
 import {
   combatValueAtStar,
   defaultCombatGemSlotsBase,
@@ -75,7 +76,7 @@ function RarityValueTable({
           <tr>
             <th scope="row">{title}</th>
             {mergeCostRarityKeys.map((key) => (
-              <td key={key}>{base[key]}</td>
+              <td key={key}>{formatGameNumber(base[key])}</td>
             ))}
           </tr>
         </tbody>
