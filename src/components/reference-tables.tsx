@@ -91,8 +91,6 @@ function Filters({
   setFamily,
   rarities,
   toggleRarity,
-  search,
-  setSearch,
   star,
   setStar,
   familyLabel,
@@ -103,8 +101,6 @@ function Filters({
   setFamily: (value: string) => void;
   rarities: Set<string>;
   toggleRarity: (value: string) => void;
-  search: string;
-  setSearch: (value: string) => void;
   star: number;
   setStar: (value: number) => void;
   familyLabel: (value: string) => string;
@@ -173,16 +169,7 @@ function Filters({
           })}
         </div>
       </div>
-      <label>
-        {t("filters.search")}
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder={t("filters.search-placeholder")}
-        />
-      </label>
-      <label>
+      <label className="reference-star-filter">
         {t("filters.star-level")}
         <select
           value={star}
@@ -202,7 +189,6 @@ function Filters({
 function useFilters(families: readonly string[]) {
   const [family, setFamily] = useState(families[0]);
   const [rarities, setRarities] = useState(() => new Set<string>(rarityOrder));
-  const [search, setSearch] = useState("");
   const [star, setStar] = useState(1);
   const toggleRarity = (value: string) =>
     setRarities((current) => {
@@ -216,8 +202,6 @@ function useFilters(families: readonly string[]) {
     setFamily,
     rarities,
     toggleRarity,
-    search,
-    setSearch,
     star,
     setStar,
   };
@@ -254,16 +238,9 @@ export function CombatReferenceTable({
     () =>
       rows.filter(
         (row) =>
-          filters.rarities.has(row.rarity) &&
-          row.family === filters.family &&
-          `${row.set_name} ${slotLabel(row.slot_type)} ${slotNameLabel(row.slot_name)}`
-            .toLocaleLowerCase(locale)
-            .includes(filters.search.toLocaleLowerCase(locale)),
+          filters.rarities.has(row.rarity) && row.family === filters.family,
       ),
-    // Translation functions change with the active locale, which is already a
-    // dependency and intentionally refreshes the searchable labels.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, filters.rarities, filters.family, filters.search, locale],
+    [rows, filters.rarities, filters.family],
   );
   return (
     <div className="calculator-stack">
@@ -329,13 +306,17 @@ export function CombatReferenceTable({
                     );
                     return (
                       <td key={number}>
-                        {skill && skill !== "Inconnu" ? (
-                          <>
+                        {skill === "Aucune" ? (
+                          // Bloc 37/G: explicitly no skill at this slot —
+                          // distinct from "still needs data" below.
+                          "—"
+                        ) : skill && skill !== "Inconnu" ? (
+                          <span className="skill-value-row">
                             {skillLabel(skill)}
                             <strong className="reference-value">
                               {formatPercent(value, locale)}
                             </strong>
-                          </>
+                          </span>
                         ) : (
                           <span className="unconfirmed">
                             {t("complete-in-admin")}
@@ -394,16 +375,9 @@ export function ExpeditionReferenceTable({
     () =>
       rows.filter(
         (row) =>
-          filters.rarities.has(row.rarity) &&
-          row.family === filters.family &&
-          `${row.set_name} ${slotLabel(row.slot)}`
-            .toLocaleLowerCase(locale)
-            .includes(filters.search.toLocaleLowerCase(locale)),
+          filters.rarities.has(row.rarity) && row.family === filters.family,
       ),
-    // Translation functions change with the active locale, which is already a
-    // dependency and intentionally refreshes the searchable labels.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, filters.rarities, filters.family, filters.search, locale],
+    [rows, filters.rarities, filters.family],
   );
   return (
     <div className="calculator-stack">
@@ -491,15 +465,17 @@ export function ExpeditionReferenceTable({
                     <td>{familyLabel(row.family)}</td>
                     <td>{slotLabel(row.slot)}</td>
                     <td>
-                      {familyLabel(row.family)}
-                      {value(primary)}
+                      <span className="skill-value-row">
+                        {familyLabel(row.family)}
+                        {value(primary)}
+                      </span>
                     </td>
                     <td>
                       {secondaryName ? (
-                        <>
+                        <span className="skill-value-row">
                           {statLabel(secondaryName)}
                           {value(secondary)}
-                        </>
+                        </span>
                       ) : (
                         "—"
                       )}

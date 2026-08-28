@@ -1,6 +1,7 @@
 {
   "common": {
     "choose": "— Choisir —",
+    "none": "Rien",
     "decrease": "Diminuer {label}",
     "increase": "Augmenter {label}",
     "select-league": "Choisis une ligue pour calculer.",
@@ -523,8 +524,6 @@
       "rarity": "Rareté",
       "slot": "Emplacement",
       "skill": "Compétence",
-      "search": "Recherche libre",
-      "search-placeholder": "Set ou emplacement…",
       "star-level": "Niveau d’étoile"
     },
     "catalog": {

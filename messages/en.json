@@ -1,6 +1,7 @@
 {
   "common": {
     "choose": "— Choose —",
+    "none": "None",
     "decrease": "Decrease {label}",
     "increase": "Increase {label}",
     "select-league": "Choose a league to calculate.",
@@ -518,8 +519,6 @@
       "rarity": "Rarity",
       "slot": "Slot",
       "skill": "Skill",
-      "search": "Free search",
-      "search-placeholder": "Set or slot…",
       "star-level": "Star level"
     },
     "catalog": {
