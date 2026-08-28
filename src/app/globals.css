@@ -255,8 +255,15 @@ select {
   max-width: 50rem;
   padding: clamp(2rem, 6vw, 5rem) 0;
 }
+/* Bloc 38/L: this generic hero-title rule was silently overriding
+   .tools-page-title's and .reference-page-title's own (deliberately much
+   smaller) font-size clamp — `.public-main > h1` (a class + a type
+   selector) outranks a lone class selector, so only their `white-space:
+   nowrap` was actually landing, on text sized for this rule's huge
+   clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
+   Bloc 33/35's narrower clamps needed all along to actually apply. */
 .hero h1,
-.public-main > h1,
+.public-main > h1:not(.tools-page-title):not(.reference-page-title),
 .guide-shell h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
