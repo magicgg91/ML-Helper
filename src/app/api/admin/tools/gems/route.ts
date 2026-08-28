@@ -4,7 +4,12 @@ import { parseGemParameters } from "@/lib/gem-parameters";
 import { saveFormulaParameters } from "@/services/formula-parameters-admin";
 
 export async function PUT(request: Request) {
-  const session = await authorizedSession("calculators.write");
+  // Also reachable from the Guides admin table's "Gemmes" reference row
+  // (Bloc 36/A: guides_manager has references.write, no calculators.write).
+  const session = await authorizedSession([
+    "calculators.write",
+    "references.write",
+  ]);
   if (!session) return forbiddenResponse();
   const raw = await request.json().catch(() => null);
   if (!raw || typeof raw !== "object")

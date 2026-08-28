@@ -388,7 +388,12 @@
     "actual-cost": "Coût réel",
     "remaining-budget": "Budget restant",
     "gem-count": "{count, plural, one {# gemme} other {# gemmes}} {level}★",
-    "no-gems": "Aucune gemme"
+    "no-gems": "Aucune gemme",
+    "view-reference": "Voir le référentiel complet",
+    "reference": {
+      "price-row": "Coût en saphirs",
+      "competences-link": "Ouvrir les Outils Compétences"
+    }
   },
   "templars": {
     "name": "Templiers",
@@ -528,7 +533,8 @@
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
-      "templiers": "Coût des Templiers"
+      "templiers": "Coût des Templiers",
+      "gemmes": "Gemmes"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
@@ -701,7 +707,8 @@
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
         "level-up": "Level Up",
-        "templiers": "Templiers"
+        "templiers": "Templiers",
+        "gemmes": "Gemmes"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",

@@ -382,7 +382,12 @@
     "actual-cost": "Actual cost",
     "remaining-budget": "Remaining budget",
     "gem-count": "{count, plural, one {# gem} other {# gems}} {level}★",
-    "no-gems": "No gems"
+    "no-gems": "No gems",
+    "view-reference": "View full reference table",
+    "reference": {
+      "price-row": "Sapphire cost",
+      "competences-link": "Open Skills tools"
+    }
   },
   "templars": {
     "name": "Templars",
@@ -523,7 +528,8 @@
       "combat-equipment": "Combat Equipment",
       "expedition-equipment": "Expedition Equipment",
       "level-up": "Level Up",
-      "templiers": "Templar Cost"
+      "templiers": "Templar Cost",
+      "gemmes": "Gems"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
@@ -700,7 +706,8 @@
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
         "level-up": "Level Up",
-        "templiers": "Templars"
+        "templiers": "Templars",
+        "gemmes": "Gems"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",

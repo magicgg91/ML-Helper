@@ -39,7 +39,7 @@ import {
 import { GameImage } from "./game-image";
 import { RarityBadge } from "./rarity-badge";
 
-function formatPercent(value: number | null, locale: string) {
+export function formatPercent(value: number | null, locale: string) {
   return value === null
     ? "—"
     : `${value.toLocaleString(locale, { maximumFractionDigits: 2 })}%`;

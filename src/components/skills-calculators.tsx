@@ -201,6 +201,9 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   const [mode, setMode] = useState<"optimize" | "budget">("optimize");
   return (
     <div className="calculator-stack">
+      <Link className="reference-cross-link" href="/guides/referentiels/gemmes">
+        {t("view-reference")}
+      </Link>
       <section className="calculator-card">
         <div
           className="calculator-tabs compact mode-switch"

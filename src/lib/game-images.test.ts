@@ -7,15 +7,15 @@ import {
 } from "./game-images";
 
 describe("gemImagePath", () => {
-  it("matches the confirmed gem manifest naming convention", () => {
-    expect(gemImagePath("Attaque", "legend")).toBe(
-      "/gems/gemme-attaque-legende.png",
+  it("matches the naming convention of the 60 gem files actually delivered (Bloc 36)", () => {
+    expect(gemImagePath("striker", "legend")).toBe(
+      "/gems/gem-striker-legendary.webp",
     );
-    expect(gemImagePath("Récupération", "bronze")).toBe(
-      "/gems/gemme-recuperation-bronze.png",
+    expect(gemImagePath("cautious", "bronze")).toBe(
+      "/gems/gem-cautious-bronze.webp",
     );
-    expect(gemImagePath("Vitesse", "silver")).toBe(
-      "/gems/gemme-vitesse-argent.png",
+    expect(gemImagePath("rusher", "silver")).toBe(
+      "/gems/gem-rusher-silver.webp",
     );
   });
 });

@@ -177,7 +177,7 @@ describe("equipment tools", () => {
       target: { value: "legend" },
     });
     const gemImage = amulet.querySelector("img.gem-badge-image")!;
-    expect(gemImage).toHaveAttribute("src", "/gems/gemme-attaque-legende.png");
+    expect(gemImage).toHaveAttribute("src", "/gems/gem-striker-legendary.webp");
     expect(amulet.querySelector(".gem-badge")).toBeNull();
 
     fireEvent.error(gemImage);

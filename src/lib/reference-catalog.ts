@@ -25,6 +25,12 @@ export const referenceCatalog = [
     category: "competences",
     image: "/category-skills.svg",
   },
+  {
+    slug: "gemmes",
+    calculatorSlug: "gemmes" satisfies CalculatorSlug,
+    category: "competences",
+    image: "/category-skills.svg",
+  },
 ] as const;
 
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];

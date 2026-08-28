@@ -2255,7 +2255,14 @@ main.admin-main input[type="number"] {
 }
 
 /* Public landing pages */
+/* Bloc 36/B: GameImage renders a plain <img> (no next/image `fill`), so the
+   fill/cover positioning it used to get for free from next/image is now
+   explicit here — applies equally to the real photo and its SVG fallback. */
 .tool-category-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 

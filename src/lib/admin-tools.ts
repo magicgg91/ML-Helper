@@ -8,6 +8,7 @@ export const referenceToolSlugs = [
   "expedition-equipment",
   "level-up",
   "templiers",
+  "gemmes",
 ] as const;
 export const cityToolSlugs = [
   "city-cost",
@@ -30,5 +31,9 @@ export function adminToolEditHref(slug: string): string | undefined {
   if (slug === "xp-gain-rate") return "/admin/tools/xp-gain-rate";
   if (slug === "demo-attack-troops") return "/admin/tools/demo-attack-troops";
   if (slug === "gems") return "/admin/tools/gems";
+  // Bloc 36/A: same shared-edit-point pattern as "templiers" above — the
+  // Gems reference reuses the tool's editor, carrying provenance through
+  // the URL so its own "Retour" returns to Guides.
+  if (slug === "gemmes") return "/admin/tools/gems?from=guides";
   return undefined;
 }

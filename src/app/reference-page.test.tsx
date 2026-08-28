@@ -9,6 +9,7 @@ vi.mock("next-intl/server", () => ({
       "catalog.expedition-equipment": "Équipements d’Expédition",
       "catalog.level-up": "Level Up",
       "catalog.templiers": "Coût des Templiers",
+      "catalog.gemmes": "Gemmes",
     };
     return (key: string) =>
       namespace === "references" && key in catalog ? catalog[key] : key;
@@ -20,6 +21,7 @@ vi.mock("@/lib/calculators-server", () => ({
     "expedition-equipment": true,
     "level-up": true,
     templiers: true,
+    gemmes: true,
   }),
 }));
 vi.mock("@/components/reference-tables", () => ({
@@ -32,6 +34,9 @@ vi.mock("@/components/level-up-reference", () => ({
 vi.mock("@/components/templars-reference", () => ({
   TemplarsReferenceTable: () => <div data-testid="templars-table" />,
 }));
+vi.mock("@/components/gems-reference", () => ({
+  GemsReferenceTable: () => <div data-testid="gems-table" />,
+}));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
   getCombatSkydustBase: async () => ({}),
@@ -43,6 +48,7 @@ vi.mock("@/lib/reference-equipment-server", () => ({
 vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),
   getTemplarParameters: async () => ({}),
+  getGemParameters: async () => ({}),
 }));
 
 afterEach(cleanup);
@@ -74,6 +80,7 @@ describe("ReferencePage", () => {
       "Équipements d’Expédition",
       "Level Up",
       "Coût des Templiers",
+      "Gemmes",
     ]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
@@ -85,5 +92,17 @@ describe("ReferencePage", () => {
       "/guides/referentiels/expedition-equipment",
     );
     expect(otherLink).not.toHaveAttribute("aria-current");
+  });
+
+  it("Bloc36/A: routes the new 'gemmes' slug to GemsReferenceTable, the 5th reference actually built", async () => {
+    render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "gemmes" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("gems-table")).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: "Gemmes" });
+    expect(heading).toHaveClass("reference-page-title");
   });
 });

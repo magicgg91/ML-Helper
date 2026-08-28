@@ -569,6 +569,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
+  // Bloc 36/A: same cross-link pattern already verified for Templiers below.
+  await expect(
+    page.getByRole("link", { name: "Voir le référentiel complet" }),
+  ).toHaveAttribute("href", "/guides/referentiels/gemmes");
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   await page
     .locator(".city-calculators")
@@ -802,6 +806,31 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.goto("/tools/competences");
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(page.getByTestId("templar-cost")).toContainText("200");
+
+  // Bloc 36/A: same independent-active-flag + shared-editor pattern as
+  // Templiers just above, for the new Gemmes reference.
+  await page.goto("/admin/guides");
+  const gemmesGuideRow = page.getByRole("row", { name: /Gemmes/ });
+  await gemmesGuideRow.getByRole("button", { name: "Désactiver" }).click();
+  await expect(gemmesGuideRow).toContainText("Inactif");
+  await page.goto("/tools/competences");
+  await expect(page.getByRole("tab", { name: "Gemmes" })).toBeEnabled();
+  await page.goto("/admin/guides");
+  const gemmesGuideRowAfterReload = page.getByRole("row", { name: /Gemmes/ });
+  await gemmesGuideRowAfterReload
+    .getByRole("button", { name: "Activer" })
+    .click();
+  await expect(gemmesGuideRowAfterReload).toContainText("Actif");
+  await gemmesGuideRowAfterReload
+    .getByRole("link", { name: "Éditer" })
+    .click();
+  await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=guides$/);
+  await expect(
+    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+  ).toHaveAttribute("href", "/admin/guides");
+  await expect(
+    page.getByRole("heading", { name: "Paramètres des Gemmes" }),
+  ).toBeVisible();
 
   await page.goto("/admin");
   await adminNav.getByRole("link", { name: "Outils" }).click();

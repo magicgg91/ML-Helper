@@ -32,4 +32,11 @@ describe("admin tool editor routing", () => {
     for (const slug of ["stuff-simulator", "city-rewards"])
       expect(adminToolEditHref(slug)).toBeUndefined();
   });
+
+  it("Bloc36/A: lists Gemmes among the independent references and shares the Gems editor, same pattern as Templiers", () => {
+    expect(referenceToolSlugs).toContain("gemmes");
+    expect(referenceToolSlugs).not.toContain("gems");
+    expect(adminToolEditHref("gems")).not.toContain("from=guides");
+    expect(adminToolEditHref("gemmes")).toBe("/admin/tools/gems?from=guides");
+  });
 });

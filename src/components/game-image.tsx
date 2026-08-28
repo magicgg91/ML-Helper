@@ -13,11 +13,17 @@ export function GameImage({
   alt,
   className,
   fallback,
+  eager = false,
 }: {
   src: string;
   alt: string;
   className?: string;
   fallback: ReactNode;
+  // Bloc 36/B: the first tool category tile is the page's LCP element on
+  // both the homepage and /tools — same "villes" special-case the old
+  // next/image usage had, ported here so switching to GameImage doesn't
+  // regress it.
+  eager?: boolean;
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   if (failedSrc === src) return <>{fallback}</>;
@@ -27,7 +33,7 @@ export function GameImage({
       src={src}
       alt={alt}
       className={className}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       onError={() => setFailedSrc(src)}
     />
   );

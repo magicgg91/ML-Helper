@@ -87,14 +87,33 @@ describe("buildSiteSearchResults", () => {
       guides: [],
       translate: translateFr,
     });
-    expect(results).toEqual([
-      {
-        type: "tool",
-        id: "tool-gems",
-        label: "Gemmes",
-        href: "/tools/competences",
-      },
-    ]);
+    expect(results).toContainEqual({
+      type: "tool",
+      id: "tool-gems",
+      label: "Gemmes",
+      href: "/tools/competences",
+    });
+  });
+
+  it("Bloc36/A: keeps the Gems tool and its reference independently searchable, even though they share the exact same label", () => {
+    const results = buildSiteSearchResults({
+      query: "gemmes",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toContainEqual({
+      type: "tool",
+      id: "tool-gems",
+      label: "Gemmes",
+      href: "/tools/competences",
+    });
+    expect(results).toContainEqual({
+      type: "reference",
+      id: "reference-gemmes",
+      label: "Gemmes",
+      href: "/guides/referentiels/gemmes",
+    });
   });
 
   it("never lists a reference table's calculator entry as a tool", () => {
@@ -166,6 +185,8 @@ describe("buildSiteSearchResults", () => {
       guides: [],
       translate: translateFr,
     });
-    expect(results).toHaveLength(1);
+    // Bloc36/A: the Gems tool and its reference share the exact same
+    // "Gemmes" label, so both match here — same as the "gemmes" query above.
+    expect(results).toHaveLength(2);
   });
 });
