@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { TabLabel } from "./tab-label";
 
 const categories = [
   { label: "cities", slug: "villes" },
@@ -39,7 +40,7 @@ export function ToolCategoryNav({
             key={category.slug}
             title={t("unavailable")}
           >
-            {t(category.label)}
+            <TabLabel label={t(category.label)} badge={t("unavailable")} />
           </button>
         ),
       )}

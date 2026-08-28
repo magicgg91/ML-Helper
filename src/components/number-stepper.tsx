@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { selectOnFocus } from "../lib/utils";
 
 type NumberStepperProps = {
   label: string;
@@ -40,6 +41,7 @@ export function NumberStepper({
         max={Number.isFinite(max) ? max : undefined}
         step={step}
         onChange={(event) => onChange(clamp(Number(event.target.value) || 0))}
+        onFocus={selectOnFocus}
       />
       <button
         type="button"

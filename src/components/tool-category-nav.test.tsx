@@ -56,11 +56,21 @@ describe("ToolCategoryNav", () => {
         }}
       />,
     );
-    expect(screen.getByRole("button", { name: "Classement" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Classement" })).toHaveAttribute(
-      "title",
+    const button = screen.getByRole("button", { name: /^Classement/ });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("title", "Indisponible actuellement");
+    expect(screen.queryByRole("link", { name: "Classement" })).toBeNull();
+  });
+
+  it("shows the unavailable text permanently, not only on hover (Bloc 33/N)", () => {
+    render(
+      <ToolCategoryNav
+        availability={{ villes: true, classement: false, competences: true }}
+      />,
+    );
+    const button = screen.getByRole("button", { name: /^Classement/ });
+    expect(button.querySelector(".tab-coming-soon")).toHaveTextContent(
       "Indisponible actuellement",
     );
-    expect(screen.queryByRole("link", { name: "Classement" })).toBeNull();
   });
 });

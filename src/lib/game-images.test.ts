@@ -85,8 +85,20 @@ describe("filterButtonColor (Bloc 31/H)", () => {
       expect(filterButtonColor(rarity)).toBe(`var(--rarity-${className})`);
   });
 
-  it("returns undefined for a value with no established color (e.g. the custom filter)", () => {
-    expect(filterButtonColor("custom")).toBeUndefined();
+  it("returns undefined for a value with no established color", () => {
     expect(filterButtonColor("Personnalisé")).toBeUndefined();
+    expect(filterButtonColor("unknown-key")).toBeUndefined();
+  });
+
+  it("gives the 'custom' filter its own color, distinct from the 4 family colors (Bloc 33/J)", () => {
+    const customColor = filterButtonColor("custom");
+    expect(customColor).toBeDefined();
+    const familyColors = [
+      filterButtonColor("Or"),
+      filterButtonColor("Équipement"),
+      filterButtonColor("Consommables"),
+      filterButtonColor("Troupes"),
+    ];
+    for (const color of familyColors) expect(customColor).not.toBe(color);
   });
 });

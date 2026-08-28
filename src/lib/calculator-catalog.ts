@@ -42,6 +42,10 @@ export const calculatorCatalog = [
     label: "Équipement d’Expédition",
   },
   { slug: "level-up", category: "referentiels", label: "Level Up" },
+  // Bloc 33/G: Templars' reference gets its own row, independent from the
+  // "templars" tool row above — same formula params/edit point, but its
+  // own active flag (see admin-tools.ts/referenceToolSlugs).
+  { slug: "templiers", category: "referentiels", label: "Templiers" },
 ] as const;
 
 export type CalculatorSlug = (typeof calculatorCatalog)[number]["slug"];

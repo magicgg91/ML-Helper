@@ -2,7 +2,7 @@ import { requireAdminSession } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { getLocale, getTranslations } from "next-intl/server";
-import { guideReferenceSlugs, referenceToolSlugs } from "@/lib/admin-tools";
+import { referenceToolSlugs } from "@/lib/admin-tools";
 
 export default async function AdminPage() {
   const session = await requireAdminSession();
@@ -42,12 +42,12 @@ export default async function AdminPage() {
     mayViewGuides ? prisma.guide.count() : Promise.resolve(0),
     mayViewReferences
       ? prisma.calculator.count({
-          where: { active: true, slug: { in: [...guideReferenceSlugs] } },
+          where: { active: true, slug: { in: [...referenceToolSlugs] } },
         })
       : Promise.resolve(0),
     mayViewReferences
       ? prisma.calculator.count({
-          where: { slug: { in: [...guideReferenceSlugs] } },
+          where: { slug: { in: [...referenceToolSlugs] } },
         })
       : Promise.resolve(0),
     mayViewUsers

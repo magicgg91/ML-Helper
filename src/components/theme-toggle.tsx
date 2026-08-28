@@ -11,7 +11,15 @@ export function ThemeToggle() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const saved = localStorage.getItem("mlhelper_theme");
-      const initial: Theme = saved === "light" ? "light" : "dark";
+      // Bloc 33/B: first visit (no explicit choice saved yet) follows the
+      // OS/browser preference instead of always defaulting to dark —
+      // matches the inline blocking script in the root layout.
+      const initial: Theme =
+        saved === "light" || saved === "dark"
+          ? saved
+          : window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
       document.documentElement.dataset.theme = initial;
       setTheme(initial);
     }, 0);

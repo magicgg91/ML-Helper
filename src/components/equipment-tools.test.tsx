@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -6,7 +7,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StuffSimulator } from "./equipment-tools";
 import { playerStorageKey } from "./player-settings-panel";
 import { NextIntlClientProvider } from "next-intl";
@@ -388,6 +389,43 @@ describe("equipment tools", () => {
         name: "Transférer vers les Paramètres du joueur",
       }),
     ).not.toBeInTheDocument();
+  });
+
+  it("right-aligns the transfer button in a distinct violet accent, not the neutral family-button style (Bloc 33/H)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const group = familyButtonsGroup();
+    const buttons = within(group).getAllByRole("button");
+    const transfer = buttons[buttons.length - 1];
+    expect(transfer).toHaveTextContent("Transférer vers les Paramètres du joueur");
+    expect(transfer).toHaveClass("transfer-action");
+    // Family buttons carry --pill-color for their semantic accent; the
+    // transfer button gets its violet purely from the dedicated class.
+    expect(transfer.style.getPropertyValue("--pill-color")).toBe("");
+  });
+
+  it("highlights the transfer button on click, on top of the text confirmation, then clears both within 5s (Bloc 33/H+K)", () => {
+    vi.useFakeTimers();
+    try {
+      renderTool(<StuffSimulator combatRows={combatRows} />);
+      const transfer = within(familyButtonsGroup()).getByRole("button", {
+        name: "Transférer vers les Paramètres du joueur",
+      });
+      expect(transfer).not.toHaveClass("transfer-action-active");
+      fireEvent.click(transfer);
+      expect(transfer).toHaveClass("transfer-action-active");
+      expect(
+        screen.getByText("Transféré dans les Paramètres du joueur !"),
+      ).toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(transfer).not.toHaveClass("transfer-action-active");
+      expect(
+        screen.queryByText("Transféré dans les Paramètres du joueur !"),
+      ).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("links the active cell's config panel to it via a shared active class", () => {

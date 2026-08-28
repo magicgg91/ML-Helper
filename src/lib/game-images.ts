@@ -35,8 +35,8 @@ const equipmentRarityValues = ["Commun", "Rare", "Épique", "Mythique", "Légend
 // equipment type) reuse whichever color already identifies the same
 // family/skill elsewhere — rarity/family on the equipment cells, skill
 // colors in the Gems visualisations — so a button visually recalls what it
-// filters. Returns undefined for a value with no established color (e.g.
-// the "Personnalisé"/custom filter), which keeps the neutral default style.
+// filters. Returns undefined for a value with no established color, which
+// keeps the neutral default style.
 export function filterButtonColor(key: string): string | undefined {
   switch (key) {
     // Combat equipment families and their equivalent Gems families.
@@ -59,6 +59,13 @@ export function filterButtonColor(key: string): string | undefined {
       return "var(--emerald)";
     case "Troupes":
       return equipmentSkillColors.Vitesse;
+    // Bloc 33/J: "Personnalisé" is a mixed catalog, not tied to any single
+    // family — a neutral slate distinguishes it from all 4 semantic family
+    // colors above (notably from Troupes' violet-leaning Vitesse color,
+    // which otherwise looks close to the default accent it used to fall
+    // back to).
+    case "custom":
+      return "#6b7280";
     default:
       return equipmentRarityValues.includes(key)
         ? `var(--rarity-${rarityClassName(key)})`

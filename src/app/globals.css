@@ -606,6 +606,13 @@ select {
   background: var(--accent-strong);
   color: var(--surface);
 }
+/* Bloc 33/N: always visible, not only on hover — a disabled tab otherwise
+   gives no clue why clicking it does nothing, especially on touch devices
+   where a title tooltip never shows at all. */
+.tab-coming-soon {
+  color: var(--text-faint);
+  font-weight: 600;
+}
 .calculator-stack {
   display: grid;
   gap: 1rem;
@@ -905,20 +912,17 @@ select {
   font-size: 0.82rem;
 }
 
-.stuff-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-/* Bloc 31/E.4: Expedition's summary always shows all 10 skills, laid out
-   as a fixed 5-column x 2-row grid on desktop. */
+/* Bloc 31/E.4 + Bloc 33/I: both simulators' global summary always shows
+   all 10 skills, laid out as a fixed 5-column x 2-row grid on desktop so
+   they fill the available width instead of an arbitrary auto-fit count. */
+.stuff-summary-grid,
 .expedition-summary-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
 }
 @media (max-width: 900px) {
+  .stuff-summary-grid,
   .expedition-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1122,6 +1126,24 @@ select {
     var(--surface-muted)
   );
   box-shadow: inset 0 0 0 1px var(--pill-color, var(--accent-strong));
+}
+/* Bloc 33/H: the transfer button shares the family buttons' size but sits
+   apart from them — pushed to the far right of the row, in a permanent
+   violet accent rather than the neutral family-button style, with a brief
+   highlight on click on top of the "Transféré !" text confirmation. */
+.transfer-action {
+  margin-left: auto;
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+  background: color-mix(
+    in srgb,
+    var(--accent-strong) 14%,
+    var(--surface-muted)
+  );
+}
+.transfer-action-active {
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--accent-strong) 45%, transparent);
 }
 .gem-total-slots {
   max-width: 18rem;
@@ -1348,8 +1370,7 @@ select,
 }
 
 .totals-grid,
-.calculator-results,
-.stuff-summary-grid {
+.calculator-results {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
@@ -2235,6 +2256,30 @@ body > main h1 {
   font-weight: 700;
 }
 
+/* Bloc 33/A: the homepage's tool categories intro, directly above the
+   reused .tool-category-grid (1-click access, no /tools detour). */
+.home-tools {
+  margin-top: clamp(3rem, 8vw, 7rem);
+}
+.home-tools h2 {
+  margin: 0.4rem 0 1rem;
+  color: var(--text);
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.08;
+}
+.home-tools > p:not(.eyebrow) {
+  max-width: 46rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one
+   line at any viewport width instead of breaking onto 2 at narrow ones. */
+.tools-page-title {
+  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
+  white-space: nowrap;
+}
+
 .tool-category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
@@ -2288,12 +2333,6 @@ body > main h1 {
   color: var(--accent-strong);
   font-family: "JetBrains Mono", monospace;
   font-size: 0.78rem;
-}
-.tool-category-cta {
-  justify-self: start;
-  color: var(--text);
-  font-size: 0.85rem;
-  font-weight: 700;
 }
 .tool-unavailable {
   color: var(--text-faint);

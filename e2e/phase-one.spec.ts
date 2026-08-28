@@ -154,10 +154,13 @@ test("tool routes alone expose persistent player settings", async ({
     page.getByRole("heading", { name: "Prépare ta prochaine progression." }),
   ).toBeVisible();
   await expect(page.locator(".home-carousel-track figure")).toHaveCount(3);
-  await expect(page.locator(".home-feature")).toHaveCount(2);
+  // Bloc 33/A: the homepage now gives 1-click access to a tool category
+  // directly (the same ToolCategoryGrid as /tools) instead of a "Voir les
+  // outils" teaser link — only the guides teaser still uses .home-feature.
+  await expect(page.locator(".home-feature")).toHaveCount(1);
   await expect(
-    page.getByRole("link", { name: "Voir les outils" }),
-  ).toHaveAttribute("href", "/tools");
+    page.getByRole("link", { name: /Villes/ }),
+  ).toHaveAttribute("href", "/tools/villes");
   await expect(
     page.getByRole("link", { name: "Parcourir les guides" }),
   ).toHaveAttribute("href", "/guides");
@@ -210,7 +213,9 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("navigation", { name: "Catégories de simulateurs" }),
   ).toHaveCount(0);
-  await page.getByRole("link", { name: "Ouvrir la catégorie" }).first().click();
+  // Bloc 33/E: the whole tile is the link now — no more redundant "Ouvrir
+  // la catégorie" text to click on.
+  await page.getByRole("link", { name: /^Villes/ }).click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
   await expect(page).toHaveTitle("Outils — Villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
@@ -357,7 +362,9 @@ test("the Cities category exposes its three working calculators", async ({
     .getByRole("combobox", { name: "Ligue" });
   await expect(cityLeague).toHaveValue("");
   await cityLeague.selectOption("legend");
-  await expect(page.getByTestId("city-cost-one")).toHaveText("10 or");
+  // Bloc 33/C: "city-cost-one" was merged into the single "Total" block's
+  // "city-cost-total" testid (cityCount defaults to 1, same figure).
+  await expect(page.getByTestId("city-cost-total")).toHaveText("10 or");
 
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("12");
   await expect(
@@ -725,14 +732,26 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await adminNav.getByRole("link", { name: "Guides" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
   // must open the same TemplarParametersEditor as the calculator tool
-  // (cdc section 6, décision Bloc 3), not a dead or separate screen. Its
-  // active state is controlled from the Outils table instead, so this row
-  // has no independent toggle button.
+  // (cdc section 6, décision Bloc 3), not a dead or separate screen.
+  // Bloc 33/G: the reference now has its own independent active flag (a
+  // dedicated Calculator row, distinct from the Templars tool's own) —
+  // toggling it here must not affect the public Templars tool at all.
   const templarsGuideRow = page.getByRole("row", { name: /Templiers/ });
+  await templarsGuideRow.getByRole("button", { name: "Désactiver" }).click();
+  await expect(templarsGuideRow).toContainText("Inactif");
+  await page.goto("/tools/competences");
   await expect(
-    templarsGuideRow.getByRole("button", { name: "Désactiver" }),
-  ).toHaveCount(0);
-  await templarsGuideRow.getByRole("link", { name: "Éditer" }).click();
+    page.getByRole("tab", { name: "Templiers" }),
+  ).toBeEnabled();
+  await page.goto("/admin/guides");
+  const templarsGuideRowAfterReload = page.getByRole("row", {
+    name: /Templiers/,
+  });
+  await templarsGuideRowAfterReload
+    .getByRole("button", { name: "Activer" })
+    .click();
+  await expect(templarsGuideRowAfterReload).toContainText("Actif");
+  await templarsGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/tools\/templars$/);
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),

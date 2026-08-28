@@ -15,6 +15,7 @@ import {
 import type { League } from "../lib/player-settings";
 import { LeagueSelect } from "./league-select";
 import { NumberStepper } from "./number-stepper";
+import { TabLabel } from "./tab-label";
 import { useSyncedLeague } from "./use-synced-league";
 
 const units = [
@@ -198,7 +199,10 @@ export function CombatCalculators({
           disabled
           title={tools("comingSoon")}
         >
-          {tools("combat-simulator")}
+          <TabLabel
+            label={tools("combat-simulator")}
+            badge={tools("comingSoon")}
+          />
         </button>
         <button
           type="button"
@@ -207,7 +211,7 @@ export function CombatCalculators({
           disabled
           title={tools("comingSoon")}
         >
-          {tools("enemy-troops")}
+          <TabLabel label={tools("enemy-troops")} badge={tools("comingSoon")} />
         </button>
         <button
           type="button"
@@ -217,7 +221,12 @@ export function CombatCalculators({
           title={!availability.xp ? tools("calculator-unavailable") : undefined}
           onClick={() => setActive("xp")}
         >
-          {xp("name")}
+          <TabLabel
+            label={xp("name")}
+            badge={
+              !availability.xp ? tools("calculator-unavailable") : undefined
+            }
+          />
         </button>
         <button
           type="button"
@@ -229,7 +238,12 @@ export function CombatCalculators({
           }
           onClick={() => setActive("demo")}
         >
-          {demo("name")}
+          <TabLabel
+            label={demo("name")}
+            badge={
+              !availability.demo ? tools("calculator-unavailable") : undefined
+            }
+          />
         </button>
       </nav>
       {active === "xp" ? (

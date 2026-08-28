@@ -84,6 +84,19 @@ describe("public responsive styles", () => {
     expect(css).toMatch(/\.public-header-nav\s*{[\s\S]*?margin-top: 0\.3rem/);
   });
 
+  it("gives Combat's global summary the same responsive 5x2 grid as Expedition's (Bloc 33/I)", () => {
+    expect(css).toMatch(
+      /\.stuff-summary-grid,\s*\n\.expedition-summary-grid\s*{\s*display: grid;\s*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/,
+    );
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\)\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).toMatch(/\.stuff-summary-grid/);
+    expect(mediaBlock).toMatch(/\.expedition-summary-grid/);
+    expect(mediaBlock).toMatch(/repeat\(2, minmax\(0, 1fr\)\)/);
+  });
+
   it("keeps all four summary colors at readable contrast in both themes", () => {
     const dark = css.match(
       /:root,\s*:root\[data-theme="dark"\]\s*{([\s\S]*?)\n}/,

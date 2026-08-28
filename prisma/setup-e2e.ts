@@ -73,6 +73,7 @@ async function main() {
     ["calculator-combat-equipment", "combat-equipment", "referentiels"],
     ["calculator-expedition-equipment", "expedition-equipment", "referentiels"],
     ["calculator-level-up", "level-up", "referentiels"],
+    ["calculator-templiers-reference", "templiers", "referentiels"],
   ];
   for (const [id, slug, category] of calculators) {
     await prisma.calculator.create({
