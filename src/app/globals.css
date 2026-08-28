@@ -985,6 +985,12 @@ select {
   gap: 1rem;
   align-items: end;
 }
+/* Bloc 35/4.1: widen the family column at the rarity column's expense —
+   Expedition's family labels are longer and otherwise force the family row
+   into horizontal scroll. */
+.reference-filters-wide-family {
+  grid-template-columns: 1.5fr 1.1fr minmax(190px, 0.8fr) minmax(120px, 0.4fr);
+}
 .reference-filters label,
 .reference-filters > div {
   display: grid;
@@ -1114,7 +1120,8 @@ select {
   color: var(--foreground);
   cursor: pointer;
 }
-.family-buttons button {
+.family-buttons button,
+.family-buttons a {
   flex: 0 0 auto;
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--border);
@@ -1124,6 +1131,20 @@ select {
   font-size: 0.78rem;
   white-space: nowrap;
   cursor: pointer;
+  text-decoration: none;
+}
+/* Bloc 35/1.2: the reference cross-nav reuses the family-buttons pill row,
+   marking the current reference the same way an active family is marked. */
+.reference-switcher a[aria-current="page"] {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+  background: color-mix(
+    in srgb,
+    var(--accent-strong) 16%,
+    var(--surface-muted)
+  );
+  box-shadow: inset 0 0 0 1px var(--accent-strong);
+  cursor: default;
 }
 .family-buttons button[aria-pressed="true"] {
   /* --pill-color (set inline per family/rarity/skill) reuses the same
@@ -1682,6 +1703,13 @@ body > main h1 {
 .reference-admin-table {
   min-width: max-content;
 }
+/* Bloc 35/5.5: dedicated per-table title on pages that stack several
+   editable tables (Expedition), instead of one page-level description. */
+.editable-reference-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+}
 .reference-admin-table input {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;
@@ -1689,6 +1717,66 @@ body > main h1 {
 .reference-admin-table input[readonly] {
   color: var(--text-faint);
   cursor: not-allowed;
+}
+/* Bloc 35/10.4: every select and numeric-value field across admin editors
+   (Templiers, Combat, Expedition, Gems, Ranking, …) gets its content
+   centered — free-text fields (set names, …) are untouched. */
+main.admin-main select,
+main.admin-main input[type="number"] {
+  text-align: center;
+  text-align-last: center;
+}
+/* Bloc 35/5.1: field-grid alternative to the wide table, for a single-row
+   table with many columns (per-star increments) — wraps instead of
+   scrolling horizontally. */
+.reference-admin-grid-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: 0.75rem;
+}
+.reference-admin-grid-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.reference-admin-grid-field input,
+.reference-admin-grid-field select {
+  padding: 0.45rem 0.55rem;
+}
+/* Bloc 35/5.3, 6.3, 8.1, 9.1: narrow columns whose values never exceed 100%
+   (or another short, bounded range) — the wide default min-width above is
+   what forces those tables into horizontal scroll unnecessarily. */
+.reference-admin-narrow input,
+.reference-admin-narrow select {
+  min-width: 0;
+  width: 4.5rem;
+}
+/* Bloc 35/10.1, 10.3: .primary-button had no base style at all — relying on
+   unstyled browser defaults — so it was invisible on every screen using it
+   (EditableReferenceTable's own save button, LevelUpParametersEditor, the
+   superadmin setup form). Styled to match .editor-action-primary exactly,
+   the Templiers editor's reference style, so every save action looks the
+   same everywhere. */
+.primary-button {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-panel-raised));
+  color: var(--accent-strong);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+.primary-button:hover {
+  border-color: currentColor;
+  color: var(--text);
+  transform: translateY(-1px);
 }
 .editable-reference > .primary-button {
   justify-self: start;
@@ -2213,6 +2301,13 @@ body > main h1 {
    line at any viewport width instead of breaking onto 2 at narrow ones. */
 .tools-page-title {
   font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
+  white-space: nowrap;
+}
+
+/* Bloc 35/1.3: same one-line treatment for the reference page titles, which
+   run a bit longer ("Équipements d'Expédition") than the tools subtitle. */
+.reference-page-title {
+  font-size: clamp(1rem, 1vw + 4.5vw, 2rem);
   white-space: nowrap;
 }
 
