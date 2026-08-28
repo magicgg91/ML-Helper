@@ -364,8 +364,10 @@ export function ExpeditionEquipmentSimulator({
         <h3>{t("summary-title")}</h3>
         <Summary totals={totals} selected={selected} />
       </section>
+      {/* Bloc 32/E.1: repositioned under the global summary, matching
+          Combat's family-button row (Bloc 32/D.6). */}
+      <FilterButtons filter={filter} onChange={changeFilter} />
       <section className="calculator-card stuff-block">
-        <FilterButtons filter={filter} onChange={changeFilter} />
         <div className="expedition-slot-columns">
           <div className="stuff-slot-grid">
             {expeditionSlotLayout.map((slot, index) => (

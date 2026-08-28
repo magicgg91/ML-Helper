@@ -224,4 +224,43 @@ describe("ExpeditionEquipmentSimulator", () => {
     expect(orBox).toHaveTextContent("+10,8%");
     expect(orBox).toHaveTextContent("(5,4%)");
   });
+
+  it("keeps the contribution parenthesis on the same line as the total, to its right (Bloc 32/E.2)", () => {
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement d’expédition Cape" }),
+      { target: { value: "Légendaire|Vanna" } },
+    );
+    const summary = summarySection();
+    const orBox = within(summary).getByText("Or").closest(".stuff-total")!;
+    const value = orBox.querySelector("strong.value")!;
+    const small = value.querySelector("small")!;
+    // The contribution is a child of the same <strong> line as the total,
+    // not a separately positioned block sibling below it.
+    expect(value.contains(small)).toBe(true);
+  });
+
+  it("positions the filter row under the global summary, matching Combat's family-button row (Bloc 32/E.1)", () => {
+    const { container } = renderTool();
+    const stack = container.querySelector(".calculator-stack")!;
+    const sections = Array.from(stack.querySelectorAll(":scope > *"));
+    const summaryIndex = sections.findIndex((node) =>
+      node.contains(
+        screen.getByRole("heading", {
+          name: "Récapitulatif des compétences d’expédition",
+        }),
+      ),
+    );
+    const filterRow = container.querySelector(".family-buttons")!;
+    const filterIndex = sections.findIndex((node) => node.contains(filterRow));
+    const gridIndex = sections.findIndex((node) =>
+      node.contains(screen.getByRole("button", { name: /Cape/ })),
+    );
+    expect(summaryIndex).toBeGreaterThanOrEqual(0);
+    expect(filterIndex).toBeGreaterThan(summaryIndex);
+    expect(gridIndex).toBeGreaterThan(filterIndex);
+    // Not nested inside the grid+panel card — a direct sibling of it.
+    expect(filterRow.closest(".stuff-block")).toBeNull();
+  });
 });
