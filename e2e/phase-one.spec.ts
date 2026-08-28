@@ -621,17 +621,23 @@ test("Reference tables filter combat and expedition equipment", async ({
   ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
 
   await page.goto("/guides/referentiels/combat-equipment");
+  // Bloc 39: table rows became tiles grouped into per-set blocks. Family/
+  // rarity filters no longer hide sets — a non-matching one just dims — and
+  // there's no star-level selector any more (tiles always show the base 1★
+  // value).
+  await expect(
+    page.getByRole("combobox", { name: "Niveau d’étoile" }),
+  ).toHaveCount(0);
+  const attaqueBlock = page.locator(".reference-tile-block", {
+    hasText: "Spirit Fyra",
+  });
+  const orBlock = page.locator(".reference-tile-block", {
+    hasText: "Spirit Fulgur",
+  });
   await page.getByRole("button", { name: "Attaque" }).click();
-  // Bloc 37/I: the free-search box is gone — isolate the same 9-row
-  // Légendaire subset via the rarity pills instead.
-  for (const rarity of ["Mythique", "Épique", "Rare", "Commun"]) {
-    await page.getByRole("button", { name: rarity }).click();
-  }
-  await page
-    .getByRole("combobox", { name: "Niveau d’étoile" })
-    .selectOption("5");
-  await expect(page.getByText("9 lignes — valeurs à 5★")).toBeVisible();
-  await expect(page.getByText("18%").first()).toBeVisible();
+  await expect(attaqueBlock).not.toHaveClass(/reference-tile-block-dim/);
+  await expect(orBlock).toHaveClass(/reference-tile-block-dim/);
+  await expect(attaqueBlock.getByText("10%").first()).toBeVisible();
 
   await page.goto("/guides/referentiels/expedition-equipment");
   // All 10 expedition stats are confirmed (Bloc 29): no more stale
