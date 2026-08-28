@@ -41,4 +41,13 @@ describe("TemplarsReferenceTable", () => {
       screen.getByRole("link", { name: "Ouvrir les Outils Compétences" }),
     ).toHaveAttribute("href", "/tools/competences");
   });
+
+  it("Bloc38/M: shares the .reference-simple-table class with Gemmes/Level Up, for the same alternating-row style", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable parameters={defaultTemplarParameters} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("table")).toHaveClass("reference-simple-table");
+  });
 });

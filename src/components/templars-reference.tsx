@@ -24,7 +24,7 @@ export function TemplarsReferenceTable({
     <div className="calculator-stack">
       <section className="calculator-card ranking-table-wrap">
         <div className="table-scroll">
-          <table className="ranking-table">
+          <table className="ranking-table reference-simple-table">
             <thead>
               <tr>
                 <th>{t("columns.level")}</th>

@@ -1128,6 +1128,15 @@ select {
   font-size: 0.72rem;
   text-transform: uppercase;
 }
+/* Bloc 38/M: Level Up now reuses Templiers'/Gemmes' exact table look
+   (border + background already came from wrapping it in
+   .calculator-card.ranking-table-wrap, same as those 2) — this adds the
+   3rd piece, alternating row color, shared by all 3 rather than every
+   .ranking-table (Ranking's own calculator/admin tables keep their
+   current look, unaffected). */
+.reference-simple-table tbody tr:nth-child(even) {
+  background: var(--bg-panel-raised);
+}
 .ranking-unknown {
   color: var(--muted);
   font-style: italic;

@@ -25,8 +25,11 @@ function LevelTable({
 }) {
   const t = useTranslations("level-up");
   return (
-    <div className="table-scroll">
-      <table className="ranking-table">
+    // Bloc 38/M: same calculator-card/ranking-table-wrap treatment as the
+    // Templiers and Gemmes reference tables — border and background around
+    // each of the 2 side-by-side tables, instead of a bare .table-scroll.
+    <section className="calculator-card ranking-table-wrap">
+      <table className="ranking-table reference-simple-table">
         <thead>
           <tr>
             <th>{t("columns.level")}</th>
@@ -61,7 +64,7 @@ function LevelTable({
           })}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
 

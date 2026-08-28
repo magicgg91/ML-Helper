@@ -63,4 +63,21 @@ describe("LevelUpReference", () => {
     );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
+
+  it("Bloc38/M: wraps each of the 2 side-by-side tables in the same card/border treatment as Templiers/Gemmes", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    const tables = screen.getAllByRole("table");
+    expect(tables).toHaveLength(2);
+    for (const table of tables) {
+      expect(table).toHaveClass("reference-simple-table");
+      expect(table.closest(".calculator-card.ranking-table-wrap")).not.toBeNull();
+    }
+  });
 });
