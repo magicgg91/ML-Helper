@@ -777,7 +777,13 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .click();
   await expect(templarsGuideRowAfterReload).toContainText("Actif");
   await templarsGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
-  await expect(page).toHaveURL(/\/admin\/tools\/templars$/);
+  // Bloc 35/7.1: opened from the Guides admin row, so the URL carries
+  // ?from=guides — the editor's own "Retour" now goes back to Guides,
+  // not Tools, for this exact same shared edit point.
+  await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=guides$/);
+  await expect(
+    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+  ).toHaveAttribute("href", "/admin/guides");
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
