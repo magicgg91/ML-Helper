@@ -21,6 +21,7 @@ import {
   type SkillKey,
 } from "../lib/player-settings";
 import { EditorActionBar } from "./editor-action-bar";
+import { selectOnFocus } from "../lib/utils";
 
 function useToolSave(endpoint: string, payload: unknown) {
   const t = useTranslations("admin.parameters");
@@ -87,6 +88,7 @@ function NumericField({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
+        onFocus={selectOnFocus}
       />
     </label>
   );
@@ -175,6 +177,7 @@ export function CityParametersEditor({ initial }: { initial: CityParameters }) {
                             },
                           }))
                         }
+                        onFocus={selectOnFocus}
                       />
                     </td>
                   ))}
@@ -302,6 +305,7 @@ export function LevelUpParametersEditor({
                           Number(event.target.value),
                         )
                       }
+                      onFocus={selectOnFocus}
                     />
                   </td>
                   <td>
@@ -317,6 +321,7 @@ export function LevelUpParametersEditor({
                           Number(event.target.value),
                         )
                       }
+                      onFocus={selectOnFocus}
                     />
                   </td>
                 </tr>
@@ -401,6 +406,7 @@ export function XpGainRateEditor({ initial }: { initial: XpTier[] }) {
                         onChange={(event) =>
                           updateBoundary(index, Number(event.target.value))
                         }
+                        onFocus={selectOnFocus}
                       />
                     )}
                   </td>
@@ -414,6 +420,7 @@ export function XpGainRateEditor({ initial }: { initial: XpTier[] }) {
                       onChange={(event) =>
                         updateRate(index, Number(event.target.value))
                       }
+                      onFocus={selectOnFocus}
                     />
                   </td>
                 </tr>
@@ -477,6 +484,7 @@ export function DemoAttackTroopsEditor({
                           [league]: Number(event.target.value),
                         }))
                       }
+                      onFocus={selectOnFocus}
                     />
                   </td>
                 </tr>
@@ -554,6 +562,7 @@ export function GemParametersEditor({ initial }: { initial: GemParameters }) {
                             Number(event.target.value),
                           )
                         }
+                        onFocus={selectOnFocus}
                       />
                     </td>
                   ))}
