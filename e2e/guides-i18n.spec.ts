@@ -52,11 +52,13 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
     page.getByRole("link", { name: /Équipements de Combat/ }),
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
+  // Bloc 36/A: "gemmes" now matches both the Gems tool and its new
+  // reference, sharing the exact same label — scope to the tool's exact
+  // accessible name ("Outil Gemmes") to keep testing the tool match here.
   await search.fill("gemmes");
-  await expect(page.getByRole("link", { name: /Gemmes/ })).toHaveAttribute(
-    "href",
-    "/tools/competences",
-  );
+  await expect(
+    page.getByRole("link", { name: "Outil Gemmes" }),
+  ).toHaveAttribute("href", "/tools/competences");
 
   await search.fill("introuvable");
   await expect(page.getByText("Aucun résultat.")).toBeVisible();

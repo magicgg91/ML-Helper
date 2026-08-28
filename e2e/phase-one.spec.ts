@@ -569,6 +569,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
+  // Bloc 36/A: same cross-link pattern already verified for Templiers below.
+  await expect(
+    page.getByRole("link", { name: "Voir le référentiel complet" }),
+  ).toHaveAttribute("href", "/guides/referentiels/gemmes");
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   await page
     .locator(".city-calculators")
