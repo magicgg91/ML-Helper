@@ -32,6 +32,11 @@ export function LegalNoticeEditor({
   return (
     <div className="legal-notice-editor">
       <EditorActionBar backHref="/admin" message={message}>
+        <EditorialLocaleSelect
+          label={t("language-label")}
+          value={locale}
+          onChange={setLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -40,11 +45,6 @@ export function LegalNoticeEditor({
           {t("save")}
         </button>
       </EditorActionBar>
-      <EditorialLocaleSelect
-        label={t("language-label")}
-        value={locale}
-        onChange={setLocale}
-      />
       <section className="admin-panel guide-simple-fields">
         <GuideMarkdownEditor
           label={t("field")}
