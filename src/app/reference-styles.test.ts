@@ -88,12 +88,11 @@ describe("Bloc 38 public reference/homepage styles", () => {
 });
 
 describe("Bloc 39: Combat/Expedition reference tile grid", () => {
-  it("stacks set-blocks 2 per row (6 tiles wide) — each block flex-basis ~50%, own 3-column tile grid", () => {
+  it("stacks set-blocks 2 per row (6 tiles wide) in a fixed 2-column grid, each its own 3-column tile grid", () => {
+    // Bloc 41/B: a fixed grid, not flex — flex-grow let a lone last block
+    // stretch to fill the row (see the "Bloc 41" describe block below).
     expect(css).toMatch(
-      /\.reference-tile-blocks\s*{\s*display: flex;\s*flex-wrap: wrap;/,
-    );
-    expect(css).toMatch(
-      /\.reference-tile-block\s*{\s*flex: 1 1 calc\(50% - 0\.625rem\);/,
+      /\.reference-tile-blocks\s*{\s*display: grid;\s*grid-template-columns: repeat\(2, 1fr\);/,
     );
     expect(css).toMatch(
       /\.reference-tile-grid\s*{\s*display: grid;\s*grid-template-columns: repeat\(3, 1fr\);/,
@@ -104,9 +103,9 @@ describe("Bloc 39: Combat/Expedition reference tile grid", () => {
     expect(css).not.toMatch(/\.reference-tile-block-dim/);
   });
 
-  it("settles on 2 tile-wide on mobile (tried empirically against 1, see PR report) with a full-width block", () => {
+  it("settles on 2 tile-wide on mobile (tried empirically against 1, see PR report) with a single-column block layout", () => {
     expect(css).toMatch(
-      /\.reference-tile-block\s*{\s*flex: 1 1 100%;\s*}\s*\/\*[\s\S]*?\*\/\s*\.reference-tile-grid\s*{\s*grid-template-columns: repeat\(2, 1fr\);/,
+      /\.reference-tile-blocks\s*{\s*grid-template-columns: 1fr;\s*}\s*\/\*[\s\S]*?\*\/\s*\.reference-tile-grid\s*{\s*grid-template-columns: repeat\(2, 1fr\);/,
     );
   });
 
@@ -148,5 +147,14 @@ describe("Bloc 40: reference tile fixes", () => {
     )?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/font-size: 0\.69em;/);
+  });
+});
+
+describe("Bloc 41: referentiel fixes", () => {
+  it("B: a set block has no flex-grow rule left anywhere — a fixed grid track is what keeps a lone block at exactly 50%", () => {
+    // The block itself carries no sizing rule at all now (the grid gives it
+    // one column implicitly) — just confirm the old flex-basis/flex-grow
+    // rule is gone, on desktop and mobile alike.
+    expect(css).not.toMatch(/\.reference-tile-block\s*{\s*flex:/);
   });
 });

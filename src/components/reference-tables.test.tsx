@@ -281,6 +281,19 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ]);
   });
 
+  it("Bloc41/B: an odd number of blocks after filtering still renders every block as a plain, identically-classed grid child (no special sizing for the lone last one)", () => {
+    renderTables();
+    for (const family of ["Attaque", "Défense", "Troupes/Vitesse"])
+      fireEvent.click(screen.getByRole("button", { name: family }));
+    const blocks = document.querySelectorAll<HTMLElement>(
+      ".reference-tile-block",
+    );
+    expect(blocks.length).toBe(5); // odd — the case that used to stretch
+    const classNames = new Set(Array.from(blocks).map((b) => b.className));
+    expect(classNames.size).toBe(1); // every block, including the last, is the same class
+    for (const block of blocks) expect(block.getAttribute("style")).toBeNull();
+  });
+
   it("never shows a gem count on Expedition tiles", () => {
     renderTables();
     fireEvent.click(

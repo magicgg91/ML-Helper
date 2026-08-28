@@ -1478,15 +1478,19 @@ select,
    Two set-blocks side by side make up the required "6 tiles wide" — each
    block is its own self-contained 3-column grid, so a row of tiles never
    mixes two different sets (a flat 6-col grid across the whole catalog
-   would, since 9 doesn't divide evenly by 6). */
+   would, since 9 doesn't divide evenly by 6).
+   Bloc 41/B: a fixed 2-column grid, not flex — flex's flex-grow let a
+   block left alone on the last row stretch to fill the full row (its
+   tiles doubling in size), since flex-basis is only a starting point for
+   growth. A grid's tracks don't grow to fill an empty sibling cell, so a
+   lone last block still occupies exactly one column (50%). */
 .reference-tile-blocks {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.75rem 1.25rem;
   margin-top: 1.25rem;
 }
 .reference-tile-block {
-  flex: 1 1 calc(50% - 0.625rem);
   min-width: 0;
 }
 .reference-tile-block-title {
@@ -1551,8 +1555,8 @@ select,
   justify-content: center;
 }
 @media (max-width: 900px) {
-  .reference-tile-block {
-    flex: 1 1 100%;
+  .reference-tile-blocks {
+    grid-template-columns: 1fr;
   }
   /* Bloc 39: tried both 1 and 2 columns on mobile per the task's "à tester
      empiriquement" instruction (see the PR report) — 2 columns stays
