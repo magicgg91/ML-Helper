@@ -63,10 +63,10 @@ describe("Bloc37/B, D: the admin filter row sizes selects to their content", () 
     expect(rule).toMatch(/max-width:/);
   });
 
-  it("keeps the public reference-filters row's own 3-column layout (family/rarity/star) unaffected", () => {
+  it("keeps the public reference-filters row's own layout (family/rarity, Bloc 39) unaffected by the admin filter row", () => {
     const rule = css.match(/^\.reference-filters\s*{([\s\S]*?)\n}/m)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: 1fr 1fr 20%;/);
+    expect(rule).toMatch(/grid-template-columns: 1fr 1fr;/);
   });
 });
 
