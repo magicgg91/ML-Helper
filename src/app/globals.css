@@ -2,10 +2,14 @@
 
 :root,
 :root[data-theme="dark"] {
-  --bg: #12151b;
-  --bg-panel: #191d25;
-  --bg-panel-raised: #20252f;
-  --border: #2b313d;
+  /* Bloc 34/F: 2nd testing pass asked for a slightly brighter dark theme —
+     same navy/anthracite hue (220°) and saturation, lightness nudged up
+     ~4.5 points on bg/bg-panel/bg-panel-raised/border/surface-muted below.
+     Contrast against --text stays well above WCAG AA (12.9:1/11.7:1). */
+  --bg: #1b2029;
+  --bg-panel: #222833;
+  --bg-panel-raised: #29303d;
+  --border: #343c4a;
   /* Reserved for genuinely Legendary game data (rarity badges, item
      highlights) — never a generic interface accent. Use --accent /
      --accent-strong (violet) for buttons, links, focus states, hover. */
@@ -31,7 +35,7 @@
   --foreground: var(--text);
   --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
-  --surface-muted: #252a34;
+  --surface-muted: #2f3541;
   --accent: var(--violet);
   --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
