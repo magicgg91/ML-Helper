@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   combatReferenceRows,
   combatValueAtStar,
+  defaultCombatGemSlotsBase,
+  defaultCombatSkydustBase,
+  defaultExpeditionDismantleBase,
   defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionMergeCost,
@@ -10,6 +13,9 @@ import {
   expeditionValueAtStar,
   mergeCostRarityKeys,
   missingCombatRows,
+  parseCombatGemSlotsBase,
+  parseCombatSkydustBase,
+  parseExpeditionDismantleBase,
   parseExpeditionMergeCostBase,
   parseExpeditionStarIncrements,
 } from "./reference-equipment";
@@ -98,11 +104,55 @@ describe("reference equipment", () => {
     expect(parseExpeditionMergeCostBase(null)).toEqual(
       defaultExpeditionMergeCostBase,
     );
-    expect(
-      parseExpeditionMergeCostBase({ Commun: "not-a-number" }),
-    ).toEqual(defaultExpeditionMergeCostBase);
+    expect(parseExpeditionMergeCostBase({ Commun: "not-a-number" })).toEqual(
+      defaultExpeditionMergeCostBase,
+    );
     for (const key of mergeCostRarityKeys)
       expect(defaultExpeditionMergeCostBase[key]).toBeGreaterThan(0);
+  });
+
+  it("Bloc35 6.1: defaults Combat's per-rarity Pouciel/gem-slots to the cdc-confirmed values, admin-editable per rarity", () => {
+    expect(defaultCombatSkydustBase).toEqual({
+      Commun: 3,
+      Rare: 10,
+      Épique: 30,
+      Mythique: 120,
+      Légendaire: 160,
+    });
+    expect(defaultCombatGemSlotsBase).toEqual({
+      Commun: 0,
+      Rare: 0,
+      Épique: 1,
+      Mythique: 2,
+      Légendaire: 3,
+    });
+    const skydustOverride = parseCombatSkydustBase({ Commun: 5 });
+    expect(skydustOverride.Commun).toBe(5);
+    expect(skydustOverride.Légendaire).toBe(
+      defaultCombatSkydustBase.Légendaire,
+    );
+    expect(parseCombatSkydustBase(null)).toEqual(defaultCombatSkydustBase);
+    expect(parseCombatSkydustBase({ Commun: "not-a-number" })).toEqual(
+      defaultCombatSkydustBase,
+    );
+    const gemSlotsOverride = parseCombatGemSlotsBase({ Épique: 2 });
+    expect(gemSlotsOverride.Épique).toBe(2);
+    expect(gemSlotsOverride.Commun).toBe(defaultCombatGemSlotsBase.Commun);
+    expect(parseCombatGemSlotsBase(null)).toEqual(defaultCombatGemSlotsBase);
+  });
+
+  it("Bloc35 5.2: defaults Expedition's per-rarity dismantle Terradust to 0 (unconfirmed in cdc), admin-editable per rarity", () => {
+    for (const key of mergeCostRarityKeys)
+      expect(defaultExpeditionDismantleBase[key]).toBe(0);
+    const overridden = parseExpeditionDismantleBase({ Rare: 42 });
+    expect(overridden.Rare).toBe(42);
+    expect(overridden.Commun).toBe(0);
+    expect(parseExpeditionDismantleBase(null)).toEqual(
+      defaultExpeditionDismantleBase,
+    );
+    expect(parseExpeditionDismantleBase({ Rare: "not-a-number" })).toEqual(
+      defaultExpeditionDismantleBase,
+    );
   });
 
   it("keeps the same primary-stat value across all 6 slots of a set, per rarity and family", () => {

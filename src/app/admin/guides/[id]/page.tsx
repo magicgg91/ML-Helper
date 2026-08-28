@@ -7,13 +7,19 @@ import { translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 import { AdminBackLink } from "@/components/admin-back-link";
 import {
+  CombatGemSlotsAdmin,
   CombatReferenceAdmin,
+  CombatSkydustAdmin,
+  ExpeditionDismantleAdmin,
   ExpeditionIncrementsAdmin,
   ExpeditionMergeCostAdmin,
   ExpeditionReferenceAdmin,
 } from "@/components/reference-admin-editors";
 import {
+  getCombatGemSlotsBase,
   getCombatReferenceRows,
+  getCombatSkydustBase,
+  getExpeditionDismantleBase,
   getExpeditionMergeCostBase,
   getExpeditionReferenceRows,
   getExpeditionStarIncrements,
@@ -32,7 +38,9 @@ export default async function EditGuidePage({
     await requireCapability("references.write");
     return (
       <main className="admin-main">
-        <AdminBackLink href="/admin/guides" />
+        {/* Bloc 35/10.2/10.3: LevelUpParametersEditor now carries its own
+            EditorActionBar (back link + save), matching every other named
+            parameters editor — no separate back link here. */}
         <h1>{t("reference-level-up")}</h1>
         <LevelUpParametersEditor initial={await getLevelUpParameters()} />
       </main>
@@ -49,7 +57,13 @@ export default async function EditGuidePage({
         <AdminBackLink href="/admin/guides" />
         <h1>{combat ? t("reference-combat") : t("reference-expedition")}</h1>
         {combat ? (
-          <CombatReferenceAdmin initialRows={await getCombatReferenceRows()} />
+          <>
+            <CombatReferenceAdmin
+              initialRows={await getCombatReferenceRows()}
+            />
+            <CombatSkydustAdmin initial={await getCombatSkydustBase()} />
+            <CombatGemSlotsAdmin initial={await getCombatGemSlotsBase()} />
+          </>
         ) : (
           <>
             <ExpeditionIncrementsAdmin
@@ -57,6 +71,9 @@ export default async function EditGuidePage({
             />
             <ExpeditionMergeCostAdmin
               initial={await getExpeditionMergeCostBase()}
+            />
+            <ExpeditionDismantleAdmin
+              initial={await getExpeditionDismantleBase()}
             />
             <ExpeditionReferenceAdmin
               initialRows={await getExpeditionReferenceRows()}

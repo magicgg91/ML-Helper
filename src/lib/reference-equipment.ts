@@ -42,7 +42,11 @@ export function combatValueAtStar(
   const base = Number(raw);
   if (!raw || !Number.isFinite(base) || !(skill in equipmentStarIncrement))
     return null;
-  return valueAtStar(base, equipmentStarIncrement[skill as EquipmentSkill], star);
+  return valueAtStar(
+    base,
+    equipmentStarIncrement[skill as EquipmentSkill],
+    star,
+  );
 }
 
 // The 10 expedition stats (4 primary + 6 secondary), keyed the same way
@@ -139,24 +143,75 @@ export const defaultExpeditionMergeCostBase: ExpeditionMergeCostBase = {
   Légendaire: 8000,
 };
 
-export function parseExpeditionMergeCostBase(
+function parseRarityBase<T extends Record<MergeCostRarityKey, number>>(
   value: unknown,
-): ExpeditionMergeCostBase {
-  const source =
-    value && typeof value === "object"
-      ? (value as Partial<ExpeditionMergeCostBase>)
-      : {};
+  defaults: T,
+): T {
+  const source: Partial<T> =
+    value && typeof value === "object" ? (value as Partial<T>) : {};
   return Object.fromEntries(
     mergeCostRarityKeys.map((key) => {
       const parsed = Number(source[key]);
       return [
         key,
-        Number.isFinite(parsed) && parsed >= 0
-          ? parsed
-          : defaultExpeditionMergeCostBase[key],
+        Number.isFinite(parsed) && parsed >= 0 ? parsed : defaults[key],
       ];
     }),
-  ) as ExpeditionMergeCostBase;
+  ) as T;
+}
+
+export function parseExpeditionMergeCostBase(
+  value: unknown,
+): ExpeditionMergeCostBase {
+  return parseRarityBase(value, defaultExpeditionMergeCostBase);
+}
+
+// Bloc 35/6.1: Combat's Pouciel-per-rarity, promoted from the hardcoded
+// equipmentRarityDerived lookup to genuine admin config, mirroring
+// ExpeditionMergeCostBase exactly — same 5 rarity keys, same shape. The cdc
+// 7.1 values (already confirmed) become the defaults.
+export type CombatSkydustBase = Record<MergeCostRarityKey, number>;
+export const defaultCombatSkydustBase: CombatSkydustBase = {
+  Commun: 3,
+  Rare: 10,
+  Épique: 30,
+  Mythique: 120,
+  Légendaire: 160,
+};
+export function parseCombatSkydustBase(value: unknown): CombatSkydustBase {
+  return parseRarityBase(value, defaultCombatSkydustBase);
+}
+
+// Bloc 35/6.1: Combat's gem-slots-per-rarity, same treatment.
+export type CombatGemSlotsBase = Record<MergeCostRarityKey, number>;
+export const defaultCombatGemSlotsBase: CombatGemSlotsBase = {
+  Commun: 0,
+  Rare: 0,
+  Épique: 1,
+  Mythique: 2,
+  Légendaire: 3,
+};
+export function parseCombatGemSlotsBase(value: unknown): CombatGemSlotsBase {
+  return parseRarityBase(value, defaultCombatGemSlotsBase);
+}
+
+// Bloc 35/5.2: Expedition's Terradust-on-dismantle-per-rarity. The cdc
+// lists these as "reste à définir" (unlike the merge-cost K values, which
+// are confirmed) — kept admin-editable with 0 as the default for every
+// rarity until an admin fills in the real values (AGENTS.md: unconfirmed
+// data stays editable with its current value as the default).
+export type ExpeditionDismantleBase = Record<MergeCostRarityKey, number>;
+export const defaultExpeditionDismantleBase: ExpeditionDismantleBase = {
+  Commun: 0,
+  Rare: 0,
+  Épique: 0,
+  Mythique: 0,
+  Légendaire: 0,
+};
+export function parseExpeditionDismantleBase(
+  value: unknown,
+): ExpeditionDismantleBase {
+  return parseRarityBase(value, defaultExpeditionDismantleBase);
 }
 
 export function expeditionMergeCost(

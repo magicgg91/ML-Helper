@@ -42,6 +42,33 @@ describe("EditableDataTable", () => {
     expect(onRemove).toHaveBeenCalledWith(0);
   });
 
+  it("Bloc35 9.1: narrows only the columns marked narrow, not the others", () => {
+    const narrowColumns: EditableColumn<Row>[] = [
+      { key: "name", label: "Nom", required: true },
+      {
+        key: "amount",
+        label: "Montant",
+        type: "number",
+        min: 1,
+        required: true,
+        narrow: true,
+      },
+    ];
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={narrowColumns}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText("Nom 1").closest("td")).not.toHaveClass(
+      "reference-admin-narrow",
+    );
+    expect(screen.getByLabelText("Montant 1").closest("td")).toHaveClass(
+      "reference-admin-narrow",
+    );
+  });
+
   it("shows the empty label instead of an empty table", () => {
     render(
       <EditableDataTable
