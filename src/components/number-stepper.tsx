@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { selectOnFocus } from "../lib/utils";
 
@@ -55,9 +55,14 @@ export function NumberStepper({
   // draft is dropped in favor of that authoritative value.
   const [draft, setDraft] = useState<string | null>(null);
   const [lastReported, setLastReported] = useState<number | null>(null);
-  useEffect(() => {
-    if (draft !== null && value !== lastReported) setDraft(null);
-  }, [value, draft, lastReported]);
+  // Adjusted during render rather than in a useEffect — an effect would
+  // still show the stale draft for one extra render/commit, and (per
+  // React's own guidance on this pattern) adds a real timing gap in a
+  // component this widely reused: a re-render arriving from elsewhere
+  // (e.g. a parent re-syncing from localStorage) between the effect being
+  // scheduled and actually running could let a stale draft linger, or
+  // clear a fresh one, depending on exactly how those renders interleave.
+  if (draft !== null && value !== lastReported) setDraft(null);
   const displayValue = draft ?? String(value);
 
   return (
