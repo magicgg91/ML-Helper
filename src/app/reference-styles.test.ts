@@ -75,12 +75,11 @@ describe("Bloc 38 public reference/homepage styles", () => {
     }
   });
 
-  it("Q: roughly doubles Combat's/Expedition's auxiliary-table numeric fields, scoped to a modifier class", () => {
-    expect(css).toMatch(
-      /\.reference-admin-wide-inputs \.reference-admin-table input\s*{\s*min-width: 18rem;\s*}/,
-    );
-    // Bloc 40 Codex fix (PR #62): min() caps the floor at the grid cell's
-    // own width so the row never overflows at intermediate/phone widths.
+  it("Q: doubles Expedition's grid-layout auxiliary tables' numeric fields, scoped to a modifier class", () => {
+    // Bloc 41/E: the table-layout variant of this rule (below) dropped back
+    // to 9rem — it's now exclusively Combat's Pouciel/gem-slots tables,
+    // where 18rem overflowed. The grid-layout variant (Expedition's
+    // increments/merge-cost/dismantle) is unaffected.
     expect(css).toMatch(
       /\.reference-admin-wide-inputs \.reference-admin-grid-field input\s*{\s*width: 100%;\s*min-width: min\(12rem, 100%\);/,
     );
@@ -161,6 +160,12 @@ describe("Bloc 41: referentiel fixes", () => {
   it("C: adds breathing room under the référentiels switcher specifically, not the shared category-nav (so /tools' banner is untouched)", () => {
     expect(css).toMatch(
       /\.reference-switcher\s*{\s*margin-bottom: 1\.5rem;\s*}/,
+    );
+  });
+
+  it("E: the table-layout wide-input rule (now exclusively Combat's Pouciel/gem-slots tables) drops back from 18rem to 9rem", () => {
+    expect(css).toMatch(
+      /\.reference-admin-wide-inputs \.reference-admin-table input\s*{\s*min-width: 9rem;\s*}/,
     );
   });
 });

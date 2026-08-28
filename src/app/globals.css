@@ -1816,13 +1816,17 @@ body > main h1 {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;
 }
-/* Bloc 38/Q: Combat's and Expedition's auxiliary numeric tables (Pouciel,
-   gem-slots, star increments, merge-cost, Terradust-at-destruction) get
-   roughly double their input width — never the 180/120-row main tables'
-   narrow skill/stat % columns from Bloc 35/37, which don't carry this
-   modifier class. */
+/* Bloc 38/Q doubled this to 18rem for readability. Bloc 40/B then moved
+   Expedition's star-increments/merge-cost/Terradust-at-destruction tables
+   onto the "grid" layout (.reference-admin-grid-field above), so this
+   table-layout rule is now exclusively Combat's Pouciel and gem-slots
+   tables — 5 short 1-3 digit values in one <tr>. At 18rem × 5 that row
+   (≈1550px) overflowed its own horizontally-scrolling wrapper on any
+   normal desktop width (Bloc 41/E), forcing a scroll to see the last
+   column(s). Back to the table's plain default width: still comfortably
+   readable for values this short, and 5 columns fit without scrolling. */
 .reference-admin-wide-inputs .reference-admin-table input {
-  min-width: 18rem;
+  min-width: 9rem;
 }
 /* Codex review (PR #62): a bare 12rem floor forced the row wider than its
    container at intermediate/phone widths (5 x 12rem doesn't fit until
