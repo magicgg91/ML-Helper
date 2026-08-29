@@ -46,6 +46,18 @@ import { GameImage } from "./game-image";
 // user-selectable state.
 const TILE_STAR = 1;
 
+// Bloc 41/A: the family filter/set-block order (Combat and Expedition each
+// have their own). Hoisted to module scope, not re-declared per render —
+// an inline array literal changes identity every render, which would defeat
+// the useMemo below it feeds (or trip react-hooks/exhaustive-deps).
+const combatFamilies = ["Attaque", "Défense", "Or", "Troupes/Vitesse"] as const;
+const expeditionFamilies = [
+  "Or",
+  "Équipement",
+  "Consommables",
+  "Troupes",
+] as const;
+
 export function formatPercent(value: number | null, locale: string) {
   return value === null
     ? "—"
@@ -205,16 +217,20 @@ function matchesFilters(
 
 // Bloc 39: one tile block per equipment set, tiles in the same slot order
 // as the Combat/Expedition Equipment Simulators (equipmentSlotLayout /
-// expeditionSlotLayout) so the two stay cross-referenceable. Sets are
-// grouped in the order their rows first appear — the underlying data file
-// is already laid out set-by-set, complete (every set has all 9/6 slots),
-// so this never splits a set across two groups.
+// expeditionSlotLayout) so the two stay cross-referenceable. Bloc 41/A: set
+// blocks are sorted by family (in the same order as the family filter
+// buttons) instead of the order their rows first appear in the data file —
+// that file doesn't consistently group by family (it varies rarity by
+// rarity), so without this sort the grid's family order was effectively
+// random. The sort is stable, so within a family sets keep their original
+// relative order.
 function groupBySet<
   Row extends { rarity: string; family: string; set_name: string },
 >(
   rows: readonly Row[],
   slotOf: (row: Row) => string,
   slotLayout: readonly string[],
+  familyOrder: readonly string[],
 ) {
   const bySet = new Map<
     string,
@@ -238,7 +254,9 @@ function groupBySet<
     set.rows.sort(
       (a, b) => slotLayout.indexOf(slotOf(a)) - slotLayout.indexOf(slotOf(b)),
     );
-  return Array.from(bySet.values());
+  return Array.from(bySet.values()).sort(
+    (a, b) => familyOrder.indexOf(a.family) - familyOrder.indexOf(b.family),
+  );
 }
 
 function CombatTile({
@@ -366,10 +384,16 @@ export function CombatReferenceTable({
     value ? game(`weapon-types.${combatSlotNameTranslationKeys[value]}`) : "";
   const skillLabel = (value: string) =>
     game(`skills.${equipmentSkillTranslationKeys[value as EquipmentSkill]}`);
-  const families = ["Attaque", "Défense", "Or", "Troupes/Vitesse"] as const;
+  const families = combatFamilies;
   const filters = useFilters(families);
   const sets = useMemo(
-    () => groupBySet(rows, (row) => row.slot_type, equipmentSlotLayout),
+    () =>
+      groupBySet(
+        rows,
+        (row) => row.slot_type,
+        equipmentSlotLayout,
+        combatFamilies,
+      ),
     [rows],
   );
   const filteredSets = useMemo(
@@ -547,10 +571,16 @@ export function ExpeditionReferenceTable({
     );
   const statLabel = (value: string) =>
     game(`stats.${expeditionStatTranslationKeys[value]}`);
-  const families = ["Or", "Équipement", "Consommables", "Troupes"] as const;
+  const families = expeditionFamilies;
   const filters = useFilters(families);
   const sets = useMemo(
-    () => groupBySet(rows, (row) => row.slot, expeditionSlotLayout),
+    () =>
+      groupBySet(
+        rows,
+        (row) => row.slot,
+        expeditionSlotLayout,
+        expeditionFamilies,
+      ),
     [rows],
   );
   const filteredSets = useMemo(

@@ -98,6 +98,10 @@ describe("ReferencePage", () => {
     expect(nav).not.toHaveClass("family-buttons");
     expect(currentLink).toHaveClass("category-btn");
     expect(otherLink).not.toHaveAttribute("aria-current");
+    // Bloc 41/C: keeps its own "reference-switcher" class alongside
+    // "category-nav" — the spacing-below fix is scoped to it specifically,
+    // so it doesn't add space under the /tools banner too.
+    expect(nav).toHaveClass("reference-switcher");
   });
 
   it("Bloc36/A: routes the new 'gemmes' slug to GemsReferenceTable, the 5th reference actually built", async () => {

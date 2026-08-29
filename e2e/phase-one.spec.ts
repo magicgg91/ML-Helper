@@ -713,11 +713,13 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     }),
   ).toBeVisible({ timeout: 15_000 });
   // Bloc 35/6.1: the page also renders the Pouciel/gem-slots-per-rarity
-  // editors below the main table, so scope to the first (main) table
-  // rather than every tbody row on the page.
-  await expect(page.locator("table").first().locator("tbody tr")).toHaveCount(180, {
-    timeout: 15_000,
-  });
+  // editors alongside the main table — Bloc 41/D moved them ahead of it, so
+  // scope to the last table (the main one) rather than every tbody row on
+  // the page.
+  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
+    180,
+    { timeout: 15_000 },
+  );
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
   await adminNav.getByRole("link", { name: "Guides" }).click();

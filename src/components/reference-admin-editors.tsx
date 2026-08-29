@@ -529,11 +529,9 @@ export function CombatReferenceScreen({
           {saveAllLabel}
         </button>
       </EditorActionBar>
-      <CombatReferenceAdmin
-        ref={mainRef}
-        initialRows={initialRows}
-        standalone={false}
-      />
+      {/* Bloc 41/D: Pouciel and gem-slots moved ahead of the 180-row main
+          table — they're short, single-row config tables that were easy to
+          miss scrolled past all that. */}
       <CombatSkydustAdmin
         ref={skydustRef}
         initial={skydustInitial}
@@ -542,6 +540,11 @@ export function CombatReferenceScreen({
       <CombatGemSlotsAdmin
         ref={gemSlotsRef}
         initial={gemSlotsInitial}
+        standalone={false}
+      />
+      <CombatReferenceAdmin
+        ref={mainRef}
+        initialRows={initialRows}
         standalone={false}
       />
     </div>

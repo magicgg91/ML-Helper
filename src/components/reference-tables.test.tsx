@@ -254,6 +254,46 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).toBe(true);
   });
 
+  it("Bloc41/A: orders Combat's set blocks by family (Attaque, Défense, Or, Troupes/Vitesse), not data insertion order", () => {
+    renderTables();
+    const families = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).map((block) => block.dataset.family);
+    expect(families).toEqual([
+      ...["Attaque", "Défense", "Or", "Troupes/Vitesse"].flatMap((family) =>
+        Array(5).fill(family),
+      ),
+    ]);
+  });
+
+  it("Bloc41/A: orders Expedition's set blocks by family (Or, Équipement, Consommables, Troupes)", () => {
+    renderTables();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    const families = Array.from(
+      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
+    ).map((block) => block.dataset.family);
+    expect(families).toEqual([
+      ...["Or", "Équipement", "Consommables", "Troupes"].flatMap((family) =>
+        Array(5).fill(family),
+      ),
+    ]);
+  });
+
+  it("Bloc41/B: an odd number of blocks after filtering still renders every block as a plain, identically-classed grid child (no special sizing for the lone last one)", () => {
+    renderTables();
+    for (const family of ["Attaque", "Défense", "Troupes/Vitesse"])
+      fireEvent.click(screen.getByRole("button", { name: family }));
+    const blocks = document.querySelectorAll<HTMLElement>(
+      ".reference-tile-block",
+    );
+    expect(blocks.length).toBe(5); // odd — the case that used to stretch
+    const classNames = new Set(Array.from(blocks).map((b) => b.className));
+    expect(classNames.size).toBe(1); // every block, including the last, is the same class
+    for (const block of blocks) expect(block.getAttribute("style")).toBeNull();
+  });
+
   it("never shows a gem count on Expedition tiles", () => {
     renderTables();
     fireEvent.click(

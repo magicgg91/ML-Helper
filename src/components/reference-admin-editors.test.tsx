@@ -307,7 +307,8 @@ describe("complete lookup table administration", () => {
       screen.getByRole("link", { name: /Retour/ }),
     ).toHaveAttribute("href", "/admin/guides");
 
-    const [main, skydust, gemSlots] = Array.from(
+    // Bloc 41/D: Pouciel and gem-slots render before the main table now.
+    const [skydust, gemSlots, main] = Array.from(
       container.querySelectorAll(".editable-reference"),
     );
     fireEvent.change(
@@ -378,7 +379,8 @@ describe("complete lookup table administration", () => {
         gemSlotsInitial={defaultCombatGemSlotsBase}
       />,
     );
-    const [, skydust] = Array.from(
+    // Bloc 41/D: Pouciel (skydust) is now the first table rendered.
+    const [skydust] = Array.from(
       container.querySelectorAll(".editable-reference"),
     );
     fireEvent.change(
@@ -421,6 +423,28 @@ describe("complete lookup table administration", () => {
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   });
 
+  it("Bloc41/D: renders Pouciel and gem-slots before the main 180-row table", () => {
+    const { container } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        skydustInitial={defaultCombatSkydustBase}
+        gemSlotsInitial={defaultCombatGemSlotsBase}
+      />,
+    );
+    const tables = Array.from(
+      container.querySelectorAll(".editable-reference"),
+    );
+    expect(tables).toHaveLength(3);
+    const [skydust, gemSlots, main] = tables;
+    expect(skydust.querySelector("p")?.textContent).toContain(
+      "Pouciel à la destruction",
+    );
+    expect(gemSlots.querySelector("p")?.textContent).toContain(
+      "Emplacements de gemmes",
+    );
+    expect(main.querySelector("table")).not.toBeNull();
+  });
+
   it("Bloc38/Q: widens Combat's Pouciel/gem-slots and Expedition's increments/merge-cost/dismantle inputs, never the main tables' narrow % columns", () => {
     const { container: combatContainer } = render(
       <CombatReferenceScreen
@@ -429,7 +453,8 @@ describe("complete lookup table administration", () => {
         gemSlotsInitial={defaultCombatGemSlotsBase}
       />,
     );
-    const [combatMain, skydust, gemSlots] = Array.from(
+    // Bloc 41/D: Pouciel and gem-slots render before the main table now.
+    const [skydust, gemSlots, combatMain] = Array.from(
       combatContainer.querySelectorAll(".editable-reference"),
     );
     expect(combatMain).not.toHaveClass("reference-admin-wide-inputs");
