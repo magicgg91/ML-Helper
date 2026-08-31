@@ -1,8 +1,17 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { getServerSession } from "next-auth";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import AdminLayout from "./layout";
+import AdminLayout, { metadata } from "./layout";
 import { prisma } from "@/lib/prisma";
+
+// Bloc 42/J: the admin section has no organic-search value and must never
+// be indexed — this used to be the site-wide root metadata (applied to
+// every public page too, since none of them overrode `description`).
+describe("AdminLayout metadata (Bloc 42/J)", () => {
+  it("sets robots noindex/nofollow", () => {
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
+});
 
 vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
 vi.mock("@/auth/options", () => ({ authOptions: {} }));

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  combatMergeCost,
   combatReferenceRows,
   combatValueAtStar,
   defaultCombatGemSlotsBase,
+  defaultCombatMergeCostBase,
   defaultCombatSkydustBase,
   defaultExpeditionDismantleBase,
   defaultExpeditionMergeCostBase,
@@ -14,6 +16,7 @@ import {
   mergeCostRarityKeys,
   missingCombatRows,
   parseCombatGemSlotsBase,
+  parseCombatMergeCostBase,
   parseCombatSkydustBase,
   parseExpeditionDismantleBase,
   parseExpeditionMergeCostBase,
@@ -109,6 +112,32 @@ describe("reference equipment", () => {
     );
     for (const key of mergeCostRarityKeys)
       expect(defaultExpeditionMergeCostBase[key]).toBeGreaterThan(0);
+  });
+
+  // Bloc 42/A: Coût_Pouciel(rareté, n) = K(rareté) × 2^(n-1), K doubling at
+  // each rarity tier (20/40/80/160/320) — audit 29/08/2026 found this
+  // formula, fully confirmed in the cdc, had never actually been built.
+  it("computes Combat's Pouciel merge cost as K(rarity) doubling per rarity tier, K × 2^(n-1) per star", () => {
+    expect(combatMergeCost("Commun", 1)).toBe(20);
+    expect(combatMergeCost("Rare", 1)).toBe(40);
+    expect(combatMergeCost("Épique", 1)).toBe(80);
+    expect(combatMergeCost("Mythique", 1)).toBe(160);
+    expect(combatMergeCost("Légendaire", 1)).toBe(320);
+    // Doubles per star upgrade within the same rarity.
+    expect(combatMergeCost("Commun", 2)).toBe(40);
+    expect(combatMergeCost("Commun", 3)).toBe(80);
+    expect(combatMergeCost("Inconnue", 1)).toBeNull();
+  });
+
+  it("lets an admin override the Pouciel merge-cost base, falling back per-rarity", () => {
+    const overridden = parseCombatMergeCostBase({ Commun: 25 });
+    expect(overridden.Commun).toBe(25);
+    expect(overridden.Légendaire).toBe(defaultCombatMergeCostBase.Légendaire);
+    expect(combatMergeCost("Commun", 1, overridden)).toBe(25);
+    expect(parseCombatMergeCostBase(null)).toEqual(defaultCombatMergeCostBase);
+    expect(parseCombatMergeCostBase({ Commun: "not-a-number" })).toEqual(
+      defaultCombatMergeCostBase,
+    );
   });
 
   it("Bloc35 6.1: defaults Combat's per-rarity Pouciel/gem-slots to the cdc-confirmed values, admin-editable per rarity", () => {

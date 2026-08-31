@@ -15,7 +15,7 @@ import {
   type GemParameters,
 } from "../lib/gem-parameters";
 import {
-  leagues,
+  leagues as allLeagues,
   skillKeys,
   type League,
   type SkillKey,
@@ -221,7 +221,7 @@ export function LevelUpParametersEditor({
     value,
   );
   const updateTroops = (
-    league: (typeof confirmedLevelUpLeagues)[number],
+    league: League,
     field: "coefficient" | "ratio",
     next: number,
   ) =>
@@ -316,12 +316,53 @@ export function LevelUpParametersEditor({
                   </td>
                 </tr>
               ))}
+              {/* Bloc 42/B: Silver's troop formula is still unconfirmed
+                  (levelUpTroopsAt keeps returning null for it), but
+                  AGENTS.md requires unconfirmed data to stay admin-editable
+                  with a default value — a real input replaces the previous
+                  static "not confirmed" text, so an admin can start filling
+                  it in once the values are known. */}
+              <tr>
+                <td>
+                  {leagues("silver")}{" "}
+                  <small className="unconfirmed">({t("unconfirmed")})</small>
+                </td>
+                <td>
+                  <input
+                    aria-label={`${leagues("silver")} ${t("coefficient")}`}
+                    type="number"
+                    step="0.0001"
+                    value={value.troops.silver.coefficient}
+                    onChange={(event) =>
+                      updateTroops(
+                        "silver",
+                        "coefficient",
+                        Number(event.target.value),
+                      )
+                    }
+                    onFocus={selectOnFocus}
+                  />
+                </td>
+                <td>
+                  <input
+                    aria-label={`${leagues("silver")} ${t("ratio")}`}
+                    type="number"
+                    step="0.001"
+                    value={value.troops.silver.ratio}
+                    onChange={(event) =>
+                      updateTroops(
+                        "silver",
+                        "ratio",
+                        Number(event.target.value),
+                      )
+                    }
+                    onFocus={selectOnFocus}
+                  />
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p>
-          {leagues("silver")} — {t("unconfirmed")}
-        </p>
       </section>
     </div>
   );
@@ -453,7 +494,7 @@ export function DemoAttackTroopsEditor({
               </tr>
             </thead>
             <tbody>
-              {leagues.map((league) => (
+              {allLeagues.map((league) => (
                 <tr key={league}>
                   <td>{gameLeagues(league)}</td>
                   <td>
@@ -527,8 +568,8 @@ export function GemParametersEditor({
             <thead>
               <tr>
                 <th></th>
-                {leagues.map((league) => (
-                  <th key={league} className="gems-admin-narrow">
+                {allLeagues.map((league) => (
+                  <th key={league} className="reference-admin-narrow">
                     {game(`leagues.${league}`)}
                   </th>
                 ))}
@@ -538,8 +579,8 @@ export function GemParametersEditor({
               {skillKeys.map((skill) => (
                 <tr key={skill}>
                   <td>{game(`skills.${skill}`)}</td>
-                  {leagues.map((league) => (
-                    <td key={league} className="gems-admin-narrow">
+                  {allLeagues.map((league) => (
+                    <td key={league} className="reference-admin-narrow">
                       <input
                         aria-label={t("value-field", {
                           skill: game(`skills.${skill}`),

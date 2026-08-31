@@ -1,6 +1,6 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import HomePage from "./(public)/page";
+import HomePage, { generateMetadata } from "./(public)/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
@@ -53,6 +53,21 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 afterEach(cleanup);
+
+// Bloc 42/J: every public page's metadata must carry a real (never empty)
+// description, plus hreflang alternates for the 5 launched locales — this
+// app's routing is cookie-based (no locale segment in the URL), so every
+// alternate self-references the same canonical URL.
+describe("HomePage metadata (Bloc 42/J)", () => {
+  it("sets a non-empty description and hreflang alternates for all 5 locales", async () => {
+    const metadata = await generateMetadata();
+    expect(metadata.description).toBeTruthy();
+    const languages = metadata.alternates?.languages as
+      Record<string, string> | undefined;
+    expect(languages?.fr).toBe("https://ml-helper.com/");
+    expect(languages?.["x-default"]).toBe("https://ml-helper.com/");
+  });
+});
 
 describe("HomePage", () => {
   it("gives 1-click access to a tool category directly on the homepage (Bloc 33/A)", async () => {

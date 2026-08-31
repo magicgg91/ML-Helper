@@ -81,7 +81,7 @@ describe("SkillsCalculators", () => {
     const attack = screen.getByRole("button", { name: "Attaque" });
     expect(attack.style.getPropertyValue("--pill-color")).toBe("#c0392b");
     const gold = screen.getByRole("button", { name: "Or" });
-    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--amber)");
   });
   it("caps mixed optimization rows at the available socket count", () => {
     renderWithIntl(

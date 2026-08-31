@@ -2,9 +2,16 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
+// Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
+// applied to every page in the app, public site included, since almost no
+// public page overrode `description` — the admin-specific title/robots now
+// live on /admin's own layout instead, and this root fallback describes
+// the public site (only ever shown on a page whose own generateMetadata
+// hasn't set a more specific description).
 export const metadata: Metadata = {
-  title: "ML-Helper Admin",
-  description: "ML-Helper administration",
+  title: "ML Helper",
+  description:
+    "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
 };
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();

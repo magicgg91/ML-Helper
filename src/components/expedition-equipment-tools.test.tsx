@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
@@ -20,7 +27,9 @@ function renderTool() {
 
 function summarySection() {
   return screen
-    .getByRole("heading", { name: "Récapitulatif des compétences d’expédition" })
+    .getByRole("heading", {
+      name: "Récapitulatif des compétences d’expédition",
+    })
     .closest("section")!;
 }
 
@@ -49,13 +58,11 @@ describe("ExpeditionEquipmentSimulator", () => {
     const buttons = Array.from(
       container.querySelectorAll(".stuff-slot-grid button"),
     );
-    expect(buttons.map((button) => button.querySelector("span")?.textContent)).toEqual(
-      ["Cape", "Longue-vue", "Bourse", "Boussole", "Torche", "Pioche"],
-    );
-    fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
     expect(
-      screen.queryByText(/Gemmes/),
-    ).not.toBeInTheDocument();
+      buttons.map((button) => button.querySelector("span")?.textContent),
+    ).toEqual(["Cape", "Longue-vue", "Bourse", "Boussole", "Torche", "Pioche"]);
+    fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
+    expect(screen.queryByText(/Gemmes/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("combobox", { name: /gemme/i }),
     ).not.toBeInTheDocument();
@@ -119,7 +126,14 @@ describe("ExpeditionEquipmentSimulator", () => {
         screen.getByText("Clique sur un emplacement pour le configurer."),
       ).toBeInTheDocument(),
     );
-    for (const slot of ["Cape", "Longue-vue", "Bourse", "Boussole", "Torche", "Pioche"])
+    for (const slot of [
+      "Cape",
+      "Longue-vue",
+      "Bourse",
+      "Boussole",
+      "Torche",
+      "Pioche",
+    ])
       expect(
         screen.getByRole("button", { name: new RegExp(slot) }),
       ).toHaveTextContent("Vide");
@@ -157,23 +171,20 @@ describe("ExpeditionEquipmentSimulator", () => {
 
   it("restricts every slot's catalog to one primary-stat family when a filter is active (E.1)", () => {
     renderTool();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Or" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
     fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
     const select = screen.getByRole("combobox", {
       name: "Équipement d’expédition Cape",
     });
     const options = Array.from(select.querySelectorAll("option")).slice(1);
     expect(options.length).toBeGreaterThan(0);
-    for (const option of options)
-      expect(option.textContent).toContain("(Or)");
+    for (const option of options) expect(option.textContent).toContain("(Or)");
   });
 
   it("colors the E.1 filter buttons to match their equipment-family color elsewhere (Bloc 31/H)", () => {
     renderTool();
     const gold = screen.getByRole("button", { name: "Or" });
-    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--amber)");
   });
 
   it("gives 'Personnalisé' its own color, distinct from all 4 family colors (Bloc 33/J)", () => {
@@ -181,7 +192,12 @@ describe("ExpeditionEquipmentSimulator", () => {
     const custom = screen.getByRole("button", { name: "Personnalisé" });
     const customColor = custom.style.getPropertyValue("--pill-color");
     expect(customColor).not.toBe("");
-    for (const family of ["Or", "Équipement combat", "Consommables", "Troupes"]) {
+    for (const family of [
+      "Or",
+      "Équipement combat",
+      "Consommables",
+      "Troupes",
+    ]) {
       const familyColor = screen
         .getByRole("button", { name: family })
         .style.getPropertyValue("--pill-color");
@@ -201,16 +217,12 @@ describe("ExpeditionEquipmentSimulator", () => {
       "1★",
     );
     // Switch to the "Or" filter — its own Cape slot starts empty.
-    fireEvent.click(
-      screen.getByRole("button", { name: "Or" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
     expect(screen.getByRole("button", { name: /Cape/ })).toHaveTextContent(
       "Vide",
     );
     // Switch back to "Personnalisé" — the earlier selection is still there.
-    fireEvent.click(
-      screen.getByRole("button", { name: "Personnalisé" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Personnalisé" }));
     expect(screen.getByRole("button", { name: /Cape/ })).not.toHaveTextContent(
       "Vide",
     );

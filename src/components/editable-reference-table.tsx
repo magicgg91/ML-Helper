@@ -74,7 +74,12 @@ export function EditableDataTable<Row extends Record<string, string>>({
   return (
     <>
       {onAdd && (
-        <button className="secondary-action" type="button" onClick={onAdd}>
+        <button
+          className="secondary-action"
+          type="button"
+          data-testid="add-row"
+          onClick={onAdd}
+        >
           {addLabel}
         </button>
       )}
@@ -99,7 +104,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
             </thead>
             <tbody>
               {rows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
+                <tr key={rowIndex} data-testid={`row-${rowIndex}`}>
                   {columns.map((column) => {
                     const label =
                       column.inputLabel?.(rowIndex) ??
@@ -159,6 +164,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
+                        data-testid={`move-up-${rowIndex}`}
                         onClick={() => onMove(rowIndex, -1)}
                         disabled={rowIndex === 0}
                         aria-label={moveUpLabel}
@@ -168,6 +174,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
+                        data-testid={`move-down-${rowIndex}`}
                         onClick={() => onMove(rowIndex, 1)}
                         disabled={rowIndex === rows.length - 1}
                         aria-label={moveDownLabel}
@@ -181,6 +188,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
+                        data-testid={`remove-row-${rowIndex}`}
                         onClick={() => onRemove(rowIndex)}
                       >
                         {removeLabel}

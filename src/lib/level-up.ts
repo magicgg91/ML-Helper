@@ -1,4 +1,4 @@
-import type { League } from "./player-settings";
+import { leagues, type League } from "./player-settings";
 
 export const confirmedLevelUpLeagues = [
   "bronze",
@@ -10,10 +10,12 @@ export const confirmedLevelUpLeagues = [
 export type ConfirmedLevelUpLeague = (typeof confirmedLevelUpLeagues)[number];
 export type LevelUpParameters = {
   xp: { base: number; ratio: number };
-  troops: Record<
-    ConfirmedLevelUpLeague,
-    { coefficient: number; ratio: number }
-  >;
+  // Bloc 42/B: widened to every league, not just the 5 confirmed ones —
+  // Silver's formula is still unconfirmed (levelUpTroopsAt keeps returning
+  // null for it below) but AGENTS.md requires unconfirmed data to stay
+  // admin-editable with a default value, which needs a slot in the type to
+  // edit. Silver defaults to {0, 0} rather than a confirmed league's value.
+  troops: Record<League, { coefficient: number; ratio: number }>;
   maxLevel: number;
   columnSize: number;
   pageSize: number;
@@ -24,6 +26,7 @@ export const defaultLevelUpParameters: LevelUpParameters = {
   xp: { base: 50, ratio: 1.3 },
   troops: {
     bronze: { coefficient: 32.2028, ratio: 1.245 },
+    silver: { coefficient: 0, ratio: 0 },
     gold: { coefficient: 32.49, ratio: 1.24 },
     platinum: { coefficient: 35.88, ratio: 1.237 },
     diamond: { coefficient: 32.2028, ratio: 1.245 },
@@ -45,7 +48,7 @@ export function parseLevelUpParameters(value: unknown): LevelUpParameters {
       ratio: Number(raw.xp?.ratio ?? 1.3),
     },
     troops: Object.fromEntries(
-      confirmedLevelUpLeagues.map((league) => [
+      leagues.map((league) => [
         league,
         {
           coefficient: Number(

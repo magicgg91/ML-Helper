@@ -59,8 +59,8 @@ describe("filterButtonColor (Bloc 31/H)", () => {
     expect(filterButtonColor("attack")).toBe(equipmentSkillColors.Attaque);
     expect(filterButtonColor("Défense")).toBe(equipmentSkillColors.Défense);
     expect(filterButtonColor("defense")).toBe(equipmentSkillColors.Défense);
-    expect(filterButtonColor("Or")).toBe("var(--gold)");
-    expect(filterButtonColor("gold")).toBe("var(--gold)");
+    expect(filterButtonColor("Or")).toBe("var(--amber)");
+    expect(filterButtonColor("gold")).toBe("var(--amber)");
     expect(filterButtonColor("Troupes/Vitesse")).toBe(
       equipmentSkillColors.Vitesse,
     );
@@ -68,7 +68,7 @@ describe("filterButtonColor (Bloc 31/H)", () => {
   });
 
   it("gives the 4 Expedition equipment families their own colors", () => {
-    expect(filterButtonColor("Or")).toBe("var(--gold)");
+    expect(filterButtonColor("Or")).toBe("var(--amber)");
     expect(filterButtonColor("Équipement")).toBe("var(--sapphire)");
     expect(filterButtonColor("Consommables")).toBe("var(--emerald)");
     expect(filterButtonColor("Troupes")).toBe(equipmentSkillColors.Vitesse);

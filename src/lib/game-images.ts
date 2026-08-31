@@ -52,9 +52,12 @@ export function filterButtonColor(key: string): string | undefined {
     case "Défense":
     case "defense":
       return equipmentSkillColors.Défense;
+    // Bloc 42/C: --gold is reserved for genuinely Legendary game data (its
+    // own definition comment) — the "Or" family filter gets its own
+    // distinct, theme-aware token instead of reusing it.
     case "Or":
     case "gold":
-      return "var(--gold)";
+      return "var(--amber)";
     case "Troupes/Vitesse":
     case "speed":
       return equipmentSkillColors.Vitesse;

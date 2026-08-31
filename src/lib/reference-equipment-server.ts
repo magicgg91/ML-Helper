@@ -3,17 +3,20 @@ import {
   applyCombatOverrides,
   combatReferenceRows,
   defaultCombatGemSlotsBase,
+  defaultCombatMergeCostBase,
   defaultCombatSkydustBase,
   defaultExpeditionDismantleBase,
   defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionReferenceRows,
   parseCombatGemSlotsBase,
+  parseCombatMergeCostBase,
   parseCombatSkydustBase,
   parseExpeditionDismantleBase,
   parseExpeditionMergeCostBase,
   parseExpeditionStarIncrements,
   type CombatGemSlotsBase,
+  type CombatMergeCostBase,
   type CombatReferenceRow,
   type CombatSkydustBase,
   type ExpeditionDismantleBase,
@@ -30,6 +33,7 @@ export const referenceKeys = {
   expeditionDismantle: "expedition_equipment_dismantle_terradust",
   combatSkydust: "combat_equipment_skydust",
   combatGemSlots: "combat_equipment_gem_slots",
+  combatMergeCost: "combat_equipment_merge_cost",
 } as const;
 
 async function rowsFor<T>(key: string, fallback: readonly T[]): Promise<T[]> {
@@ -113,4 +117,14 @@ export async function getCombatGemSlotsBase(): Promise<CombatGemSlotsBase> {
   return stored
     ? parseCombatGemSlotsBase(stored)
     : { ...defaultCombatGemSlotsBase };
+}
+
+export async function getCombatMergeCostBase(): Promise<CombatMergeCostBase> {
+  const table = await prisma.referenceTable.findUnique({
+    where: { key: referenceKeys.combatMergeCost },
+  });
+  const stored = Array.isArray(table?.rows) ? table.rows[0] : undefined;
+  return stored
+    ? parseCombatMergeCostBase(stored)
+    : { ...defaultCombatMergeCostBase };
 }

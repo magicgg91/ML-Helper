@@ -171,6 +171,37 @@ export function parseExpeditionMergeCostBase(
   return parseRarityBase(value, defaultExpeditionMergeCostBase);
 }
 
+// Bloc 42/A: Combat's Pouciel merge cost — Coût(rareté, n) = K(rareté) ×
+// 2^(n-1), same principle as expeditionMergeCost() below, K entièrement
+// confirmée (cdc 7.1, données joueur transition 1★→2★, doublement exact à
+// chaque palier de rareté). Distinct from CombatSkydustBase just below
+// (Pouciel "à la destruction" — a different, unrelated quantity that was
+// already implemented; this merge-cost function/table never existed until
+// this bloc, per the 29/08/2026 audit).
+export type CombatMergeCostBase = Record<MergeCostRarityKey, number>;
+
+export const defaultCombatMergeCostBase: CombatMergeCostBase = {
+  Commun: 20,
+  Rare: 40,
+  Épique: 80,
+  Mythique: 160,
+  Légendaire: 320,
+};
+
+export function parseCombatMergeCostBase(value: unknown): CombatMergeCostBase {
+  return parseRarityBase(value, defaultCombatMergeCostBase);
+}
+
+export function combatMergeCost(
+  rarity: string,
+  star: number,
+  base: CombatMergeCostBase = defaultCombatMergeCostBase,
+): number | null {
+  const rarityBase = base[rarity as MergeCostRarityKey];
+  if (rarityBase === undefined) return null;
+  return rarityBase * 2 ** (Math.max(1, star) - 1);
+}
+
 // Bloc 35/6.1: Combat's Pouciel-per-rarity, promoted from the hardcoded
 // equipmentRarityDerived lookup to genuine admin config, mirroring
 // ExpeditionMergeCostBase exactly — same 5 rarity keys, same shape. The cdc

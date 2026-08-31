@@ -186,18 +186,47 @@ describe("named formula parameter editors", () => {
     expect(await screen.findByText("Paramètres enregistrés.")).toBeVisible();
   });
 
+  // Bloc 42/B: Silver's troop formula is still unconfirmed, but AGENTS.md
+  // requires unconfirmed data to stay admin-editable with a default value —
+  // this used to be a plain "not confirmed" paragraph, no field at all.
+  it("Bloc42/B: gives Silver a real, editable coefficient/ratio field instead of just a static 'unconfirmed' note", async () => {
+    const request = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    render(<LevelUpParametersEditor initial={defaultLevelUpParameters} />);
+    const coefficientField = screen.getByRole("spinbutton", {
+      name: "Argent Coefficient",
+    });
+    const ratioField = screen.getByRole("spinbutton", {
+      name: "Argent Ratio",
+    });
+    expect(coefficientField).toHaveValue(0);
+    expect(ratioField).toHaveValue(0);
+    expect(screen.getByText(/Formule de troupes non confirmée/)).toBeVisible();
+
+    fireEvent.change(coefficientField, { target: { value: "12.5" } });
+    fireEvent.change(ratioField, { target: { value: "1.1" } });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer les paramètres" }),
+    );
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    expect(body.troops.silver).toEqual({ coefficient: 12.5, ratio: 1.1 });
+  });
+
   it("Bloc35 8.1: narrows the per-skill/per-league value columns (never exceed 100%)", () => {
     render(<GemParametersEditor initial={defaultGemParameters} />);
     const valueCell = screen
       .getByRole("spinbutton", { name: "Vitesse · Légende" })
       .closest("td");
-    // Bloc 37/F: decoupled from .reference-admin-narrow so its own cells
-    // could grow ~50% without narrowing every other admin table with them.
-    expect(valueCell).toHaveClass("gems-admin-narrow");
+    // Bloc 42/H: shares the one canonical compact-numeric-field class with
+    // every other admin table (Combat, Expedition, Ranking, Consumables) —
+    // no longer its own decoupled .gems-admin-narrow class (Bloc 37/F).
+    expect(valueCell).toHaveClass("reference-admin-narrow");
     const priceCell = screen
       .getByRole("spinbutton", { name: "Prix Légende" })
       .closest("td");
-    expect(priceCell).not.toHaveClass("gems-admin-narrow");
+    expect(priceCell).not.toHaveClass("reference-admin-narrow");
   });
 
   it("Bloc35 8.2/8.3: shows the purchase-price fields as a real table with plain league-name headers", () => {

@@ -321,18 +321,14 @@ describe("equipment tools", () => {
     expect(defense).toHaveAttribute("aria-pressed", "false");
     expect(attaque.style.getPropertyValue("--pill-color")).toBe("#c0392b");
     expect(defense.style.getPropertyValue("--pill-color")).toBe("#3a6ea8");
-    expect(or.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+    expect(or.style.getPropertyValue("--pill-color")).toBe("var(--amber)");
     expect(vitesse.style.getPropertyValue("--pill-color")).toBe("#9b59b6");
     // Only the active family's 9 slots are on screen.
-    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(
-      1,
-    );
+    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(1);
     selectFamily("Défense");
     expect(defense).toHaveAttribute("aria-pressed", "true");
     expect(attaque).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(
-      1,
-    );
+    expect(screen.getAllByRole("button", { name: /Amulette/ })).toHaveLength(1);
   });
 
   it("removes the per-family summary entirely — only the global recap section exists (Bloc 32/D.4)", () => {
@@ -399,7 +395,9 @@ describe("equipment tools", () => {
     const group = familyButtonsGroup();
     const buttons = within(group).getAllByRole("button");
     const transfer = buttons[buttons.length - 1];
-    expect(transfer).toHaveTextContent("Transférer vers les Paramètres du joueur");
+    expect(transfer).toHaveTextContent(
+      "Transférer vers les Paramètres du joueur",
+    );
     expect(transfer).toHaveClass("transfer-action");
     // Family buttons carry --pill-color for their semantic accent; the
     // transfer button gets its violet purely from the dedicated class.
@@ -432,7 +430,9 @@ describe("equipment tools", () => {
   });
 
   it("links the active cell's config panel to it via a shared active class", () => {
-    const { container } = renderTool(<StuffSimulator combatRows={combatRows} />);
+    const { container } = renderTool(
+      <StuffSimulator combatRows={combatRows} />,
+    );
     const panel = container.querySelector(".stuff-editor-panel")!;
     expect(panel).not.toHaveClass("stuff-editor-panel-active");
     fireEvent.click(screen.getByRole("button", { name: /Amulette/ }));

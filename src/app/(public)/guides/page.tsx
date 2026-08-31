@@ -6,10 +6,15 @@ import { localizedText } from "@/lib/translations";
 import { GuidesHub } from "@/components/guides-hub";
 import { getTranslations } from "next-intl/server";
 import { parseGuideCategories } from "@/lib/guide-categories";
+import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Public");
-  return { title: t("guides") };
+  return {
+    title: t("guides"),
+    description: t("descriptions.guides"),
+    alternates: { languages: languageAlternates("/guides") },
+  };
 }
 
 export default async function GuidesPage() {

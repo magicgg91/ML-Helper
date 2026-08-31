@@ -126,17 +126,20 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
 
   // Bloc 31/B: the Combat Equipment Comparator is removed entirely — no
   // row, no route, nothing left to assert here.
-  await expect(
-    page.getByRole("row", { name: /Comparateur/ }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("row", { name: /Comparateur/ })).toHaveCount(0);
 
   // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
   // in the confirmed Combat, Expedition, Gems, Templars order.
   const toolLabels = await page.locator("td.font-medium").allTextContents();
-  const competencesLabels = ["Équipement de Combat", "Équipements d’Expédition", "Gemmes", "Templiers"];
-  expect(toolLabels.filter((label) => competencesLabels.includes(label))).toEqual(
-    competencesLabels,
-  );
+  const competencesLabels = [
+    "Équipement de Combat",
+    "Équipements d’Expédition",
+    "Gemmes",
+    "Templiers",
+  ];
+  expect(
+    toolLabels.filter((label) => competencesLabels.includes(label)),
+  ).toEqual(competencesLabels);
 
   // Point 1: the old "Textes multilingues" editor is gone entirely — its
   // route now 404s instead of rendering an empty/dead block.
@@ -158,9 +161,10 @@ test("tool routes alone expose persistent player settings", async ({
   );
   // Bloc 33/A: the homepage gives 1-click access to a tool category
   // directly (the same ToolCategoryGrid as /tools).
-  await expect(
-    page.getByRole("link", { name: /Villes/ }),
-  ).toHaveAttribute("href", "/tools/villes");
+  await expect(page.getByRole("link", { name: /Villes/ })).toHaveAttribute(
+    "href",
+    "/tools/villes",
+  );
   // Bloc 34/E: the most recent guides + the built references are directly
   // clickable from the homepage, no detour via /guides.
   await expect(
@@ -594,9 +598,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
   // Point 1: one shared level range applies to all 5 skills at once.
   const rusherRow = page.getByRole("row", { name: /Vitesse/ });
-  await expect(rusherRow.getByRole("cell").nth(1)).toHaveText(
-    "1%/Templier",
-  );
+  await expect(rusherRow.getByRole("cell").nth(1)).toHaveText("1%/Templier");
   await expect(rusherRow.getByRole("cell").nth(2)).toHaveText("3%");
   await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+3%");
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");
@@ -637,7 +639,10 @@ test("Reference tables filter combat and expedition equipment", async ({
   });
   await expect(attaqueBlock).toBeVisible();
   await expect(orBlock).toBeVisible();
-  await page.getByRole("button", { name: "Or" }).click();
+  // Bloc 42/I: data-testid instead of the visible label — this filter row
+  // was redesigned once already (Bloc 39, rows to tiles) and a label-text
+  // selector would also break the moment "Or" gets translated per-locale.
+  await page.getByTestId("filter-family-Or").click();
   await expect(attaqueBlock).toBeVisible();
   await expect(orBlock).toHaveCount(0);
   await expect(attaqueBlock.getByText("10%").first()).toBeVisible();
@@ -645,9 +650,7 @@ test("Reference tables filter combat and expedition equipment", async ({
   await page.goto("/guides/referentiels/expedition-equipment");
   // All 10 expedition stats are confirmed (Bloc 29): no more stale
   // "unconfirmed assumption" banner on this page.
-  await expect(
-    page.getByText(/projection par étoile est une/),
-  ).toHaveCount(0);
+  await expect(page.getByText(/projection par étoile est une/)).toHaveCount(0);
   await expect(page.getByText("Hypothèse non confirmée")).toHaveCount(0);
 
   await page.goto("/tools/referentiels");
@@ -744,9 +747,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await page.getByLabel("Ligne 1 Or").fill("0.5");
   const mergeCostSection = page.locator(".editable-reference").nth(1);
   await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
-  await page
-    .getByRole("button", { name: "Enregistrer toute la page" })
-    .click();
+  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
   // Wait for the async save to actually complete before reloading, or the
   // reload can race ahead of the PUT requests and read back stale defaults.
   await expect(page.getByText("Référentiel enregistré.")).toBeVisible();
@@ -767,9 +768,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await templarsGuideRow.getByRole("button", { name: "Désactiver" }).click();
   await expect(templarsGuideRow).toContainText("Inactif");
   await page.goto("/tools/competences");
-  await expect(
-    page.getByRole("tab", { name: "Templiers" }),
-  ).toBeEnabled();
+  await expect(page.getByRole("tab", { name: "Templiers" })).toBeEnabled();
   await page.goto("/admin/guides");
   const templarsGuideRowAfterReload = page.getByRole("row", {
     name: /Templiers/,
@@ -778,7 +777,9 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("button", { name: "Activer" })
     .click();
   await expect(templarsGuideRowAfterReload).toContainText("Actif");
-  await templarsGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
+  await templarsGuideRowAfterReload
+    .getByRole("link", { name: "Éditer" })
+    .click();
   // Bloc 35/7.1: opened from the Guides admin row, so the URL carries
   // ?from=guides — the editor's own "Retour" now goes back to Guides,
   // not Tools, for this exact same shared edit point.
@@ -819,9 +820,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("button", { name: "Activer" })
     .click();
   await expect(gemmesGuideRowAfterReload).toContainText("Actif");
-  await gemmesGuideRowAfterReload
-    .getByRole("link", { name: "Éditer" })
-    .click();
+  await gemmesGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=guides$/);
   await expect(
     page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),

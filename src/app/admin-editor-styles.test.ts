@@ -34,23 +34,30 @@ describe("Bloc35 10.1: .primary-button has a real, visible base style", () => {
 });
 
 describe("Bloc37/A: numeric % columns are sized to their content, not the wide default", () => {
-  it("narrows .reference-admin-narrow to a 2-4 character width, tighter than the Bloc 35 pass", () => {
+  it("narrows .reference-admin-narrow to a fixed compact width", () => {
     const rule = css.match(
       /\.reference-admin-narrow input,\s*\n\.reference-admin-narrow select\s*{([\s\S]*?)\n}/,
     )?.[1];
     expect(rule).toBeDefined();
-    // Bloc 40/C: doubled again from Bloc 37/A's 3.25rem.
-    expect(rule).toMatch(/width: 6\.5rem;/);
+    // Bloc 42/H: one canonical width for every "compact admin numeric
+    // field" screen — folded from the Bloc 37/F Gems-specific 6.75rem and
+    // the Bloc 40/C 6.5rem back into a single value (the wider, already
+    // Gems-proven one) instead of maintaining two near-identical classes.
+    expect(rule).toMatch(/width: 6\.75rem;/);
   });
 });
 
-describe("Bloc37/F: the Gems admin value grid is sized independently, ~50% bigger", () => {
-  it("gives .gems-admin-narrow its own width, decoupled from .reference-admin-narrow", () => {
-    const rule = css.match(
-      /\.gems-admin-narrow input,\s*\n\.gems-admin-narrow select\s*{([\s\S]*?)\n}/,
-    )?.[1];
+describe("Bloc42/H: the compact admin numeric field is one shared class, not a per-screen fork", () => {
+  it("retires .gems-admin-narrow — Gems shares .reference-admin-narrow with every other admin table", () => {
+    expect(css).not.toMatch(/\.gems-admin-narrow\s*(input|select|{)/);
+  });
+});
+
+describe("Bloc42/G: a wide table panel never forces a sibling panel (e.g. Consumables' markdown editor) to widen with it", () => {
+  it("lets .admin-panel shrink below its content's intrinsic width (min-width: 0)", () => {
+    const rule = css.match(/\.admin-panel\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/width: 6\.75rem;/);
+    expect(rule).toMatch(/min-width:\s*0;/);
   });
 });
 

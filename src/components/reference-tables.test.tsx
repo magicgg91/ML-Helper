@@ -102,14 +102,13 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     }
   });
 
-  // The riskiest pairing readability-wise: the "Or" family's slot-label
-  // color (var(--gold)) sits on a tile whose border/background come from
-  // var(--rarity-legendaire) — a near-identical gold-family hex by design
-  // (both are intentionally gold-branded, cdc 7.1). They stay two distinct
-  // CSS custom properties rather than collapsing to the same value, which
-  // is what keeps a future palette tweak from silently breaking one without
-  // the other — actual on-screen contrast is checked visually (PR report).
-  it("keeps the Or family's slot-label color and the Légendaire rarity's tile color as independent tokens", () => {
+  // Bloc 42/C: the "Or" family's slot-label color used to be var(--gold) —
+  // the same token --rarity-legendaire's tile border/background draw from,
+  // near-identical by design (both intentionally gold-branded, cdc 7.1),
+  // which made the pairing hard to tell apart. --gold's own definition
+  // comment reserves it for genuinely Legendary data, so the family now
+  // gets its own distinct --amber token instead of reusing it.
+  it("gives the Or family's slot-label color its own token, distinct from the Légendaire rarity's tile color", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable
@@ -122,7 +121,7 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     const tile = document.querySelector<HTMLElement>(".reference-tile")!;
     expect(tile.style.borderColor).toBe("var(--rarity-legendaire)");
     const label = tile.querySelector<HTMLElement>(".reference-tile-slot")!;
-    expect(label.style.color).toBe("var(--gold)");
+    expect(label.style.color).toBe("var(--amber)");
   });
 
   it("shows only the base 1★ value on a tile, with no way to change it", () => {
@@ -193,9 +192,10 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
   it("Bloc40/E: family and rarity filters both start with every option selected", () => {
     renderTables();
     for (const family of ["Attaque", "Défense", "Or", "Troupes/Vitesse"]) {
-      expect(
-        screen.getByRole("button", { name: family }),
-      ).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: family })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
     }
     for (const rarity of [
       "Légendaire",
@@ -204,9 +204,10 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
       "Rare",
       "Commun",
     ]) {
-      expect(
-        screen.getByRole("button", { name: rarity }),
-      ).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: rarity })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
     }
   });
 
@@ -232,12 +233,12 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
       document.querySelectorAll<HTMLElement>(".reference-tile-block"),
     );
     expect(blocks.length).toBeLessThan(totalBefore);
-    expect(
-      blocks.some((block) => block.dataset.family === "Défense"),
-    ).toBe(false);
-    expect(
-      blocks.some((block) => block.dataset.family === "Attaque"),
-    ).toBe(true);
+    expect(blocks.some((block) => block.dataset.family === "Défense")).toBe(
+      false,
+    );
+    expect(blocks.some((block) => block.dataset.family === "Attaque")).toBe(
+      true,
+    );
   });
 
   it("Bloc40/F: deselecting a rarity removes its tiles from the DOM instead of dimming them", () => {
@@ -249,9 +250,9 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(blocks.some((block) => block.dataset.rarity === "Commun")).toBe(
       false,
     );
-    expect(
-      blocks.some((block) => block.dataset.rarity === "Légendaire"),
-    ).toBe(true);
+    expect(blocks.some((block) => block.dataset.rarity === "Légendaire")).toBe(
+      true,
+    );
   });
 
   it("Bloc41/A: orders Combat's set blocks by family (Attaque, Défense, Or, Troupes/Vitesse), not data insertion order", () => {
@@ -341,7 +342,25 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
       screen.getByRole("tab", { name: "Équipements d’Expédition" }),
     );
     const gold = screen.getAllByRole("button", { name: "Or" })[0];
-    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--gold)");
+    expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--amber)");
+  });
+
+  // Bloc 42/I: this screen was redesigned in Bloc 39 (rows became tiles) and
+  // an e2e test that had been selecting the family filter by its visible
+  // text broke silently in a way a stable selector would have avoided —
+  // data-testid keeps future redesigns from repeating that.
+  it("Bloc42/I: gives family and rarity filter buttons a stable data-testid, independent of their translated label", () => {
+    renderTables();
+    expect(screen.getByTestId("filter-family-Attaque")).toHaveTextContent(
+      "Attaque",
+    );
+    expect(screen.getByTestId("filter-rarity-Légendaire")).toHaveTextContent(
+      "Légendaire",
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
+    );
+    expect(screen.getByTestId("filter-family-Or")).toHaveTextContent("Or");
   });
 
   it("Bloc39: no star-level filter and no search box anywhere on either reference", () => {

@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
 import { getLocale, getTranslations } from "next-intl/server";
-import { localizedText } from "@/lib/translations";
+import { hasLocalizedText, localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
 import { pageTitle } from "@/lib/page-title";
+import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
@@ -20,6 +21,12 @@ export async function generateMetadata({
   const t = await getTranslations("Public");
   return {
     title: pageTitle(t("guides"), localizedText(guide.title, locale) || slug),
+    // Bloc 42/J: the guide's own excerpt when this locale has one — much
+    // more useful than a generic sentence — falling back to a generic,
+    // page-type description (never empty) when it doesn't.
+    description:
+      localizedText(guide.excerpt, locale) || t("descriptions.guide-fallback"),
+    alternates: { languages: languageAlternates(`/guides/${slug}`) },
   };
 }
 
@@ -48,7 +55,17 @@ export default async function GuidePage({
         <h1>
           {localizedText(guide.title, locale) || slug.replaceAll("-", " ")}
         </h1>
-        <MarkdownRenderer markdown={localizedText(guide.content, locale)} />
+        {/* Bloc 42/F: guides are only really written by hand in FR/EN — a
+            missing translation for the active locale (any locale,
+            including FR/EN between themselves) shows a visible notice
+            instead of silently substituting another language's content.
+            Scoped to guide content only: static UI text and the legal
+            notice keep localizedText()'s silent EN fallback untouched. */}
+        {hasLocalizedText(guide.content, locale) ? (
+          <MarkdownRenderer markdown={localizedText(guide.content, locale)} />
+        ) : (
+          <p className="empty-state">{t("detail.not-translated")}</p>
+        )}
       </article>
     </main>
   );
