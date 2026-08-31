@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  getAvailableLocales,
-  getMessagesForLocale,
-  mergeMessages,
-} from "./config";
+import { getAvailableLocales, mergeMessages } from "./config";
 
 describe("static translation configuration", () => {
   it("discovers locales from translation filenames", async () => {
@@ -20,29 +16,33 @@ describe("static translation configuration", () => {
     ]);
   });
 
-  it("falls back recursively to English for a missing French key", async () => {
-    const messages = await getMessagesForLocale("fr");
+  // CI fix: this test used to assert on a key that happened to be missing
+  // from a real translation file (Navigation.admin in fr.json, then later
+  // admin.guides.reference-consommables in de/es/tr.json) — it broke the
+  // moment someone filled in that gap, even though the fallback mechanism
+  // itself was unaffected. Exercising mergeMessages() directly with a
+  // hand-built gap keeps the assertion tied to the mechanism, not to
+  // today's translation coverage.
+  it("falls back recursively to English for a key missing from a locale", () => {
+    const merged = mergeMessages(
+      { Navigation: { tools: "Tools", admin: "Admin area" } },
+      { Navigation: { tools: "Outils" } },
+    );
 
-    expect(messages).toMatchObject({
-      Navigation: {
-        tools: "Outils",
-        admin: "Admin area",
-      },
+    expect(merged).toEqual({
+      Navigation: { tools: "Outils", admin: "Admin area" },
     });
   });
 
-  // Bloc 44 point 4: the delivered de/es/tr.json files predate a handful
-  // of keys added later this session (the Consumables reference) — a real,
-  // present-day case of "a key is missing in a newly-activated locale",
-  // not a hypothetical. Confirms the same recursive EN fallback already
-  // covers DE/ES/TR, no extra code needed.
-  it("falls back to English for a key missing from a newly-activated locale (DE/ES/TR)", async () => {
-    for (const locale of ["de", "es", "tr"]) {
-      const messages = await getMessagesForLocale(locale);
-      expect(messages).toMatchObject({
-        admin: { guides: { "reference-consommables": "Edit Consumables" } },
-      });
-    }
+  it("falls back to English for a key missing from a newly-activated locale (DE/ES/TR pattern)", () => {
+    const merged = mergeMessages(
+      { admin: { guides: { "reference-consommables": "Edit Consumables" } } },
+      { admin: { guides: {} } },
+    );
+
+    expect(merged).toEqual({
+      admin: { guides: { "reference-consommables": "Edit Consumables" } },
+    });
   });
 
   it("keeps localized keys that do not exist in the fallback", () => {

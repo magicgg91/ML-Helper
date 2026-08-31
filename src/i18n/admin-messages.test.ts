@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMessagesForLocale } from "./config";
+import { getMessagesForLocale, mergeMessages } from "./config";
 
 function translate(messages: Record<string, unknown>, path: string) {
   return path.split(".").reduce<unknown>((current, key) => {
@@ -92,8 +92,17 @@ describe("admin page translations", () => {
     expect(fr("admin.content.title")).toBe("Mentions légales");
   });
 
-  it("falls back recursively to English for a missing French admin key", async () => {
-    const { fr } = await translators();
-    expect(fr("Navigation.admin")).toBe("Admin area");
+  // CI fix: this used to assert on Navigation.admin, a key that happened to
+  // be missing from fr.json — it would break the moment someone added the
+  // French translation, even though the fallback mechanism itself would
+  // still work. mergeMessages() with a hand-built gap tests the mechanism
+  // without depending on today's translation coverage.
+  it("falls back recursively to English for a key missing from a locale", () => {
+    expect(
+      mergeMessages(
+        { Navigation: { admin: "Admin area" } },
+        { Navigation: {} },
+      ),
+    ).toEqual({ Navigation: { admin: "Admin area" } });
   });
 });
