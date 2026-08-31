@@ -71,9 +71,31 @@ describe("Bloc46/C: parseConsumableCategory", () => {
       expect(parseConsumableCategory(category)).toBe(category);
   });
 
-  it("falls back to inventory for a missing or invalid value (legacy rows saved before Bloc 46)", () => {
+  it("falls back to inventory for a missing/invalid value with no matching name (a genuinely custom row)", () => {
     expect(parseConsumableCategory(undefined)).toBe("inventory");
     expect(parseConsumableCategory("not-a-category")).toBe("inventory");
+    expect(
+      parseConsumableCategory(undefined, "Objet ajouté par un admin"),
+    ).toBe("inventory");
     expect(emptyConsumableRow.category).toBe("inventory");
+  });
+
+  // Codex review (PR #69): a row saved before Bloc 46 has no category field
+  // at all — recovering it by name keeps an already-edited installation's
+  // advisor/expedition/equipment rows correctly categorized instead of
+  // dumping everything into "inventory" on the first read after upgrade.
+  it("Bloc46/C review: recovers a legacy built-in row's category by name instead of defaulting to inventory", () => {
+    expect(parseConsumableCategory(undefined, "Commandant")).toBe("advisors");
+    expect(parseConsumableCategory(undefined, "Sac d'expédition")).toBe(
+      "expedition",
+    );
+    expect(parseConsumableCategory(undefined, "Coffre")).toBe("equipment");
+    expect(parseConsumableCategory(undefined, "Potion de 25 PV")).toBe(
+      "inventory",
+    );
+    // An explicit valid category always wins over the name lookup.
+    expect(parseConsumableCategory("expedition", "Commandant")).toBe(
+      "expedition",
+    );
   });
 });

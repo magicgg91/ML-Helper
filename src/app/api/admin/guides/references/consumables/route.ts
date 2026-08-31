@@ -30,7 +30,10 @@ export async function PUT(request: Request) {
         // Left empty rather than defaulted to 0 when the cost isn't
         // confirmed yet (AGENTS.md: never invent a game value).
         cost: numericString(source.cost),
-        category: parseConsumableCategory(source.category),
+        category: parseConsumableCategory(
+          source.category,
+          stringField(source.name_fr),
+        ),
       };
     });
     await saveReferenceTable({

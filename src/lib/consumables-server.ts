@@ -19,10 +19,12 @@ export async function getConsumableRows(): Promise<ConsumableRow[]> {
     where: { key: consumablesReferenceKey },
   });
   if (!Array.isArray(table?.rows)) return [...defaultConsumableRows];
-  // Bloc 46/C: normalizes rows saved before the category field existed.
+  // Bloc 46/C: normalizes rows saved before the category field existed,
+  // recovering the shipped catalog's category by name (Codex review, PR
+  // #69) rather than defaulting every legacy row to "inventory".
   return (table.rows as ConsumableRow[]).map((row) => ({
     ...row,
-    category: parseConsumableCategory(row.category),
+    category: parseConsumableCategory(row.category, row.name_fr),
   }));
 }
 

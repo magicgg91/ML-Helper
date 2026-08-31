@@ -18,12 +18,21 @@ export const consumableCategories = [
 ] as const;
 export type ConsumableCategory = (typeof consumableCategories)[number];
 
-// Also normalizes a legacy row saved before Bloc 46 (no category field yet)
-// to the "inventory" catch-all, same default as emptyConsumableRow.
-export function parseConsumableCategory(value: unknown): ConsumableCategory {
-  return (consumableCategories as readonly string[]).includes(value as string)
-    ? (value as ConsumableCategory)
-    : "inventory";
+// Codex review (PR #69): a row saved before Bloc 46 (no category field yet)
+// must recover its real category from the shipped catalog by name — an
+// installation that already edited/reordered the table before this
+// deploy would otherwise have every one of its advisor/expedition/
+// equipment rows silently reclassified as "inventory" on next read.
+// Only a genuinely custom row (added by an admin, no match by name) falls
+// back to "inventory".
+export function parseConsumableCategory(
+  value: unknown,
+  nameFr?: string,
+): ConsumableCategory {
+  if ((consumableCategories as readonly string[]).includes(value as string))
+    return value as ConsumableCategory;
+  const recovered = nameFr && defaultCategoryByName.get(nameFr);
+  return recovered || "inventory";
 }
 
 export type ConsumableRow = {
@@ -452,6 +461,10 @@ export const defaultConsumableRows: ConsumableRow[] = [
     category: "equipment",
   },
 ];
+
+const defaultCategoryByName = new Map(
+  defaultConsumableRows.map((row) => [row.name_fr, row.category]),
+);
 
 // Bloc 43: the free-text markdown zone at the top of the public page —
 // same {fr,en} shape as legal-notice's StaticContent, left empty by
