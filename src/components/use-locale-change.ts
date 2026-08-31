@@ -6,9 +6,9 @@ import { useEffect, useRef, useTransition } from "react";
 
 // Bloc 47/B: same storage-key convention as ThemeToggle's "mlhelper_theme"
 // (Bloc 33/B) — the chosen locale (auto-detected server-side by
-// src/middleware.ts, or picked manually) is mirrored here so a returning
-// visit stays consistent even if the NEXT_LOCALE cookie (the actual SSR
-// source of truth, read in src/i18n/request.ts) gets cleared separately.
+// src/proxy.ts, or picked manually) is mirrored here so a returning visit
+// stays consistent even if the NEXT_LOCALE cookie (the actual SSR source
+// of truth, read in src/i18n/request.ts) gets cleared separately.
 export const localeStorageKey = "mlhelper_locale";
 
 // Shared by LocaleToggle (public, 5 locales) and AdminLocaleToggle (admin
@@ -21,11 +21,24 @@ export function useLocaleChange(locales: readonly string[]) {
 
   async function change(nextLocale: string) {
     if (nextLocale === locale) return;
-    await fetch("/api/locale", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ locale: nextLocale }),
-    });
+    // Codex review (PR #70): a non-2xx response still resolves this
+    // promise — without checking response.ok (and catching a rejected
+    // request), a failed cookie write would still get persisted to
+    // localStorage and trigger a refresh, and the sync-on-mount effect
+    // would keep retrying it as if it had succeeded.
+    let ok = false;
+    try {
+      const response = await fetch("/api/locale", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ locale: nextLocale }),
+      });
+      ok = response.ok;
+    } catch {
+      // Network failure — nothing persisted, nothing refreshed; the next
+      // manual pick or mount-time sync attempt simply tries again.
+    }
+    if (!ok) return;
     try {
       localStorage.setItem(localeStorageKey, nextLocale);
     } catch {

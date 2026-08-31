@@ -6,10 +6,12 @@ import {
 } from "./translations";
 
 // Bloc 47/D review: the universal safety net for a missing translation is
-// always English, never French — French is only this app's *default*
+// English, preferred over French — French is only this app's *default*
 // locale for a visitor with no explicit preference (src/i18n/config.ts's
-// defaultLocale), a separate concept that must never leak into this
-// fallback chain.
+// defaultLocale), a separate concept that must never take priority over
+// English in this fallback chain. French still backs up English as a
+// last resort (Codex review, PR #70) so a translation that only ever
+// requires fr-or-en (guides) never renders blank.
 describe("localizedText", () => {
   it("uses the active locale's own value when present", () => {
     expect(localizedText({ fr: "Bonjour", en: "Hi", de: "Hallo" }, "de")).toBe(
@@ -23,8 +25,15 @@ describe("localizedText", () => {
     expect(localizedText({ fr: "Bonjour", en: "Hi" }, "tr")).toBe("Hi");
   });
 
-  it("returns an empty string when neither the locale nor English has a value", () => {
-    expect(localizedText({ fr: "Bonjour" }, "de")).toBe("");
+  // Codex review (PR #70): guides only require fr OR en (never both), so
+  // a fr-only guide must still render French for a DE/ES/TR visitor
+  // rather than nothing — fr is a last-resort third tier, never a
+  // preferred alternative to en.
+  it("falls back to French as a last resort when English is also absent", () => {
+    expect(localizedText({ fr: "Bonjour" }, "de")).toBe("Bonjour");
+  });
+
+  it("returns an empty string only when no translation exists at all", () => {
     expect(localizedText({}, "fr")).toBe("");
   });
 

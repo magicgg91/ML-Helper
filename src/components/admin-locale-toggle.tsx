@@ -8,6 +8,10 @@ import { useLocaleChange } from "./use-locale-change";
 // not internal tooling only the team uses. Editorial content locale
 // pickers (guides, legal notice, Consommables intro — EditorialLocaleSelect)
 // are a separate, unrelated concept and still offer all 5 unchanged.
+// Codex review (PR #70): admin and public share one NEXT_LOCALE cookie —
+// src/proxy.ts clamps the locale actually rendered for /admin down to
+// this same list, so this toggle always shows a real pressed state even
+// after an ES/DE/TR choice made while browsing publicly.
 const adminLocales = ["en", "fr"] as const;
 
 export function AdminLocaleToggle() {

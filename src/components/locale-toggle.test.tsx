@@ -94,4 +94,32 @@ describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", (
       expect(refresh).toHaveBeenCalledOnce();
     });
   });
+
+  // Codex review (PR #70): a non-2xx (or rejected) /api/locale request must
+  // never be treated as a success — no stale localStorage write, no
+  // refresh, so the sync-on-mount effect keeps retrying instead of getting
+  // stuck believing an unsaved locale is already active.
+  it("Codex review: does not persist or refresh when the server rejects the change", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    renderToggle("fr");
+    fireEvent.change(screen.getByRole("combobox", { name: "Langue" }), {
+      target: { value: "en" },
+    });
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    expect(refresh).not.toHaveBeenCalled();
+    expect(localStorage.getItem("mlhelper_locale")).toBeNull();
+  });
+
+  it("Codex review: does not persist or refresh when the request itself fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    renderToggle("fr");
+    fireEvent.change(screen.getByRole("combobox", { name: "Langue" }), {
+      target: { value: "en" },
+    });
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    expect(refresh).not.toHaveBeenCalled();
+    expect(localStorage.getItem("mlhelper_locale")).toBeNull();
+  });
 });

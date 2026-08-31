@@ -52,13 +52,17 @@ export function dropEmptyLocales(
 // Bloc 47/D review: the safety net is always English, never French —
 // falling back through `fr` first (the site's *default* locale for a
 // visitor with no explicit preference, a wholly separate concept) used to
-// surface French content to e.g. a DE/ES/TR visitor whenever their own
-// locale was missing, contradicting this app's own "falls back to English
-// when a translation is missing" rule. `defaultLocale` (src/i18n/config.ts)
-// must never leak into this function.
+// prefer French over English for e.g. a DE/ES/TR visitor whenever their
+// own locale was missing, contradicting this app's own "falls back to
+// English when a translation is missing" rule. `defaultLocale`
+// (src/i18n/config.ts) must never leak into this function.
+// Codex review (PR #70): fr stays as a last-resort third tier — guides
+// (guideInputSchema) only require fr OR en, never both, so a fr-only
+// record must still render something rather than "" for every other
+// locale (AGENTS.md: a missing translation is never a blank).
 export function localizedText(value: unknown, locale: string) {
   const translations = translationRecord(value);
-  return translations[locale] ?? translations.en ?? "";
+  return translations[locale] ?? translations.en ?? translations.fr ?? "";
 }
 
 // Bloc 42/F: unlike localizedText() above, no English fallback — checks
