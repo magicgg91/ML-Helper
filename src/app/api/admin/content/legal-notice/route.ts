@@ -7,9 +7,17 @@ import { prisma } from "@/lib/prisma";
 import { dropEmptyLocales } from "@/lib/translations";
 
 // Bloc 44: fr/en stay required (unchanged) — DE/ES/TR are activated but
-// their content arrives gradually via admin, never invented here.
+// their content arrives gradually via admin, never invented here. Bloc 44
+// review: a request that omits a DE/ES/TR key entirely (any caller
+// predating this bloc) is treated the same as one sending it empty,
+// rather than rejected outright for a locale nothing requires yet.
 const requiredLocale = z.string().trim().min(1).max(100_000);
-const optionalLocale = z.string().trim().max(100_000);
+const optionalLocale = z
+  .string()
+  .trim()
+  .max(100_000)
+  .optional()
+  .transform((value) => value ?? "");
 const schema = z.object({
   content: z.object({
     fr: requiredLocale,

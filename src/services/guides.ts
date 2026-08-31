@@ -14,6 +14,14 @@ const localeContent = z.object({
   excerpt: z.string().trim().max(320),
   content: z.string().max(100_000),
 });
+const emptyLocaleContent = { title: "", excerpt: "", content: "" };
+// Bloc 44 review: a request that omits a DE/ES/TR locale entirely (every
+// caller predating this bloc, e.g. e2e's raw API calls) is just as valid
+// as one that sends it empty — defaults to blank rather than rejecting
+// the whole request with a 400 for a locale nothing requires yet.
+const optionalLocaleContent = localeContent
+  .optional()
+  .transform((value) => value ?? emptyLocaleContent);
 
 // Bloc 44: fr/en stay the 2 locales the editorial workflow actually
 // requires (superRefine below) — DE/ES/TR are activated but their content
@@ -33,9 +41,9 @@ export const guideInputSchema = z
     translations: z.object({
       fr: localeContent,
       en: localeContent,
-      de: localeContent,
-      es: localeContent,
-      tr: localeContent,
+      de: optionalLocaleContent,
+      es: optionalLocaleContent,
+      tr: optionalLocaleContent,
     }),
   })
   .superRefine((value, context) => {

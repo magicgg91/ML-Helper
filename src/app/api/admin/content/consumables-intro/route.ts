@@ -9,8 +9,14 @@ import { dropEmptyLocales } from "@/lib/translations";
 // Bloc 43: the free-text markdown zone at the top of the public Consumables
 // page — same shape/pattern as legal-notice's content editor. Bloc 44: none
 // of the 5 locales are required here (unlike legal-notice's fr/en) — the
-// whole zone is meant to start empty and get filled in gradually.
-const localeContent = z.string().trim().max(100_000);
+// whole zone is meant to start empty and get filled in gradually, and an
+// omitted key is treated the same as an empty one rather than rejected.
+const localeContent = z
+  .string()
+  .trim()
+  .max(100_000)
+  .optional()
+  .transform((value) => value ?? "");
 const schema = z.object({
   content: z.object({
     fr: localeContent,
