@@ -51,7 +51,7 @@ export const leaguePointsPerLevel: Record<League, number> = {
   bronze: 1,
   silver: 1,
   gold: 1,
-  platinum: 2,
+  platinum: 1,
   diamond: 2,
   legend: 2,
 };
