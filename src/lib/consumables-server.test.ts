@@ -106,6 +106,33 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     ]);
   });
 
+  // Codex review (PR #71): the grouped shape must re-home potions too, not
+  // just the legacy flat-array path — a row saved under the wrong category
+  // via the PUT endpoint (or a manual DB edit) must self-correct on read,
+  // same as the array path already did.
+  it("Bloc48/E follow-up: relocates a potion stored under the wrong category in the grouped shape", () => {
+    const stored = {
+      advisors: [],
+      equipment: [],
+      expedition: [],
+      inventory: [
+        {
+          image: "/consumables/25-hp-potion.webp",
+          name_fr: "Potion de 25 PV",
+          name_en: "25 HP Potion",
+          description_fr: "D",
+          description_en: "D",
+          cost: "250",
+        },
+      ],
+    };
+    const result = normalizeStoredValue(stored);
+    expect(result.inventory).toEqual([]);
+    expect(result.expedition.map((r) => r.name_fr)).toEqual([
+      "Potion de 25 PV",
+    ]);
+  });
+
   it("ignores malformed entries instead of throwing", () => {
     const stored = [null, "not an object", 42];
     const result = normalizeStoredValue(stored);

@@ -56,14 +56,27 @@ export function normalizeStoredValue(value: unknown): ConsumableCatalog {
     return grouped;
   }
   if (isPlainObject(value)) {
-    return Object.fromEntries(
-      consumableCategories.map((category) => [
-        category,
-        Array.isArray(value[category])
-          ? (value[category] as ConsumableRow[])
-          : [],
-      ]),
+    const grouped = Object.fromEntries(
+      consumableCategories.map((category) => [category, [] as ConsumableRow[]]),
     ) as ConsumableCatalog;
+    for (const category of consumableCategories) {
+      const rawRows = value[category];
+      if (!Array.isArray(rawRows)) continue;
+      for (const raw of rawRows) {
+        if (!isPlainObject(raw)) continue;
+        const row = raw as ConsumableRow;
+        // Codex review (PR #71): the grouped shape must re-home potions
+        // too, not just the legacy flat-array path — a row saved via the
+        // PUT endpoint (or a manual DB edit) under the wrong category
+        // would otherwise never self-correct on later reads.
+        const nameFr =
+          typeof row.name_fr === "string" ? row.name_fr : undefined;
+        const target =
+          nameFr && consumablePotionNames.has(nameFr) ? "expedition" : category;
+        grouped[target].push(row);
+      }
+    }
+    return grouped;
   }
   return defaultConsumableCatalog;
 }
