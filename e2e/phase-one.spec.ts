@@ -179,11 +179,13 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(publicThemeToggle).toHaveText("☀");
   await publicThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  // Bloc 47/A: the public switcher is now a styled <select>, not a row of
-  // buttons.
+  // Bloc 48/C: the public switcher is now a custom ARIA listbox (button
+  // trigger + role="listbox" popup), not a native <select>.
+  await page.getByRole("button", { name: /Language|Langue/ }).click();
   await page
-    .getByRole("combobox", { name: /Language|Langue/ })
-    .selectOption("en");
+    .getByRole("listbox", { name: /Language|Langue/ })
+    .getByRole("option", { name: "EN" })
+    .click();
   await expect(page.locator(".home-intro p")).toHaveText(
     "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
   );
@@ -192,9 +194,11 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: /Language|Langue/ }).click();
   await page
-    .getByRole("combobox", { name: /Language|Langue/ })
-    .selectOption("fr");
+    .getByRole("listbox", { name: /Language|Langue/ })
+    .getByRole("option", { name: "FR" })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();
