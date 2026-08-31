@@ -42,6 +42,44 @@ describe("EditableDataTable", () => {
     expect(onRemove).toHaveBeenCalledWith(0);
   });
 
+  it("Bloc43: offers row reordering only when onMove is provided, disabled at the boundaries", () => {
+    const onMove = vi.fn();
+    render(
+      <EditableDataTable
+        rows={[
+          { name: "Alpha", amount: "1" },
+          { name: "Beta", amount: "2" },
+        ]}
+        columns={columns}
+        onChange={vi.fn()}
+        onMove={onMove}
+        moveUpLabel="Monter"
+        moveDownLabel="Descendre"
+      />,
+    );
+    const up = screen.getAllByRole("button", { name: "Monter" });
+    const down = screen.getAllByRole("button", { name: "Descendre" });
+    expect(up[0]).toBeDisabled();
+    expect(down[1]).toBeDisabled();
+    fireEvent.click(down[0]);
+    expect(onMove).toHaveBeenCalledWith(0, 1);
+    fireEvent.click(up[1]);
+    expect(onMove).toHaveBeenCalledWith(1, -1);
+  });
+
+  it("Bloc43: renders no move buttons at all when onMove is omitted (Ranking's own usage)", () => {
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /monter|descendre/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("Bloc35 9.1: narrows only the columns marked narrow, not the others", () => {
     const narrowColumns: EditableColumn<Row>[] = [
       { key: "name", label: "Nom", required: true },
@@ -148,9 +186,7 @@ describe("EditableReferenceTable", () => {
         description="Table de test"
       />,
     );
-    expect(
-      container.querySelector(".reference-admin-wide-inputs"),
-    ).toBeNull();
+    expect(container.querySelector(".reference-admin-wide-inputs")).toBeNull();
     unmount();
     const { container: wideContainer } = render(
       <EditableReferenceTable

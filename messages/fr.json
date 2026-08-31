@@ -533,12 +533,22 @@
       "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
       "templiers": "Coût des Templiers",
-      "gemmes": "Gemmes"
+      "gemmes": "Gemmes",
+      "consumables": "Consommables"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
     "unavailable": "Ces référentiels sont temporairement indisponibles.",
-    "single-unavailable": "Ce référentiel est temporairement indisponible."
+    "single-unavailable": "Ce référentiel est temporairement indisponible.",
+    "consumables": {
+      "columns": {
+        "image": "Image",
+        "name": "Nom",
+        "description": "Description",
+        "cost": "Coût (Saphirs)"
+      },
+      "cost-unknown": "Non défini"
+    }
   },
   "combat-equipment": {
     "name": "Équipements de Combat",
@@ -695,12 +705,14 @@
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
       "reference-level-up": "Éditer Level Up",
+      "reference-consumables": "Éditer les Consommables",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
         "level-up": "Level Up",
         "templiers": "Templiers",
-        "gemmes": "Gemmes"
+        "gemmes": "Gemmes",
+        "consumables": "Consommables"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
@@ -860,7 +872,30 @@
       "saved": "Référentiel enregistré.",
       "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
       "all": "Tous",
-      "filters": { "skill": "Compétence" }
+      "filters": { "skill": "Compétence" },
+      "consumables-intro-title": "Texte d’introduction",
+      "consumables-intro-description": "Zone de texte libre en markdown, affichée en haut de la page publique du référentiel Consommables.",
+      "consumables-intro-label": "Introduction (markdown)",
+      "consumables-intro-language-label": "Langue du texte",
+      "consumables-intro-save": "Enregistrer l’introduction",
+      "consumables-intro-saved": "Introduction enregistrée.",
+      "consumables-intro-error": "Impossible d’enregistrer l’introduction.",
+      "consumables-table-title": "Objets",
+      "consumables-table-description": "Ajoute, réordonne ou supprime librement les objets consommables. Laisse le coût vide tant qu’il n’est pas confirmé — l’ordre des lignes est l’ordre d’affichage public.",
+      "consumables-table-save": "Enregistrer les objets",
+      "consumables-columns": {
+        "image": "Chemin de l’image",
+        "name-fr": "Nom (FR)",
+        "name-en": "Nom (EN)",
+        "description-fr": "Description (FR)",
+        "description-en": "Description (EN)",
+        "cost": "Coût (Saphirs)"
+      },
+      "add": "Ajouter un objet",
+      "remove": "Supprimer",
+      "move-up": "Monter",
+      "move-down": "Descendre",
+      "empty": "Aucun objet pour l’instant."
     },
     "common": { "back": "Retour" },
     "parameters": {

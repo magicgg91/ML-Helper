@@ -81,4 +81,31 @@ describe("GuidesAdminPage", () => {
     expect(rows[0].canToggle).toBeUndefined();
     expect(rows[0].toggleHref).toBeUndefined();
   });
+
+  it("Bloc43: routes Consumables' reference row to its own admin editor, no shared tool to fall back on", async () => {
+    mockedRequireCapability.mockResolvedValue({
+      user: { id: "admin", role: "super_admin", name: "Admin" },
+    } as Awaited<ReturnType<typeof requireCapability>>);
+    mockedGuideFindMany.mockResolvedValue(
+      [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
+    );
+    mockedCalculatorFindMany.mockResolvedValue([
+      {
+        id: "calculator-consumables-reference",
+        slug: "consumables",
+        active: true,
+      },
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+
+    render(await GuidesAdminPage());
+
+    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
+    expect(rows[0]).toMatchObject({
+      id: "consumables",
+      slug: "consumables",
+      active: true,
+      type: "reference",
+      editHref: "/admin/guides/reference-consumables",
+    });
+  });
 });

@@ -1780,6 +1780,12 @@ body > main h1 {
 .reference-admin-table {
   min-width: max-content;
 }
+/* Bloc 43: Consumables' 1-position move buttons — side by side, not
+   stacked, in their own narrow cell (distinct from the Remove cell). */
+.reference-admin-move-cell {
+  display: flex;
+  gap: 0.35rem;
+}
 /* Bloc 37/B, D: the admin editors' own filter row — decoupled from
    .reference-filters (the public page's family/rarity/star-level row,
    sized to a completely different layout) so its selects size to their

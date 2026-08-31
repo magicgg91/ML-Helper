@@ -9,6 +9,7 @@ import {
   CombatReferenceScreen,
   ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
+import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
 import {
   getCombatGemSlotsBase,
   getCombatReferenceRows,
@@ -20,6 +21,10 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
+import {
+  getConsumableRows,
+  getConsumablesIntro,
+} from "@/lib/consumables-server";
 import { parseGuideCategories } from "@/lib/guide-categories";
 
 export default async function EditGuidePage({
@@ -63,6 +68,18 @@ export default async function EditGuidePage({
             dismantleInitial={await getExpeditionDismantleBase()}
           />
         )}
+      </main>
+    );
+  }
+  if (id === "reference-consumables") {
+    await requireCapability("references.write");
+    return (
+      <main className="admin-main">
+        <h1>{t("reference-consumables")}</h1>
+        <ConsumablesReferenceScreen
+          initialRows={await getConsumableRows()}
+          introInitial={await getConsumablesIntro()}
+        />
       </main>
     );
   }

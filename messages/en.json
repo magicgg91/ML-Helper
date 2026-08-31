@@ -528,12 +528,22 @@
       "expedition-equipment": "Expedition Equipment",
       "level-up": "Level Up",
       "templiers": "Templar Cost",
-      "gemmes": "Gems"
+      "gemmes": "Gems",
+      "consumables": "Consumables"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
     "unavailable": "These reference tables are temporarily unavailable.",
-    "single-unavailable": "This reference table is temporarily unavailable."
+    "single-unavailable": "This reference table is temporarily unavailable.",
+    "consumables": {
+      "columns": {
+        "image": "Image",
+        "name": "Name",
+        "description": "Description",
+        "cost": "Cost (Sapphires)"
+      },
+      "cost-unknown": "Not set"
+    }
   },
   "combat-equipment": {
     "name": "Combat Equipment",
@@ -694,12 +704,14 @@
       "reference-combat": "Edit Combat Equipment",
       "reference-expedition": "Edit Expedition Equipment",
       "reference-level-up": "Edit Level Up",
+      "reference-consumables": "Edit Consumables",
       "references": {
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
         "level-up": "Level Up",
         "templiers": "Templars",
-        "gemmes": "Gems"
+        "gemmes": "Gems",
+        "consumables": "Consumables"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
@@ -859,7 +871,30 @@
       "saved": "Reference table saved.",
       "server-error": "Unable to reach the server. Check the connection and try again.",
       "all": "All",
-      "filters": { "skill": "Skill" }
+      "filters": { "skill": "Skill" },
+      "consumables-intro-title": "Intro text",
+      "consumables-intro-description": "Free-text markdown zone, shown at the top of the public Consumables reference page.",
+      "consumables-intro-label": "Introduction (markdown)",
+      "consumables-intro-language-label": "Text language",
+      "consumables-intro-save": "Save the introduction",
+      "consumables-intro-saved": "Introduction saved.",
+      "consumables-intro-error": "Unable to save the introduction.",
+      "consumables-table-title": "Items",
+      "consumables-table-description": "Freely add, reorder or remove consumable items. Leave the cost empty until it's confirmed — row order is the public display order.",
+      "consumables-table-save": "Save the items",
+      "consumables-columns": {
+        "image": "Image path",
+        "name-fr": "Name (FR)",
+        "name-en": "Name (EN)",
+        "description-fr": "Description (FR)",
+        "description-en": "Description (EN)",
+        "cost": "Cost (Sapphires)"
+      },
+      "add": "Add an item",
+      "remove": "Remove",
+      "move-up": "Move up",
+      "move-down": "Move down",
+      "empty": "No items yet."
     },
     "common": { "back": "Back" },
     "parameters": {
