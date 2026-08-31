@@ -41,6 +41,13 @@ export const referenceCatalog = [
     image: "/referentials/referential-gems.webp",
     fallbackImage: "/category-skills.svg",
   },
+  {
+    slug: "consumables",
+    calculatorSlug: "consumables" satisfies CalculatorSlug,
+    category: "consommables",
+    image: "/referentials/referential-consumables.webp",
+    fallbackImage: "/category-references.svg",
+  },
 ] as const;
 
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];

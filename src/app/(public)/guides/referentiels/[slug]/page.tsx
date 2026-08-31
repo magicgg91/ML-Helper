@@ -19,11 +19,16 @@ import {
 import { LevelUpReference } from "@/components/level-up-reference";
 import { TemplarsReferenceTable } from "@/components/templars-reference";
 import { GemsReferenceTable } from "@/components/gems-reference";
+import { ConsumablesReferenceTable } from "@/components/consumables-reference";
 import {
   getGemParameters,
   getLevelUpParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
+import {
+  getConsumableRows,
+  getConsumablesIntro,
+} from "@/lib/consumables-server";
 
 export async function generateMetadata({
   params,
@@ -84,6 +89,11 @@ export default async function ReferencePage({
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
         ) : slug === "gemmes" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
+        ) : slug === "consumables" ? (
+          <ConsumablesReferenceTable
+            intro={await getConsumablesIntro()}
+            rows={await getConsumableRows()}
+          />
         ) : (
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}

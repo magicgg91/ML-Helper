@@ -10,6 +10,7 @@ vi.mock("next-intl/server", () => ({
       "catalog.level-up": "Level Up",
       "catalog.templiers": "Coût des Templiers",
       "catalog.gemmes": "Gemmes",
+      "catalog.consumables": "Consommables",
     };
     return (key: string) =>
       namespace === "references" && key in catalog ? catalog[key] : key;
@@ -22,6 +23,7 @@ vi.mock("@/lib/calculators-server", () => ({
     "level-up": true,
     templiers: true,
     gemmes: true,
+    consumables: true,
   }),
 }));
 vi.mock("@/components/reference-tables", () => ({
@@ -36,6 +38,13 @@ vi.mock("@/components/templars-reference", () => ({
 }));
 vi.mock("@/components/gems-reference", () => ({
   GemsReferenceTable: () => <div data-testid="gems-table" />,
+}));
+vi.mock("@/components/consumables-reference", () => ({
+  ConsumablesReferenceTable: () => <div data-testid="consumables-table" />,
+}));
+vi.mock("@/lib/consumables-server", () => ({
+  getConsumableRows: async () => [],
+  getConsumablesIntro: async () => ({ fr: "", en: "" }),
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
@@ -81,6 +90,7 @@ describe("ReferencePage", () => {
       "Level Up",
       "Coût des Templiers",
       "Gemmes",
+      "Consommables",
     ]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
@@ -113,6 +123,18 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("gems-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Gemmes" });
+    expect(heading).toHaveClass("reference-page-title");
+  });
+
+  it("Bloc43: routes the new 'consumables' slug to ConsumablesReferenceTable, the 6th reference actually built", async () => {
+    render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "consumables" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("consumables-table")).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: "Consommables" });
     expect(heading).toHaveClass("reference-page-title");
   });
 });
