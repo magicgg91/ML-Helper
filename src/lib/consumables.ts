@@ -7,6 +7,34 @@
 // l'ordre d'affichage public"). name/description carry both locales inline
 // (fr/en suffix) rather than a nested {fr,en} object, for the same reason:
 // EditableColumn<Row> requires Row extends Record<string, string>.
+// Bloc 46/C: 4 categories, admin-assigned per row — "inventory" is the
+// catch-all ("classique", everything not shipping/advisors/equipment) and
+// the default for a freshly-added row.
+export const consumableCategories = [
+  "expedition",
+  "advisors",
+  "equipment",
+  "inventory",
+] as const;
+export type ConsumableCategory = (typeof consumableCategories)[number];
+
+// Codex review (PR #69): a row saved before Bloc 46 (no category field yet)
+// must recover its real category from the shipped catalog by name — an
+// installation that already edited/reordered the table before this
+// deploy would otherwise have every one of its advisor/expedition/
+// equipment rows silently reclassified as "inventory" on next read.
+// Only a genuinely custom row (added by an admin, no match by name) falls
+// back to "inventory".
+export function parseConsumableCategory(
+  value: unknown,
+  nameFr?: string,
+): ConsumableCategory {
+  if ((consumableCategories as readonly string[]).includes(value as string))
+    return value as ConsumableCategory;
+  const recovered = nameFr && defaultCategoryByName.get(nameFr);
+  return recovered || "inventory";
+}
+
 export type ConsumableRow = {
   image: string;
   name_fr: string;
@@ -16,6 +44,7 @@ export type ConsumableRow = {
   // Empty string = cost still unconfirmed (never invented, AGENTS.md) —
   // shown as such publicly, left blank (not defaulted to 0) in admin.
   cost: string;
+  category: ConsumableCategory;
 };
 
 export const emptyConsumableRow: ConsumableRow = {
@@ -25,6 +54,7 @@ export const emptyConsumableRow: ConsumableRow = {
   description_fr: "",
   description_en: "",
   cost: "",
+  category: "inventory",
 };
 
 // Starting list provided by the porteur de projet (Bloc 43). Image paths
@@ -42,6 +72,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "Free multi-rally, free mass scouting, improved multi-rally range, attack power calculation",
     cost: "800",
+    category: "advisors",
   },
   {
     image: "/consumables/advisor-harvester.webp",
@@ -52,6 +83,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "The Harvester automatically collects the bonuses you've discovered on the map.",
     cost: "1000",
+    category: "advisors",
   },
   {
     image: "/consumables/advisor-watcher.webp",
@@ -62,6 +94,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "The Watcher protects your cities from enemy attacks. You can customize the protection period.",
     cost: "1500",
+    category: "advisors",
   },
   {
     image: "/consumables/advisor-weapon-master.webp",
@@ -72,6 +105,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "Automatically equips your best gear depending on the situation.",
     cost: "1000",
+    category: "advisors",
   },
   {
     image: "/consumables/city-rename.webp",
@@ -81,6 +115,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Chaque ville a besoin d'un nom, pensez à utiliser cet objet pour la renommer.",
     description_en: "Every city needs a name — use this item to rename it.",
     cost: "",
+    category: "inventory",
   },
   {
     image: "/consumables/clan-rename.webp",
@@ -91,6 +126,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "If you're the leader of a clan, you can change its name at any time with this item.",
     cost: "",
+    category: "inventory",
   },
   {
     image: "/consumables/common-equipment-chest.webp",
@@ -100,6 +136,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Ce coffre peut contenir des Armes, des Boucliers et/ou des Ceintures.",
     description_en: "This chest may contain Weapons, Shields and/or Belts.",
     cost: "150",
+    category: "equipment",
   },
   {
     image: "/consumables/common-equipment-chest.webp",
@@ -109,6 +146,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Ce coffre peut contenir des Armes, des Boucliers et/ou des Ceintures.",
     description_en: "This chest may contain Weapons, Shields and/or Belts.",
     cost: "675",
+    category: "equipment",
   },
   {
     image: "/consumables/common-jewelry-chest.webp",
@@ -119,6 +157,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This jewelry box may contain Pendants, Rings and/or Bracelets.",
     cost: "150",
+    category: "equipment",
   },
   {
     image: "/consumables/common-jewelry-chest.webp",
@@ -129,6 +168,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This jewelry box may contain Pendants, Rings and/or Bracelets.",
     cost: "675",
+    category: "equipment",
   },
   {
     image: "/consumables/common-loot-chest.webp",
@@ -138,6 +178,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette caisse peut contenir des Bottes, des Gantelets et/ou des Casques.",
     description_en: "This crate may contain Boots, Gauntlets and/or Helmets.",
     cost: "150",
+    category: "equipment",
   },
   {
     image: "/consumables/common-loot-chest.webp",
@@ -147,6 +188,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette caisse peut contenir des Bottes, des Gantelets et/ou des Casques.",
     description_en: "This crate may contain Boots, Gauntlets and/or Helmets.",
     cost: "675",
+    category: "equipment",
   },
   {
     image: "/consumables/expedition-bag.webp",
@@ -157,6 +199,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "A bag containing supplies for your adventurer. Use it to launch expeditions.",
     cost: "450",
+    category: "expedition",
   },
   {
     image: "/consumables/expedition-parchment.webp",
@@ -167,6 +210,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This item lets you change your adventurer's expedition destinations and discover new horizons to explore.",
     cost: "100",
+    category: "expedition",
   },
   {
     image: "/consumables/phoenix-elixir.webp",
@@ -177,6 +221,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "When your adventurer is too wounded to continue the expedition, use this elixir to instantly restore all their health and carry on the adventure.",
     cost: "750",
+    category: "expedition",
   },
   {
     image: "/consumables/teleportation-amulet.webp",
@@ -187,6 +232,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "Save time by teleporting your adventurer straight back to base with this item.",
     cost: "50",
+    category: "expedition",
   },
   {
     image: "/consumables/fresh-start.webp",
@@ -197,6 +243,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "A fresh start is a real relief when you're backed into a corner, or simply want to start over. It lets you begin your climb to the top in a new random zone.",
     cost: "",
+    category: "inventory",
   },
   {
     image: "/consumables/lord-rename.webp",
@@ -205,6 +252,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_fr: "Vous pouvez changer votre nom à tout moment.",
     description_en: "You can change your name at any time.",
     cost: "1500",
+    category: "inventory",
   },
   {
     image: "/consumables/main-city-change.webp",
@@ -215,6 +263,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "Even if your main city is poorly located, you can always designate one of your allied cities as your main city. The first change is free; later changes cost sapphires or this item.",
     cost: "",
+    category: "inventory",
   },
   {
     image: "/consumables/mighty-equipment-chest.webp",
@@ -224,6 +273,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Ce coffre peut contenir des Armes, des Boucliers et/ou des Ceintures.",
     description_en: "This chest may contain Weapons, Shields and/or Belts.",
     cost: "1200",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-equipment-chest.webp",
@@ -233,6 +283,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Ce coffre peut contenir des Armes, des Boucliers et/ou des Ceintures.",
     description_en: "This chest may contain Weapons, Shields and/or Belts.",
     cost: "10500",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-jewelry-chest.webp",
@@ -243,6 +294,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This jewelry box may contain Pendants, Rings and/or Bracelets.",
     cost: "1200",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-jewelry-chest.webp",
@@ -253,6 +305,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This jewelry box may contain Pendants, Rings and/or Bracelets.",
     cost: "10500",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-loot-chest.webp",
@@ -262,6 +315,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette caisse peut contenir des Bottes, des Gantelets et/ou des Casques.",
     description_en: "This crate may contain Boots, Gauntlets and/or Helmets.",
     cost: "1200",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-loot-chest.webp",
@@ -271,6 +325,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette caisse peut contenir des Bottes, des Gantelets et/ou des Casques.",
     description_en: "This crate may contain Boots, Gauntlets and/or Helmets.",
     cost: "10500",
+    category: "equipment",
   },
   {
     image: "/consumables/reskill-book.webp",
@@ -281,6 +336,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "If you think you haven't allocated your skill points correctly, use this item to reset them. The cost increases by 50 sapphires with each reset.",
     cost: "50",
+    category: "inventory",
   },
   {
     image: "/consumables/speed-up.webp",
@@ -291,6 +347,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "Troop speed-ups increase how fast a troop moves from one city to another. Only works for movements between your own cities.",
     cost: "25",
+    category: "inventory",
   },
   {
     image: "/consumables/25-hp-potion.webp",
@@ -299,6 +356,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_fr: "Une potion qui soigne votre aventurier de 25 PV.",
     description_en: "A potion that heals your adventurer for 25 HP.",
     cost: "250",
+    category: "inventory",
   },
   {
     image: "/consumables/50-hp-potion.webp",
@@ -307,6 +365,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_fr: "Une potion qui soigne votre aventurier de 50 PV.",
     description_en: "A potion that heals your adventurer for 50 HP.",
     cost: "450",
+    category: "inventory",
   },
   {
     image: "/consumables/75-hp-potion.webp",
@@ -315,6 +374,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_fr: "Une potion qui soigne votre aventurier de 75 PV.",
     description_en: "A potion that heals your adventurer for 75 HP.",
     cost: "650",
+    category: "inventory",
   },
   {
     image: "/consumables/urn.webp",
@@ -325,6 +385,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This urn may contain a Cloak, an Herbalist Pouch and/or a Spyglass.",
     cost: "150",
+    category: "equipment",
   },
   {
     image: "/consumables/urn.webp",
@@ -335,6 +396,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This urn may contain a Cloak, an Herbalist Pouch and/or a Spyglass.",
     cost: "675",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-urn.webp",
@@ -345,6 +407,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This urn may contain a Cloak, an Herbalist Pouch and/or a Spyglass.",
     cost: "1200",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-urn.webp",
@@ -355,6 +418,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
     description_en:
       "This urn may contain a Cloak, an Herbalist Pouch and/or a Spyglass.",
     cost: "10500",
+    category: "equipment",
   },
   {
     image: "/consumables/jar.webp",
@@ -364,6 +428,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette jarre peut contenir une Boussole, une Pioche et/ou une Torche.",
     description_en: "This jar may contain a Compass, a Pickaxe and/or a Torch.",
     cost: "150",
+    category: "equipment",
   },
   {
     image: "/consumables/jar.webp",
@@ -373,6 +438,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette jarre peut contenir une Boussole, une Pioche et/ou une Torche.",
     description_en: "This jar may contain a Compass, a Pickaxe and/or a Torch.",
     cost: "675",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-jar.webp",
@@ -382,6 +448,7 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette jarre peut contenir une Boussole, une Pioche et/ou une Torche.",
     description_en: "This jar may contain a Compass, a Pickaxe and/or a Torch.",
     cost: "1200",
+    category: "equipment",
   },
   {
     image: "/consumables/mighty-jar.webp",
@@ -391,8 +458,13 @@ export const defaultConsumableRows: ConsumableRow[] = [
       "Cette jarre peut contenir une Boussole, une Pioche et/ou une Torche.",
     description_en: "This jar may contain a Compass, a Pickaxe and/or a Torch.",
     cost: "10500",
+    category: "equipment",
   },
 ];
+
+const defaultCategoryByName = new Map(
+  defaultConsumableRows.map((row) => [row.name_fr, row.category]),
+);
 
 // Bloc 43: the free-text markdown zone at the top of the public page —
 // same {fr,en} shape as legal-notice's StaticContent, left empty by

@@ -17,6 +17,7 @@ const rowA: ConsumableRow = {
   description_fr: "Description A",
   description_en: "Description A EN",
   cost: "100",
+  category: "equipment",
 };
 const rowB: ConsumableRow = {
   image: "/consumables/b.webp",
@@ -25,6 +26,7 @@ const rowB: ConsumableRow = {
   description_fr: "Description B",
   description_en: "Description B EN",
   cost: "",
+  category: "inventory",
 };
 const introInitial = {
   fr: "## Intro FR",
@@ -101,6 +103,37 @@ describe("ConsumablesReferenceScreen", () => {
     fireEvent.click(moveDownButtons[0]);
     expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet B");
     expect(screen.getByLabelText("Ligne 2 Nom (FR)")).toHaveValue("Objet A");
+  });
+
+  // Bloc 46/B: the move buttons render an arrow icon, not the "Monter"/
+  // "Descendre" text label — aria-label (used above for the accessible
+  // name/functional queries) keeps carrying the text for a11y.
+  it("Bloc46/B: renders the move buttons as icons, with no visible text label", () => {
+    renderScreen();
+    const moveUpButtons = screen.getAllByRole("button", { name: "Monter" });
+    const moveDownButtons = screen.getAllByRole("button", {
+      name: "Descendre",
+    });
+    for (const button of [...moveUpButtons, ...moveDownButtons]) {
+      expect(button).toHaveTextContent("");
+      expect(button.querySelector("svg")).toBeInTheDocument();
+    }
+  });
+
+  // Bloc 46/C: a select per row lets the admin assign one of the 4
+  // categories, available for both existing and newly-added rows.
+  it("Bloc46/C: offers a functional category select for each row, defaulting new rows to Inventaire", () => {
+    renderScreen();
+    const categoryA = screen.getByLabelText("Ligne 1 Catégorie");
+    const categoryB = screen.getByLabelText("Ligne 2 Catégorie");
+    expect(categoryA).toHaveValue("equipment");
+    expect(categoryB).toHaveValue("inventory");
+
+    fireEvent.change(categoryA, { target: { value: "expedition" } });
+    expect(categoryA).toHaveValue("expedition");
+
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter un objet" }));
+    expect(screen.getByLabelText("Ligne 3 Catégorie")).toHaveValue("inventory");
   });
 
   // Bloc 44 review: a single action persists both sections together — no

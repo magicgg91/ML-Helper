@@ -553,9 +553,20 @@
         "image": "Image",
         "name": "Nom",
         "description": "Description",
-        "cost": "Coût (Saphirs)"
+        "cost": "Coût (Saphirs)",
+        "category": "Catégorie"
       },
-      "cost-unknown": "Non défini"
+      "cost-unknown": "Non défini",
+      "filters": {
+        "label": "Filtrer par catégorie",
+        "category": "Catégorie"
+      },
+      "categories": {
+        "expedition": "Expédition",
+        "advisors": "Conseillers",
+        "equipment": "Équipement",
+        "inventory": "Inventaire"
+      }
     }
   },
   "combat-equipment": {
@@ -896,7 +907,8 @@
         "name-en": "Nom (EN)",
         "description-fr": "Description (FR)",
         "description-en": "Description (EN)",
-        "cost": "Coût (Saphirs)"
+        "cost": "Coût (Saphirs)",
+        "category": "Catégorie"
       },
       "add": "Ajouter un objet",
       "remove": "Supprimer",

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { consumablesReferenceKey } from "@/lib/consumables-server";
+import { parseConsumableCategory } from "@/lib/consumables";
 import {
   numericString,
   saveReferenceTable,
@@ -29,6 +30,10 @@ export async function PUT(request: Request) {
         // Left empty rather than defaulted to 0 when the cost isn't
         // confirmed yet (AGENTS.md: never invent a game value).
         cost: numericString(source.cost),
+        category: parseConsumableCategory(
+          source.category,
+          stringField(source.name_fr),
+        ),
       };
     });
     await saveReferenceTable({
@@ -41,6 +46,7 @@ export async function PUT(request: Request) {
         "description_fr",
         "description_en",
         "cost",
+        "category",
       ],
       rows,
       userId: session.user.id,

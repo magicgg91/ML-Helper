@@ -8,6 +8,7 @@ import {
   type ForwardedRef,
 } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 // Bloc 37/E: lets a page hosting several of these tables (Combat,
 // Expedition) drive them from one shared save button instead of each table
@@ -169,7 +170,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                         disabled={rowIndex === 0}
                         aria-label={moveUpLabel}
                       >
-                        {moveUpLabel}
+                        <ArrowUp size={16} aria-hidden="true" />
                       </button>
                       <button
                         className="secondary-action"
@@ -179,7 +180,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                         disabled={rowIndex === rows.length - 1}
                         aria-label={moveDownLabel}
                       >
-                        {moveDownLabel}
+                        <ArrowDown size={16} aria-hidden="true" />
                       </button>
                     </td>
                   )}

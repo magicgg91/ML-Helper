@@ -547,9 +547,20 @@
         "image": "Image",
         "name": "Name",
         "description": "Description",
-        "cost": "Cost (Sapphires)"
+        "cost": "Cost (Sapphires)",
+        "category": "Category"
       },
-      "cost-unknown": "Not set"
+      "cost-unknown": "Not set",
+      "filters": {
+        "label": "Filter by category",
+        "category": "Category"
+      },
+      "categories": {
+        "expedition": "Expedition",
+        "advisors": "Advisors",
+        "equipment": "Equipment",
+        "inventory": "Inventory"
+      }
     }
   },
   "combat-equipment": {
@@ -894,7 +905,8 @@
         "name-en": "Name (EN)",
         "description-fr": "Description (FR)",
         "description-en": "Description (EN)",
-        "cost": "Cost (Sapphires)"
+        "cost": "Cost (Sapphires)",
+        "category": "Category"
       },
       "add": "Add an item",
       "remove": "Remove",
