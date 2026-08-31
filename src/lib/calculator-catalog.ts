@@ -51,8 +51,10 @@ export const calculatorCatalog = [
   // only the formula params/edit point.
   { slug: "gemmes", category: "referentiels", label: "Gemmes" },
   // Bloc 43: the 6th reference, and the first with no matching "tool" row
-  // at all — free CRUD data, not a formula/simulator.
-  { slug: "consumables", category: "referentiels", label: "Consommables" },
+  // at all — free CRUD data, not a formula/simulator. Bloc 44 review: slug
+  // kept French ("consommables"), matching templiers/gemmes and the URL
+  // documented in the original task spec.
+  { slug: "consommables", category: "referentiels", label: "Consommables" },
 ] as const;
 
 export type CalculatorSlug = (typeof calculatorCatalog)[number]["slug"];

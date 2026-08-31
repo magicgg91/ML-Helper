@@ -71,11 +71,11 @@ export default async function EditGuidePage({
       </main>
     );
   }
-  if (id === "reference-consumables") {
+  if (id === "reference-consommables") {
     await requireCapability("references.write");
     return (
       <main className="admin-main">
-        <h1>{t("reference-consumables")}</h1>
+        <h1>{t("reference-consommables")}</h1>
         <ConsumablesReferenceScreen
           initialRows={await getConsumableRows()}
           introInitial={await getConsumablesIntro()}

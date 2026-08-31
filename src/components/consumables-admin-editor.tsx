@@ -68,20 +68,6 @@ export function ConsumablesReferenceScreen({
       t("row-label", { row: index + 1, field: column.label }),
   }));
 
-  async function saveIntro() {
-    setStatus(t("saving"));
-    const response = await fetch("/api/admin/content/consumables-intro", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ content: intro }),
-    }).catch(() => null);
-    setStatus(
-      response?.ok
-        ? t("consumables-intro-saved")
-        : t("consumables-intro-error"),
-    );
-  }
-
   function validateRows() {
     const next: FieldErrors = {};
     rows.forEach((row, rowIndex) =>
@@ -100,26 +86,37 @@ export function ConsumablesReferenceScreen({
     return Object.keys(next).length === 0;
   }
 
-  async function saveRows() {
+  // Bloc 44 review: one save action for both sections, not two — a click
+  // on either previous button, then navigating away, silently discarded
+  // whichever section wasn't clicked. Both requests always fire together;
+  // a partial failure is reported explicitly (which section didn't save),
+  // never silently swallowed by the other section's success message.
+  async function saveAll() {
     if (!validateRows()) {
       setStatus(t("validation"));
       return;
     }
     setStatus(t("saving"));
-    try {
-      const response = await fetch("/api/admin/guides/references/consumables", {
+    const [introResult, rowsResult] = await Promise.allSettled([
+      fetch("/api/admin/content/consumables-intro", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ content: intro }),
+      }),
+      fetch("/api/admin/guides/references/consumables", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(rows),
-      });
-      if (!response.ok) {
-        setStatus(t("save-error", { status: response.status }));
-        return;
-      }
-      setStatus(t("saved"));
-    } catch {
-      setStatus(t("server-error"));
-    }
+      }),
+    ]);
+    const introOk = introResult.status === "fulfilled" && introResult.value.ok;
+    const rowsOk = rowsResult.status === "fulfilled" && rowsResult.value.ok;
+    if (introOk && rowsOk) setStatus(t("saved"));
+    else if (!introOk && !rowsOk) setStatus(t("server-error"));
+    else
+      setStatus(
+        introOk ? t("consumables-rows-error") : t("consumables-intro-error"),
+      );
   }
 
   return (
@@ -130,15 +127,12 @@ export function ConsumablesReferenceScreen({
           value={locale}
           onChange={setLocale}
         />
-        <button className="editor-action" type="button" onClick={saveIntro}>
-          {t("consumables-intro-save")}
-        </button>
         <button
           className="editor-action editor-action-primary"
           type="button"
-          onClick={saveRows}
+          onClick={saveAll}
         >
-          {t("consumables-table-save")}
+          {t("save-all")}
         </button>
       </EditorActionBar>
       <section className="admin-panel guide-simple-fields">

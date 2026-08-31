@@ -10,7 +10,7 @@ vi.mock("next-intl/server", () => ({
       "catalog.level-up": "Level Up",
       "catalog.templiers": "Coût des Templiers",
       "catalog.gemmes": "Gemmes",
-      "catalog.consumables": "Consommables",
+      "catalog.consommables": "Consommables",
     };
     return (key: string) =>
       namespace === "references" && key in catalog ? catalog[key] : key;
@@ -23,7 +23,7 @@ vi.mock("@/lib/calculators-server", () => ({
     "level-up": true,
     templiers: true,
     gemmes: true,
-    consumables: true,
+    consommables: true,
   }),
 }));
 vi.mock("@/components/reference-tables", () => ({
@@ -126,10 +126,10 @@ describe("ReferencePage", () => {
     expect(heading).toHaveClass("reference-page-title");
   });
 
-  it("Bloc43: routes the new 'consumables' slug to ConsumablesReferenceTable, the 6th reference actually built", async () => {
+  it("Bloc43/44: routes the 'consommables' slug to ConsumablesReferenceTable, the 6th reference actually built (public URL kept French per review)", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "consumables" }),
+        params: Promise.resolve({ slug: "consommables" }),
         searchParams: Promise.resolve({}),
       }),
     );

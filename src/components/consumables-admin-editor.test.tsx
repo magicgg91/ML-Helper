@@ -20,35 +20,35 @@ const rowB: ConsumableRow = {
   description_en: "Description B EN",
   cost: "",
 };
+const introInitial = {
+  fr: "## Intro FR",
+  en: "## Intro EN",
+  de: "",
+  es: "",
+  tr: "",
+};
 
 function renderScreen() {
   return render(
     <ConsumablesReferenceScreen
       initialRows={[rowA, rowB]}
-      introInitial={{
-        fr: "## Intro FR",
-        en: "## Intro EN",
-        de: "",
-        es: "",
-        tr: "",
-      }}
+      introInitial={introInitial}
     />,
   );
+}
+
+function saveButton() {
+  return screen.getByRole("button", { name: "Enregistrer toute la page" });
 }
 
 describe("ConsumablesReferenceScreen", () => {
   afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
-  it("shows one back link, both save buttons and the two starting rows in order", () => {
+  it("shows one back link, one combined save button and the two starting rows in order", () => {
     renderScreen();
     expect(screen.getAllByRole("link", { name: "← Retour" })).toHaveLength(1);
-    expect(
-      screen.getByRole("button", { name: "Enregistrer l’introduction" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Enregistrer les objets" }),
-    ).toBeInTheDocument();
+    expect(saveButton()).toBeInTheDocument();
     expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet A");
     expect(screen.getByLabelText("Ligne 2 Nom (FR)")).toHaveValue("Objet B");
   });
@@ -81,59 +81,77 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.getByLabelText("Ligne 2 Nom (FR)")).toHaveValue("Objet A");
   });
 
-  it("saves the rows as-is (order = display order) via PUT, distinct from the intro's endpoint", async () => {
+  // Bloc 44 review: a single action persists both sections together — no
+  // separate button per section that could be clicked while leaving the
+  // other one's edits unsaved.
+  it("saves both the intro (PATCH) and the rows (PUT) from the one save button", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 200 }));
     renderScreen();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Enregistrer les objets" }),
+    fireEvent.change(screen.getByLabelText("Introduction (markdown)"), {
+      target: { value: "## Nouvelle intro" },
+    });
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    const calls = fetchMock.mock.calls;
+    const introCall = calls.find(
+      ([url]) => url === "/api/admin/content/consumables-intro",
     );
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/admin/guides/references/consumables");
-    expect(init?.method).toBe("PUT");
-    expect(JSON.parse(String(init?.body))).toEqual([rowA, rowB]);
+    const rowsCall = calls.find(
+      ([url]) => url === "/api/admin/guides/references/consumables",
+    );
+    expect(introCall?.[1]?.method).toBe("PATCH");
+    expect(JSON.parse(String(introCall?.[1]?.body))).toEqual({
+      content: { ...introInitial, fr: "## Nouvelle intro" },
+    });
+    expect(rowsCall?.[1]?.method).toBe("PUT");
+    expect(JSON.parse(String(rowsCall?.[1]?.body))).toEqual([rowA, rowB]);
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Référentiel enregistré.",
+    );
   });
 
-  it("blocks saving the rows when a required field is emptied, without calling fetch", () => {
+  it("blocks saving entirely when a required field is emptied, without calling fetch", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     renderScreen();
     fireEvent.change(screen.getByLabelText("Ligne 1 Nom (FR)"), {
       target: { value: "" },
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Enregistrer les objets" }),
-    );
+    fireEvent.click(saveButton());
     expect(
       screen.getByText("Corrige les champs signalés avant l’enregistrement."),
     ).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("saves the FR/EN intro markdown via its own PATCH endpoint", async () => {
+  // Bloc 44 review: a partial failure (one section saved, the other
+  // didn't) is reported explicitly, distinct from the other section's
+  // success — never a generic "saved" that hides the failed half.
+  it("reports a partial failure explicitly instead of a generic success", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
-      .mockResolvedValue(new Response(null, { status: 200 }));
+      .mockImplementation(async (url) =>
+        url === "/api/admin/content/consumables-intro"
+          ? new Response(null, { status: 500 })
+          : new Response(null, { status: 200 }),
+      );
     renderScreen();
-    const editor = screen.getByLabelText("Introduction (markdown)");
-    expect(editor).toHaveValue("## Intro FR");
-    fireEvent.change(editor, { target: { value: "## Nouvelle intro" } });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Enregistrer l’introduction" }),
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Introduction non enregistrée (les objets ont bien été enregistrés).",
     );
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/admin/content/consumables-intro");
-    expect(init?.method).toBe("PATCH");
-    expect(JSON.parse(String(init?.body))).toEqual({
-      content: {
-        fr: "## Nouvelle intro",
-        en: "## Intro EN",
-        de: "",
-        es: "",
-        tr: "",
-      },
-    });
+  });
+
+  it("reports total failure when both requests fail", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
+    renderScreen();
+    fireEvent.click(saveButton());
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Impossible de joindre le serveur.",
+    );
   });
 });

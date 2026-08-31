@@ -89,7 +89,7 @@ export default async function ReferencePage({
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
         ) : slug === "gemmes" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
-        ) : slug === "consumables" ? (
+        ) : slug === "consommables" ? (
           <ConsumablesReferenceTable
             intro={await getConsumablesIntro()}
             rows={await getConsumableRows()}

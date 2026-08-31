@@ -94,10 +94,10 @@ describe("Bloc35 10.2/10.3: EditGuidePage's back-link consistency", () => {
     expect(back).toHaveAttribute("href", "/admin/guides");
   });
 
-  it("Bloc43: routes 'reference-consumables' to ConsumablesReferenceScreen", async () => {
+  it("Bloc43/44: routes 'reference-consommables' to ConsumablesReferenceScreen", async () => {
     render(
       await EditGuidePage({
-        params: Promise.resolve({ id: "reference-consumables" }),
+        params: Promise.resolve({ id: "reference-consommables" }),
         searchParams: Promise.resolve({}),
       }),
     );

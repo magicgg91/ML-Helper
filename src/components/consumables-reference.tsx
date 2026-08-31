@@ -7,6 +7,17 @@ import { localizedText } from "../lib/translations";
 import type { EditorialLocale } from "./editorial-locale-select";
 import type { ConsumableRow } from "../lib/consumables";
 
+// Bloc 44 review: item name/description are flat fr/en-suffixed fields
+// (never omitted, only ever "" when blank), so localizedText()'s
+// missing-key fallback doesn't apply here — an explicit "" must still be
+// treated as absent. en gets its own preference (unchanged from before);
+// every other locale (fr included, and de/es/tr with no item-level
+// translation of their own) prefers fr, matching this app's own
+// defaultLocale, and now falls back to en too if fr is blank.
+function pickLocaleText(fr: string, en: string, locale: string): string {
+  return locale === "en" ? en || fr : fr || en;
+}
+
 // Bloc 43: the only reference with 2 public zones — a free-text markdown
 // block (filled in by the porteur de projet via admin) above the items
 // table. Costs are shown at raw value, never compacted to k/M (cdc section
@@ -18,11 +29,8 @@ export function ConsumablesReferenceTable({
   intro: Record<EditorialLocale, string>;
   rows: ConsumableRow[];
 }) {
-  const t = useTranslations("references.consumables");
+  const t = useTranslations("references.consommables");
   const locale = useLocale();
-  // Bloc 44: localizedText already falls back fr → en for a DE/ES/TR
-  // visitor whose intro isn't written yet — same fallback item name/
-  // description below still only cover fr/en directly (out of scope here).
   const introText = localizedText(intro, locale);
 
   return (
@@ -41,12 +49,12 @@ export function ConsumablesReferenceTable({
             </thead>
             <tbody>
               {rows.map((row, index) => {
-                const name =
-                  locale === "en" ? row.name_en || row.name_fr : row.name_fr;
-                const description =
-                  locale === "en"
-                    ? row.description_en || row.description_fr
-                    : row.description_fr;
+                const name = pickLocaleText(row.name_fr, row.name_en, locale);
+                const description = pickLocaleText(
+                  row.description_fr,
+                  row.description_en,
+                  locale,
+                );
                 return (
                   <tr key={`${row.image}-${index}`}>
                     <td>

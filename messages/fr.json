@@ -534,13 +534,13 @@
       "level-up": "Level Up",
       "templiers": "Coût des Templiers",
       "gemmes": "Gemmes",
-      "consumables": "Consommables"
+      "consommables": "Consommables"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
     "unavailable": "Ces référentiels sont temporairement indisponibles.",
     "single-unavailable": "Ce référentiel est temporairement indisponible.",
-    "consumables": {
+    "consommables": {
       "columns": {
         "image": "Image",
         "name": "Nom",
@@ -705,14 +705,14 @@
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
       "reference-level-up": "Éditer Level Up",
-      "reference-consumables": "Éditer les Consommables",
+      "reference-consommables": "Éditer les Consommables",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
         "level-up": "Level Up",
         "templiers": "Templiers",
         "gemmes": "Gemmes",
-        "consumables": "Consommables"
+        "consommables": "Consommables"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
@@ -877,12 +877,10 @@
       "consumables-intro-description": "Zone de texte libre en markdown, affichée en haut de la page publique du référentiel Consommables.",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Langue du texte",
-      "consumables-intro-save": "Enregistrer l’introduction",
-      "consumables-intro-saved": "Introduction enregistrée.",
-      "consumables-intro-error": "Impossible d’enregistrer l’introduction.",
+      "consumables-intro-error": "Introduction non enregistrée (les objets ont bien été enregistrés).",
+      "consumables-rows-error": "Objets non enregistrés (l’introduction a bien été enregistrée).",
       "consumables-table-title": "Objets",
       "consumables-table-description": "Ajoute, réordonne ou supprime librement les objets consommables. Laisse le coût vide tant qu’il n’est pas confirmé — l’ordre des lignes est l’ordre d’affichage public.",
-      "consumables-table-save": "Enregistrer les objets",
       "consumables-columns": {
         "image": "Chemin de l’image",
         "name-fr": "Nom (FR)",

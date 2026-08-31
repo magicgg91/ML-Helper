@@ -40,7 +40,7 @@ describe("static translation configuration", () => {
     for (const locale of ["de", "es", "tr"]) {
       const messages = await getMessagesForLocale(locale);
       expect(messages).toMatchObject({
-        admin: { guides: { "reference-consumables": "Edit Consumables" } },
+        admin: { guides: { "reference-consommables": "Edit Consumables" } },
       });
     }
   });

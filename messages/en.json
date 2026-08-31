@@ -529,13 +529,13 @@
       "level-up": "Level Up",
       "templiers": "Templar Cost",
       "gemmes": "Gems",
-      "consumables": "Consumables"
+      "consommables": "Consumables"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
     "unavailable": "These reference tables are temporarily unavailable.",
     "single-unavailable": "This reference table is temporarily unavailable.",
-    "consumables": {
+    "consommables": {
       "columns": {
         "image": "Image",
         "name": "Name",
@@ -704,14 +704,14 @@
       "reference-combat": "Edit Combat Equipment",
       "reference-expedition": "Edit Expedition Equipment",
       "reference-level-up": "Edit Level Up",
-      "reference-consumables": "Edit Consumables",
+      "reference-consommables": "Edit Consumables",
       "references": {
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
         "level-up": "Level Up",
         "templiers": "Templars",
         "gemmes": "Gems",
-        "consumables": "Consumables"
+        "consommables": "Consumables"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
@@ -876,12 +876,10 @@
       "consumables-intro-description": "Free-text markdown zone, shown at the top of the public Consumables reference page.",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Text language",
-      "consumables-intro-save": "Save the introduction",
-      "consumables-intro-saved": "Introduction saved.",
-      "consumables-intro-error": "Unable to save the introduction.",
+      "consumables-intro-error": "Introduction not saved (items were saved).",
+      "consumables-rows-error": "Items not saved (the introduction was saved).",
       "consumables-table-title": "Items",
       "consumables-table-description": "Freely add, reorder or remove consumable items. Leave the cost empty until it's confirmed — row order is the public display order.",
-      "consumables-table-save": "Save the items",
       "consumables-columns": {
         "image": "Image path",
         "name-fr": "Name (FR)",
