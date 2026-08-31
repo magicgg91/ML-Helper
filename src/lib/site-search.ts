@@ -17,8 +17,13 @@ export type SiteSearchResult = {
   href: string;
 };
 
+// Bloc 48/F: keyed by calculatorSlug, not the public `slug` — the two
+// diverge for the Shop reference (public slug "shop", calculatorSlug
+// "consommables" unchanged), and this set exists specifically to match
+// calculatorCatalog[].slug entries below (CalculatorSlug-typed), not
+// referenceCatalog[].slug.
 const referenceSlugs = new Set<string>(
-  referenceCatalog.map((reference) => reference.slug),
+  referenceCatalog.map((reference) => reference.calculatorSlug),
 );
 
 export function buildSiteSearchResults({

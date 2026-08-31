@@ -42,12 +42,12 @@ export const referenceCatalog = [
     fallbackImage: "/category-skills.svg",
   },
   {
-    // Bloc 44 review: public slug kept French ("consommables"), matching
-    // templiers/gemmes — the URL /guides/referentiels/consommables is the
-    // one documented in the original task spec. Internal technical keys
-    // (file names, ReferenceTable/StaticContent DB keys, API routes) stay
-    // English per AGENTS.md.
-    slug: "consommables",
+    // Bloc 48/F: public label/URL renamed Consommables -> Boutique
+    // (slug "shop", no redirect from the old /consommables URL — no
+    // indexed traffic to preserve yet). Internal technical keys (file
+    // names, calculatorSlug, ReferenceTable/StaticContent DB keys, API
+    // routes) stay unchanged per AGENTS.md — only this public slug moves.
+    slug: "shop",
     calculatorSlug: "consommables" satisfies CalculatorSlug,
     category: "consommables",
     image: "/referentials/referential-consumables.webp",

@@ -8,25 +8,23 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConsumablesReferenceScreen } from "./consumables-admin-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
-import type { ConsumableRow } from "../lib/consumables";
+import type { ConsumableCatalog } from "../lib/consumables";
 
-const rowA: ConsumableRow = {
+const rowA = {
   image: "/consumables/a.webp",
   name_fr: "Objet A",
   name_en: "Item A",
   description_fr: "Description A",
   description_en: "Description A EN",
   cost: "100",
-  category: "equipment",
 };
-const rowB: ConsumableRow = {
+const rowB = {
   image: "/consumables/b.webp",
   name_fr: "Objet B",
   name_en: "Item B",
   description_fr: "Description B",
   description_en: "Description B EN",
   cost: "",
-  category: "inventory",
 };
 const introInitial = {
   fr: "## Intro FR",
@@ -36,10 +34,19 @@ const introInitial = {
   tr: "",
 };
 
+function initialCatalog(): ConsumableCatalog {
+  return {
+    advisors: [],
+    equipment: [rowA],
+    expedition: [],
+    inventory: [rowB],
+  };
+}
+
 function renderScreen() {
   return render(
     <ConsumablesReferenceScreen
-      initialRows={[rowA, rowB]}
+      initialCatalog={initialCatalog()}
       introInitial={introInitial}
     />,
   );
@@ -53,93 +60,111 @@ describe("ConsumablesReferenceScreen", () => {
   afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
-  it("shows one back link, one combined save button and the two starting rows in order", () => {
+  it("shows one back link, one combined save button, and 4 category tables", () => {
     renderScreen();
     expect(screen.getAllByRole("link", { name: "← Retour" })).toHaveLength(1);
     expect(saveButton()).toBeInTheDocument();
-    expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet A");
-    expect(screen.getByLabelText("Ligne 2 Nom (FR)")).toHaveValue("Objet B");
-  });
-
-  it("adds a free-form empty row at the end", () => {
-    renderScreen();
-    fireEvent.click(screen.getByRole("button", { name: "Ajouter un objet" }));
-    expect(screen.getByLabelText("Ligne 3 Nom (FR)")).toHaveValue("");
-    expect(screen.getByLabelText("Ligne 3 Coût (Saphirs)")).toHaveValue(null);
-  });
-
-  it("removes a row by its own row-scoped button", () => {
-    renderScreen();
-    fireEvent.click(screen.getAllByRole("button", { name: "Supprimer" })[0]);
-    expect(screen.queryByLabelText("Ligne 2 Nom (FR)")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet B");
-  });
-
-  // Bloc 42/I: this table was reordered in Bloc 41 and its row-scoped
-  // actions have no other stable identifier — a data-testid keyed on row
-  // position survives future redesigns that a text/role query wouldn't.
-  it("Bloc42/I: gives each row and its move/remove actions a stable, row-scoped data-testid", () => {
-    renderScreen();
     expect(
-      within(screen.getByTestId("row-0")).getByLabelText("Ligne 1 Nom (FR)"),
-    ).toHaveValue("Objet A");
+      screen.getByRole("heading", { name: "Conseillers" }),
+    ).toBeInTheDocument();
     expect(
-      within(screen.getByTestId("row-1")).getByLabelText("Ligne 2 Nom (FR)"),
-    ).toHaveValue("Objet B");
-    expect(screen.getByTestId("move-up-0")).toBeDisabled();
-    expect(screen.getByTestId("move-down-1")).toBeDisabled();
-    expect(screen.getByTestId("remove-row-0")).toBeInTheDocument();
+      screen.getByRole("heading", { name: "Équipement" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Expédition" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Inventaire" }),
+    ).toBeInTheDocument();
   });
 
-  it("moves a row down/up by exactly 1 position, disabled at the boundaries", () => {
+  // Bloc 48/A: regression fix — the locale selector already driving the
+  // intro markdown zone must also drive the items table columns, showing
+  // only 2 text columns (Nom + Description) in the active language at a
+  // time, never all 4 (FR+EN name, FR+EN description) simultaneously.
+  it("Bloc48/A: shows only Nom+Description in French by default, not all 4 language columns", () => {
+    renderScreen();
+    expect(screen.getByLabelText("Équipement — ligne 1 Nom")).toHaveValue(
+      "Objet A",
+    );
+    expect(
+      screen.getByLabelText("Équipement — ligne 1 Description"),
+    ).toHaveValue("Description A");
+    expect(screen.queryByText("Nom (FR)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nom (EN)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Description (FR)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Description (EN)")).not.toBeInTheDocument();
+    // Only the equipment and inventory tables have rows (and therefore a
+    // rendered header) in this fixture — advisors/expedition start empty.
+    expect(screen.getAllByText("Nom")).toHaveLength(2);
+    expect(screen.getAllByText("Description")).toHaveLength(2);
+  });
+
+  // Bloc 48/A: switching the editorial locale switches which language's
+  // values the table edits — this is the exact regression the task
+  // required re-verifying from scratch, not trusting the prior PR summary.
+  it("Bloc48/A: switching the locale selector switches the table to the English values", () => {
+    renderScreen();
+    fireEvent.change(screen.getByLabelText("Langue du texte"), {
+      target: { value: "en" },
+    });
+    expect(screen.getByLabelText("Équipement — ligne 1 Nom")).toHaveValue(
+      "Item A",
+    );
+    expect(
+      screen.getByLabelText("Équipement — ligne 1 Description"),
+    ).toHaveValue("Description A EN");
+    expect(screen.queryByDisplayValue("Objet A")).not.toBeInTheDocument();
+  });
+
+  // Bloc 48/B: each of the 4 tables has its own "Ajouter" button, scoped to
+  // its own category — no more per-row category select.
+  it("Bloc48/B: each category has its own scoped Add button that only affects that table", () => {
+    renderScreen();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ajouter (Conseillers)" }),
+    );
+    expect(screen.getByLabelText("Conseillers — ligne 1 Nom")).toHaveValue("");
+    // The equipment/inventory tables are untouched by the advisors add.
+    expect(screen.getByLabelText("Équipement — ligne 1 Nom")).toHaveValue(
+      "Objet A",
+    );
+    expect(
+      screen.queryByLabelText("Équipement — ligne 2 Nom"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Bloc48/B: removes a row from only its own category table", () => {
+    renderScreen();
+    fireEvent.click(
+      within(screen.getByTestId("row-0-equipment")).getAllByRole("button", {
+        name: "Supprimer",
+      })[0],
+    );
+    expect(
+      screen.queryByLabelText("Équipement — ligne 1 Nom"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Inventaire — ligne 1 Nom")).toHaveValue(
+      "Objet B",
+    );
+  });
+
+  // Bloc 48/B: up/down ordering is scoped independently per category — a
+  // category with a single row has both its move buttons disabled.
+  it("Bloc48/B: disables move buttons at each table's own boundaries", () => {
     renderScreen();
     const moveUpButtons = screen.getAllByRole("button", { name: "Monter" });
     const moveDownButtons = screen.getAllByRole("button", {
       name: "Descendre",
     });
-    expect(moveUpButtons[0]).toBeDisabled();
-    expect(moveDownButtons[1]).toBeDisabled();
-
-    fireEvent.click(moveDownButtons[0]);
-    expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet B");
-    expect(screen.getByLabelText("Ligne 2 Nom (FR)")).toHaveValue("Objet A");
-  });
-
-  // Bloc 46/B: the move buttons render an arrow icon, not the "Monter"/
-  // "Descendre" text label — aria-label (used above for the accessible
-  // name/functional queries) keeps carrying the text for a11y.
-  it("Bloc46/B: renders the move buttons as icons, with no visible text label", () => {
-    renderScreen();
-    const moveUpButtons = screen.getAllByRole("button", { name: "Monter" });
-    const moveDownButtons = screen.getAllByRole("button", {
-      name: "Descendre",
-    });
-    for (const button of [...moveUpButtons, ...moveDownButtons]) {
-      expect(button).toHaveTextContent("");
-      expect(button.querySelector("svg")).toBeInTheDocument();
-    }
-  });
-
-  // Bloc 46/C: a select per row lets the admin assign one of the 4
-  // categories, available for both existing and newly-added rows.
-  it("Bloc46/C: offers a functional category select for each row, defaulting new rows to Inventaire", () => {
-    renderScreen();
-    const categoryA = screen.getByLabelText("Ligne 1 Catégorie");
-    const categoryB = screen.getByLabelText("Ligne 2 Catégorie");
-    expect(categoryA).toHaveValue("equipment");
-    expect(categoryB).toHaveValue("inventory");
-
-    fireEvent.change(categoryA, { target: { value: "expedition" } });
-    expect(categoryA).toHaveValue("expedition");
-
-    fireEvent.click(screen.getByRole("button", { name: "Ajouter un objet" }));
-    expect(screen.getByLabelText("Ligne 3 Catégorie")).toHaveValue("inventory");
+    for (const button of [...moveUpButtons, ...moveDownButtons])
+      expect(button).toBeDisabled();
   });
 
   // Bloc 44 review: a single action persists both sections together — no
   // separate button per section that could be clicked while leaving the
   // other one's edits unsaved.
-  it("saves both the intro (PATCH) and the rows (PUT) from the one save button", async () => {
+  it("saves both the intro (PATCH) and the grouped catalog (PUT) from the one save button", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 200 }));
@@ -162,7 +187,7 @@ describe("ConsumablesReferenceScreen", () => {
       content: { ...introInitial, fr: "## Nouvelle intro" },
     });
     expect(rowsCall?.[1]?.method).toBe("PUT");
-    expect(JSON.parse(String(rowsCall?.[1]?.body))).toEqual([rowA, rowB]);
+    expect(JSON.parse(String(rowsCall?.[1]?.body))).toEqual(initialCatalog());
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Référentiel enregistré.",
     );
@@ -171,7 +196,7 @@ describe("ConsumablesReferenceScreen", () => {
   it("blocks saving entirely when a required field is emptied, without calling fetch", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     renderScreen();
-    fireEvent.change(screen.getByLabelText("Ligne 1 Nom (FR)"), {
+    fireEvent.change(screen.getByLabelText("Équipement — ligne 1 Nom"), {
       target: { value: "" },
     });
     fireEvent.click(saveButton());

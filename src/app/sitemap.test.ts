@@ -63,9 +63,9 @@ describe("sitemap (Bloc 42/J)", () => {
     expect(urls).not.toContain(
       "https://ml-helper.com/guides/referentiels/expedition-equipment",
     );
-    expect(urls).toContain(
-      "https://ml-helper.com/guides/referentiels/consommables",
-    );
+    // Bloc 48/F: renamed Consommables -> Boutique, URL /consommables ->
+    // /shop (calculatorSlug "consommables" stays the internal DB key above).
+    expect(urls).toContain("https://ml-helper.com/guides/referentiels/shop");
   });
 
   it("gives every entry hreflang alternates for the 5 launched locales plus x-default, self-referencing the same URL", async () => {

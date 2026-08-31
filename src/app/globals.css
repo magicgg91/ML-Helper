@@ -2040,30 +2040,63 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   border-radius: 999px;
   background: var(--bg-panel-raised);
 }
-.locale-select select {
-  appearance: none;
+/* Bloc 48/C: the native <select> was replaced by a custom ARIA listbox
+   (see src/components/locale-toggle.tsx) so its open direction is always
+   controlled here, never left to browser/OS heuristics. */
+.locale-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  padding: 0.35rem 1.7rem 0.35rem 0.9rem;
+  padding: 0.35rem 0.9rem;
   color: var(--text-dim);
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 700;
 }
-.locale-select select:disabled {
+.locale-select-trigger:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
-.locale-select select:hover,
-.locale-select select:focus-visible {
+.locale-select-trigger:hover,
+.locale-select-trigger:focus-visible {
   color: var(--accent-strong);
 }
 .locale-select-chevron {
-  position: absolute;
-  right: 0.6rem;
-  color: var(--text-dim);
+  color: inherit;
   pointer-events: none;
+}
+.locale-listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
+}
+.locale-listbox-option {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.locale-listbox-option-active {
+  background: var(--bg-panel);
+}
+.locale-listbox-option-active,
+.locale-listbox-option[aria-selected="true"] {
+  color: var(--accent-strong);
 }
 .admin-account {
   position: relative;

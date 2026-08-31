@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type { Session } from "next-auth";
 import { can } from "../auth/permissions";
 import { prisma } from "../lib/prisma";
@@ -10,11 +11,23 @@ export async function saveReferenceTable(args: {
   key: string;
   target: string;
   columns: string[];
-  rows: object[];
+  // Bloc 48/B: Boutique's admin editor now saves 4 tables grouped in a
+  // single plain object (one array per category) instead of one flat
+  // array — this function is otherwise fully shape-agnostic (it only ever
+  // passes rows straight through to Prisma's Json column and into the
+  // audit diff), so widening the type costs existing array-based callers
+  // (Combat/Expedition/etc.) nothing.
+  rows: object[] | Record<string, unknown>;
   userId: string;
   actorRole: string;
   actorName: string;
 }) {
+  // Prisma's Json input type doesn't structurally accept a plain
+  // Record<string, unknown> (its index signature isn't provably
+  // InputJsonValue-shaped to the type checker) even though any JSON-safe
+  // object serializes fine at runtime — this function is a thin,
+  // shape-agnostic passthrough to the Json column either way.
+  const rows = args.rows as Prisma.InputJsonValue;
   const before = await prisma.referenceTable.findUnique({
     where: { key: args.key },
   });
@@ -23,9 +36,9 @@ export async function saveReferenceTable(args: {
     create: {
       key: args.key,
       columns: args.columns,
-      rows: args.rows,
+      rows,
     },
-    update: { rows: args.rows },
+    update: { rows },
   });
   await prisma.auditLog.create({
     data: {
@@ -39,7 +52,7 @@ export async function saveReferenceTable(args: {
         before ? "update" : "create",
         args.target,
       ),
-      diff: { before: before?.rows ?? null, after: args.rows },
+      diff: { before: before?.rows ?? null, after: rows },
     },
   });
   return table;

@@ -542,7 +542,7 @@
       "level-up": "Level Up",
       "templiers": "Coût des Templiers",
       "gemmes": "Gemmes",
-      "consommables": "Consommables"
+      "shop": "Boutique"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
@@ -553,8 +553,7 @@
         "image": "Image",
         "name": "Nom",
         "description": "Description",
-        "cost": "Coût (Saphirs)",
-        "category": "Catégorie"
+        "cost": "Coût (Saphirs)"
       },
       "cost-unknown": "Non défini",
       "filters": {
@@ -725,14 +724,14 @@
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
       "reference-level-up": "Éditer Level Up",
-      "reference-consommables": "Éditer les Consommables",
+      "reference-consommables": "Éditer la Boutique",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
         "level-up": "Level Up",
         "templiers": "Templiers",
         "gemmes": "Gemmes",
-        "consommables": "Consommables"
+        "consommables": "Boutique"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
@@ -894,22 +893,21 @@
       "all": "Tous",
       "filters": { "skill": "Compétence" },
       "consumables-intro-title": "Texte d’introduction",
-      "consumables-intro-description": "Zone de texte libre en markdown, affichée en haut de la page publique du référentiel Consommables.",
+      "consumables-intro-description": "Zone de texte libre en markdown, affichée en haut de la page publique du référentiel Boutique.",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Langue du texte",
       "consumables-intro-error": "Introduction non enregistrée (les objets ont bien été enregistrés).",
       "consumables-rows-error": "Objets non enregistrés (l’introduction a bien été enregistrée).",
       "consumables-table-title": "Objets",
-      "consumables-table-description": "Ajoute, réordonne ou supprime librement les objets consommables. Laisse le coût vide tant qu’il n’est pas confirmé — l’ordre des lignes est l’ordre d’affichage public.",
+      "consumables-table-description": "Ajoute, réordonne ou supprime librement les objets de chaque catégorie. Laisse le coût vide tant qu’il n’est pas confirmé — l’ordre des lignes dans chaque tableau est l’ordre d’affichage public de cette catégorie.",
       "consumables-columns": {
         "image": "Chemin de l’image",
-        "name-fr": "Nom (FR)",
-        "name-en": "Nom (EN)",
-        "description-fr": "Description (FR)",
-        "description-en": "Description (EN)",
-        "cost": "Coût (Saphirs)",
-        "category": "Catégorie"
+        "name": "Nom",
+        "description": "Description",
+        "cost": "Coût (Saphirs)"
       },
+      "add-category": "Ajouter ({category})",
+      "category-row-label": "{category} — ligne {row} {field}",
       "add": "Ajouter un objet",
       "remove": "Supprimer",
       "move-up": "Monter",

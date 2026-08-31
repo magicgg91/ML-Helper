@@ -58,6 +58,11 @@ export function EditableDataTable<Row extends Record<string, string>>({
   onMove,
   moveUpLabel,
   moveDownLabel,
+  // Bloc 48/B: distinguishes row/move/remove testids when several of these
+  // tables render on the same page (Boutique's 4 category tables) — without
+  // it every table's row 0 shares the exact same "row-0" testid, breaking
+  // any e2e/test query that targets a specific table's row.
+  testIdPrefix,
 }: {
   rows: Row[];
   columns: EditableColumn<Row>[];
@@ -71,14 +76,17 @@ export function EditableDataTable<Row extends Record<string, string>>({
   onMove?: (index: number, direction: -1 | 1) => void;
   moveUpLabel?: string;
   moveDownLabel?: string;
+  testIdPrefix?: string;
 }) {
+  const testId = (name: string) =>
+    testIdPrefix ? `${name}-${testIdPrefix}` : name;
   return (
     <>
       {onAdd && (
         <button
           className="secondary-action"
           type="button"
-          data-testid="add-row"
+          data-testid={testId("add-row")}
           onClick={onAdd}
         >
           {addLabel}
@@ -105,7 +113,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
             </thead>
             <tbody>
               {rows.map((row, rowIndex) => (
-                <tr key={rowIndex} data-testid={`row-${rowIndex}`}>
+                <tr key={rowIndex} data-testid={testId(`row-${rowIndex}`)}>
                   {columns.map((column) => {
                     const label =
                       column.inputLabel?.(rowIndex) ??
@@ -165,7 +173,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
-                        data-testid={`move-up-${rowIndex}`}
+                        data-testid={testId(`move-up-${rowIndex}`)}
                         onClick={() => onMove(rowIndex, -1)}
                         disabled={rowIndex === 0}
                         aria-label={moveUpLabel}
@@ -175,7 +183,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
-                        data-testid={`move-down-${rowIndex}`}
+                        data-testid={testId(`move-down-${rowIndex}`)}
                         onClick={() => onMove(rowIndex, 1)}
                         disabled={rowIndex === rows.length - 1}
                         aria-label={moveDownLabel}
@@ -189,7 +197,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       <button
                         className="secondary-action"
                         type="button"
-                        data-testid={`remove-row-${rowIndex}`}
+                        data-testid={testId(`remove-row-${rowIndex}`)}
                         onClick={() => onRemove(rowIndex)}
                       >
                         {removeLabel}

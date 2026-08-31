@@ -537,7 +537,7 @@
       "level-up": "Seviye Atlama",
       "templiers": "Tapınak Şövalyesi Maliyeti",
       "gemmes": "Mücevherler",
-      "consommables": "Tüketim Malzemeleri"
+      "shop": "Mağaza"
     },
     "tabs-label": "Referans tabloları",
     "disabled-tooltip": "Devre dışı — şu anda kullanılamıyor",
@@ -718,7 +718,7 @@
         "level-up": "Seviye Atlama",
         "templiers": "Tapınak Şövalyeleri",
         "gemmes": "Mücevherler",
-        "consommables": "Tüketim Malzemeleri"
+        "consommables": "Mağaza"
       },
       "disabled-tooltip": "Devre dışı ve genel siteden gizli",
       "status-label": "{title} durumu",
@@ -734,7 +734,7 @@
       "disabled": "Rehber devre dışı bırakıldı.",
       "delete-forbidden": "Rolün bu rehberi silmeye izin vermiyor.",
       "deleted": "Rehber kalıcı olarak silindi.",
-      "reference-consommables": "Tüketim Malzemelerini düzenle"
+      "reference-consommables": "Mağazayı düzenle"
     },
     "guide-editor": {
       "language-label": "Rehber dili",
@@ -883,15 +883,15 @@
         "skill": "Yetenek"
       },
       "add": "Öğe ekle",
+      "add-category": "Ekle ({category})",
+      "category-row-label": "{category} — satır {row} {field}",
       "consumables-columns": {
         "cost": "Maliyet (Safir)",
-        "description-en": "Açıklama (EN)",
-        "description-fr": "Açıklama (FR)",
+        "description": "Açıklama",
         "image": "Görsel yolu",
-        "name-en": "Ad (EN)",
-        "name-fr": "Ad (FR)"
+        "name": "Ad"
       },
-      "consumables-intro-description": "Genel Tüketim Malzemeleri referans sayfasının üst kısmında görüntülenen serbest metin markdown alanı.",
+      "consumables-intro-description": "Genel Mağaza referans sayfasının üst kısmında görüntülenen serbest metin markdown alanı.",
       "consumables-intro-error": "Giriş kaydedilmedi (öğeler kaydedildi).",
       "consumables-intro-label": "Giriş (markdown)",
       "consumables-intro-language-label": "Metin dili",
