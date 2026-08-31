@@ -2,17 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { auditMessage } from "@/lib/audit-message";
-import { legalNoticeKey } from "@/lib/legal-notice";
+import { consumablesIntroKey } from "@/lib/consumables";
 import { prisma } from "@/lib/prisma";
 import { dropEmptyLocales } from "@/lib/translations";
 
-// Bloc 44: fr/en stay required (unchanged) — DE/ES/TR are activated but
-// their content arrives gradually via admin, never invented here. Bloc 44
-// review: a request that omits a DE/ES/TR key entirely (any caller
-// predating this bloc) is treated the same as one sending it empty,
-// rather than rejected outright for a locale nothing requires yet.
-const requiredLocale = z.string().trim().min(1).max(100_000);
-const optionalLocale = z
+// Bloc 43: the free-text markdown zone at the top of the public Consumables
+// page — same shape/pattern as legal-notice's content editor. Bloc 44: none
+// of the 5 locales are required here (unlike legal-notice's fr/en) — the
+// whole zone is meant to start empty and get filled in gradually, and an
+// omitted key is treated the same as an empty one rather than rejected.
+const localeContent = z
   .string()
   .trim()
   .max(100_000)
@@ -20,30 +19,30 @@ const optionalLocale = z
   .transform((value) => value ?? "");
 const schema = z.object({
   content: z.object({
-    fr: requiredLocale,
-    en: requiredLocale,
-    de: optionalLocale,
-    es: optionalLocale,
-    tr: optionalLocale,
+    fr: localeContent,
+    en: localeContent,
+    de: localeContent,
+    es: localeContent,
+    tr: localeContent,
   }),
 });
 
 export async function PATCH(request: Request) {
-  const session = await authorizedSession("content.write");
+  const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
     return NextResponse.json({ error: "invalid_content" }, { status: 400 });
 
   const before = await prisma.staticContent.findUnique({
-    where: { key: legalNoticeKey },
+    where: { key: consumablesIntroKey },
   });
   const content = dropEmptyLocales(parsed.data.content);
   const updated = await prisma.$transaction(async (tx) => {
     const item = await tx.staticContent.upsert({
-      where: { key: legalNoticeKey },
+      where: { key: consumablesIntroKey },
       create: {
-        key: legalNoticeKey,
+        key: consumablesIntroKey,
         content,
         updatedBy: session.user.id,
       },
@@ -56,7 +55,7 @@ export async function PATCH(request: Request) {
         message: auditMessage(
           session.user.name ?? session.user.id,
           "update",
-          "les mentions légales",
+          "le texte d’introduction du référentiel Consommables",
         ),
         action: "update",
         entityType: "static_content",

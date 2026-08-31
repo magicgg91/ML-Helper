@@ -9,6 +9,11 @@ export const referenceToolSlugs = [
   "level-up",
   "templiers",
   "gemmes",
+  // Bloc 43: no matching "tool" row — adminToolEditHref returns undefined
+  // for it below, same as combat-equipment/expedition-equipment/level-up,
+  // so it falls through to /admin/guides/reference-consommables. Bloc 44
+  // review: slug kept French, matching templiers/gemmes.
+  "consommables",
 ] as const;
 export const cityToolSlugs = [
   "city-cost",

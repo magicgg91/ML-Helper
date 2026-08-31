@@ -49,6 +49,14 @@ export function EditableDataTable<Row extends Record<string, string>>({
   removeLabel,
   emptyLabel,
   errors,
+  // Bloc 43: optional 1-position move (Consumables' free row ordering,
+  // "l'ordre choisi en admin est l'ordre d'affichage public" — no
+  // drag-and-drop). Left undefined for tables with no meaningful order
+  // (e.g. Ranking's threshold-sorted rows), same opt-in pattern as
+  // onAdd/onRemove above.
+  onMove,
+  moveUpLabel,
+  moveDownLabel,
 }: {
   rows: Row[];
   columns: EditableColumn<Row>[];
@@ -59,6 +67,9 @@ export function EditableDataTable<Row extends Record<string, string>>({
   removeLabel?: string;
   emptyLabel?: string;
   errors?: FieldErrors;
+  onMove?: (index: number, direction: -1 | 1) => void;
+  moveUpLabel?: string;
+  moveDownLabel?: string;
 }) {
   return (
     <>
@@ -82,6 +93,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                     {column.label}
                   </th>
                 ))}
+                {onMove && <th>{moveUpLabel}</th>}
                 {onRemove && <th>{removeLabel}</th>}
               </tr>
             </thead>
@@ -142,6 +154,28 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       </td>
                     );
                   })}
+                  {onMove && (
+                    <td className="reference-admin-move-cell">
+                      <button
+                        className="secondary-action"
+                        type="button"
+                        onClick={() => onMove(rowIndex, -1)}
+                        disabled={rowIndex === 0}
+                        aria-label={moveUpLabel}
+                      >
+                        {moveUpLabel}
+                      </button>
+                      <button
+                        className="secondary-action"
+                        type="button"
+                        onClick={() => onMove(rowIndex, 1)}
+                        disabled={rowIndex === rows.length - 1}
+                        aria-label={moveDownLabel}
+                      >
+                        {moveDownLabel}
+                      </button>
+                    </td>
+                  )}
                   {onRemove && (
                     <td>
                       <button

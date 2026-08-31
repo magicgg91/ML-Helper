@@ -41,6 +41,18 @@ export const referenceCatalog = [
     image: "/referentials/referential-gems.webp",
     fallbackImage: "/category-skills.svg",
   },
+  {
+    // Bloc 44 review: public slug kept French ("consommables"), matching
+    // templiers/gemmes — the URL /guides/referentiels/consommables is the
+    // one documented in the original task spec. Internal technical keys
+    // (file names, ReferenceTable/StaticContent DB keys, API routes) stay
+    // English per AGENTS.md.
+    slug: "consommables",
+    calculatorSlug: "consommables" satisfies CalculatorSlug,
+    category: "consommables",
+    image: "/referentials/referential-consumables.webp",
+    fallbackImage: "/category-references.svg",
+  },
 ] as const;
 
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];

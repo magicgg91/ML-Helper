@@ -3,12 +3,13 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/guide-editor";
 import { prisma } from "@/lib/prisma";
-import { translationRecord } from "@/lib/translations";
+import { launchRecord, translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 import {
   CombatReferenceScreen,
   ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
+import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
 import {
   getCombatGemSlotsBase,
   getCombatReferenceRows,
@@ -20,6 +21,10 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
+import {
+  getConsumableRows,
+  getConsumablesIntro,
+} from "@/lib/consumables-server";
 import { parseGuideCategories } from "@/lib/guide-categories";
 
 export default async function EditGuidePage({
@@ -66,6 +71,18 @@ export default async function EditGuidePage({
       </main>
     );
   }
+  if (id === "reference-consommables") {
+    await requireCapability("references.write");
+    return (
+      <main className="admin-main">
+        <h1>{t("reference-consommables")}</h1>
+        <ConsumablesReferenceScreen
+          initialRows={await getConsumableRows()}
+          introInitial={await getConsumablesIntro()}
+        />
+      </main>
+    );
+  }
   const guide = await prisma.guide.findUnique({ where: { id } });
   if (!guide) notFound();
   const title = translationRecord(guide.title),
@@ -83,18 +100,11 @@ export default async function EditGuidePage({
           category: parseGuideCategories(guide.category),
           coverImage: guide.coverImage ?? "",
           status: guide.status,
-          translations: {
-            fr: {
-              title: title.fr ?? "",
-              excerpt: excerpt.fr ?? "",
-              content: content.fr ?? "",
-            },
-            en: {
-              title: title.en ?? "",
-              excerpt: excerpt.en ?? "",
-              content: content.en ?? "",
-            },
-          },
+          translations: launchRecord((locale) => ({
+            title: title[locale] ?? "",
+            excerpt: excerpt[locale] ?? "",
+            content: content[locale] ?? "",
+          })),
         }}
       />
     </main>

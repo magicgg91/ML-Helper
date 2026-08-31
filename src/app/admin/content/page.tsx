@@ -2,7 +2,7 @@ import { requireCapability } from "@/auth/require-session";
 import { LegalNoticeEditor } from "@/components/legal-notice-editor";
 import { defaultLegalNoticeContent, legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
-import { translationRecord } from "@/lib/translations";
+import { launchRecord, translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 
 export default async function StaticContentAdminPage() {
@@ -16,10 +16,13 @@ export default async function StaticContentAdminPage() {
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <LegalNoticeEditor
-        initialContent={{
-          fr: content.fr || defaultLegalNoticeContent.fr,
-          en: content.en || defaultLegalNoticeContent.en,
-        }}
+        initialContent={launchRecord(
+          (locale) =>
+            content[locale] ||
+            (locale === "fr" || locale === "en"
+              ? defaultLegalNoticeContent[locale]
+              : ""),
+        )}
       />
     </main>
   );

@@ -39,4 +39,9 @@ describe("admin tool editor routing", () => {
     expect(adminToolEditHref("gems")).not.toContain("from=guides");
     expect(adminToolEditHref("gemmes")).toBe("/admin/tools/gems?from=guides");
   });
+
+  it("Bloc43/44: lists Consumables among the independent references, with no shared tool to edit — falls through to /admin/guides/reference-consommables (public slug kept French per review)", () => {
+    expect(referenceToolSlugs).toContain("consommables");
+    expect(adminToolEditHref("consommables")).toBeUndefined();
+  });
 });

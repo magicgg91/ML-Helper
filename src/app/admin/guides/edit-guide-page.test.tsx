@@ -14,6 +14,10 @@ vi.mock("@/auth/require-session", () => ({
 vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),
 }));
+vi.mock("@/lib/consumables-server", () => ({
+  getConsumableRows: async () => [],
+  getConsumablesIntro: async () => ({ fr: "", en: "" }),
+}));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
   getCombatSkydustBase: async () => ({}),
@@ -52,6 +56,17 @@ vi.mock("@/components/reference-admin-editors", () => {
     ExpeditionReferenceScreen: Screen,
   };
 });
+vi.mock("@/components/consumables-admin-editor", () => ({
+  ConsumablesReferenceScreen: () => (
+    <div className="calculator-stack">
+      <div className="editor-action-bar">
+        <Link className="editor-back-action" href="/admin/guides">
+          back
+        </Link>
+      </div>
+    </div>
+  ),
+}));
 
 afterEach(cleanup);
 
@@ -71,6 +86,18 @@ describe("Bloc35 10.2/10.3: EditGuidePage's back-link consistency", () => {
     render(
       await EditGuidePage({
         params: Promise.resolve({ id: "reference-combat-equipment" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    const back = screen.getByRole("link", { name: /back/ });
+    expect(back).toHaveClass("editor-back-action");
+    expect(back).toHaveAttribute("href", "/admin/guides");
+  });
+
+  it("Bloc43/44: routes 'reference-consommables' to ConsumablesReferenceScreen", async () => {
+    render(
+      await EditGuidePage({
+        params: Promise.resolve({ id: "reference-consommables" }),
         searchParams: Promise.resolve({}),
       }),
     );

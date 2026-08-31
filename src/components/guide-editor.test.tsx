@@ -42,6 +42,9 @@ describe("GuideEditor", () => {
               excerpt: "English summary",
               content: "English content",
             },
+            de: { title: "", excerpt: "", content: "" },
+            es: { title: "", excerpt: "", content: "" },
+            tr: { title: "", excerpt: "", content: "" },
           },
         }}
       />,
@@ -82,6 +85,9 @@ describe("GuideEditor", () => {
           translations: {
             fr: { title: "Titre", excerpt: "Résumé", content: "~~ancien~~" },
             en: { title: "Title", excerpt: "Summary", content: "" },
+            de: { title: "", excerpt: "", content: "" },
+            es: { title: "", excerpt: "", content: "" },
+            tr: { title: "", excerpt: "", content: "" },
           },
         }}
       />,
