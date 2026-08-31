@@ -58,7 +58,7 @@ export const guideInputSchema = z
 // Bloc 44: fr/en are always written (even blank — an admin can deliberately
 // clear one, unchanged prior behavior). A not-yet-translated DE/ES/TR field
 // is left out of the result entirely instead of being written as "" — an
-// explicit empty string would permanently defeat localizedText()'s fr/en
+// explicit empty string would permanently defeat localizedText()'s English
 // fallback for that locale, where an absent key doesn't.
 function nonEmptyLocaleValues(
   pick: (locale: LaunchLocale) => string,

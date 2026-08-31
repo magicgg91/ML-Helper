@@ -1,38 +1,35 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useTranslations } from "next-intl";
+import { ChevronDown } from "lucide-react";
+import { useLocaleChange } from "./use-locale-change";
 
+// Bloc 47/A: a styled <select> instead of one button per locale — still
+// looks like the site's existing pill controls (ThemeToggle,
+// AdminLocaleToggle), just compact enough for 5 languages instead of 2.
 export function LocaleToggle({ locales }: { locales: string[] }) {
-  const locale = useLocale();
   const t = useTranslations("common");
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-
-  async function change(nextLocale: string) {
-    if (nextLocale === locale) return;
-    await fetch("/api/locale", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ locale: nextLocale }),
-    });
-    startTransition(() => router.refresh());
-  }
+  const { locale, change, pending } = useLocaleChange(locales);
 
   return (
-    <div role="group" aria-label={t("language")} className="locale-toggle">
-      {locales.map((availableLocale) => (
-        <button
-          key={availableLocale}
-          type="button"
-          disabled={pending}
-          aria-pressed={availableLocale === locale}
-          onClick={() => change(availableLocale)}
-        >
-          {availableLocale.toUpperCase()}
-        </button>
-      ))}
+    <div className="locale-select">
+      <select
+        aria-label={t("language")}
+        disabled={pending}
+        value={locale}
+        onChange={(event) => change(event.target.value)}
+      >
+        {locales.map((availableLocale) => (
+          <option key={availableLocale} value={availableLocale}>
+            {availableLocale.toUpperCase()}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        size={14}
+        className="locale-select-chevron"
+      />
     </div>
   );
 }

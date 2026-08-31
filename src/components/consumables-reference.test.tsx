@@ -74,6 +74,15 @@ describe("ConsumablesReferenceTable", () => {
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
   });
 
+  // Bloc 47/D review: item name/description have no de/es/tr fields at
+  // all, so a non-fr/non-en visitor always hits the fallback — it must
+  // land on English (the universal safety net), never French.
+  it("Bloc47/D: shows the English name/description to a DE visitor, never the French one", () => {
+    render(<ConsumablesReferenceTable intro={emptyIntro} rows={rows} />, "de");
+    expect(screen.getByText("Divine Jar ×10")).toBeInTheDocument();
+    expect(screen.queryByText("Jarre divine ×10")).not.toBeInTheDocument();
+  });
+
   // Bloc 46/C: a dedicated column shows each row's category.
   it("Bloc46/C: displays a category column with each row's category", () => {
     render(<ConsumablesReferenceTable intro={emptyIntro} rows={rows} />);

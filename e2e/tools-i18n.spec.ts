@@ -1,13 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+// Bloc 47/A: the public switcher is now a styled <select>, not a row of
+// buttons.
 async function selectLanguage(
   page: import("@playwright/test").Page,
   locale: string,
 ) {
   await page
-    .getByRole("group", { name: /Language|Langue/ })
-    .getByRole("button", { name: locale.toUpperCase() })
-    .click();
+    .getByRole("combobox", { name: /Language|Langue/ })
+    .selectOption(locale);
 }
 
 test("renders every tool category in French and English", async ({ page }) => {

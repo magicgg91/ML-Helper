@@ -8,11 +8,13 @@ test("switches the public navigation language and falls back to English", async 
   // shell and therefore isolates the locale switch behavior.
   await page.goto("/contact");
 
-  const language = page.getByRole("group", { name: /Language|Langue/ });
-  await language.getByRole("button", { name: "EN" }).click();
+  // Bloc 47/A: the public switcher is now a styled <select>, not a row of
+  // buttons.
+  const language = page.getByRole("combobox", { name: /Language|Langue/ });
+  await language.selectOption("en");
   await expect(page.getByRole("link", { name: "Tools" })).toBeVisible();
 
-  await language.getByRole("button", { name: "FR" }).click();
+  await language.selectOption("fr");
   await expect(page.getByRole("link", { name: "Outils" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin area" })).toHaveCount(0);
 });

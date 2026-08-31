@@ -2029,6 +2029,42 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   background: var(--accent);
   color: var(--bg);
 }
+/* Bloc 47/A: the public locale switcher — a real <select> styled to match
+   the same pill shape/palette as .locale-toggle above (admin-only now),
+   compact enough for 5 languages instead of 2. */
+.locale-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+}
+.locale-select select {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0.35rem 1.7rem 0.35rem 0.9rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.locale-select select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.locale-select select:hover,
+.locale-select select:focus-visible {
+  color: var(--accent-strong);
+}
+.locale-select-chevron {
+  position: absolute;
+  right: 0.6rem;
+  color: var(--text-dim);
+  pointer-events: none;
+}
 .admin-account {
   position: relative;
 }
