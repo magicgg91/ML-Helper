@@ -12,7 +12,7 @@ vi.mock("next-intl/server", () => ({
       "catalog.level-up": "Level Up",
       "catalog.templiers": "Coût des Templiers",
       "catalog.gemmes": "Gemmes",
-      "catalog.consommables": "Consommables",
+      "catalog.shop": "Boutique",
     };
     return (key: string) =>
       namespace === "references" && key in catalog ? catalog[key] : key;
@@ -45,7 +45,12 @@ vi.mock("@/components/consumables-reference", () => ({
   ConsumablesReferenceTable: () => <div data-testid="consumables-table" />,
 }));
 vi.mock("@/lib/consumables-server", () => ({
-  getConsumableRows: async () => [],
+  getConsumableCatalog: async () => ({
+    advisors: [],
+    equipment: [],
+    expedition: [],
+    inventory: [],
+  }),
   getConsumablesIntro: async () => ({ fr: "", en: "" }),
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({
@@ -113,7 +118,7 @@ describe("ReferencePage", () => {
       "Level Up",
       "Coût des Templiers",
       "Gemmes",
-      "Consommables",
+      "Boutique",
     ]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
@@ -149,15 +154,17 @@ describe("ReferencePage", () => {
     expect(heading).toHaveClass("reference-page-title");
   });
 
-  it("Bloc43/44: routes the 'consommables' slug to ConsumablesReferenceTable, the 6th reference actually built (public URL kept French per review)", async () => {
+  // Bloc 48/F: renamed Consommables -> Boutique, URL /consommables ->
+  // /shop, no redirect from the old URL (no indexed traffic to preserve).
+  it("Bloc48/F: routes the 'shop' slug to ConsumablesReferenceTable, labelled Boutique", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "consommables" }),
+        params: Promise.resolve({ slug: "shop" }),
         searchParams: Promise.resolve({}),
       }),
     );
     expect(screen.getByTestId("consumables-table")).toBeInTheDocument();
-    const heading = screen.getByRole("heading", { name: "Consommables" });
+    const heading = screen.getByRole("heading", { name: "Boutique" });
     expect(heading).toHaveClass("reference-page-title");
   });
 });

@@ -537,7 +537,7 @@
       "level-up": "Subida de Nivel",
       "templiers": "Coste de Templarios",
       "gemmes": "Gemas",
-      "consommables": "Consumibles"
+      "shop": "Tienda"
     },
     "tabs-label": "Tablas de referencia",
     "disabled-tooltip": "Desactivada — no disponible actualmente",
@@ -718,7 +718,7 @@
         "level-up": "Subida de Nivel",
         "templiers": "Templarios",
         "gemmes": "Gemas",
-        "consommables": "Consumibles"
+        "consommables": "Tienda"
       },
       "disabled-tooltip": "Desactivada y oculta del sitio público",
       "status-label": "Estado de {title}",
@@ -734,7 +734,7 @@
       "disabled": "Guía desactivada.",
       "delete-forbidden": "Tu rol no permite eliminar esta guía.",
       "deleted": "Guía eliminada permanentemente.",
-      "reference-consommables": "Editar Consumibles"
+      "reference-consommables": "Editar la Tienda"
     },
     "guide-editor": {
       "language-label": "Idioma de la guía",
@@ -883,15 +883,15 @@
         "skill": "Habilidad"
       },
       "add": "Añadir un objeto",
+      "add-category": "Añadir ({category})",
+      "category-row-label": "{category} — fila {row} {field}",
       "consumables-columns": {
         "cost": "Coste (Zafiros)",
-        "description-en": "Descripción (EN)",
-        "description-fr": "Descripción (FR)",
+        "description": "Descripción",
         "image": "Ruta de la imagen",
-        "name-en": "Nombre (EN)",
-        "name-fr": "Nombre (FR)"
+        "name": "Nombre"
       },
-      "consumables-intro-description": "Zona de texto libre en markdown, mostrada en la parte superior de la página pública de referencia de Consumibles.",
+      "consumables-intro-description": "Zona de texto libre en markdown, mostrada en la parte superior de la página pública de referencia de la Tienda.",
       "consumables-intro-error": "Introducción no guardada (los objetos se guardaron).",
       "consumables-intro-label": "Introducción (markdown)",
       "consumables-intro-language-label": "Idioma del texto",

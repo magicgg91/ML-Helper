@@ -27,7 +27,7 @@ import {
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
 import {
-  getConsumableRows,
+  getConsumableCatalog,
   getConsumablesIntro,
 } from "@/lib/consumables-server";
 import { languageAlternates } from "@/lib/site-url";
@@ -102,10 +102,10 @@ export default async function ReferencePage({
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
         ) : slug === "gemmes" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
-        ) : slug === "consommables" ? (
+        ) : slug === "shop" ? (
           <ConsumablesReferenceTable
             intro={await getConsumablesIntro()}
-            rows={await getConsumableRows()}
+            catalog={await getConsumableCatalog()}
           />
         ) : (
           <ExpeditionReferenceTable

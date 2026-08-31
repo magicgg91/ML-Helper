@@ -178,6 +178,27 @@ describe("buildSiteSearchResults", () => {
     expect(lastReference).toBeLessThan(firstTool);
   });
 
+  // Bloc 48/F: the Shop reference is the first one where the public slug
+  // ("shop") diverges from calculatorSlug ("consommables" unchanged) — a
+  // filter keyed on the wrong one would let it leak through as a spurious
+  // duplicate "tool" result alongside its real "reference" result.
+  it("Bloc48/F: lists the Shop reference exactly once, never duplicated as a tool", () => {
+    const results = buildSiteSearchResults({
+      query: "boutique",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toEqual([
+      {
+        type: "reference",
+        id: "reference-shop",
+        label: "Boutique",
+        href: "/guides/referentiels/shop",
+      },
+    ]);
+  });
+
   it("is case-insensitive", () => {
     const results = buildSiteSearchResults({
       query: "GEMMES",

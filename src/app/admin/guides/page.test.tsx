@@ -82,7 +82,7 @@ describe("GuidesAdminPage", () => {
     expect(rows[0].toggleHref).toBeUndefined();
   });
 
-  it("Bloc43/44: routes Consumables' reference row to its own admin editor, no shared tool to fall back on (public slug kept French per review)", async () => {
+  it("Bloc43/44: routes the Shop's reference row to its own admin editor, no shared tool to fall back on (internal slug/route stay unchanged per Bloc 48/F)", async () => {
     mockedRequireCapability.mockResolvedValue({
       user: { id: "admin", role: "super_admin", name: "Admin" },
     } as Awaited<ReturnType<typeof requireCapability>>);

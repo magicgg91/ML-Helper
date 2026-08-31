@@ -537,7 +537,7 @@
       "level-up": "Stufenaufstieg",
       "templiers": "Templerkosten",
       "gemmes": "Edelsteine",
-      "consommables": "Verbrauchsgüter"
+      "shop": "Shop"
     },
     "tabs-label": "Referenztabellen",
     "disabled-tooltip": "Deaktiviert — derzeit nicht verfügbar",
@@ -718,7 +718,7 @@
         "level-up": "Stufenaufstieg",
         "templiers": "Templer",
         "gemmes": "Edelsteine",
-        "consommables": "Verbrauchsgüter"
+        "consommables": "Shop"
       },
       "disabled-tooltip": "Deaktiviert und auf der öffentlichen Website ausgeblendet",
       "status-label": "Status von {title}",
@@ -734,7 +734,7 @@
       "disabled": "Anleitung deaktiviert.",
       "delete-forbidden": "Deine Rolle erlaubt das Löschen dieser Anleitung nicht.",
       "deleted": "Anleitung dauerhaft gelöscht.",
-      "reference-consommables": "Verbrauchsgüter bearbeiten"
+      "reference-consommables": "Shop bearbeiten"
     },
     "guide-editor": {
       "language-label": "Anleitungssprache",
@@ -883,15 +883,15 @@
         "skill": "Fähigkeit"
       },
       "add": "Objekt hinzufügen",
+      "add-category": "Hinzufügen ({category})",
+      "category-row-label": "{category} — Zeile {row} {field}",
       "consumables-columns": {
         "cost": "Kosten (Saphire)",
-        "description-en": "Beschreibung (EN)",
-        "description-fr": "Beschreibung (FR)",
+        "description": "Beschreibung",
         "image": "Bildpfad",
-        "name-en": "Name (EN)",
-        "name-fr": "Name (FR)"
+        "name": "Name"
       },
-      "consumables-intro-description": "Freier Markdown-Textbereich, der oben auf der öffentlichen Konsumgüter-Referenzseite angezeigt wird.",
+      "consumables-intro-description": "Freier Markdown-Textbereich, der oben auf der öffentlichen Shop-Referenzseite angezeigt wird.",
       "consumables-intro-error": "Einleitung nicht gespeichert (Objekte wurden gespeichert).",
       "consumables-intro-label": "Einleitung (Markdown)",
       "consumables-intro-language-label": "Textsprache",

@@ -15,7 +15,12 @@ vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),
 }));
 vi.mock("@/lib/consumables-server", () => ({
-  getConsumableRows: async () => [],
+  getConsumableCatalog: async () => ({
+    advisors: [],
+    equipment: [],
+    expedition: [],
+    inventory: [],
+  }),
   getConsumablesIntro: async () => ({ fr: "", en: "" }),
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({

@@ -536,7 +536,7 @@
       "level-up": "Level Up",
       "templiers": "Templar Cost",
       "gemmes": "Gems",
-      "consommables": "Consumables"
+      "shop": "Shop"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
@@ -547,8 +547,7 @@
         "image": "Image",
         "name": "Name",
         "description": "Description",
-        "cost": "Cost (Sapphires)",
-        "category": "Category"
+        "cost": "Cost (Sapphires)"
       },
       "cost-unknown": "Not set",
       "filters": {
@@ -723,14 +722,14 @@
       "reference-combat": "Edit Combat Equipment",
       "reference-expedition": "Edit Expedition Equipment",
       "reference-level-up": "Edit Level Up",
-      "reference-consommables": "Edit Consumables",
+      "reference-consommables": "Edit the Shop",
       "references": {
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
         "level-up": "Level Up",
         "templiers": "Templars",
         "gemmes": "Gems",
-        "consommables": "Consumables"
+        "consommables": "Shop"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
@@ -892,22 +891,21 @@
       "all": "All",
       "filters": { "skill": "Skill" },
       "consumables-intro-title": "Intro text",
-      "consumables-intro-description": "Free-text markdown zone, shown at the top of the public Consumables reference page.",
+      "consumables-intro-description": "Free-text markdown zone, shown at the top of the public Shop reference page.",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Text language",
       "consumables-intro-error": "Introduction not saved (items were saved).",
       "consumables-rows-error": "Items not saved (the introduction was saved).",
       "consumables-table-title": "Items",
-      "consumables-table-description": "Freely add, reorder or remove consumable items. Leave the cost empty until it's confirmed — row order is the public display order.",
+      "consumables-table-description": "Freely add, reorder or remove items in each category. Leave the cost empty until it's confirmed — row order within a table is that category's public display order.",
       "consumables-columns": {
         "image": "Image path",
-        "name-fr": "Name (FR)",
-        "name-en": "Name (EN)",
-        "description-fr": "Description (FR)",
-        "description-en": "Description (EN)",
-        "cost": "Cost (Sapphires)",
-        "category": "Category"
+        "name": "Name",
+        "description": "Description",
+        "cost": "Cost (Sapphires)"
       },
+      "add-category": "Add ({category})",
+      "category-row-label": "{category} — row {row} {field}",
       "add": "Add an item",
       "remove": "Remove",
       "move-up": "Move up",

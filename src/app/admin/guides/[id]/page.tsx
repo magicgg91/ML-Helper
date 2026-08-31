@@ -23,7 +23,7 @@ import {
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
 import {
-  getConsumableRows,
+  getConsumableCatalog,
   getConsumablesIntro,
 } from "@/lib/consumables-server";
 import { parseGuideCategories } from "@/lib/guide-categories";
@@ -79,7 +79,7 @@ export default async function EditGuidePage({
       <main className="admin-main">
         <h1>{t("reference-consommables")}</h1>
         <ConsumablesReferenceScreen
-          initialRows={await getConsumableRows()}
+          initialCatalog={await getConsumableCatalog()}
           introInitial={await getConsumablesIntro()}
         />
       </main>

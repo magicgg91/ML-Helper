@@ -1,14 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-// Bloc 47/A: the public switcher is now a styled <select>, not a row of
-// buttons.
+// Bloc 48/C: the public switcher is now a custom ARIA listbox (button
+// trigger + role="listbox" popup), not a native <select>.
 async function selectLanguage(
   page: import("@playwright/test").Page,
   locale: string,
 ) {
+  await page.getByRole("button", { name: /Language|Langue/ }).click();
   await page
-    .getByRole("combobox", { name: /Language|Langue/ })
-    .selectOption(locale);
+    .getByRole("listbox", { name: /Language|Langue/ })
+    .getByRole("option", { name: locale.toUpperCase() })
+    .click();
 }
 
 test("renders every tool category in French and English", async ({ page }) => {

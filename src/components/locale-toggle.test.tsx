@@ -30,9 +30,24 @@ function renderToggle(locale = "fr", locales = ["en", "fr"]) {
   );
 }
 
+function trigger() {
+  return screen.getByRole("button", { name: "Langue" });
+}
+
+function listbox() {
+  return screen.getByRole("listbox", { name: "Langue" });
+}
+
 afterEach(cleanup);
 
-describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", () => {
+// Bloc 48/C: a native <select>'s open direction is decided by the
+// browser/OS (viewport space + which option is selected) — occasionally
+// upward, forcing an unwanted page scroll. Replaced by a custom ARIA
+// listbox (button trigger + role="listbox" popup) whose popup is always
+// `position: absolute`, anchored below the trigger — verified here via its
+// structure/classes and interaction behavior, not literal pixel geometry
+// (outside what jsdom can render).
+describe("LocaleToggle (Bloc 48/C: custom listbox, always opens downward)", () => {
   beforeEach(() => {
     localStorage.clear();
     refresh.mockReset();
@@ -40,32 +55,51 @@ describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", (
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("renders a single select, not a row of buttons", () => {
+  it("renders a single button trigger, not a native select", () => {
     renderToggle();
-    const select = screen.getByRole("combobox", { name: "Langue" });
-    expect(select).toBeVisible();
-    expect(screen.queryByRole("button")).toBeNull();
+    expect(trigger()).toBeVisible();
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.queryByRole("listbox")).toBeNull();
   });
 
-  it("Bloc 44: still offers all 5 activated locales as select options", () => {
+  it("shows the active locale on the trigger, uppercased", () => {
+    renderToggle("fr");
+    expect(trigger()).toHaveTextContent("FR");
+  });
+
+  it("opens a listbox positioned to always anchor below the trigger, regardless of which locale is active", () => {
+    for (const locale of ["en", "fr"]) {
+      renderToggle(locale);
+      fireEvent.click(trigger());
+      expect(listbox()).toHaveClass("locale-listbox");
+      cleanup();
+    }
+  });
+
+  it("Bloc 44: still offers all 5 activated locales as listbox options", () => {
     renderToggle("fr", ["de", "en", "es", "fr", "tr"]);
-    const select = screen.getByRole("combobox", { name: "Langue" });
-    const optionLabels = Array.from(select.querySelectorAll("option")).map(
-      (option) => option.textContent,
+    fireEvent.click(trigger());
+    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(options).toEqual(["DE", "EN", "ES", "FR", "TR"]);
+  });
+
+  it("marks the active locale as the selected option", () => {
+    renderToggle("fr");
+    fireEvent.click(trigger());
+    expect(screen.getByRole("option", { name: "FR" })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
-    expect(optionLabels).toEqual(["DE", "EN", "ES", "FR", "TR"]);
+    expect(screen.getByRole("option", { name: "EN" })).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
   });
 
-  it("shows the active locale as the select's current value", () => {
+  it("selects an option by click, persists the choice, refreshes, and closes the listbox", async () => {
     renderToggle("fr");
-    expect(screen.getByRole("combobox", { name: "Langue" })).toHaveValue("fr");
-  });
-
-  it("persists the selected language, refreshes the route, and mirrors the choice to localStorage", async () => {
-    renderToggle("fr");
-    fireEvent.change(screen.getByRole("combobox", { name: "Langue" }), {
-      target: { value: "en" },
-    });
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "EN" }));
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith("/api/locale", {
@@ -76,6 +110,41 @@ describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", (
       expect(refresh).toHaveBeenCalledOnce();
     });
     expect(localStorage.getItem("mlhelper_locale")).toBe("en");
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("navigates and selects with the keyboard (ArrowUp then Enter)", async () => {
+    // Opens with the active locale ("fr", index 1) highlighted — ArrowUp
+    // moves the highlight to "en" (index 0), Enter selects it.
+    renderToggle("fr", ["en", "fr"]);
+    fireEvent.click(trigger());
+    fireEvent.keyDown(listbox(), { key: "ArrowUp" });
+    fireEvent.keyDown(listbox(), { key: "Enter" });
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith("/api/locale", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ locale: "en" }),
+      }),
+    );
+  });
+
+  it("closes without selecting on Escape and returns focus to the trigger", () => {
+    renderToggle("fr");
+    fireEvent.click(trigger());
+    fireEvent.keyDown(listbox(), { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(trigger()).toHaveFocus();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("closes when clicking outside the component", () => {
+    renderToggle("fr");
+    fireEvent.click(trigger());
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("listbox")).toBeNull();
   });
 
   // Bloc 47/B: a previously-saved choice (e.g. the cookie got cleared
@@ -102,9 +171,8 @@ describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", (
   it("Codex review: does not persist or refresh when the server rejects the change", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     renderToggle("fr");
-    fireEvent.change(screen.getByRole("combobox", { name: "Langue" }), {
-      target: { value: "en" },
-    });
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "EN" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(refresh).not.toHaveBeenCalled();
@@ -114,9 +182,8 @@ describe("LocaleToggle (Bloc 47/A: styled select, not one button per locale)", (
   it("Codex review: does not persist or refresh when the request itself fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     renderToggle("fr");
-    fireEvent.change(screen.getByRole("combobox", { name: "Langue" }), {
-      target: { value: "en" },
-    });
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "EN" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(refresh).not.toHaveBeenCalled();

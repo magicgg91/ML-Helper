@@ -8,24 +8,15 @@ import { localizedText } from "../lib/translations";
 import type { EditorialLocale } from "./editorial-locale-select";
 import {
   consumableCategories,
+  type ConsumableCatalog,
   type ConsumableCategory,
   type ConsumableRow,
 } from "../lib/consumables";
 
-// Bloc 44 review: item name/description are flat fr/en-suffixed fields
-// (never omitted, only ever "" when blank), so localizedText()'s
-// missing-key fallback doesn't apply here — an explicit "" must still be
-// treated as absent. fr gets its own preference only for the fr locale
-// itself; every other locale (en included, and de/es/tr with no
-// item-level translation of their own) prefers en — the universal safety
-// net (Bloc 47/D review) — falling back to fr only if en is blank.
 function pickLocaleText(fr: string, en: string, locale: string): string {
   return locale === "fr" ? fr || en : en || fr;
 }
 
-// Bloc 46/C: mirrors reference-tables.tsx's Filters component (aria-pressed,
-// data-testid, cumulative multi-select), but for Consommables' single
-// category dimension only — no family/rarity here.
 function CategoryFilters({
   selected,
   toggle,
@@ -44,6 +35,10 @@ function CategoryFilters({
       <div>
         <span className="filter-label">{filterLabel}</span>
         <div className="family-buttons">
+          {/* Bloc 48/D: category button order follows consumableCategories
+              (alphabetical: Conseillers, Équipement, Expédition,
+              Inventaire) — kept in sync with the table display order
+              below, both driven by the same constant. */}
           {consumableCategories.map((category) => (
             <button
               type="button"
@@ -61,16 +56,74 @@ function CategoryFilters({
   );
 }
 
-// Bloc 43: the only reference with 2 public zones — a free-text markdown
-// block (filled in by the porteur de projet via admin) above the items
-// table. Costs are shown at raw value, never compacted to k/M (cdc section
-// 3.3 exception, same rule already applied to Gemmes' prices).
+function CategoryTable({
+  category,
+  rows,
+  categoryLabel,
+  t,
+  locale,
+}: {
+  category: ConsumableCategory;
+  rows: ConsumableRow[];
+  categoryLabel: (category: ConsumableCategory) => string;
+  t: (key: string) => string;
+  locale: string;
+}) {
+  return (
+    <section className="calculator-card ranking-table-wrap">
+      <h2 className="editable-reference-title">{categoryLabel(category)}</h2>
+      <div className="table-scroll">
+        <table className="ranking-table reference-table reference-simple-table consumables-table">
+          <thead>
+            <tr>
+              <th>{t("columns.image")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.description")}</th>
+              <th>{t("columns.cost")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => {
+              const name = pickLocaleText(row.name_fr, row.name_en, locale);
+              const description = pickLocaleText(
+                row.description_fr,
+                row.description_en,
+                locale,
+              );
+              return (
+                <tr key={`${row.image}-${index}`}>
+                  <td>
+                    <GameImage
+                      src={row.image}
+                      alt={name}
+                      className="reference-equipment-image"
+                      fallback={null}
+                    />
+                  </td>
+                  <td>{name}</td>
+                  <td>{description}</td>
+                  <td className="value">{row.cost || t("cost-unknown")}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+// Bloc 48/B: replaces the single filtered table (with a "Type" column) by
+// 4 fully independent tables, one per category — category is no longer a
+// column, it's which table a row lives in. A deselected filter button
+// fully removes its table from the DOM (Bloc41's full-hide pattern, not a
+// dim/opacity treatment).
 export function ConsumablesReferenceTable({
   intro,
-  rows,
+  catalog,
 }: {
   intro: Record<EditorialLocale, string>;
-  rows: ConsumableRow[];
+  catalog: ConsumableCatalog;
 }) {
   const t = useTranslations("references.consommables");
   const categoryLabel = useTranslations("references.consommables.categories");
@@ -89,10 +142,6 @@ export function ConsumablesReferenceTable({
     });
   }
 
-  const visibleRows = rows.filter((row) =>
-    selectedCategories.has(row.category),
-  );
-
   return (
     <div className="calculator-stack">
       {introText && <MarkdownRenderer markdown={introText} />}
@@ -103,47 +152,21 @@ export function ConsumablesReferenceTable({
         filtersLabel={t("filters.label")}
         filterLabel={t("filters.category")}
       />
-      <section className="calculator-card ranking-table-wrap">
-        <div className="table-scroll">
-          <table className="ranking-table reference-table reference-simple-table consumables-table">
-            <thead>
-              <tr>
-                <th>{t("columns.image")}</th>
-                <th>{t("columns.name")}</th>
-                <th>{t("columns.description")}</th>
-                <th>{t("columns.cost")}</th>
-                <th>{t("columns.category")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map((row, index) => {
-                const name = pickLocaleText(row.name_fr, row.name_en, locale);
-                const description = pickLocaleText(
-                  row.description_fr,
-                  row.description_en,
-                  locale,
-                );
-                return (
-                  <tr key={`${row.image}-${index}`}>
-                    <td>
-                      <GameImage
-                        src={row.image}
-                        alt={name}
-                        className="reference-equipment-image"
-                        fallback={null}
-                      />
-                    </td>
-                    <td>{name}</td>
-                    <td>{description}</td>
-                    <td className="value">{row.cost || t("cost-unknown")}</td>
-                    <td>{categoryLabel(row.category)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {/* Bloc 48/D: table order follows consumableCategories (alphabetical:
+          Conseillers, Équipement, Expédition, Inventaire), same order as
+          the filter buttons above. */}
+      {consumableCategories
+        .filter((category) => selectedCategories.has(category))
+        .map((category) => (
+          <CategoryTable
+            key={category}
+            category={category}
+            rows={catalog[category]}
+            categoryLabel={categoryLabel}
+            t={t}
+            locale={locale}
+          />
+        ))}
     </div>
   );
 }
