@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
-export const metadata: Metadata = {
-  title: "ML-Helper Admin",
-  description: "ML-Helper administration",
-};
+
+// Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
+// applied to every page in the app, public site included, since almost no
+// public page overrode `description` — the admin-specific title/robots now
+// live on /admin's own layout instead, and this root fallback describes
+// the public site (only ever shown on a page whose own generateMetadata
+// hasn't set a more specific description).
+// Codex review (PR #68): a static, French-only fallback text is wrong for
+// a visitor whose <html lang> is anything else — generateMetadata (not a
+// bare `export const metadata`) is what lets it follow the active locale,
+// same as every real page's own metadata already does. Reuses the exact
+// same string as the homepage's own intro sentence.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Home");
+  return { title: "ML Helper", description: t("intro") };
+}
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();
   const locale = await getLocale();

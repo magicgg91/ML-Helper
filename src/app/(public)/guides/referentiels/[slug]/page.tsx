@@ -10,6 +10,7 @@ import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 import {
   getCombatGemSlotsBase,
+  getCombatMergeCostBase,
   getCombatReferenceRows,
   getCombatSkydustBase,
   getExpeditionDismantleBase,
@@ -29,6 +30,7 @@ import {
   getConsumableRows,
   getConsumablesIntro,
 } from "@/lib/consumables-server";
+import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
@@ -36,8 +38,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) return {};
-  const t = await getTranslations("references");
-  return { title: t(`catalog.${reference.slug}`) };
+  const [t, publicT] = await Promise.all([
+    getTranslations("references"),
+    getTranslations("Public"),
+  ]);
+  const name = t(`catalog.${reference.slug}`);
+  return {
+    title: name,
+    description: publicT("descriptions.reference-detail", { name }),
+    alternates: {
+      languages: languageAlternates(`/guides/referentiels/${slug}`),
+    },
+  };
 }
 
 export default async function ReferencePage({
@@ -82,6 +94,7 @@ export default async function ReferencePage({
             rows={await getCombatReferenceRows()}
             skydustBase={await getCombatSkydustBase()}
             gemSlotsBase={await getCombatGemSlotsBase()}
+            mergeCostBase={await getCombatMergeCostBase()}
           />
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />

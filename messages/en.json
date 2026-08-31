@@ -416,7 +416,6 @@
   "Navigation": {
     "tools": "Tools",
     "guides": "Guides",
-    "admin": "Admin area",
     "menu": "Menu"
   },
   "search": {
@@ -435,7 +434,14 @@
     "guides": "Guides",
     "contact": "Contact",
     "admin": "Administration",
-    "legal": "Legal notice"
+    "legal": "Legal notice",
+    "descriptions": {
+      "guides": "Guides and reference tables for Million Lords: costs, stats and game mechanics verified by the community.",
+      "legal": "Legal notice for the ML Helper website.",
+      "guide-fallback": "A Million Lords guide on ML Helper.",
+      "admin": "ML Helper administration area.",
+      "reference-detail": "{name} reference for Million Lords on ML Helper: data verified by the community."
+    }
   },
   "contact": {
     "eyebrow": "Contact",
@@ -509,7 +515,8 @@
     "empty": "No published guide yet.",
     "no-results": "No guide matches these filters.",
     "detail": {
-      "eyebrow": "Guide in {category}"
+      "eyebrow": "Guide in {category}",
+      "not-translated": "This guide has not been translated into this language yet."
     }
   },
   "references": {
@@ -553,7 +560,8 @@
       "rarity": "Rarity",
       "skydust": "Skydust",
       "gems": "Gems",
-      "skill": "Skill {number}"
+      "skill": "Skill {number}",
+      "merge-cost": "Merge cost (Skydust)"
     },
     "complete-in-admin": "Complete in administration"
   },
@@ -892,7 +900,8 @@
       "remove": "Remove",
       "move-up": "Move up",
       "move-down": "Move down",
-      "empty": "No items yet."
+      "empty": "No items yet.",
+      "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star)."
     },
     "common": { "back": "Back" },
     "parameters": {

@@ -1,8 +1,23 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { getServerSession } from "next-auth";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import AdminLayout from "./layout";
+import AdminLayout, { generateMetadata } from "./layout";
 import { prisma } from "@/lib/prisma";
+
+// Bloc 42/J: the admin section has no organic-search value and must never
+// be indexed — this used to be the site-wide root metadata (applied to
+// every public page too, since none of them overrode `description`).
+// Codex review (PR #68): a real generateMetadata (not a static export)
+// so the title/description follow the active locale, same as every real
+// page's own metadata.
+describe("AdminLayout metadata (Bloc 42/J)", () => {
+  it("sets robots noindex/nofollow, plus a non-empty, locale-aware title/description", async () => {
+    const metadata = await generateMetadata();
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+    expect(metadata.title).toBeTruthy();
+    expect(metadata.description).toBeTruthy();
+  });
+});
 
 vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
 vi.mock("@/auth/options", () => ({ authOptions: {} }));

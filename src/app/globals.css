@@ -15,6 +15,12 @@
      --accent-strong (violet) for buttons, links, focus states, hover. */
   --gold: #c9a04a;
   --gold-bright: #e0bb63;
+  /* Bloc 42/C: the "Or" family filter's own color — distinct from --gold
+     above, which its own comment reserves for genuinely Legendary game
+     data. A warmer, more orange amber keeps the currency-adjacent feel
+     without reusing the Legendary token. */
+  --amber: #cc8a2e;
+  --amber-bright: #e8a94f;
   --emerald: #4a9179;
   --emerald-bright: #6ab596;
   --ember: #c05a3e;
@@ -50,6 +56,8 @@
   --border: #c5cad2;
   --gold: #9b6f1e;
   --gold-bright: #704b0e;
+  --amber: #8f5c14;
+  --amber-bright: #6e4410;
   --emerald: #35735f;
   /* Bloc 25/3rd pass: earlier attempts (Blocs 22/24) only tuned lightness —
      the summary colors already measured 8:1 WCAG AA but still read as dull
@@ -1736,6 +1744,16 @@ body > main h1 {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg);
+  /* Bloc 42/G: without this, a wide sibling panel (Consumables' item table,
+     whose own .ranking-table-wrap already scrolls horizontally on its own)
+     forces every panel sharing its parent .calculator-stack grid track to
+     grow to that same width — a CSS Grid item's default min-width is its
+     content's intrinsic min-width, not 0, so the grid track (and every
+     item in it, including an unrelated markdown editor above the table)
+     stretches to fit the widest one instead of letting that one table
+     scroll internally. min-width: 0 lets this panel shrink to the
+     container's actual width so overflow-x: auto below can do its job. */
+  min-width: 0;
 }
 .admin-panel h2,
 .admin-section-heading h2 {
@@ -1892,25 +1910,24 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .reference-admin-grid-field select {
   padding: 0.45rem 0.55rem;
 }
-/* Bloc 35/5.3, 6.3, 8.1, 9.1: narrow columns whose values never exceed 100%
-   (or another short, bounded range) — the wide default min-width above is
-   what forces those tables into horizontal scroll unnecessarily.
-   Bloc 37/A: still too wide after the first pass — sized down to what a
-   2-4 character percentage actually needs.
-   Bloc 40/C: doubled again — the stat/skill value columns specifically
-   (Combat's Valeur 1-4, Expedition's Valeur type/secondaire) still read as
-   too cramped at 3.25rem. */
+/* Bloc 42/H: the single canonical "compact admin numeric field" style —
+   fixed reasonable width, no spinner arrows (already global, see
+   main.admin-main input[type="number"] below), centered (also already
+   global). Apply .reference-admin-narrow to any admin numeric/select cell
+   whose values are short and bounded (a percentage, a small cost, a
+   skill×league value…): Combat's Valeur 1-4, Expedition's Valeur
+   type/secondaire, Gems' skill×league grid, Ranking's numeric columns,
+   Consumables' cost column all share this one class — do not add a new
+   per-screen width variant when this need comes up again.
+   History: Bloc 35/5.3, 6.3, 8.1, 9.1 first narrowed these columns (the
+   wide default min-width above forces horizontal scroll unnecessarily);
+   Bloc 37/A sized down further to a 2-4 character percentage; Bloc 37/F
+   split Gems into its own .gems-admin-narrow class (its cells needed
+   ~50% more room); Bloc 40/C widened again for Combat/Expedition's value
+   columns. Bloc 42/H folds that split back into one class at the wider
+   (Gems-proven) width instead of re-forking it a third time. */
 .reference-admin-narrow input,
 .reference-admin-narrow select {
-  min-width: 0;
-  width: 6.5rem;
-}
-/* Bloc 37/F: Gems' skill×league value grid is its own case, decoupled from
-   .reference-admin-narrow above — its cells shrank too far once the
-   horizontal scroll was fixed (Bloc 35/8.1), so they're sized up ~50%
-   from that original 4.5rem instead of following A's further reduction. */
-.gems-admin-narrow input,
-.gems-admin-narrow select {
   min-width: 0;
   width: 6.75rem;
 }

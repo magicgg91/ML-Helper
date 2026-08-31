@@ -12,6 +12,7 @@ import {
 import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
 import {
   getCombatGemSlotsBase,
+  getCombatMergeCostBase,
   getCombatReferenceRows,
   getCombatSkydustBase,
   getExpeditionDismantleBase,
@@ -59,6 +60,7 @@ export default async function EditGuidePage({
             initialRows={await getCombatReferenceRows()}
             skydustInitial={await getCombatSkydustBase()}
             gemSlotsInitial={await getCombatGemSlotsBase()}
+            mergeCostInitial={await getCombatMergeCostBase()}
           />
         ) : (
           <ExpeditionReferenceScreen

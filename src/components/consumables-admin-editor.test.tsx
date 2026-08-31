@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConsumablesReferenceScreen } from "./consumables-admin-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
@@ -65,6 +71,22 @@ describe("ConsumablesReferenceScreen", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Supprimer" })[0]);
     expect(screen.queryByLabelText("Ligne 2 Nom (FR)")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Ligne 1 Nom (FR)")).toHaveValue("Objet B");
+  });
+
+  // Bloc 42/I: this table was reordered in Bloc 41 and its row-scoped
+  // actions have no other stable identifier — a data-testid keyed on row
+  // position survives future redesigns that a text/role query wouldn't.
+  it("Bloc42/I: gives each row and its move/remove actions a stable, row-scoped data-testid", () => {
+    renderScreen();
+    expect(
+      within(screen.getByTestId("row-0")).getByLabelText("Ligne 1 Nom (FR)"),
+    ).toHaveValue("Objet A");
+    expect(
+      within(screen.getByTestId("row-1")).getByLabelText("Ligne 2 Nom (FR)"),
+    ).toHaveValue("Objet B");
+    expect(screen.getByTestId("move-up-0")).toBeDisabled();
+    expect(screen.getByTestId("move-down-1")).toBeDisabled();
+    expect(screen.getByTestId("remove-row-0")).toBeInTheDocument();
   });
 
   it("moves a row down/up by exactly 1 position, disabled at the boundaries", () => {

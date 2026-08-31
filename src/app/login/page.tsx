@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { LoginForm } from "@/components/login-form";
+
+// Bloc 42/J: an admin login page has no organic-search value.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function LoginPage() {
   const t = await getTranslations("login");
   return (

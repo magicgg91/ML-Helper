@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import ToolsPage from "./(public)/tools/page";
+import ToolsPage, { generateMetadata } from "./(public)/tools/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
@@ -23,6 +23,19 @@ vi.mock("@/lib/calculators-server", () => ({
 }));
 
 afterEach(cleanup);
+
+// Bloc 42/J: same requirement as every other public page — real
+// description, hreflang alternates for the 5 launched locales.
+describe("ToolsPage metadata (Bloc 42/J)", () => {
+  it("sets a non-empty description and hreflang alternates for all 5 locales", async () => {
+    const metadata = await generateMetadata();
+    expect(metadata.description).toBeTruthy();
+    const languages = metadata.alternates?.languages as
+      Record<string, string> | undefined;
+    expect(languages?.fr).toBe("https://ml-helper.com/tools");
+    expect(languages?.["x-default"]).toBe("https://ml-helper.com/tools");
+  });
+});
 
 describe("ToolsPage", () => {
   it("makes the whole card a link for an available category", async () => {

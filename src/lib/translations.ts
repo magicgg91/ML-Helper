@@ -53,3 +53,13 @@ export function localizedText(value: unknown, locale: string) {
   const translations = translationRecord(value);
   return translations[locale] ?? translations.fr ?? translations.en ?? "";
 }
+
+// Bloc 42/F: unlike localizedText() above, no fr/en fallback — checks
+// whether THIS exact locale has real content, for the one place (guide
+// editorial content) where a missing translation must show a visible
+// "not translated yet" placeholder instead of silently substituting
+// another language. Static UI text and the legal notice keep the silent
+// fallback via localizedText() — this helper is not for them.
+export function hasLocalizedText(value: unknown, locale: string): boolean {
+  return Boolean(translationRecord(value)[locale]);
+}

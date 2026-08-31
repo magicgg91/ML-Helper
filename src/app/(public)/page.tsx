@@ -9,8 +9,16 @@ import { ToolCategoryGrid } from "@/components/tool-category-grid";
 import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
+import { languageAlternates } from "@/lib/site-url";
 
-export const metadata: Metadata = { title: "ML Helper" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Home");
+  return {
+    title: "ML Helper",
+    description: t("intro"),
+    alternates: { languages: languageAlternates("/") },
+  };
+}
 
 export default async function HomePage() {
   await connection();

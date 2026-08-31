@@ -22,6 +22,7 @@ vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
   getCombatSkydustBase: async () => ({}),
   getCombatGemSlotsBase: async () => ({}),
+  getCombatMergeCostBase: async () => ({}),
   getExpeditionReferenceRows: async () => [],
   getExpeditionStarIncrements: async () => ({}),
   getExpeditionMergeCostBase: async () => ({}),

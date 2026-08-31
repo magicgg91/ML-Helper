@@ -27,12 +27,14 @@ import { formatGameNumber } from "../lib/city-calculators";
 import {
   combatValueAtStar,
   defaultCombatGemSlotsBase,
+  defaultCombatMergeCostBase,
   defaultCombatSkydustBase,
   defaultExpeditionDismantleBase,
   defaultExpeditionStarIncrements,
   expeditionValueAtStar,
   mergeCostRarityKeys,
   type CombatGemSlotsBase,
+  type CombatMergeCostBase,
   type CombatReferenceRow,
   type CombatSkydustBase,
   type ExpeditionDismantleBase,
@@ -141,6 +143,7 @@ function Filters({
                 type="button"
                 aria-pressed={selectedFamilies.has(item)}
                 key={item}
+                data-testid={`filter-family-${item}`}
                 style={
                   color
                     ? ({ "--pill-color": color } as CSSProperties)
@@ -164,6 +167,7 @@ function Filters({
                 type="button"
                 aria-pressed={rarities.has(item)}
                 key={item}
+                data-testid={`filter-rarity-${item}`}
                 style={
                   color
                     ? ({ "--pill-color": color } as CSSProperties)
@@ -362,10 +366,12 @@ export function CombatReferenceTable({
   rows,
   skydustBase = defaultCombatSkydustBase,
   gemSlotsBase = defaultCombatGemSlotsBase,
+  mergeCostBase = defaultCombatMergeCostBase,
 }: {
   rows: readonly CombatReferenceRow[];
   skydustBase?: CombatSkydustBase;
   gemSlotsBase?: CombatGemSlotsBase;
+  mergeCostBase?: CombatMergeCostBase;
 }) {
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
@@ -449,6 +455,12 @@ export function CombatReferenceTable({
         title={t("columns.gems")}
         rarityColumnLabel={t("columns.rarity")}
         base={gemSlotsBase}
+        rarityLabel={rarityLabel}
+      />
+      <RarityValueTable
+        title={t("columns.merge-cost")}
+        rarityColumnLabel={t("columns.rarity")}
+        base={mergeCostBase}
         rarityLabel={rarityLabel}
       />
     </div>

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   combatReferenceRows,
   defaultCombatGemSlotsBase,
+  defaultCombatMergeCostBase,
   defaultCombatSkydustBase,
   defaultExpeditionDismantleBase,
   defaultExpeditionMergeCostBase,
@@ -288,7 +289,7 @@ describe("complete lookup table administration", () => {
     expect(body[0].Commun).toBe("0");
   });
 
-  it("Bloc37/E: combines Combat's 3 tables under one top EditorActionBar, saved in a single action", async () => {
+  it("Bloc37/E: combines Combat's 4 tables under one top EditorActionBar, saved in a single action", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
@@ -297,18 +298,19 @@ describe("complete lookup table administration", () => {
         initialRows={[...combatReferenceRows]}
         skydustInitial={defaultCombatSkydustBase}
         gemSlotsInitial={defaultCombatGemSlotsBase}
+        mergeCostInitial={defaultCombatMergeCostBase}
       />,
     );
     expect(container.querySelectorAll(".editor-action-bar")).toHaveLength(1);
-    expect(container.querySelectorAll("button.primary-button")).toHaveLength(
-      0,
+    expect(container.querySelectorAll("button.primary-button")).toHaveLength(0);
+    expect(screen.getByRole("link", { name: /Retour/ })).toHaveAttribute(
+      "href",
+      "/admin/guides",
     );
-    expect(
-      screen.getByRole("link", { name: /Retour/ }),
-    ).toHaveAttribute("href", "/admin/guides");
 
     // Bloc 41/D: Pouciel and gem-slots render before the main table now.
-    const [skydust, gemSlots, main] = Array.from(
+    // Bloc 42/A: merge-cost joins them, same group.
+    const [skydust, gemSlots, mergeCost, main] = Array.from(
       container.querySelectorAll(".editable-reference"),
     );
     fireEvent.change(
@@ -323,24 +325,29 @@ describe("complete lookup table administration", () => {
       gemSlots.querySelector('input[aria-label="Ligne 1 Épique"]')!,
       { target: { value: "2" } },
     );
+    fireEvent.change(
+      mergeCost.querySelector('input[aria-label="Ligne 1 Rare"]')!,
+      { target: { value: "45" } },
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer toute la page" }),
     );
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
     const bodies = fetchMock.mock.calls.map(([, init]) =>
       JSON.parse(String(init?.body)),
     );
-    // Bloc 37/E fix (Codex review): Pouciel and gem-slots save before the
-    // main table, since its endpoint reads those bases and stamps them
-    // into every row — so they must land first, not race it.
+    // Bloc 37/E fix (Codex review): Pouciel, gem-slots and merge-cost save
+    // before the main table, since its endpoint reads those bases and
+    // stamps them into every row — so they must land first, not race it.
     expect(bodies[0][0].Commun).toBe("5");
     expect(bodies[1][0].Épique).toBe("2");
-    expect(bodies[2][0].set_name).toBe("Set modifié");
+    expect(bodies[2][0].Rare).toBe("45");
+    expect(bodies[3][0].set_name).toBe("Set modifié");
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   });
 
-  it("Bloc37/E fix: the Combat main table only saves after Pouciel and gem-slots have finished (no race on the stamped bases)", async () => {
+  it("Bloc37/E fix: the Combat main table only saves after Pouciel, gem-slots and merge-cost have finished (no race on the stamped bases)", async () => {
     const resolvers: Array<() => void> = [];
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(
       () =>
@@ -353,18 +360,20 @@ describe("complete lookup table administration", () => {
         initialRows={[...combatReferenceRows]}
         skydustInitial={defaultCombatSkydustBase}
         gemSlotsInitial={defaultCombatGemSlotsBase}
+        mergeCostInitial={defaultCombatMergeCostBase}
       />,
     );
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer toute la page" }),
     );
-    // Only Pouciel + gem-slots (the base tables) should have been sent so
-    // far — the main table's request must wait for them to resolve first.
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    resolvers.forEach((resolve) => resolve());
+    // Only Pouciel + gem-slots + merge-cost (the base tables) should have
+    // been sent so far — the main table's request must wait for them to
+    // resolve first.
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
-    resolvers[2]();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    resolvers.forEach((resolve) => resolve());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+    resolvers[3]();
     expect(await screen.findByText("Référentiel enregistré.")).toBeVisible();
   }, 15000); // above the 5s default — under full-suite parallel load this
   // render-heavy test has been observed to occasionally exceed it, even
@@ -377,6 +386,7 @@ describe("complete lookup table administration", () => {
         initialRows={[...combatReferenceRows]}
         skydustInitial={defaultCombatSkydustBase}
         gemSlotsInitial={defaultCombatGemSlotsBase}
+        mergeCostInitial={defaultCombatMergeCostBase}
       />,
     );
     // Bloc 41/D: Pouciel (skydust) is now the first table rendered.
@@ -411,9 +421,7 @@ describe("complete lookup table administration", () => {
       />,
     );
     expect(container.querySelectorAll(".editor-action-bar")).toHaveLength(1);
-    expect(container.querySelectorAll("button.primary-button")).toHaveLength(
-      0,
-    );
+    expect(container.querySelectorAll("button.primary-button")).toHaveLength(0);
     expect(container.querySelectorAll(".editable-reference")).toHaveLength(4);
 
     fireEvent.click(
@@ -429,18 +437,22 @@ describe("complete lookup table administration", () => {
         initialRows={[...combatReferenceRows]}
         skydustInitial={defaultCombatSkydustBase}
         gemSlotsInitial={defaultCombatGemSlotsBase}
+        mergeCostInitial={defaultCombatMergeCostBase}
       />,
     );
     const tables = Array.from(
       container.querySelectorAll(".editable-reference"),
     );
-    expect(tables).toHaveLength(3);
-    const [skydust, gemSlots, main] = tables;
+    expect(tables).toHaveLength(4);
+    const [skydust, gemSlots, mergeCost, main] = tables;
     expect(skydust.querySelector("p")?.textContent).toContain(
       "Pouciel à la destruction",
     );
     expect(gemSlots.querySelector("p")?.textContent).toContain(
       "Emplacements de gemmes",
+    );
+    expect(mergeCost.querySelector("p")?.textContent).toContain(
+      "Coût de fusion en Pouciel",
     );
     expect(main.querySelector("table")).not.toBeNull();
   });
@@ -451,15 +463,18 @@ describe("complete lookup table administration", () => {
         initialRows={[...combatReferenceRows]}
         skydustInitial={defaultCombatSkydustBase}
         gemSlotsInitial={defaultCombatGemSlotsBase}
+        mergeCostInitial={defaultCombatMergeCostBase}
       />,
     );
     // Bloc 41/D: Pouciel and gem-slots render before the main table now.
-    const [skydust, gemSlots, combatMain] = Array.from(
+    // Bloc 42/A: merge-cost joins them, same wide-inputs treatment.
+    const [skydust, gemSlots, combatMergeCost, combatMain] = Array.from(
       combatContainer.querySelectorAll(".editable-reference"),
     );
     expect(combatMain).not.toHaveClass("reference-admin-wide-inputs");
     expect(skydust).toHaveClass("reference-admin-wide-inputs");
     expect(gemSlots).toHaveClass("reference-admin-wide-inputs");
+    expect(combatMergeCost).toHaveClass("reference-admin-wide-inputs");
 
     const { container: expeditionContainer } = render(
       <ExpeditionReferenceScreen

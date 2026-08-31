@@ -14,6 +14,7 @@ import {
   expeditionStatKeys,
   mergeCostRarityKeys,
   type CombatGemSlotsBase,
+  type CombatMergeCostBase,
   type CombatReferenceRow,
   type CombatSkydustBase,
   type ExpeditionDismantleBase,
@@ -295,6 +296,28 @@ export const CombatGemSlotsAdmin = forwardRef<
   );
 });
 
+// Bloc 42/A: Combat's Pouciel merge cost per rarity — same pattern as
+// CombatSkydustAdmin/CombatGemSlotsAdmin above (1 row, 5 rarity columns,
+// table layout, never existed in code until this bloc despite being fully
+// confirmed in the cdc for a long time).
+export const CombatMergeCostAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: CombatMergeCostBase; standalone?: boolean }
+>(function CombatMergeCostAdmin({ initial, standalone }, ref) {
+  const t = useTranslations("admin.references");
+  return (
+    <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
+      wideInputs
+      initialRows={rarityBaseInitialRows(initial)}
+      columns={useRarityBaseColumns()}
+      endpoint="/api/admin/guides/references/combat-equipment-merge-cost"
+      description={t("combat-merge-cost-description")}
+    />
+  );
+});
+
 // Bloc 35/5.4: Famille, Rareté, Nom du set, Emplacement, Valeur stat
 // primaire, Stat secondaire, Valeur stat secondaire.
 export const ExpeditionReferenceAdmin = forwardRef<
@@ -506,16 +529,19 @@ export function CombatReferenceScreen({
   initialRows,
   skydustInitial,
   gemSlotsInitial,
+  mergeCostInitial,
 }: {
   initialRows: CombatReferenceRow[];
   skydustInitial: CombatSkydustBase;
   gemSlotsInitial: CombatGemSlotsBase;
+  mergeCostInitial: CombatMergeCostBase;
 }) {
   const mainRef = useRef<ReferenceTableHandle>(null);
   const skydustRef = useRef<ReferenceTableHandle>(null);
   const gemSlotsRef = useRef<ReferenceTableHandle>(null);
+  const mergeCostRef = useRef<ReferenceTableHandle>(null);
   const { status, saveAll, saveAllLabel } = useCombinedSave([
-    [skydustRef, gemSlotsRef],
+    [skydustRef, gemSlotsRef, mergeCostRef],
     [mainRef],
   ]);
   return (
@@ -531,7 +557,7 @@ export function CombatReferenceScreen({
       </EditorActionBar>
       {/* Bloc 41/D: Pouciel and gem-slots moved ahead of the 180-row main
           table — they're short, single-row config tables that were easy to
-          miss scrolled past all that. */}
+          miss scrolled past all that. Bloc 42/A: merge-cost joins them. */}
       <CombatSkydustAdmin
         ref={skydustRef}
         initial={skydustInitial}
@@ -540,6 +566,11 @@ export function CombatReferenceScreen({
       <CombatGemSlotsAdmin
         ref={gemSlotsRef}
         initial={gemSlotsInitial}
+        standalone={false}
+      />
+      <CombatMergeCostAdmin
+        ref={mergeCostRef}
+        initial={mergeCostInitial}
         standalone={false}
       />
       <CombatReferenceAdmin

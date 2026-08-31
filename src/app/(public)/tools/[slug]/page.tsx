@@ -19,6 +19,7 @@ import {
 } from "../../../../lib/reference-equipment-server";
 import { getTranslations } from "next-intl/server";
 import { pageTitle } from "../../../../lib/page-title";
+import { languageAlternates } from "../../../../lib/site-url";
 
 const toolTitleKeys: Record<string, string> = {
   villes: "cities",
@@ -37,7 +38,11 @@ export async function generateMetadata({
     getTranslations("Public"),
     getTranslations("tools"),
   ]);
-  return { title: pageTitle(publicTranslations("tools"), tools(key)) };
+  return {
+    title: pageTitle(publicTranslations("tools"), tools(key)),
+    description: tools("subtitle"),
+    alternates: { languages: languageAlternates(`/tools/${slug}`) },
+  };
 }
 
 export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {

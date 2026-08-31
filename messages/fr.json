@@ -440,7 +440,14 @@
     "guides": "Guides",
     "contact": "Contact",
     "admin": "Administration",
-    "legal": "Mentions légales"
+    "legal": "Mentions légales",
+    "descriptions": {
+      "guides": "Guides et référentiels de données pour Million Lords : coûts, statistiques et mécaniques de jeu vérifiés par la communauté.",
+      "legal": "Mentions légales du site ML Helper.",
+      "guide-fallback": "Un guide Million Lords sur ML Helper.",
+      "admin": "Espace d’administration de ML Helper.",
+      "reference-detail": "Référentiel {name} pour Million Lords sur ML Helper : données vérifiées par la communauté."
+    }
   },
   "contact": {
     "eyebrow": "Contact",
@@ -514,7 +521,8 @@
     "empty": "Aucun guide publié pour le moment.",
     "no-results": "Aucun guide ne correspond à ces filtres.",
     "detail": {
-      "eyebrow": "Guide · {category}"
+      "eyebrow": "Guide · {category}",
+      "not-translated": "Ce guide n’est pas encore traduit dans cette langue."
     }
   },
   "references": {
@@ -558,7 +566,8 @@
       "rarity": "Rareté",
       "skydust": "Pouciel",
       "gems": "Gemmes",
-      "skill": "Compétence {number}"
+      "skill": "Compétence {number}",
+      "merge-cost": "Coût de fusion (Pouciel)"
     },
     "complete-in-admin": "À compléter en admin"
   },
@@ -893,7 +902,8 @@
       "remove": "Supprimer",
       "move-up": "Monter",
       "move-down": "Descendre",
-      "empty": "Aucun objet pour l’instant."
+      "empty": "Aucun objet pour l’instant.",
+      "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ)."
     },
     "common": { "back": "Retour" },
     "parameters": {

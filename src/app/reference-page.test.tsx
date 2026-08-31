@@ -1,6 +1,8 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import ReferencePage from "./(public)/guides/referentiels/[slug]/page";
+import ReferencePage, {
+  generateMetadata,
+} from "./(public)/guides/referentiels/[slug]/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => {
@@ -50,6 +52,7 @@ vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
   getCombatSkydustBase: async () => ({}),
   getCombatGemSlotsBase: async () => ({}),
+  getCombatMergeCostBase: async () => ({}),
   getExpeditionReferenceRows: async () => [],
   getExpeditionStarIncrements: async () => ({}),
   getExpeditionDismantleBase: async () => ({}),
@@ -61,6 +64,26 @@ vi.mock("@/lib/admin-formulas-server", () => ({
 }));
 
 afterEach(cleanup);
+
+// Bloc 42/J: same requirement as every other public page — real
+// description, hreflang alternates for the 5 launched locales.
+describe("ReferencePage metadata (Bloc 42/J)", () => {
+  it("sets a non-empty description and hreflang alternates for all 5 locales", async () => {
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: "combat-equipment" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).toBeTruthy();
+    const languages = metadata.alternates?.languages as
+      Record<string, string> | undefined;
+    expect(languages?.fr).toBe(
+      "https://ml-helper.com/guides/referentiels/combat-equipment",
+    );
+    expect(languages?.["x-default"]).toBe(
+      "https://ml-helper.com/guides/referentiels/combat-equipment",
+    );
+  });
+});
 
 describe("ReferencePage", () => {
   it("Bloc35 1.3: gives the title a one-line class, same treatment as the tools page", async () => {
