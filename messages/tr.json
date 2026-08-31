@@ -537,12 +537,22 @@
       "expedition-equipment": "Keşif Ekipmanı",
       "level-up": "Seviye Atlama",
       "templiers": "Tapınak Şövalyesi Maliyeti",
-      "gemmes": "Mücevherler"
+      "gemmes": "Mücevherler",
+      "consommables": "Tüketim Malzemeleri"
     },
     "tabs-label": "Referans tabloları",
     "disabled-tooltip": "Devre dışı — şu anda kullanılamıyor",
     "unavailable": "Bu referans tabloları geçici olarak kullanılamıyor.",
-    "single-unavailable": "Bu referans tablosu geçici olarak kullanılamıyor."
+    "single-unavailable": "Bu referans tablosu geçici olarak kullanılamıyor.",
+    "consommables": {
+      "columns": {
+        "cost": "Maliyet (Safir)",
+        "description": "Açıklama",
+        "image": "Görsel",
+        "name": "Ad"
+      },
+      "cost-unknown": "Belirlenmedi"
+    }
   },
   "combat-equipment": {
     "name": "Savaş Ekipmanı",
@@ -708,7 +718,8 @@
         "expedition-equipment": "Keşif Ekipmanı",
         "level-up": "Seviye Atlama",
         "templiers": "Tapınak Şövalyeleri",
-        "gemmes": "Mücevherler"
+        "gemmes": "Mücevherler",
+        "consommables": "Tüketim Malzemeleri"
       },
       "disabled-tooltip": "Devre dışı ve genel siteden gizli",
       "status-label": "{title} durumu",
@@ -723,7 +734,8 @@
       "enabled": "Rehber etkinleştirildi.",
       "disabled": "Rehber devre dışı bırakıldı.",
       "delete-forbidden": "Rolün bu rehberi silmeye izin vermiyor.",
-      "deleted": "Rehber kalıcı olarak silindi."
+      "deleted": "Rehber kalıcı olarak silindi.",
+      "reference-consommables": "Tüketim Malzemelerini düzenle"
     },
     "guide-editor": {
       "language-label": "Rehber dili",
@@ -870,7 +882,28 @@
       "all": "Tümü",
       "filters": {
         "skill": "Yetenek"
-      }
+      },
+      "add": "Öğe ekle",
+      "consumables-columns": {
+        "cost": "Maliyet (Safir)",
+        "description-en": "Açıklama (EN)",
+        "description-fr": "Açıklama (FR)",
+        "image": "Görsel yolu",
+        "name-en": "Ad (EN)",
+        "name-fr": "Ad (FR)"
+      },
+      "consumables-intro-description": "Genel Tüketim Malzemeleri referans sayfasının üst kısmında görüntülenen serbest metin markdown alanı.",
+      "consumables-intro-error": "Giriş kaydedilmedi (öğeler kaydedildi).",
+      "consumables-intro-label": "Giriş (markdown)",
+      "consumables-intro-language-label": "Metin dili",
+      "consumables-intro-title": "Giriş metni",
+      "consumables-rows-error": "Öğeler kaydedilmedi (giriş kaydedildi).",
+      "consumables-table-description": "Tüketim malzemesi öğelerini serbestçe ekle, yeniden sırala veya kaldır. Onaylanana kadar maliyeti boş bırak — satır sırası genel görüntüleme sırasıdır.",
+      "consumables-table-title": "Öğeler",
+      "empty": "Henüz öğe yok.",
+      "move-down": "Aşağı taşı",
+      "move-up": "Yukarı taşı",
+      "remove": "Kaldır"
     },
     "common": {
       "back": "Geri"

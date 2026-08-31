@@ -537,12 +537,22 @@
       "expedition-equipment": "Equipo de Expedición",
       "level-up": "Subida de Nivel",
       "templiers": "Coste de Templarios",
-      "gemmes": "Gemas"
+      "gemmes": "Gemas",
+      "consommables": "Consumibles"
     },
     "tabs-label": "Tablas de referencia",
     "disabled-tooltip": "Desactivada — no disponible actualmente",
     "unavailable": "Estas tablas de referencia no están disponibles temporalmente.",
-    "single-unavailable": "Esta tabla de referencia no está disponible temporalmente."
+    "single-unavailable": "Esta tabla de referencia no está disponible temporalmente.",
+    "consommables": {
+      "columns": {
+        "cost": "Coste (Zafiros)",
+        "description": "Descripción",
+        "image": "Imagen",
+        "name": "Nombre"
+      },
+      "cost-unknown": "No definido"
+    }
   },
   "combat-equipment": {
     "name": "Equipo de Combate",
@@ -708,7 +718,8 @@
         "expedition-equipment": "Equipo de Expedición",
         "level-up": "Subida de Nivel",
         "templiers": "Templarios",
-        "gemmes": "Gemas"
+        "gemmes": "Gemas",
+        "consommables": "Consumibles"
       },
       "disabled-tooltip": "Desactivada y oculta del sitio público",
       "status-label": "Estado de {title}",
@@ -723,7 +734,8 @@
       "enabled": "Guía activada.",
       "disabled": "Guía desactivada.",
       "delete-forbidden": "Tu rol no permite eliminar esta guía.",
-      "deleted": "Guía eliminada permanentemente."
+      "deleted": "Guía eliminada permanentemente.",
+      "reference-consommables": "Editar Consumibles"
     },
     "guide-editor": {
       "language-label": "Idioma de la guía",
@@ -870,7 +882,28 @@
       "all": "Todas",
       "filters": {
         "skill": "Habilidad"
-      }
+      },
+      "add": "Añadir un objeto",
+      "consumables-columns": {
+        "cost": "Coste (Zafiros)",
+        "description-en": "Descripción (EN)",
+        "description-fr": "Descripción (FR)",
+        "image": "Ruta de la imagen",
+        "name-en": "Nombre (EN)",
+        "name-fr": "Nombre (FR)"
+      },
+      "consumables-intro-description": "Zona de texto libre en markdown, mostrada en la parte superior de la página pública de referencia de Consumibles.",
+      "consumables-intro-error": "Introducción no guardada (los objetos se guardaron).",
+      "consumables-intro-label": "Introducción (markdown)",
+      "consumables-intro-language-label": "Idioma del texto",
+      "consumables-intro-title": "Texto de introducción",
+      "consumables-rows-error": "Objetos no guardados (la introducción se guardó).",
+      "consumables-table-description": "Añade, reordena o elimina objetos consumibles libremente. Deja el coste vacío hasta que esté confirmado — el orden de las filas es el orden de visualización público.",
+      "consumables-table-title": "Objetos",
+      "empty": "Aún no hay objetos.",
+      "move-down": "Mover hacia abajo",
+      "move-up": "Mover hacia arriba",
+      "remove": "Eliminar"
     },
     "common": {
       "back": "Atrás"

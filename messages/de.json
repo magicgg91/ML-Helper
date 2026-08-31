@@ -537,12 +537,22 @@
       "expedition-equipment": "Expeditionsausrüstung",
       "level-up": "Stufenaufstieg",
       "templiers": "Templerkosten",
-      "gemmes": "Edelsteine"
+      "gemmes": "Edelsteine",
+      "consommables": "Verbrauchsgüter"
     },
     "tabs-label": "Referenztabellen",
     "disabled-tooltip": "Deaktiviert — derzeit nicht verfügbar",
     "unavailable": "Diese Referenztabellen sind vorübergehend nicht verfügbar.",
-    "single-unavailable": "Diese Referenztabelle ist vorübergehend nicht verfügbar."
+    "single-unavailable": "Diese Referenztabelle ist vorübergehend nicht verfügbar.",
+    "consommables": {
+      "columns": {
+        "cost": "Kosten (Saphire)",
+        "description": "Beschreibung",
+        "image": "Bild",
+        "name": "Name"
+      },
+      "cost-unknown": "Nicht festgelegt"
+    }
   },
   "combat-equipment": {
     "name": "Kampfausrüstung",
@@ -708,7 +718,8 @@
         "expedition-equipment": "Expeditionsausrüstung",
         "level-up": "Stufenaufstieg",
         "templiers": "Templer",
-        "gemmes": "Edelsteine"
+        "gemmes": "Edelsteine",
+        "consommables": "Verbrauchsgüter"
       },
       "disabled-tooltip": "Deaktiviert und auf der öffentlichen Website ausgeblendet",
       "status-label": "Status von {title}",
@@ -723,7 +734,8 @@
       "enabled": "Anleitung aktiviert.",
       "disabled": "Anleitung deaktiviert.",
       "delete-forbidden": "Deine Rolle erlaubt das Löschen dieser Anleitung nicht.",
-      "deleted": "Anleitung dauerhaft gelöscht."
+      "deleted": "Anleitung dauerhaft gelöscht.",
+      "reference-consommables": "Verbrauchsgüter bearbeiten"
     },
     "guide-editor": {
       "language-label": "Anleitungssprache",
@@ -870,7 +882,28 @@
       "all": "Alle",
       "filters": {
         "skill": "Fähigkeit"
-      }
+      },
+      "add": "Objekt hinzufügen",
+      "consumables-columns": {
+        "cost": "Kosten (Saphire)",
+        "description-en": "Beschreibung (EN)",
+        "description-fr": "Beschreibung (FR)",
+        "image": "Bildpfad",
+        "name-en": "Name (EN)",
+        "name-fr": "Name (FR)"
+      },
+      "consumables-intro-description": "Freier Markdown-Textbereich, der oben auf der öffentlichen Konsumgüter-Referenzseite angezeigt wird.",
+      "consumables-intro-error": "Einleitung nicht gespeichert (Objekte wurden gespeichert).",
+      "consumables-intro-label": "Einleitung (Markdown)",
+      "consumables-intro-language-label": "Textsprache",
+      "consumables-intro-title": "Einleitungstext",
+      "consumables-rows-error": "Objekte nicht gespeichert (die Einleitung wurde gespeichert).",
+      "consumables-table-description": "Füge Verbrauchsgüter-Objekte frei hinzu, ordne sie neu an oder entferne sie. Lasse die Kosten leer, bis sie bestätigt sind — die Zeilenreihenfolge ist die öffentliche Anzeigereihenfolge.",
+      "consumables-table-title": "Objekte",
+      "empty": "Noch keine Objekte.",
+      "move-down": "Nach unten verschieben",
+      "move-up": "Nach oben verschieben",
+      "remove": "Entfernen"
     },
     "common": {
       "back": "Zurück"
