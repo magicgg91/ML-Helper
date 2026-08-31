@@ -14,7 +14,11 @@ import {
   EditorialLocaleSelect,
   type EditorialLocale,
 } from "./editorial-locale-select";
-import { emptyConsumableRow, type ConsumableRow } from "../lib/consumables";
+import {
+  consumableCategories,
+  emptyConsumableRow,
+  type ConsumableRow,
+} from "../lib/consumables";
 
 // Bloc 43: Consumables is the first reference with free row CRUD (add,
 // remove, 1-position reorder) and a free-text markdown zone, alongside its
@@ -29,6 +33,7 @@ export function ConsumablesReferenceScreen({
   introInitial: Record<EditorialLocale, string>;
 }) {
   const t = useTranslations("admin.references");
+  const categoryLabel = useTranslations("references.consommables.categories");
   const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [intro, setIntro] = useState(introInitial);
   const [rows, setRows] = useState<ConsumableRow[]>(initialRows);
@@ -60,6 +65,15 @@ export function ConsumablesReferenceScreen({
         min: 0,
         step: 1,
         narrow: true,
+      },
+      {
+        key: "category",
+        label: t("consumables-columns.category"),
+        type: "select",
+        options: consumableCategories.map((category) => ({
+          value: category,
+          label: categoryLabel(category),
+        })),
       },
     ] as EditableColumn<ConsumableRow>[]
   ).map((column) => ({

@@ -3,6 +3,7 @@ import {
   consumablesIntroKey,
   defaultConsumableRows,
   defaultConsumablesIntro,
+  parseConsumableCategory,
   type ConsumableRow,
 } from "./consumables";
 import {
@@ -17,9 +18,12 @@ export async function getConsumableRows(): Promise<ConsumableRow[]> {
   const table = await prisma.referenceTable.findUnique({
     where: { key: consumablesReferenceKey },
   });
-  return Array.isArray(table?.rows)
-    ? (table.rows as ConsumableRow[])
-    : [...defaultConsumableRows];
+  if (!Array.isArray(table?.rows)) return [...defaultConsumableRows];
+  // Bloc 46/C: normalizes rows saved before the category field existed.
+  return (table.rows as ConsumableRow[]).map((row) => ({
+    ...row,
+    category: parseConsumableCategory(row.category),
+  }));
 }
 
 // Bloc 44: only fr/en have a (empty) fallback in defaultConsumablesIntro —

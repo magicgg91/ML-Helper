@@ -67,6 +67,28 @@ describe("EditableDataTable", () => {
     expect(onMove).toHaveBeenCalledWith(1, -1);
   });
 
+  it("Bloc46/B: renders the move buttons as arrow icons, not text", () => {
+    render(
+      <EditableDataTable
+        rows={[
+          { name: "Alpha", amount: "1" },
+          { name: "Beta", amount: "2" },
+        ]}
+        columns={columns}
+        onChange={vi.fn()}
+        onMove={vi.fn()}
+        moveUpLabel="Monter"
+        moveDownLabel="Descendre"
+      />,
+    );
+    const up = screen.getAllByRole("button", { name: "Monter" });
+    const down = screen.getAllByRole("button", { name: "Descendre" });
+    for (const button of [...up, ...down]) {
+      expect(button).toHaveTextContent("");
+      expect(button.querySelector("svg")).toBeInTheDocument();
+    }
+  });
+
   it("Bloc43: renders no move buttons at all when onMove is omitted (Ranking's own usage)", () => {
     render(
       <EditableDataTable

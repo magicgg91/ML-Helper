@@ -19,6 +19,15 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
+  it("Bloc46/A: Consommables' own image size is 5rem, distinct from the shared 3rem rule", () => {
+    const rule = css.match(
+      /\.consumables-table \.reference-equipment-image\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 5rem;/);
+    expect(rule).toMatch(/height: 5rem;/);
+  });
+
   it("C: wraps the Gemmes image and its % value in one inline-flex row", () => {
     expect(css).toMatch(/\.gems-value-row\s*{\s*display: inline-flex;/);
   });
@@ -140,10 +149,8 @@ describe("Bloc 40: reference tile fixes", () => {
     );
   });
 
-  it("H: sizes .reference-tile-skills at 0.69em so \"Consommables\" + its % fit on one line", () => {
-    const rule = css.match(
-      /\.reference-tile-skills\s*{([\s\S]*?)\n}/,
-    )?.[1];
+  it('H: sizes .reference-tile-skills at 0.69em so "Consommables" + its % fit on one line', () => {
+    const rule = css.match(/\.reference-tile-skills\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/font-size: 0\.69em;/);
   });

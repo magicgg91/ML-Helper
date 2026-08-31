@@ -1473,6 +1473,14 @@ select,
   object-fit: contain;
 }
 
+/* Bloc 46/A: Consommables' own image size, distinct from the 3rem shared by
+   Combat/Expedition/Gemmes (Bloc 38) — scoped to this référentiel's table
+   only, doesn't touch the shared rule above. */
+.consumables-table .reference-equipment-image {
+  width: 5rem;
+  height: 5rem;
+}
+
 /* Bloc 39: Combat/Expedition tile grid — replaces the old per-row table for
    these 2 references only (Gemmes/Templiers/Level Up keep their table).
    Two set-blocks side by side make up the required "6 tiles wide" — each
