@@ -18,11 +18,18 @@ import { prisma } from "@/lib/prisma";
 // site-wide root default, applied to every public page too) plus noindex —
 // an admin login/dashboard has no organic-search value and shouldn't be
 // crawled or indexed at all.
-export const metadata: Metadata = {
-  title: "ML-Helper Admin",
-  description: "ML-Helper administration",
-  robots: { index: false, follow: false },
-};
+// Codex review (PR #68): a static, English-only description is wrong for
+// an admin whose active locale is anything else — generateMetadata (not a
+// bare `export const metadata`) lets it follow the active locale, same as
+// every real page's own metadata already does.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Public");
+  return {
+    title: `ML-Helper ${t("admin")}`,
+    description: t("descriptions.admin"),
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);

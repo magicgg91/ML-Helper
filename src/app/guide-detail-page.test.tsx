@@ -79,6 +79,28 @@ describe("GuidePage metadata (Bloc 42/J)", () => {
     });
     expect(metadata.description).toBeTruthy();
   });
+
+  // Codex review (PR #68): localizedText() falls back fr/en, which used to
+  // put a French excerpt in the description for a locale (e.g. DE) that
+  // has none — while the page body already shows the "not translated"
+  // placeholder (Bloc 42/F) for that same locale. hasLocalizedText() must
+  // gate the excerpt choice so the description and the body agree.
+  it("uses the generic fallback, not another locale's excerpt, when this locale has no excerpt of its own", async () => {
+    locale = "de";
+    guide = {
+      slug: "guide-fr-excerpt-only",
+      category: JSON.stringify(["debuter"]),
+      title: { fr: "Guide", en: "Guide" },
+      excerpt: { fr: "Résumé en français uniquement" },
+      content: { fr: "# Bonjour", en: "# Hello" },
+    };
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: "guide-fr-excerpt-only" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).not.toBe("Résumé en français uniquement");
+    expect(metadata.description).toBeTruthy();
+  });
 });
 
 // Bloc 42/F: guides are only really written by hand in FR/EN — a missing

@@ -21,11 +21,16 @@ export async function generateMetadata({
   const t = await getTranslations("Public");
   return {
     title: pageTitle(t("guides"), localizedText(guide.title, locale) || slug),
-    // Bloc 42/J: the guide's own excerpt when this locale has one — much
-    // more useful than a generic sentence — falling back to a generic,
-    // page-type description (never empty) when it doesn't.
-    description:
-      localizedText(guide.excerpt, locale) || t("descriptions.guide-fallback"),
+    // Bloc 42/J: the guide's own excerpt when THIS locale actually has one
+    // — much more useful than a generic sentence — falling back to a
+    // generic, page-type description (never empty) otherwise. Codex review
+    // (PR #68): hasLocalizedText(), not localizedText() — the latter falls
+    // back to fr/en, which would silently put a French or English excerpt
+    // in the description while the page body shows the "not translated"
+    // placeholder (Bloc 42/F) for that same locale.
+    description: hasLocalizedText(guide.excerpt, locale)
+      ? localizedText(guide.excerpt, locale)
+      : t("descriptions.guide-fallback"),
     alternates: { languages: languageAlternates(`/guides/${slug}`) },
   };
 }

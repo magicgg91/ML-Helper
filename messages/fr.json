@@ -445,6 +445,7 @@
       "guides": "Guides et référentiels de données pour Million Lords : coûts, statistiques et mécaniques de jeu vérifiés par la communauté.",
       "legal": "Mentions légales du site ML Helper.",
       "guide-fallback": "Un guide Million Lords sur ML Helper.",
+      "admin": "Espace d’administration de ML Helper.",
       "reference-detail": "Référentiel {name} pour Million Lords sur ML Helper : données vérifiées par la communauté."
     }
   },
