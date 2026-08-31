@@ -26,7 +26,7 @@ export function ConsumablesReferenceScreen({
   introInitial,
 }: {
   initialRows: ConsumableRow[];
-  introInitial: { fr: string; en: string };
+  introInitial: Record<EditorialLocale, string>;
 }) {
   const t = useTranslations("admin.references");
   const [locale, setLocale] = useState<EditorialLocale>("fr");

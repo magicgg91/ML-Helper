@@ -1,6 +1,7 @@
 import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/guide-editor";
+import { launchRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 
 export default async function NewGuidePage() {
@@ -17,10 +18,11 @@ export default async function NewGuidePage() {
           category: ["debuter"],
           coverImage: "",
           status: "draft",
-          translations: {
-            fr: { title: "", excerpt: "", content: "" },
-            en: { title: "", excerpt: "", content: "" },
-          },
+          translations: launchRecord(() => ({
+            title: "",
+            excerpt: "",
+            content: "",
+          })),
         }}
       />
     </main>

@@ -4,6 +4,8 @@ import { ConsumablesReferenceTable } from "./consumables-reference";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import type { ConsumableRow } from "../lib/consumables";
 
+const emptyIntro = { fr: "", en: "", de: "", es: "", tr: "" };
+
 const rows: ConsumableRow[] = [
   {
     image: "/consumables/mighty-jar.webp",
@@ -29,7 +31,11 @@ describe("ConsumablesReferenceTable", () => {
   it("renders the markdown intro zone above the items table", () => {
     render(
       <ConsumablesReferenceTable
-        intro={{ fr: "## Introduction FR", en: "## Introduction EN" }}
+        intro={{
+          ...emptyIntro,
+          fr: "## Introduction FR",
+          en: "## Introduction EN",
+        }}
         rows={rows}
       />,
     );
@@ -40,24 +46,18 @@ describe("ConsumablesReferenceTable", () => {
   });
 
   it("skips the intro zone entirely when it's still empty (nothing invented)", () => {
-    render(
-      <ConsumablesReferenceTable intro={{ fr: "", en: "" }} rows={rows} />,
-    );
+    render(<ConsumablesReferenceTable intro={emptyIntro} rows={rows} />);
     expect(document.querySelector(".markdown-content")).not.toBeInTheDocument();
   });
 
   it("shows the raw cost, never compacted to k/M", () => {
-    render(
-      <ConsumablesReferenceTable intro={{ fr: "", en: "" }} rows={rows} />,
-    );
+    render(<ConsumablesReferenceTable intro={emptyIntro} rows={rows} />);
     expect(screen.getByText("10500")).toBeInTheDocument();
     expect(screen.queryByText(/10[.,]5k/i)).not.toBeInTheDocument();
   });
 
   it("shows a placeholder instead of inventing a value for an unconfirmed cost", () => {
-    render(
-      <ConsumablesReferenceTable intro={{ fr: "", en: "" }} rows={rows} />,
-    );
+    render(<ConsumablesReferenceTable intro={emptyIntro} rows={rows} />);
     expect(screen.getByText("Non défini")).toBeInTheDocument();
   });
 
@@ -66,10 +66,7 @@ describe("ConsumablesReferenceTable", () => {
       { ...rows[0], name_en: "", description_en: "" },
     ];
     render(
-      <ConsumablesReferenceTable
-        intro={{ fr: "", en: "" }}
-        rows={rowsMissingEn}
-      />,
+      <ConsumablesReferenceTable intro={emptyIntro} rows={rowsMissingEn} />,
       "en",
     );
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();

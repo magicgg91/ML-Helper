@@ -25,7 +25,13 @@ function renderScreen() {
   return render(
     <ConsumablesReferenceScreen
       initialRows={[rowA, rowB]}
-      introInitial={{ fr: "## Intro FR", en: "## Intro EN" }}
+      introInitial={{
+        fr: "## Intro FR",
+        en: "## Intro EN",
+        de: "",
+        es: "",
+        tr: "",
+      }}
     />,
   );
 }
@@ -121,7 +127,13 @@ describe("ConsumablesReferenceScreen", () => {
     expect(url).toBe("/api/admin/content/consumables-intro");
     expect(init?.method).toBe("PATCH");
     expect(JSON.parse(String(init?.body))).toEqual({
-      content: { fr: "## Nouvelle intro", en: "## Intro EN" },
+      content: {
+        fr: "## Nouvelle intro",
+        en: "## Intro EN",
+        de: "",
+        es: "",
+        tr: "",
+      },
     });
   });
 });

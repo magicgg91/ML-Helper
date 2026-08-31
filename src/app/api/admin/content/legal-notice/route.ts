@@ -4,10 +4,20 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { auditMessage } from "@/lib/audit-message";
 import { legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
+import { dropEmptyLocales } from "@/lib/translations";
 
-const localeContent = z.string().trim().min(1).max(100_000);
+// Bloc 44: fr/en stay required (unchanged) — DE/ES/TR are activated but
+// their content arrives gradually via admin, never invented here.
+const requiredLocale = z.string().trim().min(1).max(100_000);
+const optionalLocale = z.string().trim().max(100_000);
 const schema = z.object({
-  content: z.object({ fr: localeContent, en: localeContent }),
+  content: z.object({
+    fr: requiredLocale,
+    en: requiredLocale,
+    de: optionalLocale,
+    es: optionalLocale,
+    tr: optionalLocale,
+  }),
 });
 
 export async function PATCH(request: Request) {
@@ -20,7 +30,7 @@ export async function PATCH(request: Request) {
   const before = await prisma.staticContent.findUnique({
     where: { key: legalNoticeKey },
   });
-  const content = parsed.data.content;
+  const content = dropEmptyLocales(parsed.data.content);
   const updated = await prisma.$transaction(async (tx) => {
     const item = await tx.staticContent.upsert({
       where: { key: legalNoticeKey },

@@ -16,6 +16,9 @@ describe("LegalNoticeEditor", () => {
         initialContent={{
           fr: "## Ancien texte",
           en: "## Old text",
+          de: "",
+          es: "",
+          tr: "",
         }}
       />,
     );
@@ -47,7 +50,13 @@ describe("LegalNoticeEditor", () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
-      content: { fr: "## Nouveau\n\nTexte légal", en: "## Old text" },
+      content: {
+        fr: "## Nouveau\n\nTexte légal",
+        en: "## Old text",
+        de: "",
+        es: "",
+        tr: "",
+      },
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Mentions légales enregistrées.",
@@ -63,6 +72,9 @@ describe("LegalNoticeEditor", () => {
         initialContent={{
           fr: "## Ancien texte",
           en: "## Old text",
+          de: "",
+          es: "",
+          tr: "",
         }}
       />,
     );
@@ -77,7 +89,33 @@ describe("LegalNoticeEditor", () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
-      content: { fr: "## Ancien texte", en: "## Updated legal text" },
+      content: {
+        fr: "## Ancien texte",
+        en: "## Updated legal text",
+        de: "",
+        es: "",
+        tr: "",
+      },
     });
+  });
+
+  // Bloc 44: DE/ES/TR are selectable alongside FR/EN in the same dropdown.
+  it("offers all 5 activated locales in the language selector", () => {
+    render(
+      <LegalNoticeEditor
+        initialContent={{
+          fr: "## Ancien texte",
+          en: "## Old text",
+          de: "",
+          es: "",
+          tr: "",
+        }}
+      />,
+    );
+    const select = screen.getByLabelText("Langue du contenu");
+    const options = Array.from(select.querySelectorAll("option")).map(
+      (option) => option.textContent,
+    );
+    expect(options).toEqual(["FR", "EN", "DE", "ES", "TR"]);
   });
 });

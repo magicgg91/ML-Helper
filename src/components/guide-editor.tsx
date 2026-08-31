@@ -10,7 +10,7 @@ import {
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
 import { EditorActionBar } from "./editor-action-bar";
 
-type LocaleDraft = { title: string; excerpt: string; content: string };
+export type LocaleDraft = { title: string; excerpt: string; content: string };
 type GuideDraft = {
   id?: string;
   slug: string;

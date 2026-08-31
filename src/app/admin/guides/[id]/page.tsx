@@ -3,7 +3,7 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/guide-editor";
 import { prisma } from "@/lib/prisma";
-import { translationRecord } from "@/lib/translations";
+import { launchRecord, translationRecord } from "@/lib/translations";
 import { getTranslations } from "next-intl/server";
 import {
   CombatReferenceScreen,
@@ -100,18 +100,11 @@ export default async function EditGuidePage({
           category: parseGuideCategories(guide.category),
           coverImage: guide.coverImage ?? "",
           status: guide.status,
-          translations: {
-            fr: {
-              title: title.fr ?? "",
-              excerpt: excerpt.fr ?? "",
-              content: content.fr ?? "",
-            },
-            en: {
-              title: title.en ?? "",
-              excerpt: excerpt.en ?? "",
-              content: content.en ?? "",
-            },
-          },
+          translations: launchRecord((locale) => ({
+            title: title[locale] ?? "",
+            excerpt: excerpt[locale] ?? "",
+            content: content[locale] ?? "",
+          })),
         }}
       />
     </main>

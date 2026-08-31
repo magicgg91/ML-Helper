@@ -3,6 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import { GameImage } from "./game-image";
 import { MarkdownRenderer } from "./markdown-renderer";
+import { localizedText } from "../lib/translations";
+import type { EditorialLocale } from "./editorial-locale-select";
 import type { ConsumableRow } from "../lib/consumables";
 
 // Bloc 43: the only reference with 2 public zones — a free-text markdown
@@ -13,12 +15,15 @@ export function ConsumablesReferenceTable({
   intro,
   rows,
 }: {
-  intro: { fr: string; en: string };
+  intro: Record<EditorialLocale, string>;
   rows: ConsumableRow[];
 }) {
   const t = useTranslations("references.consumables");
   const locale = useLocale();
-  const introText = locale === "en" ? intro.en || intro.fr : intro.fr;
+  // Bloc 44: localizedText already falls back fr → en for a DE/ES/TR
+  // visitor whose intro isn't written yet — same fallback item name/
+  // description below still only cover fr/en directly (out of scope here).
+  const introText = localizedText(intro, locale);
 
   return (
     <div className="calculator-stack">

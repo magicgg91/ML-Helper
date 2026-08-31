@@ -42,6 +42,24 @@ describe("LocaleToggle", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
+  // Bloc 44: DE/ES/TR — this same component backs both the public layout's
+  // and the admin layout's language switcher, both fed directly from
+  // getAvailableLocales() (filesystem-driven), so this covers "selectable
+  // publicly and in admin" for both at once.
+  it("Bloc 44: shows all 5 activated locales once DE/ES/TR are discovered", () => {
+    render(
+      <NextIntlClientProvider
+        locale="fr"
+        messages={{ common: { language: "Langue" } }}
+      >
+        <LocaleToggle locales={["de", "en", "es", "fr", "tr"]} />
+      </NextIntlClientProvider>,
+    );
+
+    for (const label of ["DE", "EN", "ES", "FR", "TR"])
+      expect(screen.getByRole("button", { name: label })).toBeVisible();
+  });
+
   it("persists the selected language and refreshes the route on click", async () => {
     render(
       <NextIntlClientProvider

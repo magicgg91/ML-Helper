@@ -4,12 +4,21 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { auditMessage } from "@/lib/audit-message";
 import { consumablesIntroKey } from "@/lib/consumables";
 import { prisma } from "@/lib/prisma";
+import { dropEmptyLocales } from "@/lib/translations";
 
 // Bloc 43: the free-text markdown zone at the top of the public Consumables
-// page — same shape/pattern as legal-notice's content editor.
+// page — same shape/pattern as legal-notice's content editor. Bloc 44: none
+// of the 5 locales are required here (unlike legal-notice's fr/en) — the
+// whole zone is meant to start empty and get filled in gradually.
 const localeContent = z.string().trim().max(100_000);
 const schema = z.object({
-  content: z.object({ fr: localeContent, en: localeContent }),
+  content: z.object({
+    fr: localeContent,
+    en: localeContent,
+    de: localeContent,
+    es: localeContent,
+    tr: localeContent,
+  }),
 });
 
 export async function PATCH(request: Request) {
@@ -22,7 +31,7 @@ export async function PATCH(request: Request) {
   const before = await prisma.staticContent.findUnique({
     where: { key: consumablesIntroKey },
   });
-  const content = parsed.data.content;
+  const content = dropEmptyLocales(parsed.data.content);
   const updated = await prisma.$transaction(async (tx) => {
     const item = await tx.staticContent.upsert({
       where: { key: consumablesIntroKey },

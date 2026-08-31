@@ -1,6 +1,10 @@
-export const editorialLocales = ["fr", "en"] as const;
+// Bloc 44: same list as launchLocales (per-record editorial content and the
+// static UI text bundles activate together) — re-exported under its own
+// name rather than duplicated, so the two can't drift.
+import { launchLocales, type LaunchLocale } from "../lib/translations";
 
-export type EditorialLocale = (typeof editorialLocales)[number];
+export const editorialLocales = launchLocales;
+export type EditorialLocale = LaunchLocale;
 
 export function EditorialLocaleSelect({
   label,
