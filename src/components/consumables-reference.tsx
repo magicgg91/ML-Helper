@@ -15,12 +15,12 @@ import {
 // Bloc 44 review: item name/description are flat fr/en-suffixed fields
 // (never omitted, only ever "" when blank), so localizedText()'s
 // missing-key fallback doesn't apply here — an explicit "" must still be
-// treated as absent. en gets its own preference (unchanged from before);
-// every other locale (fr included, and de/es/tr with no item-level
-// translation of their own) prefers fr, matching this app's own
-// defaultLocale, and now falls back to en too if fr is blank.
+// treated as absent. fr gets its own preference only for the fr locale
+// itself; every other locale (en included, and de/es/tr with no
+// item-level translation of their own) prefers en — the universal safety
+// net (Bloc 47/D review) — falling back to fr only if en is blank.
 function pickLocaleText(fr: string, en: string, locale: string): string {
-  return locale === "en" ? en || fr : fr || en;
+  return locale === "fr" ? fr || en : en || fr;
 }
 
 // Bloc 46/C: mirrors reference-tables.tsx's Filters component (aria-pressed,

@@ -179,10 +179,11 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(publicThemeToggle).toHaveText("☀");
   await publicThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  // Bloc 47/A: the public switcher is now a styled <select>, not a row of
+  // buttons.
   await page
-    .getByRole("group", { name: /Language|Langue/ })
-    .getByRole("button", { name: "EN" })
-    .click();
+    .getByRole("combobox", { name: /Language|Langue/ })
+    .selectOption("en");
   await expect(page.locator(".home-intro p")).toHaveText(
     "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
   );
@@ -192,9 +193,8 @@ test("tool routes alone expose persistent player settings", async ({
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
   await page
-    .getByRole("group", { name: /Language|Langue/ })
-    .getByRole("button", { name: "FR" })
-    .click();
+    .getByRole("combobox", { name: /Language|Langue/ })
+    .selectOption("fr");
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();

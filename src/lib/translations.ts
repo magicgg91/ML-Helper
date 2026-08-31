@@ -16,7 +16,7 @@ export function translationRecord(value: unknown): Record<string, string> {
 // Bloc 44: Partial rather than a full Record — a caller can omit a locale
 // entirely (e.g. a not-yet-translated DE/ES/TR field) instead of being
 // forced to overwrite it with an empty string, which would otherwise
-// permanently defeat localizedText()'s fr/en fallback for that locale.
+// permanently defeat localizedText()'s English fallback for that locale.
 export function mergeLaunchTranslations(
   current: unknown,
   update: Partial<Record<LaunchLocale, string>>,
@@ -38,7 +38,7 @@ export function launchRecord<T>(
 // Bloc 44: strips any locale left blank (a DE/ES/TR field the admin hasn't
 // filled in yet) before a StaticContent record is persisted — same reason
 // as nonEmptyLocaleValues in services/guides.ts: an explicit "" would
-// permanently defeat localizedText()'s fr/en fallback for that locale,
+// permanently defeat localizedText()'s English fallback for that locale,
 // where an absent key doesn't. Locales that are actually required (fr/en,
 // validated non-empty upstream) pass through unaffected.
 export function dropEmptyLocales(
@@ -49,12 +49,19 @@ export function dropEmptyLocales(
   );
 }
 
+// Bloc 47/D review: the safety net is always English, never French —
+// falling back through `fr` first (the site's *default* locale for a
+// visitor with no explicit preference, a wholly separate concept) used to
+// surface French content to e.g. a DE/ES/TR visitor whenever their own
+// locale was missing, contradicting this app's own "falls back to English
+// when a translation is missing" rule. `defaultLocale` (src/i18n/config.ts)
+// must never leak into this function.
 export function localizedText(value: unknown, locale: string) {
   const translations = translationRecord(value);
-  return translations[locale] ?? translations.fr ?? translations.en ?? "";
+  return translations[locale] ?? translations.en ?? "";
 }
 
-// Bloc 42/F: unlike localizedText() above, no fr/en fallback — checks
+// Bloc 42/F: unlike localizedText() above, no English fallback — checks
 // whether THIS exact locale has real content, for the one place (guide
 // editorial content) where a missing translation must show a visible
 // "not translated yet" placeholder instead of silently substituting

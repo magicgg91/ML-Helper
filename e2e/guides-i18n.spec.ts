@@ -1,13 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Bloc 47/A: the public switcher is now a styled <select>, not a row of
+// buttons.
 async function switchLocale(page: Page, locale: "en" | "fr") {
   const document = page.locator("html");
   if ((await document.getAttribute("lang")) === locale) return;
 
   await page
-    .getByRole("group", { name: /Language|Langue/ })
-    .getByRole("button", { name: locale.toUpperCase() })
-    .click();
+    .getByRole("combobox", { name: /Language|Langue/ })
+    .selectOption(locale);
   await expect(document).toHaveAttribute("lang", locale);
 }
 
