@@ -1069,15 +1069,24 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   const saveResponse = await page.request.put(
     "/api/admin/guides/references/consumables",
     {
+      // Bloc 58: the free-text markdown intro is gone — the route now takes
+      // a single flat catalog object (intro + the 4 categories), each an
+      // array of structured rows.
       data: {
-        intro: {
-          fr: "## Introduction Boutique Bloc57",
-          en: "",
-          de: "",
-          es: "",
-          tr: "",
-        },
-        catalog: { advisors: [], equipment: [], expedition: [], inventory: [] },
+        intro: [
+          {
+            image: "/consumables/sapphires.webp",
+            name_fr: "Saphirs",
+            name_en: "Sapphires",
+            description_fr: "Introduction Boutique Bloc57",
+            description_en: "Boutique Bloc57 introduction",
+            cost: "",
+          },
+        ],
+        advisors: [],
+        equipment: [],
+        expedition: [],
+        inventory: [],
       },
     },
   );
