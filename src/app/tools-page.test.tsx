@@ -4,6 +4,7 @@ import ToolsPage, { generateMetadata } from "./(public)/tools/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
+  getLocale: async () => "fr",
 }));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: async () => ({

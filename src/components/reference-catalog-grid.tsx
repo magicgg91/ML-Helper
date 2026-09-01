@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CalculatorAvailability } from "../lib/calculator-catalog";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
+import { sortByLabel } from "../lib/sort-by-label";
 import { GameImage } from "./game-image";
 
 // Bloc 38/O: shared between the homepage and /guides (previously duplicated
@@ -26,14 +27,22 @@ import { GameImage } from "./game-image";
 export function ReferenceCatalogGrid({
   t,
   limit,
+  locale,
   active,
 }: {
   t: (key: string) => string;
   limit?: number;
+  // Bloc 64/A: tiles ordered by the label actually shown, in the visitor's
+  // locale — the catalog's declaration order means nothing to them. Sorted
+  // before `limit` applies, so the homepage teaser shows the first N
+  // alphabetically rather than the first N declared.
+  locale: string;
   active: CalculatorAvailability;
 }) {
-  const available = referenceCatalog.filter(
-    (reference) => active[reference.calculatorSlug],
+  const available = sortByLabel(
+    referenceCatalog.filter((reference) => active[reference.calculatorSlug]),
+    (reference) => t(`catalog.${reference.slug}`),
+    locale,
   );
   const entries =
     limit === undefined ? available : available.slice(0, limit);

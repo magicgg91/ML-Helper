@@ -5,7 +5,13 @@ import { renderWithIntl as render } from "../test/render-with-intl";
 import type { ConsumableCatalog } from "../lib/consumables";
 
 function emptyCatalog(): ConsumableCatalog {
-  return { intro: [], advisors: [], equipment: [], expedition: [], inventory: [] };
+  return {
+    intro: [],
+    advisors: [],
+    equipment: [],
+    expedition: [],
+    inventory: [],
+  };
 }
 
 const introRow = {
@@ -75,7 +81,9 @@ describe("ConsumablesReferenceTable", () => {
       .getByRole("heading", { name: "Introduction" })
       .closest("section")!;
     expect(
-      within(introSection).queryByRole("columnheader", { name: "Coût (Saphirs)" }),
+      within(introSection).queryByRole("columnheader", {
+        name: "Coût (Saphirs)",
+      }),
     ).not.toBeInTheDocument();
     expect(within(introSection).queryByText("10500")).not.toBeInTheDocument();
   });
@@ -85,12 +93,7 @@ describe("ConsumablesReferenceTable", () => {
   // filter selection is.
   it("Bloc58/A: the Intro table stays visible when every category filter is deselected", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
-    for (const category of [
-      "advisors",
-      "equipment",
-      "expedition",
-      "inventory",
-    ])
+    for (const category of ["advisors", "equipment", "expedition", "inventory"])
       fireEvent.click(screen.getByTestId(`filter-category-${category}`));
     expect(
       screen.getByRole("heading", { name: "Introduction" }),
@@ -109,19 +112,17 @@ describe("ConsumablesReferenceTable", () => {
     expect(within(introSection).queryAllByRole("row")).toHaveLength(1);
   });
 
-  // Bloc 58/B: the Image column header text is dropped on every one of the
-  // 5 Boutique tables (Intro + 4 category tables) — the image itself keeps
-  // rendering normally in the column.
-  it("Bloc58/B: has no 'Image' column header text on any of the 5 tables, but still renders the images", () => {
+  // Bloc 58/B: the Image column header text is dropped — the image itself
+  // keeps rendering normally in the column.
+  // Bloc 64/C: only the Intro table is left here (the 4 category listings
+  // are tile grids now), so this is 1 table, not 5.
+  it("Bloc58/B: has no 'Image' column header text on the Intro table, but still renders the images", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(
       screen.queryByRole("columnheader", { name: "Image" }),
     ).not.toBeInTheDocument();
     const tables = document.querySelectorAll("table.consumables-table");
-    // Intro + the 4 category tables (all selected by default), regardless
-    // of which ones have rows in this fixture — the public table always
-    // renders, unlike the admin editor's row-count-gated table.
-    expect(tables).toHaveLength(5);
+    expect(tables).toHaveLength(1);
     for (const table of tables) {
       const headerCells = table.querySelectorAll("thead th");
       expect(headerCells[0].textContent).toBe("");
@@ -129,9 +130,13 @@ describe("ConsumablesReferenceTable", () => {
     expect(screen.getAllByRole("img").length).toBeGreaterThan(0);
   });
 
-  it("shows the raw cost, never compacted to k/M", () => {
+  // Bloc 64/C review: the badge carries the sapphire unit now (the column
+  // header that used to name it is gone), so the amount reads through the
+  // same localized, digit-grouped message Ranking's rewards use — still
+  // the full amount, never compacted to k/M.
+  it("shows the full cost, never compacted to k/M", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
-    expect(screen.getByText("10500")).toBeInTheDocument();
+    expect(screen.getByText(/10\s?500 saphirs/)).toBeInTheDocument();
     expect(screen.queryByText(/10[.,]5k/i)).not.toBeInTheDocument();
   });
 
@@ -145,10 +150,7 @@ describe("ConsumablesReferenceTable", () => {
       ...emptyCatalog(),
       equipment: [{ ...catalog.equipment[0], name_en: "", description_en: "" }],
     };
-    render(
-      <ConsumablesReferenceTable catalog={catalogMissingEn} />,
-      "en",
-    );
+    render(<ConsumablesReferenceTable catalog={catalogMissingEn} />, "en");
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
   });
 
@@ -162,8 +164,8 @@ describe("ConsumablesReferenceTable", () => {
   });
 
   // Bloc 48/B: category is no longer a column — it's now which of the 4
-  // separate titled tables a row lives in.
-  it("Bloc48/B: renders 4 separate titled tables, one per category, with no Type column", () => {
+  // separate titled sections a row lives in (tile grids since Bloc 64/C).
+  it("Bloc48/B: renders 4 separate titled category sections, with no Type column", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(
       screen.getByRole("heading", { name: "Conseillers" }),
@@ -183,8 +185,10 @@ describe("ConsumablesReferenceTable", () => {
     expect(
       screen.queryByRole("columnheader", { name: "Type" }),
     ).not.toBeInTheDocument();
-    const jarRow = screen.getByText("Jarre divine ×10").closest("tr");
-    expect(jarRow).not.toHaveTextContent("Équipement");
+    const jarTile = screen
+      .getByText("Jarre divine ×10")
+      .closest(".consumable-tile");
+    expect(jarTile).not.toHaveTextContent("Équipement");
   });
 
   // Bloc 48/D: category order is alphabetical (Conseillers, Équipement,
@@ -235,6 +239,51 @@ describe("ConsumablesReferenceTable", () => {
     expect(screen.getByText("Renommer votre ville")).toBeInTheDocument();
   });
 
+  // Bloc 64/C: the 4 category listings are tile grids — image on the left,
+  // bold name then description on the right, sapphire cost as a badge in
+  // the tile's top-right corner, on the name's own line.
+  it("Bloc64/C: renders each category as a tile grid, image + name + description + cost badge", () => {
+    const { container } = render(
+      <ConsumablesReferenceTable catalog={catalog} />,
+    );
+    const grid = container.querySelector(".consumable-tile-grid");
+    expect(grid).not.toBeNull();
+    const jarTile = screen
+      .getByText("Jarre divine ×10")
+      .closest(".consumable-tile")!;
+    expect(jarTile).not.toBeNull();
+    // The image comes first in the tile, at the same 5rem size the table used.
+    expect(jarTile.firstElementChild?.tagName).toBe("IMG");
+    expect(jarTile.firstElementChild).toHaveClass("consumable-tile-image");
+    // Name in bold, with the cost badge as its row-mate (top right).
+    const heading = jarTile.querySelector(".consumable-tile-heading")!;
+    expect(heading.querySelector(".consumable-tile-name")?.tagName).toBe(
+      "STRONG",
+    );
+    // Bloc 64/C review: the unit rides with the amount, so the currency
+    // isn't left to the badge's color alone.
+    expect(heading.querySelector(".consumable-tile-cost")).toHaveTextContent(
+      /10\s?500 saphirs/,
+    );
+    expect(
+      jarTile.querySelector(".consumable-tile-description"),
+    ).toHaveTextContent("Description FR");
+    // No table left for the category listings — the Intro one is separate.
+    expect(jarTile.closest("table")).toBeNull();
+  });
+
+  // Bloc 64/C: an unconfirmed cost still shows its placeholder in the
+  // badge, as the Coût column did.
+  it("Bloc64/C: shows the cost placeholder in the badge when the cost is unknown", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    const cityTile = screen
+      .getByText("Renommer votre ville")
+      .closest(".consumable-tile")!;
+    expect(cityTile.querySelector(".consumable-tile-cost")).toHaveTextContent(
+      "Non défini",
+    );
+  });
+
   // Bloc 62/B: **bold** in Nom/Description renders identically here as it
   // does in the admin editor's live preview — same shared renderer.
   it("Bloc62/B: renders **bold** markers in Nom/Description as <strong>", () => {
@@ -252,7 +301,9 @@ describe("ConsumablesReferenceTable", () => {
       ],
     };
     render(<ConsumablesReferenceTable catalog={boldCatalog} />);
-    expect(screen.getByText("divine", { selector: "strong" })).toBeInTheDocument();
+    expect(
+      screen.getByText("divine", { selector: "strong" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("objets rares", { selector: "strong" }),
     ).toBeInTheDocument();

@@ -313,34 +313,23 @@ describe("EditableDataTable", () => {
     );
   });
 
-  // Bloc 62/B: an opt-in column.preview renders the field's current value
-  // through a supplied function, in a small line below the input —
-  // Boutique's Nom/Description use it with renderBoldText so an admin
-  // sees **bold** rendered live. No effect on a column without it.
-  it("Bloc62/B: renders column.preview below the input when the field has a value, nothing when empty", () => {
-    const previewColumns: EditableColumn<Row>[] = [
-      {
-        key: "name",
-        label: "Nom",
-        preview: (value) => `preview:${value}`,
-      },
-      { key: "amount", label: "Montant" },
-    ];
-    render(
+  // Bloc 64/B: the live **bold** preview line added under each input at
+  // Bloc 62/B is gone — a cell holds its input (plus an error message when
+  // there is one) and nothing else. The **markers** stay raw text in the
+  // input; the rendered result is checked on the public page instead.
+  it("Bloc64/B: renders no rendered preview beside the input, only the raw value", () => {
+    const { container } = render(
       <EditableDataTable
-        rows={[
-          { name: "Alpha", amount: "1" },
-          { name: "", amount: "2" },
-        ]}
-        columns={previewColumns}
+        rows={[{ name: "Jarre **divine**", amount: "1" }]}
+        columns={columns}
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByText("preview:Alpha")).toBeInTheDocument();
-    // Row 2's name is empty — no preview line at all, not an empty one.
-    expect(screen.queryByText(/^preview:$/)).not.toBeInTheDocument();
-    // The amount column has no preview function — nothing rendered for it.
-    expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue("Jarre **divine**")).toBeInTheDocument();
+    expect(container.querySelector(".field-bold-preview")).toBeNull();
+    expect(container.querySelector("strong")).toBeNull();
+    // Nothing renders the value a second time next to the input.
+    expect(screen.queryByText("Jarre divine")).not.toBeInTheDocument();
   });
 
   it("shows the empty label instead of an empty table", () => {

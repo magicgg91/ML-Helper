@@ -22,6 +22,7 @@ vi.mock("next-intl/server", () => ({
     return (key: string) =>
       ({ eyebrow: "Référentiels", title: "Référentiels" })[key] ?? key;
   },
+  getLocale: async () => "fr",
 }));
 vi.mock("@/components/reference-catalog-grid", () => ({
   ReferenceCatalogGrid: () => <div data-testid="reference-catalog-grid" />,

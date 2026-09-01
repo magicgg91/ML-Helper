@@ -46,23 +46,21 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
         {/* Bloc 61/B: league buttons + both numeric fields stay on a single
             row on desktop — a dedicated flex row instead of the generic
             auto-fit .calculator-fields grid, which could otherwise wrap the
-            wider button group onto its own line. */}
+            wider button group onto its own line.
+            Bloc 64/G: each label now sits inline immediately before its own
+            control (option (b) of Bloc 62/D, settled here) — same rule for
+            all 3, so none of them carries a label above it any more. */}
         <div className="ranking-fields">
-          {/* Bloc 62/D: a visible label above the button group, matching
-              the 2 numeric fields beside it — LeagueButtons only ever
-              carried its label as an aria-label (every other caller relies
-              on that alone), but here it sits next to 2 fields that do
-              show theirs, so the missing one reads as an omission. */}
-          <div className="calculator-field ranking-league-field">
-            {t("fields.league")}
+          <div className="calculator-field ranking-inline-field ranking-league-field">
+            <span className="ranking-field-label">{t("fields.league")}</span>
             <LeagueButtons
               label={t("fields.league")}
               value={league}
               onChange={setLeague}
             />
           </div>
-          <label className="calculator-field ranking-number-field">
-            {t("fields.percentage")}
+          <label className="calculator-field ranking-inline-field ranking-number-field">
+            <span className="ranking-field-label">{t("fields.percentage")}</span>
             <NumberStepper
               label={t("fields.percentage")}
               value={percentage}
@@ -72,8 +70,8 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
               onChange={setPercentage}
             />
           </label>
-          <label className="calculator-field ranking-number-field">
-            {t("fields.rank")}
+          <label className="calculator-field ranking-inline-field ranking-number-field">
+            <span className="ranking-field-label">{t("fields.rank")}</span>
             <NumberStepper
               label={t("fields.rank")}
               value={rank}

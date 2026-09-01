@@ -157,15 +157,16 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.queryByDisplayValue("Objet A")).not.toBeInTheDocument();
   });
 
-  // Bloc 62/B: a live preview under Nom/Description renders **bold** the
-  // same way the public page will, so an admin can check it before saving.
-  it("Bloc62/B: shows a live **bold** preview under Nom/Description as they're edited", () => {
-    renderScreen();
+  // Bloc 64/B: the Bloc 62/B live preview is gone — the **bold** syntax
+  // still works, but it's only rendered on the public page; admin keeps a
+  // plain text field, nothing rendered beside it.
+  it("Bloc64/B: shows no rendered preview under Nom/Description, just the raw field", () => {
+    const { container } = renderScreen();
     const nameInput = screen.getByLabelText("Équipement — ligne 1 Nom");
     fireEvent.change(nameInput, { target: { value: "Objet **rare**" } });
-    const strong = screen.getByText("rare", { selector: "strong" });
-    expect(strong).toBeInTheDocument();
-    expect(strong.closest(".field-bold-preview")).not.toBeNull();
+    expect(nameInput).toHaveValue("Objet **rare**");
+    expect(container.querySelector(".field-bold-preview")).toBeNull();
+    expect(screen.queryByText("rare", { selector: "strong" })).toBeNull();
   });
 
   // Bloc 48/B: each table has its own "Ajouter" button, scoped to its own

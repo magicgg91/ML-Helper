@@ -21,7 +21,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("shows the real referential illustration for every one of the 6 references", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     for (const src of [
@@ -39,7 +39,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("falls back to the placeholder category icon if the real image fails to load", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     const image = document.querySelector<HTMLImageElement>(
@@ -60,7 +60,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("falls back to the placeholder category icon for Boutique if its real image fails to load", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     const image = document.querySelector<HTMLImageElement>(
@@ -82,6 +82,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <ReferenceCatalogGrid
+          locale="fr"
           t={t}
           active={{ ...defaultCalculatorAvailability, events: true }}
         />
@@ -102,10 +103,33 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 64/A: tiles ordered by the displayed label, in the visitor's
+  // locale — the catalog declares Combat/Expédition/Équipements... in its
+  // own order, which is not alphabetical.
+  it("Bloc64/A: orders the tiles alphabetically by their displayed label", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid
+          locale="fr"
+          t={t}
+          active={{ ...defaultCalculatorAvailability, events: true }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const titles = Array.from(container.querySelectorAll("h3")).map(
+      (heading) => heading.textContent!,
+    );
+    expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, "fr")));
+    // Not the catalog's own order, which starts with Combat/Expédition.
+    expect(titles).not.toEqual(
+      referenceCatalog.map((reference) => t(`catalog.${reference.slug}`)),
+    );
+  });
+
   it("uses the same square .tool-category-image box as the tool categories (Bloc 38/H)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     expect(
@@ -122,6 +146,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <ReferenceCatalogGrid
+        locale="fr"
         t={t}
         limit={2}
         active={defaultCalculatorAvailability}
@@ -134,7 +159,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("shows every catalog entry when no limit is given", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     expect(screen.getAllByRole("link")).toHaveLength(referenceCatalog.length);
@@ -148,6 +173,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <ReferenceCatalogGrid
+          locale="fr"
           t={t}
           active={{ ...defaultCalculatorAvailability, events: false }}
         />
