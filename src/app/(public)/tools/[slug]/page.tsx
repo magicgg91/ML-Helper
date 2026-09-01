@@ -49,7 +49,11 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
   const tools = await getTranslations("tools");
   const active = await getCalculatorAvailability();
-  if (slug === "referentiels") redirect("/guides#references");
+  // Bloc 50/1b: /referentiels is now its own independent root (no longer a
+  // #references section embedded in /guides) — this legacy redirect stub
+  // (kept for old bookmarks/backlinks to the pre-Bloc-33 /tools/referentiels
+  // URL) now points there instead.
+  if (slug === "referentiels") redirect("/referentiels");
   if (!["villes", "combat", "classement", "competences"].includes(slug))
     notFound();
   if (slug === "combat") {

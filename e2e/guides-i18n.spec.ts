@@ -14,26 +14,39 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
   await expect(document).toHaveAttribute("lang", locale);
 }
 
-test("shows every reference table with no category filter on the guides hub", async ({
+// Bloc 50/1b: the reference catalog moved off the guides hub onto its own
+// /referentiels root (src/app/(public)/referentiels/page.tsx), with the
+// switcher banner promoted to that section's layout — so this now checks
+// /referentiels directly, and expects the switcher nav to be present
+// (it wraps the index page too), not absent.
+test("shows every reference table on the référentiels hub", async ({
   page,
 }) => {
-  await page.goto("/guides");
+  await page.goto("/referentiels");
   await switchLocale(page, "fr");
   await expect(
-    page.getByRole("heading", { name: "Référentiels" }),
+    page.getByRole("heading", { name: "Tous les référentiels", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: /référentiels/i }),
-  ).toHaveCount(0);
-  await expect(page.getByText("Équipements de Combat")).toBeVisible();
-  await expect(page.getByText("Équipements d’Expédition")).toBeVisible();
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Équipements de Combat" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Équipements d’Expédition" }),
+  ).toBeVisible();
 
   await switchLocale(page, "en");
   await expect(
-    page.getByRole("heading", { name: "Reference tables" }),
+    page.getByRole("heading", { name: "All reference tables", level: 1 }),
   ).toBeVisible();
-  await expect(page.getByText("Combat Equipment")).toBeVisible();
-  await expect(page.getByText("Expedition Equipment")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Combat Equipment" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Expedition Equipment" }),
+  ).toBeVisible();
 });
 
 test("finds a guide, a reference table and a tool from the site-wide search on any page", async ({
@@ -53,7 +66,7 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   await search.fill("équipements de combat");
   await expect(
     page.getByRole("link", { name: /Équipements de Combat/ }),
-  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
+  ).toHaveAttribute("href", "/referentiels/combat-equipment");
 
   // Bloc 36/A: "gemmes" now matches both the Gems tool and its new
   // reference, sharing the exact same label — scope to the tool's exact
@@ -99,7 +112,7 @@ test("translates the interface around a localized published guide", async ({
 test("translates combat equipment filters and result columns", async ({
   page,
 }) => {
-  await page.goto("/guides/referentiels/combat-equipment");
+  await page.goto("/referentiels/combat-equipment");
   await switchLocale(page, "fr");
   // Bloc 35/2.2: Pouciel is no longer a per-row column — it's the title of
   // its own small rarity-indexed table, so it now appears twice (heading +
@@ -120,7 +133,7 @@ test("translates combat equipment filters and result columns", async ({
 test("translates expedition equipment filters, columns and status", async ({
   page,
 }) => {
-  await page.goto("/guides/referentiels/expedition-equipment");
+  await page.goto("/referentiels/expedition-equipment");
   await switchLocale(page, "fr");
   // Bloc 39: the "Stat secondaire" column header is gone (table -> tile
   // grid) — assert the same translation coverage through a stat name that
