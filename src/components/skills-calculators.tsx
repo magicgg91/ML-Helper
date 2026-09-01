@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
 import { filterButtonColor } from "../lib/game-images";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   gemFamilies,
   gemValue,
@@ -69,6 +70,10 @@ export function SkillsCalculators({
     templars: true,
     expedition: true,
   },
+  // Bloc 53/F: a reference's cross-link to this category (Gems, Templars)
+  // now passes ?open=<tab> so it lands directly on the precise calculator
+  // instead of always defaulting to whichever tab is firstAvailable.
+  initialTool,
 }: {
   templarParameters?: TemplarParameters;
   combatRows: readonly CombatReferenceRow[];
@@ -79,6 +84,7 @@ export function SkillsCalculators({
     "simulator" | "gems" | "templars" | "expedition",
     boolean
   >;
+  initialTool?: "simulator" | "gems" | "templars" | "expedition";
 }) {
   const tools = useTranslations("tools");
   const simulator = useTranslations("stuff-simulator");
@@ -91,7 +97,7 @@ export function SkillsCalculators({
   ).find((key) => availability[key]);
   const [active, setActive] = useState<
     "simulator" | "gems" | "templars" | "expedition" | undefined
-  >(firstAvailable);
+  >(initialTool && availability[initialTool] ? initialTool : firstAvailable);
   return (
     <div className="city-calculators">
       <nav
@@ -198,12 +204,19 @@ export function SkillsCalculators({
 
 function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
+  const crossReference = useTranslations("crossReference");
+  const references = useTranslations("references");
   const [mode, setMode] = useState<"optimize" | "budget">("optimize");
+  const reference = referenceCatalog.find((item) => item.slug === "gems")!;
   return (
     <div className="calculator-stack">
-      <Link className="reference-cross-link" href="/referentiels/gems">
-        {t("view-reference")}
-      </Link>
+      <CrossReferenceLink
+        href={referenceHref("gems")}
+        title={references(`catalog.${reference.slug}`)}
+        image={reference.image}
+        fallbackImage={reference.fallbackImage}
+        label={crossReference("toReference")}
+      />
       <section className="calculator-card">
         <div
           className="calculator-tabs compact mode-switch"
@@ -630,14 +643,21 @@ function Result({
 function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const t = useTranslations("templars");
   const game = useTranslations("game");
+  const crossReference = useTranslations("crossReference");
+  const references = useTranslations("references");
   const [start, setStart] = useState(0);
   const [target, setTarget] = useState(1);
   const cost = templarUpgradeCost(start, target, parameters);
+  const reference = referenceCatalog.find((item) => item.slug === "templars")!;
   return (
     <div className="calculator-stack">
-      <Link className="reference-cross-link" href="/referentiels/templars">
-        {t("view-reference")}
-      </Link>
+      <CrossReferenceLink
+        href={referenceHref("templars")}
+        title={references(`catalog.${reference.slug}`)}
+        image={reference.image}
+        fallbackImage={reference.fallbackImage}
+        label={crossReference("toReference")}
+      />
       <section className="calculator-card">
         <div className="calculator-fields">
           <label className="calculator-field">

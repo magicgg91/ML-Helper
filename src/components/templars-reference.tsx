@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { formatGameNumber } from "../lib/city-calculators";
 import {
   templarLevelCost,
   type TemplarParameters,
 } from "../lib/templar-parameters";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog } from "../lib/reference-catalog";
 
 export function TemplarsReferenceTable({
   parameters,
@@ -14,6 +15,10 @@ export function TemplarsReferenceTable({
   parameters: TemplarParameters;
 }) {
   const t = useTranslations("templars");
+  const crossReference = useTranslations("crossReference");
+  const templarsReference = referenceCatalog.find(
+    (item) => item.slug === "templars",
+  )!;
   const costs = Array.from({ length: 20 }, (_, index) =>
     templarLevelCost(index + 1, parameters),
   );
@@ -44,9 +49,13 @@ export function TemplarsReferenceTable({
           </table>
         </div>
       </section>
-      <Link className="reference-link" href="/tools/competences">
-        {t("competences-link")}
-      </Link>
+      <CrossReferenceLink
+        href="/tools/competences?open=templars"
+        title={t("name")}
+        image={templarsReference.image}
+        fallbackImage={templarsReference.fallbackImage}
+        label={crossReference("toTool")}
+      />
     </div>
   );
 }

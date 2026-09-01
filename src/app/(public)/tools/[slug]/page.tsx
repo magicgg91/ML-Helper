@@ -45,8 +45,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
+export default async function ToolPage({
+  params,
+  searchParams,
+}: PageProps<"/tools/[slug]">) {
   const { slug } = await params;
+  const { open } = await searchParams;
   const tools = await getTranslations("tools");
   const active = await getCalculatorAvailability();
   // Bloc 50/1b: /referentiels is now its own independent root (no longer a
@@ -68,6 +72,7 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
             xp: active["xp-gain-rate"],
             demo: active["demo-attack-troops"],
           }}
+          initialTool={open === "xp" || open === "demo" ? open : undefined}
         />
       </main>
     );
@@ -88,6 +93,14 @@ export default async function ToolPage({ params }: PageProps<"/tools/[slug]">) {
             templars: active.templars,
             expedition: active["expedition-equipment-simulator"],
           }}
+          initialTool={
+            open === "simulator" ||
+            open === "expedition" ||
+            open === "gems" ||
+            open === "templars"
+              ? open
+              : undefined
+          }
         />
       </main>
     );

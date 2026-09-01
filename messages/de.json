@@ -301,7 +301,6 @@
   },
   "stuff-simulator": {
     "name": "Kampfausrüstung",
-    "view-reference": "Vollständige Referenztabelle ansehen",
     "global-summary": "Zusammenfassung der Ausrüstungsfähigkeiten",
     "transfer": "In Spielereinstellungen übertragen",
     "transferred": "In Spielereinstellungen übertragen!",
@@ -324,7 +323,6 @@
   },
   "expedition-equipment-simulator": {
     "name": "Expeditionsausrüstung",
-    "view-reference": "Vollständige Referenz ansehen",
     "summary-title": "Zusammenfassung der Expeditionsfähigkeiten",
     "empty-summary": "Keine Ausrüstung konfiguriert",
     "empty-slot": "Leer",
@@ -394,10 +392,8 @@
     "remaining-budget": "Verbleibendes Budget",
     "gem-count": "{count, plural, one {# Edelstein} other {# Edelsteine}} {level}★",
     "no-gems": "Keine Edelsteine",
-    "view-reference": "Vollständige Referenztabelle ansehen",
     "reference": {
-      "price-row": "Saphirkosten",
-      "competences-link": "Fähigkeiten-Werkzeuge öffnen"
+      "price-row": "Saphirkosten"
     }
   },
   "templars": {
@@ -412,15 +408,13 @@
     "total-bonus-level": "Gesamtbonus bei Stufe {level}",
     "gain-transition": "Gewinn Start → Ziel",
     "rate-value": "{rate}%/Templer",
-    "view-reference": "Vollständige Referenztabelle ansehen",
     "cost-table": "Exakte Kostentabelle",
     "columns": {
       "skill": "Fähigkeit",
       "level": "Erreichte Stufe",
       "level-cost": "Stufenkosten",
       "cumulative-cost": "Kumulierte Kosten"
-    },
-    "competences-link": "Fähigkeiten-Werkzeuge öffnen"
+    }
   },
   "Navigation": {
     "tools": "Werkzeuge",
@@ -582,6 +576,10 @@
       "dismantle-terradust": "Terrastaub bei Zerlegung"
     }
   },
+  "crossReference": {
+    "toReference": "Vertiefe dich mit der Referenztabelle",
+    "toTool": "Vertiefe dich mit dem Tool"
+  },
   "level-up": {
     "name": "Stufenaufstieg",
     "league": "Liga",
@@ -603,8 +601,7 @@
     "previous": "Zurück",
     "next": "Weiter",
     "page": "Seite {current} von {total}",
-    "pagination-label": "Stufenseiten",
-    "combat-link": "Kampf-Werkzeuge öffnen"
+    "pagination-label": "Stufenseiten"
   },
   "login": {
     "title": "Verwaltungsanmeldung",
@@ -915,6 +912,7 @@
       "consumables-table-title": "Objekte",
       "empty": "Noch keine Objekte.",
       "move-down": "Nach unten verschieben",
+      "actions": "Aktionen",
       "move-up": "Nach oben verschieben",
       "remove": "Entfernen"
     },

@@ -292,7 +292,6 @@
   },
   "stuff-simulator": {
     "name": "Combat Equipment",
-    "view-reference": "View full reference table",
     "global-summary": "Equipment skills summary",
     "transfer": "Transfer to Player Settings",
     "transferred": "Transferred to Player Settings!",
@@ -315,7 +314,6 @@
   },
   "expedition-equipment-simulator": {
     "name": "Expedition Equipment",
-    "view-reference": "View the full reference",
     "summary-title": "Expedition skills summary",
     "empty-summary": "No equipment configured",
     "empty-slot": "Empty",
@@ -385,10 +383,8 @@
     "remaining-budget": "Remaining budget",
     "gem-count": "{count, plural, one {# gem} other {# gems}} {level}★",
     "no-gems": "No gems",
-    "view-reference": "View full reference table",
     "reference": {
-      "price-row": "Sapphire cost",
-      "competences-link": "Open Skills tools"
+      "price-row": "Sapphire cost"
     }
   },
   "templars": {
@@ -403,15 +399,13 @@
     "total-bonus-level": "Total bonus at level {level}",
     "gain-transition": "Start → target gain",
     "rate-value": "{rate}%/templar",
-    "view-reference": "View full reference table",
     "cost-table": "Exact cost table",
     "columns": {
       "skill": "Skill",
       "level": "Reached level",
       "level-cost": "Level cost",
       "cumulative-cost": "Cumulative cost"
-    },
-    "competences-link": "Open Skills tools"
+    }
   },
   "Navigation": {
     "tools": "Tools",
@@ -592,6 +586,10 @@
       "dismantle-terradust": "Terradust on dismantle"
     }
   },
+  "crossReference": {
+    "toReference": "Go further by checking the reference table",
+    "toTool": "Go further by using the tool"
+  },
   "level-up": {
     "name": "Level Up",
     "league": "League",
@@ -613,8 +611,7 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page {current} of {total}",
-    "pagination-label": "Level pages",
-    "combat-link": "Open Combat tools"
+    "pagination-label": "Level pages"
   },
   "login": {
     "title": "Admin sign in",
@@ -920,6 +917,7 @@
       "remove": "Remove",
       "move-up": "Move up",
       "move-down": "Move down",
+      "actions": "Actions",
       "empty": "No items yet.",
       "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star)."
     },

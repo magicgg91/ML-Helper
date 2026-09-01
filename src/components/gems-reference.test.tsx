@@ -110,7 +110,9 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
       "Salvager",
     ]) {
       expect(
-        screen.getAllByRole("row").some((row) => row.textContent?.includes(label)),
+        screen
+          .getAllByRole("row")
+          .some((row) => row.textContent?.includes(label)),
       ).toBe(true);
     }
     // Confirms the fix — these mistranslations must no longer appear.
@@ -122,14 +124,18 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
     expect(screen.queryByText("Speed")).not.toBeInTheDocument();
   });
 
-  it("links back to the Compétences tools category", () => {
+  // Bloc 53/F: this link used to point at the generic /tools/competences
+  // category (landing on whichever tab happened to be firstAvailable) —
+  // now it points at the exact Gems calculator tab.
+  it("links back to the precise Gemmes calculator, not the generic Compétences category", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <GemsReferenceTable parameters={defaultGemParameters} />
       </NextIntlClientProvider>,
     );
-    expect(
-      screen.getByRole("link", { name: "Ouvrir les Outils Compétences" }),
-    ).toHaveAttribute("href", "/tools/competences");
+    expect(screen.getByRole("link", { name: "Gemmes" })).toHaveAttribute(
+      "href",
+      "/tools/competences?open=gems",
+    );
   });
 });

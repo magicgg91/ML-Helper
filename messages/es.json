@@ -301,7 +301,6 @@
   },
   "stuff-simulator": {
     "name": "Equipo de Combate",
-    "view-reference": "Ver la tabla de referencia completa",
     "global-summary": "Resumen de habilidades del equipo",
     "transfer": "Transferir a Ajustes del jugador",
     "transferred": "¡Transferido a Ajustes del jugador!",
@@ -324,7 +323,6 @@
   },
   "expedition-equipment-simulator": {
     "name": "Equipo de Expedición",
-    "view-reference": "Ver la referencia completa",
     "summary-title": "Resumen de habilidades de expedición",
     "empty-summary": "No hay equipo configurado",
     "empty-slot": "Vacío",
@@ -394,10 +392,8 @@
     "remaining-budget": "Presupuesto restante",
     "gem-count": "{count, plural, one {# gema} other {# gemas}} {level}★",
     "no-gems": "Sin gemas",
-    "view-reference": "Ver la tabla de referencia completa",
     "reference": {
-      "price-row": "Coste en zafiros",
-      "competences-link": "Abrir herramientas de Habilidades"
+      "price-row": "Coste en zafiros"
     }
   },
   "templars": {
@@ -412,15 +408,13 @@
     "total-bonus-level": "Bono total en nivel {level}",
     "gain-transition": "Ganancia inicio → objetivo",
     "rate-value": "{rate}%/templario",
-    "view-reference": "Ver la tabla de referencia completa",
     "cost-table": "Tabla de costes exactos",
     "columns": {
       "skill": "Habilidad",
       "level": "Nivel alcanzado",
       "level-cost": "Coste del nivel",
       "cumulative-cost": "Coste acumulado"
-    },
-    "competences-link": "Abrir herramientas de Habilidades"
+    }
   },
   "Navigation": {
     "tools": "Herramientas",
@@ -582,6 +576,10 @@
       "dismantle-terradust": "Terrapolvo al desmontar"
     }
   },
+  "crossReference": {
+    "toReference": "Profundiza consultando la tabla de referencia",
+    "toTool": "Profundiza usando la herramienta"
+  },
   "level-up": {
     "name": "Subida de Nivel",
     "league": "Liga",
@@ -603,8 +601,7 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "page": "Página {current} de {total}",
-    "pagination-label": "Páginas de nivel",
-    "combat-link": "Abrir herramientas de Combate"
+    "pagination-label": "Páginas de nivel"
   },
   "login": {
     "title": "Inicio de sesión de administración",
@@ -915,6 +912,7 @@
       "consumables-table-title": "Objetos",
       "empty": "Aún no hay objetos.",
       "move-down": "Mover hacia abajo",
+      "actions": "Acciones",
       "move-up": "Mover hacia arriba",
       "remove": "Eliminar"
     },

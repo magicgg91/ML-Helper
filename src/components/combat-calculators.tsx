@@ -172,17 +172,25 @@ export function CombatCalculators({
   xpTiers = defaultXpTiers,
   demoPercentages = defaultDemoPercentages,
   availability = { xp: true, demo: true },
+  // Bloc 53/F: the Level Up reference's cross-link passes ?open=xp so it
+  // lands directly on the XP Gain Rate calculator (the closest match for
+  // its troop-leveling data) instead of always defaulting to whichever tab
+  // is firstAvailable.
+  initialTool,
 }: {
   cityParameters: CityParameters;
   xpTiers?: XpTier[];
   demoPercentages?: Record<League, number>;
   availability?: { xp: boolean; demo: boolean };
+  initialTool?: "xp" | "demo";
 }) {
   const tools = useTranslations("tools"),
     xp = useTranslations("xp-gain-rate"),
     demo = useTranslations("demo-attack-troops");
   const first = availability.xp ? "xp" : availability.demo ? "demo" : undefined;
-  const [active, setActive] = useState<"xp" | "demo" | undefined>(first);
+  const [active, setActive] = useState<"xp" | "demo" | undefined>(
+    initialTool && availability[initialTool] ? initialTool : first,
+  );
   return (
     <div className="city-calculators">
       <nav

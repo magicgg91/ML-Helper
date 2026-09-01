@@ -20,15 +20,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function GuidesPage() {
   await connection();
   const locale = await getLocale();
-  const t = await getTranslations("guides");
+  const tHome = await getTranslations("Home");
   const guides = await prisma.guide.findMany({
     where: { status: "published", active: true },
     orderBy: { publishedAt: "desc" },
   });
   return (
     <main className="public-main">
-      <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
+      {/* Bloc 53/D: same title + intro sentence as the homepage's guides
+          section, so /guides reads as the same entry point reached a
+          different way (Bloc 38/K's treatment for /tools). */}
+      <h1 className="guides-page-title">{tHome("guidesTitle")}</h1>
+      <p>{tHome("guidesDescription")}</p>
       <GuidesHub
         guides={guides.map((guide) => ({
           id: guide.id,

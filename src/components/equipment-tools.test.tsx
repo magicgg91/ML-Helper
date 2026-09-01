@@ -89,7 +89,7 @@ describe("equipment tools", () => {
   it("toggles a simulator slot and persists an exact set", async () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     expect(
-      screen.getByRole("link", { name: "Voir le référentiel complet" }),
+      screen.getByRole("link", { name: "Équipements de Combat" }),
     ).toHaveAttribute("href", "/referentiels/combat-equipment");
     const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);

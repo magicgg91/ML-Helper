@@ -572,14 +572,16 @@ test("Skills exposes gem distributions and exact templar costs", async ({
       page.evaluate(() => localStorage.getItem("mlhelper_stuff_simulator")),
     )
     .toContain("Spirit Fyra");
+  // Bloc 53/E: the link's accessible name is now the destination
+  // reference's own title, not a generic "Voir le référentiel complet".
   await expect(
-    page.getByRole("link", { name: "Voir le référentiel complet" }),
+    page.getByRole("link", { name: "Équipements de Combat" }),
   ).toHaveAttribute("href", "/referentiels/combat-equipment");
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   // Bloc 36/A: same cross-link pattern already verified for Templiers below.
   await expect(
-    page.getByRole("link", { name: "Voir le référentiel complet" }),
+    page.getByRole("main").getByRole("link", { name: "Gemmes" }),
   ).toHaveAttribute("href", "/referentiels/gems");
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   await page
@@ -596,7 +598,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
 
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(
-    page.getByRole("link", { name: "Voir le référentiel complet" }),
+    page.getByRole("link", { name: "Coût des Templiers" }),
   ).toHaveAttribute("href", "/referentiels/templars");
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
@@ -615,9 +617,15 @@ test("Reference tables filter combat and expedition equipment", async ({
   // Bloc 50/1b: /referentiels is now an independent root, split off from
   // /guides — the reference catalog no longer renders on the guides hub at
   // all (only the guides list does), so this checks each root separately.
+  // Bloc 53/D: /guides' h1 now reuses the homepage's own guides intro
+  // title ("Affûte ta stratégie"), not the short "Guides" index title.
   await page.goto("/guides");
   await expect(
-    page.getByRole("heading", { name: "Guides", exact: true, level: 1 }),
+    page.getByRole("heading", {
+      name: "Affûte ta stratégie",
+      exact: true,
+      level: 1,
+    }),
   ).toBeVisible();
 
   await page.goto("/referentiels");

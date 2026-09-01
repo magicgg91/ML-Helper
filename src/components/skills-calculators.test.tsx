@@ -180,6 +180,62 @@ describe("SkillsCalculators", () => {
       "3.99k Pouciel",
     );
   });
+  // Bloc 53/F: a reference's cross-link (Gems, Templars) now passes
+  // ?open=<tab>, read server-side and forwarded here as initialTool — this
+  // must select the precise tab instead of always defaulting to whichever
+  // tab is firstAvailable.
+  it("Bloc53/F: initialTool selects the given tab directly, instead of defaulting to the first available one", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+        initialTool="templars"
+      />,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Templiers" }),
+    ).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("Bloc53/F: falls back to the first available tab when initialTool's calculator is unavailable", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+        availability={{
+          simulator: true,
+          expedition: true,
+          gems: false,
+          templars: true,
+        }}
+        initialTool="gems"
+      />,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Équipement de Combat" }),
+    ).toHaveAttribute("aria-selected", "true");
+  });
+
+  // Bloc 53/E: the plain "Voir le référentiel complet" link is now a
+  // centered banner + mini-card, with a label adapted to the link's
+  // direction (here, tool -> reference).
+  it("Bloc53/E: shows the tool->reference banner with the direction-adapted label and the destination reference's title", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    expect(
+      screen.getByText("Aller plus loin en vérifiant le référentiel"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Gemmes" })).toHaveAttribute(
+      "href",
+      "/referentiels/gems",
+    );
+  });
+
   it("uses the administrator-provided named Gem parameters", () => {
     renderWithIntl(
       <SkillsCalculators

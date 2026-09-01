@@ -269,9 +269,11 @@ select {
    selector) outranks a lone class selector, so only their `white-space:
    nowrap` was actually landing, on text sized for this rule's huge
    clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
-   Bloc 33/35's narrower clamps needed all along to actually apply. */
+   Bloc 33/35's narrower clamps needed all along to actually apply.
+   Bloc 53/D: same exclusion for /guides and /referentiels' own smaller
+   titles, added below. */
 .hero h1,
-.public-main > h1:not(.tools-page-title):not(.reference-page-title),
+.public-main > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title),
 .guide-shell h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
@@ -1966,6 +1968,86 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   min-width: 0;
   width: 6.75rem;
 }
+/* Bloc 53/B, C: Boutique-only scoping, deliberately separate from the
+   .reference-admin-table/.reference-admin-narrow rules above that Combat,
+   Expedition and Ranking's own already-tuned admin tables still depend on
+   (Blocs 38/Q, 40/B, 41/E all fought width regressions on those shared
+   classes — this class exists so Boutique's own width tuning can never
+   leak onto them, and vice versa).
+   table-layout: fixed + width: 100% makes the table fill its container
+   instead of .reference-admin-table's default min-width: max-content,
+   which is what forced a horizontal scroll here before. Every column's
+   width is a percentage (not a fixed rem, which first shipped here and
+   turned out to eat most of the row on a phone-width screen, crushing
+   Chemin de l'image/Nom to 0px) so the whole row scales down together at
+   any width instead of a couple of fixed columns starving the rest:
+   .reference-admin-wide (Description) gets the biggest cut, the merged
+   Actions column and .reference-admin-narrow (Coût) keep a smaller share,
+   and the unmarked columns (Image, Nom) split what's left. */
+.consumables-admin-table {
+  table-layout: fixed;
+  /* 100% minus a buffer: table-layout: fixed rounds each percentage
+     column's computed width independently, and those roundings can sum to
+     a few px past the container — caught live-testing the Codex review
+     fix below (.ranking-table-wrap still had a few px of overflow at
+     narrow widths with every column exactly summing to 100%). 28px is
+     empirically tuned against a live sweep down to a 320px viewport,
+     the narrowest realistic phone width; imperceptible at any wider one. */
+  width: calc(100% - 28px);
+  min-width: 0;
+}
+.consumables-admin-table .reference-admin-wide {
+  width: 36%;
+}
+.consumables-admin-table .reference-admin-narrow {
+  width: 12%;
+}
+.consumables-admin-table th:last-child,
+.consumables-admin-table td:last-child {
+  width: 20%;
+}
+/* The 3 action icons wrap onto a 2nd line rather than overflow their cell
+   on a narrow screen, now that the cell's own width can shrink below what
+   they need side by side. Below 480px even 2 side by side (wrap's best
+   case) still don't fit the Actions column's own share of a phone-width
+   table, so they stack one per line there instead — caught live testing
+   the Codex review fix above: 2-up wrap alone still left ~4px of overflow
+   on .ranking-table-wrap at 400px. */
+.consumables-admin-table .reference-admin-move-cell {
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .consumables-admin-table .reference-admin-move-cell {
+    flex-direction: column;
+  }
+}
+/* The move buttons keep .secondary-action's roomy text-button padding
+   (0.6rem 0.85rem — ~45px wide for a single icon) even though Bloc 46/B
+   already made them icon-only — down at a 320px viewport that's wider
+   than the whole Actions column, still overflowing after the stack-on-
+   narrow fix above. Icon-sized to match the neighbouring remove button's
+   own .icon-action square. */
+.consumables-admin-table .reference-admin-move-cell button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+/* Point B: every input fills its column instead of leaving the empty gap
+   .reference-admin-table's 9rem min-width (or, for Coût,
+   .reference-admin-narrow's fixed 6.75rem) left around a much narrower
+   percentage column. Codex review (PR #75): excluding narrow cells here
+   originally left Coût's input at a fixed 6.75rem/108px while its own td
+   is only 12% of the table — on any table narrower than ~900px that's
+   wider than the cell itself, overflowing into
+   .ranking-table-wrap's own overflow-x: auto and silently reintroducing
+   the exact horizontal-scroll bug points A-C exist to remove. Coût's td
+   stays visually narrow via the 12% column width above; the input itself
+   must still fill whatever that resolves to at the current table width. */
+.consumables-admin-table input,
+.consumables-admin-table select {
+  width: 100%;
+  min-width: 0;
+}
 /* Bloc 35/10.1, 10.3: .primary-button had no base style at all — relying on
    unstyled browser defaults — so it was invisible on every screen using it
    (EditableReferenceTable's own save button, LevelUpParametersEditor, the
@@ -2628,6 +2710,17 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   white-space: nowrap;
 }
 
+/* Bloc 53/D: /guides and /referentiels get the same smaller-title + intro
+   sentence treatment /tools got in Bloc 38/K, reusing the homepage's own
+   Guides/Référentiels section copy (Home.guidesTitle/guidesDescription and
+   Home.referentielsTitle/referentielsDescription) instead of the short
+   index-page title these pages showed before. */
+.guides-page-title,
+.referentiels-page-title {
+  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
+  white-space: nowrap;
+}
+
 /* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
    count based on how many tiles there are — each column's floor is either
    13.5rem or a quarter of the row (minus its 3 gaps), whichever is larger,
@@ -2708,10 +2801,53 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   color: inherit;
   text-decoration: none;
 }
-.reference-cross-link {
-  justify-self: start;
-  color: var(--accent-strong);
+/* Bloc 53/E: replaces the plain-text .reference-cross-link/.reference-link
+   with a centered banner + clickable mini-card, on both tool<->reference
+   directions — same bordered-card spirit as .calculator-card (Bloc 52/C,
+   D's framing for the Boutique reference). */
+.cross-reference-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.25rem 0;
+  text-align: center;
+}
+.cross-reference-label {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+.cross-reference-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-panel-raised);
+  color: inherit;
+  text-decoration: none;
   font-weight: 700;
+  transition: border-color 0.15s ease;
+}
+.cross-reference-card:hover {
+  border-color: var(--accent);
+}
+.cross-reference-thumb {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+}
+.cross-reference-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cross-reference-card svg {
+  color: var(--accent-strong);
+  flex-shrink: 0;
 }
 
 .level-up-tables {

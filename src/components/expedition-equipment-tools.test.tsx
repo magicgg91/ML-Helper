@@ -49,7 +49,7 @@ describe("ExpeditionEquipmentSimulator", () => {
   it("shows the cross-link to the full expedition equipment reference", () => {
     renderTool();
     expect(
-      screen.getByRole("link", { name: "Voir le référentiel complet" }),
+      screen.getByRole("link", { name: "Équipements d’Expédition" }),
     ).toHaveAttribute("href", "/referentiels/expedition-equipment");
   });
 

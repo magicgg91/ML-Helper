@@ -59,6 +59,23 @@ describe("CombatCalculators", () => {
     );
   });
 
+  // Bloc 53/F: the Level Up reference's cross-link now passes ?open=xp,
+  // forwarded here as initialTool — must select that tab directly instead
+  // of always defaulting to whichever tab is firstAvailable.
+  it("Bloc53/F: initialTool selects the given tab directly", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CombatCalculators
+          cityParameters={defaultCityParameters}
+          initialTool="demo"
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    ).toHaveAttribute("aria-selected", "true");
+  });
+
   it("calculates demo troops from the shared wall parameters", () => {
     view();
     fireEvent.click(

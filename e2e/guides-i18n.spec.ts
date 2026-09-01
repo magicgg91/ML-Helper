@@ -16,17 +16,20 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
 
 // Bloc 50/1b: the reference catalog moved off the guides hub onto its own
 // /referentiels root (src/app/(public)/referentiels/page.tsx). Bloc 52/A:
-// the index title is the short "Référentiels", not "Tous les référentiels".
-// Bloc 52/B: the switcher nav is scoped to a specific reference's page —
-// the index already shows every reference as an illustrated tile, so it
-// must NOT repeat there.
+// the index title was the short "Référentiels", not "Tous les
+// référentiels". Bloc 53/D: that short title was replaced by the
+// homepage's own référentiels intro title ("Retrouve les données clés"),
+// same treatment /tools got in Bloc 38/K — the <title> metadata still says
+// "Référentiels" (see referentiels-page.test.tsx). Bloc 52/B: the switcher
+// nav is scoped to a specific reference's page — the index already shows
+// every reference as an illustrated tile, so it must NOT repeat there.
 test("shows every reference table on the référentiels hub", async ({
   page,
 }) => {
   await page.goto("/referentiels");
   await switchLocale(page, "fr");
   await expect(
-    page.getByRole("heading", { name: "Référentiels", level: 1 }),
+    page.getByRole("heading", { name: "Retrouve les données clés", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: /référentiels/i }),
@@ -40,7 +43,7 @@ test("shows every reference table on the référentiels hub", async ({
 
   await switchLocale(page, "en");
   await expect(
-    page.getByRole("heading", { name: "Reference tables", level: 1 }),
+    page.getByRole("heading", { name: "Find the exact numbers", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Combat Equipment" }),

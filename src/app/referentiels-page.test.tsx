@@ -5,10 +5,23 @@ import ReferentielsPage, {
 } from "./(public)/referentiels/page";
 
 // Bloc 52/A: the index page's title was "Tous les référentiels" — shortened
-// to just "Référentiels", matching /guides's own short "Guides" title.
+// to just "Référentiels" for the <title> metadata, matching /guides's own
+// short "Guides" title.
+// Bloc 53/D: the on-screen h1 now reuses the homepage's référentiels intro
+// title/phrase (Home.referentielsTitle/referentielsDescription) instead of
+// that short title — same treatment /tools got in Bloc 38/K. The <title>
+// metadata itself is untouched (still the short "references.title").
 vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) =>
-    ({ eyebrow: "Référentiels", title: "Référentiels" })[key] ?? key,
+  getTranslations: async (namespace: string) => {
+    if (namespace === "Home")
+      return (key: string) =>
+        ({
+          referentielsTitle: "Retrouve les données clés",
+          referentielsDescription: "Phrase d'intro référentiels.",
+        })[key] ?? key;
+    return (key: string) =>
+      ({ eyebrow: "Référentiels", title: "Référentiels" })[key] ?? key;
+  },
 }));
 vi.mock("@/components/reference-catalog-grid", () => ({
   ReferenceCatalogGrid: () => <div data-testid="reference-catalog-grid" />,
@@ -20,14 +33,20 @@ vi.mock("@/lib/site-url", () => ({
 afterEach(cleanup);
 
 describe("ReferentielsPage", () => {
-  it("Bloc52/A: shows the short 'Référentiels' title, not 'Tous les référentiels'", async () => {
+  it("Bloc53/D: shows the homepage's référentiels title and intro sentence, not the short index title", async () => {
     render(await ReferentielsPage());
     expect(
-      screen.getByRole("heading", { name: "Référentiels", level: 1 }),
+      screen.getByRole("heading", {
+        name: "Retrouve les données clés",
+        level: 1,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Phrase d'intro référentiels."),
     ).toBeInTheDocument();
   });
 
-  it("Bloc52/A: uses the same short title for the page's <title> metadata", async () => {
+  it("Bloc52/A: still uses the short title for the page's <title> metadata", async () => {
     const metadata = await generateMetadata();
     expect(metadata.title).toBe("Référentiels");
   });

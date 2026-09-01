@@ -193,6 +193,96 @@ describe("EditableDataTable", () => {
     expect(onRemove).toHaveBeenCalledWith(0);
   });
 
+  // Bloc 53/A: Boutique's 4 tables merge move-up/move-down/remove into a
+  // single "Actions" column instead of 3 separate ones — opt-in via
+  // combinedActions, and only takes effect when both onMove and onRemove
+  // are provided (every other caller keeps its separate column(s)).
+  it("Bloc53/A: combines move and remove into a single Actions column when combinedActions is set", () => {
+    render(
+      <EditableDataTable
+        rows={[
+          { name: "Alpha", amount: "1" },
+          { name: "Beta", amount: "2" },
+        ]}
+        columns={columns}
+        onChange={vi.fn()}
+        onMove={vi.fn()}
+        onRemove={vi.fn()}
+        moveUpLabel="Monter"
+        moveDownLabel="Descendre"
+        removeLabel="Supprimer"
+        removeIcon
+        combinedActions
+        actionsLabel="Actions"
+      />,
+    );
+    const headers = screen.getAllByRole("columnheader").map((h) => h.textContent);
+    expect(headers).toEqual(["Nom", "Montant", "Actions"]);
+    expect(
+      screen.queryByRole("columnheader", { name: "Monter" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Supprimer" }),
+    ).not.toBeInTheDocument();
+    const firstRowCell = screen.getAllByRole("row")[1].querySelectorAll("td");
+    const actionsCell = firstRowCell[firstRowCell.length - 1];
+    expect(actionsCell.querySelectorAll("button")).toHaveLength(3);
+  });
+
+  it("Bloc53/A: keeps separate move/remove columns when combinedActions is not set (Ranking's own usage)", () => {
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onRemove={vi.fn()}
+        removeLabel="Supprimer"
+      />,
+    );
+    expect(
+      screen.getByRole("columnheader", { name: "Supprimer" }),
+    ).toBeInTheDocument();
+  });
+
+  // Bloc 53/C: mirrors the existing narrow flag in the other direction —
+  // gives Boutique's Description column relatively more width.
+  it("Bloc53/C: widens only the columns marked wide, not the others", () => {
+    const wideColumns: EditableColumn<Row>[] = [
+      { key: "name", label: "Nom", required: true, wide: true },
+      { key: "amount", label: "Montant", type: "number", min: 1 },
+    ];
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={wideColumns}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText("Nom 1").closest("td")).toHaveClass(
+      "reference-admin-wide",
+    );
+    expect(screen.getByLabelText("Montant 1").closest("td")).not.toHaveClass(
+      "reference-admin-wide",
+    );
+  });
+
+  // Bloc 53/B, C: a Boutique-only scoping class on the <table>, so its CSS
+  // (globals.css .consumables-admin-table) never touches Combat/Expedition/
+  // Ranking's own tables, which don't pass this prop.
+  it("Bloc53/B, C: applies the optional tableClassName to the table element", () => {
+    const { container } = render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        tableClassName="consumables-admin-table"
+      />,
+    );
+    expect(container.querySelector("table")).toHaveClass(
+      "consumables-admin-table",
+    );
+  });
+
   it("shows the empty label instead of an empty table", () => {
     render(
       <EditableDataTable
