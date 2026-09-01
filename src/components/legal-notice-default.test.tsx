@@ -56,6 +56,24 @@ describe("default French legal notice", () => {
   });
 });
 
+// Bloc 56: the legal notice is edited through the same
+// @uiw/react-md-editor + MarkdownRenderer pipeline as the Boutique intro
+// and guides — proving the raw-HTML fix here too, not just for Boutique.
+describe("legal notice — Bloc 56: raw HTML support", () => {
+  it("renders a raw <img width> tag at its set size, not escaped as text", () => {
+    render(
+      <MarkdownRenderer markdown='<img src="https://example.com/host-logo.png" alt="Logo hébergeur" width="48" height="48" />' />,
+    );
+    const image = screen.getByRole("img", { name: "Logo hébergeur" });
+    expect(image).toHaveAttribute(
+      "src",
+      "https://example.com/host-logo.png",
+    );
+    expect(image).toHaveAttribute("width", "48");
+    expect(image).toHaveAttribute("height", "48");
+  });
+});
+
 describe("default English legal notice", () => {
   it("renders its Markdown and keeps every explicit placeholder", () => {
     render(<MarkdownRenderer markdown={defaultEnglishLegalNotice} />);

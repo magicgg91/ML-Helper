@@ -93,6 +93,13 @@ describe("equipment tools", () => {
     expect(
       screen.getByRole("link", { name: /Équipements de Combat$/ }),
     ).toHaveAttribute("href", "/referentiels/combat-equipment");
+    // Bloc 55/A: the cross-reference banner sits after the tool's own
+    // content (global summary, family filters, slot grid), not before it.
+    expect(
+      globalSummarySection().compareDocumentPosition(
+        screen.getByRole("link", { name: /Équipements de Combat$/ }),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {

@@ -54,6 +54,26 @@ describe("ConsumablesReferenceTable", () => {
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
   });
 
+  // Bloc 56: the original bug report — HTML pasted into the Boutique intro
+  // (e.g. an <img width> for a size-controlled illustration) rendered fine
+  // in the admin preview but was escaped as plain text on the public site,
+  // for lack of a rehype-raw pass in the shared markdown pipeline.
+  it("Bloc56: renders a raw <img width> tag from the intro at its set size, not escaped as text", () => {
+    render(
+      <ConsumablesReferenceTable
+        intro={{
+          ...emptyIntro,
+          fr: '<img src="https://example.com/icon.png" alt="Icône" width="48" height="48" />',
+        }}
+        catalog={catalog}
+      />,
+    );
+    const image = screen.getByRole("img", { name: "Icône" });
+    expect(image).toHaveAttribute("src", "https://example.com/icon.png");
+    expect(image).toHaveAttribute("width", "48");
+    expect(image).toHaveAttribute("height", "48");
+  });
+
   it("skips the intro zone entirely when it's still empty (nothing invented)", () => {
     render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
     expect(document.querySelector(".markdown-content")).not.toBeInTheDocument();

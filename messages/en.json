@@ -704,9 +704,12 @@
         "author": "Author",
         "created": "Created",
         "updated": "Last edited",
+        "languages": "Languages",
         "status": "Status",
         "actions": "Actions"
       },
+      "language-written": "{locale} written",
+      "language-missing": "{locale} not translated",
       "no-results": "No result for this filter.",
       "statuses": {
         "draft": "Draft",

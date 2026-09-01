@@ -12,6 +12,7 @@ const row: GuideAdminRow = {
   updatedAt: "01/01/2026",
   status: "draft",
   active: true,
+  languages: { fr: true, en: false, de: false, es: false, tr: false },
 };
 
 afterEach(() => {
@@ -81,33 +82,60 @@ describe("GuideStatusList", () => {
     expect(screen.getByText("Aucun résultat pour ce filtre.")).toBeVisible();
   });
 
-  it("puts the 'Nouveau' link right-aligned in the section heading (Bloc 32/A.3)", () => {
+  // Bloc 55/C: at-a-glance translation coverage per guide — only the
+  // locales the guide actually has content in show as "written", the rest
+  // stay visibly greyed out, so it's obvious which guides still need
+  // translating without opening each one.
+  it("Bloc55/C: shows only the locales the guide is actually written in as active", () => {
     render(
       <GuideStatusList
-        rows={[row]}
+        rows={[
+          {
+            ...row,
+            id: "guide-multi",
+            languages: { fr: true, en: true, de: false, es: false, tr: false },
+          },
+        ]}
         canPublish={false}
         canDelete={true}
         canWrite={true}
-        newHref="/admin/guides/new"
       />,
     );
-    const newLink = screen.getByRole("link", { name: "Nouveau" });
-    expect(newLink).toHaveAttribute("href", "/admin/guides/new");
-    expect(newLink.parentElement).toHaveClass("admin-section-heading");
+    const fr = screen.getByTestId("guide-language-guide-multi-fr");
+    const en = screen.getByTestId("guide-language-guide-multi-en");
+    const de = screen.getByTestId("guide-language-guide-multi-de");
+    const es = screen.getByTestId("guide-language-guide-multi-es");
+    const tr = screen.getByTestId("guide-language-guide-multi-tr");
+    expect(fr).not.toHaveClass("opacity-40");
+    expect(en).not.toHaveClass("opacity-40");
+    expect(de).toHaveClass("opacity-40");
+    expect(es).toHaveClass("opacity-40");
+    expect(tr).toHaveClass("opacity-40");
   });
 
-  it("hides the 'Nouveau' link when no newHref is given", () => {
+  it("Bloc55/C: a mono-language guide shows only its one written locale as active", () => {
     render(
       <GuideStatusList
-        rows={[row]}
+        rows={[
+          {
+            ...row,
+            id: "guide-mono",
+            languages: { fr: true, en: false, de: false, es: false, tr: false },
+          },
+        ]}
         canPublish={false}
         canDelete={true}
         canWrite={true}
       />,
     );
     expect(
-      screen.queryByRole("link", { name: "Nouveau" }),
-    ).not.toBeInTheDocument();
+      screen.getByTestId("guide-language-guide-mono-fr"),
+    ).not.toHaveClass("opacity-40");
+    for (const locale of ["en", "de", "es", "tr"]) {
+      expect(
+        screen.getByTestId(`guide-language-guide-mono-${locale}`),
+      ).toHaveClass("opacity-40");
+    }
   });
 
   it("asks for confirmation before deleting a guide", () => {

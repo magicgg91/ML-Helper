@@ -26,6 +26,8 @@ const answer = 42;
 [Lien de test](https://example.com)
 
 <script>alert("unsafe")</script>
+
+<img src="https://example.com/icon.png" alt="Icône" width="48" height="48" />
 `;
 
 describe("MarkdownRenderer", () => {
@@ -63,5 +65,12 @@ describe("MarkdownRenderer", () => {
       "https://example.com",
     );
     expect(container.querySelector("script")).toBeNull();
+    // Bloc 56: raw HTML <img> must render (not be escaped as plain text)
+    // with its width/height attributes preserved — the only way to control
+    // an editorial image's size, impossible in pure Markdown syntax.
+    const image = screen.getByRole("img", { name: "Icône" });
+    expect(image).toHaveAttribute("src", "https://example.com/icon.png");
+    expect(image).toHaveAttribute("width", "48");
+    expect(image).toHaveAttribute("height", "48");
   });
 });

@@ -694,9 +694,12 @@
         "author": "Yazar",
         "created": "Oluşturuldu",
         "updated": "Son düzenleme",
+        "languages": "Diller",
         "status": "Durum",
         "actions": "İşlemler"
       },
+      "language-written": "{locale} yazıldı",
+      "language-missing": "{locale} çevrilmedi",
       "no-results": "Bu filtre için sonuç yok.",
       "statuses": {
         "draft": "Taslak",

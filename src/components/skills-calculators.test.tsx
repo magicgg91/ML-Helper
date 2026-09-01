@@ -180,6 +180,26 @@ describe("SkillsCalculators", () => {
       "3.99k Pouciel",
     );
   });
+  it("Bloc55/A: shows the Templars tool->reference banner after the tool's own content", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    expect(screen.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
+      "href",
+      "/referentiels/templars",
+    );
+    expect(
+      screen
+        .getByTestId("templar-cost")
+        .compareDocumentPosition(
+          screen.getByRole("link", { name: /Templiers$/ }),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
   // Bloc 53/F: a reference's cross-link (Gems, Templars) now passes
   // ?open=<tab>, read server-side and forwarded here as initialTool — this
   // must select the precise tab instead of always defaulting to whichever
@@ -266,6 +286,15 @@ describe("SkillsCalculators", () => {
       "href",
       "/referentiels/gems",
     );
+    // Bloc 55/A: the cross-reference banner sits after the tool's own
+    // content, not before it.
+    expect(
+      screen
+        .getByTestId("gem-allocated")
+        .compareDocumentPosition(
+          screen.getByRole("link", { name: /Gemmes$/ }),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("uses the administrator-provided named Gem parameters", () => {

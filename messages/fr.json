@@ -710,9 +710,12 @@
         "author": "Auteur",
         "created": "Créé le",
         "updated": "Dernière édition",
+        "languages": "Langues",
         "status": "Statut",
         "actions": "Actions"
       },
+      "language-written": "{locale} rédigé",
+      "language-missing": "{locale} non traduit",
       "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",

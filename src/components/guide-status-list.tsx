@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { launchLocales, type LaunchLocale } from "@/lib/translations";
 
 export type GuideAdminRow = {
   id: string;
@@ -24,19 +25,18 @@ export type GuideAdminRow = {
   updatedAt: string;
   status: string;
   active: boolean;
+  languages: Record<LaunchLocale, boolean>;
 };
 export function GuideStatusList({
   rows,
   canPublish,
   canDelete,
   canWrite,
-  newHref,
 }: {
   rows: GuideAdminRow[];
   canPublish: boolean;
   canDelete: boolean;
   canWrite: boolean;
-  newHref?: string;
 }) {
   const t = useTranslations("admin.guides");
   const [guides, setGuides] = useState(rows);
@@ -79,13 +79,6 @@ export function GuideStatusList({
   }
   return (
     <>
-      <div className="admin-section-heading">
-        {newHref && (
-          <Link className="editor-action editor-action-primary" href={newHref}>
-            {t("new")}
-          </Link>
-        )}
-      </div>
       {guides.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("no-results")}</p>
       ) : (
@@ -98,6 +91,7 @@ export function GuideStatusList({
                   <TableHead>{t("columns.author")}</TableHead>
                   <TableHead>{t("columns.created")}</TableHead>
                   <TableHead>{t("columns.updated")}</TableHead>
+                  <TableHead>{t("columns.languages")}</TableHead>
                   <TableHead>{t("columns.status")}</TableHead>
                   <TableHead className="text-right">
                     {t("columns.actions")}
@@ -117,6 +111,36 @@ export function GuideStatusList({
                     <TableCell>{guide.author}</TableCell>
                     <TableCell>{guide.createdAt}</TableCell>
                     <TableCell>{guide.updatedAt}</TableCell>
+                    <TableCell>
+                      {/* Bloc 55/C: at-a-glance translation coverage — only
+                          the locales this guide actually has content in are
+                          shown active, so which guides still need
+                          translating is visible without opening each one. */}
+                      <div
+                        className="flex flex-wrap gap-1"
+                        aria-label={t("columns.languages")}
+                      >
+                        {launchLocales.map((item) => (
+                          <span
+                            key={item}
+                            data-testid={`guide-language-${guide.id}-${item}`}
+                            title={t(
+                              guide.languages[item]
+                                ? "language-written"
+                                : "language-missing",
+                              { locale: item.toUpperCase() },
+                            )}
+                            className={
+                              guide.languages[item]
+                                ? "rounded border border-border px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase"
+                                : "rounded border border-border px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase text-muted-foreground opacity-40"
+                            }
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <select
                         className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
