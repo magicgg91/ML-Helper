@@ -621,9 +621,9 @@ test("Reference tables filter combat and expedition equipment", async ({
   ).toBeVisible();
 
   await page.goto("/referentiels");
-  // Scoped to the catalog grid: the section-nav banner (Bloc 50/E) repeats
-  // the same labels as its own links, so an unscoped role query here would
-  // resolve to two matches.
+  // Bloc 52/B: the section-nav banner no longer renders on the index page
+  // (only on a specific reference's page) — scoped to the catalog grid
+  // regardless, since that's the only place these links live here.
   const referentielsGrid = page.locator(".tool-category-grid");
   await expect(
     referentielsGrid.getByRole("link", { name: /Équipements de Combat/ }),

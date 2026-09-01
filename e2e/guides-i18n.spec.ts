@@ -15,21 +15,22 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
 }
 
 // Bloc 50/1b: the reference catalog moved off the guides hub onto its own
-// /referentiels root (src/app/(public)/referentiels/page.tsx), with the
-// switcher banner promoted to that section's layout — so this now checks
-// /referentiels directly, and expects the switcher nav to be present
-// (it wraps the index page too), not absent.
+// /referentiels root (src/app/(public)/referentiels/page.tsx). Bloc 52/A:
+// the index title is the short "Référentiels", not "Tous les référentiels".
+// Bloc 52/B: the switcher nav is scoped to a specific reference's page —
+// the index already shows every reference as an illustrated tile, so it
+// must NOT repeat there.
 test("shows every reference table on the référentiels hub", async ({
   page,
 }) => {
   await page.goto("/referentiels");
   await switchLocale(page, "fr");
   await expect(
-    page.getByRole("heading", { name: "Tous les référentiels", level: 1 }),
+    page.getByRole("heading", { name: "Référentiels", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: /référentiels/i }),
-  ).toBeVisible();
+  ).not.toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Équipements de Combat" }),
   ).toBeVisible();
@@ -39,13 +40,27 @@ test("shows every reference table on the référentiels hub", async ({
 
   await switchLocale(page, "en");
   await expect(
-    page.getByRole("heading", { name: "All reference tables", level: 1 }),
+    page.getByRole("heading", { name: "Reference tables", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Combat Equipment" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Expedition Equipment" }),
+  ).toBeVisible();
+});
+
+test("shows the reference switcher nav only on a specific reference's page, never on the hub", async ({
+  page,
+}) => {
+  await page.goto("/referentiels");
+  await expect(
+    page.getByRole("navigation", { name: "Référentiels" }),
+  ).not.toBeVisible();
+
+  await page.goto("/referentiels/combat-equipment");
+  await expect(
+    page.getByRole("navigation", { name: "Référentiels" }),
   ).toBeVisible();
 });
 

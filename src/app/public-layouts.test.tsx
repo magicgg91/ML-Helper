@@ -4,6 +4,7 @@ import PublicLayout from "./(public)/layout";
 import ToolsLayout from "./(public)/tools/layout";
 import ToolDetailLayout from "./(public)/tools/[slug]/layout";
 import ReferentielsLayout from "./(public)/referentiels/layout";
+import ReferentielDetailLayout from "./(public)/referentiels/[slug]/layout";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 
@@ -113,16 +114,33 @@ describe("public layouts", () => {
     expect(screen.getByText("Paramètres du joueur")).toBeInTheDocument();
   });
 
-  // Bloc 50/E: the reference-switcher banner is promoted from a
-  // per-detail-page inline element into the section-level header nav of the
-  // whole /referentiels route — this single layout wraps both the index and
-  // every detail page.
-  it("renders the reference switcher nav above the section's children", async () => {
+  // Bloc 52/B: the switcher nav moved out of this top-level layout (which
+  // wraps the index page too) into [slug]/layout.tsx below — the index
+  // already shows every reference as an illustrated tile, so repeating
+  // them as a text nav there was redundant.
+  it("Bloc52/B: the /referentiels index layout is a bare passthrough, no switcher nav", () => {
+    render(
+      <ReferentielsLayout params={Promise.resolve({})}>
+        <p>Référentiels</p>
+      </ReferentielsLayout>,
+    );
+
+    expect(screen.getByText("Référentiels")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Référentiels" }),
+    ).not.toBeInTheDocument();
+  });
+
+  // Bloc 50/E, moved in Bloc 52/B: the reference-switcher banner is the
+  // header nav of a specific reference's page, not the /referentiels
+  // index — scoped to the [slug] segment only, same pattern as
+  // tools/[slug]/layout.tsx.
+  it("Bloc52/B: the [slug] detail layout renders the reference switcher nav above its children", async () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        {await ReferentielsLayout({
-          children: <p>Référentiels</p>,
-          params: Promise.resolve({}),
+        {await ReferentielDetailLayout({
+          children: <p>Boutique</p>,
+          params: Promise.resolve({ slug: "shop" }),
         })}
       </NextIntlClientProvider>,
     );
@@ -130,6 +148,6 @@ describe("public layouts", () => {
     expect(
       screen.getByRole("navigation", { name: "Référentiels" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Référentiels")).toBeInTheDocument();
+    expect(screen.getByText("Boutique")).toBeInTheDocument();
   });
 });

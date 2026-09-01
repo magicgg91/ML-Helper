@@ -525,7 +525,7 @@
   },
   "references": {
     "eyebrow": "Reference tables",
-    "title": "All reference tables",
+    "title": "Reference tables",
     "filters": {
       "label": "Reference table filters",
       "family": "Family",
@@ -902,13 +902,11 @@
       "all": "All",
       "filters": { "skill": "Skill" },
       "consumables-intro-title": "Intro text",
-      "consumables-intro-description": "Free-text markdown zone, shown at the top of the public Shop reference page.",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Text language",
       "consumables-intro-error": "Introduction not saved (items were saved).",
       "consumables-rows-error": "Items not saved (the introduction was saved).",
       "consumables-table-title": "Items",
-      "consumables-table-description": "Freely add, reorder or remove items in each category. Leave the cost empty until it's confirmed — row order within a table is that category's public display order.",
       "consumables-columns": {
         "image": "Image path",
         "name": "Name",

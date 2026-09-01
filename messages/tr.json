@@ -526,7 +526,7 @@
   },
   "references": {
     "eyebrow": "Referans tabloları",
-    "title": "Tüm referans tabloları",
+    "title": "Referans tabloları",
     "filters": {
       "label": "Referans tablosu filtreleri",
       "family": "Aile",
@@ -907,13 +907,11 @@
         "image": "Görsel yolu",
         "name": "Ad"
       },
-      "consumables-intro-description": "Genel Mağaza referans sayfasının üst kısmında görüntülenen serbest metin markdown alanı.",
       "consumables-intro-error": "Giriş kaydedilmedi (öğeler kaydedildi).",
       "consumables-intro-label": "Giriş (markdown)",
       "consumables-intro-language-label": "Metin dili",
       "consumables-intro-title": "Giriş metni",
       "consumables-rows-error": "Öğeler kaydedilmedi (giriş kaydedildi).",
-      "consumables-table-description": "Tüketim malzemesi öğelerini serbestçe ekle, yeniden sırala veya kaldır. Onaylanana kadar maliyeti boş bırak — satır sırası genel görüntüleme sırasıdır.",
       "consumables-table-title": "Öğeler",
       "empty": "Henüz öğe yok.",
       "move-down": "Aşağı taşı",

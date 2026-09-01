@@ -144,14 +144,26 @@ export function ConsumablesReferenceTable({
 
   return (
     <div className="calculator-stack">
-      {introText && <MarkdownRenderer markdown={introText} />}
-      <CategoryFilters
-        selected={selectedCategories}
-        toggle={toggleCategory}
-        categoryLabel={categoryLabel}
-        filtersLabel={t("filters.label")}
-        filterLabel={t("filters.category")}
-      />
+      {/* Bloc 52/D: framed like every other free-text zone on the site
+          (guide-shell/calculator-card), not left bare. */}
+      {introText && (
+        <section className="calculator-card">
+          <MarkdownRenderer markdown={introText} />
+        </section>
+      )}
+      {/* Bloc 52/C: wrapped in the same .calculator-card frame the other
+          references' Filters block uses (see reference-tables.tsx) — was
+          rendering .reference-filters bare, the only reference filter bar
+          without it. */}
+      <section className="calculator-card">
+        <CategoryFilters
+          selected={selectedCategories}
+          toggle={toggleCategory}
+          categoryLabel={categoryLabel}
+          filtersLabel={t("filters.label")}
+          filterLabel={t("filters.category")}
+        />
+      </section>
       {/* Bloc 48/D: table order follows consumableCategories (alphabetical:
           Conseillers, Équipement, Expédition, Inventaire), same order as
           the filter buttons above. */}

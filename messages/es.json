@@ -526,7 +526,7 @@
   },
   "references": {
     "eyebrow": "Tablas de referencia",
-    "title": "Todas las tablas de referencia",
+    "title": "Tablas de referencia",
     "filters": {
       "label": "Filtros de tabla de referencia",
       "family": "Familia",
@@ -907,13 +907,11 @@
         "image": "Ruta de la imagen",
         "name": "Nombre"
       },
-      "consumables-intro-description": "Zona de texto libre en markdown, mostrada en la parte superior de la página pública de referencia de la Tienda.",
       "consumables-intro-error": "Introducción no guardada (los objetos se guardaron).",
       "consumables-intro-label": "Introducción (markdown)",
       "consumables-intro-language-label": "Idioma del texto",
       "consumables-intro-title": "Texto de introducción",
       "consumables-rows-error": "Objetos no guardados (la introducción se guardó).",
-      "consumables-table-description": "Añade, reordena o elimina objetos consumibles libremente. Deja el coste vacío hasta que esté confirmado — el orden de las filas es el orden de visualización público.",
       "consumables-table-title": "Objetos",
       "empty": "Aún no hay objetos.",
       "move-down": "Mover hacia abajo",
