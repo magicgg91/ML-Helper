@@ -2,18 +2,18 @@ import { prisma } from "./prisma";
 import {
   consumableCategories,
   consumablePotionNames,
-  consumablesIntroKey,
   defaultConsumableCatalog,
-  defaultConsumablesIntro,
   parseConsumableCategory,
   type ConsumableCatalog,
   type ConsumableRow,
 } from "./consumables";
-import {
-  launchRecord,
-  translationRecord,
-  type LaunchLocale,
-} from "./translations";
+
+// A fresh set of arrays every call — emptyConsumableCatalog itself is a
+// shared module-level constant, so spreading it would leave every grouped
+// result sharing (and mutating, via push) the very same array instances.
+function freshEmptyCatalog(): ConsumableCatalog {
+  return { intro: [], advisors: [], equipment: [], expedition: [], inventory: [] };
+}
 
 export const consumablesReferenceKey = "consumables";
 
@@ -42,11 +42,13 @@ function recoverCategory(row: {
 // original pre-Bloc46 flat array with no category field at all (recovered
 // by name via parseConsumableCategory). Falls back to the compiled-in
 // defaults only when nothing usable is stored.
+// Bloc 58/A: a stored value from before this bloc simply has no "intro"
+// key at all — it comes back as the empty array `emptyConsumableCatalog`
+// already starts with, exactly the "nothing migrated, re-enter by hand"
+// behavior the bloc calls for.
 export function normalizeStoredValue(value: unknown): ConsumableCatalog {
   if (Array.isArray(value)) {
-    const grouped = Object.fromEntries(
-      consumableCategories.map((category) => [category, [] as ConsumableRow[]]),
-    ) as ConsumableCatalog;
+    const grouped = freshEmptyCatalog();
     for (const raw of value) {
       if (!isPlainObject(raw)) continue;
       const row = { ...raw };
@@ -56,9 +58,9 @@ export function normalizeStoredValue(value: unknown): ConsumableCatalog {
     return grouped;
   }
   if (isPlainObject(value)) {
-    const grouped = Object.fromEntries(
-      consumableCategories.map((category) => [category, [] as ConsumableRow[]]),
-    ) as ConsumableCatalog;
+    const grouped = freshEmptyCatalog();
+    if (Array.isArray(value.intro))
+      grouped.intro = value.intro.filter(isPlainObject) as ConsumableRow[];
     for (const category of consumableCategories) {
       const rawRows = value[category];
       if (!Array.isArray(rawRows)) continue;
@@ -87,23 +89,4 @@ export async function getConsumableCatalog(): Promise<ConsumableCatalog> {
   });
   if (!table) return defaultConsumableCatalog;
   return normalizeStoredValue(table.rows);
-}
-
-// Bloc 44: only fr/en have a (empty) fallback in defaultConsumablesIntro —
-// DE/ES/TR simply have nothing until an admin writes it, same as a
-// never-saved fr/en would.
-export async function getConsumablesIntro(): Promise<
-  Record<LaunchLocale, string>
-> {
-  const content = await prisma.staticContent.findUnique({
-    where: { key: consumablesIntroKey },
-  });
-  const translations = translationRecord(content?.content);
-  return launchRecord(
-    (locale) =>
-      translations[locale] ??
-      (locale === "fr" || locale === "en"
-        ? defaultConsumablesIntro[locale]
-        : ""),
-  );
 }

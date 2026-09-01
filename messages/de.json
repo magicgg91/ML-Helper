@@ -543,10 +543,10 @@
     "unavailable": "Diese Referenztabellen sind vorübergehend nicht verfügbar.",
     "single-unavailable": "Diese Referenztabelle ist vorübergehend nicht verfügbar.",
     "consommables": {
+      "introTitle": "Einleitung",
       "columns": {
         "cost": "Kosten (Saphire)",
         "description": "Beschreibung",
-        "image": "Bild",
         "name": "Name"
       },
       "cost-unknown": "Nicht festgelegt"
@@ -907,9 +907,8 @@
         "image": "Bildpfad",
         "name": "Name"
       },
-      "consumables-intro-label": "Einleitung (Markdown)",
       "consumables-intro-language-label": "Textsprache",
-      "consumables-intro-title": "Einleitungstext",
+      "consumables-intro-title": "Intro",
       "consumables-table-title": "Objekte",
       "empty": "Noch keine Objekte.",
       "move-down": "Nach unten verschieben",

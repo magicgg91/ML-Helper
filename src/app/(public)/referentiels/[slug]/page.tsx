@@ -25,10 +25,7 @@ import {
   getLevelUpParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
-import {
-  getConsumableCatalog,
-  getConsumablesIntro,
-} from "@/lib/consumables-server";
+import { getConsumableCatalog } from "@/lib/consumables-server";
 import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
@@ -79,10 +76,7 @@ export default async function ReferencePage({
         ) : slug === "gems" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
         ) : slug === "shop" ? (
-          <ConsumablesReferenceTable
-            intro={await getConsumablesIntro()}
-            catalog={await getConsumableCatalog()}
-          />
+          <ConsumablesReferenceTable catalog={await getConsumableCatalog()} />
         ) : (
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}
