@@ -1028,6 +1028,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Gestion Guides",
+    "references_manager": "Référentiels",
     "tools_manager": "Gestion Outils",
     "read_only": "Lecture Seule"
   }

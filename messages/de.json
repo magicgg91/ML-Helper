@@ -1028,6 +1028,7 @@
     "super_admin": "Super-Admin",
     "admin": "Admin",
     "guides_manager": "Anleitungsverwalter",
+    "references_manager": "Référentiels",
     "tools_manager": "Werkzeugverwalter",
     "read_only": "Nur Lesen"
   }

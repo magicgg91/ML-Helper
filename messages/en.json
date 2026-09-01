@@ -1026,6 +1026,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Guides Manager",
+    "references_manager": "Référentiels",
     "tools_manager": "Tools Manager",
     "read_only": "Read Only"
   }

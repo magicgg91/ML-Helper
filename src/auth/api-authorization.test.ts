@@ -25,7 +25,7 @@ describe("API role authorization", () => {
       user: { id: "guide", role: "guides_manager" },
       expires: "2099-01-01",
     });
-    await expect(authorizedSession("references.write")).resolves.not.toBeNull();
+    await expect(authorizedSession("guides.write")).resolves.not.toBeNull();
     await expect(authorizedSession("calculators.write")).resolves.toBeNull();
     const response = forbiddenResponse();
     expect(response.status).toBe(403);
@@ -35,14 +35,23 @@ describe("API role authorization", () => {
     });
   });
 
-  it("grants access when the role has any capability in a list (Templars: shared with Guides)", async () => {
+  it("grants access when the role has any capability in a list (references_manager: Templars/Gems reference editing)", async () => {
+    mockedSession.mockResolvedValue({
+      user: { id: "references", role: "references_manager" },
+      expires: "2099-01-01",
+    });
+    await expect(
+      authorizedSession(["calculators.write", "references.write"]),
+    ).resolves.not.toBeNull();
+    // guides_manager no longer carries references.write (moved to
+    // references_manager), so it no longer qualifies for this list either.
     mockedSession.mockResolvedValue({
       user: { id: "guide", role: "guides_manager" },
       expires: "2099-01-01",
     });
     await expect(
       authorizedSession(["calculators.write", "references.write"]),
-    ).resolves.not.toBeNull();
+    ).resolves.toBeNull();
     mockedSession.mockResolvedValue({
       user: { id: "read-only", role: "read_only" },
       expires: "2099-01-01",

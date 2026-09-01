@@ -1028,6 +1028,7 @@
     "super_admin": "Süper Yönetici",
     "admin": "Yönetici",
     "guides_manager": "Rehber Yöneticisi",
+    "references_manager": "Référentiels",
     "tools_manager": "Araç Yöneticisi",
     "read_only": "Salt Okunur"
   }
