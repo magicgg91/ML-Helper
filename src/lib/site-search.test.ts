@@ -75,7 +75,7 @@ describe("buildSiteSearchResults", () => {
         type: "reference",
         id: "reference-combat-equipment",
         label: "Équipements de Combat",
-        href: "/guides/referentiels/combat-equipment",
+        href: "/referentiels/combat-equipment",
       },
     ]);
   });
@@ -110,9 +110,9 @@ describe("buildSiteSearchResults", () => {
     });
     expect(results).toContainEqual({
       type: "reference",
-      id: "reference-gemmes",
+      id: "reference-gems",
       label: "Gemmes",
-      href: "/guides/referentiels/gemmes",
+      href: "/referentiels/gems",
     });
   });
 
@@ -128,7 +128,7 @@ describe("buildSiteSearchResults", () => {
         type: "reference",
         id: "reference-level-up",
         label: "Level Up",
-        href: "/guides/referentiels/level-up",
+        href: "/referentiels/level-up",
       },
     ]);
   });
@@ -155,9 +155,9 @@ describe("buildSiteSearchResults", () => {
     expect(referenceResults).toEqual([
       {
         type: "reference",
-        id: "reference-templiers",
+        id: "reference-templars",
         label: "Coût des Templiers",
-        href: "/guides/referentiels/templiers",
+        href: "/referentiels/templars",
       },
     ]);
   });
@@ -194,7 +194,7 @@ describe("buildSiteSearchResults", () => {
         type: "reference",
         id: "reference-shop",
         label: "Boutique",
-        href: "/guides/referentiels/shop",
+        href: "/referentiels/shop",
       },
     ]);
   });

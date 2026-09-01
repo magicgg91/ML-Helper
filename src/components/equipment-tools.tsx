@@ -494,7 +494,7 @@ export function StuffSimulator({
     <div className="calculator-stack" data-testid="stuff-simulator">
       <Link
         className="reference-cross-link"
-        href="/guides/referentiels/combat-equipment"
+        href="/referentiels/combat-equipment"
       >
         {t("view-reference")}
       </Link>

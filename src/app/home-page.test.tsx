@@ -102,11 +102,11 @@ describe("HomePage", () => {
       "combat-equipment",
       "expedition-equipment",
       "level-up",
-      "templiers",
+      "templars",
     ]) {
       expect(
         screen.getByRole("link", { name: new RegExp(`catalog.${slug}`) }),
-      ).toHaveAttribute("href", `/guides/referentiels/${slug}`);
+      ).toHaveAttribute("href", `/referentiels/${slug}`);
     }
     // No detour via /guides — the section links directly to each guide and
     // reference, not to a "browse all guides" page.

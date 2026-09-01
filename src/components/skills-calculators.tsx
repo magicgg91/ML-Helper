@@ -201,7 +201,7 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   const [mode, setMode] = useState<"optimize" | "budget">("optimize");
   return (
     <div className="calculator-stack">
-      <Link className="reference-cross-link" href="/guides/referentiels/gemmes">
+      <Link className="reference-cross-link" href="/referentiels/gems">
         {t("view-reference")}
       </Link>
       <section className="calculator-card">
@@ -635,10 +635,7 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const cost = templarUpgradeCost(start, target, parameters);
   return (
     <div className="calculator-stack">
-      <Link
-        className="reference-cross-link"
-        href="/guides/referentiels/templiers"
-      >
+      <Link className="reference-cross-link" href="/referentiels/templars">
         {t("view-reference")}
       </Link>
       <section className="calculator-card">

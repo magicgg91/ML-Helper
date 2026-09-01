@@ -28,14 +28,14 @@ export const referenceCatalog = [
     fallbackImage: "/category-combat.svg",
   },
   {
-    slug: "templiers",
+    slug: "templars",
     calculatorSlug: "templiers" satisfies CalculatorSlug,
     category: "competences",
     image: "/referentials/referential-temples.webp",
     fallbackImage: "/category-skills.svg",
   },
   {
-    slug: "gemmes",
+    slug: "gems",
     calculatorSlug: "gemmes" satisfies CalculatorSlug,
     category: "competences",
     image: "/referentials/referential-gems.webp",
@@ -58,5 +58,5 @@ export const referenceCatalog = [
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];
 
 export function referenceHref(slug: ReferenceSlug) {
-  return `/guides/referentiels/${slug}` as const;
+  return `/referentiels/${slug}` as const;
 }

@@ -50,10 +50,7 @@ describe("SiteSearch", () => {
       { target: { value: "équipements de combat" } },
     );
     const link = screen.getByRole("link", { name: /Équipements de Combat/ });
-    expect(link).toHaveAttribute(
-      "href",
-      "/guides/referentiels/combat-equipment",
-    );
+    expect(link).toHaveAttribute("href", "/referentiels/combat-equipment");
     expect(link).toHaveTextContent("Référentiel");
   });
 
@@ -80,10 +77,7 @@ describe("SiteSearch", () => {
     const links = screen.getAllByRole("link", { name: /Gemmes/ });
     expect(links).toHaveLength(2);
     expect(links.map((link) => link.getAttribute("href"))).toEqual(
-      expect.arrayContaining([
-        "/tools/competences",
-        "/guides/referentiels/gemmes",
-      ]),
+      expect.arrayContaining(["/tools/competences", "/referentiels/gems"]),
     );
   });
 
@@ -96,7 +90,7 @@ describe("SiteSearch", () => {
     expect(screen.getAllByRole("link")).toHaveLength(1);
     expect(screen.getByRole("link", { name: /Level Up/ })).toHaveAttribute(
       "href",
-      "/guides/referentiels/level-up",
+      "/referentiels/level-up",
     );
   });
 
