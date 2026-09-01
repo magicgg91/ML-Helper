@@ -43,7 +43,11 @@ export async function PUT(request: Request) {
 
     const introContent = dropEmptyLocales(introSchema.parse(intro ?? {}));
 
-    if (!rawCatalog || typeof rawCatalog !== "object" || Array.isArray(rawCatalog))
+    if (
+      !rawCatalog ||
+      typeof rawCatalog !== "object" ||
+      Array.isArray(rawCatalog)
+    )
       throw new Error("invalid catalog");
     const source = rawCatalog as Record<string, unknown>;
     const catalog: ConsumableCatalog = Object.fromEntries(
@@ -69,6 +73,9 @@ export async function PUT(request: Request) {
     ) as ConsumableCatalog;
 
     await prisma.$transaction(async (tx) => {
+      const beforeIntro = await tx.staticContent.findUnique({
+        where: { key: consumablesIntroKey },
+      });
       await tx.staticContent.upsert({
         where: { key: consumablesIntroKey },
         create: {
@@ -109,9 +116,17 @@ export async function PUT(request: Request) {
             beforeRows ? "update" : "create",
             "le référentiel Boutique",
           ),
+          // Codex review (PR #78): the combined save's diff must still
+          // cover the intro, not just the catalog rows — an intro-only
+          // edit (rows unchanged) used to be traceable via the separate
+          // route's own before/after; folding both writes into one entry
+          // must not silently drop that half of the change.
           diff: {
-            before: beforeRows?.rows ?? null,
-            after: catalog,
+            before: {
+              intro: beforeIntro?.content ?? null,
+              rows: beforeRows?.rows ?? null,
+            },
+            after: { intro: introContent, rows: catalog },
           },
         },
       });
