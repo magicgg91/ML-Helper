@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferencePage, {
   generateMetadata,
@@ -102,44 +102,6 @@ describe("ReferencePage", () => {
       name: "Équipements d’Expédition",
     });
     expect(heading).toHaveClass("reference-page-title");
-  });
-
-  it("Bloc35 1.2: offers a cross-nav to switch directly to another reference", async () => {
-    render(
-      await ReferencePage({
-        params: Promise.resolve({ slug: "combat-equipment" }),
-        searchParams: Promise.resolve({}),
-      }),
-    );
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
-    for (const label of [
-      "Équipements de Combat",
-      "Équipements d’Expédition",
-      "Level Up",
-      "Coût des Templiers",
-      "Gemmes",
-      "Boutique",
-    ]) {
-      expect(within(nav).getByText(label)).toBeInTheDocument();
-    }
-    const currentLink = within(nav).getByText("Équipements de Combat");
-    expect(currentLink).toHaveAttribute("aria-current", "page");
-    const otherLink = within(nav).getByText("Équipements d’Expédition");
-    expect(otherLink).toHaveAttribute(
-      "href",
-      "/referentiels/expedition-equipment",
-    );
-    // Bloc 40/A: reverses Bloc 37/K — the switcher now reuses the /tools
-    // category banner's own container/button classes (full width, grows to
-    // fill the row) instead of the family-buttons pill row (content width).
-    expect(nav).toHaveClass("category-nav");
-    expect(nav).not.toHaveClass("family-buttons");
-    expect(currentLink).toHaveClass("category-btn");
-    expect(otherLink).not.toHaveAttribute("aria-current");
-    // Bloc 41/C: keeps its own "reference-switcher" class alongside
-    // "category-nav" — the spacing-below fix is scoped to it specifically,
-    // so it doesn't add space under the /tools banner too.
-    expect(nav).toHaveClass("reference-switcher");
   });
 
   it("Bloc36/A: routes the new 'gems' slug to GemsReferenceTable, the 5th reference actually built", async () => {

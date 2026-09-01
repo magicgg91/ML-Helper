@@ -38,6 +38,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
             menuLabel={navigation("menu")}
             links={[
               { href: "/tools", label: navigation("tools") },
+              { href: "/referentiels", label: navigation("referentiels") },
               { href: "/guides", label: navigation("guides") },
               { href: "/contact", label: t("contact") },
             ]}
