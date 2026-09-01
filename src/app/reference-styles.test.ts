@@ -198,9 +198,20 @@ describe("Bloc 41: referentiel fixes", () => {
 });
 
 describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
-  it("B: Boutique's Nom/Description inputs fill their column width, scoped away from the shared .reference-admin-table rule", () => {
+  it("B: every Boutique input (Nom/Description and Coût alike) fills its column width, scoped away from the shared .reference-admin-table/.reference-admin-narrow rules", () => {
     expect(css).toMatch(
-      /\.consumables-admin-table td:not\(\.reference-admin-narrow\) input,\s*\n\.consumables-admin-table td:not\(\.reference-admin-narrow\) select\s*{\s*width: 100%;/,
+      /\.consumables-admin-table input,\s*\n\.consumables-admin-table select\s*{\s*width: 100%;/,
+    );
+  });
+
+  // Codex review (PR #75): Coût's input previously kept the shared
+  // .reference-admin-narrow's fixed 6.75rem width while its own td shrank
+  // to 12% of the table — on a narrow admin viewport the input then
+  // overflowed its cell into .ranking-table-wrap's own horizontal scroll,
+  // reintroducing the exact bug A-C exist to remove.
+  it("B fix: Coût's input is no longer excluded from the width: 100% rule", () => {
+    expect(css).not.toMatch(
+      /\.consumables-admin-table td:not\(\.reference-admin-narrow\)/,
     );
   });
 
@@ -211,9 +222,15 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
   });
 
   it("A-C: the Boutique table fills its container width instead of the shared table's min-width: max-content (the historical horizontal-scroll trigger)", () => {
-    expect(css).toMatch(
-      /\.consumables-admin-table\s*{\s*table-layout: fixed;\s*width: 100%;\s*min-width: 0;\s*}/,
-    );
+    const rule = css.match(/\.consumables-admin-table\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/table-layout: fixed;/);
+    // Codex review (PR #75): a bare 100% still let table-layout: fixed's
+    // per-column rounding sum to a few px past the container on some
+    // widths — this small buffer is what actually keeps
+    // .ranking-table-wrap from gaining its own horizontal scroll.
+    expect(rule).toMatch(/width: calc\(100% - 28px\);/);
+    expect(rule).toMatch(/min-width: 0;/);
   });
 
   it("D: /guides and /referentiels get their own smaller title class, excluded from the generic hero-title rule", () => {
