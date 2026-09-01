@@ -884,6 +884,7 @@
       },
       "add": "Öğe ekle",
       "add-category": "Ekle ({category})",
+      "confirm-remove": "Bu öğe kalıcı olarak silinsin mi?",
       "category-row-label": "{category} — satır {row} {field}",
       "consumables-columns": {
         "cost": "Maliyet (Safir)",

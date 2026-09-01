@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Plus } from "lucide-react";
 import {
   EditableDataTable,
   errorKey,
@@ -231,20 +232,34 @@ export function ConsumablesReferenceScreen({
         <p>{t("consumables-table-description")}</p>
         {consumableCategories.map((category) => (
           <div className="editable-reference" key={category}>
-            <h3 className="editable-reference-title">
-              {categoryLabel(category)}
-            </h3>
+            <div className="editable-reference-title-row">
+              <h3 className="editable-reference-title">
+                {categoryLabel(category)}
+              </h3>
+              {/* Bloc 49/A: a scoped "+" icon on the title row replaces the
+                  verbose "Ajouter (Catégorie)" button — category stays
+                  implicit to which table this icon belongs to. */}
+              <button
+                type="button"
+                className="icon-action"
+                data-testid={`add-row-${category}`}
+                aria-label={t("add-category", {
+                  category: categoryLabel(category),
+                })}
+                onClick={() => addRow(category)}
+              >
+                <Plus size={16} aria-hidden="true" />
+              </button>
+            </div>
             <EditableDataTable
               rows={catalog[category]}
               columns={columnsFor(category)}
               testIdPrefix={category}
               onChange={(rows) => setCategoryRows(category, rows)}
-              onAdd={() => addRow(category)}
               onRemove={(index) => removeRow(category, index)}
               onMove={(index, direction) => moveRow(category, index, direction)}
-              addLabel={t("add-category", {
-                category: categoryLabel(category),
-              })}
+              removeIcon
+              removeConfirmMessage={t("confirm-remove")}
               removeLabel={t("remove")}
               moveUpLabel={t("move-up")}
               moveDownLabel={t("move-down")}

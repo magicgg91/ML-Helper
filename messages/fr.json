@@ -907,6 +907,7 @@
         "cost": "Coût (Saphirs)"
       },
       "add-category": "Ajouter ({category})",
+      "confirm-remove": "Supprimer définitivement cet objet ?",
       "category-row-label": "{category} — ligne {row} {field}",
       "add": "Ajouter un objet",
       "remove": "Supprimer",

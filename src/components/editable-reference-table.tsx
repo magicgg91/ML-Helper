@@ -8,7 +8,7 @@ import {
   type ForwardedRef,
 } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, X } from "lucide-react";
 
 // Bloc 37/E: lets a page hosting several of these tables (Combat,
 // Expedition) drive them from one shared save button instead of each table
@@ -63,6 +63,16 @@ export function EditableDataTable<Row extends Record<string, string>>({
   // it every table's row 0 shares the exact same "row-0" testid, breaking
   // any e2e/test query that targets a specific table's row.
   testIdPrefix,
+  // Bloc 49/B: renders the remove control as a red X icon instead of a text
+  // label — opt-in so other callers (Ranking) keep their text button
+  // unchanged.
+  removeIcon,
+  // Bloc 49/B: when set, a click on remove must be confirmed via
+  // window.confirm(removeConfirmMessage) before onRemove actually fires —
+  // row deletion is irreversible and previously had no confirmation step.
+  // Left undefined (no confirmation) preserves every other caller's
+  // existing behavior exactly.
+  removeConfirmMessage,
 }: {
   rows: Row[];
   columns: EditableColumn<Row>[];
@@ -77,6 +87,8 @@ export function EditableDataTable<Row extends Record<string, string>>({
   moveUpLabel?: string;
   moveDownLabel?: string;
   testIdPrefix?: string;
+  removeIcon?: boolean;
+  removeConfirmMessage?: string;
 }) {
   const testId = (name: string) =>
     testIdPrefix ? `${name}-${testIdPrefix}` : name;
@@ -195,12 +207,28 @@ export function EditableDataTable<Row extends Record<string, string>>({
                   {onRemove && (
                     <td>
                       <button
-                        className="secondary-action"
+                        className={
+                          removeIcon
+                            ? "icon-action danger-action"
+                            : "secondary-action"
+                        }
                         type="button"
                         data-testid={testId(`remove-row-${rowIndex}`)}
-                        onClick={() => onRemove(rowIndex)}
+                        aria-label={removeLabel}
+                        onClick={() => {
+                          if (
+                            removeConfirmMessage &&
+                            !window.confirm(removeConfirmMessage)
+                          )
+                            return;
+                          onRemove(rowIndex);
+                        }}
                       >
-                        {removeLabel}
+                        {removeIcon ? (
+                          <X size={16} aria-hidden="true" />
+                        ) : (
+                          removeLabel
+                        )}
                       </button>
                     </td>
                   )}
