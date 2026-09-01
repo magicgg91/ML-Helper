@@ -82,18 +82,15 @@ describe("AdminNav", () => {
     expect(screen.queryByRole("link", { name: "Historique" })).toBeNull();
   });
 
-  it("gives read-only users consultation links without legal content", () => {
+  // Bloc 59/B: read_only lost Utilisateurs and Historique — strictly
+  // Tableau de bord/Outils/Référentiels/Guides remain.
+  it("gives read-only users consultation links without legal content, Historique or Utilisateurs", () => {
     pathname = "/admin";
     render(<AdminNav role="read_only" />);
-    for (const name of [
-      "Tableau de bord",
-      "Outils",
-      "Référentiels",
-      "Guides",
-      "Utilisateurs",
-      "Historique",
-    ])
+    for (const name of ["Tableau de bord", "Outils", "Référentiels", "Guides"])
       expect(screen.getByRole("link", { name })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Utilisateurs" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Historique" })).toBeNull();
   });
 });

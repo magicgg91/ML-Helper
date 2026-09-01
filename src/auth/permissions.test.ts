@@ -17,13 +17,9 @@ const expected: Record<AdminRole, AdminCapability[]> = {
   guides_manager: ["guides.read"],
   references_manager: ["references.read"],
   tools_manager: ["calculators.read"],
-  read_only: [
-    "guides.read",
-    "calculators.read",
-    "references.read",
-    "users.read",
-    "logs.view",
-  ],
+  // Bloc 59/B: read_only lost users.read and logs.view — no access to
+  // Historique or Utilisateurs at all.
+  read_only: ["guides.read", "calculators.read", "references.read"],
 };
 
 describe("admin role permissions", () => {
@@ -81,6 +77,26 @@ describe("admin role permissions", () => {
       "content.write",
     ] as const)
       expect(can("read_only", capability)).toBe(false);
+  });
+
+  // Bloc 59/A: admin used to inherit logs.purge from the generic
+  // "everything except users.manage/content.*" filter — purge must be
+  // reserved to super_admin alone, while read access to the log stays.
+  it("Bloc59/A: reserves log purging to the Super Admin, while admin keeps read access", () => {
+    expect(can("super_admin", "logs.purge")).toBe(true);
+    expect(can("admin", "logs.purge")).toBe(false);
+    expect(can("admin", "logs.view")).toBe(true);
+  });
+
+  // Bloc 59/B: read_only must have zero access to Historique and
+  // Utilisateurs — not even read access — while keeping its 3 other
+  // read-only sections (already covered by the "sections" loop above).
+  it("Bloc59/B: keeps read_only out of the audit log and the users list entirely", () => {
+    expect(can("read_only", "logs.view")).toBe(false);
+    expect(can("read_only", "logs.purge")).toBe(false);
+    expect(can("read_only", "users.read")).toBe(false);
+    expect(can("read_only", "users.manage")).toBe(false);
+    expect(can("read_only", "dashboard.view")).toBe(true);
   });
 
   it("reserves legal content reads and writes to the Super Admin", () => {

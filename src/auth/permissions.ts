@@ -28,6 +28,7 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
     adminCapabilities.filter(
       (item) =>
         item !== "users.manage" &&
+        item !== "logs.purge" &&
         item !== "content.read" &&
         item !== "content.write",
     ),
@@ -44,10 +45,12 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
     "calculators.write",
     "calculators.toggle",
   ]),
+  // Bloc 59/B: read_only is strictly limited to Dashboard/Tools/Références/
+  // Guides in read-only — no Historique, no Utilisateurs (neither the nav
+  // link nor a direct URL), and no indirect exposure of the audit history
+  // via the dashboard's "dernières actions" section (gated by logs.view).
   read_only: new Set([
     "dashboard.view",
-    "users.read",
-    "logs.view",
     "guides.read",
     "calculators.read",
     "references.read",

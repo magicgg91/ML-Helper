@@ -1175,7 +1175,10 @@ test("the dashboard's published-guides counter ignores an inactive guide", async
 });
 
 test("direct admin URLs enforce all six roles", async ({ browser }) => {
-  test.setTimeout(60_000);
+  // Bloc 59: a few extra navigations/API calls were added to check the
+  // admin/read_only permission fix, pushing this already-heavy test past
+  // the previous 60s budget.
+  test.setTimeout(120_000);
   const rootContext = await browser.newContext();
   const root = await rootContext.newPage();
   const setup = await root.request.post("/api/admin/setup", {
@@ -1256,15 +1259,9 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
     {
       username: "role-readonly",
       password: "role-test-password",
-      // read_only has references.read too, so /admin/referentiels joins the
-      // other 4 sections it can already reach.
-      allowed: [
-        "/admin/guides",
-        "/admin/referentiels",
-        "/admin/tools",
-        "/admin/users",
-        "/admin/logs",
-      ],
+      // Bloc 59/B: read_only is strictly limited to Guides/Référentiels/
+      // Outils in read-only — no Historique, no Utilisateurs.
+      allowed: ["/admin/guides", "/admin/referentiels", "/admin/tools"],
     },
   ];
 
@@ -1286,6 +1283,33 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
         await expect(
           page.getByRole("heading", { name: "Accès interdit" }),
         ).toBeVisible();
+    }
+    if (roleCase.username === "role-admin") {
+      // Bloc59/A: admin keeps read access to the audit log (asserted above,
+      // /admin/logs is 200) but must never be able to purge it — neither
+      // the button nor a direct call to the API endpoint.
+      await expect(
+        page.getByRole("button", { name: "Purger la plage" }),
+      ).toHaveCount(0);
+      const purgeAttempt = await page.request.delete("/api/admin/logs", {
+        data: { start: "2020-01-01T00:00", end: "2020-01-02T00:00" },
+      });
+      expect(purgeAttempt.status()).toBe(403);
+    }
+    if (roleCase.username === "role-readonly") {
+      // Bloc59/B: no indirect exposure of the audit history via the
+      // dashboard's "dernières actions" section, and no nav links to the
+      // two sections it can no longer reach.
+      await page.goto("/admin");
+      await expect(
+        page.getByRole("heading", { name: "Dernières actions" }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("link", { name: "Historique" }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByRole("link", { name: "Utilisateurs" }),
+      ).toHaveCount(0);
     }
     const legalUpdate = await page.request.patch(
       "/api/admin/content/legal-notice",
