@@ -20,12 +20,14 @@ import { LevelUpReference } from "@/components/level-up-reference";
 import { TemplarsReferenceTable } from "@/components/templars-reference";
 import { GemsReferenceTable } from "@/components/gems-reference";
 import { ConsumablesReferenceTable } from "@/components/consumables-reference";
+import { EventsReferenceTable } from "@/components/events-reference";
 import {
   getGemParameters,
   getLevelUpParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
+import { getEventsCatalog } from "@/lib/events-server";
 import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
@@ -77,6 +79,8 @@ export default async function ReferencePage({
           <GemsReferenceTable parameters={await getGemParameters()} />
         ) : slug === "shop" ? (
           <ConsumablesReferenceTable catalog={await getConsumableCatalog()} />
+        ) : slug === "events" ? (
+          <EventsReferenceTable catalog={await getEventsCatalog()} />
         ) : (
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}

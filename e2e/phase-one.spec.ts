@@ -1208,6 +1208,88 @@ test("the dashboard's published-guides counter ignores an inactive guide", async
   expect(afterDeactivate).toBe(before);
 });
 
+// Bloc 60: the 7th reference — "Événements" (per-league personal quests).
+// Ships inactive and empty; this test drives the whole path end to end:
+// activates it in /admin/referentiels, adds an event with a tier in its
+// admin editor (league buttons, nested EditableDataTable reuse), then
+// confirms the public page renders it collapsed by default and expands on
+// click — the one flow unit tests alone can't fully exercise (real
+// routing, real save round-trip, real toggle).
+test("Bloc60: Événements ships inactive, and the full admin add -> public collapsible flow works once activated", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Starts inactive: invisible on the public site.
+  const publicBefore = await page.goto("/referentiels/events");
+  await expect(
+    page.getByText("Ce référentiel est temporairement indisponible."),
+  ).toBeVisible();
+  expect(publicBefore?.status()).toBe(200);
+
+  await page.goto("/admin/referentiels");
+  const row = page.getByRole("row", { name: /Événements/ });
+  await expect(row.getByText("Inactif")).toBeVisible();
+  await row.getByRole("button", { name: "Activer" }).click();
+  await expect(row.getByText("Actif")).toBeVisible();
+
+  await row.getByRole("link", { name: "Éditer" }).click();
+  await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
+
+  // Bloc 61 pattern: league buttons, not a select box — Bronze by default.
+  const leagueGroup = page.getByRole("group", { name: "Ligue" });
+  await expect(
+    leagueGroup.getByRole("button", { name: "Bronze" }),
+  ).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByTestId("add-event-bronze").click();
+  await page
+    .getByLabel("Nom de l’événement 1")
+    .fill("Recruteur");
+  await page.getByLabel("Jour de début de l’événement 1").fill("1");
+  await page.getByLabel("Jour de fin de l’événement 1").fill("7");
+  // The tier list is inside a collapsible <details>, closed by default —
+  // open it before its "+" add-tier button becomes clickable.
+  await page.getByText("Paliers (0)").click();
+  await page.getByTestId("add-tier-bronze-0").click();
+  await page
+    .getByLabel("Objectif du palier 1 de Recruteur")
+    .fill("1G troupes enrôlées");
+  await page
+    .getByLabel("Récompense du palier 1 de Recruteur")
+    .fill("100M or + 250 éclats");
+  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
+  await expect(page.getByRole("status")).toHaveText("Référentiel enregistré.");
+
+  // Public: entirely independent per league — Légende stays empty while
+  // Bronze has the event just saved; the event is closed by default.
+  await page.goto("/referentiels/events");
+  await expect(
+    page.getByRole("heading", { name: "Événements" }),
+  ).toBeVisible();
+  const publicLeagueGroup = page.getByRole("group", { name: "Ligue" });
+  await publicLeagueGroup.getByRole("button", { name: "Légende" }).click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Aucun événement pour cette ligue pour le moment.",
+  );
+
+  await publicLeagueGroup.getByRole("button", { name: "Bronze" }).click();
+  const details = page.locator("details.events-card");
+  await expect(details).toHaveCount(1);
+  await expect(page.getByText("Recruteur")).toBeVisible();
+  await expect(page.getByText("1G troupes enrôlées")).not.toBeVisible();
+
+  await page.getByText("Recruteur").click();
+  await expect(page.getByText("1G troupes enrôlées")).toBeVisible();
+  await expect(page.getByText("100M or + 250 éclats")).toBeVisible();
+});
+
 test("direct admin URLs enforce all six roles", async ({ browser }) => {
   // Bloc 59: a few extra navigations/API calls were added to check the
   // admin/read_only permission fix, pushing this already-heavy test past

@@ -245,7 +245,10 @@
       "attacker": "Je suis l’attaquant",
       "target": "Je suis la cible"
     },
-    "fields": { "my-vp": "Ma VP", "unit": "Unité de VP" },
+    "fields": {
+      "my-vp": "Ma VP",
+      "unit": "Unité de VP"
+    },
     "columns": {
       "rate": "Taux de gain d’XP",
       "opponent-vp": "Plage de VP adverse"
@@ -541,7 +544,8 @@
       "level-up": "Level Up",
       "templars": "Coût des Templiers",
       "gems": "Gemmes",
-      "shop": "Boutique"
+      "shop": "Boutique",
+      "events": "Événements"
     },
     "tabs-label": "Référentiels",
     "disabled-tooltip": "Désactivé — inaccessible actuellement",
@@ -565,6 +569,16 @@
         "equipment": "Équipement",
         "inventory": "Inventaire"
       }
+    },
+    "events": {
+      "league": "Ligue",
+      "select-league": "Choisis une ligue pour voir ses événements.",
+      "empty": "Aucun événement pour cette ligue pour le moment.",
+      "columns": {
+        "objective": "Objectif",
+        "reward": "Récompense"
+      },
+      "no-tiers": "Aucun palier pour cet événement."
     }
   },
   "combat-equipment": {
@@ -740,8 +754,15 @@
     "referentiels": {
       "eyebrow": "Données de référence",
       "title": "Référentiels",
-      "columns": { "title": "Titre", "status": "Statut", "actions": "Actions" },
-      "statuses": { "active": "Actif", "inactive": "Inactif" },
+      "columns": {
+        "title": "Titre",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
       "reference-level-up": "Éditer Level Up",
@@ -752,7 +773,8 @@
         "level-up": "Level Up",
         "templiers": "Templiers",
         "gemmes": "Gemmes",
-        "consommables": "Boutique"
+        "consommables": "Boutique",
+        "events": "Événements"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "edit": "Éditer",
@@ -761,7 +783,8 @@
       "visibility-error": "Impossible de modifier la visibilité.",
       "enabled": "Référentiel activé.",
       "disabled": "Référentiel désactivé.",
-      "no-results": "Aucun référentiel."
+      "no-results": "Aucun référentiel.",
+      "reference-events": "Éditer les Événements"
     },
     "guide-editor": {
       "language-label": "Langue du guide",
@@ -906,7 +929,9 @@
       "saved": "Référentiel enregistré.",
       "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
       "all": "Tous",
-      "filters": { "skill": "Compétence" },
+      "filters": {
+        "skill": "Compétence"
+      },
       "consumables-intro-title": "Intro",
       "consumables-intro-language-label": "Langue du texte",
       "consumables-table-title": "Objets",
@@ -925,9 +950,27 @@
       "move-down": "Descendre",
       "actions": "Actions",
       "empty": "Aucun objet pour l’instant.",
-      "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ)."
+      "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ).",
+      "events-league-label": "Ligue",
+      "events-table-title": "Liste des événements",
+      "add-event": "Ajouter un événement",
+      "events-columns": {
+        "name": "Nom",
+        "startDay": "Jour de début",
+        "endDay": "Jour de fin"
+      },
+      "tier-columns": {
+        "objective": "Objectif",
+        "reward": "Récompense"
+      },
+      "add-tier": "Ajouter un palier",
+      "events-tiers-summary": "Paliers ({count})",
+      "event-row-label": "{field} de l’événement {row}",
+      "tier-row-label": "{field} du palier {row} de {event}"
     },
-    "common": { "back": "Retour" },
+    "common": {
+      "back": "Retour"
+    },
     "parameters": {
       "save": "Enregistrer les paramètres",
       "saving": "Enregistrement…",
@@ -947,9 +990,18 @@
       "league": "Ligue",
       "army": "Multiplicateur Armée",
       "gold": "Multiplicateur Or",
-      "vp": { "base": "Base VP", "ratio": "Ratio VP" },
-      "walls": { "base": "Base Remparts", "ratio": "Ratio Remparts" },
-      "cost": { "base": "Base Coût", "ratio": "Ratio Coût" }
+      "vp": {
+        "base": "Base VP",
+        "ratio": "Ratio VP"
+      },
+      "walls": {
+        "base": "Base Remparts",
+        "ratio": "Ratio Remparts"
+      },
+      "cost": {
+        "base": "Base Coût",
+        "ratio": "Ratio Coût"
+      }
     },
     "templar-parameters": {
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",

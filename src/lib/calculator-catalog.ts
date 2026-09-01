@@ -55,6 +55,10 @@ export const calculatorCatalog = [
   // kept French ("consommables"), matching templiers/gemmes and the URL
   // documented in the original task spec.
   { slug: "consommables", category: "referentiels", label: "Consommables" },
+  // Bloc 60: the 7th reference — same "no matching tool row, free CRUD
+  // data" shape as consommables above, but its own catalog (league ->
+  // events -> tiers) instead of a flat/grouped row list.
+  { slug: "events", category: "referentiels", label: "Événements" },
 ] as const;
 
 export type CalculatorSlug = (typeof calculatorCatalog)[number]["slug"];

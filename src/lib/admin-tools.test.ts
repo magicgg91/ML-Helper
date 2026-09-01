@@ -46,4 +46,9 @@ describe("admin tool editor routing", () => {
     expect(referenceToolSlugs).toContain("consommables");
     expect(adminToolEditHref("consommables")).toBeUndefined();
   });
+
+  it("Bloc60: lists Events among the independent references, with no shared tool to edit — falls through to /admin/referentiels/reference-events", () => {
+    expect(referenceToolSlugs).toContain("events");
+    expect(adminToolEditHref("events")).toBeUndefined();
+  });
 });

@@ -1897,6 +1897,67 @@ body > main h1 {
 .icon-action:hover {
   background: var(--bg-panel-raised);
 }
+/* Bloc 60: Événements admin — each event is a card (the outer events list
+   can't reuse EditableDataTable's <table> rows since it needs a nested
+   collapsible tier table, unlike every other reference's flat CRUD). */
+.events-admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  margin: 0.75rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.events-admin-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+.events-admin-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+.events-admin-tiers summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+/* Bloc 60: Événements public — one collapsible card per event, closed by
+   default (name + duration in the summary), the tier table only mounted
+   once opened. */
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.events-card {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.events-card-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+.events-card-duration {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+.events-card table {
+  margin-top: 0.75rem;
+}
 .reference-admin-table input {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;

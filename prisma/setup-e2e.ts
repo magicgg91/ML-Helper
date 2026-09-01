@@ -90,6 +90,22 @@ async function main() {
       },
     });
   }
+  // Bloc 60: unlike every calculator above, "events" ships with zero
+  // starting data and must start inactive/hidden (see the real migration,
+  // prisma/migrations/20260907000000_events_reference) — seeded separately
+  // here instead of joining the uniform active:true loop.
+  await prisma.calculator.create({
+    data: {
+      id: "calculator-events-reference",
+      slug: "events",
+      category: "referentiels",
+      description: {},
+      active: false,
+      inputs: {},
+      outputs: {},
+      tips: {},
+    },
+  });
   await prisma.formula.create({
     data: {
       id: "formula-city-parameters",

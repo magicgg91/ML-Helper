@@ -6,6 +6,7 @@ import {
   ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
 import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
+import { EventsReferenceScreen } from "@/components/events-admin-editor";
 import {
   getCombatGemSlotsBase,
   getCombatMergeCostBase,
@@ -19,6 +20,7 @@ import {
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
+import { getEventsCatalog } from "@/lib/events-server";
 
 export default async function EditReferentielPage({
   params,
@@ -70,6 +72,14 @@ export default async function EditReferentielPage({
         <ConsumablesReferenceScreen
           initialCatalog={await getConsumableCatalog()}
         />
+      </main>
+    );
+  }
+  if (id === "reference-events") {
+    return (
+      <main className="admin-main">
+        <h1>{t("reference-events")}</h1>
+        <EventsReferenceScreen initialCatalog={await getEventsCatalog()} />
       </main>
     );
   }

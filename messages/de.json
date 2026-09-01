@@ -536,7 +536,8 @@
       "level-up": "Stufenaufstieg",
       "templars": "Templerkosten",
       "gems": "Edelsteine",
-      "shop": "Shop"
+      "shop": "Shop",
+      "events": "Events"
     },
     "tabs-label": "Referenztabellen",
     "disabled-tooltip": "Deaktiviert — derzeit nicht verfügbar",
@@ -550,6 +551,16 @@
         "name": "Name"
       },
       "cost-unknown": "Nicht festgelegt"
+    },
+    "events": {
+      "league": "Liga",
+      "select-league": "Wähle eine Liga, um ihre Events zu sehen.",
+      "empty": "Noch keine Events für diese Liga.",
+      "columns": {
+        "objective": "Ziel",
+        "reward": "Belohnung"
+      },
+      "no-tiers": "Keine Stufen für dieses Event."
     }
   },
   "combat-equipment": {
@@ -729,7 +740,10 @@
         "status": "Status",
         "actions": "Aktionen"
       },
-      "statuses": { "active": "Aktiviert", "inactive": "Deaktiviert" },
+      "statuses": {
+        "active": "Aktiviert",
+        "inactive": "Deaktiviert"
+      },
       "reference-combat": "Kampfausrüstung bearbeiten",
       "reference-expedition": "Expeditionsausrüstung bearbeiten",
       "reference-level-up": "Stufenaufstieg bearbeiten",
@@ -740,7 +754,8 @@
         "level-up": "Stufenaufstieg",
         "templiers": "Templer",
         "gemmes": "Edelsteine",
-        "consommables": "Shop"
+        "consommables": "Shop",
+        "events": "Events"
       },
       "disabled-tooltip": "Deaktiviert und auf der öffentlichen Website ausgeblendet",
       "edit": "Bearbeiten",
@@ -749,7 +764,8 @@
       "visibility-error": "Sichtbarkeit konnte nicht geändert werden.",
       "enabled": "Referenztabelle aktiviert.",
       "disabled": "Referenztabelle deaktiviert.",
-      "no-results": "Keine Referenztabelle gefunden."
+      "no-results": "Keine Referenztabelle gefunden.",
+      "reference-events": "Events bearbeiten"
     },
     "guide-editor": {
       "language-label": "Anleitungssprache",
@@ -914,7 +930,23 @@
       "move-down": "Nach unten verschieben",
       "actions": "Aktionen",
       "move-up": "Nach oben verschieben",
-      "remove": "Entfernen"
+      "remove": "Entfernen",
+      "events-league-label": "Liga",
+      "events-table-title": "Event-Liste",
+      "add-event": "Event hinzufügen",
+      "events-columns": {
+        "name": "Name",
+        "startDay": "Starttag",
+        "endDay": "Endtag"
+      },
+      "tier-columns": {
+        "objective": "Ziel",
+        "reward": "Belohnung"
+      },
+      "add-tier": "Stufe hinzufügen",
+      "events-tiers-summary": "Stufen ({count})",
+      "event-row-label": "{field} von Event {row}",
+      "tier-row-label": "{field} von Stufe {row} von {event}"
     },
     "common": {
       "back": "Zurück"
