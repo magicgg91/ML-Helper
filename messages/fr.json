@@ -527,6 +527,7 @@
   },
   "references": {
     "eyebrow": "Référentiels",
+    "title": "Tous les référentiels",
     "filters": {
       "label": "Filtres du référentiel",
       "family": "Famille",
@@ -540,8 +541,8 @@
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
-      "templiers": "Coût des Templiers",
-      "gemmes": "Gemmes",
+      "templars": "Coût des Templiers",
+      "gems": "Gemmes",
       "shop": "Boutique"
     },
     "tabs-label": "Référentiels",

@@ -356,7 +356,7 @@ export function ExpeditionEquipmentSimulator({
     <div className="calculator-stack" data-testid="expedition-equipment-simulator">
       <Link
         className="reference-cross-link"
-        href="/guides/referentiels/expedition-equipment"
+        href="/referentiels/expedition-equipment"
       >
         {t("view-reference")}
       </Link>

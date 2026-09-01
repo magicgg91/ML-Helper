@@ -521,6 +521,7 @@
   },
   "references": {
     "eyebrow": "Reference tables",
+    "title": "All reference tables",
     "filters": {
       "label": "Reference table filters",
       "family": "Family",
@@ -534,8 +535,8 @@
       "combat-equipment": "Combat Equipment",
       "expedition-equipment": "Expedition Equipment",
       "level-up": "Level Up",
-      "templiers": "Templar Cost",
-      "gemmes": "Gems",
+      "templars": "Templar Cost",
+      "gems": "Gems",
       "shop": "Shop"
     },
     "tabs-label": "Reference tables",

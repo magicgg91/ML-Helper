@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ReferenceCatalogGrid } from "./reference-catalog-grid";
 
 export type PublicGuideCard = {
   id: string;
@@ -16,7 +15,6 @@ export type PublicGuideCard = {
 
 export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   const t = useTranslations("guides");
-  const references = useTranslations("references");
   const guideCategories = useMemo(
     () => [...new Set(guides.flatMap(({ categories }) => categories))].sort(),
     [guides],
@@ -28,76 +26,62 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
   );
 
   return (
-    <>
-      <section aria-labelledby="guide-section-title">
-        <h2 id="guide-section-title">{t("sections.guides")}</h2>
-        <nav
-          className="guide-filter-nav"
-          aria-label={t("filters.guides-label")}
-        >
-          {["all", ...guideCategories].map((category) => (
-            <button
-              className="guide-filter-chip"
-              type="button"
-              aria-pressed={guideCategory === category}
-              key={category}
-              onClick={() => setGuideCategory(category)}
+    <section aria-labelledby="guide-section-title">
+      <h2 id="guide-section-title">{t("sections.guides")}</h2>
+      <nav className="guide-filter-nav" aria-label={t("filters.guides-label")}>
+        {["all", ...guideCategories].map((category) => (
+          <button
+            className="guide-filter-chip"
+            type="button"
+            aria-pressed={guideCategory === category}
+            key={category}
+            onClick={() => setGuideCategory(category)}
+          >
+            {category === "all"
+              ? t("filters.all")
+              : t(`categories.${category}`)}
+          </button>
+        ))}
+      </nav>
+      {visibleGuides.length ? (
+        <div className="card-grid">
+          {visibleGuides.map((guide) => (
+            <Link
+              className="public-card guide-list-card"
+              href={`/guides/${guide.slug}`}
+              key={guide.id}
             >
-              {category === "all"
-                ? t("filters.all")
-                : t(`categories.${category}`)}
-            </button>
+              <div className="guide-list-media">
+                {guide.coverImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
+                  <img
+                    src={guide.coverImage}
+                    alt=""
+                    className="guide-list-cover"
+                  />
+                ) : null}
+                {guide.categories[0] && (
+                  <span className="guide-list-badge">
+                    {t(`categories.${guide.categories[0]}`)}
+                    {guide.categories.length > 1
+                      ? ` +${guide.categories.length - 1}`
+                      : ""}
+                  </span>
+                )}
+              </div>
+              <div className="guide-list-copy">
+                <h3>{guide.title}</h3>
+                <p>{guide.excerpt}</p>
+                <span className="guide-list-cta">{t("read-guide")}</span>
+              </div>
+            </Link>
           ))}
-        </nav>
-        {visibleGuides.length ? (
-          <div className="card-grid">
-            {visibleGuides.map((guide) => (
-              <Link
-                className="public-card guide-list-card"
-                href={`/guides/${guide.slug}`}
-                key={guide.id}
-              >
-                <div className="guide-list-media">
-                  {guide.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- Guide covers accept administrator-provided absolute URLs.
-                    <img
-                      src={guide.coverImage}
-                      alt=""
-                      className="guide-list-cover"
-                    />
-                  ) : null}
-                  {guide.categories[0] && (
-                    <span className="guide-list-badge">
-                      {t(`categories.${guide.categories[0]}`)}
-                      {guide.categories.length > 1
-                        ? ` +${guide.categories.length - 1}`
-                        : ""}
-                    </span>
-                  )}
-                </div>
-                <div className="guide-list-copy">
-                  <h3>{guide.title}</h3>
-                  <p>{guide.excerpt}</p>
-                  <span className="guide-list-cta">{t("read-guide")}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-state">
-            {guides.length ? t("no-results") : t("empty")}
-          </p>
-        )}
-      </section>
-
-      <section
-        className="guides-reference-section"
-        id="references"
-        aria-labelledby="reference-section-title"
-      >
-        <h2 id="reference-section-title">{t("sections.references")}</h2>
-        <ReferenceCatalogGrid t={references} />
-      </section>
-    </>
+        </div>
+      ) : (
+        <p className="empty-state">
+          {guides.length ? t("no-results") : t("empty")}
+        </p>
+      )}
+    </section>
   );
 }

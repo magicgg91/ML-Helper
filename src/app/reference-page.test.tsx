@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferencePage, {
   generateMetadata,
-} from "./(public)/guides/referentiels/[slug]/page";
+} from "./(public)/referentiels/[slug]/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => {
@@ -10,8 +10,8 @@ vi.mock("next-intl/server", () => ({
       "catalog.combat-equipment": "Équipements de Combat",
       "catalog.expedition-equipment": "Équipements d’Expédition",
       "catalog.level-up": "Level Up",
-      "catalog.templiers": "Coût des Templiers",
-      "catalog.gemmes": "Gemmes",
+      "catalog.templars": "Coût des Templiers",
+      "catalog.gems": "Gemmes",
       "catalog.shop": "Boutique",
     };
     return (key: string) =>
@@ -82,10 +82,10 @@ describe("ReferencePage metadata (Bloc 42/J)", () => {
     const languages = metadata.alternates?.languages as
       Record<string, string> | undefined;
     expect(languages?.fr).toBe(
-      "https://ml-helper.com/guides/referentiels/combat-equipment",
+      "https://ml-helper.com/referentiels/combat-equipment",
     );
     expect(languages?.["x-default"]).toBe(
-      "https://ml-helper.com/guides/referentiels/combat-equipment",
+      "https://ml-helper.com/referentiels/combat-equipment",
     );
   });
 });
@@ -127,7 +127,7 @@ describe("ReferencePage", () => {
     const otherLink = within(nav).getByText("Équipements d’Expédition");
     expect(otherLink).toHaveAttribute(
       "href",
-      "/guides/referentiels/expedition-equipment",
+      "/referentiels/expedition-equipment",
     );
     // Bloc 40/A: reverses Bloc 37/K — the switcher now reuses the /tools
     // category banner's own container/button classes (full width, grows to
@@ -142,10 +142,10 @@ describe("ReferencePage", () => {
     expect(nav).toHaveClass("reference-switcher");
   });
 
-  it("Bloc36/A: routes the new 'gemmes' slug to GemsReferenceTable, the 5th reference actually built", async () => {
+  it("Bloc36/A: routes the new 'gems' slug to GemsReferenceTable, the 5th reference actually built", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "gemmes" }),
+        params: Promise.resolve({ slug: "gems" }),
         searchParams: Promise.resolve({}),
       }),
     );

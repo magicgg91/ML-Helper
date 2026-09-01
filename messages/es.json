@@ -522,6 +522,7 @@
   },
   "references": {
     "eyebrow": "Tablas de referencia",
+    "title": "Todas las tablas de referencia",
     "filters": {
       "label": "Filtros de tabla de referencia",
       "family": "Familia",
@@ -535,8 +536,8 @@
       "combat-equipment": "Equipo de Combate",
       "expedition-equipment": "Equipo de Expedición",
       "level-up": "Subida de Nivel",
-      "templiers": "Coste de Templarios",
-      "gemmes": "Gemas",
+      "templars": "Coste de Templarios",
+      "gems": "Gemas",
       "shop": "Tienda"
     },
     "tabs-label": "Tablas de referencia",

@@ -34,7 +34,7 @@ import { languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/guides/referentiels/[slug]">): Promise<Metadata> {
+}: PageProps<"/referentiels/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) return {};
@@ -47,14 +47,14 @@ export async function generateMetadata({
     title: name,
     description: publicT("descriptions.reference-detail", { name }),
     alternates: {
-      languages: languageAlternates(`/guides/referentiels/${slug}`),
+      languages: languageAlternates(`/referentiels/${slug}`),
     },
   };
 }
 
 export default async function ReferencePage({
   params,
-}: PageProps<"/guides/referentiels/[slug]">) {
+}: PageProps<"/referentiels/[slug]">) {
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
@@ -98,9 +98,9 @@ export default async function ReferencePage({
           />
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />
-        ) : slug === "templiers" ? (
+        ) : slug === "templars" ? (
           <TemplarsReferenceTable parameters={await getTemplarParameters()} />
-        ) : slug === "gemmes" ? (
+        ) : slug === "gems" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
         ) : slug === "shop" ? (
           <ConsumablesReferenceTable

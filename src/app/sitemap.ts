@@ -43,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/", "weekly"),
     entry("/tools", "weekly"),
     entry("/guides", "weekly"),
+    entry("/referentiels", "weekly"),
     entry("/contact", "yearly"),
     entry("/legal", "yearly"),
     ...toolCategoryPaths.map((category) =>
@@ -53,8 +54,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     ...referenceCatalog
       .filter((reference) => active[reference.calculatorSlug])
-      .map((reference) =>
-        entry(`/guides/referentiels/${reference.slug}`, "monthly"),
-      ),
+      .map((reference) => entry(`/referentiels/${reference.slug}`, "monthly")),
   ];
 }
