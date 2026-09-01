@@ -629,10 +629,16 @@ select {
 }
 /* Bloc 33/N: always visible, not only on hover — a disabled tab otherwise
    gives no clue why clicking it does nothing, especially on touch devices
-   where a title tooltip never shows at all. */
+   where a title tooltip never shows at all.
+   Bloc 62/J: colored instead of muted grey, plus a colored asterisk (::before)
+   — shared treatment with .tool-unavailable below and the référentiels
+   switcher's inactive teaser (.reference-switcher .tool-unavailable). */
 .tab-coming-soon {
-  color: var(--text-faint);
+  color: var(--amber-bright);
   font-weight: 600;
+}
+.tab-coming-soon::before {
+  content: "* ";
 }
 .calculator-stack {
   display: grid;
@@ -712,6 +718,26 @@ select {
   border: 1px dashed var(--border);
   border-radius: 0.7rem;
   color: var(--muted);
+}
+/* Bloc 62/E, F: sits directly above .ranking-scale, standing in for the
+   removed "Échelle visuelle" title — a compact inline label+value instead
+   of a full .total-box card, so the total reads as part of that zone's
+   own header rather than a separate results block. */
+.ranking-scale-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0.5rem 0.5rem 0;
+}
+.ranking-scale-total .label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ranking-scale-total .value {
+  color: var(--accent-strong);
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 .ranking-scale {
   position: relative;
@@ -1176,10 +1202,10 @@ select {
    auto-fit grid, which could otherwise push it onto its own line. */
 .ranking-fields {
   display: flex;
-  /* center rather than flex-end: the unlabeled button group is shorter
-     than the labeled numeric fields, so bottom-aligning them would leave
-     a visible top offset between the two. */
-  align-items: center;
+  /* Bloc 62/D: all 3 fields are labeled now (the league group got its own
+     visible label to match the other two) — flex-end bottom-aligns their
+     controls the same way a normal label-above-control row would. */
+  align-items: flex-end;
   flex-wrap: nowrap;
   gap: 1rem;
 }
@@ -1680,6 +1706,32 @@ button:disabled,
   cursor: not-allowed;
   opacity: 0.5;
 }
+/* Bloc 62/I: caps the référentiels switcher at 4 per row on desktop — 7
+   references (Events made it the first to exceed 4) wrapped unevenly
+   under the shared .category-nav flex-wrap; scoped to .reference-switcher
+   only, so the /tools banner (Bloc 40/A, still exactly 4 categories) keeps
+   its flex-wrap unchanged. Comes textually before the mobile override
+   below, which still wins there at equal specificity — untouched, already
+   correct. */
+.reference-switcher {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+/* Bloc 62/I: an inactive reference still gets a slot in the switcher (an
+   internal teaser for visitors already on the site — unlike Bloc 60's
+   search/sitemap discovery hiding, unrelated and unchanged) but isn't a
+   real link: .category-btn-unavailable overrides the plain opacity-dimmed
+   [aria-disabled] look above with the same colored asterisk + colored
+   label treatment as .tool-unavailable/.tab-coming-soon. */
+.category-btn-unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  opacity: 1;
+}
+.category-btn-unavailable .category-btn-label {
+  color: var(--text-faint);
+}
 @media (max-width: 42rem) {
   /* A real 2-per-row grid instead of flex-wrap, which packed the 3 short
      labels (Villes/Combat/Classement) onto row 1 and left the longer
@@ -2173,6 +2225,15 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   color: var(--ember);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.7rem;
+}
+/* Bloc 62/B: a live **bold** preview under Boutique's Nom/Description
+   inputs, muted so it doesn't compete with the input above it, but still
+   legible enough to check the bold rendering before saving. */
+.field-bold-preview {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  overflow-wrap: break-word;
 }
 .form-status,
 .form-success {
@@ -2868,9 +2929,16 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   font-family: "JetBrains Mono", monospace;
   font-size: 0.78rem;
 }
+/* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same
+   treatment as .tab-coming-soon above and the référentiels switcher's
+   inactive teaser below (.reference-switcher .category-btn-unavailable). */
 .tool-unavailable {
-  color: var(--text-faint);
+  color: var(--amber-bright);
   font-size: 0.85rem;
+  font-weight: 700;
+}
+.tool-unavailable::before {
+  content: "* ";
 }
 .tool-category-card[data-disabled] {
   opacity: 0.48;

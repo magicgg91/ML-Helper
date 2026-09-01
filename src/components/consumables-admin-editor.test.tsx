@@ -157,6 +157,17 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.queryByDisplayValue("Objet A")).not.toBeInTheDocument();
   });
 
+  // Bloc 62/B: a live preview under Nom/Description renders **bold** the
+  // same way the public page will, so an admin can check it before saving.
+  it("Bloc62/B: shows a live **bold** preview under Nom/Description as they're edited", () => {
+    renderScreen();
+    const nameInput = screen.getByLabelText("Équipement — ligne 1 Nom");
+    fireEvent.change(nameInput, { target: { value: "Objet **rare**" } });
+    const strong = screen.getByText("rare", { selector: "strong" });
+    expect(strong).toBeInTheDocument();
+    expect(strong.closest(".field-bold-preview")).not.toBeNull();
+  });
+
   // Bloc 48/B: each table has its own "Ajouter" button, scoped to its own
   // section — no more per-row category select.
   it("Bloc48/B: each category has its own scoped Add button that only affects that table", () => {

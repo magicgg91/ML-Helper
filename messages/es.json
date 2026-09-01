@@ -272,13 +272,12 @@
       "rank": "Tu posición actual"
     },
     "undefined": "Por definir en la administración",
-    "total-players": "Total de jugadores (deducido)",
+    "total-players": "Total de jugadores",
     "errors": {
       "select-league": "Elige una liga para calcular.",
       "positive-percentage": "Introduce un porcentaje mayor que 0 para calcular.",
       "missing-bands": "Los umbrales y recompensas deben definirse en la administración para la liga {league}."
     },
-    "visual-scale": "Escala visual",
     "ranking-ranges": "Rangos de clasificación",
     "columns": {
       "range": "Rango",

@@ -272,13 +272,12 @@
       "rank": "Dein aktueller Rang"
     },
     "undefined": "In der Administration festzulegen",
-    "total-players": "Gesamtzahl der Spieler (abgeleitet)",
+    "total-players": "Gesamtzahl der Spieler",
     "errors": {
       "select-league": "Wähle eine Liga zur Berechnung.",
       "positive-percentage": "Gib einen Prozentsatz größer als 0 ein, um zu berechnen.",
       "missing-bands": "Schwellenwerte und Belohnungen müssen in der Administration für die Liga {league} festgelegt werden."
     },
-    "visual-scale": "Visuelle Skala",
     "ranking-ranges": "Ranglisten-Bereiche",
     "columns": {
       "range": "Bereich",

@@ -75,6 +75,33 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 62/H: Events' own illustration, deposited after the other 6 —
+  // same GameImage fallback treatment, verified with Events active since
+  // it ships hidden by default.
+  it("Bloc62/H: shows the real illustration for Events, with a graceful fallback if it's missing", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid
+          t={t}
+          active={{ ...defaultCalculatorAvailability, events: true }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const image = document.querySelector<HTMLImageElement>(
+      "img[src='/referentials/referential-events.webp']",
+    )!;
+    expect(image).toBeInTheDocument();
+    fireEvent.error(image);
+    expect(
+      document.querySelector("img[src='/category-combat.svg']"),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector(
+        "img[src='/referentials/referential-events.webp']",
+      ),
+    ).not.toBeInTheDocument();
+  });
+
   it("uses the same square .tool-category-image box as the tool categories (Bloc 38/H)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>

@@ -38,6 +38,18 @@ describe("ranking calculator", () => {
     expect(result.ranges[0].rankEnd).toBe(94);
   });
 
+  // Bloc 62/G: every band floors its rank boundary except the 100% one,
+  // which must ceil instead — confirmed case: Légende, rank 137, 86.71% ->
+  // raw total 137 / 0.8671 = 157.998, so the 100% row's rankEnd is 158
+  // (Math.ceil), not 157 (the Math.floor every other row correctly uses).
+  it("Bloc62/G: ceils the 100% row's rank boundary instead of flooring it", () => {
+    const result = calculateRanking(defaultRankingConfig.legend, 86.71, 137);
+    expect(result.total).toBeCloseTo(157.998, 3);
+    const lastRange = result.ranges[result.ranges.length - 1];
+    expect(lastRange.threshold).toBe(100);
+    expect(lastRange.rankEnd).toBe(158);
+  });
+
   it("drops a band that holds no integer rank instead of showing a reversed range", () => {
     // total = 1 (rank 1 at 100%): every Diamond threshold below 100% floors
     // to rank 0, so those bands would show as the impossible "rankStart 1 >

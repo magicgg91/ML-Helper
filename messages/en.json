@@ -272,13 +272,12 @@
       "rank": "Your current rank"
     },
     "undefined": "To be defined in the administration",
-    "total-players": "Total players (deduced)",
+    "total-players": "Total players",
     "errors": {
       "select-league": "Choose a league to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
       "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
     },
-    "visual-scale": "Visual scale",
     "ranking-ranges": "Ranking ranges",
     "columns": {
       "range": "Range",

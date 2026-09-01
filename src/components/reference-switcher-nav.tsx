@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 
 // Bloc 50/E: promoted from an inline nav inside the [slug] detail page to
@@ -20,6 +20,12 @@ import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 // to a Client Component ("use server" boundary), which crashed this page
 // at runtime despite passing every unit test (RTL doesn't enforce that
 // boundary). Same pattern as tool-category-nav.tsx.
+// Bloc 62/I: an inactive reference now gets its own non-clickable slot
+// here instead of being filtered out — an internal teaser for visitors
+// already on the site (Bloc 60's search/sitemap hiding is a separate,
+// external-discovery rule, unaffected). Sorted alphabetically (the
+// displayed label, active admin/public locale) instead of the catalog's
+// own declaration order.
 export function ReferenceSwitcherNav({
   active,
 }: {
@@ -27,14 +33,18 @@ export function ReferenceSwitcherNav({
 }) {
   const pathname = usePathname();
   const t = useTranslations("references");
+  const tools = useTranslations("tools");
+  const locale = useLocale();
+  const sorted = [...referenceCatalog].sort((a, b) =>
+    t(`catalog.${a.slug}`).localeCompare(t(`catalog.${b.slug}`), locale),
+  );
   return (
     <nav
       className="reference-switcher category-nav"
       aria-label={t("tabs-label")}
     >
-      {referenceCatalog
-        .filter((item) => active[item.calculatorSlug])
-        .map((item) => (
+      {sorted.map((item) =>
+        active[item.calculatorSlug] ? (
           <Link
             className="category-btn"
             key={item.slug}
@@ -45,7 +55,20 @@ export function ReferenceSwitcherNav({
           >
             {t(`catalog.${item.slug}`)}
           </Link>
-        ))}
+        ) : (
+          <span
+            className="category-btn category-btn-unavailable"
+            key={item.slug}
+            aria-disabled="true"
+            title={tools("unavailable")}
+          >
+            <span className="category-btn-label">
+              {t(`catalog.${item.slug}`)}
+            </span>
+            <span className="tool-unavailable">{tools("comingSoon")}</span>
+          </span>
+        ),
+      )}
     </nav>
   );
 }

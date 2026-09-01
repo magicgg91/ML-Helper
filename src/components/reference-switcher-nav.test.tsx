@@ -14,7 +14,10 @@ const catalog: Record<string, string> = {
   "catalog.templars": "Coût des Templiers",
   "catalog.gems": "Gemmes",
   "catalog.shop": "Boutique",
+  "catalog.events": "Événements",
   "tabs-label": "tabs-label",
+  comingSoon: "Bientôt disponible",
+  unavailable: "Indisponible actuellement",
 };
 // The translator is read via useTranslations inside the component (not
 // passed as a `t` prop) — a next-intl/server translator is a function, and
@@ -23,6 +26,7 @@ const catalog: Record<string, string> = {
 // that boundary, so this bug only surfaced in a real browser).
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => catalog[key] ?? key,
+  useLocale: () => "fr",
 }));
 
 const active = {
@@ -32,6 +36,7 @@ const active = {
   templiers: true,
   gemmes: true,
   consommables: true,
+  events: true,
 };
 
 describe("ReferenceSwitcherNav", () => {
@@ -54,6 +59,7 @@ describe("ReferenceSwitcherNav", () => {
       "Coût des Templiers",
       "Gemmes",
       "Boutique",
+      "Événements",
     ]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
@@ -84,5 +90,41 @@ describe("ReferenceSwitcherNav", () => {
     for (const link of within(nav).getAllByRole("link")) {
       expect(link).not.toHaveAttribute("aria-current");
     }
+  });
+
+  // Bloc 62/I: sorted by the displayed label (active locale), not the
+  // catalog's own declaration order (combat-equipment, expedition-equipment,
+  // level-up, templars, gems, shop, events).
+  it("Bloc62/I: lists every reference alphabetically by its displayed label", () => {
+    render(<ReferenceSwitcherNav active={active} />);
+    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const labels = within(nav)
+      .getAllByRole("link")
+      .map((link) => link.textContent);
+    const expected = [
+      "Boutique",
+      "Coût des Templiers",
+      "Équipements de Combat",
+      "Équipements d’Expédition",
+      "Événements",
+      "Gemmes",
+      "Level Up",
+    ];
+    expect(labels).toEqual([...expected].sort((a, b) => a.localeCompare(b, "fr")));
+  });
+
+  // Bloc 62/I: an inactive reference (e.g. Events before an admin activates
+  // it) still gets a slot here — an internal teaser, unlike Bloc 60's
+  // search/sitemap discovery hiding — but isn't a real link, and shows the
+  // same colored "Bientôt disponible" treatment as disabled tools (Bloc 62/J).
+  it("Bloc62/I: shows an inactive reference as a non-clickable teaser, not hidden", () => {
+    render(<ReferenceSwitcherNav active={{ ...active, events: false }} />);
+    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    expect(within(nav).queryByRole("link", { name: /Événements/ })).toBeNull();
+    const teaser = within(nav)
+      .getByText("Événements")
+      .closest('[aria-disabled="true"]');
+    expect(teaser).not.toBeNull();
+    expect(within(nav).getByText("Bientôt disponible")).toBeInTheDocument();
   });
 });

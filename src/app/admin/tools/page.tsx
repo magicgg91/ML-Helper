@@ -2,35 +2,38 @@ import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { CalculatorVisibilityList } from "@/components/calculator-visibility-list";
 import { adminToolEditHref, referenceToolSlugs } from "@/lib/admin-tools";
-import { byCalculatorCatalogOrder } from "@/lib/calculator-catalog";
 import { prisma } from "@/lib/prisma";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export default async function ToolsAdminPage() {
   const session = await requireCapability("calculators.read");
-  const [t, messages] = await Promise.all([
+  const [t, messages, locale] = await Promise.all([
     getTranslations("admin.tools"),
     getTranslations(),
+    getLocale(),
   ]);
-  const tools = (
-    await prisma.calculator.findMany({
-      where: { slug: { notIn: [...referenceToolSlugs] } },
-    })
-  ).sort(byCalculatorCatalogOrder);
+  const tools = await prisma.calculator.findMany({
+    where: { slug: { notIn: [...referenceToolSlugs] } },
+  });
+  // Bloc 62/C: alphabetical by the label actually shown (the active admin
+  // UI locale), replacing the previous catalog-insertion order.
+  const rows = tools
+    .map((tool) => ({
+      id: tool.id,
+      slug: tool.slug,
+      label: messages(`${tool.slug}.name`),
+      category: tool.category,
+      active: tool.active,
+      editHref: adminToolEditHref(tool.slug),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale));
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <CalculatorVisibilityList
         canEdit={can(session.user.role, "calculators.write")}
         canToggle={can(session.user.role, "calculators.toggle")}
-        rows={tools.map((tool) => ({
-          id: tool.id,
-          slug: tool.slug,
-          label: messages(`${tool.slug}.name`),
-          category: tool.category,
-          active: tool.active,
-          editHref: adminToolEditHref(tool.slug),
-        }))}
+        rows={rows}
       />
     </main>
   );

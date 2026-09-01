@@ -21,6 +21,7 @@ vi.mock("next-intl/server", () => ({
       namespace === "references" && key in catalog ? catalog[key] : key;
   },
 }));
+vi.mock("next/server", () => ({ connection: async () => undefined }));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: vi.fn(async () => ({
     "combat-equipment": true,

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { getTranslations } from "next-intl/server";
 import {
   CombatReferenceTable,
@@ -53,6 +54,13 @@ export async function generateMetadata({
 export default async function ReferencePage({
   params,
 }: PageProps<"/referentiels/[slug]">) {
+  // Bloc 62/I review: forces per-request dynamic rendering — otherwise
+  // Next has no dynamic API call to detect on this route (only a direct
+  // Prisma read via getCalculatorAvailability) and statically caches the
+  // first render per slug, so a later admin toggle never reaches this
+  // page (same fix already applied to /referentiels/page.tsx, Bloc 60
+  // review).
+  await connection();
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
