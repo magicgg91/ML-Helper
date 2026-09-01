@@ -498,13 +498,6 @@ export function StuffSimulator({
         );
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
-      <CrossReferenceLink
-        href={referenceHref("combat-equipment")}
-        title={references("catalog.combat-equipment")}
-        image={combatEquipmentReference.image}
-        fallbackImage={combatEquipmentReference.fallbackImage}
-        label={crossReference("toReference")}
-      />
       <section className="calculator-card">
         <h3>{t("global-summary")}</h3>
         <Summary
@@ -599,6 +592,14 @@ export function StuffSimulator({
           </div>
         </div>
       </section>
+      {/* Bloc 55/A: after the tool's own content, not before it. */}
+      <CrossReferenceLink
+        href={referenceHref("combat-equipment")}
+        title={references("catalog.combat-equipment")}
+        image={combatEquipmentReference.image}
+        fallbackImage={combatEquipmentReference.fallbackImage}
+        label={crossReference("toReference")}
+      />
     </div>
   );
 }

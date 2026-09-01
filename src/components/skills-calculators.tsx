@@ -210,13 +210,6 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   const reference = referenceCatalog.find((item) => item.slug === "gems")!;
   return (
     <div className="calculator-stack">
-      <CrossReferenceLink
-        href={referenceHref("gems")}
-        title={references(`catalog.${reference.slug}`)}
-        image={reference.image}
-        fallbackImage={reference.fallbackImage}
-        label={crossReference("toReference")}
-      />
       <section className="calculator-card">
         <div
           className="calculator-tabs compact mode-switch"
@@ -246,6 +239,14 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
       ) : (
         <GemBudget parameters={parameters} />
       )}
+      {/* Bloc 55/A: after the tool's own content, not before it. */}
+      <CrossReferenceLink
+        href={referenceHref("gems")}
+        title={references(`catalog.${reference.slug}`)}
+        image={reference.image}
+        fallbackImage={reference.fallbackImage}
+        label={crossReference("toReference")}
+      />
     </div>
   );
 }
@@ -651,13 +652,6 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const reference = referenceCatalog.find((item) => item.slug === "templars")!;
   return (
     <div className="calculator-stack">
-      <CrossReferenceLink
-        href={referenceHref("templars")}
-        title={references(`catalog.${reference.slug}`)}
-        image={reference.image}
-        fallbackImage={reference.fallbackImage}
-        label={crossReference("toReference")}
-      />
       <section className="calculator-card">
         <div className="calculator-fields">
           <label className="calculator-field">
@@ -718,6 +712,14 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
           </table>
         </div>
       </section>
+      {/* Bloc 55/A: after the tool's own content, not before it. */}
+      <CrossReferenceLink
+        href={referenceHref("templars")}
+        title={references(`catalog.${reference.slug}`)}
+        image={reference.image}
+        fallbackImage={reference.fallbackImage}
+        label={crossReference("toReference")}
+      />
     </div>
   );
 }

@@ -694,9 +694,12 @@
         "author": "Autor",
         "created": "Erstellt",
         "updated": "Zuletzt bearbeitet",
+        "languages": "Sprachen",
         "status": "Status",
         "actions": "Aktionen"
       },
+      "language-written": "{locale} verfasst",
+      "language-missing": "{locale} nicht übersetzt",
       "no-results": "Kein Ergebnis für diesen Filter.",
       "statuses": {
         "draft": "Entwurf",

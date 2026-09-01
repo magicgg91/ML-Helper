@@ -367,13 +367,6 @@ export function ExpeditionEquipmentSimulator({
       className="calculator-stack"
       data-testid="expedition-equipment-simulator"
     >
-      <CrossReferenceLink
-        href={referenceHref("expedition-equipment")}
-        title={references("catalog.expedition-equipment")}
-        image={expeditionEquipmentReference.image}
-        fallbackImage={expeditionEquipmentReference.fallbackImage}
-        label={crossReference("toReference")}
-      />
       <section className="calculator-card">
         <h3>{t("summary-title")}</h3>
         <Summary totals={totals} selected={selected} />
@@ -420,6 +413,14 @@ export function ExpeditionEquipmentSimulator({
           </div>
         </div>
       </section>
+      {/* Bloc 55/A: after the tool's own content, not before it. */}
+      <CrossReferenceLink
+        href={referenceHref("expedition-equipment")}
+        title={references("catalog.expedition-equipment")}
+        image={expeditionEquipmentReference.image}
+        fallbackImage={expeditionEquipmentReference.fallbackImage}
+        label={crossReference("toReference")}
+      />
     </div>
   );
 }

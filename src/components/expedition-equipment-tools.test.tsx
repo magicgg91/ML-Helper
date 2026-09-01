@@ -53,6 +53,13 @@ describe("ExpeditionEquipmentSimulator", () => {
     expect(
       screen.getByRole("link", { name: /Équipements d’Expédition$/ }),
     ).toHaveAttribute("href", "/referentiels/expedition-equipment");
+    // Bloc 55/A: the cross-reference banner sits after the tool's own
+    // content (summary, filters, slot grid), not before it.
+    expect(
+      summarySection().compareDocumentPosition(
+        screen.getByRole("link", { name: /Équipements d’Expédition$/ }),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("lays out the 6 slots in the confirmed grid order, no gem configuration", () => {
