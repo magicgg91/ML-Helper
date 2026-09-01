@@ -3,9 +3,6 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { GameImage } from "./game-image";
-import { MarkdownRenderer } from "./markdown-renderer";
-import { localizedText } from "../lib/translations";
-import type { EditorialLocale } from "./editorial-locale-select";
 import {
   consumableCategories,
   type ConsumableCatalog,
@@ -38,7 +35,8 @@ function CategoryFilters({
           {/* Bloc 48/D: category button order follows consumableCategories
               (alphabetical: Conseillers, Équipement, Expédition,
               Inventaire) — kept in sync with the table display order
-              below, both driven by the same constant. */}
+              below, both driven by the same constant. Intro is never a
+              filter option (Bloc 58/A: it's not part of this list). */}
           {consumableCategories.map((category) => (
             <button
               type="button"
@@ -56,30 +54,36 @@ function CategoryFilters({
   );
 }
 
-function CategoryTable({
-  category,
+// Bloc 58/A: shared by the intro table (3 columns, no Coût) and the 4
+// category tables (4 columns) — same row shape/rendering either way, only
+// whether the cost column exists differs.
+// Bloc 58/B: the Image column header is intentionally blank — the image
+// itself still renders normally in the column, only its heading text is
+// dropped.
+function ReferenceTable({
+  title,
   rows,
-  categoryLabel,
   t,
   locale,
+  showCost,
 }: {
-  category: ConsumableCategory;
+  title: string;
   rows: ConsumableRow[];
-  categoryLabel: (category: ConsumableCategory) => string;
   t: (key: string) => string;
   locale: string;
+  showCost: boolean;
 }) {
   return (
     <section className="calculator-card ranking-table-wrap">
-      <h2 className="editable-reference-title">{categoryLabel(category)}</h2>
+      <h2 className="editable-reference-title">{title}</h2>
       <div className="table-scroll">
         <table className="ranking-table reference-table reference-simple-table consumables-table">
           <thead>
             <tr>
-              <th>{t("columns.image")}</th>
+              <th></th>
               <th>{t("columns.name")}</th>
               <th>{t("columns.description")}</th>
-              <th>{t("columns.cost")}</th>
+              {showCost && <th>{t("columns.cost")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -102,7 +106,9 @@ function CategoryTable({
                   </td>
                   <td>{name}</td>
                   <td>{description}</td>
-                  <td className="value">{row.cost || t("cost-unknown")}</td>
+                  {showCost && (
+                    <td className="value">{row.cost || t("cost-unknown")}</td>
+                  )}
                 </tr>
               );
             })}
@@ -118,17 +124,17 @@ function CategoryTable({
 // column, it's which table a row lives in. A deselected filter button
 // fully removes its table from the DOM (Bloc41's full-hide pattern, not a
 // dim/opacity treatment).
+// Bloc 58/A: the free-text markdown intro zone is replaced by a structured
+// "Intro" table — same component as the category tables (minus Coût),
+// always rendered first and never affected by the category filters below.
 export function ConsumablesReferenceTable({
-  intro,
   catalog,
 }: {
-  intro: Record<EditorialLocale, string>;
   catalog: ConsumableCatalog;
 }) {
   const t = useTranslations("references.consommables");
   const categoryLabel = useTranslations("references.consommables.categories");
   const locale = useLocale();
-  const introText = localizedText(intro, locale);
   const [selectedCategories, setSelectedCategories] = useState<
     Set<ConsumableCategory>
   >(() => new Set(consumableCategories));
@@ -144,13 +150,13 @@ export function ConsumablesReferenceTable({
 
   return (
     <div className="calculator-stack">
-      {/* Bloc 52/D: framed like every other free-text zone on the site
-          (guide-shell/calculator-card), not left bare. */}
-      {introText && (
-        <section className="calculator-card">
-          <MarkdownRenderer markdown={introText} />
-        </section>
-      )}
+      <ReferenceTable
+        title={t("introTitle")}
+        rows={catalog.intro}
+        t={t}
+        locale={locale}
+        showCost={false}
+      />
       {/* Bloc 52/C: wrapped in the same .calculator-card frame the other
           references' Filters block uses (see reference-tables.tsx) — was
           rendering .reference-filters bare, the only reference filter bar
@@ -170,13 +176,13 @@ export function ConsumablesReferenceTable({
       {consumableCategories
         .filter((category) => selectedCategories.has(category))
         .map((category) => (
-          <CategoryTable
+          <ReferenceTable
             key={category}
-            category={category}
+            title={categoryLabel(category)}
             rows={catalog[category]}
-            categoryLabel={categoryLabel}
             t={t}
             locale={locale}
+            showCost
           />
         ))}
     </div>

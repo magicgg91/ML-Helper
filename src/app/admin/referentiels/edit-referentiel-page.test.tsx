@@ -16,12 +16,12 @@ vi.mock("@/lib/admin-formulas-server", () => ({
 }));
 vi.mock("@/lib/consumables-server", () => ({
   getConsumableCatalog: async () => ({
+    intro: [],
     advisors: [],
     equipment: [],
     expedition: [],
     inventory: [],
   }),
-  getConsumablesIntro: async () => ({ fr: "", en: "" }),
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],

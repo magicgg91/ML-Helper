@@ -543,10 +543,10 @@
     "unavailable": "Bu referans tabloları geçici olarak kullanılamıyor.",
     "single-unavailable": "Bu referans tablosu geçici olarak kullanılamıyor.",
     "consommables": {
+      "introTitle": "Giriş",
       "columns": {
         "cost": "Maliyet (Safir)",
         "description": "Açıklama",
-        "image": "Görsel",
         "name": "Ad"
       },
       "cost-unknown": "Belirlenmedi"
@@ -907,9 +907,8 @@
         "image": "Görsel yolu",
         "name": "Ad"
       },
-      "consumables-intro-label": "Giriş (markdown)",
       "consumables-intro-language-label": "Metin dili",
-      "consumables-intro-title": "Giriş metni",
+      "consumables-intro-title": "Intro",
       "consumables-table-title": "Öğeler",
       "empty": "Henüz öğe yok.",
       "move-down": "Aşağı taşı",

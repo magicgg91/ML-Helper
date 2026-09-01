@@ -10,7 +10,6 @@ import {
   type FieldErrors,
 } from "./editable-reference-table";
 import { EditorActionBar } from "./editor-action-bar";
-import { GuideMarkdownEditor } from "./guide-markdown-editor";
 import {
   EditorialLocaleSelect,
   type EditorialLocale,
@@ -23,51 +22,56 @@ import {
   type ConsumableRow,
 } from "../lib/consumables";
 
-// Bloc 48/A: the same editorial locale selector already driving the intro
-// markdown zone now also drives which language's Nom/Description columns
-// this table edits and displays — fixes the regression where all 4
-// language columns (FR+EN name, FR+EN description) were shown at once.
-// Only fr/en are actually captured per item (no de/es/tr item text yet) —
-// any non-fr editorial locale edits the EN columns, matching the public
-// table's own non-fr fallback to English (Bloc44-review/C).
+// Bloc 48/A: the editorial locale selector drives which language's
+// Nom/Description columns every table edits and displays — only fr/en are
+// actually captured per item (no de/es/tr item text yet), so any non-fr
+// editorial locale edits the EN columns, matching the public table's own
+// non-fr fallback to English (Bloc44-review/C).
 function fieldLocale(locale: EditorialLocale): "fr" | "en" {
   return locale === "fr" ? "fr" : "en";
 }
 
-type CategoryErrors = Record<ConsumableCategory, FieldErrors>;
-const emptyCategoryErrors = Object.fromEntries(
-  consumableCategories.map((category) => [category, {}]),
-) as CategoryErrors;
+// Bloc 58/A: the free-text markdown intro zone is gone, replaced by an
+// "intro" table — same row shape and CRUD as the 4 category tables, always
+// rendered first and never part of the category filter/errors machinery
+// below, so it's tracked as its own section alongside (not inside)
+// ConsumableCategory.
+type ConsumableSection = "intro" | ConsumableCategory;
+const consumableSections: readonly ConsumableSection[] = [
+  "intro",
+  ...consumableCategories,
+];
+
+type SectionErrors = Record<ConsumableSection, FieldErrors>;
+const emptySectionErrors = Object.fromEntries(
+  consumableSections.map((section) => [section, {}]),
+) as SectionErrors;
 
 // Bloc 43: Consumables is the first reference with free row CRUD (add,
-// remove, 1-position reorder) and a free-text markdown zone, alongside its
-// items table — both editable from a single screen with one shared
-// EditorActionBar (Bloc 35/10.2/10.3 convention: one back link, not one
-// per section).
-// Bloc 48/B: the single table-with-category-column is replaced by 4
-// independent tables, one per category — category is now implicit to
-// which table a row lives in, each with its own scoped Add button and its
-// own independent up/down ordering.
+// remove, 1-position reorder), all editable from a single screen with one
+// shared EditorActionBar (Bloc 35/10.2/10.3 convention: one back link, not
+// one per section).
+// Bloc 48/B: the single table-with-category-column is replaced by
+// independent tables, one per section — category is implicit to which
+// table a row lives in, each with its own scoped Add button and its own
+// independent up/down ordering.
 export function ConsumablesReferenceScreen({
   initialCatalog,
-  introInitial,
 }: {
   initialCatalog: ConsumableCatalog;
-  introInitial: Record<EditorialLocale, string>;
 }) {
   const t = useTranslations("admin.references");
   const categoryLabel = useTranslations("references.consommables.categories");
   const [locale, setLocale] = useState<EditorialLocale>("fr");
-  const [intro, setIntro] = useState(introInitial);
   const [catalog, setCatalog] = useState<ConsumableCatalog>(initialCatalog);
-  const [errors, setErrors] = useState<CategoryErrors>(emptyCategoryErrors);
+  const [errors, setErrors] = useState<SectionErrors>(emptySectionErrors);
   const [status, setStatus] = useState("");
 
   const lang = fieldLocale(locale);
   const nameKey = lang === "fr" ? "name_fr" : "name_en";
   const descriptionKey = lang === "fr" ? "description_fr" : "description_en";
 
-  const baseColumns: EditableColumn<ConsumableRow>[] = [
+  const nameAndDescriptionColumns: EditableColumn<ConsumableRow>[] = [
     { key: "image", label: t("consumables-columns.image") },
     { key: nameKey, label: t("consumables-columns.name"), required: true },
     {
@@ -76,100 +80,99 @@ export function ConsumablesReferenceScreen({
       required: true,
       wide: true,
     },
-    {
-      key: "cost",
-      label: t("consumables-columns.cost"),
-      type: "number",
-      min: 0,
-      step: 1,
-      narrow: true,
-    },
   ] as EditableColumn<ConsumableRow>[];
-
-  // Bloc 48/B: 4 independent tables each restart their own row numbering at
-  // 1 — without the category name folded into the label, row 1 of every
-  // table would render the exact same aria-label ("Ligne 1 Nom"), leaving
-  // 4 indistinguishable "Ligne 1 Nom" fields on the same screen.
-  function columnsFor(category: ConsumableCategory) {
-    return baseColumns.map((column) => ({
+  const costColumn: EditableColumn<ConsumableRow> = {
+    key: "cost",
+    label: t("consumables-columns.cost"),
+    type: "number",
+    min: 0,
+    step: 1,
+    narrow: true,
+  } as EditableColumn<ConsumableRow>;
+  // Bloc 58/A: intro has no Coût column — it's a 3-column table (Image,
+  // Nom, Description), the other 4 keep their Coût column unchanged.
+  const columnsForSection = (section: ConsumableSection) => {
+    const base =
+      section === "intro"
+        ? nameAndDescriptionColumns
+        : [...nameAndDescriptionColumns, costColumn];
+    const sectionLabel =
+      section === "intro" ? t("consumables-intro-title") : categoryLabel(section);
+    return base.map((column) => ({
       ...column,
       inputLabel: (index: number) =>
         t("category-row-label", {
-          category: categoryLabel(category),
+          category: sectionLabel,
           row: index + 1,
           field: column.label,
         }),
     }));
+  };
+
+  function setSectionRows(section: ConsumableSection, rows: ConsumableRow[]) {
+    setCatalog((current) => ({ ...current, [section]: rows }));
   }
 
-  function setCategoryRows(
-    category: ConsumableCategory,
-    rows: ConsumableRow[],
-  ) {
-    setCatalog((current) => ({ ...current, [category]: rows }));
-  }
-
-  function addRow(category: ConsumableCategory) {
+  function addRow(section: ConsumableSection) {
     setCatalog((current) => ({
       ...current,
-      [category]: [...current[category], { ...emptyConsumableRow }],
+      [section]: [...current[section], { ...emptyConsumableRow }],
     }));
   }
 
-  function removeRow(category: ConsumableCategory, index: number) {
+  function removeRow(section: ConsumableSection, index: number) {
     setCatalog((current) => ({
       ...current,
-      [category]: current[category].filter((_, i) => i !== index),
+      [section]: current[section].filter((_, i) => i !== index),
     }));
   }
 
   function moveRow(
-    category: ConsumableCategory,
+    section: ConsumableSection,
     index: number,
     direction: -1 | 1,
   ) {
     setCatalog((current) => {
-      const rows = current[category];
+      const rows = current[section];
       const target = index + direction;
       if (target < 0 || target >= rows.length) return current;
       const next = [...rows];
       [next[index], next[target]] = [next[target], next[index]];
-      return { ...current, [category]: next };
+      return { ...current, [section]: next };
     });
   }
 
   function validateRows() {
-    const next: CategoryErrors = { ...emptyCategoryErrors };
+    const next: SectionErrors = { ...emptySectionErrors };
     let valid = true;
-    for (const category of consumableCategories) {
-      const categoryErrors: FieldErrors = {};
-      const columns = columnsFor(category);
-      catalog[category].forEach((row, rowIndex) =>
+    for (const section of consumableSections) {
+      const sectionErrors: FieldErrors = {};
+      const columns = columnsForSection(section);
+      catalog[section].forEach((row, rowIndex) =>
         columns.forEach((column) => {
           const value = row[column.key];
           const key = errorKey(rowIndex, column.key);
           if (column.required && !value.trim())
-            categoryErrors[key] = t("required");
+            sectionErrors[key] = t("required");
           if (column.type === "number" && value !== "") {
             const parsed = Number(value);
             if (!Number.isFinite(parsed) || parsed < 0)
-              categoryErrors[key] = t("minimum", { min: 0 });
+              sectionErrors[key] = t("minimum", { min: 0 });
           }
         }),
       );
-      if (Object.keys(categoryErrors).length) valid = false;
-      next[category] = categoryErrors;
+      if (Object.keys(sectionErrors).length) valid = false;
+      next[section] = sectionErrors;
     }
     setErrors(next);
     return valid;
   }
 
-  // Bloc 44 review: one save action for both sections, not two — a click
-  // on either previous button, then navigating away, silently discarded
-  // whichever section wasn't clicked.
-  // Bloc 57/A: both sections are now a single request to a combined
-  // endpoint (previously 2 separate requests, each writing its own audit
-  // log row — one click produced 2 lines in /admin/logs instead of 1).
+  // Bloc 44 review: one save action for all sections, not several — a
+  // click on one section's button, then navigating away, silently
+  // discarded whichever section wasn't clicked.
+  // Bloc 57/A, Bloc 58/A: a single request for the whole catalog (intro
+  // included as just another section) — one write, one audit log line.
   async function saveAll() {
     if (!validateRows()) {
       setStatus(t("validation"));
@@ -180,7 +183,7 @@ export function ConsumablesReferenceScreen({
       const response = await fetch("/api/admin/guides/references/consumables", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ intro, catalog }),
+        body: JSON.stringify(catalog),
       });
       setStatus(response.ok ? t("saved") : t("server-error"));
     } catch {
@@ -204,57 +207,50 @@ export function ConsumablesReferenceScreen({
           {t("save-all")}
         </button>
       </EditorActionBar>
-      <section className="admin-panel guide-simple-fields">
-        <h2 className="editable-reference-title">
-          {t("consumables-intro-title")}
-        </h2>
-        <GuideMarkdownEditor
-          label={t("consumables-intro-label")}
-          value={intro[locale]}
-          onChange={(value) =>
-            setIntro((current) => ({ ...current, [locale]: value }))
-          }
-        />
-      </section>
       <section className="admin-panel editable-reference">
         <h2 className="editable-reference-title">
           {t("consumables-table-title")}
         </h2>
-        {consumableCategories.map((category) => (
-          <div className="editable-reference" key={category}>
+        {consumableSections.map((section) => (
+          <div className="editable-reference" key={section}>
             <div className="editable-reference-title-row">
               <h3 className="editable-reference-title">
-                {categoryLabel(category)}
+                {section === "intro"
+                  ? t("consumables-intro-title")
+                  : categoryLabel(section)}
               </h3>
               {/* Bloc 49/A: a scoped "+" icon on the title row replaces the
-                  verbose "Ajouter (Catégorie)" button — category stays
+                  verbose "Ajouter (Catégorie)" button — section stays
                   implicit to which table this icon belongs to. */}
               <button
                 type="button"
                 className="icon-action"
-                data-testid={`add-row-${category}`}
+                data-testid={`add-row-${section}`}
                 aria-label={t("add-category", {
-                  category: categoryLabel(category),
+                  category:
+                    section === "intro"
+                      ? t("consumables-intro-title")
+                      : categoryLabel(section),
                 })}
-                onClick={() => addRow(category)}
+                onClick={() => addRow(section)}
               >
                 <Plus size={16} aria-hidden="true" />
               </button>
             </div>
             <EditableDataTable
-              rows={catalog[category]}
-              columns={columnsFor(category)}
-              testIdPrefix={category}
-              onChange={(rows) => setCategoryRows(category, rows)}
-              onRemove={(index) => removeRow(category, index)}
-              onMove={(index, direction) => moveRow(category, index, direction)}
+              rows={catalog[section]}
+              columns={columnsForSection(section)}
+              testIdPrefix={section}
+              onChange={(rows) => setSectionRows(section, rows)}
+              onRemove={(index) => removeRow(section, index)}
+              onMove={(index, direction) => moveRow(section, index, direction)}
               removeIcon
               removeConfirmMessage={t("confirm-remove")}
               removeLabel={t("remove")}
               moveUpLabel={t("move-up")}
               moveDownLabel={t("move-down")}
               emptyLabel={t("empty")}
-              errors={errors[category]}
+              errors={errors[section]}
               combinedActions
               actionsLabel={t("actions")}
               tableClassName="consumables-admin-table"

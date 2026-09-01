@@ -1,17 +1,25 @@
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { ConsumablesReferenceTable } from "./consumables-reference";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import type { ConsumableCatalog } from "../lib/consumables";
 
-const emptyIntro = { fr: "", en: "", de: "", es: "", tr: "" };
-
 function emptyCatalog(): ConsumableCatalog {
-  return { advisors: [], equipment: [], expedition: [], inventory: [] };
+  return { intro: [], advisors: [], equipment: [], expedition: [], inventory: [] };
 }
+
+const introRow = {
+  image: "/consumables/sapphires.webp",
+  name_fr: "Saphirs",
+  name_en: "Sapphires",
+  description_fr: "Description intro FR",
+  description_en: "Description intro EN",
+  cost: "",
+};
 
 const catalog: ConsumableCatalog = {
   ...emptyCatalog(),
+  intro: [introRow],
   equipment: [
     {
       image: "/consumables/mighty-jar.webp",
@@ -37,80 +45,98 @@ const catalog: ConsumableCatalog = {
 describe("ConsumablesReferenceTable", () => {
   afterEach(cleanup);
 
-  it("renders the markdown intro zone above the tables", () => {
-    render(
-      <ConsumablesReferenceTable
-        intro={{
-          ...emptyIntro,
-          fr: "## Introduction FR",
-          en: "## Introduction EN",
-        }}
-        catalog={catalog}
-      />,
-    );
+  // Bloc 58/A: the free-text markdown intro zone is gone, replaced by a
+  // structured "Intro" table — same pattern as the category tables.
+  it("Bloc58/A: renders the Intro table, with its own title and rows", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(
-      screen.getByRole("heading", { name: "Introduction FR" }),
+      screen.getByRole("heading", { name: "Introduction" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
+    expect(screen.getByText("Saphirs")).toBeInTheDocument();
+    expect(screen.getByText("Description intro FR")).toBeInTheDocument();
   });
 
-  // Bloc 56: the original bug report — HTML pasted into the Boutique intro
-  // (e.g. an <img width> for a size-controlled illustration) rendered fine
-  // in the admin preview but was escaped as plain text on the public site,
-  // for lack of a rehype-raw pass in the shared markdown pipeline.
-  it("Bloc56: renders a raw <img width> tag from the intro at its set size, not escaped as text", () => {
-    render(
-      <ConsumablesReferenceTable
-        intro={{
-          ...emptyIntro,
-          fr: '<img src="https://example.com/icon.png" alt="Icône" width="48" height="48" />',
-        }}
-        catalog={catalog}
-      />,
-    );
-    const image = screen.getByRole("img", { name: "Icône" });
-    expect(image).toHaveAttribute("src", "https://example.com/icon.png");
-    expect(image).toHaveAttribute("width", "48");
-    expect(image).toHaveAttribute("height", "48");
+  // Bloc 58/A: Intro is always the first block on the page, before the
+  // category filters and the 4 category tables.
+  it("Bloc58/A: renders the Intro table first, before the filters and category tables", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    const introHeading = screen.getByRole("heading", { name: "Introduction" });
+    const filters = document.querySelector(".reference-filters")!;
+    expect(
+      introHeading.compareDocumentPosition(filters) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
-  it("skips the intro zone entirely when it's still empty (nothing invented)", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
-    expect(document.querySelector(".markdown-content")).not.toBeInTheDocument();
+  // Bloc 58/A: Intro has no Coût column — 3 columns only.
+  it("Bloc58/A: the Intro table has no Coût column", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    const introSection = screen
+      .getByRole("heading", { name: "Introduction" })
+      .closest("section")!;
+    expect(
+      within(introSection).queryByRole("columnheader", { name: "Coût (Saphirs)" }),
+    ).not.toBeInTheDocument();
+    expect(within(introSection).queryByText("10500")).not.toBeInTheDocument();
   });
 
-  // Bloc 52/D: the free-text intro zone was rendered bare, the only
-  // reference's markdown zone without the same framed style as the rest
-  // of the site (guide-shell/calculator-card).
-  it("Bloc52/D: frames the intro markdown zone in a calculator-card, like the rest of the site", () => {
-    render(
-      <ConsumablesReferenceTable
-        intro={{ ...emptyIntro, fr: "## Introduction FR" }}
-        catalog={catalog}
-      />,
-    );
-    const heading = screen.getByRole("heading", { name: "Introduction FR" });
-    expect(heading.closest(".calculator-card")).not.toBeNull();
+  // Bloc 58/A: unlike the 4 category tables, the Intro table is never
+  // affected by the category filters — it stays visible whatever the
+  // filter selection is.
+  it("Bloc58/A: the Intro table stays visible when every category filter is deselected", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    for (const category of [
+      "advisors",
+      "equipment",
+      "expedition",
+      "inventory",
+    ])
+      fireEvent.click(screen.getByTestId(`filter-category-${category}`));
+    expect(
+      screen.getByRole("heading", { name: "Introduction" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Saphirs")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Équipement" }),
+    ).not.toBeInTheDocument();
   });
 
-  // Bloc 52/C: the category filter bar was the only reference's filter row
-  // not wrapped in the same .calculator-card frame the other references'
-  // Filters block uses (see reference-tables.tsx).
-  it("Bloc52/C: frames the category filter bar in a calculator-card, like the other references", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
-    const filters = document.querySelector(".reference-filters");
-    expect(filters).not.toBeNull();
-    expect(filters!.closest(".calculator-card")).not.toBeNull();
+  it("Bloc58/A: skips rendering intro rows when the table is still empty (nothing invented)", () => {
+    render(<ConsumablesReferenceTable catalog={emptyCatalog()} />);
+    const introSection = screen
+      .getByRole("heading", { name: "Introduction" })
+      .closest("section")!;
+    expect(within(introSection).queryAllByRole("row")).toHaveLength(1);
+  });
+
+  // Bloc 58/B: the Image column header text is dropped on every one of the
+  // 5 Boutique tables (Intro + 4 category tables) — the image itself keeps
+  // rendering normally in the column.
+  it("Bloc58/B: has no 'Image' column header text on any of the 5 tables, but still renders the images", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    expect(
+      screen.queryByRole("columnheader", { name: "Image" }),
+    ).not.toBeInTheDocument();
+    const tables = document.querySelectorAll("table.consumables-table");
+    // Intro + the 4 category tables (all selected by default), regardless
+    // of which ones have rows in this fixture — the public table always
+    // renders, unlike the admin editor's row-count-gated table.
+    expect(tables).toHaveLength(5);
+    for (const table of tables) {
+      const headerCells = table.querySelectorAll("thead th");
+      expect(headerCells[0].textContent).toBe("");
+    }
+    expect(screen.getAllByRole("img").length).toBeGreaterThan(0);
   });
 
   it("shows the raw cost, never compacted to k/M", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(screen.getByText("10500")).toBeInTheDocument();
     expect(screen.queryByText(/10[.,]5k/i)).not.toBeInTheDocument();
   });
 
   it("shows a placeholder instead of inventing a value for an unconfirmed cost", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(screen.getByText("Non défini")).toBeInTheDocument();
   });
 
@@ -120,10 +146,7 @@ describe("ConsumablesReferenceTable", () => {
       equipment: [{ ...catalog.equipment[0], name_en: "", description_en: "" }],
     };
     render(
-      <ConsumablesReferenceTable
-        intro={emptyIntro}
-        catalog={catalogMissingEn}
-      />,
+      <ConsumablesReferenceTable catalog={catalogMissingEn} />,
       "en",
     );
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
@@ -133,10 +156,7 @@ describe("ConsumablesReferenceTable", () => {
   // all, so a non-fr/non-en visitor always hits the fallback — it must
   // land on English (the universal safety net), never French.
   it("Bloc47/D: shows the English name/description to a DE visitor, never the French one", () => {
-    render(
-      <ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />,
-      "de",
-    );
+    render(<ConsumablesReferenceTable catalog={catalog} />, "de");
     expect(screen.getByText("Divine Jar ×10")).toBeInTheDocument();
     expect(screen.queryByText("Jarre divine ×10")).not.toBeInTheDocument();
   });
@@ -144,7 +164,7 @@ describe("ConsumablesReferenceTable", () => {
   // Bloc 48/B: category is no longer a column — it's now which of the 4
   // separate titled tables a row lives in.
   it("Bloc48/B: renders 4 separate titled tables, one per category, with no Type column", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(
       screen.getByRole("heading", { name: "Conseillers" }),
     ).toBeInTheDocument();
@@ -171,10 +191,13 @@ describe("ConsumablesReferenceTable", () => {
   // Expédition, Inventaire) for both the table order and the filter
   // buttons, and the two stay in sync.
   it("Bloc48/D: orders both the tables and the filter buttons alphabetically", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    // Bloc 58/A: Intro's own <h2> comes first — scope to the headings that
+    // follow it to keep asserting just the 4 category tables' order.
     const headings = screen
       .getAllByRole("heading", { level: 2 })
-      .map((heading) => heading.textContent);
+      .map((heading) => heading.textContent)
+      .filter((text) => text !== "Introduction");
     expect(headings).toEqual([
       "Conseillers",
       "Équipement",
@@ -197,7 +220,7 @@ describe("ConsumablesReferenceTable", () => {
   // Bloc 48/B: a deselected filter button fully removes its table from the
   // DOM (Bloc41's full-hide pattern), not just dims/hides its rows.
   it("Bloc48/B: fully hides a category's table when its filter is deselected", () => {
-    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    render(<ConsumablesReferenceTable catalog={catalog} />);
     const equipmentButton = screen.getByTestId("filter-category-equipment");
     expect(equipmentButton).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();

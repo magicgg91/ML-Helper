@@ -56,7 +56,24 @@ export const emptyConsumableRow: ConsumableRow = {
   cost: "",
 };
 
-export type ConsumableCatalog = Record<ConsumableCategory, ConsumableRow[]>;
+// Bloc 58/A: the free-text markdown intro zone is gone, replaced by a
+// structured "intro" table — same row shape and CRUD as the 4 category
+// tables, reusing the exact same admin/public table components. It's kept
+// as its own top-level key rather than a 5th entry in consumableCategories
+// so it can never end up in the category filter buttons or the
+// filter-driven per-category loops: it always renders first and is never
+// affected by category filters.
+export type ConsumableCatalog = Record<ConsumableCategory, ConsumableRow[]> & {
+  intro: ConsumableRow[];
+};
+
+export const emptyConsumableCatalog: ConsumableCatalog = {
+  intro: [],
+  advisors: [],
+  equipment: [],
+  expedition: [],
+  inventory: [],
+};
 
 // Bloc 48/E: the 3 HP potions move from Inventaire to Expédition — they're
 // consumed mid-expedition, not general-purpose inventory items.
@@ -73,6 +90,10 @@ export const consumablePotionNames = new Set([
 // code (GameImage's onError fallback, same as every other reference until
 // its assets land).
 export const defaultConsumableCatalog: ConsumableCatalog = {
+  // Bloc 58/A: starts empty on purpose — the previous free-text intro
+  // (Saphirs, Inventaire) is not auto-migrated into this new table; an
+  // admin re-enters it by hand once the table exists.
+  intro: [],
   advisors: [
     {
       image: "/consumables/advisor-commander.webp",
@@ -453,11 +474,3 @@ const defaultCategoryByName = new Map(
     ),
   ),
 );
-
-// Bloc 43: the free-text markdown zone at the top of the public page —
-// same {fr,en} shape as legal-notice's StaticContent, left empty by
-// default (never inventing lore copy) until the porteur de projet fills it
-// in via admin, per the brief ("le joueur remplira le contenu réel après
-// livraison").
-export const consumablesIntroKey = "consumables_intro";
-export const defaultConsumablesIntro = { fr: "", en: "" };

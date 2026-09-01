@@ -18,10 +18,7 @@ import {
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
-import {
-  getConsumableCatalog,
-  getConsumablesIntro,
-} from "@/lib/consumables-server";
+import { getConsumableCatalog } from "@/lib/consumables-server";
 
 export default async function EditReferentielPage({
   params,
@@ -72,7 +69,6 @@ export default async function EditReferentielPage({
         <h1>{t("reference-consommables")}</h1>
         <ConsumablesReferenceScreen
           initialCatalog={await getConsumableCatalog()}
-          introInitial={await getConsumablesIntro()}
         />
       </main>
     );

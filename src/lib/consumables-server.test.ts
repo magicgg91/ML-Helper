@@ -25,12 +25,38 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
 
   it("passes a new grouped-object shape straight through, losslessly", () => {
     const stored = {
+      intro: [],
       advisors: [],
       equipment: [{ ...defaultConsumableCatalog.equipment[0] }],
       expedition: [],
       inventory: [],
     };
     expect(normalizeStoredValue(stored)).toEqual(stored);
+  });
+
+  // Bloc 58/A: "intro" is a 5th table with the exact same shape as the 4
+  // category tables — stored and read back losslessly the same way, and a
+  // pre-Bloc58 stored value (no "intro" key at all) comes back as an empty
+  // table rather than throwing or dropping the rest of the catalog.
+  it("Bloc58/A: passes the intro table through losslessly when present", () => {
+    const stored = {
+      intro: [{ ...defaultConsumableCatalog.equipment[0], name_fr: "Saphirs" }],
+      advisors: [],
+      equipment: [],
+      expedition: [],
+      inventory: [],
+    };
+    expect(normalizeStoredValue(stored).intro).toEqual(stored.intro);
+  });
+
+  it("Bloc58/A: a pre-Bloc58 stored catalog with no intro key comes back with an empty intro table", () => {
+    const stored = {
+      advisors: [],
+      equipment: [{ ...defaultConsumableCatalog.equipment[0] }],
+      expedition: [],
+      inventory: [],
+    };
+    expect(normalizeStoredValue(stored).intro).toEqual([]);
   });
 
   it("fills in a missing category as an empty array rather than dropping the whole catalog", () => {
@@ -131,6 +157,26 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     expect(result.expedition.map((r) => r.name_fr)).toEqual([
       "Potion de 25 PV",
     ]);
+  });
+
+  // A prior draft of this function spread the shared emptyConsumableCatalog
+  // constant instead of building fresh arrays each call — every grouped
+  // result ended up pushing into the very same array instances, so a row
+  // added by one call would silently leak into every other call's result
+  // for that same category.
+  it("never shares row arrays across separate calls", () => {
+    const advisorRow = {
+      image: "/consumables/advisor-commander.webp",
+      name_fr: "Commandant",
+      name_en: "Commander",
+      description_fr: "D",
+      description_en: "D",
+      cost: "800",
+    };
+    const withAdvisor = normalizeStoredValue([advisorRow]);
+    const withoutAdvisor = normalizeStoredValue([]);
+    expect(withAdvisor.advisors).toHaveLength(1);
+    expect(withoutAdvisor.advisors).toEqual([]);
   });
 
   it("ignores malformed entries instead of throwing", () => {

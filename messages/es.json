@@ -543,10 +543,10 @@
     "unavailable": "Estas tablas de referencia no están disponibles temporalmente.",
     "single-unavailable": "Esta tabla de referencia no está disponible temporalmente.",
     "consommables": {
+      "introTitle": "Introducción",
       "columns": {
         "cost": "Coste (Zafiros)",
         "description": "Descripción",
-        "image": "Imagen",
         "name": "Nombre"
       },
       "cost-unknown": "No definido"
@@ -907,9 +907,8 @@
         "image": "Ruta de la imagen",
         "name": "Nombre"
       },
-      "consumables-intro-label": "Introducción (markdown)",
       "consumables-intro-language-label": "Idioma del texto",
-      "consumables-intro-title": "Texto de introducción",
+      "consumables-intro-title": "Intro",
       "consumables-table-title": "Objetos",
       "empty": "Aún no hay objetos.",
       "move-down": "Mover hacia abajo",

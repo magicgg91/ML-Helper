@@ -26,16 +26,18 @@ const rowB = {
   description_en: "Description B EN",
   cost: "",
 };
-const introInitial = {
-  fr: "## Intro FR",
-  en: "## Intro EN",
-  de: "",
-  es: "",
-  tr: "",
+const introRow = {
+  image: "/consumables/sapphires.webp",
+  name_fr: "Saphirs",
+  name_en: "Sapphires",
+  description_fr: "Description intro FR",
+  description_en: "Description intro EN",
+  cost: "",
 };
 
 function initialCatalog(): ConsumableCatalog {
   return {
+    intro: [introRow],
     advisors: [],
     equipment: [rowA],
     expedition: [],
@@ -45,10 +47,7 @@ function initialCatalog(): ConsumableCatalog {
 
 function renderScreen() {
   return render(
-    <ConsumablesReferenceScreen
-      initialCatalog={initialCatalog()}
-      introInitial={introInitial}
-    />,
+    <ConsumablesReferenceScreen initialCatalog={initialCatalog()} />,
   );
 }
 
@@ -60,9 +59,9 @@ describe("ConsumablesReferenceScreen", () => {
   afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
-  // Bloc 52/E: the helper sentences above the markdown zone and the items
-  // table were removed — the interface should read clearly without them.
-  it("Bloc52/E: has no explanatory helper text above the markdown zone or the items table", () => {
+  // Bloc 52/E: the helper sentences above the items tables were removed —
+  // the interface should read clearly without them.
+  it("Bloc52/E: has no explanatory helper text above the tables", () => {
     renderScreen();
     expect(
       screen.queryByText(/Zone de texte libre en markdown/),
@@ -72,10 +71,11 @@ describe("ConsumablesReferenceScreen", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows one back link, one combined save button, and 4 category tables", () => {
+  it("shows one back link, one combined save button, an Intro table and 4 category tables", () => {
     renderScreen();
     expect(screen.getAllByRole("link", { name: "← Retour" })).toHaveLength(1);
     expect(saveButton()).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Intro" })).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Conseillers" }),
     ).toBeInTheDocument();
@@ -90,10 +90,38 @@ describe("ConsumablesReferenceScreen", () => {
     ).toBeInTheDocument();
   });
 
+  // Bloc 58/A: Intro is the very first table in the DOM, before any of the
+  // 4 category tables — reusing the exact same admin table pattern.
+  it("Bloc58/A: renders the Intro table before the 4 category tables", () => {
+    renderScreen();
+    const headings = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual([
+      "Intro",
+      "Conseillers",
+      "Équipement",
+      "Expédition",
+      "Inventaire",
+    ]);
+  });
+
+  // Bloc 58/A: 3 columns only (Image, Nom, Description) — no Coût column,
+  // unlike the 4 category tables.
+  it("Bloc58/A: the Intro table has no Coût column", () => {
+    renderScreen();
+    expect(
+      screen.getByLabelText("Intro — ligne 1 Nom"),
+    ).toHaveValue("Saphirs");
+    expect(
+      screen.queryByLabelText("Intro — ligne 1 Coût"),
+    ).not.toBeInTheDocument();
+  });
+
   // Bloc 48/A: regression fix — the locale selector already driving the
-  // intro markdown zone must also drive the items table columns, showing
-  // only 2 text columns (Nom + Description) in the active language at a
-  // time, never all 4 (FR+EN name, FR+EN description) simultaneously.
+  // items table columns must show only 2 text columns (Nom + Description)
+  // in the active language at a time, never all 4 (FR+EN name, FR+EN
+  // description) simultaneously — this now includes the Intro table too.
   it("Bloc48/A: shows only Nom+Description in French by default, not all 4 language columns", () => {
     renderScreen();
     expect(screen.getByLabelText("Équipement — ligne 1 Nom")).toHaveValue(
@@ -106,10 +134,10 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.queryByText("Nom (EN)")).not.toBeInTheDocument();
     expect(screen.queryByText("Description (FR)")).not.toBeInTheDocument();
     expect(screen.queryByText("Description (EN)")).not.toBeInTheDocument();
-    // Only the equipment and inventory tables have rows (and therefore a
-    // rendered header) in this fixture — advisors/expedition start empty.
-    expect(screen.getAllByText("Nom")).toHaveLength(2);
-    expect(screen.getAllByText("Description")).toHaveLength(2);
+    // Intro, equipment and inventory have rows (and therefore a rendered
+    // header) in this fixture — advisors/expedition start empty.
+    expect(screen.getAllByText("Nom")).toHaveLength(3);
+    expect(screen.getAllByText("Description")).toHaveLength(3);
   });
 
   // Bloc 48/A: switching the editorial locale switches which language's
@@ -129,8 +157,8 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.queryByDisplayValue("Objet A")).not.toBeInTheDocument();
   });
 
-  // Bloc 48/B: each of the 4 tables has its own "Ajouter" button, scoped to
-  // its own category — no more per-row category select.
+  // Bloc 48/B: each table has its own "Ajouter" button, scoped to its own
+  // section — no more per-row category select.
   it("Bloc48/B: each category has its own scoped Add button that only affects that table", () => {
     renderScreen();
     fireEvent.click(
@@ -146,11 +174,23 @@ describe("ConsumablesReferenceScreen", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 58/A: the Intro table gets the exact same CRUD as the 4 category
+  // tables — a scoped "+" Add button of its own.
+  it("Bloc58/A: the Intro table has its own scoped Add button, adding a row only to Intro", () => {
+    renderScreen();
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter (Intro)" }));
+    expect(screen.getByLabelText("Intro — ligne 2 Nom")).toHaveValue("");
+    expect(
+      screen.queryByLabelText("Équipement — ligne 2 Nom"),
+    ).not.toBeInTheDocument();
+  });
+
   // Bloc 49/A: the verbose "Ajouter (Catégorie)" text button is now a "+"
   // icon, sitting on the same line as the table's own title.
-  it("Bloc49/A: renders the Add control as a '+' icon on the table's own title row, for each of the 4 tables", () => {
+  it("Bloc49/A: renders the Add control as a '+' icon on the table's own title row, for each table", () => {
     renderScreen();
     for (const category of [
+      "Intro",
       "Conseillers",
       "Équipement",
       "Expédition",
@@ -185,6 +225,10 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.getByLabelText("Inventaire — ligne 1 Nom")).toHaveValue(
       "Objet B",
     );
+    // The Intro table is untouched by removing an equipment row.
+    expect(screen.getByLabelText("Intro — ligne 1 Nom")).toHaveValue(
+      "Saphirs",
+    );
   });
 
   // Bloc 49/B: the remove control is a red X icon, and deletion is
@@ -215,15 +259,15 @@ describe("ConsumablesReferenceScreen", () => {
   });
 
   // Bloc 53/A: the 3 separate Monter/Descendre/Supprimer columns are now a
-  // single "Actions" column, on all 4 category tables.
+  // single "Actions" column, on every table.
   it("Bloc53/A: shows a single 'Actions' column instead of separate Monter/Descendre/Supprimer columns, on every table", () => {
     renderScreen();
     const actionsHeaders = screen.getAllByRole("columnheader", {
       name: "Actions",
     });
-    // Only equipment and inventory have rows in this fixture, so only those
-    // 2 tables render a <thead> at all.
-    expect(actionsHeaders).toHaveLength(2);
+    // Intro, equipment and inventory have rows in this fixture, so only
+    // those 3 tables render a <thead> at all.
+    expect(actionsHeaders).toHaveLength(3);
     expect(
       screen.queryByRole("columnheader", { name: "Monter" }),
     ).not.toBeInTheDocument();
@@ -237,17 +281,17 @@ describe("ConsumablesReferenceScreen", () => {
     expect(actionsCell.querySelectorAll("button")).toHaveLength(3);
   });
 
-  // Bloc 53/B, C: each of the 4 tables is scoped with the Boutique-only
-  // width class, never touching Combat/Expedition/Ranking's own tables.
-  it("Bloc53/B, C: scopes every category table with the consumables-admin-table class", () => {
+  // Bloc 53/B, C: each table is scoped with the Boutique-only width class,
+  // never touching Combat/Expedition/Ranking's own tables.
+  it("Bloc53/B, C: scopes every table with the consumables-admin-table class", () => {
     const { container } = renderScreen();
     const tables = container.querySelectorAll("table.consumables-admin-table");
-    // Only equipment and inventory have rows in this fixture.
-    expect(tables).toHaveLength(2);
+    // Intro, equipment and inventory have rows in this fixture.
+    expect(tables).toHaveLength(3);
   });
 
-  // Bloc 48/B: up/down ordering is scoped independently per category — a
-  // category with a single row has both its move buttons disabled.
+  // Bloc 48/B: up/down ordering is scoped independently per table — a
+  // table with a single row has both its move buttons disabled.
   it("Bloc48/B: disables move buttons at each table's own boundaries", () => {
     renderScreen();
     const moveUpButtons = screen.getAllByRole("button", { name: "Monter" });
@@ -258,19 +302,19 @@ describe("ConsumablesReferenceScreen", () => {
       expect(button).toBeDisabled();
   });
 
-  // Bloc 44 review: a single action persists both sections together — no
+  // Bloc 44 review: a single action persists every table together — no
   // separate button per section that could be clicked while leaving the
-  // other one's edits unsaved.
-  // Bloc 57/A: both sections now go out as a single request to a single
-  // combined endpoint — the old 2-requests-per-save design (each writing
-  // its own audit log row) produced 2 lines in /admin/logs for 1 click.
-  it("Bloc57/A: saves the intro and the grouped catalog together in one PUT request", async () => {
+  // other ones' edits unsaved.
+  // Bloc 57/A, Bloc 58/A: the whole catalog (Intro included, as just
+  // another section) is sent as a single PUT request — one write, one
+  // audit log line.
+  it("Bloc58/A: saves the whole catalog, Intro included, in one PUT request", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 200 }));
     renderScreen();
-    fireEvent.change(screen.getByLabelText("Introduction (markdown)"), {
-      target: { value: "## Nouvelle intro" },
+    fireEvent.change(screen.getByLabelText("Intro — ligne 1 Description"), {
+      target: { value: "Nouvelle description" },
     });
     fireEvent.click(saveButton());
 
@@ -279,8 +323,8 @@ describe("ConsumablesReferenceScreen", () => {
     expect(url).toBe("/api/admin/guides/references/consumables");
     expect(init?.method).toBe("PUT");
     expect(JSON.parse(String(init?.body))).toEqual({
-      intro: { ...introInitial, fr: "## Nouvelle intro" },
-      catalog: initialCatalog(),
+      ...initialCatalog(),
+      intro: [{ ...introRow, description_fr: "Nouvelle description" }],
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Référentiel enregistré.",

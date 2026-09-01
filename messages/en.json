@@ -542,8 +542,8 @@
     "unavailable": "These reference tables are temporarily unavailable.",
     "single-unavailable": "This reference table is temporarily unavailable.",
     "consommables": {
+      "introTitle": "Introduction",
       "columns": {
-        "image": "Image",
         "name": "Name",
         "description": "Description",
         "cost": "Cost (Sapphires)"
@@ -901,8 +901,7 @@
       "server-error": "Unable to reach the server. Check the connection and try again.",
       "all": "All",
       "filters": { "skill": "Skill" },
-      "consumables-intro-title": "Intro text",
-      "consumables-intro-label": "Introduction (markdown)",
+      "consumables-intro-title": "Intro",
       "consumables-intro-language-label": "Text language",
       "consumables-table-title": "Items",
       "consumables-columns": {

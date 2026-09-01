@@ -99,6 +99,13 @@ describe("defaultConsumableCatalog", () => {
       "inventory",
     ]);
   });
+
+  // Bloc 58/A: the old free-text intro is never auto-migrated into the new
+  // structured table — it starts empty, waiting for an admin to re-enter
+  // it by hand.
+  it("Bloc58/A: starts with an empty intro table — the old free text is never auto-migrated", () => {
+    expect(defaultConsumableCatalog.intro).toEqual([]);
+  });
 });
 
 describe("Bloc46/C: parseConsumableCategory", () => {

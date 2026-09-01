@@ -548,8 +548,8 @@
     "unavailable": "Ces référentiels sont temporairement indisponibles.",
     "single-unavailable": "Ce référentiel est temporairement indisponible.",
     "consommables": {
+      "introTitle": "Introduction",
       "columns": {
-        "image": "Image",
         "name": "Nom",
         "description": "Description",
         "cost": "Coût (Saphirs)"
@@ -907,8 +907,7 @@
       "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
       "all": "Tous",
       "filters": { "skill": "Compétence" },
-      "consumables-intro-title": "Texte d’introduction",
-      "consumables-intro-label": "Introduction (markdown)",
+      "consumables-intro-title": "Intro",
       "consumables-intro-language-label": "Langue du texte",
       "consumables-table-title": "Objets",
       "consumables-columns": {
