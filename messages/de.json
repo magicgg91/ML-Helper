@@ -549,6 +549,7 @@
         "description": "Beschreibung",
         "name": "Name"
       },
+      "cost-with-unit": "{cost, plural, one {# Saphir} other {# Saphire}}",
       "cost-unknown": "Nicht festgelegt"
     },
     "events": {

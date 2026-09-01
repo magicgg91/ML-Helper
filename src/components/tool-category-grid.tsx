@@ -75,52 +75,58 @@ export function ToolCategoryGrid({
 }) {
   return (
     <div className="tool-category-grid">
-      {sortByLabel(toolCategories, (item) => t(item.label), locale).map((category) => {
-        const count = category.calculators.filter(
-          (slug) => active[slug],
-        ).length;
-        const available = count > 0;
-        const content = (
-          <>
-            <div className="tool-category-image">
-              <GameImage
-                src={category.image}
-                alt=""
-                eager={category.slug === "villes"}
-                fallback={
-                  // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-                  <img src={category.fallbackImage} alt="" />
-                }
-              />
-            </div>
-            <div className="tool-category-copy">
-              <h2>{t(category.label)}</h2>
-              <strong className="tool-count">{t("count", { count })}</strong>
-              {!available && (
-                <span className="tool-unavailable">{t("comingSoon")}</span>
-              )}
-            </div>
-          </>
-        );
-        return available ? (
-          <Link
-            className="tool-category-card"
-            href={`/tools/${category.slug}`}
-            key={category.slug}
-          >
-            {content}
-          </Link>
-        ) : (
-          <article
-            className="tool-category-card public-card-disabled"
-            key={category.slug}
-            data-disabled
-            title={t("unavailable")}
-          >
-            {content}
-          </article>
-        );
-      })}
+      {sortByLabel(toolCategories, (item) => t(item.label), locale).map(
+        (category, index) => {
+          const count = category.calculators.filter(
+            (slug) => active[slug],
+          ).length;
+          const available = count > 0;
+          const content = (
+            <>
+              <div className="tool-category-image">
+                <GameImage
+                  src={category.image}
+                  alt=""
+                  // Bloc 64/A review: whichever tile the sort puts first is
+                  // the LCP image, so eager-loading follows the rendered
+                  // position — it used to name Villes, which is only first
+                  // while the order is the catalog's own.
+                  eager={index === 0}
+                  fallback={
+                    // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
+                    <img src={category.fallbackImage} alt="" />
+                  }
+                />
+              </div>
+              <div className="tool-category-copy">
+                <h2>{t(category.label)}</h2>
+                <strong className="tool-count">{t("count", { count })}</strong>
+                {!available && (
+                  <span className="tool-unavailable">{t("comingSoon")}</span>
+                )}
+              </div>
+            </>
+          );
+          return available ? (
+            <Link
+              className="tool-category-card"
+              href={`/tools/${category.slug}`}
+              key={category.slug}
+            >
+              {content}
+            </Link>
+          ) : (
+            <article
+              className="tool-category-card public-card-disabled"
+              key={category.slug}
+              data-disabled
+              title={t("unavailable")}
+            >
+              {content}
+            </article>
+          );
+        },
+      )}
     </div>
   );
 }

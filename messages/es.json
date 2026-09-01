@@ -549,6 +549,7 @@
         "description": "Descripción",
         "name": "Nombre"
       },
+      "cost-with-unit": "{cost, plural, one {# zafiro} other {# zafiros}}",
       "cost-unknown": "No definido"
     },
     "events": {

@@ -125,11 +125,17 @@ function ReferenceTileGrid({
   title,
   rows,
   t,
+  costWithUnit,
   locale,
 }: {
   title: string;
   rows: ConsumableRow[];
   t: (key: string) => string;
+  // Bloc 64/C review: the badge replaced the "Coût (Saphirs)" column
+  // header, which was the only thing naming the currency — so the unit
+  // rides along with the number now, for everyone rather than being
+  // implied by the badge's color.
+  costWithUnit: (cost: number) => string;
   locale: string;
 }) {
   return (
@@ -157,7 +163,13 @@ function ReferenceTileGrid({
                     {renderBoldText(name)}
                   </strong>
                   <span className="consumable-tile-cost">
-                    {row.cost || t("cost-unknown")}
+                    {/* An unconfirmed cost keeps its own placeholder; a
+                        free-text cost an admin typed that isn't a number
+                        is shown as-is rather than forced through the
+                        pluralized unit message. */}
+                    {Number.isFinite(Number(row.cost)) && row.cost !== ""
+                      ? costWithUnit(Number(row.cost))
+                      : row.cost || t("cost-unknown")}
                   </span>
                 </div>
                 <p className="consumable-tile-description">
@@ -234,6 +246,7 @@ export function ConsumablesReferenceTable({
             title={categoryLabel(category)}
             rows={catalog[category]}
             t={t}
+            costWithUnit={(cost) => t("cost-with-unit", { cost })}
             locale={locale}
           />
         ))}

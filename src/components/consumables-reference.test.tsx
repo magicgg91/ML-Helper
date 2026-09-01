@@ -5,7 +5,13 @@ import { renderWithIntl as render } from "../test/render-with-intl";
 import type { ConsumableCatalog } from "../lib/consumables";
 
 function emptyCatalog(): ConsumableCatalog {
-  return { intro: [], advisors: [], equipment: [], expedition: [], inventory: [] };
+  return {
+    intro: [],
+    advisors: [],
+    equipment: [],
+    expedition: [],
+    inventory: [],
+  };
 }
 
 const introRow = {
@@ -75,7 +81,9 @@ describe("ConsumablesReferenceTable", () => {
       .getByRole("heading", { name: "Introduction" })
       .closest("section")!;
     expect(
-      within(introSection).queryByRole("columnheader", { name: "Coût (Saphirs)" }),
+      within(introSection).queryByRole("columnheader", {
+        name: "Coût (Saphirs)",
+      }),
     ).not.toBeInTheDocument();
     expect(within(introSection).queryByText("10500")).not.toBeInTheDocument();
   });
@@ -85,12 +93,7 @@ describe("ConsumablesReferenceTable", () => {
   // filter selection is.
   it("Bloc58/A: the Intro table stays visible when every category filter is deselected", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
-    for (const category of [
-      "advisors",
-      "equipment",
-      "expedition",
-      "inventory",
-    ])
+    for (const category of ["advisors", "equipment", "expedition", "inventory"])
       fireEvent.click(screen.getByTestId(`filter-category-${category}`));
     expect(
       screen.getByRole("heading", { name: "Introduction" }),
@@ -127,9 +130,13 @@ describe("ConsumablesReferenceTable", () => {
     expect(screen.getAllByRole("img").length).toBeGreaterThan(0);
   });
 
-  it("shows the raw cost, never compacted to k/M", () => {
+  // Bloc 64/C review: the badge carries the sapphire unit now (the column
+  // header that used to name it is gone), so the amount reads through the
+  // same localized, digit-grouped message Ranking's rewards use — still
+  // the full amount, never compacted to k/M.
+  it("shows the full cost, never compacted to k/M", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
-    expect(screen.getByText("10500")).toBeInTheDocument();
+    expect(screen.getByText(/10\s?500 saphirs/)).toBeInTheDocument();
     expect(screen.queryByText(/10[.,]5k/i)).not.toBeInTheDocument();
   });
 
@@ -143,10 +150,7 @@ describe("ConsumablesReferenceTable", () => {
       ...emptyCatalog(),
       equipment: [{ ...catalog.equipment[0], name_en: "", description_en: "" }],
     };
-    render(
-      <ConsumablesReferenceTable catalog={catalogMissingEn} />,
-      "en",
-    );
+    render(<ConsumablesReferenceTable catalog={catalogMissingEn} />, "en");
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
   });
 
@@ -239,7 +243,9 @@ describe("ConsumablesReferenceTable", () => {
   // bold name then description on the right, sapphire cost as a badge in
   // the tile's top-right corner, on the name's own line.
   it("Bloc64/C: renders each category as a tile grid, image + name + description + cost badge", () => {
-    const { container } = render(<ConsumablesReferenceTable catalog={catalog} />);
+    const { container } = render(
+      <ConsumablesReferenceTable catalog={catalog} />,
+    );
     const grid = container.querySelector(".consumable-tile-grid");
     expect(grid).not.toBeNull();
     const jarTile = screen
@@ -254,8 +260,10 @@ describe("ConsumablesReferenceTable", () => {
     expect(heading.querySelector(".consumable-tile-name")?.tagName).toBe(
       "STRONG",
     );
+    // Bloc 64/C review: the unit rides with the amount, so the currency
+    // isn't left to the badge's color alone.
     expect(heading.querySelector(".consumable-tile-cost")).toHaveTextContent(
-      "10500",
+      /10\s?500 saphirs/,
     );
     expect(
       jarTile.querySelector(".consumable-tile-description"),
@@ -293,7 +301,9 @@ describe("ConsumablesReferenceTable", () => {
       ],
     };
     render(<ConsumablesReferenceTable catalog={boldCatalog} />);
-    expect(screen.getByText("divine", { selector: "strong" })).toBeInTheDocument();
+    expect(
+      screen.getByText("divine", { selector: "strong" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("objets rares", { selector: "strong" }),
     ).toBeInTheDocument();

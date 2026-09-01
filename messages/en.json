@@ -557,6 +557,7 @@
         "description": "Description",
         "cost": "Cost (Sapphires)"
       },
+      "cost-with-unit": "{cost, plural, one {# sapphire} other {# sapphires}}",
       "cost-unknown": "Not set",
       "filters": {
         "label": "Filter by category",
