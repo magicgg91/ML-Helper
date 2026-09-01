@@ -272,7 +272,7 @@
       "rank": "Ton rang actuel"
     },
     "undefined": "À définir dans l’administration",
-    "total-players": "Nombre total de joueurs",
+    "total-players": "Nombre estimé de joueurs",
     "errors": {
       "select-league": "Choisis une ligue pour calculer.",
       "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",

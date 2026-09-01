@@ -6,7 +6,6 @@ import {
   useState,
   type ChangeEvent,
   type ForwardedRef,
-  type ReactNode,
 } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, X } from "lucide-react";
@@ -40,13 +39,6 @@ export type EditableColumn<Row> = {
   // relatively more of the row's width (Boutique's Description column,
   // whose text runs longer than its neighbours).
   wide?: boolean;
-  // Bloc 62/B: when set, renders the column's current value through this
-  // function in a small line below the input — Boutique's Nom/Description
-  // use it with renderBoldText so an admin sees **bold** rendered live,
-  // identically to how the public page will show it, without turning the
-  // input itself into a rich-text editor. Left undefined (no preview) for
-  // every other column on every other reference's table.
-  preview?: (value: string) => ReactNode;
 };
 
 export type FieldErrors = Record<string, string>;
@@ -212,11 +204,6 @@ export function EditableDataTable<Row extends Record<string, string>>({
                         )}
                         {errorMessage && (
                           <small className="field-error">{errorMessage}</small>
-                        )}
-                        {column.preview && row[column.key] && (
-                          <div className="field-bold-preview">
-                            {column.preview(row[column.key])}
-                          </div>
                         )}
                       </td>
                     );

@@ -1170,8 +1170,12 @@ select {
   color: var(--foreground);
   cursor: pointer;
 }
+/* Bloc 64/D: Level Up's pagination controls share this exact rule rather
+   than a lookalike copy of it — they're navigation buttons like the league
+   ones right above them on the same page, so they must not drift apart. */
 .family-buttons button,
-.family-buttons a {
+.family-buttons a,
+.pagination button {
   flex: 0 0 auto;
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--border);
@@ -1202,18 +1206,36 @@ select {
    auto-fit grid, which could otherwise push it onto its own line. */
 .ranking-fields {
   display: flex;
-  /* Bloc 62/D: all 3 fields are labeled now (the league group got its own
-     visible label to match the other two) — flex-end bottom-aligns their
-     controls the same way a normal label-above-control row would. */
-  align-items: flex-end;
+  /* Bloc 64/G: every label is inline before its own control now, so the 3
+     fields are single-line rows — centered against each other rather than
+     bottom-aligned as they were while labels sat above. */
+  align-items: center;
   flex-wrap: nowrap;
   gap: 1rem;
 }
 .ranking-fields .family-buttons {
   margin: 0;
 }
+/* Bloc 64/G: label immediately before the control, identically on the
+   league buttons and both numeric fields — overrides .calculator-field's
+   stacked grid for these 3 only. */
+.ranking-inline-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ranking-field-label {
+  white-space: nowrap;
+}
+/* Bloc 64/G: the inline label now shares the field's width with the
+   stepper, so the field can't carry a fixed basis any more — the stepper
+   would give up whatever the label took and collapse its input to nothing.
+   The stepper gets its own width instead; the field sizes to its content. */
 .ranking-number-field {
-  flex: 0 0 9rem;
+  flex: 0 0 auto;
+}
+.ranking-number-field .number-stepper {
+  width: 9rem;
 }
 @media (max-width: 900px) {
   .ranking-fields {
@@ -1535,10 +1557,81 @@ select,
 
 /* Bloc 46/A: Consommables' own image size, distinct from the 3rem shared by
    Combat/Expedition/Gemmes (Bloc 38) — scoped to this référentiel's table
-   only, doesn't touch the shared rule above. */
-.consumables-table .reference-equipment-image {
+   only, doesn't touch the shared rule above.
+   Bloc 64/C: the tiles that replaced the 4 category tables keep that exact
+   5rem, so an item looks the same size wherever it's listed. */
+.consumables-table .reference-equipment-image,
+.consumable-tile-image {
   width: 5rem;
   height: 5rem;
+}
+
+/* Bloc 64/C: Boutique's 4 category listings — 2 tiles per row on desktop,
+   1 on mobile (see the max-width block below). Each tile is a grey card
+   pairing the item image with its name and description; the sapphire cost
+   rides top-right in the site's violet accent, on the name's own line. */
+.consumable-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.consumable-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.consumable-tile-image {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  object-fit: contain;
+}
+.consumable-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.consumable-tile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.consumable-tile-name {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  overflow-wrap: break-word;
+}
+.consumable-tile-cost {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--accent-strong);
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.consumable-tile-description {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  overflow-wrap: break-word;
+}
+@media (max-width: 900px) {
+  .consumable-tile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Bloc 39: Combat/Expedition tile grid — replaces the old per-row table for
@@ -2225,15 +2318,6 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   color: var(--ember);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.7rem;
-}
-/* Bloc 62/B: a live **bold** preview under Boutique's Nom/Description
-   inputs, muted so it doesn't compete with the input above it, but still
-   legible enough to check the bold rendering before saving. */
-.field-bold-preview {
-  margin-top: 0.3rem;
-  color: var(--muted);
-  font-size: 0.75rem;
-  overflow-wrap: break-word;
 }
 .form-status,
 .form-success {
@@ -3013,7 +3097,12 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   margin-left: 0.35rem;
 }
 
-.level-up-tables {
+/* Bloc 64/E: Templiers splits its 20 rows into the same 2 side-by-side
+   tables Level Up already uses (10 rows each, no pagination needed at that
+   size) — one shared rule so the two references stay visually aligned,
+   as agreed at Bloc 38. */
+.level-up-tables,
+.split-reference-tables {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
@@ -3031,9 +3120,23 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   justify-content: center;
   gap: 0.75rem;
 }
+/* Bloc 64/D: the button skin itself comes from the shared
+   .family-buttons/.pagination rule above (same navigation buttons as the
+   league selector) — only the state and the page counter are specific
+   here. */
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
 
 @media (max-width: 900px) {
-  .level-up-tables {
+  .level-up-tables,
+  .split-reference-tables {
     grid-template-columns: 1fr;
   }
 }

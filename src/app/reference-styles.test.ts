@@ -19,9 +19,11 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("Bloc46/A: Consommables' own image size is 5rem, distinct from the shared 3rem rule", () => {
+  // Bloc 64/C: the Boutique tiles that replaced the 4 category tables share
+  // this same 5rem rule, so the selector now lists both.
+  it("Bloc46/A: Consommables' own image size is 5rem (table and tile), distinct from the shared 3rem rule", () => {
     const rule = css.match(
-      /\.consumables-table \.reference-equipment-image\s*{([\s\S]*?)\n}/,
+      /\.consumables-table \.reference-equipment-image,\n\.consumable-tile-image\s*{([\s\S]*?)\n}/,
     )?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/width: 5rem;/);
@@ -267,5 +269,54 @@ describe("Bloc 54: missing Combat/Expedition cross-link + bigger banner", () => 
     expect(rule).toBeDefined();
     expect(rule).toMatch(/width: 5rem;/);
     expect(rule).toMatch(/height: 5rem;/);
+  });
+});
+
+describe("Bloc 64: Boutique tiles, Level Up pagination, Templiers split", () => {
+  // C: 2 tiles per row on desktop, 1 on mobile.
+  it("C: lays the Boutique tiles out 2 per row, dropping to 1 column on mobile", () => {
+    const rule = css.match(/\.consumable-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.consumable-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
+    );
+  });
+
+  // C: grey tile (the neutral surface token), violet cost badge (the
+  // site's own accent) — not a one-off color either way.
+  it("C: gives the tile the grey surface and the cost badge the violet accent", () => {
+    const tile = css.match(/\.consumable-tile\s*{([\s\S]*?)\n}/)?.[1];
+    expect(tile).toBeDefined();
+    expect(tile).toMatch(/background: var\(--surface-muted\)/);
+    const cost = css.match(/\.consumable-tile-cost\s*{([\s\S]*?)\n}/)?.[1];
+    expect(cost).toBeDefined();
+    expect(cost).toMatch(/color: var\(--accent-strong\)/);
+    // Kept on the name's line at the tile's right edge.
+    const heading = css.match(
+      /\.consumable-tile-heading\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(heading).toMatch(/justify-content: space-between/);
+  });
+
+  // D: the pagination buttons are styled by the very rule that styles the
+  // league/family navigation buttons — one shared declaration, so the two
+  // can't drift apart.
+  it("D: styles the Level Up pagination buttons with the site's navigation-button rule", () => {
+    expect(css).toMatch(
+      /\.family-buttons button,\n\.family-buttons a,\n\.pagination button\s*{/,
+    );
+    expect(css).toMatch(/\.pagination button:disabled\s*{/);
+  });
+
+  // E: Templiers reuses Level Up's 2-column split, including its
+  // single-column mobile fallback.
+  it("E: shares Level Up's 2-column split layout with the Templiers tables", () => {
+    expect(css).toMatch(
+      /\.level-up-tables,\n\.split-reference-tables\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    expect(css).toMatch(
+      /\.level-up-tables,\n\s*\.split-reference-tables\s*{\s*\n\s*grid-template-columns: 1fr;/,
+    );
   });
 });

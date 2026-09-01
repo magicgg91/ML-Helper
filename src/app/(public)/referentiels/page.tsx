@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { languageAlternates } from "@/lib/site-url";
@@ -28,10 +28,11 @@ export default async function ReferentielsPage() {
   // so a later admin toggle would never reach this page (same pattern
   // already used by /guides and the homepage, both DB-backed too).
   await connection();
-  const [t, tHome, active] = await Promise.all([
+  const [t, tHome, active, locale] = await Promise.all([
     getTranslations("references"),
     getTranslations("Home"),
     getCalculatorAvailability(),
+    getLocale(),
   ]);
   return (
     <main className="public-main">
@@ -40,7 +41,7 @@ export default async function ReferentielsPage() {
           point reached a different way (Bloc 38/K's treatment for /tools). */}
       <h1 className="referentiels-page-title">{tHome("referentielsTitle")}</h1>
       <p>{tHome("referentielsDescription")}</p>
-      <ReferenceCatalogGrid t={t} active={active} />
+      <ReferenceCatalogGrid t={t} locale={locale} active={active} />
     </main>
   );
 }

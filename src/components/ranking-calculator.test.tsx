@@ -145,28 +145,38 @@ describe("RankingCalculator", () => {
     ]);
   });
 
-  // Bloc 62/D: a visible "Ligue" label above the button group, matching the
-  // 2 other fields (percentage, rank) which already show theirs.
-  it("Bloc62/D: shows a visible Ligue label above the league buttons, like the other 2 fields", () => {
+  // Bloc 64/G: settles Bloc 62/D's open choice on option (b) — every one
+  // of the 3 fields carries its label inline, immediately before its own
+  // control, and none above. Asserted structurally: each label is the
+  // field's first child, sharing a single-line row with the control.
+  it("Bloc64/G: puts each field's label inline right before its control, on all 3 fields", () => {
     const { container } = renderCalculator();
-    const leagueField = container.querySelector(".ranking-league-field");
-    expect(leagueField).not.toBeNull();
-    expect(leagueField).toHaveTextContent("Ligue");
-    const percentageField = screen
-      .getByRole("spinbutton", { name: "Ton pourcentage actuel" })
-      .closest(".ranking-number-field");
-    const rankField = screen
-      .getByRole("spinbutton", { name: "Ton rang actuel" })
-      .closest(".ranking-number-field");
-    expect(percentageField).toHaveTextContent("Ton pourcentage actuel");
-    expect(rankField).toHaveTextContent("Ton rang actuel");
+    const fields = Array.from(
+      container.querySelectorAll(".ranking-inline-field"),
+    );
+    expect(fields).toHaveLength(3);
+    expect(
+      fields.map((field) => field.firstElementChild?.textContent),
+    ).toEqual(["Ligue", "Ton pourcentage actuel", "Ton rang actuel"]);
+    for (const field of fields) {
+      // The label is a sibling of the control, not a line above it.
+      expect(field.firstElementChild).toHaveClass("ranking-field-label");
+      expect(field.children.length).toBe(2);
+    }
+    // No label sits above any of the 3 controls any more.
+    expect(container.querySelector(".calculator-field > label")).toBeNull();
   });
 
-  // Bloc 62/E: the "(déduit)" qualifier is gone from the total-players badge.
-  it("Bloc62/E: shows the total-players label without the '(déduit)' qualifier", () => {
+  // Bloc 64/F: the badge is qualified again, this time as "estimé" —
+  // reversing Bloc 62/E, which had dropped every qualifier. "total" must
+  // not survive anywhere in the label.
+  it("Bloc64/F: labels the badge 'Nombre estimé de joueurs', never 'Nombre total de joueurs'", () => {
     renderCalculator();
     selectLeague("Diamant");
-    expect(screen.getByText("Nombre total de joueurs")).toBeInTheDocument();
+    expect(screen.getByText("Nombre estimé de joueurs")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Nombre total de joueurs"),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/déduit/i)).not.toBeInTheDocument();
   });
 

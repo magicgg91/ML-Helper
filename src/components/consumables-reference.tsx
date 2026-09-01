@@ -55,24 +55,23 @@ function CategoryFilters({
   );
 }
 
-// Bloc 58/A: shared by the intro table (3 columns, no Coût) and the 4
-// category tables (4 columns) — same row shape/rendering either way, only
-// whether the cost column exists differs.
+// Bloc 58/A: the Intro table — 3 columns, no Coût.
 // Bloc 58/B: the Image column header is intentionally blank — the image
 // itself still renders normally in the column, only its heading text is
 // dropped.
+// Bloc 64/C: intro-only now — the 4 category listings moved to
+// ReferenceTileGrid below, so the cost column this used to render
+// conditionally has no caller left.
 function ReferenceTable({
   title,
   rows,
   t,
   locale,
-  showCost,
 }: {
   title: string;
   rows: ConsumableRow[];
   t: (key: string) => string;
   locale: string;
-  showCost: boolean;
 }) {
   return (
     <section className="calculator-card ranking-table-wrap">
@@ -84,7 +83,6 @@ function ReferenceTable({
               <th></th>
               <th>{t("columns.name")}</th>
               <th>{t("columns.description")}</th>
-              {showCost && <th>{t("columns.cost")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -107,14 +105,68 @@ function ReferenceTable({
                   </td>
                   <td>{renderBoldText(name)}</td>
                   <td>{renderBoldText(description)}</td>
-                  {showCost && (
-                    <td className="value">{row.cost || t("cost-unknown")}</td>
-                  )}
                 </tr>
               );
             })}
           </tbody>
         </table>
+      </div>
+    </section>
+  );
+}
+
+// Bloc 64/C: the 4 category tables become tile grids on the public page —
+// 2 tiles per row on desktop, 1 on mobile, each tile pairing the image
+// (same 5rem as the table did, Bloc 46/A) with the name and description,
+// and carrying the sapphire cost as a badge in its top-right corner,
+// aligned with the name. The Intro table (and the whole admin editor) stay
+// tables: only these 4 category listings change shape.
+function ReferenceTileGrid({
+  title,
+  rows,
+  t,
+  locale,
+}: {
+  title: string;
+  rows: ConsumableRow[];
+  t: (key: string) => string;
+  locale: string;
+}) {
+  return (
+    <section className="calculator-card">
+      <h2 className="editable-reference-title">{title}</h2>
+      <div className="consumable-tile-grid">
+        {rows.map((row, index) => {
+          const name = pickLocaleText(row.name_fr, row.name_en, locale);
+          const description = pickLocaleText(
+            row.description_fr,
+            row.description_en,
+            locale,
+          );
+          return (
+            <article className="consumable-tile" key={`${row.image}-${index}`}>
+              <GameImage
+                src={row.image}
+                alt={name}
+                className="reference-equipment-image consumable-tile-image"
+                fallback={null}
+              />
+              <div className="consumable-tile-body">
+                <div className="consumable-tile-heading">
+                  <strong className="consumable-tile-name">
+                    {renderBoldText(name)}
+                  </strong>
+                  <span className="consumable-tile-cost">
+                    {row.cost || t("cost-unknown")}
+                  </span>
+                </div>
+                <p className="consumable-tile-description">
+                  {renderBoldText(description)}
+                </p>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -156,7 +208,6 @@ export function ConsumablesReferenceTable({
         rows={catalog.intro}
         t={t}
         locale={locale}
-        showCost={false}
       />
       {/* Bloc 52/C: wrapped in the same .calculator-card frame the other
           references' Filters block uses (see reference-tables.tsx) — was
@@ -171,19 +222,19 @@ export function ConsumablesReferenceTable({
           filterLabel={t("filters.category")}
         />
       </section>
-      {/* Bloc 48/D: table order follows consumableCategories (alphabetical:
-          Conseillers, Équipement, Expédition, Inventaire), same order as
-          the filter buttons above. */}
+      {/* Bloc 48/D: category order follows consumableCategories
+          (alphabetical: Conseillers, Équipement, Expédition, Inventaire),
+          same order as the filter buttons above.
+          Bloc 64/C: rendered as tile grids now, not tables. */}
       {consumableCategories
         .filter((category) => selectedCategories.has(category))
         .map((category) => (
-          <ReferenceTable
+          <ReferenceTileGrid
             key={category}
             title={categoryLabel(category)}
             rows={catalog[category]}
             t={t}
             locale={locale}
-            showCost
           />
         ))}
     </div>

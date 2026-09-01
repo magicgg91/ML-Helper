@@ -272,7 +272,7 @@
       "rank": "Mevcut sıralaman"
     },
     "undefined": "Yönetim panelinde tanımlanacak",
-    "total-players": "Toplam oyuncu",
+    "total-players": "Tahmini oyuncu sayısı",
     "errors": {
       "select-league": "Hesaplamak için bir lig seç.",
       "positive-percentage": "Hesaplamak için 0'dan büyük bir yüzde gir.",

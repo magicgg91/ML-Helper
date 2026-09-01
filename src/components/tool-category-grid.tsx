@@ -4,6 +4,7 @@ import type {
   CalculatorAvailability,
   CalculatorSlug,
 } from "@/lib/calculator-catalog";
+import { sortByLabel } from "@/lib/sort-by-label";
 import { GameImage } from "./game-image";
 
 // Bloc 33/A: shared between /tools (unchanged) and the homepage (now a
@@ -62,14 +63,19 @@ export const toolCategories: Array<{
 
 export function ToolCategoryGrid({
   active,
+  locale,
   t,
 }: {
   active: CalculatorAvailability;
+  // Bloc 64/A: the tiles are ordered by the label actually shown, so the
+  // sort needs the visitor's locale (accents, collation) — same rule the
+  // admin lists got at Bloc 62/C.
+  locale: string;
   t: Awaited<ReturnType<typeof getTranslations<"tools">>>;
 }) {
   return (
     <div className="tool-category-grid">
-      {toolCategories.map((category) => {
+      {sortByLabel(toolCategories, (item) => t(item.label), locale).map((category) => {
         const count = category.calculators.filter(
           (slug) => active[slug],
         ).length;

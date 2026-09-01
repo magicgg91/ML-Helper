@@ -25,29 +25,41 @@ export function TemplarsReferenceTable({
   const cumulative = costs.map((_, index) =>
     costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
   );
+  // Bloc 64/E: 2 columns of 10 levels side by side, the layout Level Up
+  // already uses — 20 rows fit in one screen that way, with no pagination
+  // to add (Level Up only paginates because it runs far past 20 levels).
+  const columns = [costs.slice(0, 10), costs.slice(10)];
   return (
     <div className="calculator-stack">
-      <section className="calculator-card ranking-table-wrap">
-        <div className="table-scroll">
-          <table className="ranking-table reference-simple-table">
-            <thead>
-              <tr>
-                <th>{t("columns.level")}</th>
-                <th>{t("columns.level-cost")}</th>
-                <th>{t("columns.cumulative-cost")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {costs.map((item, index) => (
-                <tr key={index + 1}>
-                  <td>{index + 1}</td>
-                  <td>{formatGameNumber(item)}</td>
-                  <td>{formatGameNumber(cumulative[index])}</td>
+      <section className="split-reference-tables">
+        {columns.map((column, columnIndex) => (
+          <section
+            className="calculator-card ranking-table-wrap"
+            key={columnIndex}
+          >
+            <table className="ranking-table reference-simple-table">
+              <thead>
+                <tr>
+                  <th>{t("columns.level")}</th>
+                  <th>{t("columns.level-cost")}</th>
+                  <th>{t("columns.cumulative-cost")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {column.map((item, indexInColumn) => {
+                  const index = columnIndex * 10 + indexInColumn;
+                  return (
+                    <tr key={index + 1}>
+                      <td>{index + 1}</td>
+                      <td>{formatGameNumber(item)}</td>
+                      <td>{formatGameNumber(cumulative[index])}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        ))}
       </section>
       <CrossReferenceLink
         href="/tools/competences?open=templars"
