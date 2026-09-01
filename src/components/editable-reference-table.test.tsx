@@ -229,6 +229,36 @@ describe("EditableDataTable", () => {
     expect(actionsCell.querySelectorAll("button")).toHaveLength(3);
   });
 
+  // Bloc 62/A: the flex layout must live on an inner <div>, not the <td>
+  // itself — a flexed <td> broke Boutique's table-layout: fixed column
+  // width resolution, collapsing the Actions column to a sliver too
+  // narrow for its 3 icons, which then wrapped onto separate lines even
+  // on a wide screen.
+  it("Bloc62/A: wraps the combined Actions cell's buttons in an inner .reference-admin-move-cell div, not the <td> itself", () => {
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onMove={vi.fn()}
+        onRemove={vi.fn()}
+        moveUpLabel="Monter"
+        moveDownLabel="Descendre"
+        removeLabel="Supprimer"
+        removeIcon
+        combinedActions
+        actionsLabel="Actions"
+      />,
+    );
+    const firstRowCells = screen.getAllByRole("row")[1].querySelectorAll("td");
+    const actionsCell = firstRowCells[firstRowCells.length - 1];
+    expect(actionsCell.className).toBe("");
+    const inner = actionsCell.querySelector(":scope > .reference-admin-move-cell");
+    expect(inner).not.toBeNull();
+    expect(inner?.tagName).toBe("DIV");
+    expect(inner?.querySelectorAll("button")).toHaveLength(3);
+  });
+
   it("Bloc53/A: keeps separate move/remove columns when combinedActions is not set (Ranking's own usage)", () => {
     render(
       <EditableDataTable
@@ -281,6 +311,36 @@ describe("EditableDataTable", () => {
     expect(container.querySelector("table")).toHaveClass(
       "consumables-admin-table",
     );
+  });
+
+  // Bloc 62/B: an opt-in column.preview renders the field's current value
+  // through a supplied function, in a small line below the input —
+  // Boutique's Nom/Description use it with renderBoldText so an admin
+  // sees **bold** rendered live. No effect on a column without it.
+  it("Bloc62/B: renders column.preview below the input when the field has a value, nothing when empty", () => {
+    const previewColumns: EditableColumn<Row>[] = [
+      {
+        key: "name",
+        label: "Nom",
+        preview: (value) => `preview:${value}`,
+      },
+      { key: "amount", label: "Montant" },
+    ];
+    render(
+      <EditableDataTable
+        rows={[
+          { name: "Alpha", amount: "1" },
+          { name: "", amount: "2" },
+        ]}
+        columns={previewColumns}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("preview:Alpha")).toBeInTheDocument();
+    // Row 2's name is empty — no preview line at all, not an empty one.
+    expect(screen.queryByText(/^preview:$/)).not.toBeInTheDocument();
+    // The amount column has no preview function — nothing rendered for it.
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
   });
 
   it("shows the empty label instead of an empty table", () => {

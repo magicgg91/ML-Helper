@@ -140,7 +140,16 @@ export function calculateRanking(
     ranges: sorted
       .map((band, index) => {
         const rangeStart = index === 0 ? 0 : sorted[index - 1].threshold;
-        const rankEnd = Math.floor((total * band.threshold) / 100);
+        // Bloc 62/G: every band floors its rank boundary EXCEPT the 100%
+        // one — that row represents the deduced total player count itself
+        // (rankEnd = total at threshold 100), and flooring it would silently
+        // undercount by up to 1 player (e.g. rank 137 at 86.71% -> raw
+        // 157.998, floor 157, ceil 158 — the real total is estimated, but
+        // ceil is the correct rounding direction for it specifically).
+        const rankEnd =
+          band.threshold === 100
+            ? Math.ceil((total * band.threshold) / 100)
+            : Math.floor((total * band.threshold) / 100);
         const rankStart = previousRankEnd + 1;
         previousRankEnd = rankEnd;
         return { ...band, rangeStart, rankStart, rankEnd };

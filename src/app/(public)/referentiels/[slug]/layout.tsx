@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { ReferenceSwitcherNav } from "@/components/reference-switcher-nav";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 
@@ -9,6 +10,10 @@ import { getCalculatorAvailability } from "@/lib/calculators-server";
 export default async function ReferentielDetailLayout({
   children,
 }: LayoutProps<"/referentiels/[slug]">) {
+  // Bloc 62/I review: same connection() fix as [slug]/page.tsx — forces
+  // per-request dynamic rendering so an admin toggle actually reaches this
+  // nav (it now shows inactive references too, not just filters them out).
+  await connection();
   const active = await getCalculatorAvailability();
 
   return (

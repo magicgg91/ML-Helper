@@ -48,11 +48,19 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             auto-fit .calculator-fields grid, which could otherwise wrap the
             wider button group onto its own line. */}
         <div className="ranking-fields">
-          <LeagueButtons
-            label={t("fields.league")}
-            value={league}
-            onChange={setLeague}
-          />
+          {/* Bloc 62/D: a visible label above the button group, matching
+              the 2 numeric fields beside it — LeagueButtons only ever
+              carried its label as an aria-label (every other caller relies
+              on that alone), but here it sits next to 2 fields that do
+              show theirs, so the missing one reads as an omission. */}
+          <div className="calculator-field ranking-league-field">
+            {t("fields.league")}
+            <LeagueButtons
+              label={t("fields.league")}
+              value={league}
+              onChange={setLeague}
+            />
+          </div>
           <label className="calculator-field ranking-number-field">
             {t("fields.percentage")}
             <NumberStepper
@@ -76,15 +84,18 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
         </div>
       </section>
       <section className="calculator-card">
-        <div className="calculator-results">
-          <div className="calculator-stat total-box">
-            <span className="label">{t("total-players")}</span>
-            <strong className="value" data-testid="ranking-total">
-              {result.total === null
-                ? "—"
-                : Math.round(result.total).toLocaleString(locale)}
-            </strong>
-          </div>
+        {/* Bloc 62/E, F: renamed (no more "(déduit)" qualifier) and moved
+            off its own dedicated block — this line now sits directly atop
+            the visual-scale zone, standing in for the removed "Échelle
+            visuelle" title, instead of occupying separate space of its
+            own. */}
+        <div className="ranking-scale-total">
+          <span className="label">{t("total-players")}</span>
+          <strong className="value" data-testid="ranking-total">
+            {result.total === null
+              ? "—"
+              : Math.ceil(result.total).toLocaleString(locale)}
+          </strong>
         </div>
         {!league ? (
           <p role="status" className="ranking-placeholder">
@@ -102,7 +113,6 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
           </p>
         ) : (
           <>
-            <h3>{t("visual-scale")}</h3>
             <RankingScale bands={bands} percentage={percentage} />
             <h3>{t("ranking-ranges")}</h3>
             <div className="ranking-table-wrap">

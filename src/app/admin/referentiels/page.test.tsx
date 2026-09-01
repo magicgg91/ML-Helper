@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferentielsAdminPage from "./page";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/auth/require-session";
+import { getTranslations } from "next-intl/server";
 
 vi.mock("@/auth/require-session", () => ({
   requireCapability: vi.fn(),
@@ -13,7 +14,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => key,
+  getTranslations: vi.fn(async () => (key: string) => key),
   getLocale: async () => "fr",
 }));
 vi.mock("@/components/reference-status-list", () => ({
@@ -100,5 +101,36 @@ describe("ReferentielsAdminPage", () => {
       active: false,
       editHref: "/admin/referentiels/reference-events",
     });
+  });
+
+  // Bloc 62/C: sorted by the displayed title, not DB/insertion order —
+  // the mocked findMany result below is deliberately in an order that
+  // only makes sense if the page ignored the translated title.
+  it("Bloc62/C: sorts rows alphabetically by their displayed title", async () => {
+    vi.mocked(getTranslations).mockResolvedValueOnce(((key: string) => {
+      const titles: Record<string, string> = {
+        "references.events": "Zèbre",
+        "references.gemmes": "Abricot",
+        "references.templiers": "Mangue",
+      };
+      return titles[key] ?? key;
+    }) as unknown as Awaited<ReturnType<typeof getTranslations>>);
+    mockedRequireCapability.mockResolvedValue({
+      user: { id: "admin", role: "super_admin", name: "Admin" },
+    } as Awaited<ReturnType<typeof requireCapability>>);
+    mockedCalculatorFindMany.mockResolvedValue([
+      { id: "events", slug: "events", active: true },
+      { id: "gemmes", slug: "gemmes", active: true },
+      { id: "templiers", slug: "templiers", active: true },
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+
+    render(await ReferentielsAdminPage());
+
+    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
+    expect(rows.map((row: { title: string }) => row.title)).toEqual([
+      "Abricot",
+      "Mangue",
+      "Zèbre",
+    ]);
   });
 });

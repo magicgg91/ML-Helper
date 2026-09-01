@@ -10,6 +10,7 @@ import {
   type FieldErrors,
 } from "./editable-reference-table";
 import { EditorActionBar } from "./editor-action-bar";
+import { renderBoldText } from "./bold-text";
 import {
   EditorialLocaleSelect,
   type EditorialLocale,
@@ -73,12 +74,18 @@ export function ConsumablesReferenceScreen({
 
   const nameAndDescriptionColumns: EditableColumn<ConsumableRow>[] = [
     { key: "image", label: t("consumables-columns.image") },
-    { key: nameKey, label: t("consumables-columns.name"), required: true },
+    {
+      key: nameKey,
+      label: t("consumables-columns.name"),
+      required: true,
+      preview: renderBoldText,
+    },
     {
       key: descriptionKey,
       label: t("consumables-columns.description"),
       required: true,
       wide: true,
+      preview: renderBoldText,
     },
   ] as EditableColumn<ConsumableRow>[];
   const costColumn: EditableColumn<ConsumableRow> = {

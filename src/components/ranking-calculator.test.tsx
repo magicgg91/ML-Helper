@@ -144,4 +144,59 @@ describe("RankingCalculator", () => {
       "rgba(240, 176, 136, 0.8)",
     ]);
   });
+
+  // Bloc 62/D: a visible "Ligue" label above the button group, matching the
+  // 2 other fields (percentage, rank) which already show theirs.
+  it("Bloc62/D: shows a visible Ligue label above the league buttons, like the other 2 fields", () => {
+    const { container } = renderCalculator();
+    const leagueField = container.querySelector(".ranking-league-field");
+    expect(leagueField).not.toBeNull();
+    expect(leagueField).toHaveTextContent("Ligue");
+    const percentageField = screen
+      .getByRole("spinbutton", { name: "Ton pourcentage actuel" })
+      .closest(".ranking-number-field");
+    const rankField = screen
+      .getByRole("spinbutton", { name: "Ton rang actuel" })
+      .closest(".ranking-number-field");
+    expect(percentageField).toHaveTextContent("Ton pourcentage actuel");
+    expect(rankField).toHaveTextContent("Ton rang actuel");
+  });
+
+  // Bloc 62/E: the "(déduit)" qualifier is gone from the total-players badge.
+  it("Bloc62/E: shows the total-players label without the '(déduit)' qualifier", () => {
+    renderCalculator();
+    selectLeague("Diamant");
+    expect(screen.getByText("Nombre total de joueurs")).toBeInTheDocument();
+    expect(screen.queryByText(/déduit/i)).not.toBeInTheDocument();
+  });
+
+  // Bloc 62/F: the "Échelle visuelle" title is gone — the zone (and the
+  // total-players badge sitting atop it) still renders.
+  it("Bloc62/F: renders no 'Échelle visuelle' title, while the scale zone and badge still show", () => {
+    const { container } = renderCalculator();
+    selectLeague("Diamant");
+    expect(screen.queryByText("Échelle visuelle")).not.toBeInTheDocument();
+    expect(container.querySelector(".ranking-scale-total")).not.toBeNull();
+    expect(container.querySelector(".ranking-scale")).not.toBeNull();
+  });
+
+  // Bloc 62/G: confirmed case from the task — Légende, rank 137, 86.71% ->
+  // raw total 157.998, the badge must show 158 (Math.ceil), same value as
+  // the 100% row in the table below it.
+  it("Bloc62/G: the total-players badge ceils the deduced total, matching the 100% row", () => {
+    renderCalculator();
+    selectLeague("Légende");
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
+      { target: { value: "86.71" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Ton rang actuel" }),
+      { target: { value: "137" } },
+    );
+    expect(screen.getByTestId("ranking-total")).toHaveTextContent("158");
+    const rows = screen.getAllByRole("row").slice(1); // drop the header row
+    const lastRow = rows[rows.length - 1];
+    expect(within(lastRow).getByText(/158/)).toBeInTheDocument();
+  });
 });

@@ -62,9 +62,9 @@ export const referenceCatalog = [
     slug: "events",
     calculatorSlug: "events" satisfies CalculatorSlug,
     category: "combat",
-    // No real illustration deposited yet — same placeholder-only pattern
-    // Boutique used before Bloc 51 (GameImage falls back gracefully to
-    // fallbackImage until the file exists).
+    // Bloc 62/H: real illustration deposited — same treatment as the other
+    // 6 (GameImage still falls back gracefully to fallbackImage if it's
+    // ever missing).
     image: "/referentials/referential-events.webp",
     fallbackImage: "/category-combat.svg",
   },

@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { renderBoldText } from "./bold-text";
 import { GameImage } from "./game-image";
 import {
   consumableCategories,
@@ -104,8 +105,8 @@ function ReferenceTable({
                       fallback={null}
                     />
                   </td>
-                  <td>{name}</td>
-                  <td>{description}</td>
+                  <td>{renderBoldText(name)}</td>
+                  <td>{renderBoldText(description)}</td>
                   {showCost && (
                     <td className="value">{row.cost || t("cost-unknown")}</td>
                   )}

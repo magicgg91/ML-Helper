@@ -36,6 +36,15 @@ vi.mock("../lib/calculators-server", () => ({
     templars: true,
     "combat-equipment": true,
     "expedition-equipment": true,
+    // Bloc 62/I: the reference-switcher nav now renders every reference
+    // (inactive ones as a non-clickable teaser instead of just filtering
+    // them out) — these are the references' own calculatorSlugs, distinct
+    // from the tool slugs above (gems/templars) for Gemmes/Templiers.
+    "level-up": true,
+    gemmes: true,
+    templiers: true,
+    consommables: true,
+    events: true,
   }),
 }));
 vi.mock("next/server", () => ({ connection: async () => undefined }));
@@ -139,7 +148,12 @@ describe("public layouts", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         {await ReferentielDetailLayout({
-          children: <p>Boutique</p>,
+          // Bloc 62/I: an arbitrary placeholder distinct from every real
+          // reference name — the switcher nav now always renders all 7 of
+          // those (Boutique included), so reusing "Boutique" here made
+          // this assertion ambiguous between the page's own content and
+          // the nav's own "Boutique" link.
+          children: <p>Contenu de la page</p>,
           params: Promise.resolve({ slug: "shop" }),
         })}
       </NextIntlClientProvider>,
@@ -148,6 +162,6 @@ describe("public layouts", () => {
     expect(
       screen.getByRole("navigation", { name: "Référentiels" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Boutique")).toBeInTheDocument();
+    expect(screen.getByText("Contenu de la page")).toBeInTheDocument();
   });
 });

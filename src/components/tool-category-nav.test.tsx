@@ -73,4 +73,19 @@ describe("ToolCategoryNav", () => {
       "Indisponible actuellement",
     );
   });
+
+  // Bloc 62/J: the colored-asterisk treatment (CSS: .tab-coming-soon) is
+  // present on every disabled tab, not just one — checked here on 2 (Combat
+  // is disabled too, its slug missing from the fixture below).
+  it("Bloc62/J: carries the .tab-coming-soon class on at least 2 disabled tabs", () => {
+    render(
+      <ToolCategoryNav
+        availability={{ villes: true, classement: false, competences: true }}
+      />,
+    );
+    const combatButton = screen.getByRole("button", { name: /^Combat/ });
+    const classementButton = screen.getByRole("button", { name: /^Classement/ });
+    expect(combatButton.querySelector(".tab-coming-soon")).not.toBeNull();
+    expect(classementButton.querySelector(".tab-coming-soon")).not.toBeNull();
+  });
 });

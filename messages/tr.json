@@ -272,13 +272,12 @@
       "rank": "Mevcut sıralaman"
     },
     "undefined": "Yönetim panelinde tanımlanacak",
-    "total-players": "Toplam oyuncu (tahmini)",
+    "total-players": "Toplam oyuncu",
     "errors": {
       "select-league": "Hesaplamak için bir lig seç.",
       "positive-percentage": "Hesaplamak için 0'dan büyük bir yüzde gir.",
       "missing-bands": "{league} ligi için eşikler ve ödüller yönetim panelinde tanımlanmalıdır."
     },
-    "visual-scale": "Görsel ölçek",
     "ranking-ranges": "Sıralama aralıkları",
     "columns": {
       "range": "Aralık",

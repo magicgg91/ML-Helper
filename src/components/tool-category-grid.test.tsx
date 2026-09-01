@@ -45,4 +45,26 @@ describe("ToolCategoryGrid (Bloc 36/B)", () => {
       document.querySelector("img[src='/tools/fight.webp']"),
     ).toHaveAttribute("loading", "lazy");
   });
+
+  // Bloc 62/J: the colored-asterisk treatment (CSS: .tool-unavailable) is
+  // present on every category with no active tool — checked here on 2
+  // (Combat and Classement, both fully disabled in this fixture). Shared
+  // markup used unchanged by both /tools and the homepage dashboard.
+  it("Bloc62/J: carries the .tool-unavailable class on at least 2 disabled categories", () => {
+    const { container } = render(
+      <ToolCategoryGrid
+        active={{
+          ...defaultCalculatorAvailability,
+          "xp-gain-rate": false,
+          "demo-attack-troops": false,
+          ranking: false,
+        }}
+        t={t}
+      />,
+    );
+    const cards = Array.from(container.querySelectorAll(".public-card-disabled"));
+    expect(cards).toHaveLength(2);
+    for (const card of cards)
+      expect(card.querySelector(".tool-unavailable")).not.toBeNull();
+  });
 });

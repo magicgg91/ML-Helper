@@ -234,4 +234,27 @@ describe("ConsumablesReferenceTable", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("Renommer votre ville")).toBeInTheDocument();
   });
+
+  // Bloc 62/B: **bold** in Nom/Description renders identically here as it
+  // does in the admin editor's live preview — same shared renderer.
+  it("Bloc62/B: renders **bold** markers in Nom/Description as <strong>", () => {
+    const boldCatalog: ConsumableCatalog = {
+      ...emptyCatalog(),
+      equipment: [
+        {
+          image: "/consumables/mighty-jar.webp",
+          name_fr: "Jarre **divine**",
+          name_en: "Divine Jar",
+          description_fr: "Contient des **objets rares**",
+          description_en: "Contains rare items",
+          cost: "10500",
+        },
+      ],
+    };
+    render(<ConsumablesReferenceTable catalog={boldCatalog} />);
+    expect(screen.getByText("divine", { selector: "strong" })).toBeInTheDocument();
+    expect(
+      screen.getByText("objets rares", { selector: "strong" }),
+    ).toBeInTheDocument();
+  });
 });
