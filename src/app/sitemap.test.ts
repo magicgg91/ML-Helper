@@ -29,7 +29,14 @@ describe("sitemap (Bloc 42/J)", () => {
   it("lists every static public page once, at its real absolute URL", async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
-    for (const path of ["/", "/tools", "/guides", "/contact", "/legal"])
+    for (const path of [
+      "/",
+      "/tools",
+      "/guides",
+      "/referentiels",
+      "/contact",
+      "/legal",
+    ])
       expect(urls).toContain(`https://ml-helper.com${path}`);
     // Never /admin, /login, or the /tools/referentiels redirect stub.
     expect(urls.some((url) => url.includes("/admin"))).toBe(false);
@@ -57,15 +64,15 @@ describe("sitemap (Bloc 42/J)", () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toContain(
-      "https://ml-helper.com/guides/referentiels/combat-equipment",
+      "https://ml-helper.com/referentiels/combat-equipment",
     );
     // expedition-equipment is inactive in this test's mocked availability.
     expect(urls).not.toContain(
-      "https://ml-helper.com/guides/referentiels/expedition-equipment",
+      "https://ml-helper.com/referentiels/expedition-equipment",
     );
     // Bloc 48/F: renamed Consommables -> Boutique, URL /consommables ->
     // /shop (calculatorSlug "consommables" stays the internal DB key above).
-    expect(urls).toContain("https://ml-helper.com/guides/referentiels/shop");
+    expect(urls).toContain("https://ml-helper.com/referentiels/shop");
   });
 
   it("gives every entry hreflang alternates for the 5 launched locales plus x-default, self-referencing the same URL", async () => {

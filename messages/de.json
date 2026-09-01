@@ -424,6 +424,7 @@
   },
   "Navigation": {
     "tools": "Werkzeuge",
+    "referentiels": "Referenztabellen",
     "guides": "Anleitungen",
     "menu": "Menü"
   },
@@ -471,7 +472,10 @@
     "toolsDescription": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
     "guidesEyebrow": "Lernen",
     "guidesTitle": "Schärfe deine Strategie",
-    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen."
+    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen.",
+    "referentielsEyebrow": "Nachschlagen",
+    "referentielsTitle": "Finde die genauen Zahlen",
+    "referentielsDescription": "Durchstöbere die Referenztabellen der Community für die genauen Kosten, Werte und Stufen des Spiels."
   },
   "ToolsPage": {
     "eyebrow": "Werkzeuge",
@@ -522,6 +526,7 @@
   },
   "references": {
     "eyebrow": "Referenztabellen",
+    "title": "Alle Referenztabellen",
     "filters": {
       "label": "Referenztabellen-Filter",
       "family": "Familie",
@@ -535,8 +540,8 @@
       "combat-equipment": "Kampfausrüstung",
       "expedition-equipment": "Expeditionsausrüstung",
       "level-up": "Stufenaufstieg",
-      "templiers": "Templerkosten",
-      "gemmes": "Edelsteine",
+      "templars": "Templerkosten",
+      "gems": "Edelsteine",
       "shop": "Shop"
     },
     "tabs-label": "Referenztabellen",
@@ -618,6 +623,7 @@
     "navigation": {
       "dashboard": "Übersicht",
       "tools": "Werkzeuge",
+      "referentiels": "Referenzen",
       "guides": "Anleitungen",
       "content": "Nutzungsbedingungen",
       "users": "Benutzer",
@@ -688,37 +694,17 @@
       "empty": "Keine Anleitung erstellt.",
       "columns": {
         "title": "Titel",
-        "type": "Typ",
         "author": "Autor",
         "created": "Erstellt",
         "updated": "Zuletzt bearbeitet",
         "status": "Status",
         "actions": "Aktionen"
       },
-      "types": {
-        "all": "Alle",
-        "guide": "Anleitung",
-        "reference": "Referenztabelle"
-      },
-      "filter-type-label": "Nach Typ filtern",
       "no-results": "Kein Ergebnis für diesen Filter.",
       "statuses": {
         "draft": "Entwurf",
         "pending_review": "Prüfung ausstehend",
-        "published": "Veröffentlicht",
-        "active": "Aktiviert",
-        "inactive": "Deaktiviert"
-      },
-      "reference-combat": "Kampfausrüstung bearbeiten",
-      "reference-expedition": "Expeditionsausrüstung bearbeiten",
-      "reference-level-up": "Stufenaufstieg bearbeiten",
-      "references": {
-        "combat-equipment": "Kampfausrüstung",
-        "expedition-equipment": "Expeditionsausrüstung",
-        "level-up": "Stufenaufstieg",
-        "templiers": "Templer",
-        "gemmes": "Edelsteine",
-        "consommables": "Shop"
+        "published": "Veröffentlicht"
       },
       "disabled-tooltip": "Deaktiviert und auf der öffentlichen Website ausgeblendet",
       "status-label": "Status von {title}",
@@ -733,8 +719,37 @@
       "enabled": "Anleitung aktiviert.",
       "disabled": "Anleitung deaktiviert.",
       "delete-forbidden": "Deine Rolle erlaubt das Löschen dieser Anleitung nicht.",
-      "deleted": "Anleitung dauerhaft gelöscht.",
-      "reference-consommables": "Shop bearbeiten"
+      "deleted": "Anleitung dauerhaft gelöscht."
+    },
+    "referentiels": {
+      "eyebrow": "Referenzdaten",
+      "title": "Referenzen",
+      "columns": {
+        "title": "Titel",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "statuses": { "active": "Aktiviert", "inactive": "Deaktiviert" },
+      "reference-combat": "Kampfausrüstung bearbeiten",
+      "reference-expedition": "Expeditionsausrüstung bearbeiten",
+      "reference-level-up": "Stufenaufstieg bearbeiten",
+      "reference-consommables": "Shop bearbeiten",
+      "references": {
+        "combat-equipment": "Kampfausrüstung",
+        "expedition-equipment": "Expeditionsausrüstung",
+        "level-up": "Stufenaufstieg",
+        "templiers": "Templer",
+        "gemmes": "Edelsteine",
+        "consommables": "Shop"
+      },
+      "disabled-tooltip": "Deaktiviert und auf der öffentlichen Website ausgeblendet",
+      "edit": "Bearbeiten",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren",
+      "visibility-error": "Sichtbarkeit konnte nicht geändert werden.",
+      "enabled": "Referenztabelle aktiviert.",
+      "disabled": "Referenztabelle deaktiviert.",
+      "no-results": "Keine Referenztabelle gefunden."
     },
     "guide-editor": {
       "language-label": "Anleitungssprache",
@@ -1028,6 +1043,7 @@
     "super_admin": "Super-Admin",
     "admin": "Admin",
     "guides_manager": "Anleitungsverwalter",
+    "references_manager": "Référentiels",
     "tools_manager": "Werkzeugverwalter",
     "read_only": "Nur Lesen"
   }

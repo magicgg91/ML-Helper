@@ -14,7 +14,8 @@ const sections: AdminCapability[] = [
 const expected: Record<AdminRole, AdminCapability[]> = {
   super_admin: sections,
   admin: sections.filter((item) => item !== "content.read"),
-  guides_manager: ["guides.read", "references.read"],
+  guides_manager: ["guides.read"],
+  references_manager: ["references.read"],
   tools_manager: ["calculators.read"],
   read_only: [
     "guides.read",
@@ -43,12 +44,28 @@ describe("admin role permissions", () => {
     expect(can("super_admin", "guides.delete")).toBe(true);
   });
 
-  it("moves reference editing to guide managers and keeps tools managers on simulators", () => {
-    expect(can("guides_manager", "references.write")).toBe(true);
+  it("carves reference editing out into its own references_manager role", () => {
+    expect(can("guides_manager", "references.read")).toBe(false);
+    expect(can("guides_manager", "references.write")).toBe(false);
+    expect(can("references_manager", "references.read")).toBe(true);
+    expect(can("references_manager", "references.write")).toBe(true);
+    expect(can("references_manager", "guides.read")).toBe(false);
+    expect(can("references_manager", "guides.write")).toBe(false);
+    expect(can("references_manager", "calculators.read")).toBe(false);
+    expect(can("references_manager", "calculators.write")).toBe(false);
+  });
+
+  it("keeps tools managers on simulators, without direct references access", () => {
     expect(can("tools_manager", "calculators.write")).toBe(true);
     expect(can("tools_manager", "calculators.toggle")).toBe(true);
     expect(can("tools_manager", "references.read")).toBe(false);
+    expect(can("tools_manager", "references.write")).toBe(false);
     expect(can("tools_manager", "guides.write")).toBe(false);
+    // tools_manager still reaches the Templars/Gems *reference* content, but only
+    // through its calculators.write capability and the shared formula-params
+    // editor at /admin/tools/{templars,gems}?from=referentiels (see
+    // src/lib/admin-tools.ts's adminToolEditHref) — not through references.write.
+    // That indirect path is intentional, not a gap in this role's permissions.
   });
 
   it("keeps the read-only role free of every mutation capability", () => {
@@ -70,6 +87,7 @@ describe("admin role permissions", () => {
     for (const role of [
       "admin",
       "guides_manager",
+      "references_manager",
       "tools_manager",
       "read_only",
     ] as const) {

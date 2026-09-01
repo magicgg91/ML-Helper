@@ -32,10 +32,9 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
         item !== "content.write",
     ),
   ),
-  guides_manager: new Set([
+  guides_manager: new Set(["dashboard.view", "guides.read", "guides.write"]),
+  references_manager: new Set([
     "dashboard.view",
-    "guides.read",
-    "guides.write",
     "references.read",
     "references.write",
   ]),

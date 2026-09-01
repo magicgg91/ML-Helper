@@ -198,7 +198,7 @@ export function ConsumablesReferenceScreen({
 
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/guides" message={status}>
+      <EditorActionBar backHref="/admin/referentiels" message={status}>
         <EditorialLocaleSelect
           label={t("consumables-intro-language-label")}
           value={locale}

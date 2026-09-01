@@ -172,7 +172,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveAttribute("href", "/guides/guide-visible");
   await expect(
     page.getByRole("link", { name: /Coût des Templiers/ }),
-  ).toHaveAttribute("href", "/guides/referentiels/templiers");
+  ).toHaveAttribute("href", "/referentiels/templars");
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
   });
@@ -332,10 +332,10 @@ test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   }
 });
 
-test("Level Up is a Guides reference and keeps Silver unconfirmed", async ({
+test("Level Up is a Référentiels reference and keeps Silver unconfirmed", async ({
   page,
 }) => {
-  await page.goto("/guides/referentiels/level-up");
+  await page.goto("/referentiels/level-up");
   await expect(page.getByRole("heading", { name: "Level Up" })).toBeVisible();
   for (const league of ["bronze", "gold", "platinum", "diamond", "legend"]) {
     await page.getByRole("combobox", { name: "Ligue" }).selectOption(league);
@@ -574,13 +574,13 @@ test("Skills exposes gem distributions and exact templar costs", async ({
     .toContain("Spirit Fyra");
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
-  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
+  ).toHaveAttribute("href", "/referentiels/combat-equipment");
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   // Bloc 36/A: same cross-link pattern already verified for Templiers below.
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
-  ).toHaveAttribute("href", "/guides/referentiels/gemmes");
+  ).toHaveAttribute("href", "/referentiels/gems");
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   await page
     .locator(".city-calculators")
@@ -597,7 +597,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(
     page.getByRole("link", { name: "Voir le référentiel complet" }),
-  ).toHaveAttribute("href", "/guides/referentiels/templiers");
+  ).toHaveAttribute("href", "/referentiels/templars");
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
   // Point 1: one shared level range applies to all 5 skills at once.
@@ -612,21 +612,27 @@ test("Skills exposes gem distributions and exact templar costs", async ({
 test("Reference tables filter combat and expedition equipment", async ({
   page,
 }) => {
+  // Bloc 50/1b: /referentiels is now an independent root, split off from
+  // /guides — the reference catalog no longer renders on the guides hub at
+  // all (only the guides list does), so this checks each root separately.
   await page.goto("/guides");
   await expect(
-    page.getByRole("heading", { name: "Guides", exact: true, level: 2 }),
+    page.getByRole("heading", { name: "Guides", exact: true, level: 1 }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Référentiels", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /Équipements de Combat/ }),
-  ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
-  await expect(
-    page.getByRole("link", { name: /Équipements d’Expédition/ }),
-  ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
 
-  await page.goto("/guides/referentiels/combat-equipment");
+  await page.goto("/referentiels");
+  // Scoped to the catalog grid: the section-nav banner (Bloc 50/E) repeats
+  // the same labels as its own links, so an unscoped role query here would
+  // resolve to two matches.
+  const referentielsGrid = page.locator(".tool-category-grid");
+  await expect(
+    referentielsGrid.getByRole("link", { name: /Équipements de Combat/ }),
+  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  await expect(
+    referentielsGrid.getByRole("link", { name: /Équipements d’Expédition/ }),
+  ).toHaveAttribute("href", "/referentiels/expedition-equipment");
+
+  await page.goto("/referentiels/combat-equipment");
   // Bloc 39: table rows became tiles grouped into per-set blocks — no
   // star-level selector any more (tiles always show the base 1★ value).
   // Bloc 40/D-F: family/rarity filters are back to a real hide-filter (both
@@ -651,14 +657,14 @@ test("Reference tables filter combat and expedition equipment", async ({
   await expect(orBlock).toHaveCount(0);
   await expect(attaqueBlock.getByText("10%").first()).toBeVisible();
 
-  await page.goto("/guides/referentiels/expedition-equipment");
+  await page.goto("/referentiels/expedition-equipment");
   // All 10 expedition stats are confirmed (Bloc 29): no more stale
   // "unconfirmed assumption" banner on this page.
   await expect(page.getByText(/projection par étoile est une/)).toHaveCount(0);
   await expect(page.getByText("Hypothèse non confirmée")).toHaveCount(0);
 
   await page.goto("/tools/referentiels");
-  await expect(page).toHaveURL(/\/guides#references$/);
+  await expect(page).toHaveURL(/\/referentiels$/);
 });
 
 test("a super admin signs in, creates an admin, and sees the audit log", async ({
@@ -678,7 +684,13 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
   await expect(page.getByText(/\d+ actifs \/ \d+ au total/)).toBeVisible();
-  await expect(page.getByText("Référentiels", { exact: true })).toBeVisible();
+  // Bloc 50: the admin nav now also has a "Référentiels" link, so this must
+  // be scoped to the dashboard's content-status widget to stay unambiguous.
+  await expect(
+    page
+      .getByLabel("État des contenus")
+      .getByText("Référentiels", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Dernières actions" }),
   ).toBeVisible();
@@ -709,7 +721,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("cell", { name: "super_admin" }).first(),
   ).toBeVisible();
 
-  await adminNav.getByRole("link", { name: "Guides" }).click();
+  // Bloc 50 (2): reference rows (Combat/Expedition/Level-up/Templiers/
+  // Gemmes/Boutique) live on the separate Référentiels admin screen now,
+  // not on Guides.
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements de Combat/ })
     .getByRole("link", { name: "Éditer" })
@@ -729,7 +744,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   );
   await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
 
-  await adminNav.getByRole("link", { name: "Guides" }).click();
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements d’Expédition/ })
     .getByRole("link", { name: "Éditer" })
@@ -761,7 +776,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
   ).toHaveValue("700");
 
-  await adminNav.getByRole("link", { name: "Guides" }).click();
+  await adminNav.getByRole("link", { name: "Référentiels" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
   // must open the same TemplarParametersEditor as the calculator tool
   // (cdc section 6, décision Bloc 3), not a dead or separate screen.
@@ -773,7 +788,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(templarsGuideRow).toContainText("Inactif");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Templiers" })).toBeEnabled();
-  await page.goto("/admin/guides");
+  await page.goto("/admin/referentiels");
   const templarsGuideRowAfterReload = page.getByRole("row", {
     name: /Templiers/,
   });
@@ -784,13 +799,13 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await templarsGuideRowAfterReload
     .getByRole("link", { name: "Éditer" })
     .click();
-  // Bloc 35/7.1: opened from the Guides admin row, so the URL carries
-  // ?from=guides — the editor's own "Retour" now goes back to Guides,
-  // not Tools, for this exact same shared edit point.
-  await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=guides$/);
+  // Bloc 35/7.1, updated Bloc 50: opened from the Référentiels admin row, so
+  // the URL carries ?from=referentiels — the editor's own "Retour" now goes
+  // back to Référentiels, not Tools, for this exact same shared edit point.
+  await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=referentiels$/);
   await expect(
     page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
-  ).toHaveAttribute("href", "/admin/guides");
+  ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
@@ -804,7 +819,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
   // Single shared data source (cdc section 6): the same edit reaches both
   // the public reference and the Templars calculator.
-  await page.goto("/guides/referentiels/templiers");
+  await page.goto("/referentiels/templars");
   await expect(page.locator("tbody tr").first()).toContainText("200");
   await page.goto("/tools/competences");
   await page.getByRole("tab", { name: "Templiers" }).click();
@@ -812,23 +827,23 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
 
   // Bloc 36/A: same independent-active-flag + shared-editor pattern as
   // Templiers just above, for the new Gemmes reference.
-  await page.goto("/admin/guides");
+  await page.goto("/admin/referentiels");
   const gemmesGuideRow = page.getByRole("row", { name: /Gemmes/ });
   await gemmesGuideRow.getByRole("button", { name: "Désactiver" }).click();
   await expect(gemmesGuideRow).toContainText("Inactif");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Gemmes" })).toBeEnabled();
-  await page.goto("/admin/guides");
+  await page.goto("/admin/referentiels");
   const gemmesGuideRowAfterReload = page.getByRole("row", { name: /Gemmes/ });
   await gemmesGuideRowAfterReload
     .getByRole("button", { name: "Activer" })
     .click();
   await expect(gemmesGuideRowAfterReload).toContainText("Actif");
   await gemmesGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
-  await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=guides$/);
+  await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=referentiels$/);
   await expect(
     page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
-  ).toHaveAttribute("href", "/admin/guides");
+  ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres des Gemmes" }),
   ).toBeVisible();
@@ -1094,7 +1109,7 @@ test("the dashboard's published-guides counter ignores an inactive guide", async
   expect(afterDeactivate).toBe(before);
 });
 
-test("direct admin URLs enforce all five roles", async ({ browser }) => {
+test("direct admin URLs enforce all six roles", async ({ browser }) => {
   test.setTimeout(60_000);
   const rootContext = await browser.newContext();
   const root = await rootContext.newPage();
@@ -1117,6 +1132,7 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     ["role-admin", "admin"],
     ["role-guides", "guides_manager"],
     ["role-tools", "tools_manager"],
+    ["role-references", "references_manager"],
     ["role-readonly", "read_only"],
   ] as const;
   for (const [username, role] of accounts) {
@@ -1138,6 +1154,7 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
 
   const allSections = [
     "/admin/guides",
+    "/admin/referentiels",
     "/admin/tools",
     "/admin/content",
     "/admin/users",
@@ -1157,6 +1174,8 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
     {
       username: "role-guides",
       password: "role-test-password",
+      // guides_manager has no references.read post-Bloc-50 — /admin/referentiels
+      // correctly stays 403 for it.
       allowed: ["/admin/guides"],
     },
     {
@@ -1165,9 +1184,22 @@ test("direct admin URLs enforce all five roles", async ({ browser }) => {
       allowed: ["/admin/tools"],
     },
     {
+      username: "role-references",
+      password: "role-test-password",
+      allowed: ["/admin/referentiels"],
+    },
+    {
       username: "role-readonly",
       password: "role-test-password",
-      allowed: ["/admin/guides", "/admin/tools", "/admin/users", "/admin/logs"],
+      // read_only has references.read too, so /admin/referentiels joins the
+      // other 4 sections it can already reach.
+      allowed: [
+        "/admin/guides",
+        "/admin/referentiels",
+        "/admin/tools",
+        "/admin/users",
+        "/admin/logs",
+      ],
     },
   ];
 

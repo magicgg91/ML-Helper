@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { isAdminRole, isSuperAdmin, roles } from "./roles";
 describe("admin roles", () => {
-  it("accepts exactly the five configured roles", () => {
-    expect(roles).toHaveLength(5);
+  it("accepts exactly the six configured roles", () => {
+    expect(roles).toHaveLength(6);
     expect(roles.every(isAdminRole)).toBe(true);
     expect(isAdminRole("visitor")).toBe(false);
   });

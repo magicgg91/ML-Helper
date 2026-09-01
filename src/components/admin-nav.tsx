@@ -9,7 +9,14 @@ import { cn } from "@/lib/utils";
 
 const links: Array<{
   href: string;
-  label: "dashboard" | "tools" | "guides" | "content" | "users" | "logs";
+  label:
+    | "dashboard"
+    | "tools"
+    | "referentiels"
+    | "guides"
+    | "content"
+    | "users"
+    | "logs";
   capability: AdminCapability;
 }> = [
   { href: "/admin", label: "dashboard", capability: "dashboard.view" },
@@ -17,6 +24,11 @@ const links: Array<{
     href: "/admin/tools",
     label: "tools",
     capability: "calculators.read",
+  },
+  {
+    href: "/admin/referentiels",
+    label: "referentiels",
+    capability: "references.read",
   },
   {
     href: "/admin/guides",

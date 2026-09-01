@@ -2572,10 +2572,15 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .home-tools {
   margin-top: clamp(1.5rem, 4vw, 3.5rem);
 }
+/* Bloc 50 Group3: .home-references sits between Outils and Guides now that
+   the combined section is split in three — same larger gap .home-guides
+   already used above the (formerly combined) block. */
+.home-references,
 .home-guides {
   margin-top: clamp(3rem, 8vw, 7rem);
 }
 .home-tools h2,
+.home-references h2,
 .home-guides h2 {
   margin: 0.4rem 0 1rem;
   color: var(--text);
@@ -2583,6 +2588,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   line-height: 1.08;
 }
 .home-tools > p:not(.eyebrow),
+.home-references > p:not(.eyebrow),
 .home-guides > p:not(.eyebrow) {
   max-width: 46rem;
   color: var(--text-dim);
@@ -2590,6 +2596,22 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 }
 .home-guides .card-grid {
   margin: 2rem 0;
+}
+/* Bloc 50 Group3: the homepage guides teaser now shows up to 6 cards (was
+   3) — same auto-fit-with-computed-floor technique as .tool-category-grid
+   below, sized for 3 columns instead of 4 (2 gaps at .card-grid's own
+   0.65rem gap, not 1rem), so it caps at 3 cols/2 rows instead of growing
+   past 3 columns on a wide viewport. */
+.home-guides-grid {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(max(18rem, calc((100% - 2 * 0.65rem) / 3)), 1fr)
+  );
+}
+@media (max-width: 42rem) {
+  .home-guides-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one

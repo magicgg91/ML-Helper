@@ -1,7 +1,8 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import Link from "next/link";
+import { cleanup, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import EditGuidePage from "./[id]/page";
+import { prisma } from "@/lib/prisma";
+import { renderWithIntl as render } from "../../../test/render-with-intl";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
@@ -11,104 +12,38 @@ vi.mock("@/auth/require-session", () => ({
     user: { id: "u1", role: "super_admin", name: "Admin" },
   }),
 }));
-vi.mock("@/lib/admin-formulas-server", () => ({
-  getLevelUpParameters: async () => ({}),
-}));
-vi.mock("@/lib/consumables-server", () => ({
-  getConsumableCatalog: async () => ({
-    advisors: [],
-    equipment: [],
-    expedition: [],
-    inventory: [],
-  }),
-  getConsumablesIntro: async () => ({ fr: "", en: "" }),
-}));
-vi.mock("@/lib/reference-equipment-server", () => ({
-  getCombatReferenceRows: async () => [],
-  getCombatSkydustBase: async () => ({}),
-  getCombatGemSlotsBase: async () => ({}),
-  getCombatMergeCostBase: async () => ({}),
-  getExpeditionReferenceRows: async () => [],
-  getExpeditionStarIncrements: async () => ({}),
-  getExpeditionMergeCostBase: async () => ({}),
-  getExpeditionDismantleBase: async () => ({}),
-}));
-vi.mock("@/components/named-parameters-editor", () => ({
-  LevelUpParametersEditor: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/guides">
-          back
-        </Link>
-      </div>
-    </div>
-  ),
-}));
-// Bloc 37/E: each screen now owns a single EditorActionBar internally
-// (real component tested in reference-admin-editors.test.tsx) — this mock
-// only stands in for it here, to keep this page-wiring test isolated.
-vi.mock("@/components/reference-admin-editors", () => {
-  const Screen = () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/guides">
-          back
-        </Link>
-      </div>
-    </div>
-  );
-  return {
-    CombatReferenceScreen: Screen,
-    ExpeditionReferenceScreen: Screen,
-  };
-});
-vi.mock("@/components/consumables-admin-editor", () => ({
-  ConsumablesReferenceScreen: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/guides">
-          back
-        </Link>
-      </div>
-    </div>
-  ),
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    guide: { findUnique: vi.fn() },
+  },
 }));
 
 afterEach(cleanup);
 
-describe("Bloc35 10.2/10.3: EditGuidePage's back-link consistency", () => {
-  it("shows only one back link on the Level Up reference page, owned by its EditorActionBar", async () => {
-    const { container } = render(
-      await EditGuidePage({
-        params: Promise.resolve({ id: "reference-level-up" }),
-        searchParams: Promise.resolve({}),
-      }),
-    );
-    const backLinks = container.querySelectorAll(".editor-back-action");
-    expect(backLinks).toHaveLength(1);
-  });
+// Bloc 50: this file used to only cover the reference-editing branches of
+// EditGuidePage (moved to admin/referentiels/edit-referentiel-page.test.tsx
+// alongside the routes themselves) — now that those branches are gone,
+// this exercises the guide-editing path that's actually left here.
+describe("EditGuidePage", () => {
+  it("renders the guide editor for a real guide id", async () => {
+    vi.mocked(prisma.guide.findUnique).mockResolvedValue({
+      id: "guide-1",
+      slug: "premiers-pas",
+      category: "[]",
+      coverImage: null,
+      status: "draft",
+      title: "{}",
+      excerpt: "{}",
+      content: "{}",
+    } as unknown as Awaited<ReturnType<typeof prisma.guide.findUnique>>);
 
-  it("styles the Combat/Expedition admin page's back link like every EditorActionBar back link", async () => {
     render(
       await EditGuidePage({
-        params: Promise.resolve({ id: "reference-combat-equipment" }),
+        params: Promise.resolve({ id: "guide-1" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/guides");
-  });
 
-  it("Bloc43/44: routes 'reference-consommables' to ConsumablesReferenceScreen", async () => {
-    render(
-      await EditGuidePage({
-        params: Promise.resolve({ id: "reference-consommables" }),
-        searchParams: Promise.resolve({}),
-      }),
-    );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/guides");
+    expect(screen.getByText("edit-title")).toBeInTheDocument();
   });
 });

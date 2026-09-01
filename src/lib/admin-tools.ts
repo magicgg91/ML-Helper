@@ -11,7 +11,8 @@ export const referenceToolSlugs = [
   "gemmes",
   // Bloc 43: no matching "tool" row — adminToolEditHref returns undefined
   // for it below, same as combat-equipment/expedition-equipment/level-up,
-  // so it falls through to /admin/guides/reference-consommables. Bloc 44
+  // so it falls through to /admin/referentiels/reference-consommables
+  // (Bloc 50: moved from /admin/guides/reference-consommables). Bloc 44
   // review: slug kept French, matching templiers/gemmes.
   "consommables",
 ] as const;
@@ -29,16 +30,17 @@ export function adminToolEditHref(slug: string): string | undefined {
     return "/admin/tools/city-parameters";
   if (slug === "ranking") return "/admin/tools/ranking";
   if (slug === "templars") return "/admin/tools/templars";
-  // Bloc 35/7.1: carries provenance through the URL, so the editor's back
-  // button returns to Guides — not just to whichever page a guides_manager
-  // (no calculators.read) can actually reach.
-  if (slug === "templiers") return "/admin/tools/templars?from=guides";
+  // Bloc 35/7.1, updated Bloc 50: carries provenance through the URL, so the
+  // editor's back button returns to Référentiels — not just to whichever
+  // page a references_manager (no calculators.read) can actually reach.
+  if (slug === "templiers") return "/admin/tools/templars?from=referentiels";
   if (slug === "xp-gain-rate") return "/admin/tools/xp-gain-rate";
   if (slug === "demo-attack-troops") return "/admin/tools/demo-attack-troops";
   if (slug === "gems") return "/admin/tools/gems";
-  // Bloc 36/A: same shared-edit-point pattern as "templiers" above — the
-  // Gems reference reuses the tool's editor, carrying provenance through
-  // the URL so its own "Retour" returns to Guides.
-  if (slug === "gemmes") return "/admin/tools/gems?from=guides";
+  // Bloc 36/A, updated Bloc 50: same shared-edit-point pattern as
+  // "templiers" above — the Gems reference reuses the tool's editor,
+  // carrying provenance through the URL so its own "Retour" returns to
+  // Référentiels.
+  if (slug === "gemmes") return "/admin/tools/gems?from=referentiels";
   return undefined;
 }

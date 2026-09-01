@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import frMessages from "../../messages/fr.json";
+import { referenceCatalog } from "../lib/reference-catalog";
 import { ReferenceCatalogGrid } from "./reference-catalog-grid";
 
 afterEach(cleanup);
@@ -59,5 +60,28 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     expect(
       screen.getAllByRole("link")[0].querySelector(".tool-category-image"),
     ).not.toBeNull();
+  });
+
+  // Bloc 50 Group3: `limit` is a real structural cap (used by the homepage's
+  // teaser section), not something that happens to hold today because the
+  // catalog has only 6 entries — verify it truncates when given fewer slots
+  // than the full catalog, and that omitting it (the /referentiels index
+  // page's usage) still shows every entry.
+  it("caps the number of tiles rendered when a limit is given", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid t={t} limit={2} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+  });
+
+  it("shows every catalog entry when no limit is given", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid t={t} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getAllByRole("link")).toHaveLength(referenceCatalog.length);
   });
 });

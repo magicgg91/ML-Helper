@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import PublicLayout from "./(public)/layout";
 import ToolsLayout from "./(public)/tools/layout";
 import ToolDetailLayout from "./(public)/tools/[slug]/layout";
+import ReferentielsLayout from "./(public)/referentiels/layout";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 
@@ -72,6 +73,9 @@ describe("public layouts", () => {
       "href",
       "/tools",
     );
+    expect(
+      within(nav).getByRole("link", { name: "referentiels" }),
+    ).toHaveAttribute("href", "/referentiels");
     expect(within(nav).getByRole("link", { name: "guides" })).toHaveAttribute(
       "href",
       "/guides",
@@ -107,5 +111,25 @@ describe("public layouts", () => {
     );
 
     expect(screen.getByText("Paramètres du joueur")).toBeInTheDocument();
+  });
+
+  // Bloc 50/E: the reference-switcher banner is promoted from a
+  // per-detail-page inline element into the section-level header nav of the
+  // whole /referentiels route — this single layout wraps both the index and
+  // every detail page.
+  it("renders the reference switcher nav above the section's children", async () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        {await ReferentielsLayout({
+          children: <p>Référentiels</p>,
+          params: Promise.resolve({}),
+        })}
+      </NextIntlClientProvider>,
+    );
+
+    expect(
+      screen.getByRole("navigation", { name: "Référentiels" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Référentiels")).toBeInTheDocument();
   });
 });

@@ -415,6 +415,7 @@
   },
   "Navigation": {
     "tools": "Tools",
+    "referentiels": "Reference tables",
     "guides": "Guides",
     "menu": "Menu"
   },
@@ -469,7 +470,10 @@
     "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "guidesEyebrow": "Learn",
     "guidesTitle": "Sharpen your strategy",
-    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence."
+    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
+    "referentielsEyebrow": "Consult",
+    "referentielsTitle": "Find the exact numbers",
+    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
   },
   "ToolsPage": {
     "eyebrow": "Tools",
@@ -521,6 +525,7 @@
   },
   "references": {
     "eyebrow": "Reference tables",
+    "title": "All reference tables",
     "filters": {
       "label": "Reference table filters",
       "family": "Family",
@@ -534,8 +539,8 @@
       "combat-equipment": "Combat Equipment",
       "expedition-equipment": "Expedition Equipment",
       "level-up": "Level Up",
-      "templiers": "Templar Cost",
-      "gemmes": "Gems",
+      "templars": "Templar Cost",
+      "gems": "Gems",
       "shop": "Shop"
     },
     "tabs-label": "Reference tables",
@@ -628,6 +633,7 @@
     "navigation": {
       "dashboard": "Dashboard",
       "tools": "Tools",
+      "referentiels": "References",
       "guides": "Guides",
       "content": "Terms of use",
       "users": "Users",
@@ -698,38 +704,17 @@
       "empty": "No guide created.",
       "columns": {
         "title": "Title",
-        "type": "Type",
         "author": "Author",
         "created": "Created",
         "updated": "Last edited",
         "status": "Status",
         "actions": "Actions"
       },
-      "types": {
-        "all": "All",
-        "guide": "Guide",
-        "reference": "Reference table"
-      },
-      "filter-type-label": "Filter by type",
       "no-results": "No result for this filter.",
       "statuses": {
         "draft": "Draft",
         "pending_review": "Pending review",
-        "published": "Published",
-        "active": "Enabled",
-        "inactive": "Disabled"
-      },
-      "reference-combat": "Edit Combat Equipment",
-      "reference-expedition": "Edit Expedition Equipment",
-      "reference-level-up": "Edit Level Up",
-      "reference-consommables": "Edit the Shop",
-      "references": {
-        "combat-equipment": "Combat Equipment",
-        "expedition-equipment": "Expedition Equipment",
-        "level-up": "Level Up",
-        "templiers": "Templars",
-        "gemmes": "Gems",
-        "consommables": "Shop"
+        "published": "Published"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
@@ -745,6 +730,32 @@
       "disabled": "Guide disabled.",
       "delete-forbidden": "Your role does not allow deleting this guide.",
       "deleted": "Guide permanently deleted."
+    },
+    "referentiels": {
+      "eyebrow": "Reference data",
+      "title": "References",
+      "columns": { "title": "Title", "status": "Status", "actions": "Actions" },
+      "statuses": { "active": "Enabled", "inactive": "Disabled" },
+      "reference-combat": "Edit Combat Equipment",
+      "reference-expedition": "Edit Expedition Equipment",
+      "reference-level-up": "Edit Level Up",
+      "reference-consommables": "Edit the Shop",
+      "references": {
+        "combat-equipment": "Combat Equipment",
+        "expedition-equipment": "Expedition Equipment",
+        "level-up": "Level Up",
+        "templiers": "Templars",
+        "gemmes": "Gems",
+        "consommables": "Shop"
+      },
+      "disabled-tooltip": "Disabled and hidden from the public site",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "visibility-error": "Unable to change visibility.",
+      "enabled": "Reference table enabled.",
+      "disabled": "Reference table disabled.",
+      "no-results": "No reference table found."
     },
     "guide-editor": {
       "language-label": "Guide language",
@@ -1026,6 +1037,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Guides Manager",
+    "references_manager": "Référentiels",
     "tools_manager": "Tools Manager",
     "read_only": "Read Only"
   }

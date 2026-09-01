@@ -11,14 +11,22 @@ import { GameImage } from "./game-image";
 // (getTranslations) and a client component (useTranslations) — the two
 // translator types don't structurally match despite both being callable
 // exactly the same way for a plain "catalog.<slug>" lookup.
+// Bloc 50 Group3: `limit` caps how many catalog entries render — the
+// homepage's teaser section passes 8 to structurally hold a max-4-col/
+// max-2-row grid even as the catalog grows past today's 6 entries. Omitted
+// (the /referentiels index page's usage) shows the full catalog unbounded.
 export function ReferenceCatalogGrid({
   t,
+  limit,
 }: {
   t: (key: string) => string;
+  limit?: number;
 }) {
+  const entries =
+    limit === undefined ? referenceCatalog : referenceCatalog.slice(0, limit);
   return (
     <div className="tool-category-grid">
-      {referenceCatalog.map((reference) => (
+      {entries.map((reference) => (
         <Link
           className="tool-category-card reference-category-card"
           href={referenceHref(reference.slug)}

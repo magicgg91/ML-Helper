@@ -24,14 +24,6 @@ export type GuideAdminRow = {
   updatedAt: string;
   status: string;
   active: boolean;
-  type?: "guide" | "reference";
-  editHref?: string;
-  // Templars' active state is the same Calculator row shown in the Outils
-  // table — its toggle button is gated on calculators.toggle (canToggle)
-  // and, when shown, submitted through toggleHref (the /admin/tools route,
-  // by calculator id) instead of the guides/references route below.
-  canToggle?: boolean;
-  toggleHref?: string;
 };
 export function GuideStatusList({
   rows,
@@ -49,13 +41,6 @@ export function GuideStatusList({
   const t = useTranslations("admin.guides");
   const [guides, setGuides] = useState(rows);
   const [message, setMessage] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | "guide" | "reference">(
-    "all",
-  );
-  const visibleGuides =
-    typeFilter === "all"
-      ? guides
-      : guides.filter((guide) => (guide.type ?? "guide") === typeFilter);
   async function changeStatus(id: string, status: string) {
     const response = await fetch(`/api/admin/guides/${id}/status`, {
       method: "PATCH",
@@ -70,17 +55,11 @@ export function GuideStatusList({
   }
   async function toggle(guide: GuideAdminRow) {
     const active = !guide.active;
-    const response = await fetch(
-      guide.toggleHref ??
-        (guide.type === "reference"
-          ? `/api/admin/guides/references/${guide.id}/active`
-          : `/api/admin/guides/${guide.id}/active`),
-      {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ active }),
-      },
-    );
+    const response = await fetch(`/api/admin/guides/${guide.id}/active`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ active }),
+    });
     if (!response.ok) return setMessage(t("visibility-error"));
     setGuides((current) =>
       current.map((item) =>
@@ -101,29 +80,13 @@ export function GuideStatusList({
   return (
     <>
       <div className="admin-section-heading">
-        <div
-          role="group"
-          aria-label={t("filter-type-label")}
-          className="family-buttons"
-        >
-          {(["all", "guide", "reference"] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              aria-pressed={typeFilter === type}
-              onClick={() => setTypeFilter(type)}
-            >
-              {t(`types.${type}`)}
-            </button>
-          ))}
-        </div>
         {newHref && (
           <Link className="editor-action editor-action-primary" href={newHref}>
             {t("new")}
           </Link>
         )}
       </div>
-      {visibleGuides.length === 0 ? (
+      {guides.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("no-results")}</p>
       ) : (
         <Card>
@@ -132,7 +95,6 @@ export function GuideStatusList({
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("columns.title")}</TableHead>
-                  <TableHead>{t("columns.type")}</TableHead>
                   <TableHead>{t("columns.author")}</TableHead>
                   <TableHead>{t("columns.created")}</TableHead>
                   <TableHead>{t("columns.updated")}</TableHead>
@@ -143,7 +105,7 @@ export function GuideStatusList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleGuides.map((guide) => (
+                {guides.map((guide) => (
                   <TableRow
                     key={guide.id}
                     className={guide.active ? undefined : "opacity-60"}
@@ -152,40 +114,31 @@ export function GuideStatusList({
                     <TableCell className="font-medium">
                       {guide.title || guide.slug}
                     </TableCell>
-                    <TableCell>{t(`types.${guide.type ?? "guide"}`)}</TableCell>
                     <TableCell>{guide.author}</TableCell>
                     <TableCell>{guide.createdAt}</TableCell>
                     <TableCell>{guide.updatedAt}</TableCell>
                     <TableCell>
-                      {guide.type === "reference" ? (
-                        t(
-                          guide.active
-                            ? "statuses.active"
-                            : "statuses.inactive",
-                        )
-                      ) : (
-                        <select
-                          className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
-                          aria-label={t("status-label", {
-                            title: guide.title || guide.slug,
-                          })}
-                          value={guide.status}
-                          disabled={!canWrite}
-                          onChange={(event) =>
-                            changeStatus(guide.id, event.target.value)
-                          }
-                        >
-                          <option value="draft">{t("statuses.draft")}</option>
-                          <option value="pending_review">
-                            {t("statuses.pending_review")}
+                      <select
+                        className="h-8 rounded-md border border-border bg-transparent px-2 text-sm"
+                        aria-label={t("status-label", {
+                          title: guide.title || guide.slug,
+                        })}
+                        value={guide.status}
+                        disabled={!canWrite}
+                        onChange={(event) =>
+                          changeStatus(guide.id, event.target.value)
+                        }
+                      >
+                        <option value="draft">{t("statuses.draft")}</option>
+                        <option value="pending_review">
+                          {t("statuses.pending_review")}
+                        </option>
+                        {(canPublish || guide.status === "published") && (
+                          <option value="published" disabled={!canPublish}>
+                            {t("statuses.published")}
                           </option>
-                          {(canPublish || guide.status === "published") && (
-                            <option value="published" disabled={!canPublish}>
-                              {t("statuses.published")}
-                            </option>
-                          )}
-                        </select>
-                      )}
+                        )}
+                      </select>
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
@@ -197,16 +150,14 @@ export function GuideStatusList({
                             title={t("edit")}
                           >
                             <Link
-                              href={
-                                guide.editHref ?? `/admin/guides/${guide.id}`
-                              }
+                              href={`/admin/guides/${guide.id}`}
                               aria-label={t("edit")}
                             >
                               <Pencil aria-hidden="true" />
                             </Link>
                           </Button>
                         )}
-                        {canWrite && (guide.canToggle ?? true) && (
+                        {canWrite && (
                           <Button
                             size="icon"
                             variant="outline"
@@ -217,7 +168,7 @@ export function GuideStatusList({
                             <Power aria-hidden="true" />
                           </Button>
                         )}
-                        {canDelete && guide.type !== "reference" && (
+                        {canDelete && (
                           <Button
                             size="icon"
                             variant="destructive"

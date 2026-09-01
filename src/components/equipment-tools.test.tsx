@@ -90,7 +90,7 @@ describe("equipment tools", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     expect(
       screen.getByRole("link", { name: "Voir le référentiel complet" }),
-    ).toHaveAttribute("href", "/guides/referentiels/combat-equipment");
+    ).toHaveAttribute("href", "/referentiels/combat-equipment");
     const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
     const select = screen.getByRole("combobox", {

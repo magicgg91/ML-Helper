@@ -2,6 +2,7 @@ export const roles = [
   "super_admin",
   "admin",
   "guides_manager",
+  "references_manager",
   "tools_manager",
   "read_only",
 ] as const;

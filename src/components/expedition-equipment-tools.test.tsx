@@ -50,7 +50,7 @@ describe("ExpeditionEquipmentSimulator", () => {
     renderTool();
     expect(
       screen.getByRole("link", { name: "Voir le référentiel complet" }),
-    ).toHaveAttribute("href", "/guides/referentiels/expedition-equipment");
+    ).toHaveAttribute("href", "/referentiels/expedition-equipment");
   });
 
   it("lays out the 6 slots in the confirmed grid order, no gem configuration", () => {

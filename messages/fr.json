@@ -421,6 +421,7 @@
   },
   "Navigation": {
     "tools": "Outils",
+    "referentiels": "Référentiels",
     "guides": "Guides",
     "menu": "Menu"
   },
@@ -475,7 +476,10 @@
     "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "guidesEyebrow": "Apprendre",
     "guidesTitle": "Affûte ta stratégie",
-    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
+    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
+    "referentielsEyebrow": "Consulter",
+    "referentielsTitle": "Retrouve les données clés",
+    "referentielsDescription": "Retrouve les tableaux de référence de la communauté pour connaître les coûts, statistiques et paliers exacts du jeu."
   },
   "ToolsPage": {
     "eyebrow": "Outils",
@@ -527,6 +531,7 @@
   },
   "references": {
     "eyebrow": "Référentiels",
+    "title": "Tous les référentiels",
     "filters": {
       "label": "Filtres du référentiel",
       "family": "Famille",
@@ -540,8 +545,8 @@
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
-      "templiers": "Coût des Templiers",
-      "gemmes": "Gemmes",
+      "templars": "Coût des Templiers",
+      "gems": "Gemmes",
       "shop": "Boutique"
     },
     "tabs-label": "Référentiels",
@@ -634,6 +639,7 @@
     "navigation": {
       "dashboard": "Tableau de bord",
       "tools": "Outils",
+      "referentiels": "Référentiels",
       "guides": "Guides",
       "content": "Conditions d’utilisation",
       "users": "Utilisateurs",
@@ -704,34 +710,17 @@
       "empty": "Aucun guide créé.",
       "columns": {
         "title": "Titre",
-        "type": "Type",
         "author": "Auteur",
         "created": "Créé le",
         "updated": "Dernière édition",
         "status": "Statut",
         "actions": "Actions"
       },
-      "types": { "all": "Tous", "guide": "Guide", "reference": "Référentiel" },
-      "filter-type-label": "Filtrer par type",
       "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",
         "pending_review": "En review",
-        "published": "Publié",
-        "active": "Actif",
-        "inactive": "Inactif"
-      },
-      "reference-combat": "Éditer les Équipements de Combat",
-      "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Level Up",
-      "reference-consommables": "Éditer la Boutique",
-      "references": {
-        "combat-equipment": "Équipements de Combat",
-        "expedition-equipment": "Équipements d’Expédition",
-        "level-up": "Level Up",
-        "templiers": "Templiers",
-        "gemmes": "Gemmes",
-        "consommables": "Boutique"
+        "published": "Publié"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
@@ -747,6 +736,32 @@
       "disabled": "Guide désactivé.",
       "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
       "deleted": "Guide supprimé définitivement."
+    },
+    "referentiels": {
+      "eyebrow": "Données de référence",
+      "title": "Référentiels",
+      "columns": { "title": "Titre", "status": "Statut", "actions": "Actions" },
+      "statuses": { "active": "Actif", "inactive": "Inactif" },
+      "reference-combat": "Éditer les Équipements de Combat",
+      "reference-expedition": "Éditer les Équipements d’Expédition",
+      "reference-level-up": "Éditer Level Up",
+      "reference-consommables": "Éditer la Boutique",
+      "references": {
+        "combat-equipment": "Équipements de Combat",
+        "expedition-equipment": "Équipements d’Expédition",
+        "level-up": "Level Up",
+        "templiers": "Templiers",
+        "gemmes": "Gemmes",
+        "consommables": "Boutique"
+      },
+      "disabled-tooltip": "Désactivé et invisible côté public",
+      "edit": "Éditer",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "visibility-error": "Impossible de modifier la visibilité.",
+      "enabled": "Référentiel activé.",
+      "disabled": "Référentiel désactivé.",
+      "no-results": "Aucun référentiel."
     },
     "guide-editor": {
       "language-label": "Langue du guide",
@@ -1028,6 +1043,7 @@
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Gestion Guides",
+    "references_manager": "Référentiels",
     "tools_manager": "Gestion Outils",
     "read_only": "Lecture Seule"
   }

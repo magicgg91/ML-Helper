@@ -25,11 +25,12 @@ export default async function EditToolPage({
 }: PageProps<"/admin/tools/[id]">) {
   const { id } = await params;
   const { from } = await searchParams;
-  // Templars' formula parameters are also the "Coût des Templiers" Guides
-  // reference (cdc section 6, décision Bloc 3), and Gems' are also the
-  // "Gemmes" Guides reference (Bloc 36/A) — a guides_manager reaching
-  // either editor from the Guides admin table has references.write but
-  // not calculators.write, so these two destinations accept either.
+  // Templars' formula parameters are also the "Coût des Templiers"
+  // Référentiels reference (cdc section 6, décision Bloc 3), and Gems' are
+  // also the "Gemmes" Référentiels reference (Bloc 36/A) — a
+  // references_manager reaching either editor from the Référentiels admin
+  // table has references.write but not calculators.write, so these two
+  // destinations accept either.
   const session = await requireCapability(
     id === "templars" || id === "gems"
       ? (["calculators.write", "references.write"] as const)
@@ -49,19 +50,20 @@ export default async function EditToolPage({
     content = (
       <TemplarParametersEditor
         initial={await getTemplarParameters()}
-        // Bloc 35/7.1: this edit point is shared between the "templars"
-        // tool row (Tools) and the "templiers" reference row (Guides) — the
-        // ?from query param (set by adminToolEditHref per the slug that
-        // linked here) says which table the admin actually opened it from,
-        // so "Retour" goes back there. A guides_manager (references.write
-        // but not calculators.read) always arrives with from=guides, so the
-        // role check only matters as a fallback for a link without it.
+        // Bloc 35/7.1, updated Bloc 50: this edit point is shared between
+        // the "templars" tool row (Tools) and the "templiers" reference row
+        // (Référentiels) — the ?from query param (set by adminToolEditHref
+        // per the slug that linked here) says which table the admin
+        // actually opened it from, so "Retour" goes back there. A
+        // references_manager (references.write but not calculators.read)
+        // always arrives with from=referentiels, so the role check only
+        // matters as a fallback for a link without it.
         backHref={
-          from === "guides"
-            ? "/admin/guides"
+          from === "referentiels"
+            ? "/admin/referentiels"
             : can(session.user.role, "calculators.read")
               ? "/admin/tools"
-              : "/admin/guides"
+              : "/admin/referentiels"
         }
       />
     );
@@ -76,16 +78,17 @@ export default async function EditToolPage({
     content = (
       <GemParametersEditor
         initial={await getGemParameters()}
-        // Bloc 36/A: same contextual back button as Templars — carries
-        // provenance via ?from=guides (set by adminToolEditHref for the
-        // "gemmes" reference row) so "Retour" returns to Guides, not Tools,
-        // for this same shared edit point.
+        // Bloc 36/A, updated Bloc 50: same contextual back button as
+        // Templars — carries provenance via ?from=referentiels (set by
+        // adminToolEditHref for the "gemmes" reference row) so "Retour"
+        // returns to Référentiels, not Tools, for this same shared edit
+        // point.
         backHref={
-          from === "guides"
-            ? "/admin/guides"
+          from === "referentiels"
+            ? "/admin/referentiels"
             : can(session.user.role, "calculators.read")
               ? "/admin/tools"
-              : "/admin/guides"
+              : "/admin/referentiels"
         }
       />
     );
