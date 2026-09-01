@@ -623,6 +623,7 @@
     "navigation": {
       "dashboard": "Panel",
       "tools": "Herramientas",
+      "referentiels": "Referencias",
       "guides": "Guías",
       "content": "Términos de uso",
       "users": "Usuarios",
@@ -693,37 +694,17 @@
       "empty": "No se ha creado ninguna guía.",
       "columns": {
         "title": "Título",
-        "type": "Tipo",
         "author": "Autor",
         "created": "Creada",
         "updated": "Última edición",
         "status": "Estado",
         "actions": "Acciones"
       },
-      "types": {
-        "all": "Todas",
-        "guide": "Guía",
-        "reference": "Tabla de referencia"
-      },
-      "filter-type-label": "Filtrar por tipo",
       "no-results": "Ningún resultado para este filtro.",
       "statuses": {
         "draft": "Borrador",
         "pending_review": "Pendiente de revisión",
-        "published": "Publicada",
-        "active": "Activada",
-        "inactive": "Desactivada"
-      },
-      "reference-combat": "Editar Equipo de Combate",
-      "reference-expedition": "Editar Equipo de Expedición",
-      "reference-level-up": "Editar Subida de Nivel",
-      "references": {
-        "combat-equipment": "Equipo de Combate",
-        "expedition-equipment": "Equipo de Expedición",
-        "level-up": "Subida de Nivel",
-        "templiers": "Templarios",
-        "gemmes": "Gemas",
-        "consommables": "Tienda"
+        "published": "Publicada"
       },
       "disabled-tooltip": "Desactivada y oculta del sitio público",
       "status-label": "Estado de {title}",
@@ -738,8 +719,37 @@
       "enabled": "Guía activada.",
       "disabled": "Guía desactivada.",
       "delete-forbidden": "Tu rol no permite eliminar esta guía.",
-      "deleted": "Guía eliminada permanentemente.",
-      "reference-consommables": "Editar la Tienda"
+      "deleted": "Guía eliminada permanentemente."
+    },
+    "referentiels": {
+      "eyebrow": "Datos de referencia",
+      "title": "Referencias",
+      "columns": {
+        "title": "Título",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "statuses": { "active": "Activada", "inactive": "Desactivada" },
+      "reference-combat": "Editar Equipo de Combate",
+      "reference-expedition": "Editar Equipo de Expedición",
+      "reference-level-up": "Editar Subida de Nivel",
+      "reference-consommables": "Editar la Tienda",
+      "references": {
+        "combat-equipment": "Equipo de Combate",
+        "expedition-equipment": "Equipo de Expedición",
+        "level-up": "Subida de Nivel",
+        "templiers": "Templarios",
+        "gemmes": "Gemas",
+        "consommables": "Tienda"
+      },
+      "disabled-tooltip": "Desactivada y oculta del sitio público",
+      "edit": "Editar",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "visibility-error": "No se pudo cambiar la visibilidad.",
+      "enabled": "Tabla de referencia activada.",
+      "disabled": "Tabla de referencia desactivada.",
+      "no-results": "No se encontró ninguna tabla de referencia."
     },
     "guide-editor": {
       "language-label": "Idioma de la guía",

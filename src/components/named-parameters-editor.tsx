@@ -234,7 +234,7 @@ export function LevelUpParametersEditor({
     }));
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/guides" message={status}>
+      <EditorActionBar backHref="/admin/referentiels" message={status}>
         <button
           className="editor-action editor-action-primary"
           type="button"

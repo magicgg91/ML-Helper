@@ -639,6 +639,7 @@
     "navigation": {
       "dashboard": "Tableau de bord",
       "tools": "Outils",
+      "referentiels": "Référentiels",
       "guides": "Guides",
       "content": "Conditions d’utilisation",
       "users": "Utilisateurs",
@@ -709,34 +710,17 @@
       "empty": "Aucun guide créé.",
       "columns": {
         "title": "Titre",
-        "type": "Type",
         "author": "Auteur",
         "created": "Créé le",
         "updated": "Dernière édition",
         "status": "Statut",
         "actions": "Actions"
       },
-      "types": { "all": "Tous", "guide": "Guide", "reference": "Référentiel" },
-      "filter-type-label": "Filtrer par type",
       "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",
         "pending_review": "En review",
-        "published": "Publié",
-        "active": "Actif",
-        "inactive": "Inactif"
-      },
-      "reference-combat": "Éditer les Équipements de Combat",
-      "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Level Up",
-      "reference-consommables": "Éditer la Boutique",
-      "references": {
-        "combat-equipment": "Équipements de Combat",
-        "expedition-equipment": "Équipements d’Expédition",
-        "level-up": "Level Up",
-        "templiers": "Templiers",
-        "gemmes": "Gemmes",
-        "consommables": "Boutique"
+        "published": "Publié"
       },
       "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
@@ -752,6 +736,32 @@
       "disabled": "Guide désactivé.",
       "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
       "deleted": "Guide supprimé définitivement."
+    },
+    "referentiels": {
+      "eyebrow": "Données de référence",
+      "title": "Référentiels",
+      "columns": { "title": "Titre", "status": "Statut", "actions": "Actions" },
+      "statuses": { "active": "Actif", "inactive": "Inactif" },
+      "reference-combat": "Éditer les Équipements de Combat",
+      "reference-expedition": "Éditer les Équipements d’Expédition",
+      "reference-level-up": "Éditer Level Up",
+      "reference-consommables": "Éditer la Boutique",
+      "references": {
+        "combat-equipment": "Équipements de Combat",
+        "expedition-equipment": "Équipements d’Expédition",
+        "level-up": "Level Up",
+        "templiers": "Templiers",
+        "gemmes": "Gemmes",
+        "consommables": "Boutique"
+      },
+      "disabled-tooltip": "Désactivé et invisible côté public",
+      "edit": "Éditer",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "visibility-error": "Impossible de modifier la visibilité.",
+      "enabled": "Référentiel activé.",
+      "disabled": "Référentiel désactivé.",
+      "no-results": "Aucun référentiel."
     },
     "guide-editor": {
       "language-label": "Langue du guide",

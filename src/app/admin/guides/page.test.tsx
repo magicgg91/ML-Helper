@@ -10,7 +10,6 @@ vi.mock("@/auth/require-session", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     guide: { findMany: vi.fn() },
-    calculator: { findMany: vi.fn() },
   },
 }));
 vi.mock("next-intl/server", () => ({
@@ -25,7 +24,6 @@ vi.mock("@/components/guide-status-list", () => ({
 
 const mockedRequireCapability = vi.mocked(requireCapability);
 const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
-const mockedCalculatorFindMany = vi.mocked(prisma.calculator.findMany);
 
 afterEach(() => {
   cleanup();
@@ -33,15 +31,12 @@ afterEach(() => {
 });
 
 describe("GuidesAdminPage", () => {
-  it("keeps the create action available even when guides and references are both empty (Bloc 32/A.3 regression)", async () => {
+  it("keeps the create action available even when there are no guides (Bloc 32/A.3 regression)", async () => {
     mockedRequireCapability.mockResolvedValue({
       user: { id: "admin", role: "super_admin", name: "Admin" },
     } as Awaited<ReturnType<typeof requireCapability>>);
     mockedGuideFindMany.mockResolvedValue(
       [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
-    );
-    mockedCalculatorFindMany.mockResolvedValue(
-      [] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>,
     );
 
     render(await GuidesAdminPage());
@@ -51,61 +46,5 @@ describe("GuidesAdminPage", () => {
       "href",
       "/admin/guides/new",
     );
-  });
-
-  it("gives Templiers its own independent reference row, routed to the shared formula editor (Bloc 33/G)", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedGuideFindMany.mockResolvedValue(
-      [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
-    );
-    mockedCalculatorFindMany.mockResolvedValue([
-      { id: "calculator-templiers-reference", slug: "templiers", active: true },
-    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await GuidesAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({
-      id: "templiers",
-      slug: "templiers",
-      active: true,
-      type: "reference",
-      editHref: "/admin/tools/templars?from=guides",
-    });
-    // No more special-casing: Templiers is toggled the same generic way
-    // as combat-equipment/expedition-equipment/level-up now — no
-    // calculators.toggle-gated override left in the row.
-    expect(rows[0].canToggle).toBeUndefined();
-    expect(rows[0].toggleHref).toBeUndefined();
-  });
-
-  it("Bloc43/44: routes the Shop's reference row to its own admin editor, no shared tool to fall back on (internal slug/route stay unchanged per Bloc 48/F)", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedGuideFindMany.mockResolvedValue(
-      [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
-    );
-    mockedCalculatorFindMany.mockResolvedValue([
-      {
-        id: "calculator-consumables-reference",
-        slug: "consommables",
-        active: true,
-      },
-    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await GuidesAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
-    expect(rows[0]).toMatchObject({
-      id: "consommables",
-      slug: "consommables",
-      active: true,
-      type: "reference",
-      editHref: "/admin/guides/reference-consommables",
-    });
   });
 });

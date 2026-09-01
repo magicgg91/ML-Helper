@@ -21,12 +21,12 @@ describe("admin tool editor routing", () => {
   });
   it("points Templiers' reference to the same shared formula editor as the Templars tool (Bloc 33/G)", () => {
     expect(adminToolEditHref("templiers")).toBe(
-      "/admin/tools/templars?from=guides",
+      "/admin/tools/templars?from=referentiels",
     );
   });
-  it("Bloc35 7.1: carries provenance so the editor knows which table it was opened from", () => {
-    expect(adminToolEditHref("templars")).not.toContain("from=guides");
-    expect(adminToolEditHref("templiers")).toContain("from=guides");
+  it("Bloc35 7.1, updated Bloc 50: carries provenance so the editor knows which table it was opened from", () => {
+    expect(adminToolEditHref("templars")).not.toContain("from=referentiels");
+    expect(adminToolEditHref("templiers")).toContain("from=referentiels");
   });
   it("has no edit destination for a tool with no named numeric parameters", () => {
     for (const slug of ["stuff-simulator", "city-rewards"])
@@ -36,11 +36,13 @@ describe("admin tool editor routing", () => {
   it("Bloc36/A: lists Gemmes among the independent references and shares the Gems editor, same pattern as Templiers", () => {
     expect(referenceToolSlugs).toContain("gemmes");
     expect(referenceToolSlugs).not.toContain("gems");
-    expect(adminToolEditHref("gems")).not.toContain("from=guides");
-    expect(adminToolEditHref("gemmes")).toBe("/admin/tools/gems?from=guides");
+    expect(adminToolEditHref("gems")).not.toContain("from=referentiels");
+    expect(adminToolEditHref("gemmes")).toBe(
+      "/admin/tools/gems?from=referentiels",
+    );
   });
 
-  it("Bloc43/44: lists Consumables among the independent references, with no shared tool to edit — falls through to /admin/guides/reference-consommables (public slug kept French per review)", () => {
+  it("Bloc43/44: lists Consumables among the independent references, with no shared tool to edit — falls through to /admin/referentiels/reference-consommables (public slug kept French per review)", () => {
     expect(referenceToolSlugs).toContain("consommables");
     expect(adminToolEditHref("consommables")).toBeUndefined();
   });

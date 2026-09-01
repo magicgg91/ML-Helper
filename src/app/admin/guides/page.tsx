@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { localizedText } from "@/lib/translations";
 import { getLocale, getTranslations } from "next-intl/server";
-import { adminToolEditHref, referenceToolSlugs } from "@/lib/admin-tools";
 
 export default async function GuidesAdminPage() {
   const session = await requireCapability("guides.read");
@@ -13,52 +12,27 @@ export default async function GuidesAdminPage() {
     getTranslations("admin.guides"),
     getLocale(),
   ]);
-  const [guides, references] = await Promise.all([
-    prisma.guide.findMany({ orderBy: { updatedAt: "desc" } }),
-    prisma.calculator.findMany({
-      where: { slug: { in: [...referenceToolSlugs] } },
-      orderBy: { slug: "asc" },
-    }),
-  ]);
+  const guides = await prisma.guide.findMany({
+    orderBy: { updatedAt: "desc" },
+  });
   const newHref = can(session.user.role, "guides.write")
     ? "/admin/guides/new"
     : undefined;
   return (
     <main className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
-      {guides.length || references.length ? (
+      {guides.length ? (
         <GuideStatusList
-          rows={[
-            ...guides.map((guide) => ({
-              id: guide.id,
-              slug: guide.slug,
-              title: localizedText(guide.title, locale),
-              author: guide.author,
-              createdAt: guide.createdAt.toLocaleDateString(locale),
-              updatedAt: guide.updatedAt.toLocaleDateString(locale),
-              status: guide.status,
-              active: guide.active,
-              type: "guide" as const,
-            })),
-            // Bloc 33/G: every reference row (Templiers included) now has
-            // its own independent active flag — the same generic toggle
-            // (references.write) applies to all of them. Templiers' edit
-            // action still points at the shared formula-params editor.
-            ...references.map((reference) => ({
-              id: reference.slug,
-              slug: reference.slug,
-              title: t(`references.${reference.slug}`),
-              author: "—",
-              createdAt: "—",
-              updatedAt: "—",
-              status: "reference",
-              active: reference.active,
-              type: "reference" as const,
-              editHref:
-                adminToolEditHref(reference.slug) ??
-                `/admin/guides/reference-${reference.slug}`,
-            })),
-          ]}
+          rows={guides.map((guide) => ({
+            id: guide.id,
+            slug: guide.slug,
+            title: localizedText(guide.title, locale),
+            author: guide.author,
+            createdAt: guide.createdAt.toLocaleDateString(locale),
+            updatedAt: guide.updatedAt.toLocaleDateString(locale),
+            status: guide.status,
+            active: guide.active,
+          }))}
           canPublish={can(session.user.role, "guides.publish")}
           canDelete={can(session.user.role, "guides.delete")}
           canWrite={can(session.user.role, "guides.write")}

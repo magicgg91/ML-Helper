@@ -633,6 +633,7 @@
     "navigation": {
       "dashboard": "Dashboard",
       "tools": "Tools",
+      "referentiels": "References",
       "guides": "Guides",
       "content": "Terms of use",
       "users": "Users",
@@ -703,38 +704,17 @@
       "empty": "No guide created.",
       "columns": {
         "title": "Title",
-        "type": "Type",
         "author": "Author",
         "created": "Created",
         "updated": "Last edited",
         "status": "Status",
         "actions": "Actions"
       },
-      "types": {
-        "all": "All",
-        "guide": "Guide",
-        "reference": "Reference table"
-      },
-      "filter-type-label": "Filter by type",
       "no-results": "No result for this filter.",
       "statuses": {
         "draft": "Draft",
         "pending_review": "Pending review",
-        "published": "Published",
-        "active": "Enabled",
-        "inactive": "Disabled"
-      },
-      "reference-combat": "Edit Combat Equipment",
-      "reference-expedition": "Edit Expedition Equipment",
-      "reference-level-up": "Edit Level Up",
-      "reference-consommables": "Edit the Shop",
-      "references": {
-        "combat-equipment": "Combat Equipment",
-        "expedition-equipment": "Expedition Equipment",
-        "level-up": "Level Up",
-        "templiers": "Templars",
-        "gemmes": "Gems",
-        "consommables": "Shop"
+        "published": "Published"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
@@ -750,6 +730,32 @@
       "disabled": "Guide disabled.",
       "delete-forbidden": "Your role does not allow deleting this guide.",
       "deleted": "Guide permanently deleted."
+    },
+    "referentiels": {
+      "eyebrow": "Reference data",
+      "title": "References",
+      "columns": { "title": "Title", "status": "Status", "actions": "Actions" },
+      "statuses": { "active": "Enabled", "inactive": "Disabled" },
+      "reference-combat": "Edit Combat Equipment",
+      "reference-expedition": "Edit Expedition Equipment",
+      "reference-level-up": "Edit Level Up",
+      "reference-consommables": "Edit the Shop",
+      "references": {
+        "combat-equipment": "Combat Equipment",
+        "expedition-equipment": "Expedition Equipment",
+        "level-up": "Level Up",
+        "templiers": "Templars",
+        "gemmes": "Gems",
+        "consommables": "Shop"
+      },
+      "disabled-tooltip": "Disabled and hidden from the public site",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "visibility-error": "Unable to change visibility.",
+      "enabled": "Reference table enabled.",
+      "disabled": "Reference table disabled.",
+      "no-results": "No reference table found."
     },
     "guide-editor": {
       "language-label": "Guide language",

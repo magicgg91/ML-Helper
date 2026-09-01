@@ -63,7 +63,7 @@ describe("admin role permissions", () => {
     expect(can("tools_manager", "guides.write")).toBe(false);
     // tools_manager still reaches the Templars/Gems *reference* content, but only
     // through its calculators.write capability and the shared formula-params
-    // editor at /admin/tools/{templars,gems}?from=guides (see
+    // editor at /admin/tools/{templars,gems}?from=referentiels (see
     // src/lib/admin-tools.ts's adminToolEditHref) — not through references.write.
     // That indirect path is intentional, not a gap in this role's permissions.
   });

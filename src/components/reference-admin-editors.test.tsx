@@ -305,7 +305,7 @@ describe("complete lookup table administration", () => {
     expect(container.querySelectorAll("button.primary-button")).toHaveLength(0);
     expect(screen.getByRole("link", { name: /Retour/ })).toHaveAttribute(
       "href",
-      "/admin/guides",
+      "/admin/referentiels",
     );
 
     // Bloc 41/D: Pouciel and gem-slots render before the main table now.
