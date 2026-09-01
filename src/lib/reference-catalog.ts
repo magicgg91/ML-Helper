@@ -50,7 +50,9 @@ export const referenceCatalog = [
     slug: "shop",
     calculatorSlug: "consommables" satisfies CalculatorSlug,
     category: "consommables",
-    image: "/referentials/referential-consumables.webp",
+    // Bloc 51: real illustration deposited (public/referentials/), same as
+    // the other 5 references — was a placeholder-only entry before.
+    image: "/referentials/referential-shop.webp",
     fallbackImage: "/category-references.svg",
   },
 ] as const;

@@ -17,7 +17,7 @@ const t = createTranslator({
 }) as (key: string) => string;
 
 describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
-  it("shows the real referential illustration for every one of the 5 references", () => {
+  it("shows the real referential illustration for every one of the 6 references", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <ReferenceCatalogGrid t={t} />
@@ -29,6 +29,8 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
       "/referentials/referential-levelup.webp",
       "/referentials/referential-temples.webp",
       "/referentials/referential-gems.webp",
+      // Bloc 51: Boutique's own illustration, deposited after the other 5.
+      "/referentials/referential-shop.webp",
     ])
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
   });
@@ -48,6 +50,27 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     ).toBeInTheDocument();
     expect(
       document.querySelector("img[src='/referentials/referential-fight.webp']"),
+    ).not.toBeInTheDocument();
+  });
+
+  // Bloc 51: Boutique's illustration was just deposited — same graceful
+  // GameImage fallback as the other 5 references, verified independently
+  // since it has its own real image and its own fallback icon.
+  it("falls back to the placeholder category icon for Boutique if its real image fails to load", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid t={t} />
+      </NextIntlClientProvider>,
+    );
+    const image = document.querySelector<HTMLImageElement>(
+      "img[src='/referentials/referential-shop.webp']",
+    )!;
+    fireEvent.error(image);
+    expect(
+      document.querySelector("img[src='/category-references.svg']"),
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector("img[src='/referentials/referential-shop.webp']"),
     ).not.toBeInTheDocument();
   });
 
