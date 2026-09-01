@@ -261,7 +261,10 @@ describe("ConsumablesReferenceScreen", () => {
   // Bloc 44 review: a single action persists both sections together — no
   // separate button per section that could be clicked while leaving the
   // other one's edits unsaved.
-  it("saves both the intro (PATCH) and the grouped catalog (PUT) from the one save button", async () => {
+  // Bloc 57/A: both sections now go out as a single request to a single
+  // combined endpoint — the old 2-requests-per-save design (each writing
+  // its own audit log row) produced 2 lines in /admin/logs for 1 click.
+  it("Bloc57/A: saves the intro and the grouped catalog together in one PUT request", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(null, { status: 200 }));
@@ -271,20 +274,14 @@ describe("ConsumablesReferenceScreen", () => {
     });
     fireEvent.click(saveButton());
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    const calls = fetchMock.mock.calls;
-    const introCall = calls.find(
-      ([url]) => url === "/api/admin/content/consumables-intro",
-    );
-    const rowsCall = calls.find(
-      ([url]) => url === "/api/admin/guides/references/consumables",
-    );
-    expect(introCall?.[1]?.method).toBe("PATCH");
-    expect(JSON.parse(String(introCall?.[1]?.body))).toEqual({
-      content: { ...introInitial, fr: "## Nouvelle intro" },
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/admin/guides/references/consumables");
+    expect(init?.method).toBe("PUT");
+    expect(JSON.parse(String(init?.body))).toEqual({
+      intro: { ...introInitial, fr: "## Nouvelle intro" },
+      catalog: initialCatalog(),
     });
-    expect(rowsCall?.[1]?.method).toBe("PUT");
-    expect(JSON.parse(String(rowsCall?.[1]?.body))).toEqual(initialCatalog());
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Référentiel enregistré.",
     );
@@ -303,27 +300,20 @@ describe("ConsumablesReferenceScreen", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  // Bloc 44 review: a partial failure (one section saved, the other
-  // didn't) is reported explicitly, distinct from the other section's
-  // success — never a generic "saved" that hides the failed half.
-  it("reports a partial failure explicitly instead of a generic success", async () => {
+  it("Bloc57/A: reports a server error when the combined save request fails", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
-      .mockImplementation(async (url) =>
-        url === "/api/admin/content/consumables-intro"
-          ? new Response(null, { status: 500 })
-          : new Response(null, { status: 200 }),
-      );
+      .mockResolvedValue(new Response(null, { status: 500 }));
     renderScreen();
     fireEvent.click(saveButton());
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "Introduction non enregistrée (les objets ont bien été enregistrés).",
+      "Impossible de joindre le serveur.",
     );
   });
 
-  it("reports total failure when both requests fail", async () => {
+  it("reports total failure when the request cannot reach the server", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
     renderScreen();
     fireEvent.click(saveButton());

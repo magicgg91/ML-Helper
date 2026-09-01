@@ -1,31 +1,51 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { consumablesReferenceKey } from "@/lib/consumables-server";
+import { auditMessage } from "@/lib/audit-message";
 import {
   consumableCategories,
+  consumablesIntroKey,
   type ConsumableCatalog,
 } from "@/lib/consumables";
-import {
-  numericString,
-  saveReferenceTable,
-  stringField,
-} from "@/services/reference-table-admin";
+import { consumablesReferenceKey } from "@/lib/consumables-server";
+import { prisma } from "@/lib/prisma";
+import { dropEmptyLocales } from "@/lib/translations";
+import { numericString, stringField } from "@/services/reference-table-admin";
 
-// Bloc 43: unlike Combat/Expedition/Level Up's fixed-length catalogs, this
-// reference has free CRUD (cdc: "ajout et suppression libre de lignes") —
-// no fixed row count to enforce, array order is itself the public display
-// order.
-// Bloc 48/B: the payload is now a plain object keyed by category (one
-// table per category, category implicit to which array a row is in)
-// instead of a single flat array with a category field per row.
+// Bloc 57/A: the admin screen's single save button now hits this one
+// endpoint for both the intro markdown and the items catalog, wrapped in a
+// single transaction with a single audit log entry — it used to be 2
+// separate requests (PATCH /api/admin/content/consumables-intro + this PUT),
+// each writing its own audit log row, so one click on "Enregistrer toute la
+// page" produced 2 lines in /admin/logs instead of 1.
+const localeContent = z
+  .string()
+  .trim()
+  .max(100_000)
+  .optional()
+  .transform((value) => value ?? "");
+const introSchema = z.object({
+  fr: localeContent,
+  en: localeContent,
+  de: localeContent,
+  es: localeContent,
+  tr: localeContent,
+});
+
 export async function PUT(request: Request) {
   const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
   try {
     const body = await request.json();
     if (!body || typeof body !== "object" || Array.isArray(body))
+      throw new Error("invalid body");
+    const { intro, catalog: rawCatalog } = body as Record<string, unknown>;
+
+    const introContent = dropEmptyLocales(introSchema.parse(intro ?? {}));
+
+    if (!rawCatalog || typeof rawCatalog !== "object" || Array.isArray(rawCatalog))
       throw new Error("invalid catalog");
-    const source = body as Record<string, unknown>;
+    const source = rawCatalog as Record<string, unknown>;
     const catalog: ConsumableCatalog = Object.fromEntries(
       consumableCategories.map((category) => {
         const rawRows = source[category];
@@ -47,23 +67,57 @@ export async function PUT(request: Request) {
         return [category, rows];
       }),
     ) as ConsumableCatalog;
-    await saveReferenceTable({
-      key: consumablesReferenceKey,
-      target: "le référentiel Boutique",
-      columns: [
-        "image",
-        "name_fr",
-        "name_en",
-        "description_fr",
-        "description_en",
-        "cost",
-      ],
-      rows: catalog,
-      userId: session.user.id,
-      actorRole: session.user.role,
-      actorName: session.user.name ?? session.user.id,
+
+    await prisma.$transaction(async (tx) => {
+      await tx.staticContent.upsert({
+        where: { key: consumablesIntroKey },
+        create: {
+          key: consumablesIntroKey,
+          content: introContent,
+          updatedBy: session.user.id,
+        },
+        update: { content: introContent, updatedBy: session.user.id },
+      });
+      const beforeRows = await tx.referenceTable.findUnique({
+        where: { key: consumablesReferenceKey },
+      });
+      const table = await tx.referenceTable.upsert({
+        where: { key: consumablesReferenceKey },
+        create: {
+          key: consumablesReferenceKey,
+          columns: [
+            "image",
+            "name_fr",
+            "name_en",
+            "description_fr",
+            "description_en",
+            "cost",
+          ],
+          rows: catalog,
+        },
+        update: { rows: catalog },
+      });
+      await tx.auditLog.create({
+        data: {
+          userId: session.user.id,
+          actorRole: session.user.role,
+          action: beforeRows ? "update" : "create",
+          entityType: "reference_table",
+          entityId: table.id,
+          message: auditMessage(
+            session.user.name ?? session.user.id,
+            beforeRows ? "update" : "create",
+            "le référentiel Boutique",
+          ),
+          diff: {
+            before: beforeRows?.rows ?? null,
+            after: catalog,
+          },
+        },
+      });
     });
-    return NextResponse.json(catalog);
+
+    return NextResponse.json({ intro: introContent, catalog });
   } catch {
     return NextResponse.json(
       { error: "invalid_reference_rows" },

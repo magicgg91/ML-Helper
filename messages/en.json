@@ -904,8 +904,6 @@
       "consumables-intro-title": "Intro text",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Text language",
-      "consumables-intro-error": "Introduction not saved (items were saved).",
-      "consumables-rows-error": "Items not saved (the introduction was saved).",
       "consumables-table-title": "Items",
       "consumables-columns": {
         "image": "Image path",

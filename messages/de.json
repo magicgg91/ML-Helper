@@ -907,11 +907,9 @@
         "image": "Bildpfad",
         "name": "Name"
       },
-      "consumables-intro-error": "Einleitung nicht gespeichert (Objekte wurden gespeichert).",
       "consumables-intro-label": "Einleitung (Markdown)",
       "consumables-intro-language-label": "Textsprache",
       "consumables-intro-title": "Einleitungstext",
-      "consumables-rows-error": "Objekte nicht gespeichert (die Einleitung wurde gespeichert).",
       "consumables-table-title": "Objekte",
       "empty": "Noch keine Objekte.",
       "move-down": "Nach unten verschieben",
