@@ -2804,31 +2804,25 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 /* Bloc 53/E: replaces the plain-text .reference-cross-link/.reference-link
    with a centered banner + clickable mini-card, on both tool<->reference
    directions — same bordered-card spirit as .calculator-card (Bloc 52/C,
-   D's framing for the Boutique reference). */
+   D's framing for the Boutique reference).
+   Bloc 54/B: bigger card, the label folded inside the button instead of a
+   separate line above it, and a 5rem thumbnail — matching Boutique's own
+   reference-table image size (Bloc 46/A). */
 .cross-reference-banner {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.55rem;
+  justify-content: center;
   margin: 0.25rem 0;
-  text-align: center;
-}
-.cross-reference-label {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.82rem;
 }
 .cross-reference-card {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.6rem 1.1rem;
+  gap: 1.1rem;
+  padding: 1rem 1.5rem;
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background: var(--bg-panel-raised);
   color: inherit;
   text-decoration: none;
-  font-weight: 700;
   transition: border-color 0.15s ease;
 }
 .cross-reference-card:hover {
@@ -2836,8 +2830,8 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 }
 .cross-reference-thumb {
   display: block;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 5rem;
+  height: 5rem;
   flex-shrink: 0;
 }
 .cross-reference-thumb img {
@@ -2845,9 +2839,25 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   height: 100%;
   object-fit: contain;
 }
-.cross-reference-card svg {
+.cross-reference-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+.cross-reference-label {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+.cross-reference-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.cross-reference-chevron {
   color: var(--accent-strong);
   flex-shrink: 0;
+  margin-left: 0.35rem;
 }
 
 .level-up-tables {

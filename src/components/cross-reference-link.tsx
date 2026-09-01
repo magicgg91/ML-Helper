@@ -12,6 +12,10 @@ import { GameImage } from "./game-image";
 // destination when linking to a reference, the source reference itself
 // when linking out to a tool — tools have no per-tool illustration of
 // their own, only a shared per-category icon).
+// Bloc 54/B: the label used to sit as a separate <p> above a smaller
+// button — now it's inside the button itself, alongside a bigger 5rem
+// thumbnail (matching Boutique's own reference-table image size, Bloc
+// 46/A), so the whole thing reads as one bigger clickable card.
 export function CrossReferenceLink({
   href,
   title,
@@ -27,7 +31,6 @@ export function CrossReferenceLink({
 }) {
   return (
     <div className="cross-reference-banner">
-      <p className="cross-reference-label">{label}</p>
       <Link className="cross-reference-card" href={href}>
         <span className="cross-reference-thumb">
           <GameImage
@@ -39,8 +42,15 @@ export function CrossReferenceLink({
             }
           />
         </span>
-        <span className="cross-reference-title">{title}</span>
-        <ChevronRight size={18} aria-hidden="true" />
+        <span className="cross-reference-text">
+          <span className="cross-reference-label">{label}</span>
+          <span className="cross-reference-title">{title}</span>
+        </span>
+        <ChevronRight
+          size={22}
+          aria-hidden="true"
+          className="cross-reference-chevron"
+        />
       </Link>
     </div>
   );

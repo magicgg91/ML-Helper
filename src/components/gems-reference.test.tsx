@@ -133,7 +133,9 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
         <GemsReferenceTable parameters={defaultGemParameters} />
       </NextIntlClientProvider>,
     );
-    expect(screen.getByRole("link", { name: "Gemmes" })).toHaveAttribute(
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
+    expect(screen.getByRole("link", { name: /Gemmes$/ })).toHaveAttribute(
       "href",
       "/tools/competences?open=gems",
     );

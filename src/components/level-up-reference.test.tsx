@@ -77,7 +77,9 @@ describe("LevelUpReference", () => {
     expect(tables).toHaveLength(2);
     for (const table of tables) {
       expect(table).toHaveClass("reference-simple-table");
-      expect(table.closest(".calculator-card.ranking-table-wrap")).not.toBeNull();
+      expect(
+        table.closest(".calculator-card.ranking-table-wrap"),
+      ).not.toBeNull();
     }
   });
 
@@ -91,8 +93,10 @@ describe("LevelUpReference", () => {
         <LevelUpReference parameters={defaultLevelUpParameters} />
       </NextIntlClientProvider>,
     );
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
     expect(
-      screen.getByRole("link", { name: "Taux de gain d’XP" }),
+      screen.getByRole("link", { name: /Taux de gain d’XP$/ }),
     ).toHaveAttribute("href", "/tools/combat?open=xp");
   });
 });

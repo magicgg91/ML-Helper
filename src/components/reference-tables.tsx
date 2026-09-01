@@ -42,6 +42,8 @@ import {
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog } from "../lib/reference-catalog";
 
 // Bloc 39: every equipment item now renders as a tile (base 1★ value, no
 // star selector) instead of a table row — 1★ is a fixed constant here, not
@@ -376,6 +378,11 @@ export function CombatReferenceTable({
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
   const game = useTranslations("game");
+  const simulator = useTranslations("stuff-simulator");
+  const crossReference = useTranslations("crossReference");
+  const combatEquipmentReference = referenceCatalog.find(
+    (item) => item.slug === "combat-equipment",
+  )!;
   const familyLabel = (value: string) =>
     game(
       `families.${equipmentFamilyTranslationKeys[value as EquipmentFamily]}`,
@@ -462,6 +469,16 @@ export function CombatReferenceTable({
         rarityColumnLabel={t("columns.rarity")}
         base={mergeCostBase}
         rarityLabel={rarityLabel}
+      />
+      {/* Bloc 54/A: this direction (reference -> tool) was missing entirely
+          for Combat/Expedition — the reverse (tool -> reference) already
+          existed since Bloc 53/E. Points at the exact simulator tab. */}
+      <CrossReferenceLink
+        href="/tools/competences?open=simulator"
+        title={simulator("name")}
+        image={combatEquipmentReference.image}
+        fallbackImage={combatEquipmentReference.fallbackImage}
+        label={crossReference("toTool")}
       />
     </div>
   );
@@ -573,6 +590,11 @@ export function ExpeditionReferenceTable({
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
   const game = useTranslations("game");
+  const expeditionSimulator = useTranslations("expedition-equipment-simulator");
+  const crossReference = useTranslations("crossReference");
+  const expeditionEquipmentReference = referenceCatalog.find(
+    (item) => item.slug === "expedition-equipment",
+  )!;
   const familyLabel = (value: string) =>
     game(`families.${expeditionFamilyTranslationKeys[value]}`);
   const slotLabel = (value: string) =>
@@ -642,6 +664,16 @@ export function ExpeditionReferenceTable({
         rarityColumnLabel={t("columns.rarity")}
         base={dismantleBase}
         rarityLabel={rarityLabel}
+      />
+      {/* Bloc 54/A: this direction (reference -> tool) was missing entirely
+          for Combat/Expedition — the reverse (tool -> reference) already
+          existed since Bloc 53/E. Points at the exact simulator tab. */}
+      <CrossReferenceLink
+        href="/tools/competences?open=expedition"
+        title={expeditionSimulator("name")}
+        image={expeditionEquipmentReference.image}
+        fallbackImage={expeditionEquipmentReference.fallbackImage}
+        label={crossReference("toTool")}
       />
     </div>
   );
