@@ -5,10 +5,9 @@ import { languageAlternates } from "@/lib/site-url";
 
 // Bloc 50/1b: dedicated index for the /referentiels root, now independent
 // from /guides (the reference grid used to live embedded inside the
-// /guides page — see guides-hub.tsx). Kept minimal on purpose: eyebrow +
-// title + the shared grid, same shape as /guides's own index page. The
-// reference-switcher banner and any calculator-availability filtering are
-// layered on top of this route by a later change, not part of this page.
+// /guides page — see guides-hub.tsx). The reference-switcher banner and
+// any calculator-availability filtering are layered on top of this route
+// by a later change, not part of this page.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("references");
   return {
@@ -18,11 +17,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ReferentielsPage() {
-  const t = await getTranslations("references");
+  const [t, tHome] = await Promise.all([
+    getTranslations("references"),
+    getTranslations("Home"),
+  ]);
   return (
     <main className="public-main">
-      <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
+      {/* Bloc 53/D: same title + intro sentence as the homepage's
+          référentiels section, so /referentiels reads as the same entry
+          point reached a different way (Bloc 38/K's treatment for /tools). */}
+      <h1 className="referentiels-page-title">{tHome("referentielsTitle")}</h1>
+      <p>{tHome("referentielsDescription")}</p>
       <ReferenceCatalogGrid t={t} />
     </main>
   );

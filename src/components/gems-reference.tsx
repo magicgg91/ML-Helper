@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { gemImagePath } from "../lib/game-images";
@@ -8,6 +7,8 @@ import type { GemParameters } from "../lib/gem-parameters";
 import { leagues, skillKeys } from "../lib/player-settings";
 import { GameImage } from "./game-image";
 import { formatPercent } from "./reference-tables";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog } from "../lib/reference-catalog";
 
 export function GemsReferenceTable({
   parameters,
@@ -16,7 +17,9 @@ export function GemsReferenceTable({
 }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
+  const crossReference = useTranslations("crossReference");
   const locale = useLocale();
+  const gemsReference = referenceCatalog.find((item) => item.slug === "gems")!;
 
   // Bloc 36/A: alphabetical order on the *displayed* skill name, which
   // differs by locale (e.g. Guardian/Défense sorts differently in fr vs
@@ -91,9 +94,13 @@ export function GemsReferenceTable({
           </table>
         </div>
       </section>
-      <Link className="reference-link" href="/tools/competences">
-        {t("reference.competences-link")}
-      </Link>
+      <CrossReferenceLink
+        href="/tools/competences?open=gems"
+        title={t("name")}
+        image={gemsReference.image}
+        fallbackImage={gemsReference.fallbackImage}
+        label={crossReference("toTool")}
+      />
     </div>
   );
 }

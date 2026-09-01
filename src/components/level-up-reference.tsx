@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
@@ -13,6 +12,8 @@ import {
 import type { League } from "../lib/player-settings";
 import { LeagueSelect } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog } from "../lib/reference-catalog";
 
 function LevelTable({
   levels,
@@ -74,6 +75,11 @@ export function LevelUpReference({
   parameters: LevelUpParameters;
 }) {
   const t = useTranslations("level-up");
+  const xpGainRate = useTranslations("xp-gain-rate");
+  const crossReference = useTranslations("crossReference");
+  const levelUpReference = referenceCatalog.find(
+    (item) => item.slug === "level-up",
+  )!;
   const [league, setLeague] = useSyncedLeague();
   const [page, setPage] = useState(0);
   const start = page * parameters.pageSize + 1;
@@ -139,9 +145,16 @@ export function LevelUpReference({
           </nav>
         </>
       )}
-      <Link className="reference-link" href="/tools/combat">
-        {t("combat-link")}
-      </Link>
+      {/* Bloc 53/F: points at the XP Gain Rate calculator specifically — the
+          closest match for this table's troop-XP data — instead of the
+          generic /tools/combat category page. */}
+      <CrossReferenceLink
+        href="/tools/combat?open=xp"
+        title={xpGainRate("name")}
+        image={levelUpReference.image}
+        fallbackImage={levelUpReference.fallbackImage}
+        label={crossReference("toTool")}
+      />
     </div>
   );
 }

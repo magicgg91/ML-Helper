@@ -214,6 +214,38 @@ describe("ConsumablesReferenceScreen", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 53/A: the 3 separate Monter/Descendre/Supprimer columns are now a
+  // single "Actions" column, on all 4 category tables.
+  it("Bloc53/A: shows a single 'Actions' column instead of separate Monter/Descendre/Supprimer columns, on every table", () => {
+    renderScreen();
+    const actionsHeaders = screen.getAllByRole("columnheader", {
+      name: "Actions",
+    });
+    // Only equipment and inventory have rows in this fixture, so only those
+    // 2 tables render a <thead> at all.
+    expect(actionsHeaders).toHaveLength(2);
+    expect(
+      screen.queryByRole("columnheader", { name: "Monter" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Supprimer" }),
+    ).not.toBeInTheDocument();
+    const equipmentRow = screen.getByTestId("row-0-equipment");
+    const actionsCell = equipmentRow.querySelectorAll("td")[
+      equipmentRow.querySelectorAll("td").length - 1
+    ];
+    expect(actionsCell.querySelectorAll("button")).toHaveLength(3);
+  });
+
+  // Bloc 53/B, C: each of the 4 tables is scoped with the Boutique-only
+  // width class, never touching Combat/Expedition/Ranking's own tables.
+  it("Bloc53/B, C: scopes every category table with the consumables-admin-table class", () => {
+    const { container } = renderScreen();
+    const tables = container.querySelectorAll("table.consumables-admin-table");
+    // Only equipment and inventory have rows in this fixture.
+    expect(tables).toHaveLength(2);
+  });
+
   // Bloc 48/B: up/down ordering is scoped independently per category — a
   // category with a single row has both its move buttons disabled.
   it("Bloc48/B: disables move buttons at each table's own boundaries", () => {

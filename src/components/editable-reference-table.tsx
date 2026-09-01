@@ -35,6 +35,10 @@ export type EditableColumn<Row> = {
   // scroll. Left off (the default) for columns that can hold larger numbers
   // (e.g. Ranking's reward quantities).
   narrow?: boolean;
+  // Bloc 53/C: mirrors narrow in the other direction — gives this column
+  // relatively more of the row's width (Boutique's Description column,
+  // whose text runs longer than its neighbours).
+  wide?: boolean;
 };
 
 export type FieldErrors = Record<string, string>;
@@ -73,6 +77,16 @@ export function EditableDataTable<Row extends Record<string, string>>({
   // Left undefined (no confirmation) preserves every other caller's
   // existing behavior exactly.
   removeConfirmMessage,
+  // Bloc 53/A: folds the move-up/move-down cell and the remove cell into a
+  // single "Actions" column (Boutique's 4 tables). Opt-in and only takes
+  // effect when both onMove and onRemove are provided — every other caller
+  // (Ranking has no onMove) keeps its separate column(s) unchanged.
+  combinedActions,
+  actionsLabel,
+  // Bloc 53/B, C: an extra class on the <table> for Boutique-only width CSS,
+  // scoped away from the shared .reference-admin-table rules Combat,
+  // Expedition and Ranking still depend on.
+  tableClassName,
 }: {
   rows: Row[];
   columns: EditableColumn<Row>[];
@@ -89,9 +103,19 @@ export function EditableDataTable<Row extends Record<string, string>>({
   testIdPrefix?: string;
   removeIcon?: boolean;
   removeConfirmMessage?: string;
+  combinedActions?: boolean;
+  actionsLabel?: string;
+  tableClassName?: string;
 }) {
   const testId = (name: string) =>
     testIdPrefix ? `${name}-${testIdPrefix}` : name;
+  const mergeActions = combinedActions && onMove && onRemove;
+  const columnClass = (column: EditableColumn<Row>) =>
+    column.narrow
+      ? "reference-admin-narrow"
+      : column.wide
+        ? "reference-admin-wide"
+        : undefined;
   return (
     <>
       {onAdd && (
@@ -106,21 +130,30 @@ export function EditableDataTable<Row extends Record<string, string>>({
       )}
       {rows.length ? (
         <div className="ranking-table-wrap">
-          <table className="ranking-table reference-admin-table">
+          <table
+            className={[
+              "ranking-table",
+              "reference-admin-table",
+              tableClassName,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th
-                    key={column.key}
-                    className={
-                      column.narrow ? "reference-admin-narrow" : undefined
-                    }
-                  >
+                  <th key={column.key} className={columnClass(column)}>
                     {column.label}
                   </th>
                 ))}
-                {onMove && <th>{moveUpLabel}</th>}
-                {onRemove && <th>{removeLabel}</th>}
+                {mergeActions ? (
+                  <th>{actionsLabel}</th>
+                ) : (
+                  <>
+                    {onMove && <th>{moveUpLabel}</th>}
+                    {onRemove && <th>{removeLabel}</th>}
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -151,12 +184,7 @@ export function EditableDataTable<Row extends Record<string, string>>({
                         ),
                     };
                     return (
-                      <td
-                        key={column.key}
-                        className={
-                          column.narrow ? "reference-admin-narrow" : undefined
-                        }
-                      >
+                      <td key={column.key} className={columnClass(column)}>
                         {column.type === "select" ? (
                           <select {...shared}>
                             {column.options?.map((option) => (
@@ -180,32 +208,32 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       </td>
                     );
                   })}
-                  {onMove && (
-                    <td className="reference-admin-move-cell">
-                      <button
-                        className="secondary-action"
-                        type="button"
-                        data-testid={testId(`move-up-${rowIndex}`)}
-                        onClick={() => onMove(rowIndex, -1)}
-                        disabled={rowIndex === 0}
-                        aria-label={moveUpLabel}
-                      >
-                        <ArrowUp size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        className="secondary-action"
-                        type="button"
-                        data-testid={testId(`move-down-${rowIndex}`)}
-                        onClick={() => onMove(rowIndex, 1)}
-                        disabled={rowIndex === rows.length - 1}
-                        aria-label={moveDownLabel}
-                      >
-                        <ArrowDown size={16} aria-hidden="true" />
-                      </button>
-                    </td>
-                  )}
-                  {onRemove && (
-                    <td>
+                  {(() => {
+                    const moveButtons = onMove && (
+                      <>
+                        <button
+                          className="secondary-action"
+                          type="button"
+                          data-testid={testId(`move-up-${rowIndex}`)}
+                          onClick={() => onMove(rowIndex, -1)}
+                          disabled={rowIndex === 0}
+                          aria-label={moveUpLabel}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          className="secondary-action"
+                          type="button"
+                          data-testid={testId(`move-down-${rowIndex}`)}
+                          onClick={() => onMove(rowIndex, 1)}
+                          disabled={rowIndex === rows.length - 1}
+                          aria-label={moveDownLabel}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </>
+                    );
+                    const removeButton = onRemove && (
                       <button
                         className={
                           removeIcon
@@ -230,8 +258,28 @@ export function EditableDataTable<Row extends Record<string, string>>({
                           removeLabel
                         )}
                       </button>
-                    </td>
-                  )}
+                    );
+                    if (mergeActions)
+                      return (
+                        <td
+                          className="reference-admin-move-cell"
+                          data-testid={testId(`actions-${rowIndex}`)}
+                        >
+                          {moveButtons}
+                          {removeButton}
+                        </td>
+                      );
+                    return (
+                      <>
+                        {onMove && (
+                          <td className="reference-admin-move-cell">
+                            {moveButtons}
+                          </td>
+                        )}
+                        {onRemove && <td>{removeButton}</td>}
+                      </>
+                    );
+                  })()}
                 </tr>
               ))}
             </tbody>

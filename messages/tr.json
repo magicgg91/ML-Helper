@@ -301,7 +301,6 @@
   },
   "stuff-simulator": {
     "name": "Savaş Ekipmanı",
-    "view-reference": "Tam referans tablosunu görüntüle",
     "global-summary": "Ekipman yetenekleri özeti",
     "transfer": "Oyuncu Ayarlarına aktar",
     "transferred": "Oyuncu Ayarlarına aktarıldı!",
@@ -324,7 +323,6 @@
   },
   "expedition-equipment-simulator": {
     "name": "Keşif Ekipmanı",
-    "view-reference": "Tam referansı görüntüle",
     "summary-title": "Keşif yetenekleri özeti",
     "empty-summary": "Yapılandırılmış ekipman yok",
     "empty-slot": "Boş",
@@ -394,10 +392,8 @@
     "remaining-budget": "Kalan bütçe",
     "gem-count": "{count} mücevher {level}★",
     "no-gems": "Mücevher yok",
-    "view-reference": "Tam referans tablosunu görüntüle",
     "reference": {
-      "price-row": "Safir maliyeti",
-      "competences-link": "Yetenek araçlarını aç"
+      "price-row": "Safir maliyeti"
     }
   },
   "templars": {
@@ -412,15 +408,13 @@
     "total-bonus-level": "{level} seviyesinde toplam bonus",
     "gain-transition": "Başlangıç → hedef kazancı",
     "rate-value": "%{rate}/tapınak şövalyesi",
-    "view-reference": "Tam referans tablosunu görüntüle",
     "cost-table": "Kesin maliyet tablosu",
     "columns": {
       "skill": "Yetenek",
       "level": "Ulaşılan seviye",
       "level-cost": "Seviye maliyeti",
       "cumulative-cost": "Kümülatif maliyet"
-    },
-    "competences-link": "Yetenek araçlarını aç"
+    }
   },
   "Navigation": {
     "tools": "Araçlar",
@@ -582,6 +576,10 @@
       "dismantle-terradust": "Sökümde Terra Tozu"
     }
   },
+  "crossReference": {
+    "toReference": "Referans tablosuna göz atarak derinleş",
+    "toTool": "Aracı kullanarak derinleş"
+  },
   "level-up": {
     "name": "Seviye Atlama",
     "league": "Lig",
@@ -603,8 +601,7 @@
     "previous": "Önceki",
     "next": "Sonraki",
     "page": "Sayfa {current} / {total}",
-    "pagination-label": "Seviye sayfaları",
-    "combat-link": "Savaş araçlarını aç"
+    "pagination-label": "Seviye sayfaları"
   },
   "login": {
     "title": "Yönetici girişi",
@@ -915,6 +912,7 @@
       "consumables-table-title": "Öğeler",
       "empty": "Henüz öğe yok.",
       "move-down": "Aşağı taşı",
+      "actions": "İşlemler",
       "move-up": "Yukarı taşı",
       "remove": "Kaldır"
     },

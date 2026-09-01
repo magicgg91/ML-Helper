@@ -74,6 +74,7 @@ export function ConsumablesReferenceScreen({
       key: descriptionKey,
       label: t("consumables-columns.description"),
       required: true,
+      wide: true,
     },
     {
       key: "cost",
@@ -263,6 +264,9 @@ export function ConsumablesReferenceScreen({
               moveDownLabel={t("move-down")}
               emptyLabel={t("empty")}
               errors={errors[category]}
+              combinedActions
+              actionsLabel={t("actions")}
+              tableClassName="consumables-admin-table"
             />
           </div>
         ))}

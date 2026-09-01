@@ -298,7 +298,6 @@
   },
   "stuff-simulator": {
     "name": "Équipement de Combat",
-    "view-reference": "Voir le référentiel complet",
     "global-summary": "Récapitulatif des compétences d’équipement",
     "transfer": "Transférer vers les Paramètres du joueur",
     "transferred": "Transféré dans les Paramètres du joueur !",
@@ -321,7 +320,6 @@
   },
   "expedition-equipment-simulator": {
     "name": "Équipements d’Expédition",
-    "view-reference": "Voir le référentiel complet",
     "summary-title": "Récapitulatif des compétences d’expédition",
     "empty-summary": "Aucun équipement configuré",
     "empty-slot": "Vide",
@@ -391,10 +389,8 @@
     "remaining-budget": "Budget restant",
     "gem-count": "{count, plural, one {# gemme} other {# gemmes}} {level}★",
     "no-gems": "Aucune gemme",
-    "view-reference": "Voir le référentiel complet",
     "reference": {
-      "price-row": "Coût en saphirs",
-      "competences-link": "Ouvrir les Outils Compétences"
+      "price-row": "Coût en saphirs"
     }
   },
   "templars": {
@@ -409,15 +405,13 @@
     "total-bonus-level": "Bonus total au niveau {level}",
     "gain-transition": "Gain départ → cible",
     "rate-value": "{rate}%/Templier",
-    "view-reference": "Voir le référentiel complet",
     "cost-table": "Table de coût exacte",
     "columns": {
       "skill": "Compétence",
       "level": "Niveau atteint",
       "level-cost": "Coût du niveau",
       "cumulative-cost": "Coût cumulé"
-    },
-    "competences-link": "Ouvrir les Outils Compétences"
+    }
   },
   "Navigation": {
     "tools": "Outils",
@@ -479,7 +473,7 @@
     "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
     "referentielsEyebrow": "Consulter",
     "referentielsTitle": "Retrouve les données clés",
-    "referentielsDescription": "Retrouve les tableaux de référence de la communauté pour connaître les coûts, statistiques et paliers exacts du jeu."
+    "referentielsDescription": "Retrouve les tableaux de référence pour connaître les coûts, statistiques et paliers exacts du jeu, aussi bien pour les équipements, les gemmes ou bien les templiers que pour les consommables de la boutique."
   },
   "ToolsPage": {
     "eyebrow": "Outils",
@@ -598,6 +592,10 @@
       "dismantle-terradust": "Terradust à la destruction"
     }
   },
+  "crossReference": {
+    "toReference": "Aller plus loin en vérifiant le référentiel",
+    "toTool": "Aller plus loin en utilisant l'outil"
+  },
   "level-up": {
     "name": "Level Up",
     "league": "Ligue",
@@ -619,8 +617,7 @@
     "previous": "Précédent",
     "next": "Suivant",
     "page": "Page {current} sur {total}",
-    "pagination-label": "Pages de niveaux",
-    "combat-link": "Ouvrir les Outils Combat"
+    "pagination-label": "Pages de niveaux"
   },
   "login": {
     "title": "Connexion administration",
@@ -926,6 +923,7 @@
       "remove": "Supprimer",
       "move-up": "Monter",
       "move-down": "Descendre",
+      "actions": "Actions",
       "empty": "Aucun objet pour l’instant.",
       "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ)."
     },

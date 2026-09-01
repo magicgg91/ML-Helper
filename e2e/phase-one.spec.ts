@@ -615,9 +615,15 @@ test("Reference tables filter combat and expedition equipment", async ({
   // Bloc 50/1b: /referentiels is now an independent root, split off from
   // /guides — the reference catalog no longer renders on the guides hub at
   // all (only the guides list does), so this checks each root separately.
+  // Bloc 53/D: /guides' h1 now reuses the homepage's own guides intro
+  // title ("Affûte ta stratégie"), not the short "Guides" index title.
   await page.goto("/guides");
   await expect(
-    page.getByRole("heading", { name: "Guides", exact: true, level: 1 }),
+    page.getByRole("heading", {
+      name: "Affûte ta stratégie",
+      exact: true,
+      level: 1,
+    }),
   ).toBeVisible();
 
   await page.goto("/referentiels");

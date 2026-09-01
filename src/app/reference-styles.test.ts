@@ -49,11 +49,22 @@ describe("Bloc 38 public reference/homepage styles", () => {
 
   it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
     const match = css.match(
-      /\.hero h1,\s*\n\.public-main > h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
+      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
     );
     expect(match).not.toBeNull();
     expect(match![1]).toContain(":not(.tools-page-title)");
     expect(match![1]).toContain(":not(.reference-page-title)");
+  });
+
+  // Bloc 53/D: /guides and /referentiels get the same smaller-title
+  // treatment, added to the same exclusion list above.
+  it("Bloc53/D: also excludes .guides-page-title/.referentiels-page-title from the generic hero-title rule", () => {
+    const match = css.match(
+      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
+    );
+    expect(match).not.toBeNull();
+    expect(match![1]).toContain(":not(.guides-page-title)");
+    expect(match![1]).toContain(":not(.referentiels-page-title)");
   });
 
   it("M: gives Level Up/Templiers/Gemmes' shared table class alternating row colors", () => {
@@ -183,5 +194,37 @@ describe("Bloc 41: referentiel fixes", () => {
     expect(css).toMatch(
       /\.reference-admin-wide-inputs \.reference-admin-table input\s*{\s*min-width: 9rem;\s*}/,
     );
+  });
+});
+
+describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
+  it("B: Boutique's Nom/Description inputs fill their column width, scoped away from the shared .reference-admin-table rule", () => {
+    expect(css).toMatch(
+      /\.consumables-admin-table td:not\(\.reference-admin-narrow\) input,\s*\n\.consumables-admin-table td:not\(\.reference-admin-narrow\) select\s*{\s*width: 100%;/,
+    );
+  });
+
+  it("C: gives Boutique's Description column relatively more width than its neighbours", () => {
+    expect(css).toMatch(
+      /\.consumables-admin-table \.reference-admin-wide\s*{\s*width: 36%;\s*}/,
+    );
+  });
+
+  it("A-C: the Boutique table fills its container width instead of the shared table's min-width: max-content (the historical horizontal-scroll trigger)", () => {
+    expect(css).toMatch(
+      /\.consumables-admin-table\s*{\s*table-layout: fixed;\s*width: 100%;\s*min-width: 0;\s*}/,
+    );
+  });
+
+  it("D: /guides and /referentiels get their own smaller title class, excluded from the generic hero-title rule", () => {
+    expect(css).toMatch(
+      /\.guides-page-title,\s*\n\.referentiels-page-title\s*{/,
+    );
+  });
+
+  it("E: the cross-reference banner/mini-card CSS replaces the old plain-text .reference-cross-link rule", () => {
+    expect(css).not.toMatch(/\.reference-cross-link\s*{/);
+    expect(css).toMatch(/\.cross-reference-banner\s*{/);
+    expect(css).toMatch(/\.cross-reference-card\s*{/);
   });
 });

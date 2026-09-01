@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type CSSProperties } from "react";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   equipmentRarityTranslationKeys,
   expeditionFamilyTranslationKeys,
@@ -49,7 +50,9 @@ const summaryStatOrder = [
   "Vitalité",
 ] as const;
 
-function isValidExpeditionState(value: unknown): value is ExpeditionSlotState[] {
+function isValidExpeditionState(
+  value: unknown,
+): value is ExpeditionSlotState[] {
   if (!Array.isArray(value) || value.length !== expeditionSlotLayout.length)
     return false;
   return value.every((slot: unknown) => {
@@ -111,7 +114,9 @@ function FilterButtons({
             key={key}
             type="button"
             aria-pressed={filter === key}
-            style={color ? ({ "--pill-color": color } as CSSProperties) : undefined}
+            style={
+              color ? ({ "--pill-color": color } as CSSProperties) : undefined
+            }
             onClick={() => onChange(key)}
           >
             {t(`filters.${filterTranslationKeys[key]}`)}
@@ -306,6 +311,11 @@ export function ExpeditionEquipmentSimulator({
   increments?: ExpeditionStarIncrements;
 }) {
   const t = useTranslations("expedition-equipment-simulator");
+  const crossReference = useTranslations("crossReference");
+  const references = useTranslations("references");
+  const expeditionEquipmentReference = referenceCatalog.find(
+    (item) => item.slug === "expedition-equipment",
+  )!;
   const [filter, setFilter] = useState<ExpeditionFilter>("custom");
   const [configs, setConfigs] = useState<ExpeditionConfigs>(
     createEmptyExpeditionConfigs,
@@ -353,13 +363,17 @@ export function ExpeditionEquipmentSimulator({
     setActive(undefined);
   }
   return (
-    <div className="calculator-stack" data-testid="expedition-equipment-simulator">
-      <Link
-        className="reference-cross-link"
-        href="/referentiels/expedition-equipment"
-      >
-        {t("view-reference")}
-      </Link>
+    <div
+      className="calculator-stack"
+      data-testid="expedition-equipment-simulator"
+    >
+      <CrossReferenceLink
+        href={referenceHref("expedition-equipment")}
+        title={references("catalog.expedition-equipment")}
+        image={expeditionEquipmentReference.image}
+        fallbackImage={expeditionEquipmentReference.fallbackImage}
+        label={crossReference("toReference")}
+      />
       <section className="calculator-card">
         <h3>{t("summary-title")}</h3>
         <Summary totals={totals} selected={selected} />
@@ -377,7 +391,9 @@ export function ExpeditionEquipmentSimulator({
                 state={state[index]}
                 active={active === index}
                 onClick={() =>
-                  setActive((current) => (current === index ? undefined : index))
+                  setActive((current) =>
+                    current === index ? undefined : index,
+                  )
                 }
                 rows={rows}
               />

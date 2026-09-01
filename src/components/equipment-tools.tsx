@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   equipmentFamilyTranslationKeys,
   equipmentRarityTranslationKeys,
@@ -416,6 +417,8 @@ export function StuffSimulator({
 }) {
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
+  const crossReference = useTranslations("crossReference");
+  const references = useTranslations("references");
   const playerSettings = usePlayerSettings();
   const [state, setState] = useState<StuffState>(createEmptyStuffState);
   const [loaded, setLoaded] = useState(false);
@@ -431,6 +434,9 @@ export function StuffSimulator({
     equipmentBlocks[0],
   );
   const [transferred, setTransferred] = useState(false);
+  const combatEquipmentReference = referenceCatalog.find(
+    (item) => item.slug === "combat-equipment",
+  )!;
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
@@ -492,12 +498,13 @@ export function StuffSimulator({
         );
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
-      <Link
-        className="reference-cross-link"
-        href="/referentiels/combat-equipment"
-      >
-        {t("view-reference")}
-      </Link>
+      <CrossReferenceLink
+        href={referenceHref("combat-equipment")}
+        title={references("catalog.combat-equipment")}
+        image={combatEquipmentReference.image}
+        fallbackImage={combatEquipmentReference.fallbackImage}
+        label={crossReference("toReference")}
+      />
       <section className="calculator-card">
         <h3>{t("global-summary")}</h3>
         <Summary

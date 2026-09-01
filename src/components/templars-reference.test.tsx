@@ -31,15 +31,19 @@ describe("TemplarsReferenceTable", () => {
     expect(level1[1]).toHaveTextContent("999");
   });
 
-  it("links back to the Compétences tools category", () => {
+  // Bloc 53/F: this link used to point at the generic /tools/competences
+  // category (landing on whichever tab happened to be firstAvailable) —
+  // now it points at the exact Templiers calculator tab.
+  it("links back to the precise Templiers calculator, not the generic Compétences category", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <TemplarsReferenceTable parameters={defaultTemplarParameters} />
       </NextIntlClientProvider>,
     );
-    expect(
-      screen.getByRole("link", { name: "Ouvrir les Outils Compétences" }),
-    ).toHaveAttribute("href", "/tools/competences");
+    expect(screen.getByRole("link", { name: "Templiers" })).toHaveAttribute(
+      "href",
+      "/tools/competences?open=templars",
+    );
   });
 
   it("Bloc38/M: shares the .reference-simple-table class with Gemmes/Level Up, for the same alternating-row style", () => {
