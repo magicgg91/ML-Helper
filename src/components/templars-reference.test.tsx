@@ -40,7 +40,9 @@ describe("TemplarsReferenceTable", () => {
         <TemplarsReferenceTable parameters={defaultTemplarParameters} />
       </NextIntlClientProvider>,
     );
-    expect(screen.getByRole("link", { name: "Templiers" })).toHaveAttribute(
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
+    expect(screen.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
       "href",
       "/tools/competences?open=templars",
     );

@@ -48,8 +48,10 @@ describe("ExpeditionEquipmentSimulator", () => {
 
   it("shows the cross-link to the full expedition equipment reference", () => {
     renderTool();
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
     expect(
-      screen.getByRole("link", { name: "Équipements d’Expédition" }),
+      screen.getByRole("link", { name: /Équipements d’Expédition$/ }),
     ).toHaveAttribute("href", "/referentiels/expedition-equipment");
   });
 

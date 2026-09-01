@@ -192,8 +192,38 @@ describe("SkillsCalculators", () => {
         initialTool="templars"
       />,
     );
+    expect(screen.getByRole("tab", { name: "Templiers" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  // Bloc 54/A: the newly-added Combat/Expedition reference->tool links pass
+  // ?open=simulator / ?open=expedition — must select those tabs too, same
+  // mechanism already proven for gems/templars above.
+  it('Bloc54/A: initialTool="simulator" selects the Équipement de Combat tab', () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+        initialTool="simulator"
+      />,
+    );
     expect(
-      screen.getByRole("tab", { name: "Templiers" }),
+      screen.getByRole("tab", { name: "Équipement de Combat" }),
+    ).toHaveAttribute("aria-selected", "true");
+  });
+
+  it('Bloc54/A: initialTool="expedition" selects the Équipements d’Expédition tab', () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+        initialTool="expedition"
+      />,
+    );
+    expect(
+      screen.getByRole("tab", { name: "Équipements d’Expédition" }),
     ).toHaveAttribute("aria-selected", "true");
   });
 
@@ -230,7 +260,9 @@ describe("SkillsCalculators", () => {
     expect(
       screen.getByText("Aller plus loin en vérifiant le référentiel"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Gemmes" })).toHaveAttribute(
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
+    expect(screen.getByRole("link", { name: /Gemmes$/ })).toHaveAttribute(
       "href",
       "/referentiels/gems",
     );

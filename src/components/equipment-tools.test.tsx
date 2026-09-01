@@ -88,8 +88,10 @@ describe("equipment tools", () => {
 
   it("toggles a simulator slot and persists an exact set", async () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
+    // Bloc 54/B: the label is now folded inside the button itself, so the
+    // link's accessible name is the label + title together.
     expect(
-      screen.getByRole("link", { name: "Équipements de Combat" }),
+      screen.getByRole("link", { name: /Équipements de Combat$/ }),
     ).toHaveAttribute("href", "/referentiels/combat-equipment");
     const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);

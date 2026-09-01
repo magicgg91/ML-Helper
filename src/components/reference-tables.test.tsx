@@ -2,7 +2,11 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
-import { CombatReferenceTable, ReferenceTables } from "./reference-tables";
+import {
+  CombatReferenceTable,
+  ExpeditionReferenceTable,
+  ReferenceTables,
+} from "./reference-tables";
 import { equipmentSlotLayout } from "../lib/equipment";
 import { expeditionSlotLayout } from "../lib/expedition-equipment";
 import {
@@ -459,5 +463,35 @@ describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-fi
     expect(skill2.querySelector(".unconfirmed")).toHaveTextContent(
       "À compléter en admin",
     );
+  });
+});
+
+// Bloc 54/A: this direction (reference -> tool) was entirely missing for
+// Combat/Expedition equipment — the reverse (tool -> reference) already
+// existed since Bloc 53/E. Both must now link to the exact simulator tab,
+// not the generic /tools/competences category.
+describe("Bloc 54/A: reference -> tool cross-link (Combat/Expedition equipment)", () => {
+  afterEach(cleanup);
+
+  it("Combat Equipment reference links to the exact Équipement de Combat simulator tab", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={combatReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.getByRole("link", { name: /Équipement de Combat$/ }),
+    ).toHaveAttribute("href", "/tools/competences?open=simulator");
+  });
+
+  it("Expedition Equipment reference links to the exact Équipements d’Expédition simulator tab", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ExpeditionReferenceTable rows={expeditionReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.getByRole("link", { name: /Équipements d’Expédition$/ }),
+    ).toHaveAttribute("href", "/tools/competences?open=expedition");
   });
 });

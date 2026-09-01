@@ -245,3 +245,27 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
     expect(css).toMatch(/\.cross-reference-card\s*{/);
   });
 });
+
+describe("Bloc 54: missing Combat/Expedition cross-link + bigger banner", () => {
+  // B: the phrase used to be a separate .cross-reference-label <p> above
+  // the button — it's now folded inside the button via .cross-reference-text,
+  // and there is no longer a rule styling .cross-reference-label as its own
+  // block-level line above the card.
+  it("B: the label lives inside .cross-reference-text, not as a standalone line above the button", () => {
+    expect(css).toMatch(/\.cross-reference-text\s*{/);
+    const bannerRule = css.match(
+      /\.cross-reference-banner\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(bannerRule).toBeDefined();
+    expect(bannerRule).not.toMatch(/flex-direction: column/);
+  });
+
+  // B: the thumbnail matches Boutique's own reference-table image size
+  // (Bloc 46/A), up from the original 2.25rem.
+  it("B: sizes the cross-reference thumbnail at 5rem, matching Boutique's reference-table image size", () => {
+    const rule = css.match(/\.cross-reference-thumb\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 5rem;/);
+    expect(rule).toMatch(/height: 5rem;/);
+  });
+});
