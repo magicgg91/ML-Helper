@@ -241,9 +241,18 @@
   "xp-gain-rate": {
     "name": "XP Gain Rate",
     "mode-label": "XP calculation mode",
-    "modes": { "attacker": "I am the attacker", "target": "I am the target" },
-    "fields": { "my-vp": "My VP", "unit": "VP unit" },
-    "columns": { "rate": "XP gain rate", "opponent-vp": "Opponent VP range" }
+    "modes": {
+      "attacker": "I am the attacker",
+      "target": "I am the target"
+    },
+    "fields": {
+      "my-vp": "My VP",
+      "unit": "VP unit"
+    },
+    "columns": {
+      "rate": "XP gain rate",
+      "opponent-vp": "Opponent VP range"
+    }
   },
   "demo-attack-troops": {
     "name": "Demo Attack Troops",
@@ -535,7 +544,8 @@
       "level-up": "Level Up",
       "templars": "Templar Cost",
       "gems": "Gems",
-      "shop": "Shop"
+      "shop": "Shop",
+      "events": "Events"
     },
     "tabs-label": "Reference tables",
     "disabled-tooltip": "Disabled — currently unavailable",
@@ -559,6 +569,16 @@
         "equipment": "Equipment",
         "inventory": "Inventory"
       }
+    },
+    "events": {
+      "league": "League",
+      "select-league": "Choose a league to see its events.",
+      "empty": "No events for this league yet.",
+      "columns": {
+        "objective": "Objective",
+        "reward": "Reward"
+      },
+      "no-tiers": "No tiers for this event."
     }
   },
   "combat-equipment": {
@@ -734,8 +754,15 @@
     "referentiels": {
       "eyebrow": "Reference data",
       "title": "References",
-      "columns": { "title": "Title", "status": "Status", "actions": "Actions" },
-      "statuses": { "active": "Enabled", "inactive": "Disabled" },
+      "columns": {
+        "title": "Title",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "active": "Enabled",
+        "inactive": "Disabled"
+      },
       "reference-combat": "Edit Combat Equipment",
       "reference-expedition": "Edit Expedition Equipment",
       "reference-level-up": "Edit Level Up",
@@ -746,7 +773,8 @@
         "level-up": "Level Up",
         "templiers": "Templars",
         "gemmes": "Gems",
-        "consommables": "Shop"
+        "consommables": "Shop",
+        "events": "Events"
       },
       "disabled-tooltip": "Disabled and hidden from the public site",
       "edit": "Edit",
@@ -755,7 +783,8 @@
       "visibility-error": "Unable to change visibility.",
       "enabled": "Reference table enabled.",
       "disabled": "Reference table disabled.",
-      "no-results": "No reference table found."
+      "no-results": "No reference table found.",
+      "reference-events": "Edit Events"
     },
     "guide-editor": {
       "language-label": "Guide language",
@@ -900,7 +929,9 @@
       "saved": "Reference table saved.",
       "server-error": "Unable to reach the server. Check the connection and try again.",
       "all": "All",
-      "filters": { "skill": "Skill" },
+      "filters": {
+        "skill": "Skill"
+      },
       "consumables-intro-title": "Intro",
       "consumables-intro-language-label": "Text language",
       "consumables-table-title": "Items",
@@ -919,9 +950,28 @@
       "move-down": "Move down",
       "actions": "Actions",
       "empty": "No items yet.",
-      "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star)."
+      "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star).",
+      "events-league-label": "League",
+      "events-language-label": "Text language",
+      "events-table-title": "Event list",
+      "add-event": "Add an event",
+      "events-columns": {
+        "name": "Name",
+        "startDay": "Start day",
+        "endDay": "End day"
+      },
+      "tier-columns": {
+        "objective": "Objective",
+        "reward": "Reward"
+      },
+      "add-tier": "Add a tier",
+      "events-tiers-summary": "Tiers ({count})",
+      "event-row-label": "{field} of event {row}",
+      "tier-row-label": "{field} of tier {row} of {event}"
     },
-    "common": { "back": "Back" },
+    "common": {
+      "back": "Back"
+    },
     "parameters": {
       "save": "Save parameters",
       "saving": "Saving…",
@@ -941,9 +991,18 @@
       "league": "League",
       "army": "Army multiplier",
       "gold": "Gold multiplier",
-      "vp": { "base": "VP base", "ratio": "VP ratio" },
-      "walls": { "base": "Walls base", "ratio": "Walls ratio" },
-      "cost": { "base": "Cost base", "ratio": "Cost ratio" }
+      "vp": {
+        "base": "VP base",
+        "ratio": "VP ratio"
+      },
+      "walls": {
+        "base": "Walls base",
+        "ratio": "Walls ratio"
+      },
+      "cost": {
+        "base": "Cost base",
+        "ratio": "Cost ratio"
+      }
     },
     "templar-parameters": {
       "formula": "Cost(n) = round(base × ratio^(n-1))",

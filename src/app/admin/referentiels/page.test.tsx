@@ -78,4 +78,27 @@ describe("ReferentielsAdminPage", () => {
       editHref: "/admin/referentiels/reference-consommables",
     });
   });
+
+  // Bloc60: the 7th reference — same generic wiring as the other 6, so
+  // references_manager (whose access is entirely driven by the shared
+  // references.read/write capabilities this page and the [id] editor both
+  // gate on, never per-slug) reaches it exactly the same way.
+  it("Bloc60: routes the Events reference row to its own admin editor, ships inactive by default", async () => {
+    mockedRequireCapability.mockResolvedValue({
+      user: { id: "references-manager", role: "references_manager", name: "RM" },
+    } as Awaited<ReturnType<typeof requireCapability>>);
+    mockedCalculatorFindMany.mockResolvedValue([
+      { id: "calculator-events-reference", slug: "events", active: false },
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+
+    render(await ReferentielsAdminPage());
+
+    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
+    expect(rows[0]).toMatchObject({
+      id: "events",
+      slug: "events",
+      active: false,
+      editHref: "/admin/referentiels/reference-events",
+    });
+  });
 });

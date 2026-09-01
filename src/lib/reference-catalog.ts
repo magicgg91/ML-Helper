@@ -55,6 +55,19 @@ export const referenceCatalog = [
     image: "/referentials/referential-shop.webp",
     fallbackImage: "/category-references.svg",
   },
+  {
+    // Bloc 60: 7th reference — "Événements" is a deliberate working name,
+    // already used elsewhere for the unrelated seasonal-events mechanic;
+    // kept as-is per the bloc's explicit instruction, to reconsider later.
+    slug: "events",
+    calculatorSlug: "events" satisfies CalculatorSlug,
+    category: "combat",
+    // No real illustration deposited yet — same placeholder-only pattern
+    // Boutique used before Bloc 51 (GameImage falls back gracefully to
+    // fallbackImage until the file exists).
+    image: "/referentials/referential-events.webp",
+    fallbackImage: "/category-combat.svg",
+  },
 ] as const;
 
 export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];

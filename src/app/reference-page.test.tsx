@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferencePage, {
   generateMetadata,
 } from "./(public)/referentiels/[slug]/page";
+import { getCalculatorAvailability } from "@/lib/calculators-server";
+import { defaultCalculatorAvailability } from "@/lib/calculator-catalog";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => {
@@ -13,20 +15,22 @@ vi.mock("next-intl/server", () => ({
       "catalog.templars": "Coût des Templiers",
       "catalog.gems": "Gemmes",
       "catalog.shop": "Boutique",
+      "catalog.events": "Événements",
     };
     return (key: string) =>
       namespace === "references" && key in catalog ? catalog[key] : key;
   },
 }));
 vi.mock("@/lib/calculators-server", () => ({
-  getCalculatorAvailability: async () => ({
+  getCalculatorAvailability: vi.fn(async () => ({
     "combat-equipment": true,
     "expedition-equipment": true,
     "level-up": true,
     templiers: true,
     gemmes: true,
     consommables: true,
-  }),
+    events: true,
+  })),
 }));
 vi.mock("@/components/reference-tables", () => ({
   CombatReferenceTable: () => <div data-testid="combat-table" />,
@@ -51,6 +55,19 @@ vi.mock("@/lib/consumables-server", () => ({
     equipment: [],
     expedition: [],
     inventory: [],
+  }),
+}));
+vi.mock("@/components/events-reference", () => ({
+  EventsReferenceTable: () => <div data-testid="events-table" />,
+}));
+vi.mock("@/lib/events-server", () => ({
+  getEventsCatalog: async () => ({
+    bronze: [],
+    silver: [],
+    gold: [],
+    platinum: [],
+    diamond: [],
+    legend: [],
   }),
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({
@@ -128,5 +145,44 @@ describe("ReferencePage", () => {
     expect(screen.getByTestId("consumables-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Boutique" });
     expect(heading).toHaveClass("reference-page-title");
+  });
+
+  // Bloc60: the 7th reference, routed the same way as every other one.
+  it("Bloc60: routes the 'events' slug to EventsReferenceTable when active", async () => {
+    render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "events" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("events-table")).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: "Événements" });
+    expect(heading).toHaveClass("reference-page-title");
+  });
+
+  // Bloc60: ships inactive by default — invisible on the public site until
+  // an admin has entered enough content to switch it on themselves.
+  it("Bloc60: hides Événements behind the unavailable message while inactive, shows it once activated", async () => {
+    vi.mocked(getCalculatorAvailability).mockResolvedValueOnce({
+      ...defaultCalculatorAvailability,
+      events: false,
+    });
+    const { unmount } = render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "events" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.queryByTestId("events-table")).not.toBeInTheDocument();
+    expect(screen.getByText("single-unavailable")).toBeInTheDocument();
+    unmount();
+
+    render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "events" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("events-table")).toBeInTheDocument();
   });
 });

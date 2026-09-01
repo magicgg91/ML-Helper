@@ -23,6 +23,16 @@ vi.mock("@/lib/consumables-server", () => ({
     inventory: [],
   }),
 }));
+vi.mock("@/lib/events-server", () => ({
+  getEventsCatalog: async () => ({
+    bronze: [],
+    silver: [],
+    gold: [],
+    platinum: [],
+    diamond: [],
+    legend: [],
+  }),
+}));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
   getCombatSkydustBase: async () => ({}),
@@ -73,6 +83,17 @@ vi.mock("@/components/consumables-admin-editor", () => ({
     </div>
   ),
 }));
+vi.mock("@/components/events-admin-editor", () => ({
+  EventsReferenceScreen: () => (
+    <div className="calculator-stack">
+      <div className="editor-action-bar">
+        <Link className="editor-back-action" href="/admin/referentiels">
+          back
+        </Link>
+      </div>
+    </div>
+  ),
+}));
 
 afterEach(cleanup);
 
@@ -104,6 +125,18 @@ describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => 
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-consommables" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    const back = screen.getByRole("link", { name: /back/ });
+    expect(back).toHaveClass("editor-back-action");
+    expect(back).toHaveAttribute("href", "/admin/referentiels");
+  });
+
+  it("Bloc60: routes 'reference-events' to EventsReferenceScreen", async () => {
+    render(
+      await EditReferentielPage({
+        params: Promise.resolve({ id: "reference-events" }),
         searchParams: Promise.resolve({}),
       }),
     );

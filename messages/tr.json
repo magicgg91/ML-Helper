@@ -536,7 +536,8 @@
       "level-up": "Seviye Atlama",
       "templars": "Tapınak Şövalyesi Maliyeti",
       "gems": "Mücevherler",
-      "shop": "Mağaza"
+      "shop": "Mağaza",
+      "events": "Etkinlikler"
     },
     "tabs-label": "Referans tabloları",
     "disabled-tooltip": "Devre dışı — şu anda kullanılamıyor",
@@ -550,6 +551,16 @@
         "name": "Ad"
       },
       "cost-unknown": "Belirlenmedi"
+    },
+    "events": {
+      "league": "Lig",
+      "select-league": "Etkinliklerini görmek için bir lig seç.",
+      "empty": "Bu lig için henüz etkinlik yok.",
+      "columns": {
+        "objective": "Hedef",
+        "reward": "Ödül"
+      },
+      "no-tiers": "Bu etkinlik için kademe yok."
     }
   },
   "combat-equipment": {
@@ -729,7 +740,10 @@
         "status": "Durum",
         "actions": "İşlemler"
       },
-      "statuses": { "active": "Etkin", "inactive": "Devre dışı" },
+      "statuses": {
+        "active": "Etkin",
+        "inactive": "Devre dışı"
+      },
       "reference-combat": "Savaş Ekipmanını düzenle",
       "reference-expedition": "Keşif Ekipmanını düzenle",
       "reference-level-up": "Seviye Atlamayı düzenle",
@@ -740,7 +754,8 @@
         "level-up": "Seviye Atlama",
         "templiers": "Tapınak Şövalyeleri",
         "gemmes": "Mücevherler",
-        "consommables": "Mağaza"
+        "consommables": "Mağaza",
+        "events": "Etkinlikler"
       },
       "disabled-tooltip": "Devre dışı ve genel siteden gizli",
       "edit": "Düzenle",
@@ -749,7 +764,8 @@
       "visibility-error": "Görünürlük değiştirilemedi.",
       "enabled": "Referans tablosu etkinleştirildi.",
       "disabled": "Referans tablosu devre dışı bırakıldı.",
-      "no-results": "Referans tablosu bulunamadı."
+      "no-results": "Referans tablosu bulunamadı.",
+      "reference-events": "Etkinlikleri Düzenle"
     },
     "guide-editor": {
       "language-label": "Rehber dili",
@@ -914,7 +930,24 @@
       "move-down": "Aşağı taşı",
       "actions": "İşlemler",
       "move-up": "Yukarı taşı",
-      "remove": "Kaldır"
+      "remove": "Kaldır",
+      "events-league-label": "Lig",
+      "events-language-label": "Metin dili",
+      "events-table-title": "Etkinlik listesi",
+      "add-event": "Etkinlik ekle",
+      "events-columns": {
+        "name": "İsim",
+        "startDay": "Başlangıç günü",
+        "endDay": "Bitiş günü"
+      },
+      "tier-columns": {
+        "objective": "Hedef",
+        "reward": "Ödül"
+      },
+      "add-tier": "Kademe ekle",
+      "events-tiers-summary": "Kademeler ({count})",
+      "event-row-label": "{row}. etkinliğin {field}",
+      "tier-row-label": "{event} etkinliğinin {row}. kademesinin {field}"
     },
     "common": {
       "back": "Geri"

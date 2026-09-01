@@ -62,7 +62,7 @@ export default async function HomePage() {
         {/* Structural cap (not a today-only coincidence): limit={8} keeps
             this teaser within .tool-category-grid's 4-column/2-row shape
             even once the catalog grows past 8 entries. */}
-        <ReferenceCatalogGrid t={references} limit={8} />
+        <ReferenceCatalogGrid t={references} limit={8} active={active} />
       </section>
       {/* Bloc 34/E (Bloc 50 Group3: now its own section, take raised from 3
           to 6): the most recently published guides, same sort as /guides. */}

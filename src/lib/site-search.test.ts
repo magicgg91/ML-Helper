@@ -199,6 +199,34 @@ describe("buildSiteSearchResults", () => {
     ]);
   });
 
+  // Bloc 60 review (Codex PR #81): a reference shipped inactive (Events,
+  // hidden until an admin activates it) must not surface as a search
+  // result either — same "masqué du public" requirement as the catalog
+  // grid, this was the other unfiltered consumer Codex flagged.
+  it("Bloc60 review: hides a reference from results while its calculator is inactive", () => {
+    const results = buildSiteSearchResults({
+      query: "événements",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+      active: { events: false },
+    });
+    expect(results).toEqual([]);
+  });
+
+  it("Bloc60 review: still lists an active reference when an availability map is given", () => {
+    const results = buildSiteSearchResults({
+      query: "événements",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+      active: { events: true },
+    });
+    expect(results).toContainEqual(
+      expect.objectContaining({ type: "reference", id: "reference-events" }),
+    );
+  });
+
   it("is case-insensitive", () => {
     const results = buildSiteSearchResults({
       query: "GEMMES",

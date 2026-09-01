@@ -536,7 +536,8 @@
       "level-up": "Subida de Nivel",
       "templars": "Coste de Templarios",
       "gems": "Gemas",
-      "shop": "Tienda"
+      "shop": "Tienda",
+      "events": "Eventos"
     },
     "tabs-label": "Tablas de referencia",
     "disabled-tooltip": "Desactivada — no disponible actualmente",
@@ -550,6 +551,16 @@
         "name": "Nombre"
       },
       "cost-unknown": "No definido"
+    },
+    "events": {
+      "league": "Liga",
+      "select-league": "Elige una liga para ver sus eventos.",
+      "empty": "Aún no hay eventos para esta liga.",
+      "columns": {
+        "objective": "Objetivo",
+        "reward": "Recompensa"
+      },
+      "no-tiers": "Sin niveles para este evento."
     }
   },
   "combat-equipment": {
@@ -729,7 +740,10 @@
         "status": "Estado",
         "actions": "Acciones"
       },
-      "statuses": { "active": "Activada", "inactive": "Desactivada" },
+      "statuses": {
+        "active": "Activada",
+        "inactive": "Desactivada"
+      },
       "reference-combat": "Editar Equipo de Combate",
       "reference-expedition": "Editar Equipo de Expedición",
       "reference-level-up": "Editar Subida de Nivel",
@@ -740,7 +754,8 @@
         "level-up": "Subida de Nivel",
         "templiers": "Templarios",
         "gemmes": "Gemas",
-        "consommables": "Tienda"
+        "consommables": "Tienda",
+        "events": "Eventos"
       },
       "disabled-tooltip": "Desactivada y oculta del sitio público",
       "edit": "Editar",
@@ -749,7 +764,8 @@
       "visibility-error": "No se pudo cambiar la visibilidad.",
       "enabled": "Tabla de referencia activada.",
       "disabled": "Tabla de referencia desactivada.",
-      "no-results": "No se encontró ninguna tabla de referencia."
+      "no-results": "No se encontró ninguna tabla de referencia.",
+      "reference-events": "Editar Eventos"
     },
     "guide-editor": {
       "language-label": "Idioma de la guía",
@@ -914,7 +930,24 @@
       "move-down": "Mover hacia abajo",
       "actions": "Acciones",
       "move-up": "Mover hacia arriba",
-      "remove": "Eliminar"
+      "remove": "Eliminar",
+      "events-league-label": "Liga",
+      "events-language-label": "Idioma del texto",
+      "events-table-title": "Lista de eventos",
+      "add-event": "Añadir un evento",
+      "events-columns": {
+        "name": "Nombre",
+        "startDay": "Día de inicio",
+        "endDay": "Día de fin"
+      },
+      "tier-columns": {
+        "objective": "Objetivo",
+        "reward": "Recompensa"
+      },
+      "add-tier": "Añadir un nivel",
+      "events-tiers-summary": "Niveles ({count})",
+      "event-row-label": "{field} del evento {row}",
+      "tier-row-label": "{field} del nivel {row} de {event}"
     },
     "common": {
       "back": "Atrás"

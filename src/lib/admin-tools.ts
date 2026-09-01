@@ -15,6 +15,9 @@ export const referenceToolSlugs = [
   // (Bloc 50: moved from /admin/guides/reference-consommables). Bloc 44
   // review: slug kept French, matching templiers/gemmes.
   "consommables",
+  // Bloc 60: same "no matching tool row" shape — falls through to
+  // /admin/referentiels/reference-events below.
+  "events",
 ] as const;
 export const cityToolSlugs = [
   "city-cost",
