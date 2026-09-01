@@ -4,7 +4,7 @@ Ce document est le point d'entrée pour démarrer le développement. Il résume 
 
 Domaine cible : `ml-helper.com`.
 
-**📍 État d'avancement (à mettre à jour au fil des tâches) :** Phase 0 (setup) ✅ validée et poussée. Phase 1 (fondations : schéma Prisma, auth, back-office minimal) ✅ validée et mergée. **Phase 2 (site public + tous les simulateurs déjà spécifiés) ✅ entièrement validée et mergée** — Villes, Classement, Compétences (Gemmes/Templiers/Simulateur de Stuff/Comparateur), Référentiels sont tous fonctionnels **(⚠️ mais leur emplacement dans la navigation a changé depuis — voir "Restructuration navigation" en tête de la liste unifiée, section 4)**. **Blocs 0 à 41 de la Liste unifiée (section 4) tous ✅ terminés et mergés sur dev.** Restent, non bloquants : Bloc 10 (assets images, dépôt progressif). Avant d'attaquer la Phase 3 (Combat Fight/Enemy Troops, contenu des guides, référentiel Consommables) : cadrage produit encore à faire sur ces 3 chantiers.
+**📍 État d'avancement (à mettre à jour au fil des tâches) :** Phase 0 (setup) ✅ validée et poussée. Phase 1 (fondations : schéma Prisma, auth, back-office minimal) ✅ validée et mergée. **Phase 2 (site public + tous les simulateurs déjà spécifiés) ✅ entièrement validée et mergée** — Villes, Classement, Compétences (Gemmes/Templiers/Simulateur de Stuff/Comparateur), Référentiels sont tous fonctionnels **(⚠️ mais leur emplacement dans la navigation a changé depuis — voir "Restructuration navigation" en tête de la liste unifiée, section 4)**. **Blocs 0 à 53 (Bloc 10 inclus) de la Liste unifiée (section 4) tous ✅ terminés et mergés sur dev.** L'audit de conformité du 29/08/2026 (bug Platine, Pouciel Combat, Level Up Argent, etc.) est résolu via le Bloc 42. **Référentiel "Boutique" (ex-Consommables/Bloc 43, enrichi Bloc 46, restructuré et renommé Bloc 48) construit et stable, 6ᵉ référentiel réel — l'un des 3 chantiers jamais cadrés est résolu. Site opérationnel en 5 langues (EN/FR/DE/ES/TR), sélecteur de langue public en listbox custom.** Restent, non bloquants : 36 images Combat encore manquantes (Bloc 10, à compléter plus tard). **Il ne reste plus qu'1 seul chantier réellement jamais cadré : Combat (Fight/Enemy Troops)** — le contenu des guides restants est un travail éditorial continu, pas un chantier de cadrage au même sens.
 
 ---
 
@@ -118,6 +118,7 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 - **Formules jamais exposées côté public** — uniquement les résultats, jamais `VP = 20 × 1.115^(n-1)` visible pour un joueur
 - Toute donnée encore marquée "non confirmé"/"hypothèse" dans le cahier des charges doit rester **éditable en admin** avec sa valeur actuelle par défaut, pas bloquante pour livrer la fonctionnalité
 - **Formule additive par étoile (`base + incrément × (n−1)`) commune Combat/Expédition** — actuellement écrite uniquement pour le Combat (`equipmentValueAtStar()` dans `src/lib/equipment.ts`), à extraire en helper neutre partagé (voir cahier des charges section 7.1, note d'implémentation ajoutée lors de l'audit Bloc 6) **dans la même tâche que la construction du calculateur Expédition** — ne pas la recopier telle quelle pour l'équipement d'expédition, et ne pas faire l'extraction avant, tant que le second appelant n'existe pas encore
+- **✅ Règle de rythme (01/09/2026) — ne pas créer de nouveau bloc de mon initiative.** Un nouveau bloc ne se crée que sur demande explicite du porteur de projet, ou tant que le bloc précédent n'est pas au moins envoyé à Codex/Claude Code (en cours ou mergé) — pas de blocs qui s'accumulent en préparation sans être envoyés.
 
 ---
 
@@ -220,6 +221,11 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 - **Coût de Ville — contrainte niveau cible > niveau de départ** *(point 22)* — le niveau cible doit toujours être strictement supérieur au niveau de départ (minimum +1), avec ajustement automatique dans les deux sens.
 - **Aucune ligue sélectionnée par défaut, partout** *(point 23, périmètre étendu)* — Paramètres du joueur, Classement, Gemmes (Optimisation + Budget), Simulateur de Stuff, Comparateur de stuff, Troupes attaque démo, Level Up, **Villes (Coût de Ville, Niveau Max, Production — nouveau sélecteur à construire, cdc section 7.1)** : tous les sélecteurs de ligue doivent démarrer vides (placeholder "— Choisir —"), avec repli propre côté calcul tant qu'aucune ligue n'est choisie. **Exception (Classement, Troupes attaque démo, Level Up, Villes)** : ces sélecteurs s'alignent automatiquement sur la ligue du joueur dès qu'elle est définie — **y compris au chargement initial si déjà en cache (localStorage)**. Si le sélecteur dépendant a déjà une valeur choisie manuellement, elle n'est pas écrasée. **Raison d'être pour Villes, à noter pour Codex** : permettre de tester les valeurs d'une autre ligue que la sienne (ex: simuler pour quelqu'un d'autre), pas juste refléter son propre profil — contrairement à l'implémentation actuelle qui lit `player-league` directement sans sélecteur dédié (voir prototype avant mise à jour). **Placement du sélecteur : toujours en première position (le plus à gauche) dans la grille d'inputs**, avant Nombre de villes/Niveau de départ/etc. — cohérent sur les 3 calculateurs Villes, voir prototype à jour.
 - **🚨 Nettoyage — champs de traduction obsolètes en admin** *(nouveau, trouvé en vérifiant l'admin après le Bloc 2b)* — le cdc a explicitement retiré 3 champs du modèle de données au profit des fichiers de traduction statiques next-intl (section 6, cdc) : `name` d'un Calculateur/Outil, `label` d'une Formule, `label` d'une Table de référence. Chacun garde son `slug`/`key` technique comme clé de traduction. **Cette bascule n'a jamais été suivie d'un nettoyage de l'admin** : les champs de saisie de traduction par enregistrement (nom FR/EN d'un outil, etc.) sont toujours visibles dans l'édition admin de plusieurs outils (Troupes attaque démo, Simulateur de Stuff, au moins) alors qu'ils n'ont plus d'effet ou n'auraient jamais dû survivre à la migration i18n. **À faire** : supprimer ces champs de saisie de l'UI admin partout où ils traînent encore (probablement tous les outils, pas seulement les 2 repérés), confirmer qu'aucun champ Prisma correspondant ne subsiste non plus si le Bloc 2b/2d ne l'avait pas déjà fait au niveau du schéma.
+
+### Bloc 10 — Assets : images ✅ **Terminé** (structure + intégration confirmées par le porteur de projet, 31/08/2026)
+- **Séparation `public/equipment/` en 2 sous-dossiers** (`public/equipment/combat/`, `public/equipment/expedition/`) faite, plus `public/gems/` déjà correct — convention de nommage confirmée bonne.
+- **Images intégrées** (gemmes + équipements), remplacent les couleurs/badges texte dans les simulateurs et référentiels concernés.
+- **⚠️ Non bloquant : 36 fichiers Combat encore manquants** (Casque/Gantelet/Bottes pour Commun/Rare/Épique, motif déjà connu, cdc section 12) — à compléter plus tard par le porteur de projet, ne bloque rien d'ici là.
 
 ### Bloc 11 — Refonte compacte de l'UI admin (shadcn/ui) + lien site public ✅ **Terminé** (PR [#25](https://github.com/magicgg91/ML-Helper/pull/25), 4 commits — 254 tests verts, e2e à confirmer en CI réelle)
 *Nouveau, retour joueur après le Bloc 6. Indépendant du reste.*
@@ -578,10 +584,132 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 - [Référentiel Combat uniquement, admin] Limiter la largeur des champs numériques sur ces 2 tableaux (Pouciel, Gemmes) — actuellement trop larges, provoquent un retour à la ligne par rangée et un scroll vertical excessif de la page.
 
 
-*Dès que des fichiers sont fournis, indépendamment du reste.*
+### Bloc 42 — Correctifs audit + guides non traduits + qualité transverse (composant partagé, testid, SEO) ✅ **Terminé** (PR #68, 668 tests ; point E laissé de côté, à discuter plus tard)
+*Fusionne l'audit du 29/08, l'ancien Bloc 45 (guides + largeur admin Consommables), et 3 nouveaux points de qualité transverse. Le bug Platine (+2 au lieu de +1 point/niveau) a déjà été corrigé pendant l'audit lui-même (commit `bdec46f`), pas repris ici.*
 
-- **🚨 Prérequis — séparer `public/equipment/` en 2 sous-dossiers** (retour joueur, structure créée au Bloc 22 à corriger) : `public/equipment/combat/` et `public/equipment/expedition/`, plus `public/gems/` déjà correct (cdc section 12). Mettre à jour toute référence code déjà écrite vers l'ancien chemin sans sous-dossier. **✅ Les 120 fichiers Expédition sont déjà déposés dans `public/equipment/expedition/`** — vérifier que ce chemin correspond bien à la structure attendue une fois la séparation faite.
-- **Images réelles à intégrer (gemmes + équipements)** *(point 34)* — remplaceront à terme les couleurs/badges texte dans Simulateur de Stuff, Comparateur de stuff, référentiels Équipements, et le calculateur Gemmes. **✅ Gemmes : 60/60 reçues, complet** (convention révisée — clés techniques anglaises, `.webp`, exception `legendary` pour la ligue Légende sur ce seul manifeste, voir cdc section 11 pour le détail et le point d'implémentation à ne pas rater). **Équipements : convention actée** (`{famille}-{rareté}-{emplacement}.webp`), manifeste des 300 fichiers en section 12 — 144/180 Combat reçus (36 manquants, motif connu), 120/120 Expédition complet. Pas bloquant, la palette de couleurs actuelle reste la référence tant que les images ne sont pas toutes intégrées.
+**Issu de l'audit (29/08/2026) :**
+- **A** — Implémenter le coût de fusion en Pouciel pour l'Équipement de Combat (`combatMergeCost`, formule `K(rareté) × 2^(n−1)`, K=20/40/80/160/320 — verrouillée depuis longtemps, jamais construite). Même principe que `expeditionMergeCost()` déjà existant côté Expédition, tableau public par rareté à créer en miroir.
+- **B** — Level Up : ajouter Argent au type `LevelUpParameters["troops"]` et un champ de saisie dans l'éditeur admin (actuellement juste un texte "non confirmé", aucun champ) — conforme à la règle AGENTS.md sur les données non confirmées restant éditables.
+- **C** — Corriger `--gold` utilisé à tort pour le bouton de filtre famille "Or" (réservé au Légendaire par son propre commentaire de code) — remplacer par une couleur de famille distincte, cohérente avec le thème clair/sombre.
+- **D** — Nettoyer la clé de traduction orpheline `Navigation.admin` (présente en EN, absente en FR) — clé morte, sans usage en production détecté.
+- **E** — ⏸️ Mis de côté, à rediscuter plus tard (retiré de la portée immédiate du bloc) : Simulateur d'Équipement d'Expédition, indicateur visuel discret sur les raretés non-Légendaire pour signaler les incréments extrapolés — rien n'est encore tranché.
+
+**Guides + admin Consommables (ex-Bloc 45) :**
+- **F** — Guides : placeholder visible si un guide n'a pas de contenu dans la langue active (toute langue, y compris FR/EN entre eux) — plutôt que le repli silencieux. Portée limitée au contenu des guides, le reste garde le repli silencieux EN.
+- **G** — [Admin uniquement] Zone markdown Consommables trop large — **vraie cause trouvée** : le tableau affiche Nom(FR)/Nom(EN)/Description(FR)/Description(EN) en colonnes séparées simultanément. **Correctif de fond** : le sélecteur de langue déjà en haut de page doit piloter aussi les colonnes du tableau (n'afficher que la langue active), pas juste la zone markdown — passe le tableau de 6 à 4 colonnes. `overflow-x: auto` en sécurité complémentaire, plus la seule réponse.
+
+**Qualité transverse, nouveaux points :**
+- **H** — Composant/classe CSS partagé pour les champs numériques compacts d'admin, appliqué rétroactivement sur tous les écrans existants — le même problème de largeur a été corrigé indépendamment 5 fois (Combat, Expédition, Gemmes, Classement, Consommables), à chaque fois après coup.
+- **I** — Attributs `data-testid` stables sur les éléments interactifs clés (filtres, lignes de tableau, champs, boutons), migration progressive des tests e2e depuis le texte/la structure DOM — priorité aux écrans les plus souvent refondus.
+- **J** — SEO de base : `sitemap.xml` dynamique (5 langues), meta description par page (jamais vide), `hreflang` sur chaque page. Analytics (Umami, code de suivi au moment de la mise en public) et sauvegarde base (gérée manuellement) hors périmètre.
+
+**Hors bloc, actions manuelles du joueur (pas des tâches Codex)** :
+- Reporter en admin les 21 lignes (7 sets) d'Équipement de Combat désormais confirmées (Bard, Journeyman, Thief, Adventurer, Knight, Shopkeeper, Soldier).
+- Confirmer/compléter Classement Platine (palier 75% toujours absent).
+
+### Bloc 43 — Nouveau référentiel Consommables ✅ **Terminé**
+*Slug public : `/guides/referentiels/consommables` (français — corrigé en review Codex PR #66/commit `7506da6` après un 1er essai en anglais au Bloc 43 ; identifiants internes/fichiers/routes API/clés DB restent en anglais). 38 lignes livrées (28 objets + 10 lignes de palier de quantité), traduites en EN. Les 4 objets sans coût confirmé (Renommer ville/clan, Nouveau départ, Changement de ville principale) laissés vides plutôt qu'inventés. **Autres correctifs de review (PR #66)** : sauvegarde unique pour intro+tableau (au lieu de 2 boutons séparés) ; repli fr→en manquant pour DE/ES/TR corrigé ; le champ "Category" suggéré par le bot de review n'existe dans aucune spec — non implémenté, fil de discussion laissé ouvert plutôt que d'inventer.
+
+- Nouveau référentiel `/guides/referentiels/consommables`, 6ᵉ référentiel réellement construit.
+- Page publique en 2 zones : texte libre éditable en markdown (icônes Saphirs/Inventaire, texte devises d'événement) + tableau des 28 objets en dessous.
+- CRUD complet en admin (ajout/suppression libre de lignes) — différence structurelle avec les autres référentiels au catalogue fixe.
+- Conseillers inclus. Coûts en saphirs jamais compactés (règle générale, cdc section 3.3).
+- Cas particulier : "Changement de ville principale" (1er gratuit, puis payant) — pas un prix fixe, à traiter en description plutôt qu'en colonne coût.
+- 4 objets encore sans coût chiffré (Renommer ville, Renommer clan, Nouveau départ, Changement de ville principale) — champ vide, éditable en admin.
+- Paliers de quantité (×5, ×10) : objets distincts plutôt qu'une colonne agrégée (ex: "Coffre" et "Coffre ×5" séparés) — 1 colonne coût unique côté public.
+- Réordonnancement des lignes en admin par flèches monter/descendre d'1 position (pas de glisser-déposer, pas de raccourci haut/bas).
+
+### Bloc 44 — Activer Allemand/Espagnol/Turc au niveau du code ✅ **Terminé** (PR #66, 638 tests)
+*Notes de livraison : `getAvailableLocales()` lisait déjà `messages/*.json` dynamiquement, le vrai travail a été de généraliser tous les endroits codés en dur sur fr/en (`launchLocales`, `services/guides.ts`, éditeurs mentions-légales/intro-Consommables). **Bugs trouvés et corrigés en review Codex (commit `7506da6`)** : (1) chaîne vide explicite cassait le repli EN (clé vide ≠ clé absente) — corrigé ; (2) repli fr→en manquant pour DE/ES/TR — corrigé ; (3) slug public Consommables livré en anglais par erreur — recorrigé en français (`consommables`), identifiants internes restent en anglais ; (4) sauvegarde intro+tableau unifiée en une seule action. **✅ Traductions complétées (30/08/2026)** : les 27 clés ajoutées par le Bloc 43 (admin.references.*, references.consommables.*) traduites en DE/ES/TR — parité stricte 794/794 confirmée contre le en.json à jour, aucun écart de placeholder, formes plurielles ICU valides.*
+
+- Ajouter DE/ES/TR à la config next-intl (routing, middleware).
+- Sélecteur de langue public + bascule de langue admin : 5 langues disponibles.
+- Vérifier le mécanisme de repli EN et l'absence de liste de langues codée en dur limitée à EN/FR.
+- Pas de contenu à construire (guides, mentions légales) dans cette tâche — activation technique uniquement.
+
+### Bloc 46 — Référentiel Consommables : images, réordonnancement, catégorisation ✅ **Terminé** (PR #69, 652 tests)
+*Nouveau. Indépendant du reste. Le point catégorisation fait écho à un fil de discussion resté ouvert au Bloc 43 (champ "Category" suggéré par la review Codex, non implémenté à l'époque faute de base spec).*
+
+- **A** — [Public] Images agrandies à 5rem (au lieu de la taille actuelle) — différent des 3rem déjà actés pour les images d'équipement/gemmes (Bloc 38), propre à ce référentiel.
+- **B** — [Admin] Boutons de réordonnancement "Move up"/"Move down" (Bloc 43) → icônes flèches (↑/↓) plutôt qu'en texte. Comportement inchangé, rendu visuel seul.
+- **C** — Nouvelle catégorisation, 4 catégories : Expédition, Conseillers, Équipement (coffres/coffrets/urnes/jarres), Inventaire (le reste). Admin : sélecteur de catégorie par consommable, à l'ajout et à l'édition. Public : ligne de boutons de filtre (même principe que famille/rareté) + colonne dédiée dans le tableau.
+
+### Bloc 47 — Sélecteur de langue public : select stylé + détection navigateur ✅ **Terminé** (PR #70, 698 tests)
+*⚠️ Clôture déduite du contexte (Bloc 48 remplace le `<select>` natif livré ici par une listbox custom, ce qui implique que ce bloc était déjà mergé) — pas de confirmation explicite reçue à l'époque, à corriger si erroné. Migration `middleware.ts` → `src/proxy.ts` (Next.js 16). Bug réel corrigé au point D : `localizedText()`/`pickLocaleText()` repliaient sur le français avant l'anglais.*
+*Nouveau. Indépendant du reste. Annule la règle "pas de select pour la langue" (posée à l'origine pour 2 langues, plus tenable à 5).*
+
+- **A** — Remplacer les boutons de langue publics par un `<select>` — stylé pour matcher l'esthétique des boutons actuels, pas un rendu natif brut du navigateur.
+- **B** — Détection de la langue du navigateur au premier chargement (parmi les 5 supportées, repli `defaultLocale=fr` sinon), puis persistance du choix (détecté ou modifié manuellement) en localStorage — même principe que la détection de thème (Bloc 34, point B).
+- **C** — `AdminLocaleToggle` (langue de l'interface admin elle-même — menus/boutons/libellés) restreint à EN/FR uniquement, retour en arrière sur l'extension à 5 langues du Bloc 44. **Ne pas confondre avec** les sélecteurs de langue par contenu éditorial (guides, mentions légales, intro Consommables), qui gardent bien les 5 langues — c'est leur contenu qui est vu du public. Les traductions DE/ES/TR déjà faites pour `admin.*` restent en fichier (inoffensif), juste inutilisées.
+- **D** — 🐛 Retour testeur : le repli anglais côté public affiche du français au lieu de l'anglais — même confusion `defaultLocale` (fr) vs filet de sécurité (doit être anglais) déjà corrigée pour un cas précis en admin au Bloc 44, pas généralisée à toute la partie publique. Vérifier l'ensemble du mécanisme (texte fixe + contenu dynamique JSON par locale) et corriger.
+
+### Bloc 48 — Référentiel Boutique (ex-Consommables) : 4 tableaux, correctifs, renommage ✅ **Terminé** (PR #71, 722 tests)
+*Notes de livraison : A/C vérifiés en navigateur réel avec captures, comme explicitement demandé. **3 découvertes en cours de route** : (1) bug `site-search.ts` (slug/calculatorSlug divergents, aurait dupliqué l'entrée Boutique en recherche) — corrigé ; (2) review Codex a trouvé les potions pas re-hébergées dans le chemin de lecture "grouped-shape" — corrigé avant merge ; (3) 4 specs e2e cassées par le passage `<select>` natif → listbox custom — corrigées. Merge propre, aucun fil ouvert.*
+*Nouveau. Indépendant du reste.*
+
+**A — 🐛 Régression réouverte (marquée livrée au Bloc 42/PR #68, toujours présente)** : admin édition Consommables, le tableau affiche encore Nom(FR)/Nom(EN)/Description(FR)/Description(EN) en colonnes séparées au lieu de suivre le sélecteur de langue en haut de page. Repartir de zéro, vérifier en navigateur avant de redéclarer livré.
+
+**B — Révision structurelle de la catégorisation (Bloc 46)** : 4 tableaux séparés par catégorie (Expédition, Conseillers, Équipement, Inventaire) au lieu d'un tableau unique avec select + colonne Type.
+- Public : 4 tableaux titrés, filtres masquent complètement le tableau correspondant (même principe que Combat/Expédition, Bloc 41).
+- Admin : même structure en miroir, bouton "Ajouter" propre à chaque tableau (catégorie implicite, plus de select), suppression par ligne, réordonnancement scopé par catégorie.
+- Migrer les données déjà catégorisées au Bloc 46 dans le bon tableau.
+
+**C — 🐛 Sélecteur de langue public (Bloc 47) s'ouvre dans le mauvais sens** : le style est bon, mais la liste s'ouvre à l'emplacement de l'option sélectionnée (comportement natif du `<select>`, variable selon navigateur/OS) — parfois vers le haut avec scroll vertical de la page. Doit toujours s'ouvrir vers le bas. ⚠️ Un `<select>` natif ne permet pas de contrôler ça fiablement — remplacer par un menu déroulant personnalisé (listbox custom, accessible clavier) probablement nécessaire.
+
+**D — Ordre des 4 tableaux de catégorie : alphabétique** — Conseillers, Équipement, Expédition, Inventaire. S'applique à l'ordre des tableaux ET des boutons de filtre (synchronisés). À l'intérieur de chaque catégorie, l'ordre reste celui défini en admin (flèches, scopées par catégorie) — l'alphabétique ne concerne que les 4 catégories entre elles.
+
+**E — Donnée : les 3 potions (25/50/75 PV) vont dans la catégorie Expédition**, pas Inventaire.
+
+**F — Renommage complet "Consommables" → "Boutique"** — libellé public partout (titre, nav, tuiles, liens croisés) + URL `/guides/referentiels/consommables` → `/guides/referentiels/shop`. Changement direct, pas de redirection (pas encore de trafic indexé à préserver). Identifiants internes (fichiers, routes API, clés DB) inchangés.
+
+### Bloc 49 — Référentiel Boutique, admin : bouton Ajouter en icône + confirmation de suppression ✅ **Terminé** (PR #72, 727 tests)
+*Note technique : `EditableDataTable` (composant partagé avec Classement) a reçu 2 props opt-in pour les nouveaux comportements — Classement totalement inaffecté.*
+*Nouveau. Indépendant du reste.*
+
+- Bouton "Ajouter" simplifié en icône "+", sur la même ligne que le titre du tableau (au lieu du libellé verbeux "Ajouter (Équipement)" etc.).
+- Suppression d'une ligne : icône croix rouge, avec message de confirmation avant suppression effective (manquant actuellement).
+
+### Bloc 50 — 🚨 Chantier majeur : séparer Référentiels de Guides (public + admin, nouveau rôle) ✅ **Terminé** (PR #73, 742 tests)
+*Notes de livraison : Groupe 1 (rôle + routing) ✅. Groupe 2 — **un vrai bug de verrouillage de rôle trouvé et corrigé** pendant le split admin. Groupe 3 — recherche/sitemap déjà corrects (rien à faire), une redirection legacy périmée corrigée, e2e mis à jour avec la couverture des rôles. **Bug trouvé uniquement par le passage navigateur réel (Playwright) : crash Server→Client Component sur les props fonction, sur chaque page `/referentiels`** — invisible aux tests unitaires, corrigé et vérifié en dev server réel. 2 échecs e2e intermittents (`/tools` timeouts) confirmés comme flakiness pré-existante sur `dev` non modifié, pas une régression de ce bloc.*
+*Nouveau. Refonte structurante, discutée en détail avant spécification (6 questions tranchées). Impact large : routing, admin, rôles, navigation, recherche, sitemap.*
+
+- **A** — Nouvelle racine `/referentiels/*` (au lieu de `/guides/referentiels/*`). 6 slugs, tous en anglais : `combat-equipment`, `expedition-equipment`, `level-up`, `shop`, `templars` (renommé depuis `templiers`), `gems` (renommé depuis `gemmes`) — identifiants internes inchangés.
+- **B** — Nouveau rôle `references_manager` ("Référentiels"), scopé aux référentiels. `guides_manager`/`calculators_manager` perdent les droits référentiels (sauf Templiers/Gemmes via Outils, données partagées — accepté). `admin`/`super_admin` gardent tout, `read_only` inchangé.
+- **C** — Admin : 2 menus distincts (Guides, Référentiels), colonne "Type" retirée, filtre "Guides/Référentiels/Tous" (Bloc 32) supprimé.
+- **D** — Nav publique : 3 entrées de premier niveau — Outils, Référentiels, Guides (dans cet ordre).
+- **E** — Le bandeau de bascule entre référentiels devient la nav principale de la section `/referentiels`.
+- **F** — Pas de migration automatique de droits (pas de vrai user admin externe pour l'instant).
+- **G** — Accueil éclaté en 3 sections (remplace la section combinée du Bloc 34) : Outils, puis Référentiels (4 colonnes max, 2 lignes max — jusqu'à 8), puis Guides (3 colonnes, 2 lignes max — jusqu'à 6, contre 3 précédemment).
+
+⚠️ **Impact transverse à vérifier avant/pendant l'implémentation** : `site-search.ts` (déjà corrigé une fois au Bloc 48 sur un souci de slug), sitemap/hreflang (Bloc 42), accueil (grille Guides/Référentiels déjà construite au Bloc 34 — la logique change-t-elle avec la nouvelle nav ?).
+
+### Bloc 51 — Référentiel Boutique : intégration de l'image de vignette ✅ **Terminé** (livré avec le Bloc 52, PR #74)
+*Nouveau. Indépendant du reste.*
+
+- `referential-shop.webp` déposée dans `public/referentials/` (même dossier que les 5 autres images de référentiel).
+- Remplacer le placeholder actuel de la tuile Boutique (accueil + page `/referentiels`) par cette image — même traitement que les 5 autres (`aspect-ratio: 1`, repli si fichier absent).
+
+### Bloc 52 — Retours de test sur le Bloc 50 (titre, bandeau, style Boutique) ✅ **Terminé** (PR #74, 749 tests)
+*C et D confirmés traités ensemble (encadrement filtres + intro vérifié via capture contre la page Combat) — pas un point manqué, juste un décompte "4" au lieu de "5" dans le résumé.*
+*Nouveau, retour de test. Indépendant du reste.*
+
+- **A** — Titre de la page liste `/referentiels` : "Référentiels" tout court, pas "Tous les référentiels".
+- **B** — Le bandeau de bascule entre référentiels ne doit apparaître que sur la page d'un référentiel précis, jamais sur la page liste `/referentiels` (qui affiche déjà les 6 référentiels en tuiles avec image — redondant sinon).
+- **C** — [Référentiel Boutique, public] Barre de filtres (catégories) : même style encadré que les autres pages référentiel (ex: Équipement de Combat).
+- **D** — [Référentiel Boutique, public] Zone de texte markdown (intro) également dans un cadre du même style que le reste du site.
+- **E** — [Référentiel Boutique, admin] Retirer les textes explicatifs superflus au-dessus des zones ("Zone de texte...", "Ajoute, réordonne...").
+
+### Bloc 53 — Boutique admin (colonnes) + intro Guides/Référentiels + liens croisés (refonte + bug) ✅ **Terminé** (PR #75, 768 tests)
+*Notes de livraison : A-C vérifié à 5 largeurs (1440→400px), zéro débordement horizontal à chacune. F — couverture étendue au-delà de la demande : Level Up avait le même bug, en plus de Gemmes/Templiers.*
+*Nouveau, retour de test post-Bloc 50. Indépendant du reste. Fusionne les anciens Blocs 53 et 54.*
+
+- **A** — [Admin Boutique] Boutons monter/descendre + suppression regroupés dans une seule colonne "Actions" (au lieu de colonnes séparées).
+- **B** — [Admin Boutique] Champs de saisie (Nom, Description) élargis à la largeur de leur colonne — trop d'espace vide entre chaque champ actuellement.
+- **C** — [Admin Boutique] Colonne Description légèrement élargie (texte plus long que les autres colonnes).
+- ⚠️ Contrainte impérative (A-C) : toujours aucun scroll horizontal après ces ajustements — vérifier concrètement en navigateur.
+- **D** — Titre + phrase d'intro pour `/referentiels` et `/guides`, même traitement que `/tools` (Bloc 38) — les deux couples existent déjà sur l'accueil, à réutiliser tel quel (pas de nouveau texte à écrire). `/guides` : couple existant `Home.guidesTitle`/`Home.guidesDescription` (contenu exact à reprendre depuis `messages/fr.json`, pas vérifié précisément dans cet échange). `/referentiels` : "Retrouve les données clés" / "Retrouve les tableaux de référence pour connaître les coûts, statistiques et paliers exacts du jeu, aussi bien pour les équipements, les gemmes ou bien les templiers que pour les consommables de la boutique."
+- **E** — Liens croisés outil↔référentiel, refonte visuelle : bandeau centré "Aller plus loin en vérifiant le référentiel/outil" avec mini-carte (miniature du référentiel réutilisée, Bloc 51), remplace le lien texte brut actuel. Libellé adapté au sens du lien.
+- **F** — 🐛 Bug lien croisé : le lien référentiel→outil ne mène pas à l'outil précis (ex: depuis Gemmes, atterrit sur `/tools` catégorie Compétences générique, pas le calculateur Gemmes). Corriger pour pointer vers l'URL exacte de l'outil. Vérifier sur tous les référentiels concernés (Gemmes, Templiers), pas seulement Gemmes.
 
 ---
 
