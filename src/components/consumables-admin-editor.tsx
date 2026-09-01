@@ -166,35 +166,26 @@ export function ConsumablesReferenceScreen({
 
   // Bloc 44 review: one save action for both sections, not two — a click
   // on either previous button, then navigating away, silently discarded
-  // whichever section wasn't clicked. Both requests always fire together;
-  // a partial failure is reported explicitly (which section didn't save),
-  // never silently swallowed by the other section's success message.
+  // whichever section wasn't clicked.
+  // Bloc 57/A: both sections are now a single request to a combined
+  // endpoint (previously 2 separate requests, each writing its own audit
+  // log row — one click produced 2 lines in /admin/logs instead of 1).
   async function saveAll() {
     if (!validateRows()) {
       setStatus(t("validation"));
       return;
     }
     setStatus(t("saving"));
-    const [introResult, rowsResult] = await Promise.allSettled([
-      fetch("/api/admin/content/consumables-intro", {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ content: intro }),
-      }),
-      fetch("/api/admin/guides/references/consumables", {
+    try {
+      const response = await fetch("/api/admin/guides/references/consumables", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(catalog),
-      }),
-    ]);
-    const introOk = introResult.status === "fulfilled" && introResult.value.ok;
-    const rowsOk = rowsResult.status === "fulfilled" && rowsResult.value.ok;
-    if (introOk && rowsOk) setStatus(t("saved"));
-    else if (!introOk && !rowsOk) setStatus(t("server-error"));
-    else
-      setStatus(
-        introOk ? t("consumables-rows-error") : t("consumables-intro-error"),
-      );
+        body: JSON.stringify({ intro, catalog }),
+      });
+      setStatus(response.ok ? t("saved") : t("server-error"));
+    } catch {
+      setStatus(t("server-error"));
+    }
   }
 
   return (

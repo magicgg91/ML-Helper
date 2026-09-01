@@ -1050,6 +1050,54 @@ test("the audit log paginates by 20 entries", async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user$/);
 });
 
+// Bloc 57: the Boutique reference screen has a single save button (Bloc 42)
+// that used to fire 2 separate requests (intro PATCH + rows PUT), each
+// writing its own audit log row — one click produced 2 lines in
+// /admin/logs instead of 1. Both writes now go through a single combined
+// PUT request wrapped in one transaction with one audit log entry.
+test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, correctly named", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const saveResponse = await page.request.put(
+    "/api/admin/guides/references/consumables",
+    {
+      data: {
+        intro: {
+          fr: "## Introduction Boutique Bloc57",
+          en: "",
+          de: "",
+          es: "",
+          tr: "",
+        },
+        catalog: { advisors: [], equipment: [], expedition: [], inventory: [] },
+      },
+    },
+  );
+  expect(saveResponse.ok()).toBeTruthy();
+
+  await page.goto("/admin/logs?q=référentiel Boutique");
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await expect(
+    page.getByRole("cell", {
+      name: /rootadmin a (créé|modifié) le référentiel Boutique/,
+    }),
+  ).toBeVisible();
+
+  // No residual "Consommables" naming anywhere in the log history.
+  await page.goto("/admin/logs?q=Consommables");
+  await expect(
+    page.getByText("Aucune entrée ne correspond aux filtres."),
+  ).toBeVisible();
+});
+
 test("the dashboard's published-guides counter ignores an inactive guide", async ({
   page,
 }) => {

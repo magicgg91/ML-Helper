@@ -910,8 +910,6 @@
       "consumables-intro-title": "Texte d’introduction",
       "consumables-intro-label": "Introduction (markdown)",
       "consumables-intro-language-label": "Langue du texte",
-      "consumables-intro-error": "Introduction non enregistrée (les objets ont bien été enregistrés).",
-      "consumables-rows-error": "Objets non enregistrés (l’introduction a bien été enregistrée).",
       "consumables-table-title": "Objets",
       "consumables-columns": {
         "image": "Chemin de l’image",

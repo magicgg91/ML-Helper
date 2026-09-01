@@ -907,11 +907,9 @@
         "image": "Görsel yolu",
         "name": "Ad"
       },
-      "consumables-intro-error": "Giriş kaydedilmedi (öğeler kaydedildi).",
       "consumables-intro-label": "Giriş (markdown)",
       "consumables-intro-language-label": "Metin dili",
       "consumables-intro-title": "Giriş metni",
-      "consumables-rows-error": "Öğeler kaydedilmedi (giriş kaydedildi).",
       "consumables-table-title": "Öğeler",
       "empty": "Henüz öğe yok.",
       "move-down": "Aşağı taşı",

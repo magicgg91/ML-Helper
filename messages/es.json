@@ -907,11 +907,9 @@
         "image": "Ruta de la imagen",
         "name": "Nombre"
       },
-      "consumables-intro-error": "Introducción no guardada (los objetos se guardaron).",
       "consumables-intro-label": "Introducción (markdown)",
       "consumables-intro-language-label": "Idioma del texto",
       "consumables-intro-title": "Texto de introducción",
-      "consumables-rows-error": "Objetos no guardados (la introducción se guardó).",
       "consumables-table-title": "Objetos",
       "empty": "Aún no hay objetos.",
       "move-down": "Mover hacia abajo",
