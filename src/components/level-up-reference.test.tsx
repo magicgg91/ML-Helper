@@ -1,9 +1,18 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import { defaultLevelUpParameters } from "../lib/level-up";
 import { LevelUpReference } from "./level-up-reference";
+
+const leagueLabels: Record<string, string> = {
+  bronze: "Bronze",
+  silver: "Argent",
+  gold: "Or",
+  platinum: "Platine",
+  diamond: "Diamant",
+  legend: "Légende",
+};
 
 afterEach(cleanup);
 describe("LevelUpReference", () => {
@@ -13,7 +22,11 @@ describe("LevelUpReference", () => {
         <LevelUpReference parameters={defaultLevelUpParameters} />
       </NextIntlClientProvider>,
     );
-    expect(screen.getByRole("combobox", { name: "Ligue" })).toHaveValue("");
+    // Bloc 61/A: the league <select> is replaced by single-select buttons —
+    // none of them is pressed until a league is chosen.
+    const group = screen.getByRole("group", { name: "Ligue" });
+    for (const button of within(group).getAllByRole("button"))
+      expect(button).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
   });
 
@@ -25,13 +38,39 @@ describe("LevelUpReference", () => {
           <LevelUpReference parameters={defaultLevelUpParameters} />
         </NextIntlClientProvider>,
       );
-      fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-        target: { value: league },
-      });
+      fireEvent.click(
+        screen.getByRole("button", { name: leagueLabels[league] }),
+      );
       expect(screen.getAllByRole("row")).toHaveLength(62);
       expect(screen.getByText("Coffret à bijoux")).toBeVisible();
     },
   );
+
+  // Bloc 61/A: single-select — clicking a league button presses only that
+  // one, never several at once.
+  it("presses only the clicked league button (single-select)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    const group = screen.getByRole("group", { name: "Ligue" });
+    fireEvent.click(within(group).getByRole("button", { name: "Diamant" }));
+    expect(
+      within(group).getByRole("button", { name: "Diamant" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(group).getByRole("button", { name: "Légende" }),
+    ).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(within(group).getByRole("button", { name: "Légende" }));
+    expect(
+      within(group).getByRole("button", { name: "Diamant" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(
+      within(group).getByRole("button", { name: "Légende" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
 
   it("colors the chest column and keeps empty levels visibly faint", () => {
     render(
@@ -39,9 +78,7 @@ describe("LevelUpReference", () => {
         <LevelUpReference parameters={defaultLevelUpParameters} />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Légende" }));
     expect(screen.getByText("Coffret à bijoux").closest("td")).toHaveClass(
       "level-up-chest",
     );
@@ -55,9 +92,7 @@ describe("LevelUpReference", () => {
         <LevelUpReference parameters={defaultLevelUpParameters} />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "silver" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Argent" }));
     expect(screen.getByRole("status")).toHaveTextContent(
       "non encore confirmée",
     );
@@ -70,9 +105,7 @@ describe("LevelUpReference", () => {
         <LevelUpReference parameters={defaultLevelUpParameters} />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Légende" }));
     const tables = screen.getAllByRole("table");
     expect(tables).toHaveLength(2);
     for (const table of tables) {

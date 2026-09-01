@@ -11,7 +11,7 @@ import {
   type RankMovement,
 } from "../lib/ranking";
 import { NumberStepper } from "./number-stepper";
-import { LeagueSelect } from "./league-select";
+import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 
 type Translator = ReturnType<typeof useTranslations>;
@@ -43,13 +43,17 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
   return (
     <div className="calculator-stack ranking-calculator">
       <section className="calculator-card">
-        <div className="calculator-fields">
-          <LeagueSelect
+        {/* Bloc 61/B: league buttons + both numeric fields stay on a single
+            row on desktop — a dedicated flex row instead of the generic
+            auto-fit .calculator-fields grid, which could otherwise wrap the
+            wider button group onto its own line. */}
+        <div className="ranking-fields">
+          <LeagueButtons
             label={t("fields.league")}
             value={league}
             onChange={setLeague}
           />
-          <label className="calculator-field">
+          <label className="calculator-field ranking-number-field">
             {t("fields.percentage")}
             <NumberStepper
               label={t("fields.percentage")}
@@ -60,7 +64,7 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
               onChange={setPercentage}
             />
           </label>
-          <label className="calculator-field">
+          <label className="calculator-field ranking-number-field">
             {t("fields.rank")}
             <NumberStepper
               label={t("fields.rank")}
