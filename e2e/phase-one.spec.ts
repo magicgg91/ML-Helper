@@ -337,11 +337,22 @@ test("Level Up is a Référentiels reference and keeps Silver unconfirmed", asyn
 }) => {
   await page.goto("/referentiels/level-up");
   await expect(page.getByRole("heading", { name: "Level Up" })).toBeVisible();
+  // Bloc 61/A: the league <select> is replaced by single-select buttons —
+  // same visual/interaction pattern as the equipment family filters.
+  const leagueGroup = page.getByRole("group", { name: "Ligue" });
+  const leagueLabels: Record<string, string> = {
+    bronze: "Bronze",
+    silver: "Argent",
+    gold: "Or",
+    platinum: "Platine",
+    diamond: "Diamant",
+    legend: "Légende",
+  };
   for (const league of ["bronze", "gold", "platinum", "diamond", "legend"]) {
-    await page.getByRole("combobox", { name: "Ligue" }).selectOption(league);
+    await leagueGroup.getByRole("button", { name: leagueLabels[league] }).click();
     await expect(page.getByRole("table").first()).toBeVisible();
   }
-  await page.getByRole("combobox", { name: "Ligue" }).selectOption("silver");
+  await leagueGroup.getByRole("button", { name: "Argent" }).click();
   await expect(page.getByRole("status")).toContainText("non encore confirmée");
   await expect(page.getByRole("table")).toHaveCount(0);
   await page.goto("/tools/level-up");
@@ -529,10 +540,11 @@ test("Ranking converts position and percentage into league ranges", async ({
     "aria-current",
     "page",
   );
-  await page
+  // Bloc 61/B: the league <select> is replaced by single-select buttons.
+  const rankingLeagueGroup = page
     .locator(".ranking-calculator")
-    .getByLabel("Ligue")
-    .selectOption("diamond");
+    .getByRole("group", { name: "Ligue" });
+  await rankingLeagueGroup.getByRole("button", { name: "Diamant" }).click();
   await expect(page.getByTestId("ranking-total")).toHaveText("1 000");
   await expect(
     page.getByLabel("Échelle de classement de 100% à 0%"),
@@ -541,10 +553,32 @@ test("Ranking converts position and percentage into league ranges", async ({
     page.getByRole("cell", { name: "Descente Platine" }),
   ).toBeVisible();
 
-  await page
-    .locator(".ranking-calculator")
-    .getByLabel("Ligue")
-    .selectOption("bronze");
+  // Bloc61/B: at a standard desktop width, the league buttons, the %
+  // field and the rank field must sit on a single row — checked by their
+  // vertical ranges overlapping (same row) and the buttons sitting to the
+  // left of both fields (reading order), rather than a fragile exact-y
+  // comparison (the unlabeled button group and the labeled fields have
+  // different heights, so their tops don't align pixel-for-pixel).
+  const groupBox = await rankingLeagueGroup.boundingBox();
+  const percentageBox = await page
+    .getByRole("spinbutton", { name: "Ton pourcentage actuel" })
+    .boundingBox();
+  const rankBox = await page
+    .getByRole("spinbutton", { name: "Ton rang actuel" })
+    .boundingBox();
+  expect(groupBox).not.toBeNull();
+  expect(percentageBox).not.toBeNull();
+  expect(rankBox).not.toBeNull();
+  const overlapsVertically = (
+    a: { y: number; height: number },
+    b: { y: number; height: number },
+  ) => Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height);
+  expect(overlapsVertically(groupBox!, percentageBox!)).toBe(true);
+  expect(overlapsVertically(groupBox!, rankBox!)).toBe(true);
+  expect(groupBox!.x + groupBox!.width).toBeLessThan(percentageBox!.x);
+  expect(percentageBox!.x + percentageBox!.width).toBeLessThan(rankBox!.x);
+
+  await rankingLeagueGroup.getByRole("button", { name: "Bronze" }).click();
   await expect(page.getByRole("status")).toContainText(
     "à définir dans l’administration",
   );

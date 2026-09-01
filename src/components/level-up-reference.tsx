@@ -10,7 +10,7 @@ import {
   type LevelUpParameters,
 } from "../lib/level-up";
 import type { League } from "../lib/player-settings";
-import { LeagueSelect } from "./league-select";
+import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog } from "../lib/reference-catalog";
@@ -95,7 +95,7 @@ export function LevelUpReference({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <LeagueSelect
+        <LeagueButtons
           label={t("league")}
           value={league}
           onChange={(value) => {
