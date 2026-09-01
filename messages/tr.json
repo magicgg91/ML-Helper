@@ -619,6 +619,7 @@
     "navigation": {
       "dashboard": "Kontrol Paneli",
       "tools": "Araçlar",
+      "referentiels": "Referanslar",
       "guides": "Rehberler",
       "content": "Kullanım koşulları",
       "users": "Kullanıcılar",
@@ -689,37 +690,17 @@
       "empty": "Oluşturulmuş rehber yok.",
       "columns": {
         "title": "Başlık",
-        "type": "Tür",
         "author": "Yazar",
         "created": "Oluşturuldu",
         "updated": "Son düzenleme",
         "status": "Durum",
         "actions": "İşlemler"
       },
-      "types": {
-        "all": "Tümü",
-        "guide": "Rehber",
-        "reference": "Referans tablosu"
-      },
-      "filter-type-label": "Türe göre filtrele",
       "no-results": "Bu filtre için sonuç yok.",
       "statuses": {
         "draft": "Taslak",
         "pending_review": "İncelenmeyi bekliyor",
-        "published": "Yayınlandı",
-        "active": "Etkin",
-        "inactive": "Devre dışı"
-      },
-      "reference-combat": "Savaş Ekipmanını düzenle",
-      "reference-expedition": "Keşif Ekipmanını düzenle",
-      "reference-level-up": "Seviye Atlamayı düzenle",
-      "references": {
-        "combat-equipment": "Savaş Ekipmanı",
-        "expedition-equipment": "Keşif Ekipmanı",
-        "level-up": "Seviye Atlama",
-        "templiers": "Tapınak Şövalyeleri",
-        "gemmes": "Mücevherler",
-        "consommables": "Mağaza"
+        "published": "Yayınlandı"
       },
       "disabled-tooltip": "Devre dışı ve genel siteden gizli",
       "status-label": "{title} durumu",
@@ -734,8 +715,37 @@
       "enabled": "Rehber etkinleştirildi.",
       "disabled": "Rehber devre dışı bırakıldı.",
       "delete-forbidden": "Rolün bu rehberi silmeye izin vermiyor.",
-      "deleted": "Rehber kalıcı olarak silindi.",
-      "reference-consommables": "Mağazayı düzenle"
+      "deleted": "Rehber kalıcı olarak silindi."
+    },
+    "referentiels": {
+      "eyebrow": "Referans verileri",
+      "title": "Referanslar",
+      "columns": {
+        "title": "Başlık",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "statuses": { "active": "Etkin", "inactive": "Devre dışı" },
+      "reference-combat": "Savaş Ekipmanını düzenle",
+      "reference-expedition": "Keşif Ekipmanını düzenle",
+      "reference-level-up": "Seviye Atlamayı düzenle",
+      "reference-consommables": "Mağazayı düzenle",
+      "references": {
+        "combat-equipment": "Savaş Ekipmanı",
+        "expedition-equipment": "Keşif Ekipmanı",
+        "level-up": "Seviye Atlama",
+        "templiers": "Tapınak Şövalyeleri",
+        "gemmes": "Mücevherler",
+        "consommables": "Mağaza"
+      },
+      "disabled-tooltip": "Devre dışı ve genel siteden gizli",
+      "edit": "Düzenle",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "visibility-error": "Görünürlük değiştirilemedi.",
+      "enabled": "Referans tablosu etkinleştirildi.",
+      "disabled": "Referans tablosu devre dışı bırakıldı.",
+      "no-results": "Referans tablosu bulunamadı."
     },
     "guide-editor": {
       "language-label": "Rehber dili",

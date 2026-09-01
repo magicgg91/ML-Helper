@@ -37,15 +37,18 @@ afterEach(() => {
   sessionRole = "super_admin";
 });
 
-describe("Bloc35 7.1: EditToolPage's contextual back link for the shared Templars editor", () => {
-  it("goes back to Guides when opened from the Guides reference table (?from=guides)", async () => {
+describe("Bloc35 7.1, updated Bloc 50: EditToolPage's contextual back link for the shared Templars editor", () => {
+  it("goes back to Référentiels when opened from the Référentiels reference table (?from=referentiels)", async () => {
     render(
       await EditToolPage({
         params: Promise.resolve({ id: "templars" }),
-        searchParams: Promise.resolve({ from: "guides" }),
+        searchParams: Promise.resolve({ from: "referentiels" }),
       }),
     );
-    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+    expect(screen.getByText("back")).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 
   it("goes back to Tools when opened from the Tools table (no from param)", async () => {
@@ -58,27 +61,33 @@ describe("Bloc35 7.1: EditToolPage's contextual back link for the shared Templar
     expect(screen.getByText("back")).toHaveAttribute("href", "/admin/tools");
   });
 
-  it("falls back to Guides for a guides_manager without calculators.read, even with no from param", async () => {
-    sessionRole = "guides_manager";
+  it("falls back to Référentiels for a references_manager without calculators.read, even with no from param", async () => {
+    sessionRole = "references_manager";
     render(
       await EditToolPage({
         params: Promise.resolve({ id: "templars" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+    expect(screen.getByText("back")).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 });
 
-describe("Bloc36/A: EditToolPage's contextual back link for the shared Gems editor", () => {
-  it("goes back to Guides when opened from the Guides reference table (?from=guides)", async () => {
+describe("Bloc36/A, updated Bloc 50: EditToolPage's contextual back link for the shared Gems editor", () => {
+  it("goes back to Référentiels when opened from the Référentiels reference table (?from=referentiels)", async () => {
     render(
       await EditToolPage({
         params: Promise.resolve({ id: "gems" }),
-        searchParams: Promise.resolve({ from: "guides" }),
+        searchParams: Promise.resolve({ from: "referentiels" }),
       }),
     );
-    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+    expect(screen.getByText("back")).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 
   it("goes back to Tools when opened from the Tools table (no from param)", async () => {
@@ -91,14 +100,17 @@ describe("Bloc36/A: EditToolPage's contextual back link for the shared Gems edit
     expect(screen.getByText("back")).toHaveAttribute("href", "/admin/tools");
   });
 
-  it("falls back to Guides for a guides_manager without calculators.read, even with no from param", async () => {
-    sessionRole = "guides_manager";
+  it("falls back to Référentiels for a references_manager without calculators.read, even with no from param", async () => {
+    sessionRole = "references_manager";
     render(
       await EditToolPage({
         params: Promise.resolve({ id: "gems" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    expect(screen.getByText("back")).toHaveAttribute("href", "/admin/guides");
+    expect(screen.getByText("back")).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 });
