@@ -22,8 +22,18 @@ describe("Bloc60: events-server normalizeStoredValue", () => {
       startDay: "1",
       endDay: "7",
       tiers: [
-        { objective: "1G troupes enrôlées", reward: "100M or + 250 éclats" },
-        { objective: "3G troupes enrôlées", reward: "300M or + 5 saphirs" },
+        {
+          objective_fr: "1G troupes enrôlées",
+          objective_en: "1B troops enlisted",
+          reward_fr: "100M or + 250 éclats",
+          reward_en: "100M gold + 250 shards",
+        },
+        {
+          objective_fr: "3G troupes enrôlées",
+          objective_en: "3B troops enlisted",
+          reward_fr: "300M or + 5 saphirs",
+          reward_en: "300M gold + 5 sapphires",
+        },
       ],
     };
     const stored = { ...emptyEventsCatalog, legend: [legendEvent] };
@@ -56,7 +66,7 @@ describe("Bloc60: events-server normalizeStoredValue", () => {
 
   it("defaults a missing/non-string field to an empty string instead of throwing", () => {
     const stored = {
-      bronze: [{ tiers: [{ objective: 5 }] }],
+      bronze: [{ tiers: [{ objective_fr: 5 }] }],
     };
     const result = normalizeStoredValue(stored);
     expect(result.bronze[0]).toMatchObject({
@@ -64,7 +74,12 @@ describe("Bloc60: events-server normalizeStoredValue", () => {
       startDay: "",
       endDay: "",
     });
-    expect(result.bronze[0].tiers[0]).toEqual({ objective: "", reward: "" });
+    expect(result.bronze[0].tiers[0]).toEqual({
+      objective_fr: "",
+      objective_en: "",
+      reward_fr: "",
+      reward_en: "",
+    });
   });
 
   it("ignores a non-object stored value and falls back to the empty catalog", () => {

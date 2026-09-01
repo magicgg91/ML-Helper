@@ -13,8 +13,18 @@ const recruiterEvent = {
   startDay: "1",
   endDay: "7",
   tiers: [
-    { objective: "1G troupes enrôlées", reward: "100M or + 250 éclats" },
-    { objective: "3G troupes enrôlées", reward: "300M or + 5 saphirs" },
+    {
+      objective_fr: "1G troupes enrôlées",
+      objective_en: "1B troops enlisted",
+      reward_fr: "100M or + 250 éclats",
+      reward_en: "100M gold + 250 shards",
+    },
+    {
+      objective_fr: "3G troupes enrôlées",
+      objective_en: "3B troops enlisted",
+      reward_fr: "300M or + 5 saphirs",
+      reward_en: "300M gold + 5 sapphires",
+    },
   ],
 };
 
@@ -134,9 +144,36 @@ describe("EventsReferenceScreen", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 60 review (Codex PR #81): same editorial-locale toggle as
+  // Consommables (Bloc 48/A) — tier text is captured per fr/en field, and
+  // the toggle switches which one the table edits.
+  it("Bloc60 review: switching the locale selector switches the tier table to the English values", () => {
+    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    render(<EventsReferenceScreen initialCatalog={catalog} />);
+    expect(screen.getByDisplayValue("1G troupes enrôlées")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Langue du texte"), {
+      target: { value: "en" },
+    });
+    expect(screen.getByDisplayValue("1B troops enlisted")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("100M gold + 250 shards")).toBeInTheDocument();
+    expect(
+      screen.queryByDisplayValue("1G troupes enrôlées"),
+    ).not.toBeInTheDocument();
+  });
+
   it("Bloc60: blocks save and shows an error when an event has no name or a tier is incomplete", async () => {
     const catalog = catalogWith({
-      bronze: [{ name: "", startDay: "", endDay: "", tiers: [{ objective: "", reward: "R" }] }],
+      bronze: [
+        {
+          name: "",
+          startDay: "",
+          endDay: "",
+          tiers: [
+            { objective_fr: "", objective_en: "", reward_fr: "R", reward_en: "" },
+          ],
+        },
+      ],
     });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));

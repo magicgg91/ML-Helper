@@ -22,7 +22,12 @@ describe("Bloc60: events data model", () => {
     });
   });
 
-  it("emptyEventTierRow has both free-text fields empty, no structured sub-fields", () => {
-    expect(emptyEventTierRow).toEqual({ objective: "", reward: "" });
+  it("emptyEventTierRow has both fr/en free-text fields empty, no structured sub-fields", () => {
+    expect(emptyEventTierRow).toEqual({
+      objective_fr: "",
+      objective_en: "",
+      reward_fr: "",
+      reward_en: "",
+    });
   });
 });

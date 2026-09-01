@@ -5,11 +5,12 @@ import { PublicNav } from "../../components/public-nav";
 import { SiteSearch } from "../../components/site-search";
 import { getAvailableLocales } from "../../i18n/config";
 import { getLocale, getTranslations } from "next-intl/server";
+import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 
 export default async function PublicLayout({ children }: LayoutProps<"/">) {
-  const [t, navigation, locales, locale, guides] = await Promise.all([
+  const [t, navigation, locales, locale, guides, active] = await Promise.all([
     getTranslations("Public"),
     getTranslations("Navigation"),
     getAvailableLocales(),
@@ -18,6 +19,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
       where: { status: "published", active: true },
       orderBy: { publishedAt: "desc" },
     }),
+    getCalculatorAvailability(),
   ]);
   const searchGuides = guides.map((guide) => ({
     id: guide.id,
@@ -31,7 +33,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
         <Link className="brand" href="/">
           ML-Helper
         </Link>
-        <SiteSearch guides={searchGuides} />
+        <SiteSearch guides={searchGuides} active={active} />
         <div className="public-header-actions">
           <PublicNav
             navLabel="Navigation principale"

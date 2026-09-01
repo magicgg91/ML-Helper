@@ -12,6 +12,10 @@ import {
 import { EditorActionBar } from "./editor-action-bar";
 import { LeagueButtons } from "./league-select";
 import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
+import {
   emptyEventRow,
   emptyEventTierRow,
   type EventRow,
@@ -19,6 +23,14 @@ import {
   type EventTierRow,
 } from "../lib/events";
 import { leagues, type League } from "../lib/player-settings";
+
+// Bloc 60 review (Codex PR #81): same editorial-locale toggle as
+// Consommables (Bloc 48/A) — only fr/en are actually captured per tier, so
+// any non-fr editorial locale edits the EN fields, matching the public
+// table's own non-fr fallback to English (Bloc44-review/C).
+function fieldLocale(locale: EditorialLocale): "fr" | "en" {
+  return locale === "fr" ? "fr" : "en";
+}
 
 // Bloc 60: per-event validation errors — "name" is a single message (the
 // event's own free-text fields are a small custom form, not an
@@ -35,23 +47,28 @@ function emptyCatalogErrors(): CatalogErrors {
 
 const tierColumns = (
   t: (key: string) => string,
+  lang: "fr" | "en",
   inputLabel: (index: number, field: string) => string,
-): EditableColumn<EventTierRow>[] => [
-  {
-    key: "objective",
-    label: t("tier-columns.objective"),
-    required: true,
-    wide: true,
-    inputLabel: (index) => inputLabel(index, t("tier-columns.objective")),
-  },
-  {
-    key: "reward",
-    label: t("tier-columns.reward"),
-    required: true,
-    wide: true,
-    inputLabel: (index) => inputLabel(index, t("tier-columns.reward")),
-  },
-];
+): EditableColumn<EventTierRow>[] => {
+  const objectiveKey = lang === "fr" ? "objective_fr" : "objective_en";
+  const rewardKey = lang === "fr" ? "reward_fr" : "reward_en";
+  return [
+    {
+      key: objectiveKey,
+      label: t("tier-columns.objective"),
+      required: true,
+      wide: true,
+      inputLabel: (index) => inputLabel(index, t("tier-columns.objective")),
+    },
+    {
+      key: rewardKey,
+      label: t("tier-columns.reward"),
+      required: true,
+      wide: true,
+      inputLabel: (index) => inputLabel(index, t("tier-columns.reward")),
+    },
+  ] as EditableColumn<EventTierRow>[];
+};
 
 // Bloc 60: the "Événements" reference — a 3rd reference-catalog level
 // (league -> events -> tiers) on top of the same building blocks every
@@ -69,10 +86,14 @@ export function EventsReferenceScreen({
 }) {
   const t = useTranslations("admin.references");
   const [league, setLeague] = useState<League>(leagues[0]);
+  const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [catalog, setCatalog] = useState<EventsCatalog>(initialCatalog);
   const [errors, setErrors] = useState<CatalogErrors>(emptyCatalogErrors);
   const [status, setStatus] = useState("");
 
+  const lang = fieldLocale(locale);
+  const objectiveKey = lang === "fr" ? "objective_fr" : "objective_en";
+  const rewardKey = lang === "fr" ? "reward_fr" : "reward_en";
   const events = catalog[league];
   const leagueErrors = errors[league];
 
@@ -144,10 +165,10 @@ export function EventsReferenceScreen({
       nextErrors[catalogLeague] = catalog[catalogLeague].map((event) => {
         const tierErrors: FieldErrors = {};
         event.tiers.forEach((tier, tierIndex) => {
-          if (!tier.objective.trim())
-            tierErrors[errorKey(tierIndex, "objective")] = t("required");
-          if (!tier.reward.trim())
-            tierErrors[errorKey(tierIndex, "reward")] = t("required");
+          if (!tier[objectiveKey].trim())
+            tierErrors[errorKey(tierIndex, objectiveKey)] = t("required");
+          if (!tier[rewardKey].trim())
+            tierErrors[errorKey(tierIndex, rewardKey)] = t("required");
         });
         if (Object.keys(tierErrors).length) valid = false;
         const nameError = event.name.trim() ? undefined : t("required");
@@ -180,6 +201,11 @@ export function EventsReferenceScreen({
   return (
     <div className="calculator-stack">
       <EditorActionBar backHref="/admin/referentiels" message={status}>
+        <EditorialLocaleSelect
+          label={t("events-language-label")}
+          value={locale}
+          onChange={setLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -313,7 +339,7 @@ export function EventsReferenceScreen({
                 </div>
                 <EditableDataTable
                   rows={event.tiers}
-                  columns={tierColumns(t, (index, field) =>
+                  columns={tierColumns(t, lang, (index, field) =>
                     t("tier-row-label", {
                       row: index + 1,
                       field,

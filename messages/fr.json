@@ -952,6 +952,7 @@
       "empty": "Aucun objet pour l’instant.",
       "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ).",
       "events-league-label": "Ligue",
+      "events-language-label": "Langue du texte",
       "events-table-title": "Liste des événements",
       "add-event": "Ajouter un événement",
       "events-columns": {

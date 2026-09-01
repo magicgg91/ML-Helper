@@ -9,8 +9,10 @@ function parseTier(raw: unknown): EventTierRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid tier");
   const source = raw as Record<string, unknown>;
   return {
-    objective: stringField(source.objective),
-    reward: stringField(source.reward),
+    objective_fr: stringField(source.objective_fr),
+    objective_en: stringField(source.objective_en),
+    reward_fr: stringField(source.reward_fr),
+    reward_en: stringField(source.reward_en),
   };
 }
 

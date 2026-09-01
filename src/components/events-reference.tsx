@@ -1,11 +1,27 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 import type { EventRow, EventsCatalog } from "../lib/events";
 
-function EventCard({ event, t }: { event: EventRow; t: (key: string) => string }) {
+// Bloc 60 review (Codex PR #81): same fr/en fallback as Consommables'
+// pickLocaleText (Bloc44-review/C) — fr visitors get the French text (or
+// English if it's the only one filled in), every other locale gets English
+// (or French as a last resort), never a raw missing string.
+function pickLocaleText(fr: string, en: string, locale: string): string {
+  return locale === "fr" ? fr || en : en || fr;
+}
+
+function EventCard({
+  event,
+  t,
+  locale,
+}: {
+  event: EventRow;
+  t: (key: string) => string;
+  locale: string;
+}) {
   return (
     <details className="events-card">
       <summary className="events-card-summary">
@@ -32,8 +48,16 @@ function EventCard({ event, t }: { event: EventRow; t: (key: string) => string }
             <tbody>
               {event.tiers.map((tier, index) => (
                 <tr key={index}>
-                  <td>{tier.objective}</td>
-                  <td>{tier.reward}</td>
+                  <td>
+                    {pickLocaleText(
+                      tier.objective_fr,
+                      tier.objective_en,
+                      locale,
+                    )}
+                  </td>
+                  <td>
+                    {pickLocaleText(tier.reward_fr, tier.reward_en, locale)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -50,6 +74,7 @@ function EventCard({ event, t }: { event: EventRow; t: (key: string) => string }
 // collapsible block (closed by default) revealing its tier table.
 export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
   const t = useTranslations("references.events");
+  const locale = useLocale();
   const [league, setLeague] = useSyncedLeague();
   const events = league ? catalog[league] : [];
 
@@ -69,7 +94,7 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
       ) : (
         <div className="events-list">
           {events.map((event, index) => (
-            <EventCard event={event} t={t} key={index} />
+            <EventCard event={event} t={t} locale={locale} key={index} />
           ))}
         </div>
       )}

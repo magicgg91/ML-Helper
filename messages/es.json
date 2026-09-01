@@ -932,6 +932,7 @@
       "move-up": "Mover hacia arriba",
       "remove": "Eliminar",
       "events-league-label": "Liga",
+      "events-language-label": "Idioma del texto",
       "events-table-title": "Lista de eventos",
       "add-event": "Añadir un evento",
       "events-columns": {

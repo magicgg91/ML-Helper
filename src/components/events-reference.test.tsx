@@ -13,8 +13,18 @@ const recruiterEvent = {
   startDay: "1",
   endDay: "7",
   tiers: [
-    { objective: "1G troupes enrôlées", reward: "100M or + 250 éclats" },
-    { objective: "3G troupes enrôlées", reward: "300M or + 5 saphirs" },
+    {
+      objective_fr: "1G troupes enrôlées",
+      objective_en: "1B troops enlisted",
+      reward_fr: "100M or + 250 éclats",
+      reward_en: "100M gold + 250 shards",
+    },
+    {
+      objective_fr: "3G troupes enrôlées",
+      objective_en: "3B troops enlisted",
+      reward_fr: "300M or + 5 saphirs",
+      reward_en: "300M gold + 5 sapphires",
+    },
   ],
 };
 
@@ -82,6 +92,19 @@ describe("EventsReferenceTable", () => {
     expect(details).toHaveAttribute("open");
     expect(screen.getByText("1G troupes enrôlées")).toBeVisible();
     expect(screen.getByText("100M or + 250 éclats")).toBeVisible();
+  });
+
+  // Bloc 60 review (Codex PR #81): tier text is captured per fr/en field
+  // (same pattern as Boutique's name_fr/name_en, Bloc44-review/C) — a
+  // non-fr visitor must see the English text, never the raw French string.
+  it("Bloc60 review: shows the English tier text to a non-fr visitor, French to a fr visitor", () => {
+    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    render(<EventsReferenceTable catalog={catalog} />, "en");
+    fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+    fireEvent.click(screen.getByText("Recruteur"));
+    expect(screen.getByText("1B troops enlisted")).toBeVisible();
+    expect(screen.getByText("100M gold + 250 shards")).toBeVisible();
+    expect(screen.queryByText("1G troupes enrôlées")).not.toBeInTheDocument();
   });
 
   it("Bloc60: shows a no-tiers message for an event with an empty tier list", () => {

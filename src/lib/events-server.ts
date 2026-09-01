@@ -26,8 +26,12 @@ function freshEmptyCatalog(): EventsCatalog {
 function normalizeTier(raw: unknown): EventTierRow | null {
   if (!isPlainObject(raw)) return null;
   return {
-    objective: typeof raw.objective === "string" ? raw.objective : "",
-    reward: typeof raw.reward === "string" ? raw.reward : "",
+    objective_fr:
+      typeof raw.objective_fr === "string" ? raw.objective_fr : "",
+    objective_en:
+      typeof raw.objective_en === "string" ? raw.objective_en : "",
+    reward_fr: typeof raw.reward_fr === "string" ? raw.reward_fr : "",
+    reward_en: typeof raw.reward_en === "string" ? raw.reward_en : "",
   };
 }
 

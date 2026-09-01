@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CalculatorAvailability } from "@/lib/calculator-catalog";
 import {
   buildSiteSearchResults,
   type SiteSearchGuide,
 } from "@/lib/site-search";
 
-export function SiteSearch({ guides }: { guides: SiteSearchGuide[] }) {
+export function SiteSearch({
+  guides,
+  active,
+}: {
+  guides: SiteSearchGuide[];
+  active?: Partial<CalculatorAvailability>;
+}) {
   const locale = useLocale();
   const t = useTranslations("search");
   const translate = useTranslations();
@@ -23,8 +30,9 @@ export function SiteSearch({ guides }: { guides: SiteSearchGuide[] }) {
         locale,
         guides,
         translate: (key) => translate(key),
+        active,
       }),
-    [query, locale, guides, translate],
+    [query, locale, guides, translate, active],
   );
 
   const trimmed = query.trim();

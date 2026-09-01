@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import frMessages from "../../messages/fr.json";
+import { defaultCalculatorAvailability } from "../lib/calculator-catalog";
 import { referenceCatalog } from "../lib/reference-catalog";
 import { ReferenceCatalogGrid } from "./reference-catalog-grid";
 
@@ -20,7 +21,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("shows the real referential illustration for every one of the 6 references", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} />
+        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     for (const src of [
@@ -38,7 +39,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("falls back to the placeholder category icon if the real image fails to load", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} />
+        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     const image = document.querySelector<HTMLImageElement>(
@@ -59,7 +60,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("falls back to the placeholder category icon for Boutique if its real image fails to load", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} />
+        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     const image = document.querySelector<HTMLImageElement>(
@@ -77,7 +78,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("uses the same square .tool-category-image box as the tool categories (Bloc 38/H)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} />
+        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     expect(
@@ -93,7 +94,11 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("caps the number of tiles rendered when a limit is given", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} limit={2} />
+        <ReferenceCatalogGrid
+        t={t}
+        limit={2}
+        active={defaultCalculatorAvailability}
+      />
       </NextIntlClientProvider>,
     );
     expect(screen.getAllByRole("link")).toHaveLength(2);
@@ -102,9 +107,28 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   it("shows every catalog entry when no limit is given", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid t={t} />
+        <ReferenceCatalogGrid t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
     expect(screen.getAllByRole("link")).toHaveLength(referenceCatalog.length);
+  });
+
+  // Bloc 60 review (Codex PR #81): a reference shipped inactive (Events,
+  // hidden until an admin activates it) must not appear as a clickable
+  // tile here — the direct URL already shows the "unavailable" message on
+  // its own, this grid should never link to it in the meantime.
+  it("hides a reference's tile while its calculator is inactive", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid
+          t={t}
+          active={{ ...defaultCalculatorAvailability, events: false }}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByRole("link", { name: /Événements/ })).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(
+      referenceCatalog.length - 1,
+    );
   });
 });

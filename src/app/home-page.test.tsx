@@ -23,6 +23,17 @@ vi.mock("@/lib/calculators-server", () => ({
     "expedition-equipment-simulator": true,
     gems: true,
     templars: true,
+    // Bloc 60 review (Codex PR #81): ReferenceCatalogGrid now filters by
+    // availability too — these are the calculatorSlugs (not public slugs)
+    // of the 7 references, all active so the section below keeps showing
+    // every one of them, same as before this filter existed.
+    "combat-equipment": true,
+    "expedition-equipment": true,
+    "level-up": true,
+    templiers: true,
+    gemmes: true,
+    consommables: true,
+    events: true,
   }),
 }));
 const { recentGuides, findManyMock } = vi.hoisted(() => {

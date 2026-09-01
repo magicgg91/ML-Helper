@@ -952,6 +952,7 @@
       "empty": "No items yet.",
       "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star).",
       "events-league-label": "League",
+      "events-language-label": "Text language",
       "events-table-title": "Event list",
       "add-event": "Add an event",
       "events-columns": {

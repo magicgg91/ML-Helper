@@ -1233,12 +1233,39 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   ).toBeVisible();
   expect(publicBefore?.status()).toBe(200);
 
+  // Bloc 60 review (Codex PR #81): also invisible in public discovery —
+  // no dead tile on the homepage or the /referentiels index, no dead
+  // search result — until an admin activates it.
+  await page.goto("/");
+  await expect(
+    page.getByRole("link", { name: /Événements/ }),
+  ).toHaveCount(0);
+  await page.goto("/referentiels");
+  await expect(
+    page.getByRole("link", { name: /Événements/ }),
+  ).toHaveCount(0);
+  await page.getByRole("searchbox").fill("événements");
+  await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(0);
+  await page.getByRole("searchbox").fill("");
+
   await page.goto("/admin/referentiels");
   const row = page.getByRole("row", { name: /Événements/ });
   await expect(row.getByText("Inactif")).toBeVisible();
   await row.getByRole("button", { name: "Activer" }).click();
-  await expect(row.getByText("Actif")).toBeVisible();
+  // Exact match required: getByText's default substring match would treat
+  // "Inactif" itself as satisfying "Actif" (it contains that substring),
+  // so a plain `getByText("Actif")` here would resolve immediately without
+  // actually waiting for the toggle's fetch to land — then the next line's
+  // page.goto (a hard navigation) would cancel that still-in-flight PATCH.
+  await expect(row.getByText("Actif", { exact: true })).toBeVisible();
 
+  // Bloc 60 review (Codex PR #81): now visible in public discovery too.
+  await page.goto("/referentiels");
+  await expect(
+    page.getByRole("link", { name: /Événements/ }),
+  ).toHaveCount(1);
+
+  await page.goto("/admin/referentiels");
   await row.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
 
@@ -1264,6 +1291,16 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await page
     .getByLabel("Récompense du palier 1 de Recruteur")
     .fill("100M or + 250 éclats");
+  // Bloc 60 review (Codex PR #81): tier text is captured per fr/en field —
+  // switch the editorial locale and fill the English pair too.
+  await page.getByLabel("Langue du texte").selectOption("en");
+  await page
+    .getByLabel("Objectif du palier 1 de Recruteur")
+    .fill("1B troops enlisted");
+  await page
+    .getByLabel("Récompense du palier 1 de Recruteur")
+    .fill("100M gold + 250 shards");
+  await page.getByLabel("Langue du texte").selectOption("fr");
   await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
   await expect(page.getByRole("status")).toHaveText("Référentiel enregistré.");
 

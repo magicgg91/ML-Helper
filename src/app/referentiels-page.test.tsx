@@ -29,6 +29,17 @@ vi.mock("@/components/reference-catalog-grid", () => ({
 vi.mock("@/lib/site-url", () => ({
   languageAlternates: () => ({}),
 }));
+// Bloc 60 review (Codex PR #81): the page now fetches availability itself
+// to pass down to ReferenceCatalogGrid (mocked above, so the actual value
+// doesn't matter to these tests, just that the call doesn't hit Prisma).
+vi.mock("@/lib/calculators-server", () => ({
+  getCalculatorAvailability: async () => ({}),
+}));
+// The page now also calls connection() (same as /guides and the homepage)
+// to force per-request dynamic rendering — outside Next's real request
+// scope, that throws, so it's stubbed the same way guides-page.test.tsx
+// stubs it.
+vi.mock("next/server", () => ({ connection: async () => undefined }));
 
 afterEach(cleanup);
 

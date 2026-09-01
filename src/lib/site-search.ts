@@ -1,4 +1,7 @@
-import { calculatorCatalog } from "./calculator-catalog";
+import {
+  calculatorCatalog,
+  type CalculatorAvailability,
+} from "./calculator-catalog";
 import { referenceCatalog, referenceHref } from "./reference-catalog";
 
 export type SiteSearchGuide = {
@@ -31,11 +34,18 @@ export function buildSiteSearchResults({
   locale,
   guides,
   translate,
+  active,
 }: {
   query: string;
   locale: string;
   guides: SiteSearchGuide[];
   translate: (key: string) => string;
+  // Bloc 60 review (Codex PR #81): hides an inactive reference from search
+  // results the same way ReferenceCatalogGrid now hides its tile — optional
+  // (defaults to "everything available") so every pre-existing call site
+  // that never had a reason to care about availability (every reference
+  // shipped active-by-default until Events) keeps working unchanged.
+  active?: Partial<CalculatorAvailability>;
 }): SiteSearchResult[] {
   const normalized = query.trim().toLocaleLowerCase(locale);
   if (!normalized) return [];
@@ -52,6 +62,7 @@ export function buildSiteSearchResults({
     }));
 
   const referenceResults: SiteSearchResult[] = referenceCatalog
+    .filter((reference) => active?.[reference.calculatorSlug] !== false)
     .map((reference) => ({
       reference,
       label: translate(`references.catalog.${reference.slug}`),
