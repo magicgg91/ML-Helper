@@ -216,7 +216,6 @@ export function ConsumablesReferenceScreen({
         <h2 className="editable-reference-title">
           {t("consumables-intro-title")}
         </h2>
-        <p>{t("consumables-intro-description")}</p>
         <GuideMarkdownEditor
           label={t("consumables-intro-label")}
           value={intro[locale]}
@@ -229,7 +228,6 @@ export function ConsumablesReferenceScreen({
         <h2 className="editable-reference-title">
           {t("consumables-table-title")}
         </h2>
-        <p>{t("consumables-table-description")}</p>
         {consumableCategories.map((category) => (
           <div className="editable-reference" key={category}>
             <div className="editable-reference-title-row">

@@ -526,7 +526,7 @@
   },
   "references": {
     "eyebrow": "Referenztabellen",
-    "title": "Alle Referenztabellen",
+    "title": "Referenztabellen",
     "filters": {
       "label": "Referenztabellen-Filter",
       "family": "Familie",
@@ -907,13 +907,11 @@
         "image": "Bildpfad",
         "name": "Name"
       },
-      "consumables-intro-description": "Freier Markdown-Textbereich, der oben auf der öffentlichen Shop-Referenzseite angezeigt wird.",
       "consumables-intro-error": "Einleitung nicht gespeichert (Objekte wurden gespeichert).",
       "consumables-intro-label": "Einleitung (Markdown)",
       "consumables-intro-language-label": "Textsprache",
       "consumables-intro-title": "Einleitungstext",
       "consumables-rows-error": "Objekte nicht gespeichert (die Einleitung wurde gespeichert).",
-      "consumables-table-description": "Füge Verbrauchsgüter-Objekte frei hinzu, ordne sie neu an oder entferne sie. Lasse die Kosten leer, bis sie bestätigt sind — die Zeilenreihenfolge ist die öffentliche Anzeigereihenfolge.",
       "consumables-table-title": "Objekte",
       "empty": "Noch keine Objekte.",
       "move-down": "Nach unten verschieben",

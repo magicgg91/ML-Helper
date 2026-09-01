@@ -59,6 +59,30 @@ describe("ConsumablesReferenceTable", () => {
     expect(document.querySelector(".markdown-content")).not.toBeInTheDocument();
   });
 
+  // Bloc 52/D: the free-text intro zone was rendered bare, the only
+  // reference's markdown zone without the same framed style as the rest
+  // of the site (guide-shell/calculator-card).
+  it("Bloc52/D: frames the intro markdown zone in a calculator-card, like the rest of the site", () => {
+    render(
+      <ConsumablesReferenceTable
+        intro={{ ...emptyIntro, fr: "## Introduction FR" }}
+        catalog={catalog}
+      />,
+    );
+    const heading = screen.getByRole("heading", { name: "Introduction FR" });
+    expect(heading.closest(".calculator-card")).not.toBeNull();
+  });
+
+  // Bloc 52/C: the category filter bar was the only reference's filter row
+  // not wrapped in the same .calculator-card frame the other references'
+  // Filters block uses (see reference-tables.tsx).
+  it("Bloc52/C: frames the category filter bar in a calculator-card, like the other references", () => {
+    render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
+    const filters = document.querySelector(".reference-filters");
+    expect(filters).not.toBeNull();
+    expect(filters!.closest(".calculator-card")).not.toBeNull();
+  });
+
   it("shows the raw cost, never compacted to k/M", () => {
     render(<ConsumablesReferenceTable intro={emptyIntro} catalog={catalog} />);
     expect(screen.getByText("10500")).toBeInTheDocument();

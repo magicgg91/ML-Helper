@@ -60,6 +60,18 @@ describe("ConsumablesReferenceScreen", () => {
   afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
+  // Bloc 52/E: the helper sentences above the markdown zone and the items
+  // table were removed — the interface should read clearly without them.
+  it("Bloc52/E: has no explanatory helper text above the markdown zone or the items table", () => {
+    renderScreen();
+    expect(
+      screen.queryByText(/Zone de texte libre en markdown/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Ajoute, réordonne ou supprime librement/),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows one back link, one combined save button, and 4 category tables", () => {
     renderScreen();
     expect(screen.getAllByRole("link", { name: "← Retour" })).toHaveLength(1);
