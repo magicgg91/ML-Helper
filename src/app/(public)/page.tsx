@@ -34,7 +34,7 @@ export default async function HomePage() {
       prisma.guide.findMany({
         where: { status: "published", active: true },
         orderBy: { publishedAt: "desc" },
-        take: 3,
+        take: 6,
       }),
     ]);
   return (
@@ -51,15 +51,27 @@ export default async function HomePage() {
         <p>{t("toolsDescription")}</p>
         <ToolCategoryGrid active={active} t={tools} />
       </section>
-      {/* Bloc 34/E: the 3 most recently published guides (same sort as
-          /guides) + the references actually built so far — same 1-click,
-          no-detour-via-/guides principle as the tools section above. */}
+      {/* Bloc 50 Group3: the guides/référentiels section used to be one
+          combined block — now 3 independently-ordered sections (Outils,
+          Référentiels, Guides), each keeping the same 1-click,
+          no-detour-via-/guides or /referentiels principle. */}
+      <section className="home-references">
+        <p className="eyebrow">{t("referentielsEyebrow")}</p>
+        <h2>{t("referentielsTitle")}</h2>
+        <p>{t("referentielsDescription")}</p>
+        {/* Structural cap (not a today-only coincidence): limit={8} keeps
+            this teaser within .tool-category-grid's 4-column/2-row shape
+            even once the catalog grows past 8 entries. */}
+        <ReferenceCatalogGrid t={references} limit={8} />
+      </section>
+      {/* Bloc 34/E (Bloc 50 Group3: now its own section, take raised from 3
+          to 6): the most recently published guides, same sort as /guides. */}
       <section className="home-guides">
         <p className="eyebrow">{t("guidesEyebrow")}</p>
         <h2>{t("guidesTitle")}</h2>
         <p>{t("guidesDescription")}</p>
         {recentGuides.length > 0 && (
-          <div className="card-grid">
+          <div className="card-grid home-guides-grid">
             {recentGuides.map((guide) => (
               <Link
                 className="public-card guide-list-card"
@@ -87,7 +99,6 @@ export default async function HomePage() {
             ))}
           </div>
         )}
-        <ReferenceCatalogGrid t={references} />
       </section>
     </main>
   );

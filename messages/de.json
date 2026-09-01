@@ -471,7 +471,10 @@
     "toolsDescription": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
     "guidesEyebrow": "Lernen",
     "guidesTitle": "Schärfe deine Strategie",
-    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen."
+    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen.",
+    "referentielsEyebrow": "Nachschlagen",
+    "referentielsTitle": "Finde die genauen Zahlen",
+    "referentielsDescription": "Durchstöbere die Referenztabellen der Community für die genauen Kosten, Werte und Stufen des Spiels."
   },
   "ToolsPage": {
     "eyebrow": "Werkzeuge",

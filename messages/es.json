@@ -471,7 +471,10 @@
     "toolsDescription": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
     "guidesEyebrow": "Aprender",
     "guidesTitle": "Perfecciona tu estrategia",
-    "guidesDescription": "Consulta las guías de la comunidad para entender las mecánicas del juego y progresar con confianza."
+    "guidesDescription": "Consulta las guías de la comunidad para entender las mecánicas del juego y progresar con confianza.",
+    "referentielsEyebrow": "Consultar",
+    "referentielsTitle": "Encuentra las cifras exactas",
+    "referentielsDescription": "Consulta las tablas de referencia de la comunidad para conocer los costes, estadísticas y umbrales exactos del juego."
   },
   "ToolsPage": {
     "eyebrow": "Herramientas",

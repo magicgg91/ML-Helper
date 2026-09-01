@@ -68,6 +68,15 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
+  it("Bloc 50 Group3: caps the homepage guides teaser grid at 3 columns per row, same computed-floor technique as .tool-category-grid", () => {
+    expect(css).toMatch(
+      /\.home-guides-grid\s*{\s*grid-template-columns: repeat\(\s*auto-fit,\s*minmax\(max\(18rem, calc\(\(100% - 2 \* 0\.65rem\) \/ 3\)\), 1fr\)\s*\);/,
+    );
+    expect(css).toMatch(
+      /@media \(max-width: 42rem\)\s*{\s*\.home-guides-grid\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+  });
+
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
     expect(css).toMatch(
       /main\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,

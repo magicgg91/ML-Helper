@@ -471,7 +471,10 @@
     "toolsDescription": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
     "guidesEyebrow": "Öğren",
     "guidesTitle": "Stratejini geliştir",
-    "guidesDescription": "Oyun mekaniklerini anlamak ve güvenle ilerlemek için topluluk rehberlerine göz at."
+    "guidesDescription": "Oyun mekaniklerini anlamak ve güvenle ilerlemek için topluluk rehberlerine göz at.",
+    "referentielsEyebrow": "Danış",
+    "referentielsTitle": "Doğru rakamlara ulaş",
+    "referentielsDescription": "Oyunun tam maliyetlerini, istatistiklerini ve eşiklerini öğrenmek için topluluğun referans tablolarına göz at."
   },
   "ToolsPage": {
     "eyebrow": "Araçlar",
