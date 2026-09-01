@@ -129,6 +129,70 @@ describe("EditableDataTable", () => {
     );
   });
 
+  // Bloc 49/B: opt-in icon rendering — other callers (Ranking) keep the
+  // plain text "Retirer"/"Supprimer" button untouched.
+  it("Bloc49/B: renders the remove control as a red X icon when removeIcon is set", () => {
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onRemove={vi.fn()}
+        removeLabel="Supprimer"
+        removeIcon
+      />,
+    );
+    const button = screen.getByRole("button", { name: "Supprimer" });
+    expect(button).toHaveTextContent("");
+    expect(button.querySelector("svg")).toBeInTheDocument();
+    expect(button).toHaveClass("danger-action");
+  });
+
+  // Bloc 49/B: row deletion is irreversible and previously fired with no
+  // confirmation at all — removeConfirmMessage gates it behind
+  // window.confirm, and a decline must leave the row untouched.
+  it("Bloc49/B: confirms before removing when removeConfirmMessage is set, and does nothing on decline", () => {
+    const onRemove = vi.fn();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValueOnce(false);
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onRemove={onRemove}
+        removeLabel="Supprimer"
+        removeIcon
+        removeConfirmMessage="Supprimer définitivement cet objet ?"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    expect(confirmSpy).toHaveBeenCalledWith(
+      "Supprimer définitivement cet objet ?",
+    );
+    expect(onRemove).not.toHaveBeenCalled();
+
+    confirmSpy.mockReturnValueOnce(true);
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    expect(onRemove).toHaveBeenCalledWith(0);
+  });
+
+  it("Bloc49/B: removes immediately, with no confirmation prompt, when removeConfirmMessage is omitted (every other caller's existing behavior)", () => {
+    const onRemove = vi.fn();
+    const confirmSpy = vi.spyOn(window, "confirm");
+    render(
+      <EditableDataTable
+        rows={[{ name: "Alpha", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onRemove={onRemove}
+        removeLabel="Retirer"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retirer" }));
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(onRemove).toHaveBeenCalledWith(0);
+  });
+
   it("shows the empty label instead of an empty table", () => {
     render(
       <EditableDataTable

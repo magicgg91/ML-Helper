@@ -905,6 +905,7 @@
         "cost": "Cost (Sapphires)"
       },
       "add-category": "Add ({category})",
+      "confirm-remove": "Permanently delete this item?",
       "category-row-label": "{category} — row {row} {field}",
       "add": "Add an item",
       "remove": "Remove",

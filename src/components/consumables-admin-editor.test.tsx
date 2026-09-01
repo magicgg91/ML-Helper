@@ -134,7 +134,33 @@ describe("ConsumablesReferenceScreen", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("Bloc48/B: removes a row from only its own category table", () => {
+  // Bloc 49/A: the verbose "Ajouter (Catégorie)" text button is now a "+"
+  // icon, sitting on the same line as the table's own title.
+  it("Bloc49/A: renders the Add control as a '+' icon on the table's own title row, for each of the 4 tables", () => {
+    renderScreen();
+    for (const category of [
+      "Conseillers",
+      "Équipement",
+      "Expédition",
+      "Inventaire",
+    ]) {
+      const button = screen.getByRole("button", {
+        name: `Ajouter (${category})`,
+      });
+      expect(button).toHaveTextContent("");
+      expect(button.querySelector("svg")).toBeInTheDocument();
+      const titleRow = button.closest(".editable-reference-title-row");
+      expect(titleRow).not.toBeNull();
+      expect(
+        within(titleRow as HTMLElement).getByRole("heading", {
+          name: category,
+        }),
+      ).toBeInTheDocument();
+    }
+  });
+
+  it("Bloc48/B + 49/B: removes a row from only its own category table, after confirming", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     renderScreen();
     fireEvent.click(
       within(screen.getByTestId("row-0-equipment")).getAllByRole("button", {
@@ -147,6 +173,33 @@ describe("ConsumablesReferenceScreen", () => {
     expect(screen.getByLabelText("Inventaire — ligne 1 Nom")).toHaveValue(
       "Objet B",
     );
+  });
+
+  // Bloc 49/B: the remove control is a red X icon, and deletion is
+  // irreversible — it must never happen without an explicit confirmation,
+  // and declining it must leave the row untouched.
+  it("Bloc49/B: renders a red X icon and asks for confirmation before actually deleting a row", () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+    renderScreen();
+    const removeButton = within(
+      screen.getByTestId("row-0-equipment"),
+    ).getAllByRole("button", { name: "Supprimer" })[0];
+    expect(removeButton).toHaveTextContent("");
+    expect(removeButton.querySelector("svg")).toBeInTheDocument();
+    expect(removeButton).toHaveClass("danger-action");
+
+    fireEvent.click(removeButton);
+    expect(confirmSpy).toHaveBeenCalled();
+    // Declined: the row is still there, untouched.
+    expect(screen.getByLabelText("Équipement — ligne 1 Nom")).toHaveValue(
+      "Objet A",
+    );
+
+    confirmSpy.mockReturnValue(true);
+    fireEvent.click(removeButton);
+    expect(
+      screen.queryByLabelText("Équipement — ligne 1 Nom"),
+    ).not.toBeInTheDocument();
   });
 
   // Bloc 48/B: up/down ordering is scoped independently per category — a

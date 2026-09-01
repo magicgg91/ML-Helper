@@ -884,6 +884,7 @@
       },
       "add": "Añadir un objeto",
       "add-category": "Añadir ({category})",
+      "confirm-remove": "¿Eliminar definitivamente este objeto?",
       "category-row-label": "{category} — fila {row} {field}",
       "consumables-columns": {
         "cost": "Coste (Zafiros)",

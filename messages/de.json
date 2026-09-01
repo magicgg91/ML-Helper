@@ -884,6 +884,7 @@
       },
       "add": "Objekt hinzufügen",
       "add-category": "Hinzufügen ({category})",
+      "confirm-remove": "Dieses Objekt endgültig löschen?",
       "category-row-label": "{category} — Zeile {row} {field}",
       "consumables-columns": {
         "cost": "Kosten (Saphire)",

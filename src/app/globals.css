@@ -1844,6 +1844,33 @@ body > main h1 {
   color: var(--text);
   font-size: 1.05rem;
 }
+/* Bloc 49/A: puts a category table's own scoped "+" add button on the same
+   line as its title, instead of a verbose "Ajouter (Catégorie)" button
+   sitting above the table. */
+.editable-reference-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+/* Bloc 49/A+B: a small square button for an icon-only action (add "+",
+   remove ✕) — distinct from .secondary-action's text-button padding. */
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  color: inherit;
+  cursor: pointer;
+}
+.icon-action:hover {
+  background: var(--bg-panel-raised);
+}
 .reference-admin-table input {
   min-width: 9rem;
   padding: 0.45rem 0.55rem;
