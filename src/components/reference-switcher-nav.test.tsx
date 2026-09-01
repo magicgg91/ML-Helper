@@ -16,7 +16,14 @@ const catalog: Record<string, string> = {
   "catalog.shop": "Boutique",
   "tabs-label": "tabs-label",
 };
-const t = (key: string) => catalog[key] ?? key;
+// The translator is read via useTranslations inside the component (not
+// passed as a `t` prop) — a next-intl/server translator is a function, and
+// Next.js forbids passing functions from a Server Component to a Client
+// Component, which crashed this exact page at runtime (RTL doesn't enforce
+// that boundary, so this bug only surfaced in a real browser).
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => catalog[key] ?? key,
+}));
 
 const active = {
   "combat-equipment": true,
@@ -38,7 +45,7 @@ describe("ReferenceSwitcherNav", () => {
   // [slug] detail page itself.
   it("Bloc35 1.2: offers a cross-nav to switch directly to another reference", () => {
     pathname = "/referentiels/combat-equipment";
-    render(<ReferenceSwitcherNav active={active} t={t} />);
+    render(<ReferenceSwitcherNav active={active} />);
     const nav = screen.getByRole("navigation", { name: "tabs-label" });
     for (const label of [
       "Équipements de Combat",
@@ -72,7 +79,7 @@ describe("ReferenceSwitcherNav", () => {
 
   it("sets no aria-current on the /referentiels index, where no single reference is current", () => {
     pathname = "/referentiels";
-    render(<ReferenceSwitcherNav active={active} t={t} />);
+    render(<ReferenceSwitcherNav active={active} />);
     const nav = screen.getByRole("navigation", { name: "tabs-label" });
     for (const link of within(nav).getAllByRole("link")) {
       expect(link).not.toHaveAttribute("aria-current");

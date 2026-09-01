@@ -119,14 +119,16 @@ describe("public layouts", () => {
   // every detail page.
   it("renders the reference switcher nav above the section's children", async () => {
     render(
-      await ReferentielsLayout({
-        children: <p>Référentiels</p>,
-        params: Promise.resolve({}),
-      }),
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        {await ReferentielsLayout({
+          children: <p>Référentiels</p>,
+          params: Promise.resolve({}),
+        })}
+      </NextIntlClientProvider>,
     );
 
     expect(
-      screen.getByRole("navigation", { name: "tabs-label" }),
+      screen.getByRole("navigation", { name: "Référentiels" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Référentiels")).toBeInTheDocument();
   });
