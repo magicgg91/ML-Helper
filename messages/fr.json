@@ -476,7 +476,10 @@
     "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "guidesEyebrow": "Apprendre",
     "guidesTitle": "Affûte ta stratégie",
-    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement."
+    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
+    "referentielsEyebrow": "Consulter",
+    "referentielsTitle": "Retrouve les données clés",
+    "referentielsDescription": "Retrouve les tableaux de référence de la communauté pour connaître les coûts, statistiques et paliers exacts du jeu."
   },
   "ToolsPage": {
     "eyebrow": "Outils",

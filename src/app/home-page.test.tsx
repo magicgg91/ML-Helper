@@ -25,31 +25,37 @@ vi.mock("@/lib/calculators-server", () => ({
     templars: true,
   }),
 }));
-const recentGuides = [
-  {
-    id: "g1",
-    slug: "guide-1",
-    title: { fr: "Guide 1" },
-    excerpt: { fr: "Excerpt 1" },
-    coverImage: null,
-  },
-  {
-    id: "g2",
-    slug: "guide-2",
-    title: { fr: "Guide 2" },
-    excerpt: { fr: "Excerpt 2" },
-    coverImage: null,
-  },
-  {
-    id: "g3",
-    slug: "guide-3",
-    title: { fr: "Guide 3" },
-    excerpt: { fr: "Excerpt 3" },
-    coverImage: null,
-  },
-];
+const { recentGuides, findManyMock } = vi.hoisted(() => {
+  const recentGuides = [
+    {
+      id: "g1",
+      slug: "guide-1",
+      title: { fr: "Guide 1" },
+      excerpt: { fr: "Excerpt 1" },
+      coverImage: null,
+    },
+    {
+      id: "g2",
+      slug: "guide-2",
+      title: { fr: "Guide 2" },
+      excerpt: { fr: "Excerpt 2" },
+      coverImage: null,
+    },
+    {
+      id: "g3",
+      slug: "guide-3",
+      title: { fr: "Guide 3" },
+      excerpt: { fr: "Excerpt 3" },
+      coverImage: null,
+    },
+  ];
+  return {
+    recentGuides,
+    findManyMock: vi.fn(() => Promise.resolve(recentGuides)),
+  };
+});
 vi.mock("@/lib/prisma", () => ({
-  prisma: { guide: { findMany: async () => recentGuides } },
+  prisma: { guide: { findMany: findManyMock } },
 }));
 
 afterEach(cleanup);
@@ -90,7 +96,10 @@ describe("HomePage", () => {
     expect(screen.getByText("intro")).toBeInTheDocument();
   });
 
-  it("shows the 3 most recent guides and the built references, each directly clickable (Bloc 34/E)", async () => {
+  // Bloc 50 Group3: the combined guides/référentiels section split into 2
+  // independent sections — each still links directly to its guides/
+  // references (no detour via /guides or /referentiels).
+  it("shows the most recent guides, each directly clickable, in their own section (Bloc 34/E)", async () => {
     render(await HomePage());
     for (const guide of recentGuides) {
       const link = screen.getByRole("link", {
@@ -98,19 +107,39 @@ describe("HomePage", () => {
       });
       expect(link).toHaveAttribute("href", `/guides/${guide.slug}`);
     }
+    // No detour via /guides — the section links directly to each guide,
+    // not to a "browse all guides" page.
+    expect(screen.queryByRole("link", { name: "guides" })).toBeNull();
+  });
+
+  it("fetches the 6 most recent published guides (Bloc 50 Group3: raised from 3)", async () => {
+    render(await HomePage());
+    expect(findManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 6 }),
+    );
+  });
+
+  it("shows the built references, each directly clickable, in their own section", async () => {
+    const { container } = render(await HomePage());
+    const referencesSection =
+      container.querySelector<HTMLElement>(".home-references")!;
+    expect(referencesSection).not.toBeNull();
     for (const slug of [
       "combat-equipment",
       "expedition-equipment",
       "level-up",
       "templars",
     ]) {
-      expect(
-        screen.getByRole("link", { name: new RegExp(`catalog.${slug}`) }),
-      ).toHaveAttribute("href", `/referentiels/${slug}`);
+      const link = within(referencesSection).getByRole("link", {
+        name: new RegExp(`catalog.${slug}`),
+      });
+      expect(link).toHaveAttribute("href", `/referentiels/${slug}`);
     }
-    // No detour via /guides — the section links directly to each guide and
-    // reference, not to a "browse all guides" page.
-    expect(screen.queryByRole("link", { name: "guides" })).toBeNull();
+    // No detour via /referentiels — the section links directly to each
+    // reference, not to a "browse all references" page.
+    expect(
+      within(referencesSection).queryByRole("link", { name: "referentiels" }),
+    ).toBeNull();
   });
 
   it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {
@@ -124,17 +153,21 @@ describe("HomePage", () => {
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
   });
 
-  it("keeps the tools section above the guides section", async () => {
+  it("orders the 3 sections Outils, then Références, then Guides", async () => {
     const { container } = render(await HomePage());
     const main = container.querySelector("main")!;
     const sections = Array.from(main.querySelectorAll(":scope > section"));
     const toolsIndex = sections.findIndex((section) =>
       section.classList.contains("home-tools"),
     );
+    const referencesIndex = sections.findIndex((section) =>
+      section.classList.contains("home-references"),
+    );
     const guidesIndex = sections.findIndex((section) =>
       section.classList.contains("home-guides"),
     );
     expect(toolsIndex).toBeGreaterThanOrEqual(0);
-    expect(guidesIndex).toBeGreaterThan(toolsIndex);
+    expect(referencesIndex).toBeGreaterThan(toolsIndex);
+    expect(guidesIndex).toBeGreaterThan(referencesIndex);
   });
 });

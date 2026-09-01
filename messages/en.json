@@ -470,7 +470,10 @@
     "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "guidesEyebrow": "Learn",
     "guidesTitle": "Sharpen your strategy",
-    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence."
+    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
+    "referentielsEyebrow": "Consult",
+    "referentielsTitle": "Find the exact numbers",
+    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
   },
   "ToolsPage": {
     "eyebrow": "Tools",
