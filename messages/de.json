@@ -407,7 +407,7 @@
     "total-bonus-level": "Gesamtbonus bei Stufe {level}",
     "gain-transition": "Gewinn Start → Ziel",
     "rate-value": "{rate}%/Templer",
-    "cost-table": "Exakte Kostentabelle",
+    "cost-table": "Kostentabelle",
     "columns": {
       "skill": "Fähigkeit",
       "level": "Erreichte Stufe",

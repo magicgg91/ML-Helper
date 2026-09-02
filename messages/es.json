@@ -407,7 +407,7 @@
     "total-bonus-level": "Bono total en nivel {level}",
     "gain-transition": "Ganancia inicio → objetivo",
     "rate-value": "{rate}%/templario",
-    "cost-table": "Tabla de costes exactos",
+    "cost-table": "Tabla de costes",
     "columns": {
       "skill": "Habilidad",
       "level": "Nivel alcanzado",

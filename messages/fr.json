@@ -407,7 +407,7 @@
     "total-bonus-level": "Bonus total au niveau {level}",
     "gain-transition": "Gain départ → cible",
     "rate-value": "{rate}%/Templier",
-    "cost-table": "Table de coût exacte",
+    "cost-table": "Table de coût",
     "columns": {
       "skill": "Compétence",
       "level": "Niveau atteint",

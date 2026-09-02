@@ -407,7 +407,7 @@
     "total-bonus-level": "{level} seviyesinde toplam bonus",
     "gain-transition": "Başlangıç → hedef kazancı",
     "rate-value": "%{rate}/tapınak şövalyesi",
-    "cost-table": "Kesin maliyet tablosu",
+    "cost-table": "Maliyet tablosu",
     "columns": {
       "skill": "Yetenek",
       "level": "Ulaşılan seviye",
