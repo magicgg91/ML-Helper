@@ -104,29 +104,27 @@ describe("ConsumablesReferenceTable", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("Bloc58/A: skips rendering intro rows when the table is still empty (nothing invented)", () => {
+  // Bloc 65/A: Intro is a tile grid now — an empty Intro renders its
+  // heading and an empty grid, never an invented row.
+  it("Bloc58/A: skips rendering intro tiles when Intro is still empty (nothing invented)", () => {
     render(<ConsumablesReferenceTable catalog={emptyCatalog()} />);
     const introSection = screen
       .getByRole("heading", { name: "Introduction" })
       .closest("section")!;
-    expect(within(introSection).queryAllByRole("row")).toHaveLength(1);
+    expect(introSection.querySelectorAll(".consumable-tile")).toHaveLength(0);
+    expect(introSection.querySelector(".consumable-tile-grid")).not.toBeNull();
   });
 
-  // Bloc 58/B: the Image column header text is dropped — the image itself
-  // keeps rendering normally in the column.
-  // Bloc 64/C: only the Intro table is left here (the 4 category listings
-  // are tile grids now), so this is 1 table, not 5.
-  it("Bloc58/B: has no 'Image' column header text on the Intro table, but still renders the images", () => {
+  // Bloc 58/B dropped the "Image" column header text while keeping the
+  // image itself. Bloc 65/A finishes the job: Boutique has no table left
+  // at all on the public page — Intro is a tile grid like the 4
+  // categories — so no column header of any kind survives, images do.
+  it("Bloc58/B, Bloc65/A: renders no table on the public page at all, but still shows every image", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />);
     expect(
       screen.queryByRole("columnheader", { name: "Image" }),
     ).not.toBeInTheDocument();
-    const tables = document.querySelectorAll("table.consumables-table");
-    expect(tables).toHaveLength(1);
-    for (const table of tables) {
-      const headerCells = table.querySelectorAll("thead th");
-      expect(headerCells[0].textContent).toBe("");
-    }
+    expect(document.querySelectorAll("table")).toHaveLength(0);
     expect(screen.getAllByRole("img").length).toBeGreaterThan(0);
   });
 
@@ -237,6 +235,49 @@ describe("ConsumablesReferenceTable", () => {
       screen.queryByRole("heading", { name: "Équipement" }),
     ).not.toBeInTheDocument();
     expect(screen.getByText("Renommer votre ville")).toBeInTheDocument();
+  });
+
+  // Bloc 65/A: Intro renders as tiles too — same grid, same tile, same
+  // colors as the 4 category listings — but never a cost badge, since its
+  // entries explain a currency rather than being priced items.
+  it("Bloc65/A: renders Intro as tiles, structured like the categories but with no cost badge", () => {
+    const { container } = render(
+      <ConsumablesReferenceTable catalog={catalog} />,
+    );
+    const introSection = screen
+      .getByRole("heading", { name: "Introduction" })
+      .closest("section")!;
+    expect(introSection.querySelector(".consumable-tile-grid")).not.toBeNull();
+    const introTile = screen
+      .getByText("Saphirs")
+      .closest(".consumable-tile")! as HTMLElement;
+    // Same structure as a category tile: image, then name + description.
+    expect(introTile.firstElementChild?.tagName).toBe("IMG");
+    expect(introTile.firstElementChild).toHaveClass("consumable-tile-image");
+    expect(introTile.querySelector(".consumable-tile-name")).toHaveTextContent(
+      "Saphirs",
+    );
+    expect(
+      introTile.querySelector(".consumable-tile-description"),
+    ).toHaveTextContent("Description intro FR");
+    // The one difference: no price badge anywhere in the Intro grid.
+    expect(introTile.querySelector(".consumable-tile-cost")).toBeNull();
+    expect(introSection.querySelectorAll(".consumable-tile-cost")).toHaveLength(
+      0,
+    );
+    // A category tile in the same render still has its badge.
+    expect(
+      screen
+        .getByText("Jarre divine ×10")
+        .closest(".consumable-tile")!
+        .querySelector(".consumable-tile-cost"),
+    ).not.toBeNull();
+    // Same tile class on both, so they share the grey styling.
+    expect(introTile.className).toBe(
+      screen.getByText("Jarre divine ×10").closest(".consumable-tile")!
+        .className,
+    );
+    expect(container.querySelectorAll("table")).toHaveLength(0);
   });
 
   // Bloc 64/C: the 4 category listings are tile grids — image on the left,

@@ -1,14 +1,79 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo } from "react";
-import { gemImagePath } from "../lib/game-images";
+import { useMemo, type CSSProperties } from "react";
+import { gemImagePath, skillColor } from "../lib/game-images";
 import type { GemParameters } from "../lib/gem-parameters";
-import { leagues, skillKeys } from "../lib/player-settings";
+import { leagues, skillKeys, type SkillKey } from "../lib/player-settings";
 import { GameImage } from "./game-image";
 import { formatPercent } from "./reference-tables";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog } from "../lib/reference-catalog";
+
+// Bloc 65/D: one tile per skill, replacing the 11 x 7 matrix table that
+// needed a horizontal scroll on a phone and was already cramped on
+// desktop. Each tile keeps all 6 leagues side by side inside itself: the
+// skill x league comparison is the whole point of this reference, so
+// unlike Level Up/Classement (Bloc 61) it gets no single-league selector.
+function GemSkillTile({
+  skill,
+  parameters,
+}: {
+  skill: SkillKey;
+  parameters: GemParameters;
+}) {
+  const game = useTranslations("game");
+  const locale = useLocale();
+  const color = skillColor(skill);
+  const skillName = game(`skills.${skill}`);
+  return (
+    <article
+      className="gems-tile"
+      data-testid={`gems-tile-${skill}`}
+      style={
+        {
+          borderColor: color,
+          background: `color-mix(in srgb, ${color} 14%, var(--surface))`,
+        } as CSSProperties
+      }
+    >
+      <h3 className="gems-tile-title">{skillName}</h3>
+      <table className="gems-tile-table">
+        <tbody>
+          <tr>
+            {leagues.map((league) => (
+              <th key={league} scope="col">
+                {game(`leagues.${league}`)}
+              </th>
+            ))}
+          </tr>
+          <tr>
+            {leagues.map((league) => (
+              <td key={league} className="value">
+                {formatPercent(
+                  parameters.skillLeagueValue[skill][league],
+                  locale,
+                )}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            {leagues.map((league) => (
+              <td key={league}>
+                <GameImage
+                  src={gemImagePath(skill, league)}
+                  alt={`${skillName} ${game(`leagues.${league}`)}`}
+                  className="gems-tile-image"
+                  fallback={null}
+                />
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </article>
+  );
+}
 
 export function GemsReferenceTable({
   parameters,
@@ -35,65 +100,45 @@ export function GemsReferenceTable({
 
   return (
     <div className="calculator-stack">
-      <section className="calculator-card ranking-table-wrap">
-        <div className="table-scroll">
-          <table className="ranking-table reference-table gems-reference-table reference-simple-table">
-            <thead>
-              <tr>
-                <th></th>
-                {leagues.map((league) => (
-                  <th key={league}>{game(`leagues.${league}`)}</th>
-                ))}
-              </tr>
-            </thead>
+      <div className="gems-tile-grid">
+        {/* Bloc 65/D: the price of a single gem varies by league (unlike
+            the fixed prices other references carry), so it keeps its own
+            tile — full width and first, in neutral grey since it belongs
+            to no skill, and 2 rows only (no gem image to show). */}
+        <article
+          className="gems-tile gems-cost-tile"
+          data-testid="gems-tile-cost"
+        >
+          <h3 className="gems-tile-title">{t("reference.price-row")}</h3>
+          <table className="gems-tile-table">
             <tbody>
               <tr>
-                <th scope="row">{t("reference.price-row")}</th>
+                {leagues.map((league) => (
+                  <th key={league} scope="col">
+                    {game(`leagues.${league}`)}
+                  </th>
+                ))}
+              </tr>
+              <tr>
                 {leagues.map((league) => (
                   <td key={league} className="value">
                     {league === "bronze"
                       ? "—"
-                      : // Bloc 38/E: this reference shows the exact price, never
-                        // compacted to k/M like formatGameNumber does elsewhere —
-                        // values stay at most 4 digits, so compaction only hurts
-                        // readability here.
+                      : // Bloc 38/E: this reference shows the exact price,
+                        // never compacted to k/M like formatGameNumber does
+                        // elsewhere — values stay at most 4 digits, so
+                        // compaction only hurts readability here.
                         Math.round(parameters.gemPrice[league])}
                   </td>
                 ))}
               </tr>
-              {orderedSkills.map((skill) => (
-                <tr key={skill}>
-                  <th scope="row">{game(`skills.${skill}`)}</th>
-                  {leagues.map((league) => {
-                    const label = `${game(`skills.${skill}`)} ${game(`leagues.${league}`)}`;
-                    return (
-                      <td key={league} className="value">
-                        {/* Bloc 38/C: image and % side by side, not stacked —
-                            .reference-equipment-image's own display:block
-                            (needed when it's alone in its column on the
-                            Combat/Expedition tables) would otherwise push the
-                            percentage onto its own line here. */}
-                        <span className="gems-value-row">
-                          <GameImage
-                            src={gemImagePath(skill, league)}
-                            alt={label}
-                            className="reference-equipment-image"
-                            fallback={null}
-                          />
-                          {formatPercent(
-                            parameters.skillLeagueValue[skill][league],
-                            locale,
-                          )}
-                        </span>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
             </tbody>
           </table>
-        </div>
-      </section>
+        </article>
+        {orderedSkills.map((skill) => (
+          <GemSkillTile key={skill} skill={skill} parameters={parameters} />
+        ))}
+      </div>
       <CrossReferenceLink
         href="/tools/competences?open=gems"
         title={t("name")}

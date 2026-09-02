@@ -6,10 +6,14 @@ import enMessages from "../../messages/en.json";
 const css = readFileSync("src/app/globals.css", "utf8");
 
 describe("Bloc 38 public reference/homepage styles", () => {
-  it("A, D: sizes the Gemmes table's 6 league columns identically and centers them", () => {
-    expect(css).toMatch(/\.gems-reference-table\s*{\s*table-layout: fixed;/);
+  // Bloc 65/D: the same equal-width, centered treatment moved onto each
+  // tile's own 6-league mini-table when the matrix table was replaced.
+  it("A, D, Bloc65/D: sizes the 6 league columns identically and centers them, now inside each tile", () => {
     expect(css).toMatch(
-      /\.gems-reference-table th,\s*\n\.gems-reference-table td\s*{\s*text-align: center;/,
+      /\.gems-tile-table\s*{\s*\n\s*width: 100%;\s*\n\s*table-layout: fixed;/,
+    );
+    expect(css).toMatch(
+      /\.gems-tile-table th,\n\.gems-tile-table td\s*{[\s\S]*?text-align: center;/,
     );
   });
 
@@ -19,19 +23,22 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  // Bloc 64/C: the Boutique tiles that replaced the 4 category tables share
-  // this same 5rem rule, so the selector now lists both.
-  it("Bloc46/A: Consommables' own image size is 5rem (table and tile), distinct from the shared 3rem rule", () => {
-    const rule = css.match(
-      /\.consumables-table \.reference-equipment-image,\n\.consumable-tile-image\s*{([\s\S]*?)\n}/,
-    )?.[1];
+  // Bloc 65/A, C: every Boutique listing is a tile now (Intro included),
+  // so one selector covers them all — at 6rem, up from 5rem.
+  it("Bloc46/A, Bloc65/C: sizes every Boutique tile image at 6rem, distinct from the shared 3rem rule", () => {
+    const rule = css.match(/\.consumable-tile-image\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/width: 5rem;/);
-    expect(rule).toMatch(/height: 5rem;/);
+    expect(rule).toMatch(/width: 6rem;/);
+    expect(rule).toMatch(/height: 6rem;/);
+    expect(css).not.toMatch(/\.consumables-table \.reference-equipment-image/);
   });
 
-  it("C: wraps the Gemmes image and its % value in one inline-flex row", () => {
-    expect(css).toMatch(/\.gems-value-row\s*{\s*display: inline-flex;/);
+  // Bloc 65/D: the Gemmes matrix table (and the .gems-value-row that
+  // paired an image with its % inside one of its cells) is gone — the
+  // tile's own mini-table puts the two on their own rows instead.
+  it("C, Bloc65/D: no longer carries the Gemmes table's own rules", () => {
+    expect(css).not.toMatch(/\.gems-value-row/);
+    expect(css).not.toMatch(/\.gems-reference-table/);
   });
 
   it("H: the shared category/reference tile image is a strict square", () => {
@@ -217,10 +224,31 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
     );
   });
 
-  it("C: gives Boutique's Description column relatively more width than its neighbours", () => {
-    expect(css).toMatch(
-      /\.consumables-admin-table \.reference-admin-wide\s*{\s*width: 36%;\s*}/,
+  // Bloc 65/B: Description now takes the width the table actually has —
+  // near half of it — instead of merely leading its neighbours, the share
+  // coming from Actions and Coût.
+  it("C, Bloc65/B: gives Boutique's Description column the bulk of the table width", () => {
+    const width = (selector: string) =>
+      Number(
+        css.match(
+          new RegExp(
+            `\\.consumables-admin-table ${selector}\\s*{\\s*width: (\\d+)%;`,
+          ),
+        )?.[1],
+      );
+    const description = width("\\.reference-admin-wide");
+    expect(description).toBe(48);
+    expect(width("\\.reference-admin-narrow")).toBe(10);
+    // Every other column is far behind it, and the 5 still sum to 100%.
+    const actions = Number(
+      css.match(
+        /\.consumables-admin-table th:last-child,\n\.consumables-admin-table td:last-child\s*{\s*width: (\d+)%;/,
+      )?.[1],
     );
+    expect(actions).toBe(14);
+    const unmarked = (100 - description - 10 - actions) / 2;
+    expect(unmarked).toBe(14);
+    expect(description).toBeGreaterThan(3 * unmarked);
   });
 
   it("A-C: the Boutique table fills its container width instead of the shared table's min-width: max-content (the historical horizontal-scroll trigger)", () => {
@@ -277,7 +305,9 @@ describe("Bloc 64: Boutique tiles, Level Up pagination, Templiers split", () => 
   it("C: lays the Boutique tiles out 2 per row, dropping to 1 column on mobile", () => {
     const rule = css.match(/\.consumable-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.consumable-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -318,5 +348,89 @@ describe("Bloc 64: Boutique tiles, Level Up pagination, Templiers split", () => 
     expect(css).toMatch(
       /\.level-up-tables,\n\s*\.split-reference-tables\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
+  });
+});
+
+describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
+  // A + C: the Intro grid and the category grids are the same rule, so
+  // one 6rem image size and one tile style cover both.
+  it("A, C: styles every Boutique tile (Intro included) from one shared rule, images at 6rem", () => {
+    expect(css).toMatch(/\.consumable-tile-grid\s*{/);
+    const image = css.match(/\.consumable-tile-image\s*{([\s\S]*?)\n}/)?.[1];
+    expect(image).toMatch(/width: 6rem;/);
+    // No Intro-specific tile or image variant: the Intro reuses the same
+    // classes, which is what keeps the two visually identical.
+    expect(css).not.toMatch(/\.consumable-intro-tile/);
+  });
+
+  // D: 2 tiles per row, the mini-tables equal-width and centered, and the
+  // Coût tile spanning the full grid in neutral grey.
+  it("D: lays out the Gemmes tiles, with the Coût tile spanning the grid in grey", () => {
+    const grid = css.match(/\.gems-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
+    expect(grid).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    const cost = css.match(/\.gems-cost-tile\s*{([\s\S]*?)\n}/)?.[1];
+    expect(cost).toMatch(/grid-column: 1 \/ -1;/);
+    expect(cost).toMatch(/background: var\(--surface-muted\)/);
+    const table = css.match(/\.gems-tile-table\s*{([\s\S]*?)\n}/)?.[1];
+    expect(table).toMatch(/table-layout: fixed;/);
+    expect(table).toMatch(/width: 100%;/);
+  });
+
+  // D: "même design sur mobile et desktop" — the tiles stack into a single
+  // column on a phone, but a tile's own mini-table never changes: all 6
+  // leagues stay side by side, which is the comparison this reference is
+  // for.
+  it("D: keeps each tile's 6-league mini-table intact on mobile, only stacking the grid", () => {
+    const mobile = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.gems-tile-grid\s*{([\s\S]*?)\n {2}}/,
+    )?.[1];
+    expect(mobile).toMatch(/grid-template-columns: 1fr;/);
+    // Nothing else about the tiles changes at that breakpoint.
+    expect(css).not.toMatch(
+      /@media[^{]*{[^}]*\.gems-tile-table\s*{[^}]*display:/,
+    );
+  });
+
+  // B: the widened Description must not cost the table its no-scroll
+  // guarantee — the 5 column shares still sum to exactly 100% at every
+  // breakpoint, which is what keeps the table inside its wrapper
+  // (measured live from 1400px down to 320px; see the PR report).
+  it("B: keeps the column shares summing to 100% at every breakpoint", () => {
+    const shares = (block: string) => {
+      const wide = Number(
+        block.match(/\.reference-admin-wide\s*{\s*width: (\d+)%;/)?.[1],
+      );
+      const narrow = Number(
+        block.match(/\.reference-admin-narrow\s*{\s*width: (\d+)%;/)?.[1],
+      );
+      const actions = Number(
+        block.match(/td:last-child\s*{\s*width: (\d+)%;/)?.[1],
+      );
+      // Image and Nom carry no width of their own: table-layout: fixed
+      // splits whatever is left between them.
+      return { wide, narrow, actions, rest: 100 - wide - narrow - actions };
+    };
+    const desktop = shares(
+      css.slice(css.indexOf(".consumables-admin-table .reference-admin-wide")),
+    );
+    expect(desktop.rest).toBeGreaterThan(0);
+    // Below 480px the icons need their column back, so Description gives
+    // some of it up — still summing to 100%.
+    const phoneBlock = css.match(
+      /@media \(max-width: 480px\) {([\s\S]*?)\n}/,
+    )?.[1];
+    const phone = shares(phoneBlock ?? "");
+    expect(phone.wide).toBeLessThan(desktop.wide);
+    expect(phone.actions).toBeGreaterThan(desktop.actions);
+    expect(phone.rest).toBeGreaterThan(0);
+  });
+
+  // E: the 3 fields spread edge to edge instead of bunching left.
+  it("E: spreads the Classement filter bar across the full width of its block", () => {
+    const rule = css.match(/\.ranking-fields\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toMatch(/display: flex;/);
+    expect(rule).toMatch(/justify-content: space-between;/);
   });
 });

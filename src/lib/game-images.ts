@@ -113,6 +113,27 @@ export function gemImagePath(skill: SkillKey, league: League): string {
   return `/gems/gem-${skill}-${gemLeagueFileSlug[league]}.webp`;
 }
 
+// Bloc 65/D: the Gemmes tiles are colored per skill, reusing the palette
+// already in place (equipmentSkillColors, cdc 7.1) rather than inventing a
+// second one — this maps each technical SkillKey onto its entry there,
+// which is keyed by the skill's French domain label.
+const skillColorNames: Record<SkillKey, EquipmentSkill> = {
+  striker: "Attaque",
+  brave: "Bravoure",
+  scavenger: "Charognard",
+  guardian: "Défense",
+  fearless: "Intrépide",
+  prosperous: "Prospérité",
+  recruiter: "Recruteur",
+  cautious: "Récupération",
+  salvager: "Recycleur",
+  rusher: "Vitesse",
+};
+
+export function skillColor(skill: SkillKey): string {
+  return equipmentSkillColors[skillColorNames[skill]];
+}
+
 // Convention actée cdc section 12 : {family}-{rarity}-{slot}.webp.
 // The catalogs retain their French domain labels, while static asset names use
 // stable English slugs. The slot unambiguously identifies the catalog.

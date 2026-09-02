@@ -4,34 +4,93 @@ import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
 import { defaultGemParameters } from "../lib/gem-parameters";
+import { skillColor } from "../lib/game-images";
 import { GemsReferenceTable } from "./gems-reference";
 
 afterEach(cleanup);
 
+const renderReference = (
+  locale: "fr" | "en" = "fr",
+  bundle: typeof messages | typeof enMessages = messages,
+) =>
+  render(
+    <NextIntlClientProvider locale={locale} messages={bundle}>
+      <GemsReferenceTable parameters={defaultGemParameters} />
+    </NextIntlClientProvider>,
+  );
+
 describe("GemsReferenceTable (Bloc 36/A)", () => {
-  it("shows the 6x11 table: 1 sapphire-cost row + 10 skill rows, 6 league columns", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
+  // Bloc 65/D: 10 skill tiles + 1 Coût tile replace the 11 x 7 matrix
+  // table. Each tile keeps all 6 leagues, so the skill x league comparison
+  // this reference exists for stays visible without a league selector.
+  it("Bloc65/D: renders 1 tile per skill plus the Coût tile, each holding all 6 leagues", () => {
+    const { container } = renderReference();
+    const tiles = Array.from(container.querySelectorAll(".gems-tile"));
+    expect(tiles).toHaveLength(11);
+    for (const tile of tiles) {
+      const headerCells = tile.querySelectorAll("th");
+      expect(headerCells).toHaveLength(6);
+      expect(Array.from(headerCells).map((cell) => cell.textContent)).toEqual([
+        "Bronze",
+        "Argent",
+        "Or",
+        "Platine",
+        "Diamant",
+        "Légende",
+      ]);
+    }
+    // No single-league selector: every league is on screen at once.
+    expect(container.querySelector(".family-buttons")).toBeNull();
+  });
+
+  // Bloc 65/D: the Coût tile opens the grid, spans it fully, stays neutral
+  // grey (it belongs to no skill) and carries 2 rows only — no gem image.
+  it("Bloc65/D: puts the full-width grey Coût tile first, with 2 rows and no image", () => {
+    const { container } = renderReference();
+    const tiles = Array.from(container.querySelectorAll(".gems-tile"));
+    const cost = screen.getByTestId("gems-tile-cost");
+    expect(tiles[0]).toBe(cost);
+    expect(cost).toHaveClass("gems-cost-tile");
+    expect(cost.querySelectorAll("tr")).toHaveLength(2);
+    expect(cost.querySelector("img")).toBeNull();
+    // Grey comes from the class, not an inline per-skill color.
+    expect((cost as HTMLElement).style.background).toBe("");
+  });
+
+  // Bloc 65/D: a skill tile is titled with the skill name and colored from
+  // the palette already associated with that skill (cdc 7.1), the same way
+  // the Combat/Expedition tiles take their rarity color.
+  it("Bloc65/D: titles each skill tile and colors it from the existing per-skill palette", () => {
+    renderReference();
+    const striker = screen.getByTestId("gems-tile-striker");
+    expect(striker.querySelector("h3")).toHaveTextContent("Attaque");
+    expect(striker).toHaveStyle({ borderColor: skillColor("striker") });
+    expect((striker as HTMLElement).style.background).toContain(
+      skillColor("striker"),
     );
-    const headerCells = screen.getAllByRole("row")[0].querySelectorAll("th");
-    expect(headerCells).toHaveLength(7); // empty corner + 6 leagues
-    const rows = screen.getAllByRole("row");
-    expect(rows).toHaveLength(12); // header + price row + 10 skill rows
-    for (const row of rows.slice(1))
-      expect(row.querySelectorAll("td")).toHaveLength(6);
+  });
+
+  // Bloc 65/D: 3 rows — league names, percentage, gem image — in equal,
+  // centered columns (the equal width itself is a CSS concern, asserted in
+  // reference-styles.test.ts).
+  it("Bloc65/D: gives each skill tile a 3-row mini-table: leagues, %, gem image", () => {
+    renderReference();
+    const striker = screen.getByTestId("gems-tile-striker");
+    const rows = striker.querySelectorAll("tr");
+    expect(rows).toHaveLength(3);
+    expect(rows[1].querySelectorAll("td")).toHaveLength(6);
+    expect(rows[1].querySelectorAll("td")[0]).toHaveTextContent("1%");
+    const image = within(striker).getByRole("img", { name: "Attaque Bronze" });
+    expect(image).toHaveAttribute("src", "/gems/gem-striker-bronze.webp");
+    expect(rows[2].contains(image)).toBe(true);
   });
 
   it("orders the 10 skills alphabetically by their displayed (French) name, not the technical key", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
-    );
-    const skillRows = screen.getAllByRole("row").slice(2); // skip header + price row
-    const labels = skillRows.map((row) => row.querySelector("th")!.textContent);
-    expect(labels).toEqual([
+    const { container } = renderReference();
+    const titles = Array.from(container.querySelectorAll(".gems-tile h3"))
+      .map((title) => title.textContent)
+      .slice(1); // the Coût tile opens the grid
+    expect(titles).toEqual([
       "Attaque",
       "Bravoure",
       "Charognard",
@@ -46,56 +105,27 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
   });
 
   it("Bloc38/E: shows the locked sapphire-cost formula's raw values, not compact-formatted, with Bronze marked not purchasable", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
-    );
-    const priceRow = screen.getAllByRole("row")[1];
-    expect(priceRow.querySelector("th")).toHaveTextContent("Coût en saphirs");
-    const cells = priceRow.querySelectorAll("td");
+    renderReference();
+    const cost = screen.getByTestId("gems-tile-cost");
+    expect(cost.querySelector("h3")).toHaveTextContent("Coût en saphirs");
+    const cells = cost.querySelectorAll("td");
     expect(cells[0]).toHaveTextContent("—"); // Bronze: not purchasable
     expect(cells[1]).toHaveTextContent("3000"); // Argent, not "3k"
     expect(cells[5]).toHaveTextContent("7000"); // Légende, not "7k"
   });
 
   it("shows the real per-cell gem image (skill x league) with its confirmed percentage value", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
-    );
-    const strikerRow = screen
-      .getAllByRole("row")
-      .find((row) => row.querySelector("th")?.textContent === "Attaque")!;
-    const image = within(strikerRow).getByRole("img", {
-      name: "Attaque Bronze",
-    });
+    renderReference();
+    const striker = screen.getByTestId("gems-tile-striker");
+    const image = within(striker).getByRole("img", { name: "Attaque Bronze" });
     expect(image).toHaveAttribute("src", "/gems/gem-striker-bronze.webp");
-    expect(within(strikerRow).getAllByText("1%")[0]).toBeInTheDocument();
-  });
-
-  it("Bloc38/C: puts the gem image and its % value in the same wrapping element, not stacked", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
-    );
-    const strikerRow = screen
-      .getAllByRole("row")
-      .find((row) => row.querySelector("th")?.textContent === "Attaque")!;
-    const cell = strikerRow.querySelectorAll("td")[0];
-    const wrapper = cell.querySelector(".gems-value-row")!;
-    expect(wrapper).toBeInTheDocument();
-    expect(wrapper.querySelector("img")).not.toBeNull();
-    expect(wrapper).toHaveTextContent("1%");
+    expect(within(striker).getAllByText("1%")[0]).toBeInTheDocument();
   });
 
   it("Bloc38/F: uses the exact English skill names, not a literal translation", () => {
-    render(
-      <NextIntlClientProvider locale="en" messages={enMessages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
+    const { container } = renderReference("en", enMessages);
+    const titles = Array.from(container.querySelectorAll(".gems-tile h3")).map(
+      (title) => title.textContent,
     );
     for (const label of [
       "Striker",
@@ -108,13 +138,8 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
       "Recruiter",
       "Scavenger",
       "Salvager",
-    ]) {
-      expect(
-        screen
-          .getAllByRole("row")
-          .some((row) => row.textContent?.includes(label)),
-      ).toBe(true);
-    }
+    ])
+      expect(titles).toContain(label);
     // Confirms the fix — these mistranslations must no longer appear.
     expect(screen.queryByText("Attack")).not.toBeInTheDocument();
     expect(screen.queryByText("Bravery")).not.toBeInTheDocument();
@@ -128,11 +153,7 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
   // category (landing on whichever tab happened to be firstAvailable) —
   // now it points at the exact Gems calculator tab.
   it("links back to the precise Gemmes calculator, not the generic Compétences category", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <GemsReferenceTable parameters={defaultGemParameters} />
-      </NextIntlClientProvider>,
-    );
+    renderReference();
     // Bloc 54/B: the label is now folded inside the button itself, so the
     // link's accessible name is the label + title together.
     expect(screen.getByRole("link", { name: /Gemmes$/ })).toHaveAttribute(

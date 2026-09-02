@@ -55,72 +55,14 @@ function CategoryFilters({
   );
 }
 
-// Bloc 58/A: the Intro table — 3 columns, no Coût.
-// Bloc 58/B: the Image column header is intentionally blank — the image
-// itself still renders normally in the column, only its heading text is
-// dropped.
-// Bloc 64/C: intro-only now — the 4 category listings moved to
-// ReferenceTileGrid below, so the cost column this used to render
-// conditionally has no caller left.
-function ReferenceTable({
-  title,
-  rows,
-  t,
-  locale,
-}: {
-  title: string;
-  rows: ConsumableRow[];
-  t: (key: string) => string;
-  locale: string;
-}) {
-  return (
-    <section className="calculator-card ranking-table-wrap">
-      <h2 className="editable-reference-title">{title}</h2>
-      <div className="table-scroll">
-        <table className="ranking-table reference-table reference-simple-table consumables-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>{t("columns.name")}</th>
-              <th>{t("columns.description")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => {
-              const name = pickLocaleText(row.name_fr, row.name_en, locale);
-              const description = pickLocaleText(
-                row.description_fr,
-                row.description_en,
-                locale,
-              );
-              return (
-                <tr key={`${row.image}-${index}`}>
-                  <td>
-                    <GameImage
-                      src={row.image}
-                      alt={name}
-                      className="reference-equipment-image"
-                      fallback={null}
-                    />
-                  </td>
-                  <td>{renderBoldText(name)}</td>
-                  <td>{renderBoldText(description)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-// Bloc 64/C: the 4 category tables become tile grids on the public page —
+// Bloc 64/C: the 4 category tables became tile grids on the public page —
 // 2 tiles per row on desktop, 1 on mobile, each tile pairing the image
-// (same 5rem as the table did, Bloc 46/A) with the name and description,
-// and carrying the sapphire cost as a badge in its top-right corner,
-// aligned with the name. The Intro table (and the whole admin editor) stay
-// tables: only these 4 category listings change shape.
+// with the name and description, and carrying the sapphire cost as a badge
+// in its top-right corner, aligned with the name.
+// Bloc 65/A: the Intro block (Bloc 58/A) joins them, same structure and
+// same colors — only without the cost badge, since its entries (Saphirs,
+// Inventaire) explain a currency rather than being priced items. The admin
+// editor keeps its tables either way.
 function ReferenceTileGrid({
   title,
   rows,
@@ -135,7 +77,9 @@ function ReferenceTileGrid({
   // header, which was the only thing naming the currency — so the unit
   // rides along with the number now, for everyone rather than being
   // implied by the badge's color.
-  costWithUnit: (cost: number) => string;
+  // Bloc 65/A: left out entirely by the Intro grid, whose rows carry no
+  // cost to show.
+  costWithUnit?: (cost: number) => string;
   locale: string;
 }) {
   return (
@@ -162,15 +106,17 @@ function ReferenceTileGrid({
                   <strong className="consumable-tile-name">
                     {renderBoldText(name)}
                   </strong>
-                  <span className="consumable-tile-cost">
-                    {/* An unconfirmed cost keeps its own placeholder; a
-                        free-text cost an admin typed that isn't a number
-                        is shown as-is rather than forced through the
-                        pluralized unit message. */}
-                    {Number.isFinite(Number(row.cost)) && row.cost !== ""
-                      ? costWithUnit(Number(row.cost))
-                      : row.cost || t("cost-unknown")}
-                  </span>
+                  {costWithUnit && (
+                    <span className="consumable-tile-cost">
+                      {/* An unconfirmed cost keeps its own placeholder; a
+                          free-text cost an admin typed that isn't a number
+                          is shown as-is rather than forced through the
+                          pluralized unit message. */}
+                      {Number.isFinite(Number(row.cost)) && row.cost !== ""
+                        ? costWithUnit(Number(row.cost))
+                        : row.cost || t("cost-unknown")}
+                    </span>
+                  )}
                 </div>
                 <p className="consumable-tile-description">
                   {renderBoldText(description)}
@@ -215,7 +161,9 @@ export function ConsumablesReferenceTable({
 
   return (
     <div className="calculator-stack">
-      <ReferenceTable
+      {/* Bloc 65/A: the Intro block is a tile grid too now — same grid,
+          same tile, no cost badge (its rows have no price to show). */}
+      <ReferenceTileGrid
         title={t("introTitle")}
         rows={catalog.intro}
         t={t}
