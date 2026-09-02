@@ -12,7 +12,7 @@ vi.mock("next-intl/server", () => ({
       "catalog.combat-equipment": "Équipements de Combat",
       "catalog.expedition-equipment": "Équipements d’Expédition",
       "catalog.level-up": "Level Up",
-      "catalog.templars": "Coût des Templiers",
+      "catalog.templars": "Templiers",
       "catalog.gems": "Gemmes",
       "catalog.shop": "Boutique",
       "catalog.events": "Événements",
@@ -84,6 +84,9 @@ vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),
   getTemplarParameters: async () => ({}),
   getGemParameters: async () => ({}),
+}));
+vi.mock("@/lib/templars-presentation-server", () => ({
+  getTemplarPresentation: async () => ({}),
 }));
 
 afterEach(cleanup);

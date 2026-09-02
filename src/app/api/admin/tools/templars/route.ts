@@ -4,8 +4,8 @@ import { parseTemplarParameters } from "@/lib/templar-parameters";
 import { saveFormulaParameters } from "@/services/formula-parameters-admin";
 
 export async function PUT(request: Request) {
-  // Also reachable from the Guides admin table's "Coût des Templiers"
-  // reference row (guides_manager: references.write, no calculators.write).
+  // Also reachable from the Guides admin table's "Templiers" reference row
+  // (guides_manager: references.write, no calculators.write).
   const session = await authorizedSession([
     "calculators.write",
     "references.write",
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
-    target: "les paramètres de coût des Templiers",
+    target: "les paramètres des Templiers",
   });
   return NextResponse.json(parameters);
 }

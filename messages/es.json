@@ -411,8 +411,13 @@
     "columns": {
       "skill": "Habilidad",
       "level": "Nivel alcanzado",
-      "level-cost": "Coste del nivel",
-      "cumulative-cost": "Coste acumulado"
+      "level-cost": "Coste del nivel (Polvo celeste)",
+      "cumulative-cost": "Coste acumulado (Polvo celeste)"
+    },
+    "presentation": {
+      "tile-title": "Templario {name}",
+      "temple-base-label": "Base de templo",
+      "bonus-label": "Bono otorgado por templario"
     }
   },
   "Navigation": {
@@ -533,7 +538,7 @@
       "combat-equipment": "Equipo de Combate",
       "expedition-equipment": "Equipo de Expedición",
       "level-up": "Subida de Nivel",
-      "templars": "Coste de Templarios",
+      "templars": "Templarios",
       "gems": "Gemas",
       "shop": "Tienda",
       "events": "Eventos"
@@ -947,7 +952,16 @@
       "add-tier": "Añadir un nivel",
       "events-tiers-summary": "Niveles ({count})",
       "event-row-label": "{field} del evento {row}",
-      "tier-row-label": "{field} del nivel {row} de {event}"
+      "tier-row-label": "{field} del nivel {row} de {event}",
+      "templars-presentation-title": "Presentación",
+      "templars-presentation-language-label": "Idioma del texto",
+      "templars-columns": {
+        "image": "Ruta de la imagen",
+        "name": "Nombre",
+        "description": "Descripción",
+        "temple-base": "Base de templo",
+        "bonus": "Bono (%)"
+      }
     },
     "common": {
       "back": "Atrás"

@@ -27,6 +27,7 @@ import {
   getLevelUpParameters,
   getTemplarParameters,
 } from "@/lib/admin-formulas-server";
+import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { languageAlternates } from "@/lib/site-url";
@@ -82,7 +83,10 @@ export default async function ReferencePage({
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />
         ) : slug === "templars" ? (
-          <TemplarsReferenceTable parameters={await getTemplarParameters()} />
+          <TemplarsReferenceTable
+            parameters={await getTemplarParameters()}
+            presentation={await getTemplarPresentation()}
+          />
         ) : slug === "gems" ? (
           <GemsReferenceTable parameters={await getGemParameters()} />
         ) : slug === "shop" ? (

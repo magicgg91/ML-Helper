@@ -126,6 +126,28 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     );
   });
 
+  // Bloc 66/A: dropping the "Coût des" prefix moves Templiers from sorting
+  // under C to sorting under T — an automatic consequence of the sort
+  // above being computed on the displayed label, not a bug to guard
+  // against. Confirmed here with the real, non-mocked fr labels.
+  it("Bloc66/A: sorts Templiers under T (after Level Up, Gemmes), not under C as 'Coût des Templiers' once did", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
+      </NextIntlClientProvider>,
+    );
+    const titles = Array.from(container.querySelectorAll("h3")).map(
+      (heading) => heading.textContent!,
+    );
+    expect(titles).toContain("Templiers");
+    expect(titles.indexOf("Templiers")).toBeGreaterThan(
+      titles.indexOf("Level Up"),
+    );
+    expect(titles.indexOf("Templiers")).toBeGreaterThan(
+      titles.indexOf("Gemmes"),
+    );
+  });
+
   it("uses the same square .tool-category-image box as the tool categories (Bloc 38/H)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>

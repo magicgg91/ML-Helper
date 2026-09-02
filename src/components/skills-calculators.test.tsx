@@ -188,10 +188,13 @@ describe("SkillsCalculators", () => {
       />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
-    expect(screen.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
-      "href",
-      "/referentiels/templars",
-    );
+    // Bloc 66/A: the reciprocal link's title is the renamed reference
+    // label — "Templiers" exactly, not the old "Coût des Templiers".
+    expect(
+      screen.getByRole("link", {
+        name: "Aller plus loin en vérifiant le référentiel Templiers",
+      }),
+    ).toHaveAttribute("href", "/referentiels/templars");
     expect(
       screen
         .getByTestId("templar-cost")

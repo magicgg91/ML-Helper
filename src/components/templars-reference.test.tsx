@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import { defaultTemplarParameters } from "../lib/templar-parameters";
+import { defaultTemplarPresentationCatalog } from "../lib/templars-presentation";
+import { templarKeys } from "../lib/player-settings";
+import { skillColor } from "../lib/game-images";
 import { TemplarsReferenceTable } from "./templars-reference";
 
 afterEach(cleanup);
@@ -12,7 +15,10 @@ describe("TemplarsReferenceTable", () => {
   it("shows the full 1-20 level cost table with running totals", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <TemplarsReferenceTable parameters={defaultTemplarParameters} />
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
       </NextIntlClientProvider>,
     );
     const rows = screen.getAllByRole("row");
@@ -29,7 +35,10 @@ describe("TemplarsReferenceTable", () => {
   it("Bloc64/E: splits the 20 levels into 2 tables of 10 rows, with no pagination", () => {
     const { container } = render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <TemplarsReferenceTable parameters={defaultTemplarParameters} />
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
       </NextIntlClientProvider>,
     );
     const tables = screen.getAllByRole("table");
@@ -54,7 +63,10 @@ describe("TemplarsReferenceTable", () => {
   it("uses the administrator-provided named Templar parameters", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <TemplarsReferenceTable parameters={{ base: 999, ratio: 1.3 }} />
+        <TemplarsReferenceTable
+          parameters={{ base: 999, ratio: 1.3 }}
+          presentation={defaultTemplarPresentationCatalog}
+        />
       </NextIntlClientProvider>,
     );
     const level1 = screen.getAllByRole("row")[1].querySelectorAll("td");
@@ -67,7 +79,10 @@ describe("TemplarsReferenceTable", () => {
   it("links back to the precise Templiers calculator, not the generic Compétences category", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <TemplarsReferenceTable parameters={defaultTemplarParameters} />
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
       </NextIntlClientProvider>,
     );
     // Bloc 54/B: the label is now folded inside the button itself, so the
@@ -78,13 +93,162 @@ describe("TemplarsReferenceTable", () => {
     );
   });
 
+  // Bloc 66/D: the level-20 cost must show as the full digit sequence, not
+  // compacted to "21,9k" — this table's values never exceed 5 digits, so
+  // compaction only hurts readability (same reasoning as Gemmes' price row).
+  it("Bloc66/D: never compacts the cost to k/M notation, even at level 20", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const tables = screen.getAllByRole("table");
+    const level20Row = tables[1].querySelectorAll("tbody tr")[9];
+    const cells = level20Row.querySelectorAll("td");
+    expect(cells[0]).toHaveTextContent("20");
+    expect(cells[1]).toHaveTextContent("21929");
+    expect(cells[1].textContent).not.toMatch(/[kKmMgG]/);
+  });
+
+  // Bloc 66/D: the currency was previously absent from the column headers,
+  // making the figures look unitless — "Pouciel" now appears alongside.
+  it("Bloc66/D: shows the Pouciel currency in both cost column headers", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    for (const table of screen.getAllByRole("table")) {
+      const headers = table.querySelectorAll("th");
+      expect(headers[1]).toHaveTextContent("Coût du niveau (Pouciel)");
+      expect(headers[2]).toHaveTextContent("Coût cumulé (Pouciel)");
+    }
+  });
+
   it("Bloc38/M: shares the .reference-simple-table class with Gemmes/Level Up, for the same alternating-row style", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
-        <TemplarsReferenceTable parameters={defaultTemplarParameters} />
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
       </NextIntlClientProvider>,
     );
     for (const table of screen.getAllByRole("table"))
       expect(table).toHaveClass("reference-simple-table");
+  });
+
+  // Bloc 66/B: the new presentation section — one tile per Templar, always
+  // in templarKeys' own fixed order (already alphabetical on the French
+  // competence names), rendered before the cost table below it.
+  it("Bloc66/B: renders 5 presentation tiles, in templarKeys order, before the cost table", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const tiles = container.querySelectorAll(".templars-tile");
+    expect(tiles).toHaveLength(5);
+    for (const key of templarKeys)
+      expect(
+        container.querySelector(`[data-testid="templars-tile-${key}"]`),
+      ).not.toBeNull();
+    const grid = container.querySelector(".templars-tile-grid");
+    const costTable = container.querySelector(".split-reference-tables");
+    expect(grid).not.toBeNull();
+    expect(costTable).not.toBeNull();
+    expect(
+      grid!.compareDocumentPosition(costTable!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  // Bloc 66/B: "Titre de la tuile : 'Templier [Compétence]'" — not just the
+  // competence name alone.
+  it('Bloc66/B: titles each tile "Templier [Compétence]"', () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    for (const competence of ["Attaque", "Défense", "Or", "Recruteur", "Vitesse"])
+      expect(
+        screen.getByRole("heading", { name: `Templier ${competence}` }),
+      ).toBeInTheDocument();
+  });
+
+  // Bloc 66/B: "En dessous du titre : Base Temple, puis Bonus donné par 1
+  // templier" — both values shown, seeded from the already-confirmed
+  // templeBase/templarRates constants.
+  it("Bloc66/B: shows Base Temple then the per-templar Bonus below each title", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const rusherTile = container.querySelector(
+      '[data-testid="templars-tile-rusher"]',
+    )!;
+    const stats = rusherTile.querySelectorAll(".templars-tile-stat");
+    expect(stats).toHaveLength(2);
+    expect(stats[0]).toHaveTextContent("Base Temple");
+    expect(stats[0]).toHaveTextContent("50%");
+    expect(stats[1]).toHaveTextContent("Bonus donné par 1 Templier");
+    expect(stats[1]).toHaveTextContent("1%");
+  });
+
+  // Bloc 66/B: colored by the associated competence, same per-skill
+  // palette as Gemmes' own tiles (skillColor).
+  it("Bloc66/B: colors each tile by its associated competence", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const strikerTile = container.querySelector(
+      '[data-testid="templars-tile-striker"]',
+    ) as HTMLElement;
+    const guardianTile = container.querySelector(
+      '[data-testid="templars-tile-guardian"]',
+    ) as HTMLElement;
+    expect(strikerTile).toHaveStyle({ borderColor: skillColor("striker") });
+    expect(guardianTile).toHaveStyle({ borderColor: skillColor("guardian") });
+    expect(strikerTile.style.borderColor).not.toBe(
+      guardianTile.style.borderColor,
+    );
+  });
+
+  // Bloc 66/B: "Image à gauche, 6rem (cohérent avec Boutique, Bloc 65)".
+  it("Bloc66/B: places the image left via .templars-tile-image, Boutique's own class pattern", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const strikerTile = container.querySelector(
+      '[data-testid="templars-tile-striker"]',
+    )!;
+    expect(strikerTile.firstElementChild).toHaveClass("templars-tile-image");
   });
 });

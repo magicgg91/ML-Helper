@@ -9,6 +9,9 @@ vi.mock("@/lib/admin-formulas-server", () => ({
   getTemplarParameters: async () => ({ base: 100, ratio: 1.1 }),
   getGemParameters: async () => ({ skillLeagueValue: {}, gemPrice: {} }),
 }));
+vi.mock("@/lib/templars-presentation-server", () => ({
+  getTemplarPresentation: async () => ({}),
+}));
 vi.mock("@/components/named-parameters-editor", () => ({
   TemplarParametersEditor: ({ backHref }: { backHref: string }) => (
     <a className="editor-back-action" href={backHref}>
@@ -23,6 +26,11 @@ vi.mock("@/components/named-parameters-editor", () => ({
     </a>
   ),
   XpGainRateEditor: () => null,
+}));
+vi.mock("@/components/templars-presentation-editor", () => ({
+  TemplarsPresentationEditor: () => (
+    <div data-testid="templars-presentation-editor" />
+  ),
 }));
 
 let sessionRole = "super_admin";
@@ -73,6 +81,23 @@ describe("Bloc35 7.1, updated Bloc 50: EditToolPage's contextual back link for t
       "href",
       "/admin/referentiels",
     );
+  });
+});
+
+// Bloc 66/B: the presentation catalog editor shares this same edit point,
+// rendered alongside the cost-formula editor rather than at its own route.
+describe("Bloc66/B: EditToolPage also renders the Templiers presentation editor", () => {
+  it("renders both the formula editor and the presentation editor on the templars edit point", async () => {
+    render(
+      await EditToolPage({
+        params: Promise.resolve({ id: "templars" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByText("back")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("templars-presentation-editor"),
+    ).toBeInTheDocument();
   });
 });
 

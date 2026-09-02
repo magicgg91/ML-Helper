@@ -11,7 +11,7 @@ const catalog: Record<string, string> = {
   "catalog.combat-equipment": "Équipements de Combat",
   "catalog.expedition-equipment": "Équipements d’Expédition",
   "catalog.level-up": "Level Up",
-  "catalog.templars": "Coût des Templiers",
+  "catalog.templars": "Templiers",
   "catalog.gems": "Gemmes",
   "catalog.shop": "Boutique",
   "catalog.events": "Événements",
@@ -56,7 +56,7 @@ describe("ReferenceSwitcherNav", () => {
       "Équipements de Combat",
       "Équipements d’Expédition",
       "Level Up",
-      "Coût des Templiers",
+      "Templiers",
       "Gemmes",
       "Boutique",
       "Événements",
@@ -103,7 +103,7 @@ describe("ReferenceSwitcherNav", () => {
       .map((link) => link.textContent);
     const expected = [
       "Boutique",
-      "Coût des Templiers",
+      "Templiers",
       "Équipements de Combat",
       "Équipements d’Expédition",
       "Événements",
