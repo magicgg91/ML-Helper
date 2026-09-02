@@ -526,6 +526,19 @@ main.public-main.contact-page {
   .settings-grid-primary > :first-child {
     grid-column: 1 / -1;
   }
+  /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
+     its unit select, and shrink that select, so the two NumberSteppers
+     (Level's, which has no unit select, and VP's) end up close to the
+     same width instead of VP's looking squeezed. */
+  .settings-grid-primary {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+  .settings-grid-primary .unit-input {
+    grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .settings-grid-primary .unit-input select {
+    padding: 0 0.3rem;
+  }
 }
 .settings-grid label {
   display: grid;

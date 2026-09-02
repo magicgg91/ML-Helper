@@ -547,6 +547,25 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
       /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
     );
   });
+
+  // Follow-up to H: the Level field has no unit select, so an even 1fr/1fr
+  // split left its NumberStepper visibly wider than VP's. On mobile only,
+  // VP's column gets extra width (7fr vs Level's 5fr) and its unit select
+  // shrinks, so the two NumberSteppers end up close to the same width.
+  it("gives the mobile Level/VP row an uneven column split and a narrower VP unit select, so both NumberSteppers end up close in width", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
+    );
+  });
 });
 
 // Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
