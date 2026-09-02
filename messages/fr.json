@@ -405,8 +405,8 @@
     "total-cost": "Coût total",
     "skydust": "Pouciel",
     "bonus-per-templar": "Bonus par Templier",
-    "total-bonus-level": "Bonus total au niveau {level}",
-    "gain-transition": "Gain départ → cible",
+    "total-bonus": "Bonus total",
+    "gain": "Gain",
     "rate-value": "{rate}%",
     "cost-table": "Table de coût",
     "columns": {

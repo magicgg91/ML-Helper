@@ -405,8 +405,8 @@
     "total-cost": "Gesamtkosten",
     "skydust": "Himmelsstaub",
     "bonus-per-templar": "Bonus pro Templer",
-    "total-bonus-level": "Gesamtbonus bei Stufe {level}",
-    "gain-transition": "Gewinn Start → Ziel",
+    "total-bonus": "Gesamtbonus",
+    "gain": "Gewinn",
     "rate-value": "{rate}%",
     "cost-table": "Kostentabelle",
     "columns": {

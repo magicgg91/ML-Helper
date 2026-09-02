@@ -260,6 +260,27 @@ describe("SkillsCalculators", () => {
       }
     }
   });
+  // Bloc 70/B: shortened tile labels — "Bonus total au niveau X" drops the
+  // target-level mention (redundant with the field just above it) and
+  // "Gain départ → cible" is shortened to "Gain".
+  it("Bloc70/B: shows the shortened 'Bonus total' and 'Gain' tile labels, not the old longer ones", () => {
+    const { container } = renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    const stats = container.querySelectorAll(".templars-tile-stat");
+    expect(stats.length).toBeGreaterThan(0);
+    const text = Array.from(stats)
+      .map((stat) => stat.textContent)
+      .join(" | ");
+    expect(text).toMatch(/Bonus total : -?\d+(\.\d+)?%/);
+    expect(text).toMatch(/Gain : [+-]?\d+(\.\d+)?%/);
+    expect(text).not.toMatch(/Bonus total au niveau/);
+    expect(text).not.toMatch(/Gain départ/);
+  });
   // Bloc 69/C: target level must always be at least start+1 — same
   // commit-time-only floor as the City tool (Bloc 34/C), checked both ways:
   // raising start pushes up an equal/lower target, and typing an

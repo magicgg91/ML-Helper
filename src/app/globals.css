@@ -742,14 +742,18 @@ select {
   gap: 1rem;
 }
 /* The numeric fields shrink to a compact floor (large enough for a few
-   digits + the +/- buttons) and the league field grows twice as fast, so
-   the button area gets first claim on any extra row width. */
+   digits + the +/- buttons) and share whatever's left of the row equally,
+   regardless of how many of them there are. */
 .calculator-fields-inline .calculator-field:not(.calculator-league-field) {
   flex: 1 1 0;
   min-width: 6rem;
 }
+/* Bloc 70/A: fixed at exactly half the row's width (basis 50%, no
+   grow/shrink) instead of a flex-grow ratio that shifted with the number
+   of sibling numeric fields (40% for City Cost's 3 fields, 66% for Demo
+   Attack's 1) — a flat 50% for every one of the 4 tools sharing this row. */
 .calculator-fields-inline .calculator-league-field {
-  flex: 2 1 auto;
+  flex: 0 0 50%;
 }
 .calculator-fields-inline .family-buttons {
   margin: 0;

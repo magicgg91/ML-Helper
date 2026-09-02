@@ -691,10 +691,12 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   // referentiel), not table rows.
   const rusherTile = page.getByTestId("templars-calculator-tile-rusher");
   await expect(rusherTile).toContainText("Bonus par Templier : 1%");
-  await expect(rusherTile).toContainText("Bonus total au niveau 3 : 3%");
-  await expect(rusherTile).toContainText("Gain départ → cible : +3%");
+  // Bloc 70/B: shortened labels — no more target-level mention in
+  // "Bonus total", and "Gain" instead of "Gain départ → cible".
+  await expect(rusherTile).toContainText("Bonus total : 3%");
+  await expect(rusherTile).toContainText("Gain : +3%");
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");
-  await expect(rusherTile).toContainText("Gain départ → cible : +2%");
+  await expect(rusherTile).toContainText("Gain : +2%");
 });
 
 test("Reference tables filter combat and expedition equipment", async ({

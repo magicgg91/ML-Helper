@@ -698,10 +698,7 @@ describe("Bloc 69/E: City tools + Demo Attack Troops league field shares the row
     expect(mediaBlock).toMatch(/flex-direction: column;/);
   });
 
-  it("gives the league field's buttons equal width and first claim on the row, sharing it instead of scrolling or being isolated on their own line", () => {
-    expect(css).toMatch(
-      /\.calculator-fields-inline \.calculator-league-field\s*{\s*\n\s*flex: 2 1 auto;/,
-    );
+  it("gives the league field's buttons first claim on the row, sharing it instead of scrolling or being isolated on their own line", () => {
     expect(css).toMatch(
       /\.calculator-fields-inline \.calculator-field:not\(\.calculator-league-field\)\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: 6rem;/,
     );
@@ -710,5 +707,26 @@ describe("Bloc 69/E: City tools + Demo Attack Troops league field shares the row
     expect(css).toMatch(
       /\.calculator-fields-inline \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
     );
+  });
+});
+
+// Bloc 70/A: the league field's own width is now fixed at exactly 50% of
+// the shared row (flex: 0 0 50%, no grow/shrink), instead of a flex-grow
+// ratio that shifted with how many numeric fields shared the row (40% for
+// City Cost's 3 fields, 50% for Niveau Max/Production's 2, 66% for Demo
+// Attack's 1) — flat 50% across all 4 tools. Scoped to
+// .calculator-fields-inline only: Player Settings, Ranking mobile, and
+// Level Up/Progression/Events keep their own separate width decisions.
+describe("Bloc 70/A: league field is exactly 50% of the shared row", () => {
+  it("fixes .calculator-league-field at flex: 0 0 50%, not a grow-based ratio", () => {
+    expect(css).toMatch(
+      /\.calculator-fields-inline \.calculator-league-field\s*{\s*\n\s*flex: 0 0 50%;/,
+    );
+  });
+
+  it("does not touch the width of any other league-button selector on the site", () => {
+    expect(css).not.toMatch(/\.settings-grid[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
+    expect(css).not.toMatch(/\.ranking-[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
+    expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(1);
   });
 });
