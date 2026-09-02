@@ -443,12 +443,15 @@ main.public-main.contact-page {
   justify-content: space-between;
   gap: 1rem;
 }
-.player-summary-row1::before {
+/* The disclosure arrow lives on the title itself, not as a 3rd flex item
+   of .player-summary-row1 — otherwise space-between spreads it away from
+   the title instead of keeping the two flush together. */
+#player-settings-title::before {
   content: "▸";
   margin-right: 0.55rem;
   color: var(--accent);
 }
-.player-settings > details[open] > summary .player-summary-row1::before {
+.player-settings > details[open] > summary #player-settings-title::before {
   content: "▾";
 }
 .player-summary-line2 {
@@ -694,6 +697,16 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 0.8rem;
+}
+/* Bloc 68/J+K fix: a LeagueButtons group (.family-buttons) dropped straight
+   into .calculator-fields (City's 3 tools, Demo Attack Troops) got boxed
+   into one ~12rem auto-fit cell, and since .family-buttons never wraps
+   above 900px, its later leagues fell behind a horizontal scrollbar
+   instead of staying visible like the select it replaced. Span the full
+   row instead, so all 6 buttons fit on one line — same fix Ranking's own
+   dedicated .ranking-fields layout already used pre-Bloc 68. */
+.calculator-fields > .family-buttons {
+  grid-column: 1 / -1;
 }
 .calculator-field {
   display: grid;

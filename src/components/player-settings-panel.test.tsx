@@ -95,6 +95,17 @@ describe("PlayerSettingsPanel", () => {
     );
   });
 
+  it("gives the league button group the .league-buttons-grid class, so it forms a 2-row/3-column grid on mobile like Events/Progression's", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("group", { name: "Ligue" })).toHaveClass(
+      "league-buttons-grid",
+    );
+  });
+
   // Bloc 68/I: every settings-grid section (equipment, points, templars,
   // clan temple) carries the plain "settings-grid" class the shared mobile
   // 2-col rule targets.

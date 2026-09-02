@@ -568,6 +568,24 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   });
 });
 
+describe("Bloc 68/J+K review fixes: Codex findings on the PR", () => {
+  it("keeps the disclosure arrow on the title itself, not as a 3rd flex item of .player-summary-row1 (space-between would push it away from the title)", () => {
+    expect(css).not.toMatch(/\.player-summary-row1::before/);
+    expect(css).toMatch(
+      /#player-settings-title::before\s*{\s*\n\s*content: "▸";/,
+    );
+    expect(css).toMatch(
+      /\.player-settings > details\[open\] > summary #player-settings-title::before\s*{\s*\n\s*content: "▾";/,
+    );
+  });
+
+  it("makes a LeagueButtons group (.family-buttons) dropped into .calculator-fields span the full row, so it isn't boxed into one ~12rem auto-fit column with a horizontal scrollbar hiding later leagues on desktop", () => {
+    expect(css).toMatch(
+      /\.calculator-fields > \.family-buttons\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
+});
+
 // Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
 // columns (Niveau départ / Niveau cible / Coût total) on desktop, 1 column
 // (stacked) on mobile. Dedicated class, distinct from the shared

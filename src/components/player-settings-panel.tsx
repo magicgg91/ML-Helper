@@ -264,6 +264,7 @@ export function PlayerSettingsPanel() {
               label={t("league")}
               value={settings.league}
               onChange={setLeague}
+              className="league-buttons-grid"
             />
             <label>
               {t("player-level")}
