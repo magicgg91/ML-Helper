@@ -51,6 +51,7 @@ import { replaceEquipmentSkills } from "./player-settings-panel";
 import { usePlayerSettings } from "./use-player-settings";
 import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
+import { StarRating } from "./star-rating";
 
 const storageKey = "mlhelper_stuff_simulator";
 // Bloc 33/K: confirmation clears itself well under the 5s cap.
@@ -257,43 +258,50 @@ function SlotCell({
     >
       <span>{game(`slots.${equipmentSlotTranslationKeys[slot]}`)}</span>
       {rarity ? (
-        // Bloc 32/D.1: reverted to a single stacked layout — name, image,
-        // star, then the gem row below, no internal columns.
-        <>
-          {item ? (
-            <GameImage
-              src={equipmentImagePath(item.family, rarity, slot)}
-              alt={item.set_name}
-              className="stuff-slot-image"
-              fallback={null}
-            />
-          ) : null}
-          <small>{state.star}★</small>
+        // Bloc 73/D: image + its star level on the left, the (up to 3)
+        // gems stacked in a column to the right — replaces Bloc 32/D.1's
+        // single-column stack (image, star, then a row of gem badges).
+        <div className="stuff-slot-layout">
+          <div className="stuff-slot-left">
+            {item ? (
+              <GameImage
+                src={equipmentImagePath(item.family, rarity, slot)}
+                alt={item.set_name}
+                className="stuff-slot-image stuff-slot-image-combat"
+                fallback={null}
+              />
+            ) : null}
+            <StarRating level={state.star} />
+          </div>
           {activeGems.length ? (
-            <div className="gem-badges">
+            <div className="stuff-slot-gems">
               {activeGems.map((gem, index) => {
                 const title = `${game(`skills.${equipmentSkillTranslationKeys[gem.skill]}`)} ${game(`leagues.${gem.league}`)} ${gem.star}★`;
                 return (
-                  <GameImage
-                    key={index}
-                    src={gemImagePath(skillKeyByLabel[gem.skill], gem.league)}
-                    alt={title}
-                    className="gem-badge-image"
-                    fallback={
-                      <span
-                        className="gem-badge"
-                        style={{ background: equipmentSkillColors[gem.skill] }}
-                        title={title}
-                      >
-                        {gem.star}★{game(`leagues-short.${gem.league}`)}
-                      </span>
-                    }
-                  />
+                  <div className="stuff-slot-gem" key={index}>
+                    <GameImage
+                      src={gemImagePath(skillKeyByLabel[gem.skill], gem.league)}
+                      alt={title}
+                      className="gem-badge-image"
+                      fallback={
+                        <span
+                          className="gem-badge"
+                          style={{
+                            background: equipmentSkillColors[gem.skill],
+                          }}
+                          title={title}
+                        >
+                          {game(`leagues-short.${gem.league}`)}
+                        </span>
+                      }
+                    />
+                    <StarRating level={gem.star} size={8} />
+                  </div>
                 );
               })}
             </div>
           ) : null}
-        </>
+        </div>
       ) : (
         <small>{t("empty-slot")}</small>
       )}

@@ -7,7 +7,8 @@
     "select-league": "Hesaplamak için bir lig seç.",
     "language": "Dil",
     "theme-light": "Açık modu etkinleştir",
-    "theme-dark": "Koyu modu etkinleştir"
+    "theme-dark": "Koyu modu etkinleştir",
+    "star-count": "{level} yıldız"
   },
   "game": {
     "skills": {
