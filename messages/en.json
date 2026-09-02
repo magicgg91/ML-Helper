@@ -417,7 +417,7 @@
     "presentation": {
       "tile-title": "Templar {name}",
       "temple-base-label": "Temple base",
-      "bonus-label": "Bonus given per templar"
+      "bonus-label": "Bonus per templar"
     }
   },
   "Navigation": {

@@ -332,11 +332,15 @@ test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   }
 });
 
-test("Level Up is a Référentiels reference and keeps Silver unconfirmed", async ({
+// Bloc 67: renamed from "Level Up" to "Progression" — the URL itself is
+// unchanged (/referentiels/level-up), only the displayed label.
+test("Progression is a Référentiels reference and keeps Silver unconfirmed", async ({
   page,
 }) => {
   await page.goto("/referentiels/level-up");
-  await expect(page.getByRole("heading", { name: "Level Up" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Progression" }),
+  ).toBeVisible();
   // Bloc 61/A: the league <select> is replaced by single-select buttons —
   // same visual/interaction pattern as the equipment family filters.
   const leagueGroup = page.getByRole("group", { name: "Ligue" });
@@ -852,8 +856,8 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
   // Bloc 66/B: exact match — the presentation editor sharing this page now
-  // also carries 5 read-only "Base Temple N" fields, whose accessible
-  // names otherwise substring-match this same "Base" locator.
+  // also carries 5 editable "Base Temple N" fields (Bloc 68/C), whose
+  // accessible names otherwise substring-match this same "Base" locator.
   await page
     .getByRole("spinbutton", { name: "Base", exact: true })
     .fill("200");
@@ -904,7 +908,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // Base was changed to 200 above, from the Guides admin reference row —
   // same shared parameters, reached from either admin table. Exact match:
   // see the earlier comment on the same collision with the presentation
-  // editor's "Base Temple N" fields.
+  // editor's editable "Base Temple N" fields.
   await expect(
     page.getByRole("spinbutton", { name: "Base", exact: true }),
   ).toHaveValue("200");

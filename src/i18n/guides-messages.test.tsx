@@ -11,11 +11,11 @@ function LevelUpFallbackProbe() {
 
 describe("guide and reference translation catalogs", () => {
   // CI fix: this used to depend on getMessagesForLocale("fr") against the
-  // real messages/fr.json — but fr's level-up.name is "Level Up" too (the
-  // game term is deliberately kept untranslated), so the test passed for
-  // the wrong reason: it would still pass even if the EN-fallback
-  // mechanism were completely broken. mergeMessages() with a hand-built
-  // gap actually exercises the fallback, independent of today's content.
+  // real messages/fr.json, which passed for the wrong reason whenever the
+  // fr and en values happened to coincide (as "Level Up" did, pre-Bloc 67)
+  // — it would still pass even if the EN-fallback mechanism were completely
+  // broken. mergeMessages() with a hand-built gap actually exercises the
+  // fallback, independent of today's content.
   it("uses the English Level Up label when its French key is missing", () => {
     const messages = mergeMessages(
       { "level-up": { name: "Level Up" } },

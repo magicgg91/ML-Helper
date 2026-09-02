@@ -15,6 +15,8 @@ const validRow: TemplarPresentationRow = {
   name_en: "Attack",
   description_fr: "Description",
   description_en: "Description EN",
+  temple_base: "50",
+  bonus: "1",
 };
 
 describe("normalizeStoredTemplarPresentation (Bloc 66/B)", () => {
@@ -53,17 +55,27 @@ describe("normalizeStoredTemplarPresentation (Bloc 66/B)", () => {
     expect(Object.keys(result).sort()).toEqual([...templarKeys].sort());
   });
 
-  // Codex review (PR #85): temple_base/bonus used to be part of this row
-  // shape and could already be sitting in the database from before that
-  // fix — normalizing must drop them rather than resurrecting a second,
-  // driftable copy of the real templeBase/templarRates constants.
-  it("Codex review (PR#85): strips a legacy stored temple_base/bonus, never carrying them through", () => {
+  // Bloc 68/C: Base Temple/Bonus are genuine, admin-editable fields on this
+  // row again (reverting a prior Codex-driven change) — a stored value
+  // must carry them through unchanged.
+  it("Bloc68/C: carries a stored temple_base/bonus through unchanged", () => {
     const stored = {
-      striker: { ...validRow, temple_base: "999", bonus: "999" },
+      striker: { ...validRow, temple_base: "75", bonus: "2.5" },
     };
     const result = normalizeStoredTemplarPresentation(stored);
-    expect(result.striker).toEqual(validRow);
-    expect(result.striker).not.toHaveProperty("temple_base");
-    expect(result.striker).not.toHaveProperty("bonus");
+    expect(result.striker.temple_base).toBe("75");
+    expect(result.striker.bonus).toBe("2.5");
+  });
+
+  // Bloc 68/C: an admin clearing the field (AGENTS.md — never invent a
+  // game value) must be preserved as an empty string, not resurrected from
+  // the seeded default.
+  it("Bloc68/C: preserves an explicitly-cleared temple_base/bonus as empty, not the seeded default", () => {
+    const stored = {
+      striker: { ...validRow, temple_base: "", bonus: "" },
+    };
+    const result = normalizeStoredTemplarPresentation(stored);
+    expect(result.striker.temple_base).toBe("");
+    expect(result.striker.bonus).toBe("");
   });
 });

@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
 const catalog: Record<string, string> = {
   "catalog.combat-equipment": "Équipements de Combat",
   "catalog.expedition-equipment": "Équipements d’Expédition",
-  "catalog.level-up": "Level Up",
+  "catalog.level-up": "Progression",
   "catalog.templars": "Templiers",
   "catalog.gems": "Gemmes",
   "catalog.shop": "Boutique",
@@ -55,7 +55,7 @@ describe("ReferenceSwitcherNav", () => {
     for (const label of [
       "Équipements de Combat",
       "Équipements d’Expédition",
-      "Level Up",
+      "Progression",
       "Templiers",
       "Gemmes",
       "Boutique",
@@ -108,7 +108,7 @@ describe("ReferenceSwitcherNav", () => {
       "Équipements d’Expédition",
       "Événements",
       "Gemmes",
-      "Level Up",
+      "Progression",
     ];
     expect(labels).toEqual([...expected].sort((a, b) => a.localeCompare(b, "fr")));
   });

@@ -118,8 +118,8 @@ describe("LevelUpReference", () => {
 
   // Bloc 53/F: this link used to point at the generic /tools/combat category
   // (landing on whichever tab happened to be firstAvailable, neither of
-  // which is Level Up) — now it points at the closest matching calculator,
-  // XP Gain Rate, precisely.
+  // which is Progression) — now it points at the closest matching
+  // calculator, XP Gain Rate, precisely.
   it("links to the precise XP Gain Rate calculator, not the generic Combat category", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>

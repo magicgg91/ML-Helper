@@ -12,8 +12,7 @@ import {
   EditorialLocaleSelect,
   type EditorialLocale,
 } from "./editorial-locale-select";
-import { templarKeys, templeBase } from "../lib/player-settings";
-import { templarRates } from "../lib/gems-templars";
+import { templarKeys } from "../lib/player-settings";
 import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
@@ -23,23 +22,19 @@ function fieldLocale(locale: EditorialLocale): "fr" | "en" {
   return locale === "fr" ? "fr" : "en";
 }
 
-// Base Temple/Bonus ride along in the table for visibility (Codex review,
-// PR #85: showing them here is still useful) but are read-only, computed
-// straight from templeBase/templarRates — never sent back to the server,
-// never a second source an admin could edit out of sync with the real
-// calculators. See templars-presentation.ts's own comment for why.
-type DisplayRow = TemplarPresentationRow & {
-  temple_base: string;
-  bonus: string;
-};
-
-// Bloc 66/B: same admin pattern as Boutique (a simple table, not tiles),
-// but with no add/move/remove controls — the 5 Templiers are a fixed,
-// complete set (cdc-confirmed), always shown in templarKeys' own order
-// (already alphabetical on the French competence names: Attaque, Défense,
-// Or, Recruteur, Vitesse). Renders with no EditorActionBar of its own: it
-// shares the page with TemplarParametersEditor, which already carries the
-// page's one back link (Bloc 35/10.2/10.3 convention).
+// Bloc 66/B, restored Bloc 68/C: same admin pattern as Boutique (a simple
+// table, not tiles), but with no add/move/remove controls — the 5
+// Templiers are a fixed, complete set (cdc-confirmed), always shown in
+// templarKeys' own order (already alphabetical on the French competence
+// names: Attaque, Défense, Or, Recruteur, Vitesse). Renders with no
+// EditorActionBar of its own: it shares the page with
+// TemplarParametersEditor, which already carries the page's one back link
+// (Bloc 35/10.2/10.3 convention).
+// Base Temple/Bonus are genuinely editable here (Bloc 68/C: reverted a
+// prior pass that made them read-only/computed — the porteur de projet
+// confirmed editable was the intended spec) and left blank rather than
+// forced to a value if an admin clears them (AGENTS.md: never invent a
+// game value) — the public tile shows "—" in that case.
 export function TemplarsPresentationEditor({
   initialCatalog,
 }: {
@@ -57,7 +52,7 @@ export function TemplarsPresentationEditor({
   const nameKey = lang === "fr" ? "name_fr" : "name_en";
   const descriptionKey = lang === "fr" ? "description_fr" : "description_en";
 
-  const columns: EditableColumn<DisplayRow>[] = [
+  const columns: EditableColumn<TemplarPresentationRow>[] = [
     { key: "image", label: t("templars-columns.image") },
     { key: nameKey, label: t("templars-columns.name"), required: true },
     {
@@ -69,40 +64,25 @@ export function TemplarsPresentationEditor({
       key: "temple_base",
       label: t("templars-columns.temple-base"),
       type: "number",
-      readOnly: true,
+      min: 0,
       narrow: true,
     },
     {
       key: "bonus",
       label: t("templars-columns.bonus"),
       type: "number",
-      readOnly: true,
+      min: 0,
+      step: 0.01,
       narrow: true,
     },
-  ] as EditableColumn<DisplayRow>[];
+  ] as EditableColumn<TemplarPresentationRow>[];
 
-  const rows: DisplayRow[] = templarKeys.map((key) => ({
-    ...catalog[key],
-    temple_base: String(templeBase[key]),
-    bonus: String(templarRates[key]),
-  }));
+  const rows = templarKeys.map((key) => catalog[key]);
 
-  function setRows(nextRows: DisplayRow[]) {
+  function setRows(nextRows: TemplarPresentationRow[]) {
     setCatalog(
       Object.fromEntries(
-        templarKeys.map((key, index) => {
-          const row = nextRows[index];
-          return [
-            key,
-            {
-              image: row.image,
-              name_fr: row.name_fr,
-              name_en: row.name_en,
-              description_fr: row.description_fr,
-              description_en: row.description_en,
-            },
-          ];
-        }),
+        templarKeys.map((key, index) => [key, nextRows[index]]),
       ) as TemplarPresentationCatalog,
     );
     setStatus("");
@@ -113,10 +93,14 @@ export function TemplarsPresentationEditor({
     const next: FieldErrors = {};
     rows.forEach((row, rowIndex) =>
       columns.forEach((column) => {
-        if (column.readOnly) return;
         const value = row[column.key];
         const key = errorKey(rowIndex, column.key);
         if (column.required && !value.trim()) next[key] = t("required");
+        if (column.type === "number" && value !== "") {
+          const parsed = Number(value);
+          if (!Number.isFinite(parsed) || parsed < 0)
+            next[key] = t("minimum", { min: 0 });
+        }
       }),
     );
     setErrors(next);

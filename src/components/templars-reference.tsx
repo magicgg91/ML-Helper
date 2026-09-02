@@ -10,8 +10,7 @@ import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
 import { referenceCatalog } from "../lib/reference-catalog";
 import { skillColor } from "../lib/game-images";
-import { templarKeys, templeBase, type TemplarKey } from "../lib/player-settings";
-import { templarRates } from "../lib/gems-templars";
+import { templarKeys, type TemplarKey } from "../lib/player-settings";
 import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
@@ -19,6 +18,14 @@ import type {
 
 function pickLocaleText(fr: string, en: string, locale: string): string {
   return locale === "fr" ? fr || en : en || fr;
+}
+
+// Bloc 68/C: admin can clear Base Temple/Bonus (AGENTS.md — never invent a
+// game value), so the tile must show that gracefully rather than a broken
+// "%" — same "—" placeholder precedent as Gemmes' price row and Boutique's
+// cost badge.
+function formatStat(value: string): string {
+  return value !== "" && Number.isFinite(Number(value)) ? `${value}%` : "—";
 }
 
 // Bloc 66/B: one tile per Templar, colored by its associated competence
@@ -59,16 +66,11 @@ function TemplarPresentationTile({
         <h3 className="templars-tile-title">
           {t("presentation.tile-title", { name })}
         </h3>
-        {/* Codex review (PR #85): Base Temple/Bonus are read straight from
-            the real game constants (templeBase/templarRates), the exact
-            same source player-settings-panel.tsx/skills-calculators.tsx
-            use — never a separately admin-editable copy that could show a
-            different number than what the calculators actually apply. */}
         <p className="templars-tile-stat">
-          {t("presentation.temple-base-label")} : {templeBase[templarKey]}%
+          {t("presentation.temple-base-label")} : {formatStat(row.temple_base)}
         </p>
         <p className="templars-tile-stat">
-          {t("presentation.bonus-label")} : {templarRates[templarKey]}%
+          {t("presentation.bonus-label")} : {formatStat(row.bonus)}
         </p>
       </div>
     </article>

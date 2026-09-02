@@ -417,7 +417,7 @@
     "presentation": {
       "tile-title": "Templier {name}",
       "temple-base-label": "Base Temple",
-      "bonus-label": "Bonus donné par 1 Templier"
+      "bonus-label": "Bonus par templier"
     }
   },
   "Navigation": {
@@ -545,7 +545,7 @@
       "expedition": "Expédition",
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
-      "level-up": "Level Up",
+      "level-up": "Progression",
       "templars": "Templiers",
       "gems": "Gemmes",
       "shop": "Boutique",
@@ -616,7 +616,7 @@
     "toTool": "Aller plus loin en utilisant l'outil"
   },
   "level-up": {
-    "name": "Level Up",
+    "name": "Progression",
     "league": "Ligue",
     "select-league": "Choisis une ligue pour afficher le référentiel.",
     "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
@@ -770,12 +770,12 @@
       },
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Level Up",
+      "reference-level-up": "Éditer Progression",
       "reference-consommables": "Éditer la Boutique",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
-        "level-up": "Level Up",
+        "level-up": "Progression",
         "templiers": "Templiers",
         "gemmes": "Gemmes",
         "consommables": "Boutique",
