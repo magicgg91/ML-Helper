@@ -1050,31 +1050,65 @@ select {
   background: var(--background);
   color: var(--foreground);
 }
-/* Bloc 38/A, D: the Gemmes reference only — 6 league columns of strictly
-   equal width (table-layout: fixed splits the remainder evenly once the
-   1st, row-label column gets an explicit width), title and content
-   centered. Gemmes is the only reference still in table form (Bloc 39
-   moved Combat/Expedition to a tile grid — see .reference-tile-*). */
-.gems-reference-table {
+/* Bloc 65/D: Gemmes is a tile grid now — the 11 x 7 matrix table it
+   replaces (Bloc 38/A) needed a horizontal scroll on a phone. One tile per
+   skill, each holding its own 6-league mini-table, plus the full-width
+   Coût tile that opens the grid. Deliberately the same layout on mobile
+   and desktop: a tile is already only 6 short columns wide, and the
+   skill x league comparison these tiles exist for must not be split up.
+   The tile's own color comes from the per-skill palette (inline, from
+   skillColor) exactly as the Combat/Expedition tiles take theirs from the
+   rarity palette. */
+.gems-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.gems-tile {
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border: 2px solid var(--border);
+  border-radius: 0.6rem;
+}
+/* The price tile belongs to no skill: neutral grey, and it spans the whole
+   grid so its 6 values read as the row they are. */
+.gems-cost-tile {
+  grid-column: 1 / -1;
+  background: var(--surface-muted);
+}
+.gems-tile-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+/* 6 columns of strictly equal width (table-layout: fixed splits them
+   evenly with no column carrying an explicit width), everything centered. */
+.gems-tile-table {
+  width: 100%;
   table-layout: fixed;
-  min-width: 900px;
+  border-collapse: collapse;
 }
-.gems-reference-table th,
-.gems-reference-table td {
+.gems-tile-table th,
+.gems-tile-table td {
+  padding: 0.2rem 0.15rem;
   text-align: center;
+  font-size: 0.75rem;
 }
-.gems-reference-table th:first-child,
-.gems-reference-table td:first-child {
-  width: 9rem;
-  text-align: left;
+.gems-tile-table th {
+  color: var(--muted);
+  font-weight: 700;
 }
-/* Bloc 38/C: image and % on the same line — see the component comment for
-   why .reference-equipment-image's own display:block would otherwise stack
-   them. */
-.gems-value-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+.gems-tile-image {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0 auto;
+  object-fit: contain;
+}
+@media (max-width: 900px) {
+  .gems-tile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .reference-value {
   color: var(--success);
@@ -1212,6 +1246,11 @@ select {
   align-items: center;
   flex-wrap: nowrap;
   gap: 1rem;
+  /* Bloc 65/E: the 3 fields spread across the whole block instead of
+     bunching at its left edge and leaving the rest of the row empty —
+     the league group keeps the left edge, the rank field reaches the
+     right one. */
+  justify-content: space-between;
 }
 .ranking-fields .family-buttons {
   margin: 0;
@@ -1555,15 +1594,15 @@ select,
   object-fit: contain;
 }
 
-/* Bloc 46/A: Consommables' own image size, distinct from the 3rem shared by
-   Combat/Expedition/Gemmes (Bloc 38) — scoped to this référentiel's table
-   only, doesn't touch the shared rule above.
-   Bloc 64/C: the tiles that replaced the 4 category tables keep that exact
-   5rem, so an item looks the same size wherever it's listed. */
-.consumables-table .reference-equipment-image,
+/* Bloc 46/A: Boutique's own image size, distinct from the 3rem shared by
+   Combat/Expedition/Gemmes (Bloc 38) — scoped to this référentiel only,
+   doesn't touch the shared rule above.
+   Bloc 65/A, C: every Boutique listing is a tile now (Intro included), so
+   this one selector covers them all, at 6rem — up from the 5rem the
+   tables and then the tiles carried. */
 .consumable-tile-image {
-  width: 5rem;
-  height: 5rem;
+  width: 6rem;
+  height: 6rem;
 }
 
 /* Bloc 64/C: Boutique's 4 category listings — 2 tiles per row on desktop,
@@ -2226,15 +2265,21 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   width: calc(100% - 28px);
   min-width: 0;
 }
+/* Bloc 65/B: rebalanced so Description actually takes the room the table
+   has rather than being merely wider than its neighbours — the share came
+   from the columns that were holding width they never used (Actions,
+   which only ever holds 3 icon buttons, and Coût, a 3-4 digit number).
+   The percentages still sum to 100%, so no horizontal scroll appears:
+   verified live from 1400px down to 320px. */
 .consumables-admin-table .reference-admin-wide {
-  width: 36%;
+  width: 48%;
 }
 .consumables-admin-table .reference-admin-narrow {
-  width: 12%;
+  width: 10%;
 }
 .consumables-admin-table th:last-child,
 .consumables-admin-table td:last-child {
-  width: 20%;
+  width: 14%;
 }
 /* The 3 action icons wrap onto a 2nd line rather than overflow their cell
    on a narrow screen, now that the cell's own width can shrink below what
@@ -2249,6 +2294,22 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 @media (max-width: 480px) {
   .consumables-admin-table .reference-admin-move-cell {
     flex-direction: column;
+  }
+  /* Bloc 65/B: the wider Description above takes its share from Actions,
+     which is fine while the table is wide enough that 14% still clears an
+     icon button — below 480px it doesn't (the buttons stack one per line
+     here, each still 2rem), and the cell overflowed its own wrapper by a
+     few px. Phone widths keep the pre-Bloc-65 split, where Description
+     has no room to spare anyway. */
+  .consumables-admin-table .reference-admin-wide {
+    width: 42%;
+  }
+  .consumables-admin-table .reference-admin-narrow {
+    width: 12%;
+  }
+  .consumables-admin-table th:last-child,
+  .consumables-admin-table td:last-child {
+    width: 20%;
   }
 }
 /* The move buttons keep .secondary-action's roomy text-button padding
