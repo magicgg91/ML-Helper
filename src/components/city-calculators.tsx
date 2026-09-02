@@ -136,11 +136,15 @@ function CostCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueButtons
-            label={t("fields.league")}
-            value={league}
-            onChange={setLeague}
-          />
+          <div className="calculator-field calculator-league-field">
+            {t("fields.league")}
+            <LeagueButtons
+              label={t("fields.league")}
+              value={league}
+              onChange={setLeague}
+              className="league-buttons-grid"
+            />
+          </div>
           <Field
             label={t("fields.city-count")}
             value={cityCount}
@@ -314,11 +318,15 @@ function MaxLevelCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueButtons
-            label={t("fields.league")}
-            value={league}
-            onChange={setLeague}
-          />
+          <div className="calculator-field calculator-league-field">
+            {t("fields.league")}
+            <LeagueButtons
+              label={t("fields.league")}
+              value={league}
+              onChange={setLeague}
+              className="league-buttons-grid"
+            />
+          </div>
           <Field
             label={t("fields.city-count")}
             value={cityCount}
@@ -479,11 +487,15 @@ function ProductionCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueButtons
-            label={t("fields.league")}
-            value={league}
-            onChange={setLeague}
-          />
+          <div className="calculator-field calculator-league-field">
+            {t("fields.league")}
+            <LeagueButtons
+              label={t("fields.league")}
+              value={league}
+              onChange={setLeague}
+              className="league-buttons-grid"
+            />
+          </div>
           <Field
             label={t("fields.city-count")}
             value={cityCount}

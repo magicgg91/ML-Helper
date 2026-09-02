@@ -606,11 +606,10 @@ describe("Bloc 68/J+K review fixes: Codex findings on the PR", () => {
     );
   });
 
-  it("makes a LeagueButtons group (.family-buttons) dropped into .calculator-fields span the full row, so it isn't boxed into one ~12rem auto-fit column with a horizontal scrollbar hiding later leagues on desktop", () => {
-    expect(css).toMatch(
-      /\.calculator-fields > \.family-buttons\s*{\s*\n\s*grid-column: 1 \/ -1;/,
-    );
-  });
+  // Superseded by Bloc 69/E, which explicitly asks for the league field to
+  // share the row with the tool's other fields instead of being isolated
+  // on its own — see the "Bloc 69/E" describe block below for the new
+  // no-horizontal-scroll fix (wrap instead of full-row span).
 });
 
 // Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
@@ -674,5 +673,22 @@ describe("Bloc 69/G: Ranking mobile-only redesign", () => {
     expect(mediaBlock).toMatch(
       /\.ranking-number-field \.number-stepper\s*{\s*\n\s*width: 100%;/,
     );
+  });
+});
+
+// Bloc 69/E: City's 3 tools (Coût de Ville/Niveau Max Atteignable/
+// Production) and Demo Attack Troops' league field now shares the row
+// with the tool's other fields on desktop, instead of being isolated on
+// its own full-width row (superseding the Bloc 68/J+K fix above) — its
+// .family-buttons wraps within its own cell instead of scrolling
+// horizontally.
+describe("Bloc 69/E: City tools + Demo Attack Troops league field shares the row", () => {
+  it("switches .calculator-league-field's .family-buttons from nowrap+scroll to wrap, so it never spills into a horizontal scrollbar", () => {
+    const rule = css.match(
+      /\.calculator-league-field \.family-buttons\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/flex-wrap: wrap;/);
+    expect(rule).toMatch(/overflow-x: visible;/);
   });
 });

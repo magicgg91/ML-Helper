@@ -722,15 +722,21 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 0.8rem;
 }
-/* Bloc 68/J+K fix: a LeagueButtons group (.family-buttons) dropped straight
-   into .calculator-fields (City's 3 tools, Demo Attack Troops) got boxed
-   into one ~12rem auto-fit cell, and since .family-buttons never wraps
-   above 900px, its later leagues fell behind a horizontal scrollbar
-   instead of staying visible like the select it replaced. Span the full
-   row instead, so all 6 buttons fit on one line — same fix Ranking's own
-   dedicated .ranking-fields layout already used pre-Bloc 68. */
-.calculator-fields > .family-buttons {
-  grid-column: 1 / -1;
+/* Bloc 69/E, superseding Bloc 68/J+K's fix: a bare LeagueButtons group
+   (.family-buttons) dropped straight into .calculator-fields (City's 3
+   tools, Demo Attack Troops) got boxed into one ~12rem auto-fit cell,
+   and since .family-buttons never wraps above 900px, its later leagues
+   fell behind a horizontal scrollbar. Bloc 68 fixed that by spanning the
+   full row, isolating the league field on its own line; Bloc 69/E asks
+   for it to share the row with the tool's other fields instead. It's now
+   wrapped in its own .calculator-field (so it gets a visible "Ligue"
+   title like every other field), and its .family-buttons switches from
+   nowrap+scroll to wrap, so on desktop it wraps within its own cell
+   instead of spilling into a horizontal scrollbar (Bloc 69/F: no scroll,
+   in either direction). */
+.calculator-league-field .family-buttons {
+  flex-wrap: wrap;
+  overflow-x: visible;
 }
 .calculator-field {
   display: grid;
