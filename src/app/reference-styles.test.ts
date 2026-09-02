@@ -455,12 +455,13 @@ describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
 });
 
 describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () => {
-  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 2
-  // tiles per row on desktop, 1 on mobile like Boutique/Gemmes.
-  it("B: lays the Templiers tiles out 2 per row, dropping to 1 column on mobile, images at 6rem", () => {
+  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 3
+  // tiles per row on desktop (Bloc 68/A: 5 Templiers = 3+2), 1 on mobile
+  // like Boutique/Gemmes.
+  it("B: lays the Templiers tiles out 3 per row, dropping to 1 column on mobile, images at 6rem", () => {
     const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(grid).toBeDefined();
-    expect(grid).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(grid).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
