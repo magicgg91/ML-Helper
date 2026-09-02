@@ -685,12 +685,17 @@ describe("Bloc 69/G: Ranking mobile-only redesign", () => {
 
 // Bloc 71/B: reverses the Bloc 69 exclusion — Classement's desktop league
 // field now joins the Villes/Demo Attack pattern (Blocs 69/70): title
-// above the buttons, fixed at 50% of the row. Mobile (Bloc 69/G, tested
+// above the buttons, targeting 50% of the row. Mobile (Bloc 69/G, tested
 // above) is untouched.
 describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern", () => {
-  it("fixes .ranking-league-field at flex: 0 0 50%", () => {
+  // Review fix (PR #90): unlike Villes/Demo Attack's non-shrinking 50%
+  // (their numeric fields shrink instead, per Bloc 69/E), Ranking's 2
+  // numeric fields have fixed 9rem steppers that never shrink — so this
+  // field must stay shrinkable (flex-shrink: 1, min-width: 0) or the row
+  // overflows at desktop widths just above the 900px breakpoint.
+  it("targets 50% via flex: 0 1 50%, shrinkable (not the non-shrinking flex: 0 0 50% used elsewhere)", () => {
     expect(css).toMatch(
-      /\.ranking-league-field\s*{\s*\n\s*flex: 0 0 50%;/,
+      /\.ranking-league-field\s*{\s*\n\s*flex: 0 1 50%;\s*\n\s*min-width: 0;/,
     );
   });
 
@@ -753,12 +758,14 @@ describe("Bloc 70/A: league field is exactly 50% of the shared row", () => {
   });
 
   // Bloc 71/B reversed the Bloc 69 exclusion for Classement's desktop
-  // league field specifically — it now also gets flex: 0 0 50%, alongside
-  // Villes/Demo Attack. Player Settings and Level Up/Progression/Events
-  // still keep their own separate width decisions, untouched.
+  // league field specifically — it now also targets 50% (via its own
+  // shrinkable flex: 0 1 50%, tested in the Bloc 71/B block below; the
+  // 2 numeric fields it shares the row with, unlike Villes/Demo Attack's,
+  // never shrink). Player Settings and Level Up/Progression/Events still
+  // keep their own separate width decisions, untouched.
   it("does not touch the width of Player Settings' or Level Up/Progression/Events' league selectors", () => {
     expect(css).not.toMatch(/\.settings-grid[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
-    expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(2);
+    expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(1);
   });
 });
 

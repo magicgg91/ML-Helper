@@ -1506,10 +1506,19 @@ select {
 }
 /* Bloc 71/B: the league field rejoins the Villes/Demo Attack desktop
    pattern (Blocs 69/70) — .calculator-field's own title-above-control
-   grid (unchanged) plus a fixed 50% share of the row; the 2 numeric
-   fields (below) keep their own Bloc 64/G inline-label style. */
+   grid (unchanged) plus a 50% share of the row; the 2 numeric fields
+   (below) keep their own Bloc 64/G inline-label style.
+   Review fix (PR #90): flex-shrink must stay 1, not 0 — the numeric
+   fields' fixed 9rem steppers plus .ranking-fields' own nowrap left no
+   room for a non-shrinking 50% at desktop widths just above the 900px
+   breakpoint, overflowing the row. min-width: 0 removes the automatic
+   content-based floor that would otherwise still block shrinking, so at
+   that pinch point this field compresses and its own .family-buttons
+   (overflow-x: auto) scrolls internally instead — the same fallback the
+   row already relied on before this field had any explicit width. */
 .ranking-league-field {
-  flex: 0 0 50%;
+  flex: 0 1 50%;
+  min-width: 0;
 }
 /* Bloc 64/G: label immediately before the control, on both numeric
    fields — overrides .calculator-field's stacked grid for these 2 only. */
