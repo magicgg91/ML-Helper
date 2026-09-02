@@ -735,7 +735,11 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               label={t("fields.start-level")}
               value={start}
               min={0}
-              max={20}
+              // Bloc69/C review fix: capped one below target's own max=20
+              // (mirroring the City tool's start=199/target=200 headroom) so
+              // "start+1" committed below can never exceed target's max and
+              // silently push it to 21.
+              max={19}
               onChange={(value) => setStart(Math.floor(value))}
               // Bloc 69/C: same "must be > start" floor as the City tool
               // (Bloc 34/C) — only enforced at commit time (blur, +/-

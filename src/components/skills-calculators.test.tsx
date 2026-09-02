@@ -324,6 +324,31 @@ describe("SkillsCalculators", () => {
       fireEvent.blur(targetInput);
       expect(targetInput).toHaveValue(6);
     });
+
+    // Codex review on PR #88: committing start at the game's max level (20)
+    // pushed target to 21, one past its own max=20, since start's own max
+    // used to be 20 too. Start is now capped at 19 (mirroring the City
+    // tool's start=199/target=200 headroom) so start+1 can never exceed
+    // target's max.
+    it("never pushes target past its own max=20, even when start is committed at its own max", () => {
+      renderWithIntl(
+        <SkillsCalculators
+          combatRows={combatRows}
+          expeditionRows={expeditionRows}
+        />,
+      );
+      fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+      const startInput = screen.getByRole("spinbutton", {
+        name: "Niveau de départ",
+      });
+      const targetInput = screen.getByRole("spinbutton", {
+        name: "Niveau cible",
+      });
+      fireEvent.change(startInput, { target: { value: "25" } });
+      fireEvent.blur(startInput);
+      expect(startInput).toHaveValue(19);
+      expect(targetInput).toHaveValue(20);
+    });
   });
   it("Bloc55/A: shows the Templars tool->reference banner after the tool's own content", () => {
     renderWithIntl(
