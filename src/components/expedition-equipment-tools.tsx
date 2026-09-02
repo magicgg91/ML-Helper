@@ -106,7 +106,10 @@ function FilterButtons({
 }) {
   const t = useTranslations("expedition-equipment-simulator");
   return (
-    <div className="family-buttons" aria-label={t("filters.label")}>
+    <div
+      className="family-buttons expedition-sim-family-buttons"
+      aria-label={t("filters.label")}
+    >
       {expeditionFilterOrder.map((key) => {
         const color = filterButtonColor(key);
         return (

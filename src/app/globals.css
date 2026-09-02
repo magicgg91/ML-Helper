@@ -1082,6 +1082,21 @@ select {
   font-size: 0.82rem;
 }
 
+/* Bloc 72/A, mobile only: the "Gemme X" label moves above the 3 selects
+   instead of sharing the row with them, freeing the full row width for
+   Compétence/Étoiles/Ligue (too cramped otherwise). Desktop is untouched.
+   The label is the row's first DOM child, so spanning it across all 3
+   columns pushes it onto its own row; the 3 selects then auto-flow into
+   an implicit 2nd row without needing explicit row placement. */
+@media (max-width: 900px) {
+  .stuff-gem-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .stuff-gem-row-label {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Bloc 31/E.4 + Bloc 33/I: both simulators' global summary always shows
    all 10 skills, laid out as a fixed 5-column x 2-row grid on desktop so
    they fill the available width instead of an arbitrary auto-fit count. */
@@ -1590,6 +1605,59 @@ select {
 .transfer-action-active {
   box-shadow: 0 0 0 3px
     color-mix(in srgb, var(--accent-strong) 45%, transparent);
+}
+/* Bloc 72/C, mobile only: the 4 family buttons stay on one full-width
+   line (min-width: max-content so their own text never truncates, same
+   technique as Bloc 69/E) and the transfer button — normally pushed
+   right by margin-left: auto, no longer meaningful once everything is
+   full width — gets its own 2nd line via flex-basis: 100%, which forces
+   a wrap onto a line of its own inside this already-wrapping row. */
+@media (max-width: 900px) {
+  .stuff-family-buttons button:not(.transfer-action) {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+  .stuff-family-buttons .transfer-action {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+}
+/* Bloc 72/B, mobile only: Gems' Optimisation mode's 4 family buttons
+   (Attaque/Défense/Or/Vitesse) stay on one full-width line instead of
+   the generic .family-buttons mobile wrap — same equal-width, no-
+   truncation technique as Bloc 72/C above. */
+@media (max-width: 900px) {
+  .gem-optimize-family-buttons button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
+/* Bloc 72/D, mobile only: the Expedition Equipment Simulator's 5-item
+   filter (Personnalisé/Or/Équipement/Consommables/Troupes), split 3+2
+   across 2 rows full width — same 6-column-track technique as the
+   Combat/Expedition referentiel's 5-item rarity filter (Bloc 68/M),
+   mirrored (3 then 2, not 2 then 3) since expeditionFilterOrder's DOM
+   order groups differently than rarityOrder's did. */
+@media (max-width: 900px) {
+  .expedition-sim-family-buttons {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .expedition-sim-family-buttons button {
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+  .expedition-sim-family-buttons button:nth-child(1),
+  .expedition-sim-family-buttons button:nth-child(2),
+  .expedition-sim-family-buttons button:nth-child(3) {
+    grid-column: span 2;
+  }
+  .expedition-sim-family-buttons button:nth-child(4),
+  .expedition-sim-family-buttons button:nth-child(5) {
+    grid-column: span 3;
+  }
 }
 .gem-total-slots {
   max-width: 18rem;

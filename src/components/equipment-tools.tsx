@@ -507,7 +507,7 @@ export function StuffSimulator({
         />
       </section>
       <div
-        className="family-buttons"
+        className="family-buttons stuff-family-buttons"
         role="group"
         aria-label={t("family-filter-label")}
       >

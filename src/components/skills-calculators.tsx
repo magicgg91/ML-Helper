@@ -340,7 +340,10 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
     <>
       <section className="calculator-card">
         <h3>{t("optimization.title")}</h3>
-        <div className="family-buttons" aria-label={t("family-label")}>
+        <div
+          className="family-buttons gem-optimize-family-buttons"
+          aria-label={t("family-label")}
+        >
           {(["attack", "defense", "gold", "speed"] as GemFamily[]).map(
             (key) => {
               const color = filterButtonColor(key);

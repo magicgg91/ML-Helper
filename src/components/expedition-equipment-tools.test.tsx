@@ -295,4 +295,18 @@ describe("ExpeditionEquipmentSimulator", () => {
     // Not nested inside the grid+panel card — a direct sibling of it.
     expect(filterRow.closest(".stuff-block")).toBeNull();
   });
+
+  it("gives the filter row a dedicated class and keeps the 5 filters in the 3+2 mobile-grid order (Bloc 72/D)", () => {
+    const { container } = renderTool();
+    const filterRow = container.querySelector(".family-buttons")!;
+    expect(filterRow).toHaveClass("expedition-sim-family-buttons");
+    const buttons = within(filterRow as HTMLElement).getAllByRole("button");
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      "Personnalisé",
+      "Or",
+      "Équipement combat",
+      "Consommables",
+      "Troupes",
+    ]);
+  });
 });
