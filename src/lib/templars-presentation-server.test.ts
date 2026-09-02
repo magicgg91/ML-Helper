@@ -15,8 +15,6 @@ const validRow: TemplarPresentationRow = {
   name_en: "Attack",
   description_fr: "Description",
   description_en: "Description EN",
-  temple_base: "20",
-  bonus: "0.25",
 };
 
 describe("normalizeStoredTemplarPresentation (Bloc 66/B)", () => {
@@ -53,5 +51,19 @@ describe("normalizeStoredTemplarPresentation (Bloc 66/B)", () => {
       unknown: { ...validRow },
     });
     expect(Object.keys(result).sort()).toEqual([...templarKeys].sort());
+  });
+
+  // Codex review (PR #85): temple_base/bonus used to be part of this row
+  // shape and could already be sitting in the database from before that
+  // fix — normalizing must drop them rather than resurrecting a second,
+  // driftable copy of the real templeBase/templarRates constants.
+  it("Codex review (PR#85): strips a legacy stored temple_base/bonus, never carrying them through", () => {
+    const stored = {
+      striker: { ...validRow, temple_base: "999", bonus: "999" },
+    };
+    const result = normalizeStoredTemplarPresentation(stored);
+    expect(result.striker).toEqual(validRow);
+    expect(result.striker).not.toHaveProperty("temple_base");
+    expect(result.striker).not.toHaveProperty("bonus");
   });
 });

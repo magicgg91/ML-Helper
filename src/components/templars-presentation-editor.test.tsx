@@ -63,6 +63,22 @@ describe("TemplarsPresentationEditor", () => {
     expect(screen.getByLabelText("Bonus (%) 5")).toHaveValue(1);
   });
 
+  // Codex review (PR #85): a separately-editable copy of these 2 values
+  // could drift from the templeBase/templarRates constants the real
+  // calculators read — they're shown for visibility only, computed
+  // straight from those constants, never editable here.
+  it("Codex review (PR#85): Base Temple/Bonus are read-only, computed from the real game constants", () => {
+    render(
+      <TemplarsPresentationEditor
+        initialCatalog={defaultTemplarPresentationCatalog}
+      />,
+    );
+    expect(screen.getByLabelText("Base Temple 5")).toHaveAttribute(
+      "readonly",
+    );
+    expect(screen.getByLabelText("Bonus (%) 5")).toHaveAttribute("readonly");
+  });
+
   // The locale toggle switches which language's Nom/Description columns
   // are being edited, same as Boutique's own admin editor.
   it("switches the Nom/Description columns to English via the locale selector", () => {
@@ -104,6 +120,11 @@ describe("TemplarsPresentationEditor", () => {
       "rusher",
     ]);
     expect(body.striker.name_fr).toBe("Attaque modifiée");
+    // Codex review (PR #85): the read-only Base Temple/Bonus columns are
+    // never part of the saved payload — there is nothing to drift out of
+    // sync with the real templeBase/templarRates constants.
+    expect(body.striker).not.toHaveProperty("temple_base");
+    expect(body.striker).not.toHaveProperty("bonus");
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Référentiel enregistré.",
     );

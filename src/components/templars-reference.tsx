@@ -10,7 +10,8 @@ import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
 import { referenceCatalog } from "../lib/reference-catalog";
 import { skillColor } from "../lib/game-images";
-import { templarKeys, type TemplarKey } from "../lib/player-settings";
+import { templarKeys, templeBase, type TemplarKey } from "../lib/player-settings";
+import { templarRates } from "../lib/gems-templars";
 import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
@@ -58,11 +59,16 @@ function TemplarPresentationTile({
         <h3 className="templars-tile-title">
           {t("presentation.tile-title", { name })}
         </h3>
+        {/* Codex review (PR #85): Base Temple/Bonus are read straight from
+            the real game constants (templeBase/templarRates), the exact
+            same source player-settings-panel.tsx/skills-calculators.tsx
+            use — never a separately admin-editable copy that could show a
+            different number than what the calculators actually apply. */}
         <p className="templars-tile-stat">
-          {t("presentation.temple-base-label")} : {row.temple_base}%
+          {t("presentation.temple-base-label")} : {templeBase[templarKey]}%
         </p>
         <p className="templars-tile-stat">
-          {t("presentation.bonus-label")} : {row.bonus}%
+          {t("presentation.bonus-label")} : {templarRates[templarKey]}%
         </p>
       </div>
     </article>

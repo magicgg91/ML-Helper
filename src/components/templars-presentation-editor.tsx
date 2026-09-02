@@ -12,7 +12,8 @@ import {
   EditorialLocaleSelect,
   type EditorialLocale,
 } from "./editorial-locale-select";
-import { templarKeys } from "../lib/player-settings";
+import { templarKeys, templeBase } from "../lib/player-settings";
+import { templarRates } from "../lib/gems-templars";
 import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
@@ -21,6 +22,16 @@ import type {
 function fieldLocale(locale: EditorialLocale): "fr" | "en" {
   return locale === "fr" ? "fr" : "en";
 }
+
+// Base Temple/Bonus ride along in the table for visibility (Codex review,
+// PR #85: showing them here is still useful) but are read-only, computed
+// straight from templeBase/templarRates — never sent back to the server,
+// never a second source an admin could edit out of sync with the real
+// calculators. See templars-presentation.ts's own comment for why.
+type DisplayRow = TemplarPresentationRow & {
+  temple_base: string;
+  bonus: string;
+};
 
 // Bloc 66/B: same admin pattern as Boutique (a simple table, not tiles),
 // but with no add/move/remove controls — the 5 Templiers are a fixed,
@@ -46,7 +57,7 @@ export function TemplarsPresentationEditor({
   const nameKey = lang === "fr" ? "name_fr" : "name_en";
   const descriptionKey = lang === "fr" ? "description_fr" : "description_en";
 
-  const columns: EditableColumn<TemplarPresentationRow>[] = [
+  const columns: EditableColumn<DisplayRow>[] = [
     { key: "image", label: t("templars-columns.image") },
     { key: nameKey, label: t("templars-columns.name"), required: true },
     {
@@ -58,25 +69,40 @@ export function TemplarsPresentationEditor({
       key: "temple_base",
       label: t("templars-columns.temple-base"),
       type: "number",
-      min: 0,
+      readOnly: true,
       narrow: true,
     },
     {
       key: "bonus",
       label: t("templars-columns.bonus"),
       type: "number",
-      min: 0,
-      step: 0.01,
+      readOnly: true,
       narrow: true,
     },
-  ] as EditableColumn<TemplarPresentationRow>[];
+  ] as EditableColumn<DisplayRow>[];
 
-  const rows = templarKeys.map((key) => catalog[key]);
+  const rows: DisplayRow[] = templarKeys.map((key) => ({
+    ...catalog[key],
+    temple_base: String(templeBase[key]),
+    bonus: String(templarRates[key]),
+  }));
 
-  function setRows(nextRows: TemplarPresentationRow[]) {
+  function setRows(nextRows: DisplayRow[]) {
     setCatalog(
       Object.fromEntries(
-        templarKeys.map((key, index) => [key, nextRows[index]]),
+        templarKeys.map((key, index) => {
+          const row = nextRows[index];
+          return [
+            key,
+            {
+              image: row.image,
+              name_fr: row.name_fr,
+              name_en: row.name_en,
+              description_fr: row.description_fr,
+              description_en: row.description_en,
+            },
+          ];
+        }),
       ) as TemplarPresentationCatalog,
     );
     setStatus("");
@@ -87,14 +113,10 @@ export function TemplarsPresentationEditor({
     const next: FieldErrors = {};
     rows.forEach((row, rowIndex) =>
       columns.forEach((column) => {
+        if (column.readOnly) return;
         const value = row[column.key];
         const key = errorKey(rowIndex, column.key);
         if (column.required && !value.trim()) next[key] = t("required");
-        if (column.type === "number" && value !== "") {
-          const parsed = Number(value);
-          if (!Number.isFinite(parsed) || parsed < 0)
-            next[key] = t("minimum", { min: 0 });
-        }
       }),
     );
     setErrors(next);

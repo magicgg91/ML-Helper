@@ -171,7 +171,7 @@ test("tool routes alone expose persistent player settings", async ({
     page.getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", "/guides/guide-visible");
   await expect(
-    page.getByRole("link", { name: /Coût des Templiers/ }),
+    page.getByRole("link", { name: /Templiers/ }),
   ).toHaveAttribute("href", "/referentiels/templars");
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
@@ -632,7 +632,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
 
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(
-    page.getByRole("link", { name: "Coût des Templiers" }),
+    page.getByRole("link", { name: /Templiers$/ }),
   ).toHaveAttribute("href", "/referentiels/templars");
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
