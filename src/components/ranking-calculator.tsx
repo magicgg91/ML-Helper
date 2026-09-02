@@ -57,6 +57,7 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
               label={t("fields.league")}
               value={league}
               onChange={setLeague}
+              className="league-buttons-grid"
             />
           </div>
           <label className="calculator-field ranking-inline-field ranking-number-field">

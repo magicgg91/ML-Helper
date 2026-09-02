@@ -1455,9 +1455,27 @@ select {
 .ranking-number-field .number-stepper {
   width: 9rem;
 }
+/* Bloc 69/G, mobile only: desktop's inline-label-before-control row (Bloc
+   64/G) is replaced by a title-above-control stack — each of the 3
+   sections (League/percentage/rank) becomes its own full-width block,
+   the league buttons form a 2-row/3-column grid (.league-buttons-grid,
+   same as Events/Progression's), and the 2 numeric fields stretch full
+   width instead of a fixed 9rem. Desktop is completely unaffected. */
 @media (max-width: 900px) {
   .ranking-fields {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ranking-inline-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+  .ranking-number-field {
+    flex: 1 1 auto;
+  }
+  .ranking-number-field .number-stepper {
+    width: 100%;
   }
 }
 /* Bloc 33/H: the transfer button shares the family buttons' size but sits

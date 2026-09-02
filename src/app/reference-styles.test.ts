@@ -642,3 +642,37 @@ describe("Bloc 69/A: banner buttons center their content vertically", () => {
     expect(rule).toMatch(/justify-content: center;/);
   });
 });
+
+// Bloc 69/G: the Ranking tool's desktop layout (Bloc 64/G, inline label
+// before each control, single row) stays untouched — only a mobile-only
+// override replaces it with a title-above-control stack, 2x3 league
+// buttons, and full-width numeric fields.
+describe("Bloc 69/G: Ranking mobile-only redesign", () => {
+  it("stacks each ranking field's label above its control on mobile only, leaving the desktop inline-label rule untouched", () => {
+    const desktopRule = css.match(/\.ranking-inline-field\s*{([\s\S]*?)\n}/)?.[1];
+    expect(desktopRule).toBeDefined();
+    expect(desktopRule).toMatch(/align-items: center;/);
+    expect(desktopRule).not.toMatch(/flex-direction: column;/);
+    // Anchored to the specific @media block containing .ranking-fields —
+    // there are many "@media (max-width: 900px) {" blocks in this file, so
+    // an unanchored match grabs the wrong one as soon as another Bloc
+    // inserts its own block earlier (the exact bug fixed for a different
+    // rule in responsive-styles.test.ts).
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.ranking-fields\s*{([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).toMatch(
+      /\.ranking-fields\s*{\s*\n\s*flex-direction: column;\s*\n\s*align-items: stretch;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.ranking-inline-field\s*{\s*\n\s*flex-direction: column;\s*\n\s*align-items: stretch;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.ranking-number-field\s*{\s*\n\s*flex: 1 1 auto;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.ranking-number-field \.number-stepper\s*{\s*\n\s*width: 100%;/,
+    );
+  });
+});
