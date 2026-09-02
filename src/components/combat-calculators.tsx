@@ -34,7 +34,13 @@ function rangeLabel(minimum: number, maximum: number | null) {
   return `${formatGameNumber(minimum)} – ${formatGameNumber(maximum)}`;
 }
 
-function XpGainRate({ tiers }: { tiers: XpTier[] }) {
+function XpGainRate({
+  tiers,
+  levelUpReferenceActive,
+}: {
+  tiers: XpTier[];
+  levelUpReferenceActive: boolean;
+}) {
   const t = useTranslations("xp-gain-rate");
   const references = useTranslations("references");
   const crossReference = useTranslations("crossReference");
@@ -113,14 +119,20 @@ function XpGainRate({ tiers }: { tiers: XpTier[] }) {
       {/* Bloc 67: the missing tool->reference direction, added the same
           way Combat/Expedition Equipment/Gemmes/Templiers already have it —
           the reference already links here (?open=xp), but nothing linked
-          back until now. */}
-      <CrossReferenceLink
-        href={referenceHref("level-up")}
-        title={references("catalog.level-up")}
-        image={levelUpReference.image}
-        fallbackImage={levelUpReference.fallbackImage}
-        label={crossReference("toReference")}
-      />
+          back until now. Bloc 68 review: Progression's own active flag is
+          independent from this xp-gain-rate tool's (Bloc 33/G) — hidden
+          when an admin disables the reference on its own, same as the
+          catalog/search paths already do, so the link never sends visitors
+          to a page that only shows the "unavailable" message. */}
+      {levelUpReferenceActive && (
+        <CrossReferenceLink
+          href={referenceHref("level-up")}
+          title={references("catalog.level-up")}
+          image={levelUpReference.image}
+          fallbackImage={levelUpReference.fallbackImage}
+          label={crossReference("toReference")}
+        />
+      )}
     </div>
   );
 }
@@ -195,12 +207,17 @@ export function CombatCalculators({
   // its troop-leveling data) instead of always defaulting to whichever tab
   // is firstAvailable.
   initialTool,
+  // Bloc 68 review: the Progression reference's own independent active
+  // flag (Bloc 33/G) — distinct from `availability.xp`, which is the
+  // xp-gain-rate tool's own flag.
+  levelUpReferenceActive = true,
 }: {
   cityParameters: CityParameters;
   xpTiers?: XpTier[];
   demoPercentages?: Record<League, number>;
   availability?: { xp: boolean; demo: boolean };
   initialTool?: "xp" | "demo";
+  levelUpReferenceActive?: boolean;
 }) {
   const tools = useTranslations("tools"),
     xp = useTranslations("xp-gain-rate"),
@@ -273,7 +290,10 @@ export function CombatCalculators({
         </button>
       </nav>
       {active === "xp" ? (
-        <XpGainRate tiers={xpTiers} />
+        <XpGainRate
+          tiers={xpTiers}
+          levelUpReferenceActive={levelUpReferenceActive}
+        />
       ) : active === "demo" ? (
         <DemoAttackTroops
           cityParameters={cityParameters}

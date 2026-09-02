@@ -69,6 +69,24 @@ describe("CombatCalculators", () => {
     expect(link).toHaveAttribute("href", "/referentiels/level-up");
   });
 
+  // Bloc 68 review (Codex): Progression's own independent active flag
+  // (Bloc 33/G) can be off while the xp-gain-rate tool itself stays
+  // available — the link must not send visitors to a reference page that
+  // only shows the "unavailable" message.
+  it("Bloc68 review: hides the cross-link to Progression when its reference is independently disabled", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CombatCalculators
+          cityParameters={defaultCityParameters}
+          levelUpReferenceActive={false}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.queryByRole("link", { name: /Progression$/ }),
+    ).not.toBeInTheDocument();
+  });
+
   // Bloc 53/F: the Progression reference's cross-link now passes ?open=xp,
   // forwarded here as initialTool — must select that tab directly instead
   // of always defaulting to whichever tab is firstAvailable.

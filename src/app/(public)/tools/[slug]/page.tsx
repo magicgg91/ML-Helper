@@ -73,6 +73,7 @@ export default async function ToolPage({
             demo: active["demo-attack-troops"],
           }}
           initialTool={open === "xp" || open === "demo" ? open : undefined}
+          levelUpReferenceActive={active["level-up"]}
         />
       </main>
     );

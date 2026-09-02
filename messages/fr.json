@@ -770,7 +770,7 @@
       },
       "reference-combat": "Éditer les Équipements de Combat",
       "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Level Up",
+      "reference-level-up": "Éditer Progression",
       "reference-consommables": "Éditer la Boutique",
       "references": {
         "combat-equipment": "Équipements de Combat",
@@ -856,8 +856,7 @@
       "templar-parameters": "Paramètres de coût des Templiers",
       "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
       "demo-attack-troops-editor": "Pourcentages d’attaque démo",
-      "gems-editor": "Paramètres des Gemmes",
-      "reference-level-up": "Éditer Progression"
+      "gems-editor": "Paramètres des Gemmes"
     },
     "ranking": {
       "title": "Classement",
