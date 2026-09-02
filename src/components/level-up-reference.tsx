@@ -102,6 +102,7 @@ export function LevelUpReference({
             setLeague(value);
             setPage(0);
           }}
+          className="league-buttons-grid"
         />
       </section>
       {!league ? (

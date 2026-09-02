@@ -30,6 +30,19 @@ describe("LevelUpReference", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
   });
 
+  // Bloc 68/N: the league buttons opt into the shared mobile 3-column
+  // grid (.league-buttons-grid) instead of the default wrap.
+  it("Bloc68/N: gives the league buttons the mobile 3-column grid class", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("group", { name: "Ligue" })).toHaveClass(
+      "league-buttons-grid",
+    );
+  });
+
   it.each(["bronze", "gold", "platinum", "diamond", "legend"])(
     "renders the confirmed %s table",
     (league) => {

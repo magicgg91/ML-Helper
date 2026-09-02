@@ -321,13 +321,25 @@ test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   await page.getByRole("tab", { name: "Je suis la cible" }).click();
   await expect(page.getByTestId("xp-range-200")).toHaveText("< 500k");
   await page.getByRole("tab", { name: "Troupes en attaque démo" }).click();
+  // Bloc 68/J: the league <select> is replaced by single-select buttons.
+  const demoLeagueGroup = page.getByRole("group", {
+    name: "Ligue de l’attaquant",
+  });
+  const demoLeagueLabels: Record<string, string> = {
+    bronze: "Bronze",
+    silver: "Argent",
+    gold: "Or",
+    diamond: "Diamant",
+  };
   for (const [league, expected] of [
     ["bronze", "70"],
     ["silver", "35"],
     ["gold", "28"],
     ["diamond", "21"],
   ]) {
-    await page.getByLabel("Ligue de l’attaquant").selectOption(league);
+    await demoLeagueGroup
+      .getByRole("button", { name: demoLeagueLabels[league] })
+      .click();
     await expect(page.getByTestId("demo-troops")).toHaveText(expected);
   }
 });
@@ -381,11 +393,14 @@ test("the Cities category exposes its three working calculators", async ({
     "aria-current",
     "page",
   );
-  const cityLeague = page
+  // Bloc 68/K: the league <select> is replaced by single-select buttons.
+  const cityLeagueGroup = page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" });
-  await expect(cityLeague).toHaveValue("");
-  await cityLeague.selectOption("legend");
+    .getByRole("group", { name: "Ligue" });
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Légende" }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await cityLeagueGroup.getByRole("button", { name: "Légende" }).click();
   // Bloc 33/C: "city-cost-one" was merged into the single "Total" block's
   // "city-cost-total" testid (cityCount defaults to 1, same figure).
   await expect(page.getByTestId("city-cost-total")).toHaveText("10 or");
@@ -412,16 +427,18 @@ test("the Cities category exposes its three working calculators", async ({
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
   await page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" })
-    .selectOption("legend");
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Légende" })
+    .click();
   await page.getByRole("spinbutton", { name: "Or disponible" }).fill("0.044");
   await expect(page.getByTestId("max-level-result")).toHaveText("4");
 
   await page.getByRole("tab", { name: "Production", exact: true }).click();
   await page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" })
-    .selectOption("legend");
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Légende" })
+    .click();
   await expect(page.getByText("Or — Production totale")).toBeVisible();
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
@@ -517,23 +534,34 @@ test("dependent league selectors sync once and preserve manual choices", async (
   const playerLeague = page
     .locator(".player-settings")
     .getByRole("combobox", { name: "Ligue" });
-  const cityLeague = page
+  // Bloc 68/K: the city calculators' league field is a button group, not
+  // a <select> — assert via aria-pressed instead of the field's value.
+  const cityLeagueGroup = page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" });
+    .getByRole("group", { name: "Ligue" });
 
   await expect(playerLeague).toHaveValue("");
-  await expect(cityLeague).toHaveValue("");
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Diamant" }),
+  ).toHaveAttribute("aria-pressed", "false");
   await playerLeague.selectOption("diamond");
-  await expect(cityLeague).toHaveValue("diamond");
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Diamant" }),
+  ).toHaveAttribute("aria-pressed", "true");
 
-  await cityLeague.selectOption("gold");
+  await cityLeagueGroup.getByRole("button", { name: "Or" }).click();
   await playerLeague.selectOption("legend");
-  await expect(cityLeague).toHaveValue("gold");
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Or" }),
+  ).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
   await expect(
-    page.locator(".city-calculators").getByRole("combobox", { name: "Ligue" }),
-  ).toHaveValue("legend");
+    page
+      .locator(".city-calculators")
+      .getByRole("group", { name: "Ligue" })
+      .getByRole("button", { name: "Légende" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("Ranking converts position and percentage into league ranges", async ({

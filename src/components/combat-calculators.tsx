@@ -13,7 +13,7 @@ import {
   type XpTier,
 } from "../lib/combat-calculators";
 import type { League } from "../lib/player-settings";
-import { LeagueSelect } from "./league-select";
+import { LeagueButtons } from "./league-select";
 import { NumberStepper } from "./number-stepper";
 import { TabLabel } from "./tab-label";
 import { useSyncedLeague } from "./use-synced-league";
@@ -154,7 +154,7 @@ function DemoAttackTroops({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueSelect
+          <LeagueButtons
             label={t("fields.league")}
             value={league}
             onChange={setLeague}

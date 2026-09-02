@@ -17,7 +17,7 @@ import {
   type CityParameters,
 } from "../lib/city-parameters";
 import { NumberStepper } from "./number-stepper";
-import { LeagueSelect } from "./league-select";
+import { LeagueButtons } from "./league-select";
 import { TabLabel } from "./tab-label";
 import { usePlayerSettings } from "./use-player-settings";
 import { useSyncedLeague } from "./use-synced-league";
@@ -136,7 +136,7 @@ function CostCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueSelect
+          <LeagueButtons
             label={t("fields.league")}
             value={league}
             onChange={setLeague}
@@ -314,7 +314,7 @@ function MaxLevelCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueSelect
+          <LeagueButtons
             label={t("fields.league")}
             value={league}
             onChange={setLeague}
@@ -479,7 +479,7 @@ function ProductionCalculator({
     <div className="calculator-stack">
       <section className="calculator-card">
         <div className="calculator-fields">
-          <LeagueSelect
+          <LeagueButtons
             label={t("fields.league")}
             value={league}
             onChange={setLeague}

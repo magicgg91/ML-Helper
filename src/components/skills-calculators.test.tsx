@@ -329,4 +329,28 @@ describe("SkillsCalculators", () => {
     expect(screen.getAllByText("10k").length).toBeGreaterThan(0);
     expect(screen.queryByText("14k")).not.toBeInTheDocument();
   });
+
+  // Bloc 68 non-regression: the Gems league selectors are explicitly
+  // excluded from the select->buttons conversion (points J/K) and must
+  // stay plain <select> elements — GemOptimization's per-row league field
+  // and GemBudget's league field.
+  it("Bloc68: keeps the Gems league fields as plain <select> elements, not buttons", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    const rowLeague = screen.getByRole("combobox", { name: "Ligue ligne 1" });
+    expect(rowLeague.tagName).toBe("SELECT");
+
+    fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    const budgetLeague = screen.getByRole("combobox", { name: "Ligue" });
+    expect(budgetLeague.tagName).toBe("SELECT");
+
+    expect(
+      screen.queryByRole("group", { name: /ligue/i }),
+    ).not.toBeInTheDocument();
+  });
 });
