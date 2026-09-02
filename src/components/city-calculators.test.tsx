@@ -119,9 +119,14 @@ describe("CityCalculators", () => {
       const group = screen.getByRole("group", { name: "Ligue" });
       for (const button of within(group).getAllByRole("button"))
         expect(button).toHaveAttribute("aria-pressed", "false");
-      expect(
-        group.closest(".calculator-fields")?.firstElementChild,
-      ).toBe(group);
+      // Bloc 69/E: the league group is now wrapped in its own
+      // .calculator-league-field (for the visible "Ligue" title) instead
+      // of being a bare direct child — that wrapper is still first.
+      const wrapper = group.closest(".calculator-fields-inline")
+        ?.firstElementChild;
+      expect(wrapper).toContainElement(group);
+      expect(wrapper).toHaveTextContent("Ligue");
+      expect(group).toHaveClass("league-buttons-grid");
       expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
     }
   });

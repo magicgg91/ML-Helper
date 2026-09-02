@@ -121,4 +121,21 @@ describe("CombatCalculators", () => {
     expect(screen.getByTestId("demo-troops")).toHaveTextContent("70");
     expect(screen.getByTestId("demo-troops")).toHaveClass("emerald");
   });
+
+  // Bloc 69/E: a visible "Ligue de l’attaquant" title above the buttons
+  // (previously the field carried no visible label at all), sharing the
+  // row with the tool's other field instead of being isolated on its own
+  // (Bloc 68/J+K), and the mobile 2x3 grid class.
+  it("Bloc69/E: gives the league field a visible title and the mobile 2x3 grid class", () => {
+    view();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    );
+    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
+    const wrapper = league.closest(".calculator-fields-inline")
+      ?.firstElementChild;
+    expect(wrapper).toContainElement(league);
+    expect(wrapper).toHaveTextContent("Ligue de l’attaquant");
+    expect(league).toHaveClass("league-buttons-grid");
+  });
 });

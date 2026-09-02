@@ -515,6 +515,16 @@ main.public-main.contact-page {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
+/* Bloc 69/D, desktop: 4 equal columns instead of the base .settings-grid's
+   auto-fit — League (:first-child) still spans the full row on its own,
+   and Level/VP then fall into the first 2 of the 4 columns, i.e. exactly
+   25% of the row's width each, leaving the other 2 columns empty. */
+.settings-grid-primary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.settings-grid-primary > :first-child {
+  grid-column: 1 / -1;
+}
 /* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
    skills, skill points, templars, clan temple) goes from 1 to 2 columns
    (I). Within .settings-grid-primary specifically, its first child — the
@@ -532,9 +542,11 @@ main.public-main.contact-page {
   /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
      its unit select, and shrink that select, so the two NumberSteppers
      (Level's, which has no unit select, and VP's) end up close to the
-     same width instead of VP's looking squeezed. */
+     same width instead of VP's looking squeezed. Bloc 69/D: Level's own
+     share is reduced a further 10% (5fr -> 4.5fr) and handed to VP
+     (7fr -> 7.5fr), keeping the 12fr total. */
   .settings-grid-primary {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
   }
   .settings-grid-primary .unit-input {
     grid-template-columns: minmax(0, 1fr) 3.1rem;
@@ -546,6 +558,18 @@ main.public-main.contact-page {
 .settings-grid label {
   display: grid;
   gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+/* Bloc 69/D: same label look as the Level/VP fields (.settings-grid
+   label above), for the league field's own title — a plain <div>/<span>
+   since LeagueButtons renders a role="group" div, not a <label>. */
+.settings-grid-league-field {
+  display: grid;
+  gap: 0.4rem;
+}
+.settings-grid-league-label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -698,15 +722,51 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 0.8rem;
 }
-/* Bloc 68/J+K fix: a LeagueButtons group (.family-buttons) dropped straight
-   into .calculator-fields (City's 3 tools, Demo Attack Troops) got boxed
-   into one ~12rem auto-fit cell, and since .family-buttons never wraps
-   above 900px, its later leagues fell behind a horizontal scrollbar
-   instead of staying visible like the select it replaced. Span the full
-   row instead, so all 6 buttons fit on one line — same fix Ranking's own
-   dedicated .ranking-fields layout already used pre-Bloc 68. */
-.calculator-fields > .family-buttons {
-  grid-column: 1 / -1;
+/* Bloc 69/E, superseding Bloc 68/J+K's fix: a bare LeagueButtons group
+   (.family-buttons) dropped straight into .calculator-fields (City's 3
+   tools, Demo Attack Troops) got boxed into one ~12rem auto-fit cell,
+   and since .family-buttons never wraps above 900px, its later leagues
+   fell behind a horizontal scrollbar. Bloc 68 fixed that by spanning the
+   full row, isolating the league field on its own line; Bloc 69/E asks
+   for it to share the row with the tool's other fields instead — same
+   single-row, equal-width-buttons layout as Ranking's own dedicated
+   .ranking-fields (Bloc 61/B), not the generic auto-fit grid, which
+   would either box the buttons into a too-narrow column (horizontal
+   scroll) or, wrapped, stretch the whole row taller than its sibling
+   fields need. A dedicated class instead of .calculator-fields itself,
+   since that one is still the plain grid for Gems/results/admin. */
+.calculator-fields-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+/* The numeric fields shrink to a compact floor (large enough for a few
+   digits + the +/- buttons) and the league field grows twice as fast, so
+   the button area gets first claim on any extra row width. */
+.calculator-fields-inline .calculator-field:not(.calculator-league-field) {
+  flex: 1 1 0;
+  min-width: 6rem;
+}
+.calculator-fields-inline .calculator-league-field {
+  flex: 2 1 auto;
+}
+.calculator-fields-inline .family-buttons {
+  margin: 0;
+}
+/* min-width: max-content (not 0) is the point — flex-basis: 0 alone lets
+   a button shrink past its own label, truncating it; pinning the floor
+   to the label's own natural width keeps every button's text whole while
+   still letting flex-grow: 1 distribute any leftover space equally. */
+.calculator-fields-inline .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+@media (max-width: 900px) {
+  .calculator-fields-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 .calculator-field {
   display: grid;
@@ -1431,9 +1491,27 @@ select {
 .ranking-number-field .number-stepper {
   width: 9rem;
 }
+/* Bloc 69/G, mobile only: desktop's inline-label-before-control row (Bloc
+   64/G) is replaced by a title-above-control stack — each of the 3
+   sections (League/percentage/rank) becomes its own full-width block,
+   the league buttons form a 2-row/3-column grid (.league-buttons-grid,
+   same as Events/Progression's), and the 2 numeric fields stretch full
+   width instead of a fixed 9rem. Desktop is completely unaffected. */
 @media (max-width: 900px) {
   .ranking-fields {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ranking-inline-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+  .ranking-number-field {
+    flex: 1 1 auto;
+  }
+  .ranking-number-field .number-stepper {
+    width: 100%;
   }
 }
 /* Bloc 33/H: the transfer button shares the family buttons' size but sits
@@ -1977,6 +2055,9 @@ button:disabled,
   margin-bottom: 1.5rem;
 }
 .category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
   min-width: 100px;
   padding: 9px 14px;

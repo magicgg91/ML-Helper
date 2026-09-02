@@ -109,6 +109,14 @@ describe("RankingCalculator", () => {
     expect(numberFields).toHaveLength(2);
   });
 
+  // Bloc 69/G: mobile-only redesign, desktop unaffected — the league group
+  // gets the same .league-buttons-grid class as Events/Progression's, so it
+  // forms a 2-row/3-column grid there instead of desktop's single row.
+  it("Bloc69/G: gives the league button group the .league-buttons-grid class for the mobile 2x3 grid", () => {
+    renderCalculator();
+    expect(leagueGroup()).toHaveClass("league-buttons-grid");
+  });
+
   it("shows the exact-position indicator and alternates labels above/below", () => {
     const { container } = renderCalculator();
     selectLeague("Diamant");
