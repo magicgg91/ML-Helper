@@ -153,7 +153,7 @@ function DemoAttackTroops({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div className="calculator-fields">
+        <div className="calculator-fields-inline">
           <div className="calculator-field calculator-league-field">
             {t("fields.league")}
             <LeagueButtons

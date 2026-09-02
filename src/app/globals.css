@@ -728,15 +728,45 @@ select {
    and since .family-buttons never wraps above 900px, its later leagues
    fell behind a horizontal scrollbar. Bloc 68 fixed that by spanning the
    full row, isolating the league field on its own line; Bloc 69/E asks
-   for it to share the row with the tool's other fields instead. It's now
-   wrapped in its own .calculator-field (so it gets a visible "Ligue"
-   title like every other field), and its .family-buttons switches from
-   nowrap+scroll to wrap, so on desktop it wraps within its own cell
-   instead of spilling into a horizontal scrollbar (Bloc 69/F: no scroll,
-   in either direction). */
-.calculator-league-field .family-buttons {
-  flex-wrap: wrap;
-  overflow-x: visible;
+   for it to share the row with the tool's other fields instead — same
+   single-row, equal-width-buttons layout as Ranking's own dedicated
+   .ranking-fields (Bloc 61/B), not the generic auto-fit grid, which
+   would either box the buttons into a too-narrow column (horizontal
+   scroll) or, wrapped, stretch the whole row taller than its sibling
+   fields need. A dedicated class instead of .calculator-fields itself,
+   since that one is still the plain grid for Gems/results/admin. */
+.calculator-fields-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+/* The numeric fields shrink to a compact floor (large enough for a few
+   digits + the +/- buttons) and the league field grows twice as fast, so
+   the button area gets first claim on any extra row width. */
+.calculator-fields-inline .calculator-field:not(.calculator-league-field) {
+  flex: 1 1 0;
+  min-width: 6rem;
+}
+.calculator-fields-inline .calculator-league-field {
+  flex: 2 1 auto;
+}
+.calculator-fields-inline .family-buttons {
+  margin: 0;
+}
+/* min-width: max-content (not 0) is the point — flex-basis: 0 alone lets
+   a button shrink past its own label, truncating it; pinning the floor
+   to the label's own natural width keeps every button's text whole while
+   still letting flex-grow: 1 distribute any leftover space equally. */
+.calculator-fields-inline .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+@media (max-width: 900px) {
+  .calculator-fields-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 .calculator-field {
   display: grid;

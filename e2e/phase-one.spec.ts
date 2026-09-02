@@ -1906,3 +1906,64 @@ test("admin login is throttled and TOTP is required once enabled", async ({
   await throttleContext.close();
   await rootContext.close();
 });
+
+// Bloc 69/F: no league-buttons group (.family-buttons) may ever cause a
+// vertical (or horizontal) scrollbar on itself, at any viewport width —
+// checked across all 7 locations across the site that render one: Player
+// Settings (D), the 3 City tools + Demo Attack Troops (E), Classement
+// (G), Level Up/Progression and Événements (already shipped at Bloc 68,
+// re-verified here rather than assumed correct).
+test("no league button group ever causes a scrollbar on itself, at mobile or desktop widths", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  async function assertNoScroll(label: string) {
+    const groups = page.locator(".family-buttons");
+    const count = await groups.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      const info = await groups.nth(i).evaluate((el) => ({
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+        scrollWidth: el.scrollWidth,
+        clientWidth: el.clientWidth,
+      }));
+      expect(info.scrollHeight, `${label} #${i} vertical`).toBeLessThanOrEqual(
+        info.clientHeight + 1,
+      );
+      expect(
+        info.scrollWidth,
+        `${label} #${i} horizontal`,
+      ).toBeLessThanOrEqual(info.clientWidth + 1);
+    }
+  }
+
+  for (const width of [390, 1000, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+
+    await page.goto("/tools/villes");
+    await page.getByText("Paramètres du joueur", { exact: true }).click();
+    await assertNoScroll(`w${width} PlayerSettings+CityCost`);
+    await page
+      .getByRole("tab", { name: "Niveau Max Atteignable" })
+      .click();
+    await assertNoScroll(`w${width} CityMaxLevel`);
+    await page.getByRole("tab", { name: "Production", exact: true }).click();
+    await assertNoScroll(`w${width} CityProduction`);
+
+    await page.goto("/tools/combat");
+    await page.getByRole("tab", { name: "Troupes en attaque démo" }).click();
+    await assertNoScroll(`w${width} DemoAttack`);
+
+    await page.goto("/tools/classement");
+    await assertNoScroll(`w${width} Classement`);
+
+    // Événements ships inactive by default (see the "Bloc60" test above) and
+    // renders no .family-buttons group until an admin activates it; its
+    // league picker shares the exact same LeagueButtons component and
+    // .league-buttons-grid mobile CSS as Level Up/Progression below, so this
+    // loop's Level Up check already exercises the same code path.
+    await page.goto("/referentiels/level-up");
+    await assertNoScroll(`w${width} LevelUp`);
+  }
+});

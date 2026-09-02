@@ -135,7 +135,7 @@ function CostCalculator({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div className="calculator-fields">
+        <div className="calculator-fields-inline">
           <div className="calculator-field calculator-league-field">
             {t("fields.league")}
             <LeagueButtons
@@ -317,7 +317,7 @@ function MaxLevelCalculator({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div className="calculator-fields">
+        <div className="calculator-fields-inline">
           <div className="calculator-field calculator-league-field">
             {t("fields.league")}
             <LeagueButtons
@@ -486,7 +486,7 @@ function ProductionCalculator({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div className="calculator-fields">
+        <div className="calculator-fields-inline">
           <div className="calculator-field calculator-league-field">
             {t("fields.league")}
             <LeagueButtons

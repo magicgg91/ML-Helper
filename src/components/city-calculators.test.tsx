@@ -122,7 +122,8 @@ describe("CityCalculators", () => {
       // Bloc 69/E: the league group is now wrapped in its own
       // .calculator-league-field (for the visible "Ligue" title) instead
       // of being a bare direct child — that wrapper is still first.
-      const wrapper = group.closest(".calculator-fields")?.firstElementChild;
+      const wrapper = group.closest(".calculator-fields-inline")
+        ?.firstElementChild;
       expect(wrapper).toContainElement(group);
       expect(wrapper).toHaveTextContent("Ligue");
       expect(group).toHaveClass("league-buttons-grid");

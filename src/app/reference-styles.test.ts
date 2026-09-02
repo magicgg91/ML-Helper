@@ -678,17 +678,37 @@ describe("Bloc 69/G: Ranking mobile-only redesign", () => {
 
 // Bloc 69/E: City's 3 tools (Coût de Ville/Niveau Max Atteignable/
 // Production) and Demo Attack Troops' league field now shares the row
-// with the tool's other fields on desktop, instead of being isolated on
-// its own full-width row (superseding the Bloc 68/J+K fix above) — its
-// .family-buttons wraps within its own cell instead of scrolling
-// horizontally.
+// with the tool's other fields on desktop (a dedicated flex row,
+// .calculator-fields-inline, not the generic .calculator-fields grid
+// still used by Gems/results/admin), instead of being isolated on its
+// own full-width row (superseding the Bloc 68/J+K fix). Single line,
+// equal-width buttons — same pattern as Ranking's own dedicated
+// .ranking-fields (Bloc 61/B) — instead of wrapping and stretching the
+// row taller than its sibling fields need.
 describe("Bloc 69/E: City tools + Demo Attack Troops league field shares the row", () => {
-  it("switches .calculator-league-field's .family-buttons from nowrap+scroll to wrap, so it never spills into a horizontal scrollbar", () => {
-    const rule = css.match(
-      /\.calculator-league-field \.family-buttons\s*{([\s\S]*?)\n}/,
-    )?.[1];
+  it("lays out .calculator-fields-inline as a single nowrap row on desktop, stacked on mobile", () => {
+    const rule = css.match(/\.calculator-fields-inline\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/flex-wrap: wrap;/);
-    expect(rule).toMatch(/overflow-x: visible;/);
+    expect(rule).toMatch(/display: flex;/);
+    expect(rule).toMatch(/flex-wrap: nowrap;/);
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.calculator-fields-inline\s*{([\s\S]*?)\n\s*}/,
+    )?.[1];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).toMatch(/flex-direction: column;/);
+  });
+
+  it("gives the league field's buttons equal width and first claim on the row, sharing it instead of scrolling or being isolated on their own line", () => {
+    expect(css).toMatch(
+      /\.calculator-fields-inline \.calculator-league-field\s*{\s*\n\s*flex: 2 1 auto;/,
+    );
+    expect(css).toMatch(
+      /\.calculator-fields-inline \.calculator-field:not\(\.calculator-league-field\)\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: 6rem;/,
+    );
+    // min-width: max-content (not 0) is the point — flex-basis: 0 alone
+    // would let a button shrink past its own label, truncating it.
+    expect(css).toMatch(
+      /\.calculator-fields-inline \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+    );
   });
 });

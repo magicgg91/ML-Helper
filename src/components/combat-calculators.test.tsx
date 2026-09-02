@@ -132,7 +132,8 @@ describe("CombatCalculators", () => {
       screen.getByRole("tab", { name: "Troupes en attaque démo" }),
     );
     const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    const wrapper = league.closest(".calculator-fields")?.firstElementChild;
+    const wrapper = league.closest(".calculator-fields-inline")
+      ?.firstElementChild;
     expect(wrapper).toContainElement(league);
     expect(wrapper).toHaveTextContent("Ligue de l’attaquant");
     expect(league).toHaveClass("league-buttons-grid");
