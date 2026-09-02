@@ -90,7 +90,10 @@ describe("PlayerSettingsPanel", () => {
       </NextIntlClientProvider>,
     );
     const primary = container.querySelector(".settings-grid-primary")!;
-    expect(primary.children[0]).toBe(
+    // Bloc 69/D: League's own group is now wrapped in a field div (to carry
+    // the new "Ligue" title above it) — that wrapper is the first child,
+    // and it still contains the league group.
+    expect(primary.children[0]).toContainElement(
       screen.getByRole("group", { name: "Ligue" }),
     );
   });
@@ -104,6 +107,16 @@ describe("PlayerSettingsPanel", () => {
     expect(screen.getByRole("group", { name: "Ligue" })).toHaveClass(
       "league-buttons-grid",
     );
+  });
+
+  it("Bloc69/D: shows a visible 'Ligue' title above the league buttons (missing at Bloc68 delivery)", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const label = container.querySelector(".settings-grid-league-label");
+    expect(label).toHaveTextContent("Ligue");
   });
 
   // Bloc 68/I: every settings-grid section (equipment, points, templars,

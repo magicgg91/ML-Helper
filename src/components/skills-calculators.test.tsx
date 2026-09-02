@@ -163,14 +163,16 @@ describe("SkillsCalculators", () => {
       '[data-testid="templars-calculator-tile-striker"]',
     )!;
     expect(striker).toHaveTextContent("Templier Attaque");
-    expect(striker).toHaveTextContent("0.25%/Templier");
+    // Bloc 69/B: "Bonus par Templier" already names the unit, so the value
+    // itself is a bare percentage — no "/Templier" repeated after it.
+    expect(striker).toHaveTextContent("Bonus par Templier : 0.25%");
     expect(striker).toHaveTextContent("0.75%");
     expect(striker).toHaveTextContent("+0.75%");
     const rusher = container.querySelector(
       '[data-testid="templars-calculator-tile-rusher"]',
     )!;
     expect(rusher).toHaveTextContent("Templier Vitesse");
-    expect(rusher).toHaveTextContent("1%/Templier");
+    expect(rusher).toHaveTextContent("Bonus par Templier : 1%");
     expect(rusher).toHaveTextContent("3%");
     expect(rusher).toHaveTextContent("+3%");
   });
@@ -238,6 +240,90 @@ describe("SkillsCalculators", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
     expect(container.querySelector(".templars-cost-fields")).not.toBeNull();
     expect(container.querySelector(".templars-tile-grid")).not.toBeNull();
+  });
+  // Bloc 69/B: "Bonus par Templier" already names the unit, so the value
+  // next to it must be a bare percentage, not "X%/Templier" — the label
+  // repeated after the number too.
+  it("Bloc69/B: shows a bare percentage after 'Bonus par Templier', with no redundant unit text", () => {
+    const { container } = renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    const stats = container.querySelectorAll(".templars-tile-stat");
+    expect(stats.length).toBeGreaterThan(0);
+    for (const stat of stats) {
+      if (stat.textContent?.includes("Bonus par Templier")) {
+        expect(stat.textContent).toMatch(/Bonus par Templier : -?\d+(\.\d+)?%$/);
+      }
+    }
+  });
+  // Bloc 69/C: target level must always be at least start+1 — same
+  // commit-time-only floor as the City tool (Bloc 34/C), checked both ways:
+  // raising start pushes up an equal/lower target, and typing an
+  // equal/lower target directly gets pushed back up at blur.
+  describe("Bloc69/C: target level >= start level + 1", () => {
+    it("pushes target up when start is committed at or above it", () => {
+      renderWithIntl(
+        <SkillsCalculators
+          combatRows={combatRows}
+          expeditionRows={expeditionRows}
+        />,
+      );
+      fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+      const startInput = screen.getByRole("spinbutton", {
+        name: "Niveau de départ",
+      });
+      const targetInput = screen.getByRole("spinbutton", {
+        name: "Niveau cible",
+      });
+      expect(targetInput).toHaveValue(1);
+      fireEvent.change(startInput, { target: { value: "5" } });
+      fireEvent.blur(startInput);
+      expect(startInput).toHaveValue(5);
+      expect(targetInput).toHaveValue(6);
+    });
+
+    it("does not push target up while start is still being typed (commits at blur only)", () => {
+      renderWithIntl(
+        <SkillsCalculators
+          combatRows={combatRows}
+          expeditionRows={expeditionRows}
+        />,
+      );
+      fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+      const startInput = screen.getByRole("spinbutton", {
+        name: "Niveau de départ",
+      });
+      const targetInput = screen.getByRole("spinbutton", {
+        name: "Niveau cible",
+      });
+      fireEvent.change(startInput, { target: { value: "5" } });
+      expect(targetInput).toHaveValue(1);
+    });
+
+    it("rejects a target committed at or below start, clamping it to start+1", () => {
+      renderWithIntl(
+        <SkillsCalculators
+          combatRows={combatRows}
+          expeditionRows={expeditionRows}
+        />,
+      );
+      fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+      const startInput = screen.getByRole("spinbutton", {
+        name: "Niveau de départ",
+      });
+      const targetInput = screen.getByRole("spinbutton", {
+        name: "Niveau cible",
+      });
+      fireEvent.change(startInput, { target: { value: "5" } });
+      fireEvent.blur(startInput);
+      fireEvent.change(targetInput, { target: { value: "3" } });
+      fireEvent.blur(targetInput);
+      expect(targetInput).toHaveValue(6);
+    });
   });
   it("Bloc55/A: shows the Templars tool->reference banner after the tool's own content", () => {
     renderWithIntl(

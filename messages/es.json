@@ -407,7 +407,7 @@
     "bonus-per-templar": "Bono por templario",
     "total-bonus-level": "Bono total en nivel {level}",
     "gain-transition": "Ganancia inicio → objetivo",
-    "rate-value": "{rate}%/templario",
+    "rate-value": "{rate}%",
     "cost-table": "Tabla de costes",
     "columns": {
       "skill": "Habilidad",

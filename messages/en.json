@@ -407,7 +407,7 @@
     "bonus-per-templar": "Bonus per templar",
     "total-bonus-level": "Total bonus at level {level}",
     "gain-transition": "Start → target gain",
-    "rate-value": "{rate}%/templar",
+    "rate-value": "{rate}%",
     "cost-table": "Cost table",
     "columns": {
       "skill": "Skill",

@@ -407,7 +407,7 @@
     "bonus-per-templar": "Bonus pro Templer",
     "total-bonus-level": "Gesamtbonus bei Stufe {level}",
     "gain-transition": "Gewinn Start → Ziel",
-    "rate-value": "{rate}%/Templer",
+    "rate-value": "{rate}%",
     "cost-table": "Kostentabelle",
     "columns": {
       "skill": "Fähigkeit",

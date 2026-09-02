@@ -690,7 +690,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   // Bloc 68/C: results are now tiles (same pattern as the Templiers
   // referentiel), not table rows.
   const rusherTile = page.getByTestId("templars-calculator-tile-rusher");
-  await expect(rusherTile).toContainText("1%/Templier");
+  await expect(rusherTile).toContainText("Bonus par Templier : 1%");
   await expect(rusherTile).toContainText("Bonus total au niveau 3 : 3%");
   await expect(rusherTile).toContainText("Gain départ → cible : +3%");
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");

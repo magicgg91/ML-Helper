@@ -737,6 +737,16 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               min={0}
               max={20}
               onChange={(value) => setStart(Math.floor(value))}
+              // Bloc 69/C: same "must be > start" floor as the City tool
+              // (Bloc 34/C) — only enforced at commit time (blur, +/-
+              // buttons), not on every keystroke.
+              onCommit={(v) => {
+                const nextStart = Math.floor(v);
+                setStart(nextStart);
+                setTarget((current) =>
+                  current <= nextStart ? nextStart + 1 : current,
+                );
+              }}
             />
           </label>
           <label className="calculator-field">
@@ -744,9 +754,13 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
             <NumberStepper
               label={t("fields.target-level")}
               value={target}
-              min={0}
+              min={1}
               max={20}
               onChange={(value) => setTarget(Math.floor(value))}
+              onCommit={(v) => {
+                const nextTarget = Math.floor(v);
+                setTarget(nextTarget <= start ? start + 1 : nextTarget);
+              }}
             />
           </label>
           <Result

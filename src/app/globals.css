@@ -515,6 +515,16 @@ main.public-main.contact-page {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
+/* Bloc 69/D, desktop: 4 equal columns instead of the base .settings-grid's
+   auto-fit — League (:first-child) still spans the full row on its own,
+   and Level/VP then fall into the first 2 of the 4 columns, i.e. exactly
+   25% of the row's width each, leaving the other 2 columns empty. */
+.settings-grid-primary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.settings-grid-primary > :first-child {
+  grid-column: 1 / -1;
+}
 /* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
    skills, skill points, templars, clan temple) goes from 1 to 2 columns
    (I). Within .settings-grid-primary specifically, its first child — the
@@ -532,9 +542,11 @@ main.public-main.contact-page {
   /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
      its unit select, and shrink that select, so the two NumberSteppers
      (Level's, which has no unit select, and VP's) end up close to the
-     same width instead of VP's looking squeezed. */
+     same width instead of VP's looking squeezed. Bloc 69/D: Level's own
+     share is reduced a further 10% (5fr -> 4.5fr) and handed to VP
+     (7fr -> 7.5fr), keeping the 12fr total. */
   .settings-grid-primary {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
   }
   .settings-grid-primary .unit-input {
     grid-template-columns: minmax(0, 1fr) 3.1rem;
@@ -546,6 +558,18 @@ main.public-main.contact-page {
 .settings-grid label {
   display: grid;
   gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+/* Bloc 69/D: same label look as the Level/VP fields (.settings-grid
+   label above), for the league field's own title — a plain <div>/<span>
+   since LeagueButtons renders a role="group" div, not a <label>. */
+.settings-grid-league-field {
+  display: grid;
+  gap: 0.4rem;
+}
+.settings-grid-league-label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -1977,6 +2001,9 @@ button:disabled,
   margin-bottom: 1.5rem;
 }
 .category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
   min-width: 100px;
   padding: 9px 14px;

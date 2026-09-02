@@ -407,7 +407,7 @@
     "bonus-per-templar": "Tapınak şövalyesi başına bonus",
     "total-bonus-level": "{level} seviyesinde toplam bonus",
     "gain-transition": "Başlangıç → hedef kazancı",
-    "rate-value": "%{rate}/tapınak şövalyesi",
+    "rate-value": "%{rate}",
     "cost-table": "Maliyet tablosu",
     "columns": {
       "skill": "Yetenek",

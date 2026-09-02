@@ -260,12 +260,19 @@ export function PlayerSettingsPanel() {
         </summary>
         <div className="player-settings-body">
           <div className="settings-grid settings-grid-primary">
-            <LeagueButtons
-              label={t("league")}
-              value={settings.league}
-              onChange={setLeague}
-              className="league-buttons-grid"
-            />
+            {/* Bloc 69/D: a visible "Ligue" title above the buttons — the
+                league picker was the only field in this grid without one
+                (Level/VP both already show their label above their own
+                control). */}
+            <div className="settings-grid-league-field">
+              <span className="settings-grid-league-label">{t("league")}</span>
+              <LeagueButtons
+                label={t("league")}
+                value={settings.league}
+                onChange={setLeague}
+                className="league-buttons-grid"
+              />
+            </div>
             <label>
               {t("player-level")}
               <NumberStepper

@@ -550,20 +550,47 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
 
   // Follow-up to H: the Level field has no unit select, so an even 1fr/1fr
   // split left its NumberStepper visibly wider than VP's. On mobile only,
-  // VP's column gets extra width (7fr vs Level's 5fr) and its unit select
-  // shrinks, so the two NumberSteppers end up close to the same width.
+  // VP's column gets extra width and its unit select shrinks, so the two
+  // NumberSteppers end up close to the same width. Bloc 69/D: Level's own
+  // share is reduced a further 10% (5fr -> 4.5fr), handed to VP (7fr ->
+  // 7.5fr).
   it("gives the mobile Level/VP row an uneven column split and a narrower VP unit select, so both NumberSteppers end up close in width", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/,
+      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
     );
     expect(mediaBlock).toMatch(
       /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
     );
     expect(mediaBlock).toMatch(
       /\.settings-grid-primary \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
+    );
+  });
+
+  // Bloc 69/D, desktop: League spans the full row on its own (unchanged
+  // from Bloc 68/H's mobile-only version, now also true on desktop), and
+  // Level/VP each land in exactly 25% of the row (1 of 4 equal columns).
+  it("gives Player Settings' primary grid 4 equal desktop columns, with League still spanning the full row", () => {
+    const desktopRuleIndex = css.indexOf(
+      ".settings-grid-primary {\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n}",
+    );
+    const desktopSpanIndex = css.indexOf(
+      ".settings-grid-primary > :first-child {\n  grid-column: 1 / -1;\n}",
+    );
+    const mediaQueryIndex = css.indexOf("@media (max-width: 900px) {");
+    expect(desktopRuleIndex).toBeGreaterThan(-1);
+    expect(desktopSpanIndex).toBeGreaterThan(-1);
+    // Both rules must sit before the mobile media query, i.e. apply
+    // unconditionally (desktop included), not just under it.
+    expect(desktopRuleIndex).toBeLessThan(mediaQueryIndex);
+    expect(desktopSpanIndex).toBeLessThan(mediaQueryIndex);
+  });
+
+  it("gives the league field a visible title matching the Level/VP fields' own label style", () => {
+    expect(css).toMatch(
+      /\.settings-grid-league-label\s*{\s*\n\s*color: var\(--muted\);\s*\n\s*font-size: 0\.78rem;\s*\n\s*font-weight: 700;/,
     );
   });
 });
@@ -598,5 +625,20 @@ describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
+  });
+});
+
+// Bloc 69/A: a banner button whose content wraps to 2 lines (e.g.
+// "Équipement d'Expédition") grows taller than its single-line siblings on
+// the same grid row; .category-btn is the shared class for both banners
+// (.category-nav on /tools, .reference-switcher on /referentiels), so a
+// flex + align-items:center fix here covers both at once.
+describe("Bloc 69/A: banner buttons center their content vertically", () => {
+  it("makes .category-btn a flex container centered on both axes, shared by the /tools and /referentiels banners", () => {
+    const rule = css.match(/\.category-btn\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/display: flex;/);
+    expect(rule).toMatch(/align-items: center;/);
+    expect(rule).toMatch(/justify-content: center;/);
   });
 });
