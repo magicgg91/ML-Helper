@@ -851,7 +851,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
-  await page.getByRole("spinbutton", { name: "Base" }).fill("200");
+  // Bloc 66/B: exact match — the presentation editor sharing this page now
+  // also carries 5 read-only "Base Temple N" fields, whose accessible
+  // names otherwise substring-match this same "Base" locator.
+  await page
+    .getByRole("spinbutton", { name: "Base", exact: true })
+    .fill("200");
   await page
     .locator(".editor-action-bar")
     .getByRole("button", { name: "Enregistrer les paramètres" })
@@ -897,10 +902,12 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("link", { name: "Modifier" })
     .click();
   // Base was changed to 200 above, from the Guides admin reference row —
-  // same shared parameters, reached from either admin table.
-  await expect(page.getByRole("spinbutton", { name: "Base" })).toHaveValue(
-    "200",
-  );
+  // same shared parameters, reached from either admin table. Exact match:
+  // see the earlier comment on the same collision with the presentation
+  // editor's "Base Temple N" fields.
+  await expect(
+    page.getByRole("spinbutton", { name: "Base", exact: true }),
+  ).toHaveValue("200");
   await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
     "1.3",
   );
