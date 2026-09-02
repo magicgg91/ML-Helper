@@ -1162,6 +1162,21 @@ select {
     grid-template-columns: 1fr;
   }
 }
+/* Bloc 68/C: the Templiers calculator's own fields+cost card — Niveau
+   départ / Niveau cible / Coût total merged into 3 equal columns on
+   desktop, stacked to 1 column on mobile. Dedicated class rather than
+   reusing .calculator-fields above (shared by Gems/City/DemoAttackTroops,
+   whose own auto-fit layout must not change). */
+.templars-cost-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+@media (max-width: 900px) {
+  .templars-cost-fields {
+    grid-template-columns: 1fr;
+  }
+}
 .reference-value {
   color: var(--success);
 }

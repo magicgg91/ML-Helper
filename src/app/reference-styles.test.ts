@@ -520,3 +520,18 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     );
   });
 });
+
+// Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
+// columns (Niveau départ / Niveau cible / Coût total) on desktop, 1 column
+// (stacked) on mobile. Dedicated class, distinct from the shared
+// .calculator-fields used by Gems/City/DemoAttackTroops.
+describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
+  it("gives .templars-cost-fields 3 equal columns on desktop, 1 on mobile", () => {
+    const rule = css.match(/\.templars-cost-fields\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
+    );
+  });
+});
