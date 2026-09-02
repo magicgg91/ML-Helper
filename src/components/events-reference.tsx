@@ -81,7 +81,12 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <LeagueButtons label={t("league")} value={league} onChange={setLeague} />
+        <LeagueButtons
+          label={t("league")}
+          value={league}
+          onChange={setLeague}
+          className="league-buttons-grid"
+        />
       </section>
       {!league ? (
         <p className="empty-state" role="status">

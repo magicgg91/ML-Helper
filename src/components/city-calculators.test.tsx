@@ -26,16 +26,22 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     expect(screen.getByTestId("city-cost-total")).toHaveTextContent("10 or");
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Nombre de villes" }),
       {
@@ -110,11 +116,12 @@ describe("CityCalculators", () => {
       "Production",
     ]) {
       fireEvent.click(screen.getByRole("tab", { name: tab }));
-      const fields = screen.getByRole("combobox", { name: "Ligue" });
-      expect(fields).toHaveValue("");
+      const group = screen.getByRole("group", { name: "Ligue" });
+      for (const button of within(group).getAllByRole("button"))
+        expect(button).toHaveAttribute("aria-pressed", "false");
       expect(
-        fields.closest(".calculator-fields")?.querySelector("select"),
-      ).toBe(fields);
+        group.closest(".calculator-fields")?.firstElementChild,
+      ).toBe(group);
       expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
     }
   });
@@ -148,9 +155,12 @@ describe("CityCalculators", () => {
       </NextIntlClientProvider>,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     expect(screen.queryByText("Bonus Or obtenu")).toBeNull();
     expect(screen.queryByText("Bonus Troupes obtenu")).toBeNull();
     expect(screen.queryByText("Heures Or reçues")).toBeNull();
@@ -331,9 +341,12 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     // La base de temple pour Prospérité (30%, cdc section 7.1) s'applique
     // automatiquement même sans contribution de clan saisie (voir templeBase).
     const breakdown = screen.getByTestId("city-cost-single-gold-start");
@@ -385,9 +398,12 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     // Only one result heading now — the old separate "Pour 1 ville" title
     // is gone.
     expect(screen.queryByText("Pour 1 ville")).not.toBeInTheDocument();
@@ -413,9 +429,12 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     const wallAtOne = screen.getByTestId("city-cost-wall").textContent;
     const totalAtOne = screen.getByTestId("city-cost-total").textContent;
     fireEvent.change(
@@ -439,9 +458,12 @@ describe("CityCalculators", () => {
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
+        "button",
+        { name: "Légende" },
+      ),
+    );
     expect(
       screen.queryByText("Ville seule (niveau atteint)"),
     ).not.toBeInTheDocument();
