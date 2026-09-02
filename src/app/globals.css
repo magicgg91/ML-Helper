@@ -1769,6 +1769,16 @@ select,
   .consumable-tile-grid {
     grid-template-columns: 1fr;
   }
+  /* Bloc 68/B: mobile stacks the cost badge under the name instead of
+     keeping it as a top-right badge — name is already the heading's first
+     child and cost the second, so this is a pure layout change (JSX and
+     the badge's own styling are untouched). Desktop keeps the row/
+     space-between rule above. */
+  .consumable-tile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
 }
 
 /* Bloc 39: Combat/Expedition tile grid — replaces the old per-row table for

@@ -325,6 +325,18 @@ describe("ConsumablesReferenceTable", () => {
     );
   });
 
+  // Bloc 68/L: the category filter buttons form a full-width 2-column grid
+  // on mobile (shared class, CSS defined once in globals.css) instead of
+  // the default wrap.
+  it("Bloc68/L: the category filter group carries the shared mobile 2-column grid class", () => {
+    render(<ConsumablesReferenceTable catalog={catalog} />);
+    const filterGroup = screen.getByTestId(
+      "filter-category-equipment",
+    ).parentElement!;
+    expect(filterGroup).toHaveClass("family-buttons");
+    expect(filterGroup).toHaveClass("reference-filter-grid-2");
+  });
+
   // Bloc 62/B: **bold** in Nom/Description renders identically here as it
   // does in the admin editor's live preview — same shared renderer.
   it("Bloc62/B: renders **bold** markers in Nom/Description as <strong>", () => {
