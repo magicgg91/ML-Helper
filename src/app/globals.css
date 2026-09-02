@@ -443,12 +443,15 @@ main.public-main.contact-page {
   justify-content: space-between;
   gap: 1rem;
 }
-.player-summary-row1::before {
+/* The disclosure arrow lives on the title itself, not as a 3rd flex item
+   of .player-summary-row1 — otherwise space-between spreads it away from
+   the title instead of keeping the two flush together. */
+#player-settings-title::before {
   content: "▸";
   margin-right: 0.55rem;
   color: var(--accent);
 }
-.player-settings > details[open] > summary .player-summary-row1::before {
+.player-settings > details[open] > summary #player-settings-title::before {
   content: "▾";
 }
 .player-summary-line2 {
@@ -511,6 +514,34 @@ main.public-main.contact-page {
 .settings-grid-primary {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
+}
+/* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
+   skills, skill points, templars, clan temple) goes from 1 to 2 columns
+   (I). Within .settings-grid-primary specifically, its first child — the
+   league LeagueButtons group since Bloc 68/F — spans both columns on its
+   own full-width row, leaving Level and VP as the 2nd/3rd children to
+   share the row below (H). Depends on the JSX keeping League first,
+   Level second, VP third. */
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .settings-grid-primary > :first-child {
+    grid-column: 1 / -1;
+  }
+  /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
+     its unit select, and shrink that select, so the two NumberSteppers
+     (Level's, which has no unit select, and VP's) end up close to the
+     same width instead of VP's looking squeezed. */
+  .settings-grid-primary {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+  .settings-grid-primary .unit-input {
+    grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .settings-grid-primary .unit-input select {
+    padding: 0 0.3rem;
+  }
 }
 .settings-grid label {
   display: grid;
@@ -666,6 +697,16 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 0.8rem;
+}
+/* Bloc 68/J+K fix: a LeagueButtons group (.family-buttons) dropped straight
+   into .calculator-fields (City's 3 tools, Demo Attack Troops) got boxed
+   into one ~12rem auto-fit cell, and since .family-buttons never wraps
+   above 900px, its later leagues fell behind a horizontal scrollbar
+   instead of staying visible like the select it replaced. Span the full
+   row instead, so all 6 buttons fit on one line — same fix Ranking's own
+   dedicated .ranking-fields layout already used pre-Bloc 68. */
+.calculator-fields > .family-buttons {
+  grid-column: 1 / -1;
 }
 .calculator-field {
   display: grid;
@@ -1115,10 +1156,12 @@ select {
 /* Bloc 66/B: the Templiers presentation tiles, before the 2x10 cost table
    (Bloc 64/E, unchanged) — same image-left layout and 6rem size as
    Boutique (Bloc 65/C), colored per associated competence (skillColor),
-   same principle as Gemmes' tiles above. */
+   same principle as Gemmes' tiles above.
+   Bloc 68/A: 3 per row on desktop (5 Templiers = 3+2 layout). Also reused
+   verbatim by the Templiers calculator's result tiles (Bloc 68/C). */
 .templars-tile-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 .templars-tile {
@@ -1157,6 +1200,21 @@ select {
 }
 @media (max-width: 900px) {
   .templars-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 68/C: the Templiers calculator's own fields+cost card — Niveau
+   départ / Niveau cible / Coût total merged into 3 equal columns on
+   desktop, stacked to 1 column on mobile. Dedicated class rather than
+   reusing .calculator-fields above (shared by Gems/City/DemoAttackTroops,
+   whose own auto-fit layout must not change). */
+.templars-cost-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+@media (max-width: 900px) {
+  .templars-cost-fields {
     grid-template-columns: 1fr;
   }
 }
@@ -1244,6 +1302,53 @@ select {
   .family-buttons {
     flex-wrap: wrap;
     overflow-x: visible;
+  }
+}
+/* Bloc 68/L+M: opt-in modifier for a .family-buttons group that should form
+   a full-width, evenly-sized 2-column grid on mobile instead of the default
+   wrap (which can leave a ragged last row) — Boutique's category filter
+   (Bloc 68/L) and Combat/Expedition's family filter (Bloc 68/M), both
+   exactly 4 buttons. Desktop is untouched (still the plain nowrap row
+   above). */
+@media (max-width: 900px) {
+  .reference-filter-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Bloc 68/M: Combat/Expedition's 5-item rarity filter, split 2+3 across 2
+   rows on mobile — deliberately NOT a plain 2-column grid (which would
+   leave an awkward lone 5th button) and deliberately keeping rarityOrder's
+   existing rarest-to-commonest DOM order (Légendaire, Mythique, Épique,
+   Rare, Commun): row 1 is the first 2 buttons, row 2 the last 3, via a
+   6-column track so each row's buttons stay equal width without needing to
+   restructure the flat button list into 2 separate containers. */
+@media (max-width: 900px) {
+  .reference-filter-grid-rarity {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .reference-filter-grid-rarity button:nth-child(1),
+  .reference-filter-grid-rarity button:nth-child(2) {
+    grid-column: span 3;
+  }
+  .reference-filter-grid-rarity button:nth-child(3),
+  .reference-filter-grid-rarity button:nth-child(4),
+  .reference-filter-grid-rarity button:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+/* Bloc 68/N: the Événements/Progression league picker (6 leagues) forms a
+   full-width 3-column grid on mobile (2 rows of 3) instead of the default
+   wrap, which could split unevenly. Opt-in via LeagueButtons' className
+   prop — Classement's own league buttons and the other new button
+   conversions (Bloc 68/F/J/K) are untouched, keeping their plain wrap. */
+@media (max-width: 900px) {
+  .league-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
   }
 }
 .secondary-action {
@@ -1721,6 +1826,16 @@ select,
 @media (max-width: 900px) {
   .consumable-tile-grid {
     grid-template-columns: 1fr;
+  }
+  /* Bloc 68/B: mobile stacks the cost badge under the name instead of
+     keeping it as a top-right badge — name is already the heading's first
+     child and cost the second, so this is a pure layout change (JSX and
+     the badge's own styling are untouched). Desktop keeps the row/
+     space-between rule above. */
+  .consumable-tile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
   }
 }
 
@@ -3003,11 +3118,19 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .home-guides {
   margin-top: clamp(3rem, 8vw, 7rem);
 }
+/* Bloc 68/D: matches the violet gradient h1 these same title+phrase pairs
+   already render as on /tools, /referentiels and /guides (the "Prototype
+   visual language" h1 rule above, ~line 1471: a gradient clipped to the
+   text) — the homepage reuses the exact same title text but as an h2,
+   which never inherited that rule and hardcoded var(--text) instead. */
 .home-tools h2,
 .home-references h2,
 .home-guides h2 {
   margin: 0.4rem 0 1rem;
-  color: var(--text);
+  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   line-height: 1.08;
 }

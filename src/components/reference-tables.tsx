@@ -137,7 +137,7 @@ function Filters({
     <div className="reference-filters" aria-label={t("filters.label")}>
       <div>
         <span className="filter-label">{t("filters.family")}</span>
-        <div className="family-buttons">
+        <div className="family-buttons reference-filter-grid-2">
           {families.map((item) => {
             const color = filterButtonColor(item);
             return (
@@ -161,7 +161,7 @@ function Filters({
       </div>
       <div>
         <span className="filter-label">{t("filters.rarity")}</span>
-        <div className="family-buttons">
+        <div className="family-buttons reference-filter-grid-rarity">
           {rarityOrder.map((item) => {
             const color = filterButtonColor(item);
             return (

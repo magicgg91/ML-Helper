@@ -88,17 +88,23 @@ describe("public responsive styles", () => {
     expect(css).toMatch(
       /\.stuff-summary-grid,\s*\n\.expedition-summary-grid\s*{\s*display: grid;\s*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/,
     );
+    // Bloc 68: anchored to the specific media block containing these 2
+    // selectors, not just "the first @media (max-width: 900px) block in
+    // the file" — that unanchored match broke the moment a later Bloc
+    // inserted its own 900px block earlier in the file.
     const mediaBlock = css.match(
-      /@media \(max-width: 900px\)\s*{([\s\S]*?)\n}/,
+      /@media \(max-width: 900px\) {\s*\n\s*\.stuff-summary-grid,\s*\n\s*\.expedition-summary-grid\s*{([\s\S]*?)\n {2}}/,
     )?.[1];
     expect(mediaBlock).toBeDefined();
-    expect(mediaBlock).toMatch(/\.stuff-summary-grid/);
-    expect(mediaBlock).toMatch(/\.expedition-summary-grid/);
     expect(mediaBlock).toMatch(/repeat\(2, minmax\(0, 1fr\)\)/);
   });
 
   it("wraps Combat/Expedition's family buttons to a 2nd row on mobile instead of scrolling horizontally (Bloc 34/B)", () => {
-    const rule = css.match(/\.family-buttons\s*{([\s\S]*?)\n}/)?.[1];
+    // Anchored to a standalone `.family-buttons {` selector at the start of
+    // a line — Bloc 68/J+K's `.calculator-fields > .family-buttons { ... }`
+    // rule also contains the substring ".family-buttons {" and, sitting
+    // earlier in the file, was matched instead by an unanchored regex here.
+    const rule = css.match(/(?:^|\n)\.family-buttons\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
     // Desktop still never wraps (Bloc 31/H) — the family-buttons rule
     // itself keeps flex-wrap: nowrap outside any media query.

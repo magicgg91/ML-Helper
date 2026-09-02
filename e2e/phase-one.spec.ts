@@ -321,13 +321,25 @@ test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   await page.getByRole("tab", { name: "Je suis la cible" }).click();
   await expect(page.getByTestId("xp-range-200")).toHaveText("< 500k");
   await page.getByRole("tab", { name: "Troupes en attaque démo" }).click();
+  // Bloc 68/J: the league <select> is replaced by single-select buttons.
+  const demoLeagueGroup = page.getByRole("group", {
+    name: "Ligue de l’attaquant",
+  });
+  const demoLeagueLabels: Record<string, string> = {
+    bronze: "Bronze",
+    silver: "Argent",
+    gold: "Or",
+    diamond: "Diamant",
+  };
   for (const [league, expected] of [
     ["bronze", "70"],
     ["silver", "35"],
     ["gold", "28"],
     ["diamond", "21"],
   ]) {
-    await page.getByLabel("Ligue de l’attaquant").selectOption(league);
+    await demoLeagueGroup
+      .getByRole("button", { name: demoLeagueLabels[league] })
+      .click();
     await expect(page.getByTestId("demo-troops")).toHaveText(expected);
   }
 });
@@ -381,11 +393,14 @@ test("the Cities category exposes its three working calculators", async ({
     "aria-current",
     "page",
   );
-  const cityLeague = page
+  // Bloc 68/K: the league <select> is replaced by single-select buttons.
+  const cityLeagueGroup = page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" });
-  await expect(cityLeague).toHaveValue("");
-  await cityLeague.selectOption("legend");
+    .getByRole("group", { name: "Ligue" });
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Légende" }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await cityLeagueGroup.getByRole("button", { name: "Légende" }).click();
   // Bloc 33/C: "city-cost-one" was merged into the single "Total" block's
   // "city-cost-total" testid (cityCount defaults to 1, same figure).
   await expect(page.getByTestId("city-cost-total")).toHaveText("10 or");
@@ -412,16 +427,18 @@ test("the Cities category exposes its three working calculators", async ({
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
   await page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" })
-    .selectOption("legend");
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Légende" })
+    .click();
   await page.getByRole("spinbutton", { name: "Or disponible" }).fill("0.044");
   await expect(page.getByTestId("max-level-result")).toHaveText("4");
 
   await page.getByRole("tab", { name: "Production", exact: true }).click();
   await page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" })
-    .selectOption("legend");
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Légende" })
+    .click();
   await expect(page.getByText("Or — Production totale")).toBeVisible();
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
@@ -476,8 +493,22 @@ test("all three City tools use all six confirmed league multipliers", async ({
     ["legend", "260", "78", "200/h", "60/h"],
   ] as const;
 
+  // Bloc 68/F: the Player Settings league field is a button group now,
+  // not a <select>.
+  const playerLeagueLabels: Record<string, string> = {
+    bronze: "Bronze",
+    silver: "Argent",
+    gold: "Or",
+    platinum: "Platine",
+    diamond: "Diamant",
+    legend: "Légende",
+  };
+
   await page.goto("/tools/villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
+  const playerLeagueGroup = page
+    .locator(".player-settings")
+    .getByRole("group", { name: "Ligue" });
   for (const [
     league,
     boostedGold,
@@ -485,7 +516,9 @@ test("all three City tools use all six confirmed league multipliers", async ({
     baseGold,
     baseArmy,
   ] of leagueCases) {
-    await page.getByLabel("Ligue").first().selectOption(league);
+    await playerLeagueGroup
+      .getByRole("button", { name: playerLeagueLabels[league] })
+      .click();
 
     await page.getByRole("tab", { name: "Coût de Ville" }).click();
     await expect(page.getByTestId("city-cost-gold")).toContainText(
@@ -514,26 +547,39 @@ test("dependent league selectors sync once and preserve manual choices", async (
 }) => {
   await page.goto("/tools/villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
-  const playerLeague = page
+  // Bloc 68/F+K: both the Player Settings and the city calculators' league
+  // fields are button groups now, not <select> elements — assert via
+  // aria-pressed instead of the field's value.
+  const playerLeagueGroup = page
     .locator(".player-settings")
-    .getByRole("combobox", { name: "Ligue" });
-  const cityLeague = page
+    .getByRole("group", { name: "Ligue" });
+  const cityLeagueGroup = page
     .locator(".city-calculators")
-    .getByRole("combobox", { name: "Ligue" });
+    .getByRole("group", { name: "Ligue" });
 
-  await expect(playerLeague).toHaveValue("");
-  await expect(cityLeague).toHaveValue("");
-  await playerLeague.selectOption("diamond");
-  await expect(cityLeague).toHaveValue("diamond");
+  for (const button of await playerLeagueGroup.getByRole("button").all())
+    await expect(button).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Diamant" }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await playerLeagueGroup.getByRole("button", { name: "Diamant" }).click();
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Diamant" }),
+  ).toHaveAttribute("aria-pressed", "true");
 
-  await cityLeague.selectOption("gold");
-  await playerLeague.selectOption("legend");
-  await expect(cityLeague).toHaveValue("gold");
+  await cityLeagueGroup.getByRole("button", { name: "Or" }).click();
+  await playerLeagueGroup.getByRole("button", { name: "Légende" }).click();
+  await expect(
+    cityLeagueGroup.getByRole("button", { name: "Or" }),
+  ).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
   await expect(
-    page.locator(".city-calculators").getByRole("combobox", { name: "Ligue" }),
-  ).toHaveValue("legend");
+    page
+      .locator(".city-calculators")
+      .getByRole("group", { name: "Ligue" })
+      .getByRole("button", { name: "Légende" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("Ranking converts position and percentage into league ranges", async ({
@@ -641,12 +687,14 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
   // Point 1: one shared level range applies to all 5 skills at once.
-  const rusherRow = page.getByRole("row", { name: /Vitesse/ });
-  await expect(rusherRow.getByRole("cell").nth(1)).toHaveText("1%/Templier");
-  await expect(rusherRow.getByRole("cell").nth(2)).toHaveText("3%");
-  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+3%");
+  // Bloc 68/C: results are now tiles (same pattern as the Templiers
+  // referentiel), not table rows.
+  const rusherTile = page.getByTestId("templars-calculator-tile-rusher");
+  await expect(rusherTile).toContainText("1%/Templier");
+  await expect(rusherTile).toContainText("Bonus total au niveau 3 : 3%");
+  await expect(rusherTile).toContainText("Gain départ → cible : +3%");
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");
-  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+2%");
+  await expect(rusherTile).toContainText("Gain départ → cible : +2%");
 });
 
 test("Reference tables filter combat and expedition equipment", async ({

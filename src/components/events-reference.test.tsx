@@ -41,6 +41,15 @@ describe("EventsReferenceTable", () => {
     );
   });
 
+  // Bloc 68/N: the league buttons opt into the shared mobile 3-column
+  // grid (.league-buttons-grid) instead of the default wrap.
+  it("Bloc68/N: gives the league buttons the mobile 3-column grid class", () => {
+    render(<EventsReferenceTable catalog={emptyEventsCatalog} />);
+    expect(screen.getByRole("group", { name: "Ligue" })).toHaveClass(
+      "league-buttons-grid",
+    );
+  });
+
   it("shows an empty message for a league with no events yet", () => {
     render(<EventsReferenceTable catalog={emptyEventsCatalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Légende" }));

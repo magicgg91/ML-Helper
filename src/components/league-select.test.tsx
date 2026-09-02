@@ -83,4 +83,28 @@ describe("LeagueButtons", () => {
       "family-buttons",
     );
   });
+
+  // Bloc 68/N: an opt-in extra class (e.g. for Événements/Progression's
+  // mobile 3-column grid) layers onto .family-buttons rather than
+  // replacing it — every other caller that omits it is unaffected.
+  it("Bloc68/N: layers an optional extra class onto .family-buttons without replacing it", () => {
+    render(
+      <LeagueButtons
+        label="Ligue"
+        value=""
+        onChange={vi.fn()}
+        className="league-buttons-grid"
+      />,
+    );
+    const group = screen.getByRole("group", { name: "Ligue" });
+    expect(group).toHaveClass("family-buttons");
+    expect(group).toHaveClass("league-buttons-grid");
+  });
+
+  it("Bloc68/N: carries no extra class when none is given", () => {
+    render(<LeagueButtons label="Ligue" value="" onChange={vi.fn()} />);
+    expect(screen.getByRole("group", { name: "Ligue" }).className).toBe(
+      "family-buttons",
+    );
+  });
 });

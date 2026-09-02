@@ -132,6 +132,7 @@
     "title": "Player settings",
     "summary": "{league} · Level {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
     "league": "League",
+    "league-undefined": "League not set",
     "player-level": "Player level",
     "player-vp": "Player VP",
     "vp-unit": "VP unit",

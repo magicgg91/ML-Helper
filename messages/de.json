@@ -132,6 +132,7 @@
     "title": "Spielereinstellungen",
     "summary": "{league} · Stufe {level} · {vp} VP · {templarTotal, plural, one {# Templer} other {# Templer}}",
     "league": "Liga",
+    "league-undefined": "Liga nicht festgelegt",
     "player-level": "Spielerstufe",
     "player-vp": "Spieler-VP",
     "vp-unit": "VP-Einheit",

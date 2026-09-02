@@ -3,8 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
-import { filterButtonColor } from "../lib/game-images";
+import { filterButtonColor, skillColor } from "../lib/game-images";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { GameImage } from "./game-image";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   gemFamilies,
@@ -25,7 +26,13 @@ import {
   defaultTemplarParameters,
   type TemplarParameters,
 } from "../lib/templar-parameters";
-import { skillKeys, templarKeys, type SkillKey } from "../lib/player-settings";
+import { defaultTemplarPresentationCatalog } from "../lib/templars-presentation";
+import {
+  skillKeys,
+  templarKeys,
+  type SkillKey,
+  type TemplarKey,
+} from "../lib/player-settings";
 import type {
   CombatReferenceRow,
   ExpeditionReferenceRow,
@@ -628,22 +635,86 @@ function Result({
   label,
   value,
   tone,
+  testId,
 }: {
   label: string;
   value: string;
   tone?: "emerald";
+  testId?: string;
 }) {
   return (
     <div className="calculator-stat total-box">
       <span className="label">{label}</span>
-      <strong className={tone ? `value ${tone}` : "value"}>{value}</strong>
+      <strong className={tone ? `value ${tone}` : "value"} data-testid={testId}>
+        {value}
+      </strong>
     </div>
+  );
+}
+
+// Bloc 68/C: one Templar result tile, same markup/classes as the
+// Templiers referentiel's own presentation tile (templars-reference.tsx)
+// — reused verbatim (.templars-tile-grid/-tile/-image/-body/-title/-stat)
+// so the calculator's results read identically to the reference, per the
+// task spec. Image + border color come from the compiled-in defaults
+// (defaultTemplarPresentationCatalog, skillColor) rather than the live
+// admin-edited catalog: threading that through SkillsCalculators and the
+// /tools/[slug] page as a new server prop is out of scope for this Bloc,
+// and every other image/color used in this file is already a static
+// constant the same way.
+function TemplarResultTile({
+  templarKey,
+  start,
+  target,
+}: {
+  templarKey: TemplarKey;
+  start: number;
+  target: number;
+}) {
+  const t = useTranslations("templars");
+  const game = useTranslations("game");
+  const rate = templarRates[templarKey];
+  const gain = (target - start) * rate;
+  const row = defaultTemplarPresentationCatalog[templarKey];
+  const color = skillColor(templarKey);
+  const name = game(`templars.${templarKey}`);
+  return (
+    <article
+      className="templars-tile"
+      data-testid={`templars-calculator-tile-${templarKey}`}
+      style={
+        {
+          borderColor: color,
+          background: `color-mix(in srgb, ${color} 14%, var(--surface))`,
+        } as CSSProperties
+      }
+    >
+      <GameImage
+        src={row.image}
+        alt={name}
+        className="templars-tile-image"
+        fallback={null}
+      />
+      <div className="templars-tile-body">
+        <h3 className="templars-tile-title">
+          {t("presentation.tile-title", { name })}
+        </h3>
+        <p className="templars-tile-stat">
+          {t("bonus-per-templar")} : {t("rate-value", { rate })}
+        </p>
+        <p className="templars-tile-stat">
+          {t("total-bonus-level", { level: target })} : {`${target * rate}%`}
+        </p>
+        <p className="templars-tile-stat">
+          {t("gain-transition")} : {`${gain >= 0 ? "+" : ""}${gain}%`}
+        </p>
+      </div>
+    </article>
   );
 }
 
 function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const t = useTranslations("templars");
-  const game = useTranslations("game");
   const crossReference = useTranslations("crossReference");
   const references = useTranslations("references");
   const [start, setStart] = useState(0);
@@ -652,8 +723,12 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
   const reference = referenceCatalog.find((item) => item.slug === "templars")!;
   return (
     <div className="calculator-stack">
+      {/* Bloc 68/C: fields + cost total merged into one 3-equal-column
+          card on desktop (dedicated .templars-cost-fields, not the shared
+          .calculator-fields used by Gems/City/DemoAttackTroops), stacking
+          to 1 column on mobile via the same class's own media query. */}
       <section className="calculator-card">
-        <div className="calculator-fields">
+        <div className="templars-cost-fields">
           <label className="calculator-field">
             {t("fields.start-level")}
             <NumberStepper
@@ -674,42 +749,25 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               onChange={(value) => setTarget(Math.floor(value))}
             />
           </label>
+          <Result
+            label={t("total-cost")}
+            value={`${formatGameNumber(cost)} ${t("skydust")}`}
+            testId="templar-cost"
+          />
         </div>
       </section>
+      {/* Bloc 68/C: results as tiles (same visual pattern as the
+          referentiel's presentation tiles), replacing the old table. */}
       <section className="calculator-card">
-        <div className="result-highlight">
-          <span>{t("total-cost")}</span>
-          <strong data-testid="templar-cost">
-            {formatGameNumber(cost)} {t("skydust")}
-          </strong>
-        </div>
-      </section>
-      <section className="calculator-card">
-        <div className="ranking-table-wrap">
-          <table className="ranking-table">
-            <thead>
-              <tr>
-                <th>{t("columns.skill")}</th>
-                <th>{t("bonus-per-templar")}</th>
-                <th>{t("total-bonus-level", { level: target })}</th>
-                <th>{t("gain-transition")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templarKeys.map((key) => {
-                const rate = templarRates[key];
-                const gain = (target - start) * rate;
-                return (
-                  <tr key={key}>
-                    <td>{game(`templars.${key}`)}</td>
-                    <td>{t("rate-value", { rate })}</td>
-                    <td>{`${target * rate}%`}</td>
-                    <td>{`${gain >= 0 ? "+" : ""}${gain}%`}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="templars-tile-grid">
+          {templarKeys.map((key) => (
+            <TemplarResultTile
+              key={key}
+              templarKey={key}
+              start={start}
+              target={target}
+            />
+          ))}
         </div>
       </section>
       {/* Bloc 55/A: after the tool's own content, not before it. */}

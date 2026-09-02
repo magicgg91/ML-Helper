@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
@@ -138,7 +144,7 @@ describe("SkillsCalculators", () => {
     expect(obtainedStat).toHaveClass("value", "emerald");
   });
   it("applies one shared level range to all five Templar skills at once", () => {
-    renderWithIntl(
+    const { container } = renderWithIntl(
       <SkillsCalculators
         combatRows={combatRows}
         expeditionRows={expeditionRows}
@@ -149,20 +155,24 @@ describe("SkillsCalculators", () => {
       target: { value: "3" },
     });
     expect(screen.getByTestId("templar-cost")).toHaveTextContent("599 Pouciel");
-    const rows = screen.getAllByRole("row").slice(1);
-    expect(rows).toHaveLength(5);
-    const striker = rows
-      .find((row) => row.textContent?.startsWith("Attaque"))!
-      .querySelectorAll("td");
-    expect(striker[1]).toHaveTextContent("0.25%/Templier");
-    expect(striker[2]).toHaveTextContent("0.75%");
-    expect(striker[3]).toHaveTextContent("+0.75%");
-    const rusher = rows
-      .find((row) => row.textContent?.startsWith("Vitesse"))!
-      .querySelectorAll("td");
-    expect(rusher[1]).toHaveTextContent("1%/Templier");
-    expect(rusher[2]).toHaveTextContent("3%");
-    expect(rusher[3]).toHaveTextContent("+3%");
+    // Bloc 68/C: results are now tiles (same pattern as the Templiers
+    // referentiel), not table rows.
+    const tiles = container.querySelectorAll(".templars-tile");
+    expect(tiles).toHaveLength(5);
+    const striker = container.querySelector(
+      '[data-testid="templars-calculator-tile-striker"]',
+    )!;
+    expect(striker).toHaveTextContent("Templier Attaque");
+    expect(striker).toHaveTextContent("0.25%/Templier");
+    expect(striker).toHaveTextContent("0.75%");
+    expect(striker).toHaveTextContent("+0.75%");
+    const rusher = container.querySelector(
+      '[data-testid="templars-calculator-tile-rusher"]',
+    )!;
+    expect(rusher).toHaveTextContent("Templier Vitesse");
+    expect(rusher).toHaveTextContent("1%/Templier");
+    expect(rusher).toHaveTextContent("3%");
+    expect(rusher).toHaveTextContent("+3%");
   });
   it("uses the administrator-provided named Templar parameters", () => {
     renderWithIntl(
@@ -179,6 +189,55 @@ describe("SkillsCalculators", () => {
     expect(screen.getByTestId("templar-cost")).toHaveTextContent(
       "3.99k Pouciel",
     );
+  });
+  // Bloc 68/C: Niveau départ / Niveau cible / Coût total merged into one
+  // 3-column card (.templars-cost-fields), not the shared .calculator-fields
+  // used by Gems/City/DemoAttackTroops — and the testid must still resolve
+  // correctly inside that merged block.
+  it("Bloc68/C: merges the level fields and the cost total into one .templars-cost-fields card", () => {
+    const { container } = renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    const mergedCard = container.querySelector(".templars-cost-fields")!;
+    expect(mergedCard).not.toBeNull();
+    expect(
+      mergedCard.querySelector('[data-testid="templar-cost"]'),
+    ).not.toBeNull();
+    expect(
+      within(mergedCard as HTMLElement).getByRole("spinbutton", {
+        name: "Niveau de départ",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(mergedCard as HTMLElement).getByRole("spinbutton", {
+        name: "Niveau cible",
+      }),
+    ).toBeInTheDocument();
+    // No leftover generic .calculator-fields/.result-highlight blocks
+    // for this calculator (would regress Gems/City's own shared class).
+    expect(container.querySelector(".calculator-fields")).toBeNull();
+    expect(container.querySelector(".result-highlight")).toBeNull();
+    expect(container.querySelector("table")).toBeNull();
+  });
+  // Bloc 68/C, Bloc 68/A: the merged fields card and the result tiles reuse
+  // the referentiel's own 3-col-desktop/1-col-mobile grid classes, so the
+  // mobile stack + desktop 3-col merge are covered by the CSS assertions in
+  // reference-styles.test.ts — this only checks the classes are actually
+  // present in the rendered DOM.
+  it("Bloc68/A, C: the fields card and result tiles carry the classes with the desktop-3col/mobile-1col rules", () => {
+    const { container } = renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Templiers" }));
+    expect(container.querySelector(".templars-cost-fields")).not.toBeNull();
+    expect(container.querySelector(".templars-tile-grid")).not.toBeNull();
   });
   it("Bloc55/A: shows the Templars tool->reference banner after the tool's own content", () => {
     renderWithIntl(
@@ -328,5 +387,29 @@ describe("SkillsCalculators", () => {
     // price must be the one actually used, giving 10k instead.
     expect(screen.getAllByText("10k").length).toBeGreaterThan(0);
     expect(screen.queryByText("14k")).not.toBeInTheDocument();
+  });
+
+  // Bloc 68 non-regression: the Gems league selectors are explicitly
+  // excluded from the select->buttons conversion (points J/K) and must
+  // stay plain <select> elements — GemOptimization's per-row league field
+  // and GemBudget's league field.
+  it("Bloc68: keeps the Gems league fields as plain <select> elements, not buttons", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    const rowLeague = screen.getByRole("combobox", { name: "Ligue ligne 1" });
+    expect(rowLeague.tagName).toBe("SELECT");
+
+    fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    const budgetLeague = screen.getByRole("combobox", { name: "Ligue" });
+    expect(budgetLeague.tagName).toBe("SELECT");
+
+    expect(
+      screen.queryByRole("group", { name: /ligue/i }),
+    ).not.toBeInTheDocument();
   });
 });

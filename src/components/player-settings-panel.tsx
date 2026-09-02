@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { NumberStepper } from "./number-stepper";
+import { LeagueButtons } from "./league-select";
 import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
@@ -11,7 +12,6 @@ import {
   combinedSkillPercent,
   defaultPlayerSettings,
   fitSkillPointsToBudget,
-  leagues,
   skillCapForLeague,
   skillKeys,
   skillPercent,
@@ -90,7 +90,6 @@ export function PlayerSettingsPanel() {
   const locale = useLocale();
   const t = useTranslations("player-settings");
   const game = useTranslations("game");
-  const common = useTranslations("common");
   const [settings, setSettings] = useState(defaultPlayerSettings);
   const [loaded, setLoaded] = useState(false);
 
@@ -149,7 +148,7 @@ export function PlayerSettingsPanel() {
       t("summary", {
         league: settings.league
           ? game(`leagues.${settings.league}`)
-          : common("choose"),
+          : t("league-undefined"),
         level: settings.level,
         vp: Intl.NumberFormat(locale, {
           notation: "compact",
@@ -157,16 +156,7 @@ export function PlayerSettingsPanel() {
         }).format(vp),
         templarTotal,
       }),
-    [
-      common,
-      game,
-      locale,
-      settings.league,
-      settings.level,
-      t,
-      templarTotal,
-      vp,
-    ],
+    [game, locale, settings.league, settings.level, t, templarTotal, vp],
   );
 
   const setLevel = (level: number) =>
@@ -207,8 +197,15 @@ export function PlayerSettingsPanel() {
     <aside className="player-settings" aria-labelledby="player-settings-title">
       <details>
         <summary>
-          <span id="player-settings-title">{t("title")}</span>
-          <small>{summary}</small>
+          {/* Bloc 68/G: wraps the title + one-line summary so the mobile
+              breakpoint can stack them (globals.css's own
+              .player-summary-row1 rule, previously unused by any
+              component) — the skills-breakdown line below is unaffected,
+              it already sits on its own line either way. */}
+          <div className="player-summary-row1">
+            <span id="player-settings-title">{t("title")}</span>
+            <small>{summary}</small>
+          </div>
           <small
             className="player-summary-line2"
             data-testid="player-summary-line2"
@@ -263,22 +260,12 @@ export function PlayerSettingsPanel() {
         </summary>
         <div className="player-settings-body">
           <div className="settings-grid settings-grid-primary">
-            <label>
-              {t("league")}
-              <select
-                value={settings.league}
-                onChange={(event) =>
-                  setLeague(event.target.value as LeagueSelection)
-                }
-              >
-                <option value="">{common("choose")}</option>
-                {leagues.map((league) => (
-                  <option key={league} value={league}>
-                    {game(`leagues.${league}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <LeagueButtons
+              label={t("league")}
+              value={settings.league}
+              onChange={setLeague}
+              className="league-buttons-grid"
+            />
             <label>
               {t("player-level")}
               <NumberStepper

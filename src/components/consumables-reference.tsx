@@ -32,7 +32,10 @@ function CategoryFilters({
     <div className="reference-filters" aria-label={filtersLabel}>
       <div>
         <span className="filter-label">{filterLabel}</span>
-        <div className="family-buttons">
+        {/* Bloc 68/L: shared mobile 2-column grid (see globals.css) — exactly
+            4 category buttons, so they fill a full-width 2x2 grid on mobile
+            instead of the default wrap. Desktop is untouched. */}
+        <div className="family-buttons reference-filter-grid-2">
           {/* Bloc 48/D: category button order follows consumableCategories
               (alphabetical: Conseillers, Équipement, Expédition,
               Inventaire) — kept in sync with the table display order

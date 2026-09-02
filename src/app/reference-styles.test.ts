@@ -97,6 +97,25 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
+  // Bloc 68/D: the homepage reuses the Outils/Référentiels/Guides section
+  // titles verbatim from /tools, /referentiels and /guides — but those 3
+  // pages render theirs as a real <h1>, which picks up the gradient
+  // clipped-text violet from the "Prototype visual language" h1 rule
+  // (~line 1471), while the homepage rendered the same text as a plain
+  // var(--text) <h2> that never inherited it.
+  it("Bloc68/D: gives the homepage's Outils/Référentiels/Guides section titles the same gradient violet clip as their h1 counterparts", () => {
+    const rule = css.match(
+      /\.home-tools h2,\n\.home-references h2,\n\.home-guides h2\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(
+      /background: linear-gradient\(110deg, var\(--accent-strong\), var\(--accent\)\);/,
+    );
+    expect(rule).toMatch(/color: transparent;/);
+    expect(rule).toMatch(/background-clip: text;/);
+    expect(rule).not.toMatch(/color: var\(--text\);/);
+  });
+
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
     expect(css).toMatch(
       /main\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
@@ -351,6 +370,24 @@ describe("Bloc 64: Boutique tiles, Level Up pagination, Templiers split", () => 
   });
 });
 
+describe("Bloc 68/B: Boutique tile cost badge moves under the name, mobile only", () => {
+  it("stacks the heading into a column on mobile, badge under the name", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.consumable-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;\s*\n\s*}\s*\n[\s\S]*?\n\s*\.consumable-tile-heading\s*{\s*\n\s*flex-direction: column;\s*\n\s*align-items: flex-start;/,
+    );
+  });
+
+  // Desktop must stay exactly as Bloc 64/C left it: a row, badge at the
+  // top-right via space-between — the mobile override above must not leak
+  // into the base (non-media-query) rule.
+  it("leaves the desktop rule untouched: still a row, still space-between", () => {
+    const heading = css.match(/\.consumable-tile-heading\s*{([\s\S]*?)\n}/)?.[1];
+    expect(heading).toBeDefined();
+    expect(heading).toMatch(/justify-content: space-between/);
+    expect(heading).not.toMatch(/flex-direction/);
+  });
+});
+
 describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
   // A + C: the Intro grid and the category grids are the same rule, so
   // one 6rem image size and one tile style cover both.
@@ -436,12 +473,13 @@ describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
 });
 
 describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () => {
-  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 2
-  // tiles per row on desktop, 1 on mobile like Boutique/Gemmes.
-  it("B: lays the Templiers tiles out 2 per row, dropping to 1 column on mobile, images at 6rem", () => {
+  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 3
+  // tiles per row on desktop (Bloc 68/A: 5 Templiers = 3+2), 1 on mobile
+  // like Boutique/Gemmes.
+  it("B: lays the Templiers tiles out 3 per row, dropping to 1 column on mobile, images at 6rem", () => {
     const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(grid).toBeDefined();
-    expect(grid).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(grid).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -463,5 +501,102 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
       expect(rule, selector).toBeDefined();
       expect(rule, selector).toMatch(/font-size: 1\.1rem;/);
     }
+  });
+});
+
+// Bloc 68: shared mobile-only grid modifiers, laid down once so every
+// consumer (Boutique's category filter, Combat/Expedition's family/rarity
+// filters, Événements/Progression's league buttons) references the exact
+// same rule instead of each defining its own near-duplicate.
+describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
+  it("L, M: .reference-filter-grid-2 forms a full-width 2-column grid, mobile only", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-2\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+  });
+
+  // M: deliberately 2 then 3, not a flat 2-column grid — and deliberately
+  // keeps rarityOrder's existing rarest-to-commonest DOM order (Légendaire,
+  // Mythique first) rather than "correcting" it to Commun→Légendaire.
+  it("M: .reference-filter-grid-rarity splits 5 buttons 2-then-3 across 2 rows, mobile only", () => {
+    const rule = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-rarity\s*{([\s\S]*?)\n {2}}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/);
+    expect(css).toMatch(
+      /\.reference-filter-grid-rarity button:nth-child\(1\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(2\)\s*{\s*\n\s*grid-column: span 3;/,
+    );
+    expect(css).toMatch(
+      /\.reference-filter-grid-rarity button:nth-child\(3\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(4\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(5\)\s*{\s*\n\s*grid-column: span 2;/,
+    );
+  });
+
+  it("N: .league-buttons-grid forms a full-width 3-column grid (2 rows of 3 for 6 leagues), mobile only", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.league-buttons-grid\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    );
+  });
+
+  // H+I: Player Settings' .settings-grid sections (equipment/points/
+  // templars/clan-temple) go 2-column on mobile, and within the primary
+  // fields grid specifically, the first child (the league LeagueButtons
+  // group, since F) spans the full row so Level/VP share the row below it.
+  it("H+I: Player Settings' .settings-grid sections go 2-column on mobile, with the primary grid's first child (league) spanning the full row", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
+
+  // Follow-up to H: the Level field has no unit select, so an even 1fr/1fr
+  // split left its NumberStepper visibly wider than VP's. On mobile only,
+  // VP's column gets extra width (7fr vs Level's 5fr) and its unit select
+  // shrinks, so the two NumberSteppers end up close to the same width.
+  it("gives the mobile Level/VP row an uneven column split and a narrower VP unit select, so both NumberSteppers end up close in width", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
+    );
+  });
+});
+
+describe("Bloc 68/J+K review fixes: Codex findings on the PR", () => {
+  it("keeps the disclosure arrow on the title itself, not as a 3rd flex item of .player-summary-row1 (space-between would push it away from the title)", () => {
+    expect(css).not.toMatch(/\.player-summary-row1::before/);
+    expect(css).toMatch(
+      /#player-settings-title::before\s*{\s*\n\s*content: "▸";/,
+    );
+    expect(css).toMatch(
+      /\.player-settings > details\[open\] > summary #player-settings-title::before\s*{\s*\n\s*content: "▾";/,
+    );
+  });
+
+  it("makes a LeagueButtons group (.family-buttons) dropped into .calculator-fields span the full row, so it isn't boxed into one ~12rem auto-fit column with a horizontal scrollbar hiding later leagues on desktop", () => {
+    expect(css).toMatch(
+      /\.calculator-fields > \.family-buttons\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
+});
+
+// Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
+// columns (Niveau départ / Niveau cible / Coût total) on desktop, 1 column
+// (stacked) on mobile. Dedicated class, distinct from the shared
+// .calculator-fields used by Gems/City/DemoAttackTroops.
+describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
+  it("gives .templars-cost-fields 3 equal columns on desktop, 1 on mobile", () => {
+    const rule = css.match(/\.templars-cost-fields\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
+    );
   });
 });
