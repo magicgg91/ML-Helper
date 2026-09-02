@@ -417,6 +417,101 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
   });
 });
 
+// Bloc 68/M: mobile-only filter grid classes on Combat/Expedition
+// referentiels — family filter (4 buttons) gets a 2-column grid, rarity
+// filter (5 buttons) gets the 3+2 split grid. Both classes are already
+// fully defined/tested in globals.css (scaffolding commit); this only
+// checks the class names land on the right <div>s.
+describe("Bloc 68/M: mobile filter grids (family 2-col, rarity 3+2) on Combat/Expedition referentiels", () => {
+  afterEach(cleanup);
+
+  it("Combat: family filter div carries both family-buttons and reference-filter-grid-2", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={combatReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    const familyGroup = screen.getByTestId("filter-family-Attaque").closest(
+      ".family-buttons",
+    )!;
+    expect(familyGroup.className).toContain("family-buttons");
+    expect(familyGroup.className).toContain("reference-filter-grid-2");
+  });
+
+  it("Combat: rarity filter div carries both family-buttons and reference-filter-grid-rarity", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={combatReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    const rarityGroup = screen
+      .getByTestId("filter-rarity-Légendaire")
+      .closest(".family-buttons")!;
+    expect(rarityGroup.className).toContain("family-buttons");
+    expect(rarityGroup.className).toContain("reference-filter-grid-rarity");
+  });
+
+  it("Expedition: family filter div carries both family-buttons and reference-filter-grid-2", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ExpeditionReferenceTable rows={expeditionReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    const familyGroup = screen.getByTestId("filter-family-Or").closest(
+      ".family-buttons",
+    )!;
+    expect(familyGroup.className).toContain("family-buttons");
+    expect(familyGroup.className).toContain("reference-filter-grid-2");
+  });
+
+  it("Expedition: rarity filter div carries both family-buttons and reference-filter-grid-rarity", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ExpeditionReferenceTable rows={expeditionReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    const rarityGroup = screen
+      .getByTestId("filter-rarity-Commun")
+      .closest(".family-buttons")!;
+    expect(rarityGroup.className).toContain("family-buttons");
+    expect(rarityGroup.className).toContain("reference-filter-grid-rarity");
+  });
+
+  // Non-regression: rarityOrder in lib/equipment.ts is deliberately
+  // rarest-to-commonest (reverse of the site's usual convention), and the
+  // .reference-filter-grid-rarity CSS (nth-child based) assumes this exact
+  // DOM order — Légendaire+Mythique on row 1, Épique+Rare+Commun on row 2.
+  // Reordering rarityOrder or the button rendering would silently break
+  // that grouping without any visible error, so guard the order here.
+  it("Bloc 68/M non-regression: rarity filter buttons render rarest-first — Légendaire, Mythique, Épique, Rare, Commun — never Commun-first", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable rows={combatReferenceRows} />
+      </NextIntlClientProvider>,
+    );
+    const rarityGroup = screen
+      .getByTestId("filter-rarity-Légendaire")
+      .closest(".family-buttons")!;
+    const buttons = Array.from(
+      rarityGroup.querySelectorAll<HTMLElement>("button"),
+    );
+    expect(buttons.map((button) => button.dataset.testid)).toEqual([
+      "filter-rarity-Légendaire",
+      "filter-rarity-Mythique",
+      "filter-rarity-Épique",
+      "filter-rarity-Rare",
+      "filter-rarity-Commun",
+    ]);
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      "Légendaire",
+      "Mythique",
+      "Épique",
+      "Rare",
+      "Commun",
+    ]);
+  });
+});
+
 describe("CombatReferenceTable — Bloc 37/G: explicit 'no skill' vs. not-yet-filled-in (kept)", () => {
   afterEach(cleanup);
   const baseSet = (() => {
