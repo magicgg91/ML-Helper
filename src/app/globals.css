@@ -1029,12 +1029,17 @@ select {
   color: var(--muted);
 }
 
-/* Bloc 73/E: 1.8rem -> 2.8rem, alongside the Bloc 73/D layout revision
-   below (bigger image needs the extra room D's 2-column split frees up). */
 .stuff-slot-image {
   max-width: 100%;
-  max-height: 2.8rem;
+  max-height: 1.8rem;
   object-fit: contain;
+}
+/* Bloc 73/E review fix: scoped to Combat only (a 2nd class alongside the
+   shared .stuff-slot-image) — the shared rule above is also used by the
+   Expedition slot renderer, which doesn't get Bloc 73/D's 2-column split
+   and has no extra room for a bigger image. */
+.stuff-slot-image-combat {
+  max-height: 2.8rem;
 }
 /* Bloc 73/D: replaces the old single-column stack (image, star text, then
    a row of gem badges below) with image+star on the left and the (up to
@@ -1080,7 +1085,12 @@ select {
 /* Bloc 73/D: shared star-rating rendering — real repeated star icons,
    never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
    1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
-   Used for both the equipment's own star level and each gem's. */
+   Used for both the equipment's own star level and each gem's.
+   Review fix: the white fill needs its own fixed dark outline, not
+   var(--border) — that token is a light, near-white grey in the light
+   theme, so a white-filled star sat almost invisible against the equally
+   near-white tile background there. A fixed semi-transparent black
+   outline stays legible against both a light and a dark surface. */
 .star-rating {
   display: inline-flex;
   gap: 1px;
@@ -1088,11 +1098,42 @@ select {
 }
 .star-rating svg {
   fill: currentColor;
-  stroke: var(--border);
+  stroke: rgb(0 0 0 / 55%);
   stroke-width: 1.5px;
 }
 .star-rating-yellow {
   color: var(--amber-bright);
+}
+/* Bloc 73/D review fix: at the 390px mobile floor, a fully configured
+   slot (2.8rem image, a 3-gem column each with up to a 4-icon rating)
+   could overflow its ~95px cell — shrink the image back down, tighten
+   every gap, and shrink the icons themselves so the worst case (every
+   gem at its max 8-star tier) still fits. Desktop (Bloc 73/E) keeps the
+   full 2.8rem image untouched. */
+@media (max-width: 900px) {
+  .stuff-slot-image-combat {
+    max-height: 1.6rem;
+  }
+  .stuff-slot-layout {
+    gap: 0.3rem;
+  }
+  .stuff-slot-gems {
+    gap: 0.1rem;
+  }
+  .stuff-slot-gem {
+    gap: 0.15rem;
+  }
+  .gem-badge-image {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  .star-rating {
+    gap: 0;
+  }
+  .star-rating svg {
+    width: 6px;
+    height: 6px;
+  }
 }
 
 .stuff-editor,

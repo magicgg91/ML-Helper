@@ -267,7 +267,7 @@ function SlotCell({
               <GameImage
                 src={equipmentImagePath(item.family, rarity, slot)}
                 alt={item.set_name}
-                className="stuff-slot-image"
+                className="stuff-slot-image stuff-slot-image-combat"
                 fallback={null}
               />
             ) : null}

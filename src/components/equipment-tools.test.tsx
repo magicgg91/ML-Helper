@@ -221,6 +221,10 @@ describe("equipment tools", () => {
     const left = layout.querySelector(".stuff-slot-left")!;
     const image = left.querySelector("img.stuff-slot-image")!;
     expect(image).toBeInTheDocument();
+    // Review fix: the enlarged size (Bloc 73/E) is scoped to Combat via
+    // this 2nd class — the shared .stuff-slot-image class alone (also
+    // used by the untouched Expedition slot renderer) must stay small.
+    expect(image).toHaveClass("stuff-slot-image-combat");
     // The equipment's own star sits below the image, inside the same left
     // column, not off to the side with the gems.
     expect(left.querySelector(".star-rating")).toBeInTheDocument();

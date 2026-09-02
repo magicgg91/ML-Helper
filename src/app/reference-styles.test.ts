@@ -981,12 +981,46 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     );
     expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: var\(--amber-bright\);/);
   });
+
+  // Review fix: var(--border) is a light, near-white grey in the light
+  // theme, so a white-filled star had almost no visible outline against
+  // the equally near-white tile background there. A fixed, theme-
+  // independent dark outline stays legible on both a light and dark
+  // surface.
+  it("gives the white-tier star icons a fixed dark outline, not the theme-dependent --border token", () => {
+    expect(css).toMatch(
+      /\.star-rating svg\s*{\s*\n\s*fill: currentColor;\s*\n\s*stroke: rgb\(0 0 0 \/ 55%\);/,
+    );
+  });
+
+  // Review fix: the worst case (2.8rem image + a 3-gem column, each gem
+  // at its max 8-star/4-icon tier) overflowed the ~95px mobile cell —
+  // shrink the image, gaps and icon sizes back down below the 900px
+  // breakpoint so it always fits. Desktop (Bloc 73/E) is untouched.
+  it("shrinks the combat image, gaps, and icon sizes back down on mobile so the worst case (max stars on all 3 gems) still fits", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.stuff-slot-image-combat\s*{([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).toMatch(/max-height: 1\.6rem;/);
+    expect(mediaBlock).toMatch(/\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/);
+  });
 });
 
 describe("Bloc 73/E: Combat equipment slot image grows to 2.8rem", () => {
-  it("raises .stuff-slot-image's max-height from the old 1.8rem to 2.8rem", () => {
+  it("keeps the shared .stuff-slot-image (also used by Expedition) at the original 1.8rem", () => {
     expect(css).toMatch(
-      /\.stuff-slot-image\s*{\s*\n\s*max-width: 100%;\s*\n\s*max-height: 2\.8rem;/,
+      /\.stuff-slot-image\s*{\s*\n\s*max-width: 100%;\s*\n\s*max-height: 1\.8rem;/,
+    );
+  });
+
+  // Review fix: .stuff-slot-image is shared with the (untouched)
+  // Expedition slot renderer, which has no extra room for a bigger image
+  // — the 2.8rem increase is scoped to a 2nd, Combat-only class instead
+  // of the shared one.
+  it("raises the size only for Combat, via a 2nd class alongside the shared one", () => {
+    expect(css).toMatch(
+      /\.stuff-slot-image-combat\s*{\s*\n\s*max-height: 2\.8rem;\s*\n}/,
     );
   });
 });
