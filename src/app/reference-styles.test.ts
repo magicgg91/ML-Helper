@@ -569,23 +569,30 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     );
   });
 
-  // Bloc 69/D, desktop: League spans the full row on its own (unchanged
-  // from Bloc 68/H's mobile-only version, now also true on desktop), and
-  // Level/VP each land in exactly 25% of the row (1 of 4 equal columns).
-  it("gives Player Settings' primary grid 4 equal desktop columns, with League still spanning the full row", () => {
+  // Bloc 71/D, desktop: League/Level/VP now share a single row (reversing
+  // Bloc 69/D's "League spans alone, Level/VP split 25% each below it") —
+  // a 5:2:3 column grid (50%/20%/30%), with VP's own unit-input split 2:1
+  // internally so its NumberStepper lands at 20% of the row and the unit
+  // select at 10%.
+  it("gives Player Settings' primary grid a 5:2:3 desktop column split (League/Level/VP), not the old 4-equal-columns-with-League-spanning", () => {
     const desktopRuleIndex = css.indexOf(
-      ".settings-grid-primary {\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n}",
+      ".settings-grid-primary {\n  grid-template-columns: 5fr 2fr 3fr;\n}",
     );
-    const desktopSpanIndex = css.indexOf(
-      ".settings-grid-primary > :first-child {\n  grid-column: 1 / -1;\n}",
+    const desktopUnitInputIndex = css.indexOf(
+      ".settings-grid-primary .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
     );
     const mediaQueryIndex = css.indexOf("@media (max-width: 900px) {");
     expect(desktopRuleIndex).toBeGreaterThan(-1);
-    expect(desktopSpanIndex).toBeGreaterThan(-1);
+    expect(desktopUnitInputIndex).toBeGreaterThan(-1);
     // Both rules must sit before the mobile media query, i.e. apply
     // unconditionally (desktop included), not just under it.
     expect(desktopRuleIndex).toBeLessThan(mediaQueryIndex);
-    expect(desktopSpanIndex).toBeLessThan(mediaQueryIndex);
+    expect(desktopUnitInputIndex).toBeLessThan(mediaQueryIndex);
+    // The old desktop-wide full-span rule for League is gone — only the
+    // mobile-scoped one (inside the media query) should remain.
+    expect(css).not.toMatch(
+      /\.settings-grid-primary {\s*\n\s*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/,
+    );
   });
 
   it("gives the league field a visible title matching the Level/VP fields' own label style", () => {
@@ -676,6 +683,44 @@ describe("Bloc 69/G: Ranking mobile-only redesign", () => {
   });
 });
 
+// Bloc 71/B: reverses the Bloc 69 exclusion — Classement's desktop league
+// field now joins the Villes/Demo Attack pattern (Blocs 69/70): title
+// above the buttons, targeting 50% of the row. Mobile (Bloc 69/G, tested
+// above) is untouched.
+describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern", () => {
+  // Review fix (PR #90): unlike Villes/Demo Attack's non-shrinking 50%
+  // (their numeric fields shrink instead, per Bloc 69/E), Ranking's 2
+  // numeric fields have fixed 9rem steppers that never shrink — so this
+  // field must stay shrinkable (flex-shrink: 1, min-width: 0) or the row
+  // overflows at desktop widths just above the 900px breakpoint.
+  it("targets 50% via flex: 0 1 50%, shrinkable (not the non-shrinking flex: 0 0 50% used elsewhere)", () => {
+    expect(css).toMatch(
+      /\.ranking-league-field\s*{\s*\n\s*flex: 0 1 50%;\s*\n\s*min-width: 0;/,
+    );
+  });
+
+  it("no longer carries .ranking-inline-field's desktop inline-label rule (title is above, not inline before)", () => {
+    // .ranking-inline-field itself must still exist for the 2 numeric
+    // fields (Bloc 64/G, tested in Bloc 69/G above) — only the league
+    // field's own rule declares the 50% width independently.
+    const leagueRule = css.match(/\.ranking-league-field\s*{([\s\S]*?)\n}/)?.[1];
+    expect(leagueRule).toBeDefined();
+    expect(leagueRule).not.toMatch(/display: flex;/);
+  });
+
+  // 2nd review fix (PR #90): the field shrinking alone let its
+  // .family-buttons fall back to its own generic overflow-x: auto and
+  // scroll internally — which the permanent Bloc 69/F e2e regression test
+  // forbids (no league group may ever scroll, at any width; this exact
+  // case failed CI at 1000px). Wraps to a 2nd row instead: no scroll in
+  // either axis, full button text always visible.
+  it("wraps .family-buttons instead of letting it scroll, so the row-F 'never scrolls' invariant holds even when the field is squeezed", () => {
+    expect(css).toMatch(
+      /\.ranking-league-field \.family-buttons\s*{\s*\n\s*flex-wrap: wrap;\s*\n\s*overflow-x: visible;/,
+    );
+  });
+});
+
 // Bloc 69/E: City's 3 tools (Coût de Ville/Niveau Max Atteignable/
 // Production) and Demo Attack Troops' league field now shares the row
 // with the tool's other fields on desktop (a dedicated flex row,
@@ -724,9 +769,89 @@ describe("Bloc 70/A: league field is exactly 50% of the shared row", () => {
     );
   });
 
-  it("does not touch the width of any other league-button selector on the site", () => {
+  // Bloc 71/B reversed the Bloc 69 exclusion for Classement's desktop
+  // league field specifically — it now also targets 50% (via its own
+  // shrinkable flex: 0 1 50%, tested in the Bloc 71/B block below; the
+  // 2 numeric fields it shares the row with, unlike Villes/Demo Attack's,
+  // never shrink). Player Settings and Level Up/Progression/Events still
+  // keep their own separate width decisions, untouched.
+  it("does not touch the width of Player Settings' or Level Up/Progression/Events' league selectors", () => {
     expect(css).not.toMatch(/\.settings-grid[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
-    expect(css).not.toMatch(/\.ranking-[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
     expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(1);
+  });
+});
+
+// Bloc 71/A: Niveau Max Atteignable only — Nombre de villes and Niveau de
+// départ narrowed 30%, freeing space for the Or disponible numeric field
+// (not its own unit selector, which is separately narrowed 30% too).
+describe("Bloc 71/A: Niveau Max Atteignable field widths", () => {
+  it("narrows Nombre de villes/Niveau de départ by 30% (flex-grow 0.7 vs the row's default 1)", () => {
+    expect(css).toMatch(
+      /\.city-maxlevel-fields \.calculator-field\.city-maxlevel-narrow-field\s*{\s*\n\s*flex: 0\.7 1 0;/,
+    );
+  });
+
+  it("hands the freed space (0.3 + 0.3) to the Or disponible field as a whole", () => {
+    expect(css).toMatch(
+      /\.city-maxlevel-fields \.calculator-field\.city-maxlevel-gold-field\s*{\s*\n\s*flex: 1\.6 1 0;/,
+    );
+  });
+
+  it("narrows the gold unit select by 30% (4.5rem -> 3.15rem), so the NumberStepper column absorbs it", () => {
+    expect(css).toMatch(
+      /\.city-maxlevel-gold-field \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.15rem;/,
+    );
+  });
+});
+
+// Bloc 71/C: league buttons must never render bold, on any of the site's
+// league-button locations — aligned on Player Settings' own (correct)
+// style, which was never bold because its label is a sibling <span>
+// rather than a shared bold ancestor.
+describe("Bloc 71/C: league button text is never bold", () => {
+  it("pins .family-buttons button/a to font-weight: 400, overriding any inherited bold ancestor", () => {
+    expect(css).toMatch(
+      /\.family-buttons button,\s*\n\.family-buttons a\s*{\s*\n\s*font-weight: 400;/,
+    );
+  });
+
+  it("does not change .pagination button's own weight (same base rule, but a different concern)", () => {
+    const rule = css.match(
+      /\.family-buttons button,\s*\n\.family-buttons a\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).not.toMatch(/\.pagination/);
+  });
+});
+
+// Bloc 71/D: League/Level/VP now share one row on desktop, replacing Bloc
+// 68's "25% each for Level/VP" (which didn't put League on that row at
+// all) — a 50/20/20/10 split (League/Level/VP-number/VP-unit).
+describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)", () => {
+  it("splits the desktop row 5:2:3 (League 50%, Level 20%, VP-as-a-whole 30%)", () => {
+    expect(css).toMatch(
+      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: 5fr 2fr 3fr;/,
+    );
+  });
+
+  it("splits VP's own unit-input 2:1, landing its NumberStepper at 20% of the row and the unit select at 10%", () => {
+    expect(css).toMatch(
+      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
+    );
+  });
+
+  it("keeps the mobile layout (Blocs 68/H+I, 69/D) completely unchanged", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+    );
   });
 });

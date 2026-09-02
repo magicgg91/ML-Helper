@@ -153,26 +153,40 @@ describe("RankingCalculator", () => {
     ]);
   });
 
-  // Bloc 64/G: settles Bloc 62/D's open choice on option (b) — every one
-  // of the 3 fields carries its label inline, immediately before its own
-  // control, and none above. Asserted structurally: each label is the
-  // field's first child, sharing a single-line row with the control.
-  it("Bloc64/G: puts each field's label inline right before its control, on all 3 fields", () => {
+  // Bloc 64/G: settles Bloc 62/D's open choice on option (b) — the 2
+  // numeric fields carry their label inline, immediately before their own
+  // control. Asserted structurally: each label is the field's first child,
+  // sharing a single-line row with the control.
+  // Bloc 71/B reversed this for the league field specifically (see the
+  // dedicated test below) — only 2 fields (percentage/rank) use this
+  // inline pattern now, not 3.
+  it("Bloc64/G: puts each numeric field's label inline right before its control", () => {
     const { container } = renderCalculator();
     const fields = Array.from(
       container.querySelectorAll(".ranking-inline-field"),
     );
-    expect(fields).toHaveLength(3);
+    expect(fields).toHaveLength(2);
     expect(
       fields.map((field) => field.firstElementChild?.textContent),
-    ).toEqual(["Ligue", "Ton pourcentage actuel", "Ton rang actuel"]);
+    ).toEqual(["Ton pourcentage actuel", "Ton rang actuel"]);
     for (const field of fields) {
       // The label is a sibling of the control, not a line above it.
       expect(field.firstElementChild).toHaveClass("ranking-field-label");
       expect(field.children.length).toBe(2);
     }
-    // No label sits above any of the 3 controls any more.
-    expect(container.querySelector(".calculator-field > label")).toBeNull();
+  });
+
+  // Bloc 71/B: the league field rejoins the Villes/Demo Attack desktop
+  // pattern (Blocs 69/70) — a title above the buttons (not inline before
+  // them, unlike the 2 numeric fields above), no longer carrying
+  // .ranking-inline-field.
+  it("Bloc71/B: puts the league field's title above the buttons, not inline before them", () => {
+    const { container } = renderCalculator();
+    const leagueField = container.querySelector(".ranking-league-field");
+    expect(leagueField).not.toBeNull();
+    expect(leagueField).not.toHaveClass("ranking-inline-field");
+    expect(leagueField?.firstElementChild?.textContent).toBe("Ligue");
+    expect(leagueField?.firstElementChild).toHaveClass("ranking-field-label");
   });
 
   // Bloc 64/F: the badge is qualified again, this time as "estimé" —

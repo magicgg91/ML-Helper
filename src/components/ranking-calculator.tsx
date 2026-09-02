@@ -49,9 +49,15 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             wider button group onto its own line.
             Bloc 64/G: each label now sits inline immediately before its own
             control (option (b) of Bloc 62/D, settled here) — same rule for
-            all 3, so none of them carries a label above it any more. */}
+            all 3, so none of them carries a label above it any more.
+            Bloc 71/B: reversed for the league field only — desktop now
+            joins the Villes/Demo Attack pattern (Blocs 69/70): a title
+            above the buttons, fixed at 50% of the row, instead of the
+            inline label. The 2 numeric fields keep Bloc 64/G's inline
+            style; mobile is unaffected (it already stacks title-above via
+            .ranking-fields' own mobile rule, independent of this class). */}
         <div className="ranking-fields">
-          <div className="calculator-field ranking-inline-field ranking-league-field">
+          <div className="calculator-field ranking-league-field">
             <span className="ranking-field-label">{t("fields.league")}</span>
             <LeagueButtons
               label={t("fields.league")}
