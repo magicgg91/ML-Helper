@@ -405,8 +405,8 @@
     "total-cost": "Coste total",
     "skydust": "Polvo celeste",
     "bonus-per-templar": "Bono por templario",
-    "total-bonus-level": "Bono total en nivel {level}",
-    "gain-transition": "Ganancia inicio → objetivo",
+    "total-bonus": "Bono total",
+    "gain": "Ganancia",
     "rate-value": "{rate}%",
     "cost-table": "Tabla de costes",
     "columns": {

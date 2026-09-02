@@ -405,8 +405,8 @@
     "total-cost": "Total cost",
     "skydust": "Skydust",
     "bonus-per-templar": "Bonus per templar",
-    "total-bonus-level": "Total bonus at level {level}",
-    "gain-transition": "Start → target gain",
+    "total-bonus": "Total bonus",
+    "gain": "Gain",
     "rate-value": "{rate}%",
     "cost-table": "Cost table",
     "columns": {

@@ -703,10 +703,10 @@ function TemplarResultTile({
           {t("bonus-per-templar")} : {t("rate-value", { rate })}
         </p>
         <p className="templars-tile-stat">
-          {t("total-bonus-level", { level: target })} : {`${target * rate}%`}
+          {t("total-bonus")} : {`${target * rate}%`}
         </p>
         <p className="templars-tile-stat">
-          {t("gain-transition")} : {`${gain >= 0 ? "+" : ""}${gain}%`}
+          {t("gain")} : {`${gain >= 0 ? "+" : ""}${gain}%`}
         </p>
       </div>
     </article>

@@ -405,8 +405,8 @@
     "total-cost": "Toplam maliyet",
     "skydust": "Gökyüzü Tozu",
     "bonus-per-templar": "Tapınak şövalyesi başına bonus",
-    "total-bonus-level": "{level} seviyesinde toplam bonus",
-    "gain-transition": "Başlangıç → hedef kazancı",
+    "total-bonus": "Toplam bonus",
+    "gain": "Kazanç",
     "rate-value": "%{rate}",
     "cost-table": "Maliyet tablosu",
     "columns": {
