@@ -688,16 +688,12 @@ describe("Bloc 69/G: Ranking mobile-only redesign", () => {
 // above the buttons, targeting 50% of the row. Mobile (Bloc 69/G, tested
 // above) is untouched.
 describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern", () => {
-  // Review fix (PR #90): unlike Villes/Demo Attack's non-shrinking 50%
-  // (their numeric fields shrink instead, per Bloc 69/E), Ranking's 2
-  // numeric fields have fixed 9rem steppers that never shrink — so this
-  // field must stay shrinkable (flex-shrink: 1, min-width: 0) or the row
-  // overflows at desktop widths just above the 900px breakpoint.
-  it("targets 50% via flex: 0 1 50%, shrinkable (not the non-shrinking flex: 0 0 50% used elsewhere)", () => {
-    expect(css).toMatch(
-      /\.ranking-league-field\s*{\s*\n\s*flex: 0 1 50%;\s*\n\s*min-width: 0;/,
-    );
-  });
+  // Review fix (PR #90) made this shrinkable (flex: 0 1 50%; min-width: 0)
+  // to avoid overflowing at desktop widths just above 900px — but that let
+  // the field silently shrink to as little as 38% there, which Bloc 73/C
+  // (tested separately below) fixes by pinning back to a non-shrinking 50%
+  // and instead letting .ranking-fields itself wrap. See the Bloc 73/C
+  // describe block for the current rule.
 
   it("no longer carries .ranking-inline-field's desktop inline-label rule (title is above, not inline before)", () => {
     // .ranking-inline-field itself must still exist for the 2 numeric
@@ -770,14 +766,16 @@ describe("Bloc 70/A: league field is exactly 50% of the shared row", () => {
   });
 
   // Bloc 71/B reversed the Bloc 69 exclusion for Classement's desktop
-  // league field specifically — it now also targets 50% (via its own
-  // shrinkable flex: 0 1 50%, tested in the Bloc 71/B block below; the
-  // 2 numeric fields it shares the row with, unlike Villes/Demo Attack's,
-  // never shrink). Player Settings and Level Up/Progression/Events still
-  // keep their own separate width decisions, untouched.
+  // league field specifically — it now also targets 50% (Bloc 73/C:
+  // back to a non-shrinking flex: 0 0 50%, tested in the Bloc 73/C block
+  // below — PR #90's shrinkable flex: 0 1 50% let it silently shrink well
+  // below 50% at desktop widths just above 900px). Player Settings (its
+  // own 5fr/2fr/3fr grid split, Bloc 71/D) and Level Up/Progression/Events
+  // still keep their own separate width decisions, untouched.
   it("does not touch the width of Player Settings' or Level Up/Progression/Events' league selectors", () => {
     expect(css).not.toMatch(/\.settings-grid[\w-]*\s*{\s*\n\s*flex: 0 0 50%;/);
-    expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(1);
+    // Bloc 73/C added a 2nd site-wide occurrence: .ranking-league-field.
+    expect(css.match(/flex: 0 0 50%;/g)?.length).toBe(2);
   });
 });
 
@@ -918,6 +916,77 @@ describe("Bloc 72/D: Expedition equipment simulator's 5 family filters, 3+2 mobi
   it("lets a button's own label wrap instead of overflowing its narrower grid column (long labels like 'Équipement combat')", () => {
     expect(css).toMatch(
       /\.expedition-sim-family-buttons button\s*{\s*\n\s*min-width: 0;\s*\n\s*white-space: normal;\s*\n\s*text-align: center;/,
+    );
+  });
+});
+
+// Bloc 73/A+C: the Bloc 71 50% column/field was mathematically correct but
+// the league buttons themselves never grew to fill it (flex: 0 0 auto),
+// leaving a large dead gap after the last button — both fixed with the
+// same no-truncation equal-width technique as Bloc 69/E.
+describe("Bloc 73/A: Player Settings league buttons fill their 50% column", () => {
+  it("grows each button to share the column, without shrinking below its own label", () => {
+    expect(css).toMatch(
+      /\.settings-grid-league-field \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+    );
+  });
+});
+
+describe("Bloc 73/B: Niveau/VP fields match the panel's other field heights", () => {
+  it("stops .settings-grid label's own grid from stretching its rows to the row's full height (the League field's taller title+buttons stack was forcing Niveau/VP's stepper row taller too)", () => {
+    expect(css).toMatch(
+      /\.settings-grid label\s*{\s*\n\s*display: grid;\s*\n\s*align-content: start;/,
+    );
+  });
+});
+
+describe("Bloc 73/C: Classement league buttons genuinely hold 50%, at every desktop width", () => {
+  it("fills the league buttons to their column, same as Bloc 73/A", () => {
+    expect(css).toMatch(
+      /\.ranking-league-field \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+    );
+  });
+
+  it("pins the field back to a non-shrinking 50% (Bloc 71/B's flex: 0 1 50%; min-width: 0 review fix is reverted)", () => {
+    expect(css).toMatch(
+      /\.ranking-league-field\s*{\s*\n\s*flex: 0 0 50%;\s*\n}/,
+    );
+  });
+
+  it("lets .ranking-fields itself wrap so a numeric field moves to a 2nd line instead of league ever shrinking", () => {
+    expect(css).toMatch(
+      /\.ranking-fields\s*{\s*\n\s*display: flex;[\s\S]*?\n\s*flex-wrap: wrap;/,
+    );
+  });
+});
+
+// Bloc 73/D: replaces Bloc 32/D.1's single stacked column (image, star
+// text, then a row of gem badges) with image+star on the left and the
+// gems stacked in their own column on the right, using real star icons
+// (never "N★"/"N*" text) for both the equipment and each gem.
+describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column right", () => {
+  it("lays the slot's body out as a row: left column (image+star), right column (stacked gems)", () => {
+    expect(css).toMatch(
+      /\.stuff-slot-layout\s*{\s*\n\s*display: flex;/,
+    );
+    expect(css).toMatch(/\.stuff-slot-left\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/);
+    expect(css).toMatch(
+      /\.stuff-slot-gems\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/,
+    );
+  });
+
+  it("defines the shared star-rating rendering (white by default, converts fully to a distinct yellow past level 4)", () => {
+    expect(css).toMatch(
+      /\.star-rating svg\s*{\s*\n\s*fill: currentColor;/,
+    );
+    expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: var\(--amber-bright\);/);
+  });
+});
+
+describe("Bloc 73/E: Combat equipment slot image grows to 2.8rem", () => {
+  it("raises .stuff-slot-image's max-height from the old 1.8rem to 2.8rem", () => {
+    expect(css).toMatch(
+      /\.stuff-slot-image\s*{\s*\n\s*max-width: 100%;\s*\n\s*max-height: 2\.8rem;/,
     );
   });
 });

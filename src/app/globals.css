@@ -558,6 +558,7 @@ main.public-main.contact-page {
 }
 .settings-grid label {
   display: grid;
+  align-content: start;
   gap: 0.4rem;
   color: var(--muted);
   font-size: 0.78rem;
@@ -569,6 +570,17 @@ main.public-main.contact-page {
 .settings-grid-league-field {
   display: grid;
   gap: 0.4rem;
+}
+/* Bloc 73/A review fix: the 50% column (Bloc 71/D) was mathematically
+   correct but the buttons themselves never grew to fill it — flex:0 0
+   auto left up to ~180px of dead space after the last button, reading
+   as "not actually 50%" to the eye. Same no-truncation equal-width
+   technique as Bloc 69/E (min-width: max-content, not 0, so a button
+   never shrinks below its own label while flex-grow: 1 spreads the
+   column's full width across all 6). */
+.settings-grid-league-field .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
 }
 .settings-grid-league-label {
   color: var(--muted);
@@ -1017,19 +1029,39 @@ select {
   color: var(--muted);
 }
 
+/* Bloc 73/E: 1.8rem -> 2.8rem, alongside the Bloc 73/D layout revision
+   below (bigger image needs the extra room D's 2-column split frees up). */
 .stuff-slot-image {
   max-width: 100%;
-  max-height: 1.8rem;
+  max-height: 2.8rem;
   object-fit: contain;
 }
-.gem-badges {
-  /* Bloc 32/D.1: single row below the star, never wraps even at 3 gems. */
+/* Bloc 73/D: replaces the old single-column stack (image, star text, then
+   a row of gem badges below) with image+star on the left and the (up to
+   3) gems stacked in a column on the right — kept isolated in its own
+   commit so the previous layout stays a simple git revert away. */
+.stuff-slot-layout {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.stuff-slot-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0.2rem;
+}
+.stuff-slot-gems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.stuff-slot-gem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 .gem-badge-image {
   width: 1rem;
@@ -1044,6 +1076,23 @@ select {
   font-size: 0.6rem;
   line-height: 1.3;
   text-shadow: 0 1px 1px rgb(0 0 0 / 40%);
+}
+/* Bloc 73/D: shared star-rating rendering — real repeated star icons,
+   never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
+   1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
+   Used for both the equipment's own star level and each gem's. */
+.star-rating {
+  display: inline-flex;
+  gap: 1px;
+  color: #fff;
+}
+.star-rating svg {
+  fill: currentColor;
+  stroke: var(--border);
+  stroke-width: 1.5px;
+}
+.star-rating-yellow {
+  color: var(--amber-bright);
 }
 
 .stuff-editor,
@@ -1508,7 +1557,15 @@ select {
      fields are single-line rows — centered against each other rather than
      bottom-aligned as they were while labels sat above. */
   align-items: center;
-  flex-wrap: nowrap;
+  /* Bloc 73/C review fix: was nowrap, which forced the league field to
+     shrink well below its intended 50% (down to ~38% at 1000px) to make
+     room for the 2 fixed-9rem numeric fields — the field's own flex-basis
+     was correct, but flex-shrink absorbed 100% of any deficit since it
+     was the row's only shrinkable item. Letting the ROW wrap instead
+     keeps league fixed at exactly 50% always; on the rare desktop width
+     where all 3 don't fit on one line, a numeric field wraps to a 2nd
+     line rather than league silently shrinking. */
+  flex-wrap: wrap;
   gap: 1rem;
   /* Bloc 65/E: the 3 fields spread across the whole block instead of
      bunching at its left edge and leaving the rest of the row empty —
@@ -1523,14 +1580,12 @@ select {
    pattern (Blocs 69/70) — .calculator-field's own title-above-control
    grid (unchanged) plus a 50% share of the row; the 2 numeric fields
    (below) keep their own Bloc 64/G inline-label style.
-   Review fix (PR #90): flex-shrink must stay 1, not 0 — the numeric
-   fields' fixed 9rem steppers plus .ranking-fields' own nowrap left no
-   room for a non-shrinking 50% at desktop widths just above the 900px
-   breakpoint, overflowing the row. min-width: 0 removes the automatic
-   content-based floor that would otherwise still block shrinking. */
+   Bloc 73/C review fix: back to non-shrinking (flex: 0 0 50%, PR #90's
+   flex: 0 1 50%; min-width: 0 reverted) — .ranking-fields itself now
+   wraps (above) to absorb any overflow instead of squeezing this field
+   below its intended 50%. */
 .ranking-league-field {
-  flex: 0 1 50%;
-  min-width: 0;
+  flex: 0 0 50%;
 }
 /* 2nd review fix (PR #90): the field shrinking alone isn't enough — its
    .family-buttons would then fall back to its own generic overflow-x:
@@ -1544,6 +1599,13 @@ select {
 .ranking-league-field .family-buttons {
   flex-wrap: wrap;
   overflow-x: visible;
+}
+/* Bloc 73/C review fix: same dead-space bug as Bloc 73/A above — the
+   buttons kept their natural flex:0 0 auto size, leaving ~190px unused
+   inside the 50% field instead of visually filling it. */
+.ranking-league-field .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
 }
 /* Bloc 64/G: label immediately before the control, on both numeric
    fields — overrides .calculator-field's stacked grid for these 2 only. */

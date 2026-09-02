@@ -7,7 +7,8 @@
     "select-league": "Choose a league to calculate.",
     "language": "Language",
     "theme-light": "Enable light mode",
-    "theme-dark": "Enable dark mode"
+    "theme-dark": "Enable dark mode",
+    "star-count": "{level} stars"
   },
   "game": {
     "skills": {

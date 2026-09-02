@@ -204,11 +204,11 @@ describe("equipment tools", () => {
 
     fireEvent.error(gemImage);
     const gemBadge = amulet.querySelector(".gem-badge")!;
-    expect(gemBadge).toHaveTextContent("1★Lég");
+    expect(gemBadge).toHaveTextContent("Lég");
     expect(gemBadge).toHaveAttribute("title", "Attaque Légende 1★");
   });
 
-  it("lays a configured cell out on a single stacked line — name, image, star, gems below, no internal columns (Bloc 32/D.1)", () => {
+  it("lays a configured cell out with the image+star on the left and the gems stacked in a column on the right (Bloc 73/D, replaces Bloc 32/D.1's single stacked line)", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     const amulet = screen.getByRole("button", { name: /Amulette/ });
     fireEvent.click(amulet);
@@ -216,11 +216,14 @@ describe("equipment tools", () => {
       screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
       { target: { value: "Légendaire|Spirit Fyra" } },
     );
-    // The Bloc 31 2-column wrapper is gone entirely.
-    expect(amulet.querySelector(".stuff-slot-body")).toBeNull();
-    expect(amulet.querySelector(".stuff-slot-main")).toBeNull();
-    const image = amulet.querySelector("img.stuff-slot-image")!;
+    const layout = amulet.querySelector(".stuff-slot-layout")!;
+    expect(layout).toBeInTheDocument();
+    const left = layout.querySelector(".stuff-slot-left")!;
+    const image = left.querySelector("img.stuff-slot-image")!;
     expect(image).toBeInTheDocument();
+    // The equipment's own star sits below the image, inside the same left
+    // column, not off to the side with the gems.
+    expect(left.querySelector(".star-rating")).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("combobox", { name: "Compétence gemme 1" }),
       { target: { value: "Attaque" } },
@@ -242,12 +245,16 @@ describe("equipment tools", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue gemme 3" }), {
       target: { value: "legend" },
     });
-    const gems = amulet.querySelector(".gem-badges")!;
+    const gems = layout.querySelector(".stuff-slot-gems")!;
     expect(gems).toBeInTheDocument();
-    // All 3 gems sit as direct siblings in one row, never nested/wrapped.
+    // All 3 gems stack as direct siblings, one per row, each carrying its
+    // own icon + star rating — not a single horizontal row any more.
     expect(gems.children).toHaveLength(3);
-    for (const child of Array.from(gems.children))
+    for (const child of Array.from(gems.children)) {
+      expect(child).toHaveClass("stuff-slot-gem");
       expect(child.parentElement).toBe(gems);
+      expect(child.querySelector(".star-rating")).toBeInTheDocument();
+    }
   });
 
   it("renders whichever combatRows it's given, not the bundled static catalog", () => {
@@ -374,7 +381,9 @@ describe("equipment tools", () => {
       screen.getByRole("combobox", { name: "Équipement Défense Amulette" }),
       { target: { value: "Commun|Cap Test" } },
     );
-    expect(defenseAmulet).toHaveTextContent("1★");
+    expect(
+      within(defenseAmulet).getByRole("img", { name: "1 étoiles" }),
+    ).toBeInTheDocument();
     let box = within(globalSummarySection())
       .getByText("Récupération")
       .closest(".stuff-total")!;
@@ -392,9 +401,11 @@ describe("equipment tools", () => {
     expect(box).toHaveTextContent("+30%");
     // Switching back to Défense shows the earlier selection untouched.
     selectFamily("Défense");
-    expect(screen.getByRole("button", { name: /Amulette/ })).toHaveTextContent(
-      "1★",
-    );
+    expect(
+      within(
+        screen.getByRole("button", { name: /Amulette/ }),
+      ).getByRole("img", { name: "1 étoiles" }),
+    ).toBeInTheDocument();
   });
 
   it("puts the transfer button in the family-button row, same size/style, not the summary heading (Bloc 32/D.6-D.7)", () => {
