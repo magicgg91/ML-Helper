@@ -515,15 +515,16 @@ main.public-main.contact-page {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
-/* Bloc 69/D, desktop: 4 equal columns instead of the base .settings-grid's
-   auto-fit — League (:first-child) still spans the full row on its own,
-   and Level/VP then fall into the first 2 of the 4 columns, i.e. exactly
-   25% of the row's width each, leaving the other 2 columns empty. */
+/* Bloc 71/D, desktop: League/Level/VP now share a single row — a 5:2:3
+   column grid (50%/20%/30% of the row) replacing Bloc 69/D's "League
+   spans alone, Level/VP split 25% each below it". VP's own unit-input
+   (below) further splits that 30% 2:1 internally, so the NumberStepper
+   itself lands at 20% of the full row and the unit select at 10%. */
 .settings-grid-primary {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 5fr 2fr 3fr;
 }
-.settings-grid-primary > :first-child {
-  grid-column: 1 / -1;
+.settings-grid-primary .unit-input {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 }
 /* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
    skills, skill points, templars, clan temple) goes from 1 to 2 columns
@@ -771,6 +772,23 @@ select {
     flex-direction: column;
     align-items: stretch;
   }
+}
+/* Bloc 71/A: Niveau Max Atteignable only — Nombre de villes and Niveau de
+   départ narrowed 30% (flex-grow 0.7 instead of the row's default 1), and
+   Or disponible's own flex-grow raised to 1.6 to absorb exactly that freed
+   space (0.3 + 0.3), keeping the flex-grow sum at 3 so the row's overall
+   width split with the league field (Bloc 70/A) is unaffected. */
+.city-maxlevel-fields .calculator-field.city-maxlevel-narrow-field {
+  flex: 0.7 1 0;
+}
+.city-maxlevel-fields .calculator-field.city-maxlevel-gold-field {
+  flex: 1.6 1 0;
+}
+/* The gold unit select's own fixed column also narrows 30% (4.5rem ->
+   3.15rem); minmax(0, 1fr) on the NumberStepper column means it alone
+   absorbs that freed space, not the field's own label/gap. */
+.city-maxlevel-gold-field .unit-input {
+  grid-template-columns: minmax(0, 1fr) 3.15rem;
 }
 .calculator-field {
   display: grid;
@@ -1440,6 +1458,18 @@ select {
   cursor: pointer;
   text-decoration: none;
 }
+/* Bloc 71/C: league buttons were inheriting bold (font: inherit on
+   <button>) from whichever labeled ancestor wraps them — .calculator-field
+   and .ranking-field-label both set font-weight: 700 on an element the
+   buttons sit inside. Player Settings never had this problem (its own
+   label is a sibling <span>, not a shared ancestor), so this pins every
+   .family-buttons button/link back to that same normal weight, regardless
+   of ancestor — .pagination shares the rule above but keeps its own
+   (unrelated) weight, so it's deliberately not included here. */
+.family-buttons button,
+.family-buttons a {
+  font-weight: 400;
+}
 .family-buttons button[aria-pressed="true"] {
   /* --pill-color (set inline per family/rarity/skill) reuses the same
      color already identifying that value elsewhere; falls back to the
@@ -1474,9 +1504,15 @@ select {
 .ranking-fields .family-buttons {
   margin: 0;
 }
-/* Bloc 64/G: label immediately before the control, identically on the
-   league buttons and both numeric fields — overrides .calculator-field's
-   stacked grid for these 3 only. */
+/* Bloc 71/B: the league field rejoins the Villes/Demo Attack desktop
+   pattern (Blocs 69/70) — .calculator-field's own title-above-control
+   grid (unchanged) plus a fixed 50% share of the row; the 2 numeric
+   fields (below) keep their own Bloc 64/G inline-label style. */
+.ranking-league-field {
+  flex: 0 0 50%;
+}
+/* Bloc 64/G: label immediately before the control, on both numeric
+   fields — overrides .calculator-field's stacked grid for these 2 only. */
 .ranking-inline-field {
   display: flex;
   align-items: center;

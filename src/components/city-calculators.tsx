@@ -44,6 +44,7 @@ function Field({
   min = 1,
   max,
   step,
+  className,
 }: {
   label: string;
   value: number;
@@ -52,9 +53,12 @@ function Field({
   min?: number;
   max?: number;
   step?: number;
+  className?: string;
 }) {
   return (
-    <label className="calculator-field">
+    <label
+      className={className ? `calculator-field ${className}` : "calculator-field"}
+    >
       {label}
       <NumberStepper
         label={label}
@@ -317,7 +321,7 @@ function MaxLevelCalculator({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div className="calculator-fields-inline">
+        <div className="calculator-fields-inline city-maxlevel-fields">
           <div className="calculator-field calculator-league-field">
             {t("fields.league")}
             <LeagueButtons
@@ -330,15 +334,17 @@ function MaxLevelCalculator({
           <Field
             label={t("fields.city-count")}
             value={cityCount}
+            className="city-maxlevel-narrow-field"
             onChange={(v) => setCityCount(Math.floor(v))}
           />
           <Field
             label={t("fields.start-level")}
             value={startLevel}
             max={200}
+            className="city-maxlevel-narrow-field"
             onChange={(v) => setStartLevel(Math.floor(v))}
           />
-          <label className="calculator-field">
+          <label className="calculator-field city-maxlevel-gold-field">
             {t("fields.available-gold")}
             <div className="unit-input">
               <NumberStepper
