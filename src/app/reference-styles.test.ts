@@ -855,3 +855,69 @@ describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)
     );
   });
 });
+
+// Bloc 72/A: the Combat equipment simulator's "Gemme X" label moves above
+// its 3 selects on mobile, instead of sharing the row with them, freeing
+// the full row width for Compétence/Étoiles/Ligue. Desktop is untouched.
+describe("Bloc 72/A: gem row label moves above its 3 selects, mobile only", () => {
+  it("switches the row to a 3-equal-column grid and spans the label across all of them, inside a max-width: 900px query", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.stuff-gem-row\s*{\s*\n\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.stuff-gem-row-label\s*{\s*\n\s*grid-column: 1 \/ -1;\s*\n\s*}\s*\n}/,
+    );
+  });
+});
+
+// Bloc 72/B: Gems' Optimisation mode's 4 family buttons stay on one
+// full-width line on mobile instead of the generic .family-buttons wrap.
+describe("Bloc 72/B: Gems Optimization family buttons stay full width on one mobile line", () => {
+  it("makes the 4 buttons grow equally without shrinking below their own label", () => {
+    expect(css).toMatch(
+      /\.gem-optimize-family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+    );
+  });
+});
+
+// Bloc 72/C: the Combat equipment simulator's skill-filter buttons go full
+// width on one mobile line, and the "Transférer en Paramètres joueur"
+// button — no longer meaningfully right-aligned once everything is full
+// width — moves to its own full-width 2nd line.
+describe("Bloc 72/C: Combat equipment simulator's skill buttons + transfer button, mobile", () => {
+  it("makes the skill buttons grow equally without shrinking below their own label", () => {
+    expect(css).toMatch(
+      /\.stuff-family-buttons button:not\(\.transfer-action\)\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+    );
+  });
+
+  it("forces the transfer button onto its own full-width 2nd line", () => {
+    expect(css).toMatch(
+      /\.stuff-family-buttons \.transfer-action\s*{\s*\n\s*flex: 1 1 100%;\s*\n\s*margin-left: 0;/,
+    );
+  });
+});
+
+// Bloc 72/D: the Expedition equipment simulator's 5 family filters split
+// 3+2 across 2 full-width mobile rows (Personnalisé/Or/Équipement, then
+// Consommables/Troupes), using the same 6-column-track technique as
+// Bloc 68/M's rarity filter.
+describe("Bloc 72/D: Expedition equipment simulator's 5 family filters, 3+2 mobile grid", () => {
+  it("lays the row out as a 6-column track, inside a max-width: 900px query", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.expedition-sim-family-buttons\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/,
+    );
+  });
+
+  it("spans the first 3 buttons over 2 columns each (row 1) and the last 2 over 3 columns each (row 2)", () => {
+    expect(css).toMatch(
+      /\.expedition-sim-family-buttons button:nth-child\(1\),\s*\n\s*\.expedition-sim-family-buttons button:nth-child\(2\),\s*\n\s*\.expedition-sim-family-buttons button:nth-child\(3\)\s*{\s*\n\s*grid-column: span 2;/,
+    );
+    expect(css).toMatch(
+      /\.expedition-sim-family-buttons button:nth-child\(4\),\s*\n\s*\.expedition-sim-family-buttons button:nth-child\(5\)\s*{\s*\n\s*grid-column: span 3;/,
+    );
+  });
+
+  it("lets a button's own label wrap instead of overflowing its narrower grid column (long labels like 'Équipement combat')", () => {
+    expect(css).toMatch(
+      /\.expedition-sim-family-buttons button\s*{\s*\n\s*min-width: 0;\s*\n\s*white-space: normal;\s*\n\s*text-align: center;/,
+    );
+  });
+});

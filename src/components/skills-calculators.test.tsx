@@ -89,6 +89,18 @@ describe("SkillsCalculators", () => {
     const gold = screen.getByRole("button", { name: "Or" });
     expect(gold.style.getPropertyValue("--pill-color")).toBe("var(--amber)");
   });
+  it("gives Gems Optimization's family buttons a dedicated class for the mobile full-width single-line layout (Bloc 72/B)", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    const attack = screen.getByRole("button", { name: "Attaque" });
+    expect(attack.parentElement).toHaveClass("family-buttons");
+    expect(attack.parentElement).toHaveClass("gem-optimize-family-buttons");
+  });
   it("caps mixed optimization rows at the available socket count", () => {
     renderWithIntl(
       <SkillsCalculators

@@ -149,6 +149,19 @@ describe("equipment tools", () => {
     ).toBeVisible();
   });
 
+  it("gives each gem row's label and row a dedicated class so mobile can move the label above the 3 selects (Bloc 72/A)", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
+    fireEvent.click(amulet);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    const label = screen.getByText("Gemme 1");
+    expect(label).toHaveClass("stuff-gem-row-label");
+    expect(label.parentElement).toHaveClass("stuff-gem-row");
+  });
+
   it("colors the slot cell by rarity without a redundant rarity text badge", () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     const amulet = screen.getByRole("button", { name: /Amulette/ });
@@ -392,6 +405,8 @@ describe("equipment tools", () => {
     });
     expect(transfer).toBeInTheDocument();
     expect(transfer.parentElement).toHaveClass("family-buttons");
+    expect(transfer.parentElement).toHaveClass("stuff-family-buttons");
+    expect(transfer).toHaveClass("transfer-action");
     expect(
       within(globalSummarySection()).queryByRole("button", {
         name: "Transférer vers les Paramètres du joueur",
