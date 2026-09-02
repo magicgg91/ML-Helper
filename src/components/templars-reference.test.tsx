@@ -189,9 +189,9 @@ describe("TemplarsReferenceTable", () => {
       ).toBeInTheDocument();
   });
 
-  // Bloc 66/B: "En dessous du titre : Base Temple, puis Bonus donné par 1
-  // templier" — both values shown, seeded from the already-confirmed
-  // templeBase/templarRates constants.
+  // Bloc 66/B, renamed Bloc 68/D: "En dessous du titre : Base Temple, puis
+  // Bonus par templier" — both values shown, seeded from the
+  // already-confirmed templeBase/templarRates constants.
   it("Bloc66/B: shows Base Temple then the per-templar Bonus below each title", () => {
     const { container } = render(
       <NextIntlClientProvider locale="fr" messages={messages}>
@@ -208,8 +208,79 @@ describe("TemplarsReferenceTable", () => {
     expect(stats).toHaveLength(2);
     expect(stats[0]).toHaveTextContent("Base Temple");
     expect(stats[0]).toHaveTextContent("50%");
-    expect(stats[1]).toHaveTextContent("Bonus donné par 1 Templier");
+    expect(stats[1]).toHaveTextContent("Bonus par templier");
     expect(stats[1]).toHaveTextContent("1%");
+  });
+
+  // Bloc 68/D: "Bonus donné par 1 templier" → "Bonus par templier" — no
+  // trace of the old wording should remain.
+  it("Bloc68/D: no longer shows the old 'Bonus donné par 1 Templier' wording", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.queryByText("Bonus donné par 1 Templier"),
+    ).not.toBeInTheDocument();
+  });
+
+  // Bloc 68/C: an unconfirmed (cleared) Base Temple/Bonus must never render
+  // a broken "%" suffix on an empty value — same "—" precedent as Gemmes'
+  // price row and Boutique's cost badge.
+  it("Bloc68/C: shows a — placeholder instead of a bare % when Base Temple/Bonus is empty", () => {
+    const catalog = {
+      ...defaultTemplarPresentationCatalog,
+      rusher: {
+        ...defaultTemplarPresentationCatalog.rusher,
+        temple_base: "",
+        bonus: "",
+      },
+    };
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={catalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const rusherTile = container.querySelector(
+      '[data-testid="templars-tile-rusher"]',
+    )!;
+    const stats = rusherTile.querySelectorAll(".templars-tile-stat");
+    expect(stats[0]).toHaveTextContent("Base Temple : —");
+    expect(stats[1]).toHaveTextContent("Bonus par templier : —");
+  });
+
+  // Bloc 68/B: the 5 real illustrations delivered to public/templars/ are
+  // wired into the default catalog — no placeholder image path remains.
+  it("Bloc68/B: renders the real delivered image for each of the 5 Templiers tiles", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    const expectedImages: Record<string, string> = {
+      striker: "/templars/templar-striker.webp",
+      guardian: "/templars/templar-guardian.webp",
+      prosperous: "/templars/templar-prosperous.webp",
+      recruiter: "/templars/templar-recruiter.webp",
+      rusher: "/templars/templar-rusher.webp",
+    };
+    for (const key of templarKeys) {
+      const tile = container.querySelector(
+        `[data-testid="templars-tile-${key}"]`,
+      )!;
+      const image = tile.querySelector("img")!;
+      expect(image).toHaveAttribute("src", expectedImages[key]);
+    }
   });
 
   // Bloc 66/B: colored by the associated competence, same per-skill

@@ -22,6 +22,8 @@ function normalizeRow(raw: unknown, key: TemplarKey): TemplarPresentationRow {
       typeof raw.description_fr === "string" ? raw.description_fr : "",
     description_en:
       typeof raw.description_en === "string" ? raw.description_en : "",
+    temple_base: typeof raw.temple_base === "string" ? raw.temple_base : "",
+    bonus: typeof raw.bonus === "string" ? raw.bonus : "",
   };
 }
 

@@ -4,15 +4,17 @@ import { templarsPresentationReferenceKey } from "@/lib/templars-presentation-se
 import { templarKeys } from "@/lib/player-settings";
 import type { TemplarPresentationCatalog } from "@/lib/templars-presentation";
 import {
+  numericString,
   saveReferenceTable,
   stringField,
 } from "@/services/reference-table-admin";
 
-// Bloc 66/B: unlike Boutique, this catalog is a fixed set of exactly 5
-// rows (one per TemplarKey, cdc-confirmed) — no add/remove/reorder, so the
-// payload is a plain object keyed by the 5 technical keys rather than an
-// array with free CRUD. Base Temple/Bonus are deliberately not part of
-// this row shape — see templars-presentation.ts's own comment.
+// Bloc 66/B, restored Bloc 68/C: unlike Boutique, this catalog is a fixed
+// set of exactly 5 rows (one per TemplarKey, cdc-confirmed) — no
+// add/remove/reorder, so the payload is a plain object keyed by the 5
+// technical keys rather than an array with free CRUD. Base Temple/Bonus
+// are admin-editable fields on this row (see templars-presentation.ts's
+// own comment for why).
 function parseRow(raw: unknown) {
   if (!raw || typeof raw !== "object") throw new Error("invalid row");
   const source = raw as Record<string, unknown>;
@@ -22,6 +24,8 @@ function parseRow(raw: unknown) {
     name_en: stringField(source.name_en),
     description_fr: stringField(source.description_fr),
     description_en: stringField(source.description_en),
+    temple_base: numericString(source.temple_base),
+    bonus: numericString(source.bonus),
   };
 }
 
@@ -47,7 +51,15 @@ export async function PUT(request: Request) {
     await saveReferenceTable({
       key: templarsPresentationReferenceKey,
       target: "la présentation du référentiel Templiers",
-      columns: ["image", "name_fr", "name_en", "description_fr", "description_en"],
+      columns: [
+        "image",
+        "name_fr",
+        "name_en",
+        "description_fr",
+        "description_en",
+        "temple_base",
+        "bonus",
+      ],
       rows: catalog,
       userId: session.user.id,
       actorRole: session.user.role,

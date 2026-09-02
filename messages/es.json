@@ -417,7 +417,7 @@
     "presentation": {
       "tile-title": "Templario {name}",
       "temple-base-label": "Base de templo",
-      "bonus-label": "Bono otorgado por templario"
+      "bonus-label": "Bono por templario"
     }
   },
   "Navigation": {

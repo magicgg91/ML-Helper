@@ -417,7 +417,7 @@
     "presentation": {
       "tile-title": "Templier {name}",
       "temple-base-label": "Base Temple",
-      "bonus-label": "Bonus donné par 1 Templier"
+      "bonus-label": "Bonus par templier"
     }
   },
   "Navigation": {
