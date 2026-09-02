@@ -407,12 +407,17 @@
     "total-bonus-level": "Total bonus at level {level}",
     "gain-transition": "Start → target gain",
     "rate-value": "{rate}%/templar",
-    "cost-table": "Exact cost table",
+    "cost-table": "Cost table",
     "columns": {
       "skill": "Skill",
       "level": "Reached level",
-      "level-cost": "Level cost",
-      "cumulative-cost": "Cumulative cost"
+      "level-cost": "Level cost (Skydust)",
+      "cumulative-cost": "Cumulative cost (Skydust)"
+    },
+    "presentation": {
+      "tile-title": "Templar {name}",
+      "temple-base-label": "Temple base",
+      "bonus-label": "Bonus given per templar"
     }
   },
   "Navigation": {
@@ -541,7 +546,7 @@
       "combat-equipment": "Combat Equipment",
       "expedition-equipment": "Expedition Equipment",
       "level-up": "Level Up",
-      "templars": "Templar Cost",
+      "templars": "Templars",
       "gems": "Gems",
       "shop": "Shop",
       "events": "Events"
@@ -967,7 +972,16 @@
       "add-tier": "Add a tier",
       "events-tiers-summary": "Tiers ({count})",
       "event-row-label": "{field} of event {row}",
-      "tier-row-label": "{field} of tier {row} of {event}"
+      "tier-row-label": "{field} of tier {row} of {event}",
+      "templars-presentation-title": "Presentation",
+      "templars-presentation-language-label": "Text language",
+      "templars-columns": {
+        "image": "Image path",
+        "name": "Name",
+        "description": "Description",
+        "temple-base": "Temple base",
+        "bonus": "Bonus (%)"
+      }
     },
     "common": {
       "back": "Back"

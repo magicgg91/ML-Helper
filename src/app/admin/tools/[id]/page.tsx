@@ -8,6 +8,7 @@ import {
   TemplarParametersEditor,
   XpGainRateEditor,
 } from "@/components/named-parameters-editor";
+import { TemplarsPresentationEditor } from "@/components/templars-presentation-editor";
 import { RankingAdminEditor } from "@/components/ranking-admin-editor";
 import {
   getCityParameters,
@@ -16,6 +17,7 @@ import {
   getTemplarParameters,
   getXpGainTiers,
 } from "@/lib/admin-formulas-server";
+import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getRankingConfig } from "@/lib/ranking";
 import { getTranslations } from "next-intl/server";
 
@@ -25,8 +27,8 @@ export default async function EditToolPage({
 }: PageProps<"/admin/tools/[id]">) {
   const { id } = await params;
   const { from } = await searchParams;
-  // Templars' formula parameters are also the "Coût des Templiers"
-  // Référentiels reference (cdc section 6, décision Bloc 3), and Gems' are
+  // Templars' formula parameters are also the "Templiers" Référentiels
+  // reference (cdc section 6, décision Bloc 3; renamed Bloc 66/A), and Gems' are
   // also the "Gemmes" Référentiels reference (Bloc 36/A) — a
   // references_manager reaching either editor from the Référentiels admin
   // table has references.write but not calculators.write, so these two
@@ -47,25 +49,36 @@ export default async function EditToolPage({
     content = <RankingAdminEditor initialConfig={await getRankingConfig()} />;
   } else if (id === "templars") {
     title = t("templar-parameters");
+    // Bloc 66/B: the presentation catalog (Image/Nom/Description/Base
+    // Temple/Bonus behind the public tile section) shares this edit point
+    // too — one more consumer of the templars/gems dual-capability check
+    // above, alongside the cost formula. It renders with no
+    // EditorActionBar of its own (see its own comment): the formula
+    // editor's bar below already carries the page's one back link.
     content = (
-      <TemplarParametersEditor
-        initial={await getTemplarParameters()}
-        // Bloc 35/7.1, updated Bloc 50: this edit point is shared between
-        // the "templars" tool row (Tools) and the "templiers" reference row
-        // (Référentiels) — the ?from query param (set by adminToolEditHref
-        // per the slug that linked here) says which table the admin
-        // actually opened it from, so "Retour" goes back there. A
-        // references_manager (references.write but not calculators.read)
-        // always arrives with from=referentiels, so the role check only
-        // matters as a fallback for a link without it.
-        backHref={
-          from === "referentiels"
-            ? "/admin/referentiels"
-            : can(session.user.role, "calculators.read")
-              ? "/admin/tools"
-              : "/admin/referentiels"
-        }
-      />
+      <>
+        <TemplarParametersEditor
+          initial={await getTemplarParameters()}
+          // Bloc 35/7.1, updated Bloc 50: this edit point is shared between
+          // the "templars" tool row (Tools) and the "templiers" reference row
+          // (Référentiels) — the ?from query param (set by adminToolEditHref
+          // per the slug that linked here) says which table the admin
+          // actually opened it from, so "Retour" goes back there. A
+          // references_manager (references.write but not calculators.read)
+          // always arrives with from=referentiels, so the role check only
+          // matters as a fallback for a link without it.
+          backHref={
+            from === "referentiels"
+              ? "/admin/referentiels"
+              : can(session.user.role, "calculators.read")
+                ? "/admin/tools"
+                : "/admin/referentiels"
+          }
+        />
+        <TemplarsPresentationEditor
+          initialCatalog={await getTemplarPresentation()}
+        />
+      </>
     );
   } else if (id === "xp-gain-rate") {
     title = t("xp-gain-rate-editor");

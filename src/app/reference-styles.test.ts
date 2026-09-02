@@ -434,3 +434,34 @@ describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
     expect(rule).toMatch(/justify-content: space-between;/);
   });
 });
+
+describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () => {
+  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 2
+  // tiles per row on desktop, 1 on mobile like Boutique/Gemmes.
+  it("B: lays the Templiers tiles out 2 per row, dropping to 1 column on mobile, images at 6rem", () => {
+    const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
+    expect(grid).toBeDefined();
+    expect(grid).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
+    );
+    const image = css.match(/\.templars-tile-image\s*{([\s\S]*?)\n}/)?.[1];
+    expect(image).toBeDefined();
+    expect(image).toMatch(/width: 6rem;/);
+    expect(image).toMatch(/height: 6rem;/);
+  });
+
+  // C: Boutique, Gemmes and Templiers' own tile titles now share the same
+  // 1.1rem size, up from the 0.9rem Boutique/Gemmes carried before.
+  it("C: harmonizes all 3 tile-title selectors (Boutique, Gemmes, Templiers) at 1.1rem", () => {
+    for (const selector of [
+      "consumable-tile-name",
+      "gems-tile-title",
+      "templars-tile-title",
+    ]) {
+      const rule = css.match(new RegExp(`\\.${selector}\\s*{([\\s\\S]*?)\\n}`))?.[1];
+      expect(rule, selector).toBeDefined();
+      expect(rule, selector).toMatch(/font-size: 1\.1rem;/);
+    }
+  });
+});

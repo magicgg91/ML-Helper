@@ -133,33 +133,29 @@ describe("buildSiteSearchResults", () => {
     ]);
   });
 
+  // Bloc 66/A: the reference dropped its "Coût des" prefix, so its label
+  // now matches the tool's own exactly — both stay independently
+  // searchable results (distinct type/id/href) rather than the reference
+  // needing its own longer query to surface.
   it("keeps the Templars tool and its cost reference independently searchable", () => {
-    const toolResults = buildSiteSearchResults({
+    const results = buildSiteSearchResults({
       query: "templiers",
       locale: "fr",
       guides: [],
       translate: translateFr,
     });
-    expect(toolResults).toContainEqual({
+    expect(results).toContainEqual({
       type: "tool",
       id: "tool-templars",
       label: "Templiers",
       href: "/tools/competences",
     });
-    const referenceResults = buildSiteSearchResults({
-      query: "coût des templiers",
-      locale: "fr",
-      guides: [],
-      translate: translateFr,
+    expect(results).toContainEqual({
+      type: "reference",
+      id: "reference-templars",
+      label: "Templiers",
+      href: "/referentiels/templars",
     });
-    expect(referenceResults).toEqual([
-      {
-        type: "reference",
-        id: "reference-templars",
-        label: "Coût des Templiers",
-        href: "/referentiels/templars",
-      },
-    ]);
   });
 
   it("groups results as guides, then references, then tools", () => {

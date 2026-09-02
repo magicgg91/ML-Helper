@@ -407,12 +407,17 @@
     "total-bonus-level": "Bonus total au niveau {level}",
     "gain-transition": "Gain départ → cible",
     "rate-value": "{rate}%/Templier",
-    "cost-table": "Table de coût exacte",
+    "cost-table": "Table de coût",
     "columns": {
       "skill": "Compétence",
       "level": "Niveau atteint",
-      "level-cost": "Coût du niveau",
-      "cumulative-cost": "Coût cumulé"
+      "level-cost": "Coût du niveau (Pouciel)",
+      "cumulative-cost": "Coût cumulé (Pouciel)"
+    },
+    "presentation": {
+      "tile-title": "Templier {name}",
+      "temple-base-label": "Base Temple",
+      "bonus-label": "Bonus donné par 1 Templier"
     }
   },
   "Navigation": {
@@ -541,7 +546,7 @@
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
       "level-up": "Level Up",
-      "templars": "Coût des Templiers",
+      "templars": "Templiers",
       "gems": "Gemmes",
       "shop": "Boutique",
       "events": "Événements"
@@ -967,7 +972,16 @@
       "add-tier": "Ajouter un palier",
       "events-tiers-summary": "Paliers ({count})",
       "event-row-label": "{field} de l’événement {row}",
-      "tier-row-label": "{field} du palier {row} de {event}"
+      "tier-row-label": "{field} du palier {row} de {event}",
+      "templars-presentation-title": "Présentation",
+      "templars-presentation-language-label": "Langue du texte",
+      "templars-columns": {
+        "image": "Chemin de l’image",
+        "name": "Nom",
+        "description": "Description",
+        "temple-base": "Base Temple",
+        "bonus": "Bonus (%)"
+      }
     },
     "common": {
       "back": "Retour"

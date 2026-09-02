@@ -407,12 +407,17 @@
     "total-bonus-level": "Gesamtbonus bei Stufe {level}",
     "gain-transition": "Gewinn Start → Ziel",
     "rate-value": "{rate}%/Templer",
-    "cost-table": "Exakte Kostentabelle",
+    "cost-table": "Kostentabelle",
     "columns": {
       "skill": "Fähigkeit",
       "level": "Erreichte Stufe",
-      "level-cost": "Stufenkosten",
-      "cumulative-cost": "Kumulierte Kosten"
+      "level-cost": "Stufenkosten (Himmelsstaub)",
+      "cumulative-cost": "Kumulierte Kosten (Himmelsstaub)"
+    },
+    "presentation": {
+      "tile-title": "Templer {name}",
+      "temple-base-label": "Tempel-Basis",
+      "bonus-label": "Bonus pro Templer"
     }
   },
   "Navigation": {
@@ -533,7 +538,7 @@
       "combat-equipment": "Kampfausrüstung",
       "expedition-equipment": "Expeditionsausrüstung",
       "level-up": "Stufenaufstieg",
-      "templars": "Templerkosten",
+      "templars": "Templer",
       "gems": "Edelsteine",
       "shop": "Shop",
       "events": "Events"
@@ -947,7 +952,16 @@
       "add-tier": "Stufe hinzufügen",
       "events-tiers-summary": "Stufen ({count})",
       "event-row-label": "{field} von Event {row}",
-      "tier-row-label": "{field} von Stufe {row} von {event}"
+      "tier-row-label": "{field} von Stufe {row} von {event}",
+      "templars-presentation-title": "Präsentation",
+      "templars-presentation-language-label": "Textsprache",
+      "templars-columns": {
+        "image": "Bildpfad",
+        "name": "Name",
+        "description": "Beschreibung",
+        "temple-base": "Tempel-Basis",
+        "bonus": "Bonus (%)"
+      }
     },
     "common": {
       "back": "Zurück"

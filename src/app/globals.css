@@ -1078,7 +1078,8 @@ select {
 }
 .gems-tile-title {
   margin: 0 0 0.45rem;
-  font-size: 0.9rem;
+  /* Bloc 66/C: harmonized with Boutique's/Templiers' own tile titles. */
+  font-size: 1.1rem;
   color: var(--foreground);
 }
 /* 6 columns of strictly equal width (table-layout: fixed splits them
@@ -1107,6 +1108,55 @@ select {
 }
 @media (max-width: 900px) {
   .gems-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bloc 66/B: the Templiers presentation tiles, before the 2x10 cost table
+   (Bloc 64/E, unchanged) — same image-left layout and 6rem size as
+   Boutique (Bloc 65/C), colored per associated competence (skillColor),
+   same principle as Gemmes' tiles above. */
+.templars-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.templars-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0.6rem;
+}
+.templars-tile-image {
+  flex: 0 0 auto;
+  width: 6rem;
+  height: 6rem;
+  object-fit: contain;
+}
+.templars-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.templars-tile-title {
+  margin: 0;
+  color: var(--foreground);
+  /* Bloc 66/C: harmonized with Boutique's/Gemmes' own tile titles. */
+  font-size: 1.1rem;
+  overflow-wrap: break-word;
+}
+.templars-tile-stat {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+@media (max-width: 900px) {
+  .templars-tile-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1646,7 +1696,8 @@ select,
 .consumable-tile-name {
   min-width: 0;
   color: var(--foreground);
-  font-size: 0.9rem;
+  /* Bloc 66/C: harmonized with Gemmes'/Templiers' own tile titles. */
+  font-size: 1.1rem;
   overflow-wrap: break-word;
 }
 .consumable-tile-cost {

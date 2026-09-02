@@ -407,12 +407,17 @@
     "total-bonus-level": "{level} seviyesinde toplam bonus",
     "gain-transition": "Başlangıç → hedef kazancı",
     "rate-value": "%{rate}/tapınak şövalyesi",
-    "cost-table": "Kesin maliyet tablosu",
+    "cost-table": "Maliyet tablosu",
     "columns": {
       "skill": "Yetenek",
       "level": "Ulaşılan seviye",
-      "level-cost": "Seviye maliyeti",
-      "cumulative-cost": "Kümülatif maliyet"
+      "level-cost": "Seviye maliyeti (Gökyüzü Tozu)",
+      "cumulative-cost": "Kümülatif maliyet (Gökyüzü Tozu)"
+    },
+    "presentation": {
+      "tile-title": "{name} Tapınak Şövalyesi",
+      "temple-base-label": "Tapınak temeli",
+      "bonus-label": "1 tapınak şövalyesi başına verilen bonus"
     }
   },
   "Navigation": {
@@ -533,7 +538,7 @@
       "combat-equipment": "Savaş Ekipmanı",
       "expedition-equipment": "Keşif Ekipmanı",
       "level-up": "Seviye Atlama",
-      "templars": "Tapınak Şövalyesi Maliyeti",
+      "templars": "Tapınak Şövalyeleri",
       "gems": "Mücevherler",
       "shop": "Mağaza",
       "events": "Etkinlikler"
@@ -947,7 +952,16 @@
       "add-tier": "Kademe ekle",
       "events-tiers-summary": "Kademeler ({count})",
       "event-row-label": "{row}. etkinliğin {field}",
-      "tier-row-label": "{event} etkinliğinin {row}. kademesinin {field}"
+      "tier-row-label": "{event} etkinliğinin {row}. kademesinin {field}",
+      "templars-presentation-title": "Sunum",
+      "templars-presentation-language-label": "Metin dili",
+      "templars-columns": {
+        "image": "Görsel yolu",
+        "name": "Ad",
+        "description": "Açıklama",
+        "temple-base": "Tapınak temeli",
+        "bonus": "Bonus (%)"
+      }
     },
     "common": {
       "back": "Geri"
