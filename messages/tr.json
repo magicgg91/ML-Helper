@@ -132,6 +132,7 @@
     "title": "Oyuncu ayarları",
     "summary": "{league} · Seviye {level} · {vp} VP · {templarTotal, plural, other {# tapınak şövalyesi}}",
     "league": "Lig",
+    "league-undefined": "Lig belirlenmedi",
     "player-level": "Oyuncu seviyesi",
     "player-vp": "Oyuncu VP'si",
     "vp-unit": "VP birimi",

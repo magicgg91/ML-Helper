@@ -88,12 +88,14 @@ describe("public responsive styles", () => {
     expect(css).toMatch(
       /\.stuff-summary-grid,\s*\n\.expedition-summary-grid\s*{\s*display: grid;\s*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/,
     );
+    // Bloc 68: anchored to the specific media block containing these 2
+    // selectors, not just "the first @media (max-width: 900px) block in
+    // the file" — that unanchored match broke the moment a later Bloc
+    // inserted its own 900px block earlier in the file.
     const mediaBlock = css.match(
-      /@media \(max-width: 900px\)\s*{([\s\S]*?)\n}/,
+      /@media \(max-width: 900px\) {\s*\n\s*\.stuff-summary-grid,\s*\n\s*\.expedition-summary-grid\s*{([\s\S]*?)\n {2}}/,
     )?.[1];
     expect(mediaBlock).toBeDefined();
-    expect(mediaBlock).toMatch(/\.stuff-summary-grid/);
-    expect(mediaBlock).toMatch(/\.expedition-summary-grid/);
     expect(mediaBlock).toMatch(/repeat\(2, minmax\(0, 1fr\)\)/);
   });
 

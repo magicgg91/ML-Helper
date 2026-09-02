@@ -493,8 +493,22 @@ test("all three City tools use all six confirmed league multipliers", async ({
     ["legend", "260", "78", "200/h", "60/h"],
   ] as const;
 
+  // Bloc 68/F: the Player Settings league field is a button group now,
+  // not a <select>.
+  const playerLeagueLabels: Record<string, string> = {
+    bronze: "Bronze",
+    silver: "Argent",
+    gold: "Or",
+    platinum: "Platine",
+    diamond: "Diamant",
+    legend: "Légende",
+  };
+
   await page.goto("/tools/villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
+  const playerLeagueGroup = page
+    .locator(".player-settings")
+    .getByRole("group", { name: "Ligue" });
   for (const [
     league,
     boostedGold,
@@ -502,7 +516,9 @@ test("all three City tools use all six confirmed league multipliers", async ({
     baseGold,
     baseArmy,
   ] of leagueCases) {
-    await page.getByLabel("Ligue").first().selectOption(league);
+    await playerLeagueGroup
+      .getByRole("button", { name: playerLeagueLabels[league] })
+      .click();
 
     await page.getByRole("tab", { name: "Coût de Ville" }).click();
     await expect(page.getByTestId("city-cost-gold")).toContainText(
@@ -531,26 +547,28 @@ test("dependent league selectors sync once and preserve manual choices", async (
 }) => {
   await page.goto("/tools/villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
-  const playerLeague = page
+  // Bloc 68/F+K: both the Player Settings and the city calculators' league
+  // fields are button groups now, not <select> elements — assert via
+  // aria-pressed instead of the field's value.
+  const playerLeagueGroup = page
     .locator(".player-settings")
-    .getByRole("combobox", { name: "Ligue" });
-  // Bloc 68/K: the city calculators' league field is a button group, not
-  // a <select> — assert via aria-pressed instead of the field's value.
+    .getByRole("group", { name: "Ligue" });
   const cityLeagueGroup = page
     .locator(".city-calculators")
     .getByRole("group", { name: "Ligue" });
 
-  await expect(playerLeague).toHaveValue("");
+  for (const button of await playerLeagueGroup.getByRole("button").all())
+    await expect(button).toHaveAttribute("aria-pressed", "false");
   await expect(
     cityLeagueGroup.getByRole("button", { name: "Diamant" }),
   ).toHaveAttribute("aria-pressed", "false");
-  await playerLeague.selectOption("diamond");
+  await playerLeagueGroup.getByRole("button", { name: "Diamant" }).click();
   await expect(
     cityLeagueGroup.getByRole("button", { name: "Diamant" }),
   ).toHaveAttribute("aria-pressed", "true");
 
   await cityLeagueGroup.getByRole("button", { name: "Or" }).click();
-  await playerLeague.selectOption("legend");
+  await playerLeagueGroup.getByRole("button", { name: "Légende" }).click();
   await expect(
     cityLeagueGroup.getByRole("button", { name: "Or" }),
   ).toHaveAttribute("aria-pressed", "true");

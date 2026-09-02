@@ -536,4 +536,14 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
       /@media \(max-width: 900px\) {\s*\n\s*\.league-buttons-grid\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
     );
   });
+
+  // H+I: Player Settings' .settings-grid sections (equipment/points/
+  // templars/clan-temple) go 2-column on mobile, and within the primary
+  // fields grid specifically, the first child (the league LeagueButtons
+  // group, since F) spans the full row so Level/VP share the row below it.
+  it("H+I: Player Settings' .settings-grid sections go 2-column on mobile, with the primary grid's first child (league) spanning the full row", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
 });

@@ -512,6 +512,21 @@ main.public-main.contact-page {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
+/* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
+   skills, skill points, templars, clan temple) goes from 1 to 2 columns
+   (I). Within .settings-grid-primary specifically, its first child — the
+   league LeagueButtons group since Bloc 68/F — spans both columns on its
+   own full-width row, leaving Level and VP as the 2nd/3rd children to
+   share the row below (H). Depends on the JSX keeping League first,
+   Level second, VP third. */
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .settings-grid-primary > :first-child {
+    grid-column: 1 / -1;
+  }
+}
 .settings-grid label {
   display: grid;
   gap: 0.4rem;

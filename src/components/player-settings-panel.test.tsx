@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
@@ -16,6 +17,17 @@ import {
 } from "./player-settings-panel";
 import { templarRates } from "../lib/gems-templars";
 
+// Bloc 68/F: the league field is a LeagueButtons group now, not a <select>
+// — this mirrors the click-based interaction already established in
+// league-select.test.tsx / level-up-reference.test.tsx.
+function clickLeague(name: string) {
+  fireEvent.click(
+    within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+      name,
+    }),
+  );
+}
+
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
   afterEach(cleanup);
@@ -26,10 +38,75 @@ describe("PlayerSettingsPanel", () => {
         <PlayerSettingsPanel />
       </NextIntlClientProvider>,
     );
-    expect(screen.getByRole("combobox", { name: "Ligue" })).toHaveValue("");
+    const group = screen.getByRole("group", { name: "Ligue" });
+    for (const button of within(group).getAllByRole("button"))
+      expect(button).toHaveAttribute("aria-pressed", "false");
+  });
+
+  // Bloc 68/E: "Ligue non définie" replaces the old generic "— Choisir —"
+  // placeholder in the collapsed one-line summary.
+  it("Bloc68/E: shows 'Ligue non définie' in the summary until a league is picked, then the real league name", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    expect(document.querySelector(".player-summary-row1")).toHaveTextContent(
+      "Ligue non définie",
+    );
+    clickLeague("Or");
+    expect(document.querySelector(".player-summary-row1")).toHaveTextContent(
+      "Or",
+    );
     expect(
-      screen.getByRole("option", { name: "— Choisir —" }),
-    ).toBeInTheDocument();
+      document.querySelector(".player-summary-row1"),
+    ).not.toHaveTextContent("Ligue non définie");
+  });
+
+  // Bloc 68/G: the title and the one-line summary share a common wrapper
+  // (activating globals.css's own .player-summary-row1 rule, previously
+  // defined but unused by any component) so the mobile breakpoint can
+  // stack them below the title — the skills-breakdown line stays outside.
+  it("Bloc68/G: wraps the title and the one-line summary in .player-summary-row1, distinct from the skills-breakdown line", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const row1 = document.querySelector(".player-summary-row1");
+    expect(row1).not.toBeNull();
+    expect(row1!.querySelector("#player-settings-title")).not.toBeNull();
+    const line2 = screen.getByTestId("player-summary-line2");
+    expect(row1!.contains(line2)).toBe(false);
+  });
+
+  // Bloc 68/H+I: the primary fields grid keeps League, Level, VP as its
+  // first 3 children in that order — the mobile 2-col CSS (globals.css)
+  // relies on League being :first-child to span the full row.
+  it("Bloc68/H: keeps League as the primary grid's first child, ahead of Level and VP", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const primary = container.querySelector(".settings-grid-primary")!;
+    expect(primary.children[0]).toBe(
+      screen.getByRole("group", { name: "Ligue" }),
+    );
+  });
+
+  // Bloc 68/I: every settings-grid section (equipment, points, templars,
+  // clan temple) carries the plain "settings-grid" class the shared mobile
+  // 2-col rule targets.
+  it("Bloc68/I: every skills/points/templars/clan-temple section uses the shared .settings-grid class", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const grids = container.querySelectorAll(".settings-grid");
+    // primary + equipment + points + templars + clan temple = 5.
+    expect(grids).toHaveLength(5);
   });
 
   it("keeps equipment skills independent from planned points", async () => {
@@ -48,9 +125,7 @@ describe("PlayerSettingsPanel", () => {
         target: { value: "10" },
       },
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "gold" },
-    });
+    clickLeague("Or");
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );
@@ -153,7 +228,9 @@ describe("PlayerSettingsPanel", () => {
         <PlayerSettingsPanel />
       </NextIntlClientProvider>,
     );
-    expect(screen.queryByRole("combobox", { name: "Ligue" })).not.toBeVisible();
+    expect(
+      screen.queryByRole("group", { name: "Ligue" }),
+    ).not.toBeVisible();
     const line2 = screen.getByTestId("player-summary-line2");
     expect(line2).toBeVisible();
     // Attaque and Vitesse are temple skills: even with no input yet, their
@@ -193,9 +270,7 @@ describe("PlayerSettingsPanel", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Attaque avec équipement" }),
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "gold" },
-    });
+    clickLeague("Or");
     fireEvent.change(
       screen.getByLabelText("Niveau du joueur", { selector: "input" }),
       { target: { value: "10" } },
@@ -302,9 +377,7 @@ describe("PlayerSettingsPanel", () => {
       screen.getByLabelText("Attaque avec équipement"),
     ).not.toHaveAttribute("max");
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "legend" },
-    });
+    clickLeague("Légende");
     expect(screen.getByLabelText("Intrépide avec équipement")).toHaveAttribute(
       "max",
       "75",
@@ -338,9 +411,7 @@ describe("PlayerSettingsPanel", () => {
         <PlayerSettingsPanel />
       </NextIntlClientProvider>,
     );
-    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
-      target: { value: "gold" },
-    });
+    clickLeague("Or");
     fireEvent.change(
       screen.getByLabelText("Niveau du joueur", { selector: "input" }),
       { target: { value: "10" } },

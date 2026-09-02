@@ -132,6 +132,7 @@
     "title": "Ajustes del jugador",
     "summary": "{league} · Nivel {level} · {vp} VP · {templarTotal, plural, one {# templario} other {# templarios}}",
     "league": "Liga",
+    "league-undefined": "Liga no definida",
     "player-level": "Nivel del jugador",
     "player-vp": "VP del jugador",
     "vp-unit": "Unidad de VP",
