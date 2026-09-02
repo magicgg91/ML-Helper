@@ -707,6 +707,18 @@ describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern
     expect(leagueRule).toBeDefined();
     expect(leagueRule).not.toMatch(/display: flex;/);
   });
+
+  // 2nd review fix (PR #90): the field shrinking alone let its
+  // .family-buttons fall back to its own generic overflow-x: auto and
+  // scroll internally — which the permanent Bloc 69/F e2e regression test
+  // forbids (no league group may ever scroll, at any width; this exact
+  // case failed CI at 1000px). Wraps to a 2nd row instead: no scroll in
+  // either axis, full button text always visible.
+  it("wraps .family-buttons instead of letting it scroll, so the row-F 'never scrolls' invariant holds even when the field is squeezed", () => {
+    expect(css).toMatch(
+      /\.ranking-league-field \.family-buttons\s*{\s*\n\s*flex-wrap: wrap;\s*\n\s*overflow-x: visible;/,
+    );
+  });
 });
 
 // Bloc 69/E: City's 3 tools (Coût de Ville/Niveau Max Atteignable/

@@ -1512,13 +1512,23 @@ select {
    fields' fixed 9rem steppers plus .ranking-fields' own nowrap left no
    room for a non-shrinking 50% at desktop widths just above the 900px
    breakpoint, overflowing the row. min-width: 0 removes the automatic
-   content-based floor that would otherwise still block shrinking, so at
-   that pinch point this field compresses and its own .family-buttons
-   (overflow-x: auto) scrolls internally instead — the same fallback the
-   row already relied on before this field had any explicit width. */
+   content-based floor that would otherwise still block shrinking. */
 .ranking-league-field {
   flex: 0 1 50%;
   min-width: 0;
+}
+/* 2nd review fix (PR #90): the field shrinking alone isn't enough — its
+   .family-buttons would then fall back to its own generic overflow-x:
+   auto (Bloc 34/B) and scroll internally, which the permanent Bloc 69/F
+   e2e regression test forbids outright (no league group may ever
+   scroll, at any tested width — this exact case failed CI at 1000px).
+   Wrapping to a 2nd row instead keeps every button's full text on
+   screen with no scroll in either axis; unlike wrap; overflow-x:auto,
+   flex-wrap: wrap only visibly wraps once there truly isn't room for
+   one line, so ample desktop widths still render a single row. */
+.ranking-league-field .family-buttons {
+  flex-wrap: wrap;
+  overflow-x: visible;
 }
 /* Bloc 64/G: label immediately before the control, on both numeric
    fields — overrides .calculator-field's stacked grid for these 2 only. */
