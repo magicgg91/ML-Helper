@@ -3003,11 +3003,19 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .home-guides {
   margin-top: clamp(3rem, 8vw, 7rem);
 }
+/* Bloc 68/D: matches the violet gradient h1 these same title+phrase pairs
+   already render as on /tools, /referentiels and /guides (the "Prototype
+   visual language" h1 rule above, ~line 1471: a gradient clipped to the
+   text) — the homepage reuses the exact same title text but as an h2,
+   which never inherited that rule and hardcoded var(--text) instead. */
 .home-tools h2,
 .home-references h2,
 .home-guides h2 {
   margin: 0.4rem 0 1rem;
-  color: var(--text);
+  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   line-height: 1.08;
 }

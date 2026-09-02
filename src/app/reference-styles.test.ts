@@ -97,6 +97,25 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
+  // Bloc 68/D: the homepage reuses the Outils/Référentiels/Guides section
+  // titles verbatim from /tools, /referentiels and /guides — but those 3
+  // pages render theirs as a real <h1>, which picks up the gradient
+  // clipped-text violet from the "Prototype visual language" h1 rule
+  // (~line 1471), while the homepage rendered the same text as a plain
+  // var(--text) <h2> that never inherited it.
+  it("Bloc68/D: gives the homepage's Outils/Référentiels/Guides section titles the same gradient violet clip as their h1 counterparts", () => {
+    const rule = css.match(
+      /\.home-tools h2,\n\.home-references h2,\n\.home-guides h2\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(
+      /background: linear-gradient\(110deg, var\(--accent-strong\), var\(--accent\)\);/,
+    );
+    expect(rule).toMatch(/color: transparent;/);
+    expect(rule).toMatch(/background-clip: text;/);
+    expect(rule).not.toMatch(/color: var\(--text\);/);
+  });
+
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
     expect(css).toMatch(
       /main\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
