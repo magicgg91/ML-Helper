@@ -11,7 +11,7 @@ vi.mock("next-intl/server", () => ({
     const catalog: Record<string, string> = {
       "catalog.combat-equipment": "Équipements de Combat",
       "catalog.expedition-equipment": "Équipements d’Expédition",
-      "catalog.level-up": "Level Up",
+      "catalog.level-up": "Progression",
       "catalog.templars": "Templiers",
       "catalog.gems": "Gemmes",
       "catalog.shop": "Boutique",
@@ -122,6 +122,20 @@ describe("ReferencePage", () => {
     const heading = screen.getByRole("heading", {
       name: "Équipements d’Expédition",
     });
+    expect(heading).toHaveClass("reference-page-title");
+  });
+
+  // Bloc 67: renamed from "Level Up" — the slug/URL stay unchanged
+  // (/referentiels/level-up), only the displayed label changes.
+  it("Bloc67: routes the 'level-up' slug to LevelUpReference, labelled Progression", async () => {
+    render(
+      await ReferencePage({
+        params: Promise.resolve({ slug: "level-up" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("level-up-table")).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: "Progression" });
     expect(heading).toHaveClass("reference-page-title");
   });
 

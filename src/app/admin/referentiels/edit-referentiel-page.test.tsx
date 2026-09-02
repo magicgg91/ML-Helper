@@ -98,7 +98,7 @@ vi.mock("@/components/events-admin-editor", () => ({
 afterEach(cleanup);
 
 describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => {
-  it("shows only one back link on the Level Up reference page, owned by its EditorActionBar", async () => {
+  it("shows only one back link on the Progression reference page, owned by its EditorActionBar", async () => {
     const { container } = render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-level-up" }),

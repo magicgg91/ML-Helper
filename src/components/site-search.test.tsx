@@ -85,10 +85,10 @@ describe("SiteSearch", () => {
     renderSearch();
     fireEvent.change(
       screen.getByRole("searchbox", { name: "Rechercher sur le site" }),
-      { target: { value: "level up" } },
+      { target: { value: "progression" } },
     );
     expect(screen.getAllByRole("link")).toHaveLength(1);
-    expect(screen.getByRole("link", { name: /Level Up/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Progression/ })).toHaveAttribute(
       "href",
       "/referentiels/level-up",
     );
@@ -108,10 +108,10 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    // Bloc36/A: "level up" (not "gemmes", now shared by 2 results) keeps
+    // Bloc36/A: "progression" (not "gemmes", now shared by 2 results) keeps
     // this generic dropdown-behavior test to a single unambiguous match.
-    fireEvent.change(input, { target: { value: "level up" } });
-    fireEvent.click(screen.getByRole("link", { name: /Level Up/ }));
+    fireEvent.change(input, { target: { value: "progression" } });
+    fireEvent.click(screen.getByRole("link", { name: /Progression/ }));
     expect(input).toHaveValue("");
     expect(screen.queryByRole("list")).toBeNull();
   });
@@ -121,14 +121,14 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "level up" } });
-    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
+    fireEvent.change(input, { target: { value: "progression" } });
+    expect(screen.getByRole("link", { name: /Progression/ })).toBeVisible();
 
     fireEvent.mouseDown(document.body);
 
-    expect(screen.queryByRole("link", { name: /Level Up/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Progression/ })).toBeNull();
     expect(screen.queryByRole("status")).toBeNull();
-    expect(input).toHaveValue("level up");
+    expect(input).toHaveValue("progression");
   });
 
   it("does not close when clicking inside the search box or its results", () => {
@@ -136,12 +136,12 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "level up" } });
+    fireEvent.change(input, { target: { value: "progression" } });
     fireEvent.mouseDown(input);
-    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Progression/ })).toBeVisible();
 
-    fireEvent.mouseDown(screen.getByRole("link", { name: /Level Up/ }));
-    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
+    fireEvent.mouseDown(screen.getByRole("link", { name: /Progression/ }));
+    expect(screen.getByRole("link", { name: /Progression/ })).toBeVisible();
   });
 
   it("reopens the results when the search box regains focus after an outside click", () => {
@@ -149,11 +149,11 @@ describe("SiteSearch", () => {
     const input = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    fireEvent.change(input, { target: { value: "level up" } });
+    fireEvent.change(input, { target: { value: "progression" } });
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByRole("link", { name: /Level Up/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Progression/ })).toBeNull();
 
     fireEvent.focus(input);
-    expect(screen.getByRole("link", { name: /Level Up/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Progression/ })).toBeVisible();
   });
 });

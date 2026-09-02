@@ -116,9 +116,12 @@ describe("buildSiteSearchResults", () => {
     });
   });
 
+  // Bloc 67: renamed from "Level Up" to "Progression" — the query and
+  // expected label follow, the slug/href stay unchanged (no URL redirect
+  // needed, same principle as Boutique/Templiers).
   it("never lists a reference table's calculator entry as a tool", () => {
     const results = buildSiteSearchResults({
-      query: "level up",
+      query: "progression",
       locale: "fr",
       guides: [],
       translate: translateFr,
@@ -127,7 +130,7 @@ describe("buildSiteSearchResults", () => {
       {
         type: "reference",
         id: "reference-level-up",
-        label: "Level Up",
+        label: "Progression",
         href: "/referentiels/level-up",
       },
     ]);

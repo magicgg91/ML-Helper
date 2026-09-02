@@ -130,7 +130,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
   // under C to sorting under T — an automatic consequence of the sort
   // above being computed on the displayed label, not a bug to guard
   // against. Confirmed here with the real, non-mocked fr labels.
-  it("Bloc66/A: sorts Templiers under T (after Level Up, Gemmes), not under C as 'Coût des Templiers' once did", () => {
+  it("Bloc66/A: sorts Templiers under T (after Progression, Gemmes), not under C as 'Coût des Templiers' once did", () => {
     const { container } = render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
@@ -141,9 +141,27 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
     );
     expect(titles).toContain("Templiers");
     expect(titles.indexOf("Templiers")).toBeGreaterThan(
-      titles.indexOf("Level Up"),
+      titles.indexOf("Progression"),
     );
     expect(titles.indexOf("Templiers")).toBeGreaterThan(
+      titles.indexOf("Gemmes"),
+    );
+  });
+
+  // Bloc 67: same repositioning consequence as Bloc 66/A above, this time
+  // for "Level Up" -> "Progression" itself (L sorted before Gemmes/G,
+  // Progression now sorts after both).
+  it("Bloc67: sorts Progression under P (after Gemmes), not under L as 'Level Up' once did", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
+      </NextIntlClientProvider>,
+    );
+    const titles = Array.from(container.querySelectorAll("h3")).map(
+      (heading) => heading.textContent!,
+    );
+    expect(titles).toContain("Progression");
+    expect(titles.indexOf("Progression")).toBeGreaterThan(
       titles.indexOf("Gemmes"),
     );
   });

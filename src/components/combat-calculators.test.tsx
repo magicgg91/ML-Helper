@@ -59,7 +59,17 @@ describe("CombatCalculators", () => {
     );
   });
 
-  // Bloc 53/F: the Level Up reference's cross-link now passes ?open=xp,
+  // Bloc 67: the reciprocal direction — this tool now links back to its
+  // paired reference too (previously missing entirely), using the
+  // renamed "Progression" label from the same single source of truth
+  // (references.catalog.level-up) that drives the page/nav/tiles.
+  it("Bloc67: shows a cross-link to the Progression reference from the XP Gain Rate tool", () => {
+    view();
+    const link = screen.getByRole("link", { name: /Progression$/ });
+    expect(link).toHaveAttribute("href", "/referentiels/level-up");
+  });
+
+  // Bloc 53/F: the Progression reference's cross-link now passes ?open=xp,
   // forwarded here as initialTool — must select that tab directly instead
   // of always defaulting to whichever tab is firstAvailable.
   it("Bloc53/F: initialTool selects the given tab directly", () => {

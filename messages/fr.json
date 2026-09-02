@@ -545,7 +545,7 @@
       "expedition": "Expédition",
       "combat-equipment": "Équipements de Combat",
       "expedition-equipment": "Équipements d’Expédition",
-      "level-up": "Level Up",
+      "level-up": "Progression",
       "templars": "Templiers",
       "gems": "Gemmes",
       "shop": "Boutique",
@@ -616,7 +616,7 @@
     "toTool": "Aller plus loin en utilisant l'outil"
   },
   "level-up": {
-    "name": "Level Up",
+    "name": "Progression",
     "league": "Ligue",
     "select-league": "Choisis une ligue pour afficher le référentiel.",
     "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
@@ -775,7 +775,7 @@
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
-        "level-up": "Level Up",
+        "level-up": "Progression",
         "templiers": "Templiers",
         "gemmes": "Gemmes",
         "consommables": "Boutique",
@@ -856,7 +856,8 @@
       "templar-parameters": "Paramètres de coût des Templiers",
       "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
       "demo-attack-troops-editor": "Pourcentages d’attaque démo",
-      "gems-editor": "Paramètres des Gemmes"
+      "gems-editor": "Paramètres des Gemmes",
+      "reference-level-up": "Éditer Progression"
     },
     "ranking": {
       "title": "Classement",

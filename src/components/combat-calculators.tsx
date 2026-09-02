@@ -17,6 +17,8 @@ import { LeagueSelect } from "./league-select";
 import { NumberStepper } from "./number-stepper";
 import { TabLabel } from "./tab-label";
 import { useSyncedLeague } from "./use-synced-league";
+import { CrossReferenceLink } from "./cross-reference-link";
+import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 
 const units = [
   ["×1", 1],
@@ -34,6 +36,11 @@ function rangeLabel(minimum: number, maximum: number | null) {
 
 function XpGainRate({ tiers }: { tiers: XpTier[] }) {
   const t = useTranslations("xp-gain-rate");
+  const references = useTranslations("references");
+  const crossReference = useTranslations("crossReference");
+  const levelUpReference = referenceCatalog.find(
+    (item) => item.slug === "level-up",
+  )!;
   const [mode, setMode] = useState<XpMode>("attacker");
   const [vp, setVp] = useState(0);
   const [unit, setUnit] = useState(1e6);
@@ -103,6 +110,17 @@ function XpGainRate({ tiers }: { tiers: XpTier[] }) {
           </table>
         </div>
       </section>
+      {/* Bloc 67: the missing tool->reference direction, added the same
+          way Combat/Expedition Equipment/Gemmes/Templiers already have it —
+          the reference already links here (?open=xp), but nothing linked
+          back until now. */}
+      <CrossReferenceLink
+        href={referenceHref("level-up")}
+        title={references("catalog.level-up")}
+        image={levelUpReference.image}
+        fallbackImage={levelUpReference.fallbackImage}
+        label={crossReference("toReference")}
+      />
     </div>
   );
 }

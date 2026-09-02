@@ -332,11 +332,15 @@ test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   }
 });
 
-test("Level Up is a Référentiels reference and keeps Silver unconfirmed", async ({
+// Bloc 67: renamed from "Level Up" to "Progression" — the URL itself is
+// unchanged (/referentiels/level-up), only the displayed label.
+test("Progression is a Référentiels reference and keeps Silver unconfirmed", async ({
   page,
 }) => {
   await page.goto("/referentiels/level-up");
-  await expect(page.getByRole("heading", { name: "Level Up" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Progression" }),
+  ).toBeVisible();
   // Bloc 61/A: the league <select> is replaced by single-select buttons —
   // same visual/interaction pattern as the equipment family filters.
   const leagueGroup = page.getByRole("group", { name: "Ligue" });
