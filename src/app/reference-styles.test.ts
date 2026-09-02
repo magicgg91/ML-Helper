@@ -473,12 +473,13 @@ describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
 });
 
 describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () => {
-  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 2
-  // tiles per row on desktop, 1 on mobile like Boutique/Gemmes.
-  it("B: lays the Templiers tiles out 2 per row, dropping to 1 column on mobile, images at 6rem", () => {
+  // B: same image-left layout and 6rem size as Boutique (Bloc 65/C), 3
+  // tiles per row on desktop (Bloc 68/A: 5 Templiers = 3+2), 1 on mobile
+  // like Boutique/Gemmes.
+  it("B: lays the Templiers tiles out 3 per row, dropping to 1 column on mobile, images at 6rem", () => {
     const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(grid).toBeDefined();
-    expect(grid).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(grid).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -544,6 +545,21 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   it("H+I: Player Settings' .settings-grid sections go 2-column on mobile, with the primary grid's first child (league) spanning the full row", () => {
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
+});
+
+// Bloc 68/C: the Templiers calculator's own fields+cost card — 3 equal
+// columns (Niveau départ / Niveau cible / Coût total) on desktop, 1 column
+// (stacked) on mobile. Dedicated class, distinct from the shared
+// .calculator-fields used by Gems/City/DemoAttackTroops.
+describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
+  it("gives .templars-cost-fields 3 equal columns on desktop, 1 on mobile", () => {
+    const rule = css.match(/\.templars-cost-fields\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
   });
 });

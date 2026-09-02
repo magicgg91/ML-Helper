@@ -687,12 +687,14 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
   // Point 1: one shared level range applies to all 5 skills at once.
-  const rusherRow = page.getByRole("row", { name: /Vitesse/ });
-  await expect(rusherRow.getByRole("cell").nth(1)).toHaveText("1%/Templier");
-  await expect(rusherRow.getByRole("cell").nth(2)).toHaveText("3%");
-  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+3%");
+  // Bloc 68/C: results are now tiles (same pattern as the Templiers
+  // referentiel), not table rows.
+  const rusherTile = page.getByTestId("templars-calculator-tile-rusher");
+  await expect(rusherTile).toContainText("1%/Templier");
+  await expect(rusherTile).toContainText("Bonus total au niveau 3 : 3%");
+  await expect(rusherTile).toContainText("Gain départ → cible : +3%");
   await page.getByRole("spinbutton", { name: "Niveau de départ" }).fill("1");
-  await expect(rusherRow.getByRole("cell").nth(3)).toHaveText("+2%");
+  await expect(rusherTile).toContainText("Gain départ → cible : +2%");
 });
 
 test("Reference tables filter combat and expedition equipment", async ({

@@ -1130,10 +1130,12 @@ select {
 /* Bloc 66/B: the Templiers presentation tiles, before the 2x10 cost table
    (Bloc 64/E, unchanged) — same image-left layout and 6rem size as
    Boutique (Bloc 65/C), colored per associated competence (skillColor),
-   same principle as Gemmes' tiles above. */
+   same principle as Gemmes' tiles above.
+   Bloc 68/A: 3 per row on desktop (5 Templiers = 3+2 layout). Also reused
+   verbatim by the Templiers calculator's result tiles (Bloc 68/C). */
 .templars-tile-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 .templars-tile {
@@ -1172,6 +1174,21 @@ select {
 }
 @media (max-width: 900px) {
   .templars-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 68/C: the Templiers calculator's own fields+cost card — Niveau
+   départ / Niveau cible / Coût total merged into 3 equal columns on
+   desktop, stacked to 1 column on mobile. Dedicated class rather than
+   reusing .calculator-fields above (shared by Gems/City/DemoAttackTroops,
+   whose own auto-fit layout must not change). */
+.templars-cost-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+@media (max-width: 900px) {
+  .templars-cost-fields {
     grid-template-columns: 1fr;
   }
 }
