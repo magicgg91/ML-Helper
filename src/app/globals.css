@@ -1246,6 +1246,53 @@ select {
     overflow-x: visible;
   }
 }
+/* Bloc 68/L+M: opt-in modifier for a .family-buttons group that should form
+   a full-width, evenly-sized 2-column grid on mobile instead of the default
+   wrap (which can leave a ragged last row) — Boutique's category filter
+   (Bloc 68/L) and Combat/Expedition's family filter (Bloc 68/M), both
+   exactly 4 buttons. Desktop is untouched (still the plain nowrap row
+   above). */
+@media (max-width: 900px) {
+  .reference-filter-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Bloc 68/M: Combat/Expedition's 5-item rarity filter, split 2+3 across 2
+   rows on mobile — deliberately NOT a plain 2-column grid (which would
+   leave an awkward lone 5th button) and deliberately keeping rarityOrder's
+   existing rarest-to-commonest DOM order (Légendaire, Mythique, Épique,
+   Rare, Commun): row 1 is the first 2 buttons, row 2 the last 3, via a
+   6-column track so each row's buttons stay equal width without needing to
+   restructure the flat button list into 2 separate containers. */
+@media (max-width: 900px) {
+  .reference-filter-grid-rarity {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .reference-filter-grid-rarity button:nth-child(1),
+  .reference-filter-grid-rarity button:nth-child(2) {
+    grid-column: span 3;
+  }
+  .reference-filter-grid-rarity button:nth-child(3),
+  .reference-filter-grid-rarity button:nth-child(4),
+  .reference-filter-grid-rarity button:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+/* Bloc 68/N: the Événements/Progression league picker (6 leagues) forms a
+   full-width 3-column grid on mobile (2 rows of 3) instead of the default
+   wrap, which could split unevenly. Opt-in via LeagueButtons' className
+   prop — Classement's own league buttons and the other new button
+   conversions (Bloc 68/F/J/K) are untouched, keeping their plain wrap. */
+@media (max-width: 900px) {
+  .league-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+}
 .secondary-action {
   padding: 0.6rem 0.85rem;
   border: 1px solid var(--border);

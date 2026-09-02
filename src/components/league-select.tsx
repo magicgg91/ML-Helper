@@ -41,14 +41,23 @@ export function LeagueButtons({
   label,
   value,
   onChange,
+  // Bloc 68/N: an opt-in extra class (e.g. "league-buttons-grid") for
+  // callers that want a specific mobile layout instead of the default
+  // wrap — every other caller is unaffected by omitting it.
+  className,
 }: {
   label: string;
   value: LeagueSelection;
   onChange: (league: LeagueSelection) => void;
+  className?: string;
 }) {
   const game = useTranslations("game");
   return (
-    <div className="family-buttons" role="group" aria-label={label}>
+    <div
+      className={className ? `family-buttons ${className}` : "family-buttons"}
+      role="group"
+      aria-label={label}
+    >
       {leagues.map((league) => (
         <button
           key={league}

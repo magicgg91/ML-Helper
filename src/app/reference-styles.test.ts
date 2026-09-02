@@ -484,3 +484,38 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
     }
   });
 });
+
+// Bloc 68: shared mobile-only grid modifiers, laid down once so every
+// consumer (Boutique's category filter, Combat/Expedition's family/rarity
+// filters, Événements/Progression's league buttons) references the exact
+// same rule instead of each defining its own near-duplicate.
+describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
+  it("L, M: .reference-filter-grid-2 forms a full-width 2-column grid, mobile only", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-2\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+  });
+
+  // M: deliberately 2 then 3, not a flat 2-column grid — and deliberately
+  // keeps rarityOrder's existing rarest-to-commonest DOM order (Légendaire,
+  // Mythique first) rather than "correcting" it to Commun→Légendaire.
+  it("M: .reference-filter-grid-rarity splits 5 buttons 2-then-3 across 2 rows, mobile only", () => {
+    const rule = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-rarity\s*{([\s\S]*?)\n {2}}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/);
+    expect(css).toMatch(
+      /\.reference-filter-grid-rarity button:nth-child\(1\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(2\)\s*{\s*\n\s*grid-column: span 3;/,
+    );
+    expect(css).toMatch(
+      /\.reference-filter-grid-rarity button:nth-child\(3\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(4\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(5\)\s*{\s*\n\s*grid-column: span 2;/,
+    );
+  });
+
+  it("N: .league-buttons-grid forms a full-width 3-column grid (2 rows of 3 for 6 leagues), mobile only", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.league-buttons-grid\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    );
+  });
+});
