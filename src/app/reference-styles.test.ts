@@ -370,6 +370,24 @@ describe("Bloc 64: Boutique tiles, Level Up pagination, Templiers split", () => 
   });
 });
 
+describe("Bloc 68/B: Boutique tile cost badge moves under the name, mobile only", () => {
+  it("stacks the heading into a column on mobile, badge under the name", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 900px\) {\s*\n\s*\.consumable-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;\s*\n\s*}\s*\n[\s\S]*?\n\s*\.consumable-tile-heading\s*{\s*\n\s*flex-direction: column;\s*\n\s*align-items: flex-start;/,
+    );
+  });
+
+  // Desktop must stay exactly as Bloc 64/C left it: a row, badge at the
+  // top-right via space-between — the mobile override above must not leak
+  // into the base (non-media-query) rule.
+  it("leaves the desktop rule untouched: still a row, still space-between", () => {
+    const heading = css.match(/\.consumable-tile-heading\s*{([\s\S]*?)\n}/)?.[1];
+    expect(heading).toBeDefined();
+    expect(heading).toMatch(/justify-content: space-between/);
+    expect(heading).not.toMatch(/flex-direction/);
+  });
+});
+
 describe("Bloc 65: Boutique tiles, Gemmes tiles, Classement filter bar", () => {
   // A + C: the Intro grid and the category grids are the same rule, so
   // one 6rem image size and one tile style cover both.
