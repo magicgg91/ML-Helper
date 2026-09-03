@@ -668,6 +668,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
     page.getByRole("main").getByRole("link", { name: "Gemmes" }),
   ).toHaveAttribute("href", "/referentiels/gems");
   await page.getByRole("tab", { name: "Budget disponible" }).click();
+  // Bloc 82/D: no skill pre-selected any more — pick one explicitly.
+  await page
+    .getByRole("combobox", { name: "Compétence" })
+    .selectOption("fearless");
   await page
     .locator(".city-calculators")
     .getByRole("combobox", { name: "Ligue" })
