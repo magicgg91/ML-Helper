@@ -5,6 +5,7 @@ import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 import {
   eventColorVar,
+  eventTextColorVar,
   timelineLabelMaxWidthRem,
   type EventRow,
   type EventsCatalog,
@@ -63,19 +64,27 @@ function EventTimeline({
     }),
     { cumulativeHours: 0, items: [] },
   ).items;
-  // Bloc 79/D: a fine 24h-tick day scale under the segments. Anchored on
-  // the season's own fixed length (day seasonDurationDays, at 100%) and
-  // counted backward in 24h steps down to day 0 (0%) — the live game's
-  // actual season opening is a variable 12-16h window, only its reset/end
-  // is a fixed instant, so the end is the one point worth anchoring on
-  // (this produces the same positions as counting forward from 0 here,
-  // since seasonDurationDays is always a whole number of days, but keeps
-  // the code honest about which end is actually fixed).
-  const dayTicks = Array.from({ length: seasonDurationDays + 1 }, (_, i) => {
-    const day = seasonDurationDays - i;
-    const hoursFromEnd = i * 24;
-    return { day, left: ((totalHours - hoursFromEnd) / totalHours) * 100 };
-  });
+  // Bloc 81/E: revises Bloc 79/D's fine 24h-tick scale (every day,
+  // unconditionally) — a tick now only marks where an event actually
+  // changes (this event's own end doubling as the next one's start), so
+  // the count and spacing follow the league's real 24h/48h/72h event
+  // durations instead of a flat interval. The very last event's own end
+  // isn't a "change" (nothing follows it to start) and is deliberately
+  // left unmarked; J0 isn't a change either but is kept as the one fixed
+  // reference point for the season's own start. Cumulative hours are
+  // always a whole number of days (every duration is a multiple of 24h),
+  // so day = hours / 24 never needs rounding.
+  const cumulativeHoursAfterEachEvent = events.reduce<number[]>(
+    (acc, event) => [...acc, (acc[acc.length - 1] ?? 0) + event.duration],
+    [],
+  );
+  const eventChangeDays = cumulativeHoursAfterEachEvent
+    .slice(0, -1)
+    .map((hours) => hours / 24);
+  const dayTicks = [0, ...eventChangeDays].map((day) => ({
+    day,
+    left: ((day * 24) / totalHours) * 100,
+  }));
   return (
     <div className="events-timeline" aria-label={ariaLabel}>
       <div className="events-timeline-axis" />
@@ -109,9 +118,20 @@ function EventTimeline({
                 // timelineLabelMaxWidthRem's own comment, lib/events.ts).
                 style={{ maxWidth: `${timelineLabelMaxWidthRem(width)}rem` }}
               >
-                <div className="events-timeline-name">{event.name}</div>
-                <div className="events-timeline-duration">
-                  {common("duration-hours", { hours: event.duration })}
+                {/* Bloc 81/A: the duration used to repeat here too — now
+                    redundant since the tile below already shows it
+                    (Bloc 81/F), so the segment's own label is just the
+                    name. Bloc 81/D: written in the event's own chosen
+                    color — Bloc 81/D review (Codex PR #98): via
+                    eventTextColorVar, a theme-aware safe read of that
+                    same hue, not the vivid theme-invariant swatch value
+                    itself (illegible as text on the light theme's own
+                    light backgrounds). */}
+                <div
+                  className="events-timeline-name"
+                  style={{ color: eventTextColorVar(event.color) }}
+                >
+                  {event.name}
                 </div>
               </div>
             </div>
@@ -150,11 +170,15 @@ function EventTimeline({
 // one changes independently.
 function EventTile({
   event,
+  startDay,
+  endDay,
   t,
   locale,
 }: {
   event: EventRow;
-  t: (key: string) => string;
+  startDay: number;
+  endDay: number;
+  t: (key: string, values?: Record<string, string | number>) => string;
   locale: string;
 }) {
   const common = useTranslations("common");
@@ -173,10 +197,12 @@ function EventTile({
         <div className="events-tile-heading">
           {/* Bloc 80/F: the tile's own background stays grey (unchanged) —
               only the name is written in the event's chosen color, the
-              visual link back to its timeline segment above. */}
+              visual link back to its timeline segment above. Bloc 81/D
+              review (Codex PR #98): via eventTextColorVar — see its
+              comment in events-reference.tsx's timeline segment above. */}
           <strong
             className="events-tile-name"
-            style={{ color: eventColorVar(event.color) }}
+            style={{ color: eventTextColorVar(event.color) }}
           >
             {event.name}
           </strong>
@@ -186,8 +212,15 @@ function EventTile({
                 {finalObjective}
               </span>
             )}
+            {/* Bloc 81/F: "Jx-Jy (durée)" — the days come from this
+                event's own position in the chain (cumulative duration of
+                everything before it), not stored data. */}
             <span className="events-tile-badge events-tile-badge-duration">
-              {common("duration-hours", { hours: event.duration })}
+              {t("duration-badge", {
+                start: startDay,
+                end: endDay,
+                duration: common("duration-hours", { hours: event.duration }),
+              })}
             </span>
           </div>
         </div>
@@ -245,6 +278,24 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
   const [league, setLeague] = useSyncedLeague();
   const leagueData = league ? catalog[league] : null;
   const events = leagueData?.events ?? [];
+  // Bloc 81/F: each tile's own "Jx-Jy" range — cumulative duration of
+  // every event before it, in days (always whole, every duration is a
+  // multiple of 24h), same running-total principle as EventTimeline's own
+  // segments above.
+  const eventDayRanges = events.reduce<{
+    cumulativeHours: number;
+    items: Array<{ event: EventRow; startDay: number; endDay: number }>;
+  }>(
+    (acc, event) => {
+      const startDay = acc.cumulativeHours / 24;
+      const cumulativeHours = acc.cumulativeHours + event.duration;
+      return {
+        cumulativeHours,
+        items: [...acc.items, { event, startDay, endDay: cumulativeHours / 24 }],
+      };
+    },
+    { cumulativeHours: 0, items: [] },
+  ).items;
 
   return (
     <div className="calculator-stack">
@@ -272,8 +323,15 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
             ariaLabel={t("timeline-label")}
           />
           <div className="events-tile-grid">
-            {events.map((event, index) => (
-              <EventTile event={event} t={t} locale={locale} key={index} />
+            {eventDayRanges.map(({ event, startDay, endDay }, index) => (
+              <EventTile
+                event={event}
+                startDay={startDay}
+                endDay={endDay}
+                t={t}
+                locale={locale}
+                key={index}
+              />
             ))}
           </div>
         </>

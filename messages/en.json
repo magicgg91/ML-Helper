@@ -585,6 +585,7 @@
       "timeline-label": "Season timeline",
       "day-zero": "D0",
       "day-plus": "D+{day}",
+      "duration-badge": "D{start}-D{end} ({duration})",
       "columns": {
         "objective": "Objective",
         "reward": "Reward"
@@ -974,16 +975,16 @@
         "color": "Color"
       },
       "event-colors": {
-        "violet": "Violet",
+        "violet": "Dark violet",
         "violet-bright": "Light violet",
-        "emerald": "Emerald",
-        "emerald-bright": "Light emerald",
-        "amber": "Amber",
-        "amber-bright": "Light amber",
-        "ember": "Ember",
-        "ember-bright": "Light ember",
-        "sapphire": "Sapphire",
-        "sapphire-bright": "Light sapphire"
+        "emerald": "Dark green",
+        "emerald-bright": "Light green",
+        "amber": "Dark yellow",
+        "amber-bright": "Light yellow",
+        "ember": "Dark red",
+        "ember-bright": "Light red",
+        "sapphire": "Dark blue",
+        "sapphire-bright": "Light blue"
       },
       "tier-columns": {
         "objective": "Objective",

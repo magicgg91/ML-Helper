@@ -567,6 +567,7 @@
       "timeline-label": "Sezon zaman çizelgesi",
       "day-zero": "G0",
       "day-plus": "G+{day}",
+      "duration-badge": "G{start}-G{end} ({duration})",
       "columns": {
         "objective": "Hedef",
         "reward": "Ödül"
@@ -956,16 +957,16 @@
         "color": "Renk"
       },
       "event-colors": {
-        "violet": "Mor",
+        "violet": "Koyu mor",
         "violet-bright": "Açık mor",
-        "emerald": "Zümrüt",
-        "emerald-bright": "Açık zümrüt",
-        "amber": "Kehribar",
-        "amber-bright": "Açık kehribar",
-        "ember": "Kor",
-        "ember-bright": "Açık kor",
-        "sapphire": "Safir",
-        "sapphire-bright": "Açık safir"
+        "emerald": "Koyu yeşil",
+        "emerald-bright": "Açık yeşil",
+        "amber": "Koyu sarı",
+        "amber-bright": "Açık sarı",
+        "ember": "Koyu kırmızı",
+        "ember-bright": "Açık kırmızı",
+        "sapphire": "Koyu mavi",
+        "sapphire-bright": "Açık mavi"
       },
       "tier-columns": {
         "objective": "Hedef",

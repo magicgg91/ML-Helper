@@ -585,6 +585,7 @@
       "timeline-label": "Chronologie de la saison",
       "day-zero": "J0",
       "day-plus": "J+{day}",
+      "duration-badge": "J{start}-J{end} ({duration})",
       "columns": {
         "objective": "Objectif",
         "reward": "Récompense"
@@ -974,16 +975,16 @@
         "color": "Couleur"
       },
       "event-colors": {
-        "violet": "Violet",
+        "violet": "Violet foncé",
         "violet-bright": "Violet clair",
-        "emerald": "Émeraude",
-        "emerald-bright": "Émeraude clair",
-        "amber": "Ambre",
-        "amber-bright": "Ambre clair",
-        "ember": "Braise",
-        "ember-bright": "Braise clair",
-        "sapphire": "Saphir",
-        "sapphire-bright": "Saphir clair"
+        "emerald": "Vert foncé",
+        "emerald-bright": "Vert clair",
+        "amber": "Jaune foncé",
+        "amber-bright": "Jaune clair",
+        "ember": "Rouge foncé",
+        "ember-bright": "Rouge clair",
+        "sapphire": "Bleu foncé",
+        "sapphire-bright": "Bleu clair"
       },
       "tier-columns": {
         "objective": "Objectif",
