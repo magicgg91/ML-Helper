@@ -8,6 +8,7 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import {
   CombatReferenceTable,
   ExpeditionReferenceTable,
@@ -425,6 +426,66 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(
       within(expeditionSecondary).getByRole("row", { name: /Destruction/ }),
     ).toBeInTheDocument();
+  });
+
+  // Bloc 76/B: once an admin has saved a custom row label for the visitor's
+  // own locale, the public table shows that text instead of its own
+  // translated default — verifies both the customized row (Fusion) and an
+  // untouched one (Gemmes) still falling back to the translation.
+  it("Bloc76/B: shows an admin-edited row label on the public table instead of the default translation", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: defaultCombatGemSlotsBase,
+            skydust: defaultCombatSkydustBase,
+            labels: { mergeCost: { fr: "Coût de fusion" } },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const combatSecondary = screen
+      .getByRole("heading", { name: "Pouciel & Gemmes" })
+      .closest("section")!;
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Coût de fusion/ }),
+    ).toBeInTheDocument();
+    expect(within(combatSecondary).queryByText("Fusion")).not.toBeInTheDocument();
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Gemmes/ }),
+    ).toBeInTheDocument();
+  });
+
+  // Bloc 76/B fix (Codex review, PR #94): a label saved from the fr admin
+  // must not leak into what en visitors see — before this fix, metric_label
+  // was one literal string shown to every locale regardless of the
+  // visitor's own. en visitors now see the translated "Merge" default,
+  // never the fr-only override.
+  it("Bloc76/B fix: an fr-only row label override does not leak to en visitors", () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: defaultCombatGemSlotsBase,
+            skydust: defaultCombatSkydustBase,
+            labels: { mergeCost: { fr: "Coût de fusion" } },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const combatSecondary = screen
+      .getByRole("heading", { name: "Pouciel & Gems" })
+      .closest("section")!;
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Merge/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(combatSecondary).queryByText("Coût de fusion"),
+    ).not.toBeInTheDocument();
   });
 
   it("PR #57 review (kept): formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {

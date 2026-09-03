@@ -143,7 +143,37 @@ export type CombatSecondaryBase = {
   mergeCost: CombatMergeCostBase;
   gemSlots: CombatGemSlotsBase;
   skydust: CombatSkydustBase;
+  // Bloc 76/B, fixed per Codex review on PR #94: the row's own
+  // admin-editable label, stored per locale (fr/en — same convention as
+  // Boutique/Templiers/Events item text: only fr/en are actually captured,
+  // other locales fall back to en) rather than one literal string that
+  // would otherwise override next-intl for every visitor regardless of
+  // their own locale (AGENTS.md: "tout texte visible par l'utilisateur
+  // passe par next-intl"). Both fr/en undefined whenever the row has never
+  // been (re-)saved since Bloc 76 shipped (including the pre-Bloc-75 legacy
+  // fallback below, which predates row labels entirely) — callers fall back
+  // to their own locale-aware default translation in that case.
+  labels?: {
+    mergeCost?: { fr?: string; en?: string };
+    gemSlots?: { fr?: string; en?: string };
+    skydust?: { fr?: string; en?: string };
+  };
 };
+
+function rowLabel(row: unknown): { fr?: string; en?: string } {
+  const record = row as
+    | { metric_label_fr?: unknown; metric_label_en?: unknown }
+    | undefined;
+  const fr =
+    typeof record?.metric_label_fr === "string" && record.metric_label_fr.trim()
+      ? record.metric_label_fr
+      : undefined;
+  const en =
+    typeof record?.metric_label_en === "string" && record.metric_label_en.trim()
+      ? record.metric_label_en
+      : undefined;
+  return { fr, en };
+}
 
 // Bloc 75/A: the 3 previously-separate admin tables (Fusion/Gemmes/
 // Destruction), now genuinely merged into 1 stored table — 3 rows, fixed
@@ -161,6 +191,11 @@ export async function getCombatSecondaryBase(): Promise<CombatSecondaryBase> {
       mergeCost: parseCombatMergeCostBase(rows[0]),
       gemSlots: parseCombatGemSlotsBase(rows[1]),
       skydust: parseCombatSkydustBase(rows[2]),
+      labels: {
+        mergeCost: rowLabel(rows[0]),
+        gemSlots: rowLabel(rows[1]),
+        skydust: rowLabel(rows[2]),
+      },
     };
   }
   const [mergeCost, gemSlots, skydust] = await Promise.all([
@@ -204,6 +239,11 @@ async function getLegacyExpeditionDismantleBase(): Promise<ExpeditionDismantleBa
 export type ExpeditionSecondaryBase = {
   mergeCost: ExpeditionMergeCostBase;
   dismantle: ExpeditionDismantleBase;
+  // Bloc 76/B: see CombatSecondaryBase.labels above — same convention.
+  labels?: {
+    mergeCost?: { fr?: string; en?: string };
+    dismantle?: { fr?: string; en?: string };
+  };
 };
 
 export async function getExpeditionSecondaryBase(): Promise<ExpeditionSecondaryBase> {
@@ -215,6 +255,10 @@ export async function getExpeditionSecondaryBase(): Promise<ExpeditionSecondaryB
     return {
       mergeCost: parseExpeditionMergeCostBase(rows[0]),
       dismantle: parseExpeditionDismantleBase(rows[1]),
+      labels: {
+        mergeCost: rowLabel(rows[0]),
+        dismantle: rowLabel(rows[1]),
+      },
     };
   }
   const [mergeCost, dismantle] = await Promise.all([

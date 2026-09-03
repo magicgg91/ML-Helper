@@ -6,11 +6,14 @@ import {
   parseExpeditionDismantleBase,
   parseExpeditionMergeCostBase,
 } from "@/lib/reference-equipment";
-import { saveReferenceTable } from "@/services/reference-table-admin";
+import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
 
 // Bloc 75/B: the admin editor is now 1 merged table with 2 fixed-order
 // rows — Fusion (Terradust merge cost), Destruction (Terradust on
 // dismantle) — each still parsed by its own existing parser.
+// Bloc 76/B: metric_label is now editable free text (was read-only) —
+// see the equivalent Combat route comment for the full reasoning. Fixed per
+// Codex review on PR #94: stored per locale (fr/en), see the Combat route.
 export async function PUT(request: Request) {
   const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
@@ -23,13 +26,21 @@ export async function PUT(request: Request) {
   const mergeCost = parseExpeditionMergeCostBase(raw[0]);
   const dismantle = parseExpeditionDismantleBase(raw[1]);
   const rows = [
-    { metric_label: raw[0]?.metric_label ?? "", ...mergeCost },
-    { metric_label: raw[1]?.metric_label ?? "", ...dismantle },
+    {
+      metric_label_fr: stringField(raw[0]?.metric_label_fr),
+      metric_label_en: stringField(raw[0]?.metric_label_en),
+      ...mergeCost,
+    },
+    {
+      metric_label_fr: stringField(raw[1]?.metric_label_fr),
+      metric_label_en: stringField(raw[1]?.metric_label_en),
+      ...dismantle,
+    },
   ];
   await saveReferenceTable({
     key: referenceKeys.expeditionSecondary,
     target: "le Terradust (fusion, destruction) des Équipements d’Expédition",
-    columns: ["metric_label", ...mergeCostRarityKeys],
+    columns: ["metric_label_fr", "metric_label_en", ...mergeCostRarityKeys],
     rows,
     userId: session.user.id,
     actorRole: session.user.role,

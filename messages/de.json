@@ -965,6 +965,7 @@
         "bonus": "Bonus (%)"
       },
       "secondary-row": "Kennzahl",
+      "secondary-label-language": "Sprache der Kennzahl",
       "row-merge-cost": "Fusion",
       "row-gem-slots": "Edelsteine",
       "row-destruction": "Zerlegung",

@@ -8,6 +8,10 @@ import {
   type ReferenceTableHandle,
 } from "./editable-reference-table";
 import { EditorActionBar } from "./editor-action-bar";
+import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
 import { equipmentRarityValues } from "../lib/equipment-rarity";
 import {
   equipmentSkillLabels,
@@ -256,9 +260,25 @@ function useRarityBaseColumns(step = 1) {
 // merge cost, gem slots, Pouciel-at-destruction) merged into 1 table —
 // columns = the 5 rarities (shared with every other rarity-keyed table
 // here), 3 fixed-order rows labelled Fusion/Gemmes/Destruction via a
-// leading read-only column. Storage is genuinely merged too (see
+// leading column. Storage is genuinely merged too (see
 // getCombatSecondaryBase in reference-equipment-server.ts), not just this
 // table's display — one PUT now saves all 3 quantities together.
+// Bloc 76/B: that leading column is now itself editable (was read-only) —
+// an admin can retitle a row freely; the PUT route already stores whatever
+// metric_label it's sent, unchanged since Bloc 75.
+// Bloc 76/A: tableClassName scopes a fixed-layout, percentage-column,
+// full-width-input style to just this table (see .reference-secondary-table
+// in globals.css) — wideInputs's fixed 9rem-per-input floor (Combat's old
+// single-row Pouciel/gem-slots tables) doesn't scale to this table's extra
+// leading label column, so it's dropped here in favour of that instead.
+// Bloc 76/B, fixed per Codex review on PR #94: only fr/en are actually
+// captured per label override (same convention as Boutique/Templiers/
+// Events item text below) — any other editorial locale edits the EN field,
+// matching the public page's own non-fr fallback to English.
+function labelFieldLocale(locale: EditorialLocale): "fr" | "en" {
+  return locale === "fr" ? "fr" : "en";
+}
+
 export const CombatSecondaryAdmin = forwardRef<
   ReferenceTableHandle,
   {
@@ -266,31 +286,46 @@ export const CombatSecondaryAdmin = forwardRef<
       mergeCost: CombatMergeCostBase;
       gemSlots: CombatGemSlotsBase;
       skydust: CombatSkydustBase;
+      labels?: {
+        mergeCost?: { fr?: string; en?: string };
+        gemSlots?: { fr?: string; en?: string };
+        skydust?: { fr?: string; en?: string };
+      };
     };
     standalone?: boolean;
+    locale: EditorialLocale;
   }
->(function CombatSecondaryAdmin({ initial, standalone }, ref) {
+>(function CombatSecondaryAdmin({ initial, standalone, locale }, ref) {
   const t = useTranslations("admin.references");
   const rarityColumns = useRarityBaseColumns();
+  // Bloc 76/B fix: the row keeps both metric_label_fr and metric_label_en in
+  // state at once (edited fr text survives switching the selector to en and
+  // back) — only which one is shown as the "Indicateur" column changes with
+  // the active editorial locale. Blank means "no override for this
+  // locale", which the public page then reads as "use the translation".
+  const labelKey = `metric_label_${labelFieldLocale(locale)}` as const;
   const columns: EditableColumn<Record<string, string>>[] = [
-    { key: "metric_label", label: t("secondary-row"), readOnly: true },
+    { key: labelKey, label: t("secondary-row") },
     ...rarityColumns,
   ];
   const initialRows = [
     {
-      metric_label: t("row-merge-cost"),
+      metric_label_fr: initial.labels?.mergeCost?.fr ?? "",
+      metric_label_en: initial.labels?.mergeCost?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
       ),
     },
     {
-      metric_label: t("row-gem-slots"),
+      metric_label_fr: initial.labels?.gemSlots?.fr ?? "",
+      metric_label_en: initial.labels?.gemSlots?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.gemSlots[key])]),
       ),
     },
     {
-      metric_label: t("row-destruction"),
+      metric_label_fr: initial.labels?.skydust?.fr ?? "",
+      metric_label_en: initial.labels?.skydust?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.skydust[key])]),
       ),
@@ -300,7 +335,7 @@ export const CombatSecondaryAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
-      wideInputs
+      tableClassName="reference-secondary-table"
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/combat-equipment-secondary"
@@ -467,33 +502,44 @@ export const ExpeditionIncrementsAdmin = forwardRef<
 // Bloc 75/B: Expedition's 2 previously-separate single-metric tables
 // (Terradust merge cost, Terradust-at-dismantle) merged into 1 table, same
 // pattern as CombatSecondaryAdmin above — 2 fixed-order rows labelled
-// Fusion/Destruction via a leading read-only column. Storage genuinely
-// merged too (getExpeditionSecondaryBase).
+// Fusion/Destruction via a leading column. Storage genuinely merged too
+// (getExpeditionSecondaryBase).
+// Bloc 76/A+B: same treatment as CombatSecondaryAdmin above — the leading
+// label column is editable, and the table uses the full-width
+// tableClassName instead of wideInputs.
 export const ExpeditionSecondaryAdmin = forwardRef<
   ReferenceTableHandle,
   {
     initial: {
       mergeCost: ExpeditionMergeCostBase;
       dismantle: ExpeditionDismantleBase;
+      labels?: {
+        mergeCost?: { fr?: string; en?: string };
+        dismantle?: { fr?: string; en?: string };
+      };
     };
     standalone?: boolean;
+    locale: EditorialLocale;
   }
->(function ExpeditionSecondaryAdmin({ initial, standalone }, ref) {
+>(function ExpeditionSecondaryAdmin({ initial, standalone, locale }, ref) {
   const t = useTranslations("admin.references");
   const rarityColumns = useRarityBaseColumns();
+  const labelKey = `metric_label_${labelFieldLocale(locale)}` as const;
   const columns: EditableColumn<Record<string, string>>[] = [
-    { key: "metric_label", label: t("secondary-row"), readOnly: true },
+    { key: labelKey, label: t("secondary-row") },
     ...rarityColumns,
   ];
   const initialRows = [
     {
-      metric_label: t("row-merge-cost"),
+      metric_label_fr: initial.labels?.mergeCost?.fr ?? "",
+      metric_label_en: initial.labels?.mergeCost?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
       ),
     },
     {
-      metric_label: t("row-destruction"),
+      metric_label_fr: initial.labels?.dismantle?.fr ?? "",
+      metric_label_en: initial.labels?.dismantle?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.dismantle[key])]),
       ),
@@ -503,7 +549,7 @@ export const ExpeditionSecondaryAdmin = forwardRef<
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
-      wideInputs
+      tableClassName="reference-secondary-table"
       initialRows={initialRows}
       columns={columns}
       endpoint="/api/admin/guides/references/expedition-equipment-secondary"
@@ -567,9 +613,16 @@ export function CombatReferenceScreen({
     mergeCost: CombatMergeCostBase;
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      gemSlots?: { fr?: string; en?: string };
+      skydust?: { fr?: string; en?: string };
+    };
   };
   incrementsInitial: EquipmentStarIncrements;
 }) {
+  const t = useTranslations("admin.references");
+  const [labelLocale, setLabelLocale] = useState<EditorialLocale>("fr");
   const mainRef = useRef<ReferenceTableHandle>(null);
   const secondaryRef = useRef<ReferenceTableHandle>(null);
   const incrementsRef = useRef<ReferenceTableHandle>(null);
@@ -580,6 +633,14 @@ export function CombatReferenceScreen({
   return (
     <div className="calculator-stack">
       <EditorActionBar backHref="/admin/referentiels" message={status}>
+        {/* Bloc 76/B fix (Codex review, PR #94): the Fusion/Gemmes/
+            Destruction row label is stored per locale — this selector picks
+            which one CombatSecondaryAdmin's "Indicateur" column edits. */}
+        <EditorialLocaleSelect
+          label={t("secondary-label-language")}
+          value={labelLocale}
+          onChange={setLabelLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -596,6 +657,7 @@ export function CombatReferenceScreen({
         ref={secondaryRef}
         initial={secondaryInitial}
         standalone={false}
+        locale={labelLocale}
       />
       <CombatIncrementsAdmin
         ref={incrementsRef}
@@ -621,8 +683,14 @@ export function ExpeditionReferenceScreen({
   secondaryInitial: {
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      dismantle?: { fr?: string; en?: string };
+    };
   };
 }) {
+  const t = useTranslations("admin.references");
+  const [labelLocale, setLabelLocale] = useState<EditorialLocale>("fr");
   const incrementsRef = useRef<ReferenceTableHandle>(null);
   const secondaryRef = useRef<ReferenceTableHandle>(null);
   const mainRef = useRef<ReferenceTableHandle>(null);
@@ -632,6 +700,13 @@ export function ExpeditionReferenceScreen({
   return (
     <div className="calculator-stack">
       <EditorActionBar backHref="/admin/referentiels" message={status}>
+        {/* Bloc 76/B fix (Codex review, PR #94): see the equivalent Combat
+            comment above. */}
+        <EditorialLocaleSelect
+          label={t("secondary-label-language")}
+          value={labelLocale}
+          onChange={setLabelLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -651,6 +726,7 @@ export function ExpeditionReferenceScreen({
         ref={secondaryRef}
         initial={secondaryInitial}
         standalone={false}
+        locale={labelLocale}
       />
       <ExpeditionReferenceAdmin
         ref={mainRef}

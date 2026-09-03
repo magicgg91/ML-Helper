@@ -983,6 +983,7 @@
         "bonus": "Bonus (%)"
       },
       "secondary-row": "Metric",
+      "secondary-label-language": "Metric language",
       "row-merge-cost": "Merge",
       "row-gem-slots": "Gems",
       "row-destruction": "Dismantle",

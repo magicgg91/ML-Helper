@@ -47,6 +47,23 @@ import { GameImage } from "./game-image";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog } from "../lib/reference-catalog";
 
+// Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
+// override (fr direct, every other locale the en field — same fr/en-only
+// capture convention as Boutique/Templiers/Events) and falls back straight
+// to the translated default, never to the OTHER locale's override. Unlike
+// Boutique's item names (pure freeform text with no translation to fall
+// back to), this row label always has a real translated default in every
+// locale, so showing another locale's raw admin text here would still leak
+// a label this visitor never asked to see — the exact bug Codex flagged.
+function secondaryLabel(
+  override: { fr?: string; en?: string } | undefined,
+  locale: string,
+  fallback: string,
+): string {
+  const lang = locale === "fr" ? "fr" : "en";
+  return override?.[lang] || fallback;
+}
+
 // Bloc 39: every equipment item now renders as a tile (base 1★ value, no
 // star selector) instead of a table row — 1★ is a fixed constant here, not
 // user-selectable state.
@@ -386,6 +403,11 @@ export function CombatReferenceTable({
     mergeCost: CombatMergeCostBase;
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      gemSlots?: { fr?: string; en?: string };
+      skydust?: { fr?: string; en?: string };
+    };
   };
 }) {
   const { mergeCost: mergeCostBase, gemSlots: gemSlotsBase, skydust: skydustBase } =
@@ -467,13 +489,41 @@ export function CombatReferenceTable({
           ))}
         </div>
       ) : null}
+      {/* Bloc 76/B: each row's label comes from its own admin-editable
+          metric_label once an admin has saved one for THIS visitor's own
+          locale (fr direct, every other locale reads the en field, per
+          secondaryLabel above) — falls back to this reference's own
+          translated default until then. Fixed per Codex review on PR #94: a
+          label saved from one locale's admin no longer overrides every
+          other locale's public page. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
         rows={[
-          { label: t("columns.row-merge"), base: mergeCostBase },
-          { label: t("columns.row-gems"), base: gemSlotsBase },
-          { label: t("columns.row-destruction"), base: skydustBase },
+          {
+            label: secondaryLabel(
+              secondaryBase.labels?.mergeCost,
+              locale,
+              t("columns.row-merge"),
+            ),
+            base: mergeCostBase,
+          },
+          {
+            label: secondaryLabel(
+              secondaryBase.labels?.gemSlots,
+              locale,
+              t("columns.row-gems"),
+            ),
+            base: gemSlotsBase,
+          },
+          {
+            label: secondaryLabel(
+              secondaryBase.labels?.skydust,
+              locale,
+              t("columns.row-destruction"),
+            ),
+            base: skydustBase,
+          },
         ]}
         rarityLabel={rarityLabel}
       />
@@ -598,6 +648,10 @@ export function ExpeditionReferenceTable({
   secondaryBase?: {
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      dismantle?: { fr?: string; en?: string };
+    };
   };
 }) {
   const locale = useLocale();
@@ -672,13 +726,25 @@ export function ExpeditionReferenceTable({
           ))}
         </div>
       ) : null}
+      {/* Bloc 76/B: see the equivalent Combat comment above. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
         rows={[
-          { label: t("columns.row-merge"), base: secondaryBase.mergeCost },
           {
-            label: t("columns.row-destruction"),
+            label: secondaryLabel(
+              secondaryBase.labels?.mergeCost,
+              locale,
+              t("columns.row-merge"),
+            ),
+            base: secondaryBase.mergeCost,
+          },
+          {
+            label: secondaryLabel(
+              secondaryBase.labels?.dismantle,
+              locale,
+              t("columns.row-destruction"),
+            ),
             base: secondaryBase.dismantle,
           },
         ]}

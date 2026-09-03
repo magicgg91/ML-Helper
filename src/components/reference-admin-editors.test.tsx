@@ -161,7 +161,10 @@ describe("complete lookup table administration", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const { container } = render(
-      <ExpeditionSecondaryAdmin initial={expeditionSecondaryInitial} />,
+      <ExpeditionSecondaryAdmin
+        initial={expeditionSecondaryInitial}
+        locale="fr"
+      />,
     );
     expect(container.querySelectorAll("tbody tr")).toHaveLength(2);
     expect(
@@ -284,7 +287,7 @@ describe("complete lookup table administration", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const { container } = render(
-      <CombatSecondaryAdmin initial={combatSecondaryInitial} />,
+      <CombatSecondaryAdmin initial={combatSecondaryInitial} locale="fr" />,
     );
     expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
     expect(
@@ -470,7 +473,7 @@ describe("complete lookup table administration", () => {
     expect(main.querySelector("table")).not.toBeNull();
   });
 
-  it("Bloc38/Q: widens Combat's secondary/increments and Expedition's increments/secondary inputs, never the main tables' narrow % columns", () => {
+  it("Bloc38/Q: widens Combat's increments input, never the main tables' narrow % columns", () => {
     const { container: combatContainer } = render(
       <CombatReferenceScreen
         initialRows={[...combatReferenceRows]}
@@ -478,11 +481,10 @@ describe("complete lookup table administration", () => {
         incrementsInitial={equipmentStarIncrement}
       />,
     );
-    const [combatSecondary, combatIncrements, combatMain] = Array.from(
+    const [, combatIncrements, combatMain] = Array.from(
       combatContainer.querySelectorAll(".editable-reference"),
     );
     expect(combatMain).not.toHaveClass("reference-admin-wide-inputs");
-    expect(combatSecondary).toHaveClass("reference-admin-wide-inputs");
     expect(combatIncrements).toHaveClass("reference-admin-wide-inputs");
 
     const { container: expeditionContainer } = render(
@@ -492,11 +494,108 @@ describe("complete lookup table administration", () => {
         secondaryInitial={expeditionSecondaryInitial}
       />,
     );
-    const [increments, secondary, expeditionMain] = Array.from(
+    const [increments, , expeditionMain] = Array.from(
       expeditionContainer.querySelectorAll(".editable-reference"),
     );
     expect(increments).toHaveClass("reference-admin-wide-inputs");
-    expect(secondary).toHaveClass("reference-admin-wide-inputs");
     expect(expeditionMain).not.toHaveClass("reference-admin-wide-inputs");
+  });
+
+  // Bloc 76/A: the 2 merged secondary tables (Combat's Pouciel+Gemmes,
+  // Expedition's Terradust) get their own full-width table styling instead
+  // of wideInputs — its fixed 9rem-per-input floor doesn't scale to this
+  // table's extra leading label column.
+  it("Bloc76/A: gives Combat's and Expedition's merged secondary tables the full-width table class, not wideInputs", () => {
+    const { container: combatContainer } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        secondaryInitial={combatSecondaryInitial}
+        incrementsInitial={equipmentStarIncrement}
+      />,
+    );
+    const [combatSecondary] = Array.from(
+      combatContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(combatSecondary).not.toHaveClass("reference-admin-wide-inputs");
+    expect(combatSecondary.querySelector("table")).toHaveClass(
+      "reference-secondary-table",
+    );
+
+    const { container: expeditionContainer } = render(
+      <ExpeditionReferenceScreen
+        initialRows={[...expeditionReferenceRows]}
+        incrementsInitial={defaultExpeditionStarIncrements}
+        secondaryInitial={expeditionSecondaryInitial}
+      />,
+    );
+    const [, expeditionSecondary] = Array.from(
+      expeditionContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(expeditionSecondary).not.toHaveClass("reference-admin-wide-inputs");
+    expect(expeditionSecondary.querySelector("table")).toHaveClass(
+      "reference-secondary-table",
+    );
+  });
+
+  // Bloc 76/B: the row-label column (Fusion/Gemmes/Destruction) is now a
+  // real editable field, not a fixed read-only display value.
+  it("Bloc76/B: makes the row-label column of both merged secondary tables editable and persists an edited label", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatSecondaryAdmin initial={combatSecondaryInitial} locale="fr" />,
+    );
+    const labelInput = container.querySelector(
+      'input[aria-label="Ligne 1 Indicateur"]',
+    ) as HTMLInputElement;
+    expect(labelInput).not.toHaveAttribute("readonly");
+    fireEvent.change(labelInput, { target: { value: "Coût de fusion" } });
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].metric_label_fr).toBe("Coût de fusion");
+  });
+
+  // Bloc 76/B fix (Codex review, PR #94): a label typed while the editorial
+  // locale selector is on "fr" must not silently leak into the "en" field
+  // (or vice versa) — each locale keeps its own override, submitted
+  // together in the same PUT so switching the selector never drops
+  // whichever locale isn't currently shown.
+  it("Bloc76/B fix: stores the row label per locale instead of one string that would override next-intl for every visitor", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        secondaryInitial={combatSecondaryInitial}
+        incrementsInitial={equipmentStarIncrement}
+      />,
+    );
+    const labelInput = () =>
+      container.querySelector(
+        'input[aria-label="Ligne 1 Indicateur"]',
+      ) as HTMLInputElement;
+    // Default editorial locale is fr. A targeted container query (not
+    // screen.getByLabelText) — this screen's 180-row main table makes
+    // testing-library's label-matching algorithm pathologically slow.
+    fireEvent.change(labelInput(), { target: { value: "Coût de fusion" } });
+
+    fireEvent.change(
+      container.querySelector(".editorial-locale-select select")!,
+      { target: { value: "en" } },
+    );
+    // Switching locale swaps which field the same "Indicateur" input edits
+    // — the en field was never set, so it starts blank, not "Coût de fusion".
+    expect(labelInput().value).toBe("");
+    fireEvent.change(labelInput(), { target: { value: "Merge cost" } });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].metric_label_fr).toBe("Coût de fusion");
+    expect(body[0].metric_label_en).toBe("Merge cost");
   });
 });
