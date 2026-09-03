@@ -143,7 +143,23 @@ export type CombatSecondaryBase = {
   mergeCost: CombatMergeCostBase;
   gemSlots: CombatGemSlotsBase;
   skydust: CombatSkydustBase;
+  // Bloc 76/B: the row's own admin-editable label, straight from storage —
+  // free text, not translated (same convention as other admin-entered text
+  // like set names). Undefined whenever the row has never been (re-)saved
+  // since Bloc 76 shipped (including the pre-Bloc-75 legacy fallback below,
+  // which predates row labels entirely) — callers fall back to their own
+  // locale-aware default translation in that case.
+  labels?: {
+    mergeCost?: string;
+    gemSlots?: string;
+    skydust?: string;
+  };
 };
+
+function rowLabel(row: unknown): string | undefined {
+  const value = (row as { metric_label?: unknown } | undefined)?.metric_label;
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
 
 // Bloc 75/A: the 3 previously-separate admin tables (Fusion/Gemmes/
 // Destruction), now genuinely merged into 1 stored table — 3 rows, fixed
@@ -161,6 +177,11 @@ export async function getCombatSecondaryBase(): Promise<CombatSecondaryBase> {
       mergeCost: parseCombatMergeCostBase(rows[0]),
       gemSlots: parseCombatGemSlotsBase(rows[1]),
       skydust: parseCombatSkydustBase(rows[2]),
+      labels: {
+        mergeCost: rowLabel(rows[0]),
+        gemSlots: rowLabel(rows[1]),
+        skydust: rowLabel(rows[2]),
+      },
     };
   }
   const [mergeCost, gemSlots, skydust] = await Promise.all([
@@ -204,6 +225,11 @@ async function getLegacyExpeditionDismantleBase(): Promise<ExpeditionDismantleBa
 export type ExpeditionSecondaryBase = {
   mergeCost: ExpeditionMergeCostBase;
   dismantle: ExpeditionDismantleBase;
+  // Bloc 76/B: see CombatSecondaryBase.labels above — same convention.
+  labels?: {
+    mergeCost?: string;
+    dismantle?: string;
+  };
 };
 
 export async function getExpeditionSecondaryBase(): Promise<ExpeditionSecondaryBase> {
@@ -215,6 +241,10 @@ export async function getExpeditionSecondaryBase(): Promise<ExpeditionSecondaryB
     return {
       mergeCost: parseExpeditionMergeCostBase(rows[0]),
       dismantle: parseExpeditionDismantleBase(rows[1]),
+      labels: {
+        mergeCost: rowLabel(rows[0]),
+        dismantle: rowLabel(rows[1]),
+      },
     };
   }
   const [mergeCost, dismantle] = await Promise.all([

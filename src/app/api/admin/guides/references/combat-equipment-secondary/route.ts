@@ -7,12 +7,15 @@ import {
   parseCombatMergeCostBase,
   parseCombatSkydustBase,
 } from "@/lib/reference-equipment";
-import { saveReferenceTable } from "@/services/reference-table-admin";
+import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
 
 // Bloc 75/A: the admin editor is now 1 merged table with 3 fixed-order
 // rows — Fusion (merge cost), Gemmes (gem slots), Destruction (skydust) —
 // each still parsed by its own existing parser, so the 3 previously
 // separate quantities stay independently validated exactly as before.
+// Bloc 76/B: metric_label is now editable free text (was a fixed,
+// read-only display value) — stringField sanitizes it the same way every
+// other free-text admin field here already is (set names, guide titles…).
 export async function PUT(request: Request) {
   const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
@@ -26,9 +29,9 @@ export async function PUT(request: Request) {
   const gemSlots = parseCombatGemSlotsBase(raw[1]);
   const skydust = parseCombatSkydustBase(raw[2]);
   const rows = [
-    { metric_label: raw[0]?.metric_label ?? "", ...mergeCost },
-    { metric_label: raw[1]?.metric_label ?? "", ...gemSlots },
-    { metric_label: raw[2]?.metric_label ?? "", ...skydust },
+    { metric_label: stringField(raw[0]?.metric_label), ...mergeCost },
+    { metric_label: stringField(raw[1]?.metric_label), ...gemSlots },
+    { metric_label: stringField(raw[2]?.metric_label), ...skydust },
   ];
   await saveReferenceTable({
     key: referenceKeys.combatSecondary,

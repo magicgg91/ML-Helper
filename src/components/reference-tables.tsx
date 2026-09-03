@@ -386,6 +386,7 @@ export function CombatReferenceTable({
     mergeCost: CombatMergeCostBase;
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
+    labels?: { mergeCost?: string; gemSlots?: string; skydust?: string };
   };
 }) {
   const { mergeCost: mergeCostBase, gemSlots: gemSlotsBase, skydust: skydustBase } =
@@ -467,13 +468,26 @@ export function CombatReferenceTable({
           ))}
         </div>
       ) : null}
+      {/* Bloc 76/B: each row's label comes from its own admin-editable
+          metric_label once an admin has saved one — falls back to this
+          reference's own translated default until then. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
         rows={[
-          { label: t("columns.row-merge"), base: mergeCostBase },
-          { label: t("columns.row-gems"), base: gemSlotsBase },
-          { label: t("columns.row-destruction"), base: skydustBase },
+          {
+            label: secondaryBase.labels?.mergeCost || t("columns.row-merge"),
+            base: mergeCostBase,
+          },
+          {
+            label: secondaryBase.labels?.gemSlots || t("columns.row-gems"),
+            base: gemSlotsBase,
+          },
+          {
+            label:
+              secondaryBase.labels?.skydust || t("columns.row-destruction"),
+            base: skydustBase,
+          },
         ]}
         rarityLabel={rarityLabel}
       />
@@ -598,6 +612,7 @@ export function ExpeditionReferenceTable({
   secondaryBase?: {
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
+    labels?: { mergeCost?: string; dismantle?: string };
   };
 }) {
   const locale = useLocale();
@@ -672,13 +687,19 @@ export function ExpeditionReferenceTable({
           ))}
         </div>
       ) : null}
+      {/* Bloc 76/B: see the equivalent Combat comment above. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
         rows={[
-          { label: t("columns.row-merge"), base: secondaryBase.mergeCost },
           {
-            label: t("columns.row-destruction"),
+            label:
+              secondaryBase.labels?.mergeCost || t("columns.row-merge"),
+            base: secondaryBase.mergeCost,
+          },
+          {
+            label:
+              secondaryBase.labels?.dismantle || t("columns.row-destruction"),
             base: secondaryBase.dismantle,
           },
         ]}

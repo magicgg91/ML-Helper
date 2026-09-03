@@ -427,6 +427,36 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).toBeInTheDocument();
   });
 
+  // Bloc 76/B: once an admin has saved a custom row label, the public table
+  // shows that text instead of its own translated default — verifies both
+  // the customized row (Fusion) and an untouched one (Gemmes) still falling
+  // back to the translation.
+  it("Bloc76/B: shows an admin-edited row label on the public table instead of the default translation", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: defaultCombatGemSlotsBase,
+            skydust: defaultCombatSkydustBase,
+            labels: { mergeCost: "Coût de fusion" },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const combatSecondary = screen
+      .getByRole("heading", { name: "Pouciel & Gemmes" })
+      .closest("section")!;
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Coût de fusion/ }),
+    ).toBeInTheDocument();
+    expect(within(combatSecondary).queryByText("Fusion")).not.toBeInTheDocument();
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Gemmes/ }),
+    ).toBeInTheDocument();
+  });
+
   it("PR #57 review (kept): formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>

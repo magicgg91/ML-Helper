@@ -334,6 +334,12 @@ export type EditableReferenceTableProps<Row extends Record<string, string>> = {
   // specifically, never the 180/120-row main tables' narrow skill/stat %
   // columns from Bloc 35/37, which this prop is never set on.
   wideInputs?: boolean;
+  // Bloc 76/A: an extra class on the <table>, mirroring EditableDataTable's
+  // own tableClassName (Bloc 53/B) — lets a specific table opt into its own
+  // width tuning (table-layout: fixed + percentage columns + full-width
+  // inputs) without touching the shared .reference-admin-table/wideInputs
+  // rules every other caller here still depends on.
+  tableClassName?: string;
 };
 
 function EditableReferenceTableInner<Row extends Record<string, string>>(
@@ -350,6 +356,7 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
     layout = "table",
     standalone = true,
     wideInputs = false,
+    tableClassName,
   }: EditableReferenceTableProps<Row>,
   ref: ForwardedRef<ReferenceTableHandle>,
 ) {
@@ -547,7 +554,11 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
         </div>
       ) : (
         <div className="ranking-table-wrap">
-          <table className="ranking-table reference-admin-table">
+          <table
+            className={["ranking-table", "reference-admin-table", tableClassName]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <thead>
               <tr>
                 {columns.map((column) => (

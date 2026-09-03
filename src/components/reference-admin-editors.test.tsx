@@ -470,7 +470,7 @@ describe("complete lookup table administration", () => {
     expect(main.querySelector("table")).not.toBeNull();
   });
 
-  it("Bloc38/Q: widens Combat's secondary/increments and Expedition's increments/secondary inputs, never the main tables' narrow % columns", () => {
+  it("Bloc38/Q: widens Combat's increments input, never the main tables' narrow % columns", () => {
     const { container: combatContainer } = render(
       <CombatReferenceScreen
         initialRows={[...combatReferenceRows]}
@@ -478,11 +478,10 @@ describe("complete lookup table administration", () => {
         incrementsInitial={equipmentStarIncrement}
       />,
     );
-    const [combatSecondary, combatIncrements, combatMain] = Array.from(
+    const [, combatIncrements, combatMain] = Array.from(
       combatContainer.querySelectorAll(".editable-reference"),
     );
     expect(combatMain).not.toHaveClass("reference-admin-wide-inputs");
-    expect(combatSecondary).toHaveClass("reference-admin-wide-inputs");
     expect(combatIncrements).toHaveClass("reference-admin-wide-inputs");
 
     const { container: expeditionContainer } = render(
@@ -492,11 +491,65 @@ describe("complete lookup table administration", () => {
         secondaryInitial={expeditionSecondaryInitial}
       />,
     );
-    const [increments, secondary, expeditionMain] = Array.from(
+    const [increments, , expeditionMain] = Array.from(
       expeditionContainer.querySelectorAll(".editable-reference"),
     );
     expect(increments).toHaveClass("reference-admin-wide-inputs");
-    expect(secondary).toHaveClass("reference-admin-wide-inputs");
     expect(expeditionMain).not.toHaveClass("reference-admin-wide-inputs");
+  });
+
+  // Bloc 76/A: the 2 merged secondary tables (Combat's Pouciel+Gemmes,
+  // Expedition's Terradust) get their own full-width table styling instead
+  // of wideInputs — its fixed 9rem-per-input floor doesn't scale to this
+  // table's extra leading label column.
+  it("Bloc76/A: gives Combat's and Expedition's merged secondary tables the full-width table class, not wideInputs", () => {
+    const { container: combatContainer } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        secondaryInitial={combatSecondaryInitial}
+        incrementsInitial={equipmentStarIncrement}
+      />,
+    );
+    const [combatSecondary] = Array.from(
+      combatContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(combatSecondary).not.toHaveClass("reference-admin-wide-inputs");
+    expect(combatSecondary.querySelector("table")).toHaveClass(
+      "reference-secondary-table",
+    );
+
+    const { container: expeditionContainer } = render(
+      <ExpeditionReferenceScreen
+        initialRows={[...expeditionReferenceRows]}
+        incrementsInitial={defaultExpeditionStarIncrements}
+        secondaryInitial={expeditionSecondaryInitial}
+      />,
+    );
+    const [, expeditionSecondary] = Array.from(
+      expeditionContainer.querySelectorAll(".editable-reference"),
+    );
+    expect(expeditionSecondary).not.toHaveClass("reference-admin-wide-inputs");
+    expect(expeditionSecondary.querySelector("table")).toHaveClass(
+      "reference-secondary-table",
+    );
+  });
+
+  // Bloc 76/B: the row-label column (Fusion/Gemmes/Destruction) is now a
+  // real editable field, not a fixed read-only display value.
+  it("Bloc76/B: makes the row-label column of both merged secondary tables editable and persists an edited label", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatSecondaryAdmin initial={combatSecondaryInitial} />,
+    );
+    const labelInput = container.querySelector(
+      'input[aria-label="Ligne 1 Indicateur"]',
+    ) as HTMLInputElement;
+    expect(labelInput).not.toHaveAttribute("readonly");
+    fireEvent.change(labelInput, { target: { value: "Coût de fusion" } });
+    fireEvent.click(container.querySelector("button.primary-button")!);
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].metric_label).toBe("Coût de fusion");
   });
 });

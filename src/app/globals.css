@@ -2832,6 +2832,32 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   width: 100%;
   min-width: 0;
 }
+/* Bloc 76/A: Combat's Pouciel+Gemmes and Expedition's Terradust merged
+   tables (Bloc 75) — same bug class, same fix as .consumables-admin-table
+   above (table-layout: fixed + percentage columns instead of
+   .reference-admin-table's default min-width: max-content, which forced a
+   horizontal scroll on this table's extra label column + 5 rarity columns).
+   Deliberately its own scoped class, not wideInputs or .consumables-admin-
+   table — Blocs 38/Q, 40/B, 41/E, 53/B, C all fought width regressions
+   from cross-table leakage on shared classes here.
+   Label column (Fusion/Gemmes/Destruction, Bloc 76/B: now free text) gets a
+   smaller, fixed share; the 5 rarity columns split the rest evenly. */
+.reference-secondary-table {
+  table-layout: fixed;
+  width: calc(100% - 4px);
+  min-width: 0;
+}
+.reference-secondary-table th:first-child,
+.reference-secondary-table td:first-child {
+  width: 20%;
+}
+/* Every input fills its own column instead of leaving a gap around a fixed
+   rem floor (same reasoning as .consumables-admin-table's own input rule
+   above) — this is what makes the fields genuinely reach full width. */
+.reference-secondary-table input {
+  width: 100%;
+  min-width: 0;
+}
 /* Bloc 35/10.1, 10.3: .primary-button had no base style at all — relying on
    unstyled browser defaults — so it was invisible on every screen using it
    (EditableReferenceTable's own save button, LevelUpParametersEditor, the
