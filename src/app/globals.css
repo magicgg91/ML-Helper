@@ -3962,6 +3962,20 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   white-space: nowrap;
 }
 
+/* Bloc 84: on real mobile widths, the clamp()'s font-size floor still left
+   .tools-page-title/.referentiels-page-title's own titles ("Décide avec
+   les bons chiffres", "Retrouve les données clés") too wide for the
+   viewport — nowrap then visually truncated the text instead of wrapping
+   it. Must come after both rules above in source order: same specificity,
+   so an earlier media-query override loses the cascade to a later
+   unconditional rule even while its own condition is active. */
+@media (max-width: 900px) {
+  .tools-page-title,
+  .referentiels-page-title {
+    white-space: normal;
+  }
+}
+
 /* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
    count based on how many tiles there are — each column's floor is either
    13.5rem or a quarter of the row (minus its 3 gaps), whichever is larger,

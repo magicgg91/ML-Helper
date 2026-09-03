@@ -116,6 +116,22 @@ describe("public responsive styles", () => {
     expect(mobileOverride).toMatch(/flex-wrap: wrap;/);
   });
 
+  it("wraps the /tools and /referentiels page titles on mobile instead of truncating them (Bloc 84)", () => {
+    // Both titles keep their desktop nowrap+shrink-to-fit clamp() outside
+    // any media query...
+    const toolsRule = css.match(/(?:^|\n)\.tools-page-title\s*{([\s\S]*?)\n}/)?.[1];
+    expect(toolsRule).toBeDefined();
+    expect(toolsRule).toMatch(/white-space: nowrap;/);
+    // ...but on mobile that nowrap is undone so a title too wide for the
+    // viewport at the clamp()'s font-size floor wraps onto extra lines
+    // instead of being visually cut off.
+    const mobileOverride = css.match(
+      /@media \(max-width: 900px\)\s*{\s*\.tools-page-title,\s*\n\s*\.referentiels-page-title\s*{([\s\S]*?)\n\s*}/,
+    )?.[1];
+    expect(mobileOverride).toBeDefined();
+    expect(mobileOverride).toMatch(/white-space: normal;/);
+  });
+
   it("keeps all four summary colors at readable contrast in both themes", () => {
     const dark = css.match(
       /:root,\s*:root\[data-theme="dark"\]\s*{([\s\S]*?)\n}/,
