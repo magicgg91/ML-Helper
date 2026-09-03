@@ -85,6 +85,16 @@ describe("Bloc60/77: events data model", () => {
     expect(eventColorSeed("E1")).not.toBe(eventColorSeed("E2"));
   });
 
+  // Bloc 79 review (Codex PR #96): HTML collapses leading/trailing
+  // whitespace on render, so "Architecte" and "Architecte " (a trailing
+  // space an admin can easily type without noticing) look identical to a
+  // visitor — they must hash to the same seed, not a different one.
+  it("eventColorSeed: ignores leading/trailing whitespace, since HTML would render it identically anyway", () => {
+    expect(eventColorSeed("Architecte")).toBe(eventColorSeed("Architecte "));
+    expect(eventColorSeed("Architecte")).toBe(eventColorSeed(" Architecte"));
+    expect(eventColorSeed("Architecte")).toBe(eventColorSeed("  Architecte  "));
+  });
+
   it("eventColorSeed: always a non-negative integer, safe as a modulo index into a palette array", () => {
     for (const name of ["", "A", "Architecte", "Événement très long à tester"]) {
       const seed = eventColorSeed(name);

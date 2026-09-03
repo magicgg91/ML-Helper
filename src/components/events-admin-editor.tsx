@@ -19,6 +19,7 @@ import {
   emptyEventRow,
   emptyEventTierRow,
   eventDurations,
+  maxSeasonDurationDays,
   totalEventHours,
   type EventDuration,
   type EventRow,
@@ -272,11 +273,17 @@ export function EventsReferenceScreen({
           <input
             type="number"
             min={1}
+            max={maxSeasonDurationDays}
             step={1}
             aria-label={t("events-season-duration-label")}
             value={leagueData.seasonDurationDays}
             onChange={(e) =>
-              updateSeasonDuration(Math.max(1, Number(e.target.value) || 1))
+              updateSeasonDuration(
+                Math.min(
+                  maxSeasonDurationDays,
+                  Math.max(1, Math.round(Number(e.target.value) || 1)),
+                ),
+              )
             }
           />
           {seasonOverruns[league] && (

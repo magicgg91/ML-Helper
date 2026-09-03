@@ -2685,6 +2685,13 @@ body > main h1 {
 .events-tile-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Bloc 79 review (Codex PR #96): grid's default align-items: stretch
+     makes every cell in a row match the tallest one — expanding a tile
+     with several tiers then stretched its still-closed row neighbor down
+     to the same height, leaving a large empty bordered panel under its
+     own (much shorter) content. Aligning to the start lets each tile keep
+     its own height regardless of a neighbor's open/closed state. */
+  align-items: start;
   gap: 0.75rem;
   margin-top: 1rem;
 }

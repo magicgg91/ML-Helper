@@ -3,6 +3,7 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { eventsReferenceKey } from "@/lib/events-server";
 import {
   eventDurations,
+  maxSeasonDurationDays,
   totalEventHours,
   type EventDuration,
   type EventRow,
@@ -46,7 +47,11 @@ function parseEvent(raw: unknown): EventRow {
 
 function parseSeasonDurationDays(raw: unknown): number {
   const value = Number(raw);
-  if (!Number.isFinite(value) || value <= 0)
+  if (
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > maxSeasonDurationDays
+  )
     throw new Error("invalid season duration");
   return value;
 }

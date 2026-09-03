@@ -1485,6 +1485,46 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   expect(response.status()).toBe(400);
 });
 
+test("Bloc79 review (Codex PR #96): the PUT route rejects a season duration that's fractional or past the 366-day cap", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const validLeagueData = { seasonDurationDays: 14, events: [] };
+  const catalogWith = (silverSeasonDurationDays: unknown) => ({
+    bronze: { seasonDurationDays: 21, events: [] },
+    silver: { seasonDurationDays: silverSeasonDurationDays, events: [] },
+    gold: validLeagueData,
+    platinum: validLeagueData,
+    diamond: validLeagueData,
+    legend: validLeagueData,
+  });
+
+  // Without this cap (Bloc 79/D), the public timeline renders one tick
+  // element per day of seasonDurationDays on every render — an
+  // unbounded/typo'd value (or a fractional one, which would produce
+  // broken day labels) must never reach storage.
+  for (const invalid of [367, 2.5, 0, -1]) {
+    const response = await page.request.put(
+      "/api/admin/guides/references/events",
+      { data: catalogWith(invalid) },
+    );
+    expect(response.status()).toBe(400);
+  }
+
+  const okResponse = await page.request.put(
+    "/api/admin/guides/references/events",
+    { data: catalogWith(366) },
+  );
+  expect(okResponse.status()).toBe(200);
+});
+
 test("direct admin URLs enforce all six roles", async ({ browser }) => {
   // Bloc 59: a few extra navigations/API calls were added to check the
   // admin/read_only permission fix, pushing this already-heavy test past

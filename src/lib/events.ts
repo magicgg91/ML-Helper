@@ -58,6 +58,13 @@ export const emptyEventRow: EventRow = {
 // back-to-back-event mechanic, Argent-Légende run 14). Bronze still gets
 // its own editable value for consistency; the timeline simply has nothing
 // to draw for a league with no events yet.
+// Bloc 79 review (Codex PR #96): the public timeline (Bloc 79/D) generates
+// one tick element per day of this value on every render — shared between
+// the admin editor (client-side cap) and the PUT route (the real boundary)
+// so an unbounded/typo'd season length (1000000, say) can't blow up that
+// render. 366 covers any real season (cdc's longest is 21 days).
+export const maxSeasonDurationDays = 366;
+
 const defaultSeasonDurationDays: Record<League, number> = {
   bronze: 21,
   silver: 14,
@@ -97,10 +104,15 @@ export function totalEventHours(events: readonly EventRow[]): number {
 // the same name, so this derives a stable palette index purely from the
 // name string (same name -> same index, always) instead of an admin-
 // editable "color" field, which the task explicitly rules out.
+// Bloc 79 review (Codex PR #96): trimmed first — HTML collapses leading/
+// trailing whitespace on render, so "Architecte" and "Architecte " (a
+// trailing space an admin can easily type without noticing) would
+// otherwise look identical but hash to different palette indexes.
 export function eventColorSeed(name: string): number {
+  const trimmed = name.trim();
   let hash = 0;
-  for (let i = 0; i < name.length; i += 1) {
-    hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  for (let i = 0; i < trimmed.length; i += 1) {
+    hash = (hash * 31 + trimmed.charCodeAt(i)) | 0;
   }
   return Math.abs(hash);
 }

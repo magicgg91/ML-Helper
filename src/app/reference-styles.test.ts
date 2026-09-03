@@ -1178,6 +1178,16 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
     expect(mobileBlock).toMatch(/grid-template-columns: 1fr;/);
   });
 
+  // Bloc 79 review (Codex PR #96): the grid's default align-items (stretch)
+  // stretches every cell in a row to match its tallest sibling — an
+  // expanded (taller) tile was visually stretching a still-closed
+  // row-neighbor into a large empty bordered panel.
+  it("aligns grid items to the start, so an expanded tile never stretches a closed row-neighbor to match its height", () => {
+    const rule = css.match(/\.events-tile-grid\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/align-items: start;/);
+  });
+
   it("gives the tile the same grey .consumable-tile-style surface, and the heading a desktop-row/mobile-column badge group", () => {
     const tileRule = css.match(/\.events-tile\s*{([\s\S]*?)\n}/)?.[0];
     expect(tileRule).toBeDefined();
