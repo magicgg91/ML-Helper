@@ -88,6 +88,23 @@ export function totalEventHours(events: readonly EventRow[]): number {
   return events.reduce((sum, event) => sum + event.duration, 0);
 }
 
+// Bloc 79/G: an event name can repeat within a season (e.g. "Architecte" as
+// a 72h event early on, then again as a 24h event later, with different
+// tiers each time) — these stay 2 independent rows (no uniqueness
+// constraint on name), but the timeline (Bloc 77/D) should still show them
+// in the same color so a repeat reads as the same event at a glance. A
+// color keyed off the event's own index would give 2 different colors to
+// the same name, so this derives a stable palette index purely from the
+// name string (same name -> same index, always) instead of an admin-
+// editable "color" field, which the task explicitly rules out.
+export function eventColorSeed(name: string): number {
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) {
+    hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 export const emptyEventsCatalog: EventsCatalog = Object.fromEntries(
   leagues.map((league) => [
     league,

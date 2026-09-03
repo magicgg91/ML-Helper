@@ -1343,9 +1343,11 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await page
     .getByLabel("Description de l’événement 1")
     .fill("Enrôle des troupes pour la ligue.");
+  // Bloc 79/B: buttons instead of a <select> for the fixed 3-value enum.
   await page
-    .getByLabel("Durée de l’événement 1")
-    .selectOption("48");
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
+    .click();
   // The tier list is inside a collapsible <details>, closed by default —
   // open it before its "+" add-tier button becomes clickable.
   await page.getByText("Paliers (0)").click();
@@ -1382,17 +1384,32 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   );
 
   await publicLeagueGroup.getByRole("button", { name: "Bronze" }).click();
-  const details = page.locator("details.events-card");
+  // Bloc 79/I: the collapsible block is now a tile (details.events-tile).
+  const details = page.locator("details.events-tile");
   await expect(details).toHaveCount(1);
-  // Bloc 77/D: the season timeline above the card list also shows the
-  // event's name, so scope to the card itself rather than an ambiguous
+  // Bloc 77/D: the season timeline above the tile grid also shows the
+  // event's name, so scope to the tile itself rather than an ambiguous
   // page-wide getByText that would now match both.
   await expect(details.getByText("Recruteur")).toBeVisible();
-  await expect(page.getByText("1G troupes enrôlées")).not.toBeVisible();
+  // Bloc 79/F: the description shows next to the name even closed.
+  await expect(
+    details.getByText("Enrôle des troupes pour la ligue."),
+  ).toBeVisible();
+  // Bloc 79/I: the final-tier objective + duration badges show closed too
+  // (scoped to the badge classes — the same objective text also sits in
+  // the, still closed, tier table below, so an unscoped getByText would
+  // resolve to both and fail strict mode).
+  await expect(details.locator(".events-tile-badge-objective")).toHaveText(
+    "1G troupes enrôlées",
+  );
+  await expect(details.locator(".events-tile-badge-duration")).toHaveText(
+    "48h",
+  );
+  // ...but the tier table itself only mounts once opened.
+  await expect(details.getByText("100M or + 250 éclats")).not.toBeVisible();
 
-  await details.getByText("Recruteur").click();
-  await expect(page.getByText("1G troupes enrôlées")).toBeVisible();
-  await expect(page.getByText("100M or + 250 éclats")).toBeVisible();
+  await details.locator("summary").click();
+  await expect(details.getByText("100M or + 250 éclats")).toBeVisible();
 });
 
 test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns the season, and the PUT route rejects it too", async ({
@@ -1422,7 +1439,10 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.getByLabel("Durée de la saison (jours)").fill("1");
   await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
-  await page.getByLabel("Durée de l’événement 1").selectOption("48");
+  await page
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
+    .click();
   await page
     .getByRole("button", { name: "Enregistrer toute la page" })
     .click();

@@ -1108,3 +1108,106 @@ describe("Bloc 74/B: yellow-tier stars use a fixed literal color, never a theme 
     expect(rule).toMatch(/color: #a8710a;/);
   });
 });
+
+describe("Bloc 79/A: Expedition's slot star reuses .stuff-slot-left (Combat's own centered image+star column)", () => {
+  it("centers .stuff-slot-left's children — align-items: center on a column flex, not just Combat's own default alignment", () => {
+    const rule = css.match(/\.stuff-slot-left\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/display: flex;/);
+    expect(rule).toMatch(/flex-direction: column;/);
+    expect(rule).toMatch(/align-items: center;/);
+  });
+});
+
+describe("Bloc 79/C: Événements admin Description field is 3x a plain field's own width", () => {
+  it("sets .events-admin-description-field input to 27rem, 3x the 9rem a plain field like Nom gets elsewhere in this admin", () => {
+    expect(css).toMatch(
+      /\.events-admin-description-field input\s*{\s*\n\s*width: 27rem;\s*\n}/,
+    );
+  });
+
+  it("falls back to filling its row's width on mobile instead of the fixed 27rem", () => {
+    const mobileBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\/\*[\s\S]*?\.events-admin-description-field input[\s\S]*?\n\s*}\n}/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    expect(mobileBlock).toMatch(/width: 100%;/);
+  });
+});
+
+describe("Bloc 79/E: the timeline's event name is never ellipsized/clipped, whatever its segment width", () => {
+  it("removes the old single-line ellipsis truncation from .events-timeline-name, lets it wrap instead", () => {
+    const rule = css.match(/\.events-timeline-name\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).not.toMatch(/text-overflow: ellipsis/);
+    expect(rule).not.toMatch(/white-space: nowrap/);
+    expect(rule).toMatch(/overflow-wrap: break-word;/);
+  });
+
+  it("widens .events-timeline-label's own cap well past the old 5.5rem, so a long name has real room to wrap in", () => {
+    const rule = css.match(/\.events-timeline-label\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/max-width: 9rem;/);
+  });
+});
+
+describe("Bloc 79/D: a fine 24h-tick day scale under the timeline's segments", () => {
+  it("defines the scale row and its tick/label parts", () => {
+    expect(css).toMatch(/\.events-timeline-scale\s*{/);
+    expect(css).toMatch(/\.events-timeline-tick-group\s*{/);
+    expect(css).toMatch(/\.events-timeline-tick\s*{/);
+    expect(css).toMatch(/\.events-timeline-tick-label\s*{/);
+  });
+
+  it("gives the timeline container extra height to fit the new scale row without overlapping the segment labels", () => {
+    const rule = css.match(/\.events-timeline\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/height: 7rem;/);
+  });
+});
+
+describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching Boutique's own tile treatment", () => {
+  it("lays out a 2-per-row grid, 1 on mobile — same breakpoint/columns as .consumable-tile-grid", () => {
+    const rule = css.match(/\.events-tile-grid\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+    const mobileBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.events-tile-grid\s*{([\s\S]*?)\n\s*}/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    expect(mobileBlock).toMatch(/grid-template-columns: 1fr;/);
+  });
+
+  it("gives the tile the same grey .consumable-tile-style surface, and the heading a desktop-row/mobile-column badge group", () => {
+    const tileRule = css.match(/\.events-tile\s*{([\s\S]*?)\n}/)?.[0];
+    expect(tileRule).toBeDefined();
+    expect(tileRule).toMatch(/background: var\(--surface-muted\);/);
+
+    const headingRule = css.match(/\.events-tile-heading\s*{([\s\S]*?)\n}/)?.[0];
+    expect(headingRule).toBeDefined();
+    expect(headingRule).toMatch(/justify-content: space-between;/);
+
+    const mobileHeading = css.match(
+      /@media \(max-width: 900px\) {[\s\S]*?\.events-tile-heading\s*{([\s\S]*?)\n\s*}/,
+    )?.[0];
+    expect(mobileHeading).toBeDefined();
+    expect(mobileHeading).toMatch(/flex-direction: column;/);
+  });
+
+  it("styles the 2 badges distinctly (objective in emerald, duration in the accent), never coloring the tile itself by event name", () => {
+    const objectiveBadge = css.match(
+      /\.events-tile-badge-objective\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(objectiveBadge).toBeDefined();
+    // --gold is reserved for legendary-rarity data only, never a generic
+    // UI color (color-palette.test.ts) — this badge must never use it.
+    expect(objectiveBadge).not.toMatch(/var\(--gold(-bright)?\)/);
+    expect(objectiveBadge).toMatch(/var\(--emerald-bright\)/);
+
+    const durationBadge = css.match(
+      /\.events-tile-badge-duration\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(durationBadge).toBeDefined();
+    expect(durationBadge).toMatch(/var\(--accent-strong\)/);
+  });
+});

@@ -565,11 +565,14 @@
       "select-league": "Elige una liga para ver sus eventos.",
       "empty": "Aún no hay eventos para esta liga.",
       "timeline-label": "Cronología de la temporada",
+      "day-zero": "D0",
+      "day-plus": "D+{day}",
       "columns": {
         "objective": "Objetivo",
         "reward": "Recompensa"
       },
-      "no-tiers": "Sin niveles para este evento."
+      "no-tiers": "Sin niveles para este evento.",
+      "final-objective": "Objetivo final: {objective}"
     }
   },
   "combat-equipment": {
@@ -958,6 +961,7 @@
       "add-tier": "Añadir un nivel",
       "events-tiers-summary": "Niveles ({count})",
       "event-row-label": "{field} del evento {row}",
+      "events-position-aria": "Posición {row}",
       "tier-row-label": "{field} del nivel {row} de {event}",
       "templars-presentation-title": "Presentación",
       "templars-presentation-language-label": "Idioma del texto",

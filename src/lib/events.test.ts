@@ -3,6 +3,7 @@ import {
   emptyEventRow,
   emptyEventsCatalog,
   emptyEventTierRow,
+  eventColorSeed,
   totalEventHours,
 } from "./events";
 import { leagues } from "./player-settings";
@@ -66,5 +67,29 @@ describe("Bloc60/77: events data model", () => {
         { ...emptyEventRow, duration: 24 },
       ]),
     ).toBe(168);
+  });
+
+  // Bloc 79/G: an event name can repeat within a season (e.g. "Architecte"
+  // as a 72h event, then again later as a 24h event, different tiers each
+  // time — 2 independent rows, never a uniqueness constraint on name) and
+  // the timeline needs the same color for every occurrence — deriving it
+  // from the name alone (not the row's index) is what makes that possible
+  // without an admin-editable "color" field.
+  it("eventColorSeed: same name -> same seed, always, regardless of how many times it repeats", () => {
+    expect(eventColorSeed("Architecte")).toBe(eventColorSeed("Architecte"));
+    expect(eventColorSeed("")).toBe(eventColorSeed(""));
+  });
+
+  it("eventColorSeed: different names -> a different seed (at least for these)", () => {
+    expect(eventColorSeed("Architecte")).not.toBe(eventColorSeed("Recruteur"));
+    expect(eventColorSeed("E1")).not.toBe(eventColorSeed("E2"));
+  });
+
+  it("eventColorSeed: always a non-negative integer, safe as a modulo index into a palette array", () => {
+    for (const name of ["", "A", "Architecte", "Événement très long à tester"]) {
+      const seed = eventColorSeed(name);
+      expect(Number.isInteger(seed)).toBe(true);
+      expect(seed).toBeGreaterThanOrEqual(0);
+    }
   });
 });

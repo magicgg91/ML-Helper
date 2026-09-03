@@ -583,11 +583,14 @@
       "select-league": "Choose a league to see its events.",
       "empty": "No events for this league yet.",
       "timeline-label": "Season timeline",
+      "day-zero": "D0",
+      "day-plus": "D+{day}",
       "columns": {
         "objective": "Objective",
         "reward": "Reward"
       },
-      "no-tiers": "No tiers for this event."
+      "no-tiers": "No tiers for this event.",
+      "final-objective": "Final objective: {objective}"
     }
   },
   "combat-equipment": {
@@ -976,6 +979,7 @@
       "add-tier": "Add a tier",
       "events-tiers-summary": "Tiers ({count})",
       "event-row-label": "{field} of event {row}",
+      "events-position-aria": "Position {row}",
       "tier-row-label": "{field} of tier {row} of {event}",
       "templars-presentation-title": "Presentation",
       "templars-presentation-language-label": "Text language",

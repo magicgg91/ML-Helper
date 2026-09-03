@@ -2632,6 +2632,37 @@ body > main h1 {
   align-items: flex-end;
   gap: 0.75rem;
 }
+/* Bloc 79/H: purely informative position number (1, 2, 3…), never
+   editable and never shown on the public side — the move-up/down arrows
+   already reorder the array, this only surfaces where an event currently
+   sits in it. */
+.events-admin-position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  align-self: center;
+}
+/* Bloc 79/C: 3x a plain field's own effective width elsewhere in this
+   admin (.reference-admin-table input's 9rem) — Description is free text
+   and was cramped at the same default width as Nom. */
+.events-admin-description-field input {
+  width: 27rem;
+}
+@media (max-width: 900px) {
+  /* The fixed 27rem overflows a phone-width viewport — fall back to
+     filling whatever width the wrapping flex row actually has. */
+  .events-admin-description-field input {
+    width: 100%;
+  }
+}
 .events-admin-card-actions {
   display: flex;
   align-items: center;
@@ -2643,44 +2674,102 @@ body > main h1 {
   color: var(--muted);
   font-size: 0.85rem;
 }
-/* Bloc 60: Événements public — one collapsible card per event, closed by
-   default (name + duration in the summary), the tier table only mounted
-   once opened. */
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+/* Bloc 79/I: Événements public — revises Bloc 60's plain collapsible-block
+   list into a 2-per-row (1 mobile) grey tile grid, matching Boutique's own
+   tile treatment (.consumable-tile-grid/.consumable-tile) minus the image
+   (events carry none) — deliberately its own classes, not a literal reuse
+   (see EventTile's own comment in events-reference.tsx for why). Each tile
+   IS the collapsible unit: its <summary> holds title + the 2 badges +
+   description (all visible closed, Bloc 79/F), the tier table is the
+   revealed content. */
+.events-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
-.events-card {
-  padding: 0.9rem 1rem;
+.events-tile {
+  padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   background: var(--surface-muted);
 }
-.events-card-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
+.events-tile-summary {
   cursor: pointer;
+  list-style: none;
+}
+.events-tile-summary::-webkit-details-marker {
+  display: none;
+}
+.events-tile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.events-tile-name {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 1.1rem;
+  overflow-wrap: break-word;
+}
+/* Bloc 79/I: the 2 badges (final-tier objective, duration) always sit side
+   by side with each other — what moves is whether this whole group sits
+   beside the title (desktop) or drops below it (mobile), same mechanism
+   as Boutique's single cost badge (.consumable-tile-heading). */
+.events-tile-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+.events-tile-badge {
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
   font-weight: 700;
+  overflow-wrap: break-word;
 }
-.events-card-duration {
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 400;
+.events-tile-badge-duration {
+  border: 1px solid var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-/* Bloc 77/A: the event's own free-text description, shown inside the
-   collapsible card above the tier table — distinct from the timeline
-   visual below, which is strictly name + duration (cdc). */
-.events-card-description {
-  margin: 0.6rem 0 0;
-  color: var(--muted);
-  font-size: 0.85rem;
+.events-tile-badge-objective {
+  /* --gold is reserved for legendary-rarity data only (see
+     color-palette.test.ts) — --emerald-bright reads as a distinct
+     "goal/reward" green instead, next to the duration badge's violet. */
+  border: 1px solid var(--emerald-bright);
+  background: color-mix(in srgb, var(--emerald-bright) 16%, transparent);
+  color: var(--emerald-bright);
 }
-.events-card table {
+/* Bloc 77/A, 79/F: the event's own free-text description — visible right
+   under the title even with the tile closed (Bloc 79/F), distinct from
+   the timeline above, which stays strictly name + duration (cdc). */
+.events-tile-description {
+  margin: 0.4rem 0 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  overflow-wrap: break-word;
+}
+.events-tile table {
   margin-top: 0.75rem;
+}
+@media (max-width: 900px) {
+  .events-tile-grid {
+    grid-template-columns: 1fr;
+  }
+  .events-tile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+  .events-tile-badges {
+    justify-content: flex-start;
+  }
 }
 /* Bloc 77/D: the season timeline — same visual principle as .ranking-scale
    (Bloc 62/F) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
@@ -2690,8 +2779,10 @@ body > main h1 {
    duration over the league's season length instead. */
 .events-timeline {
   position: relative;
-  height: 4.75rem;
-  margin: 1rem 0.5rem 2.75rem;
+  /* Bloc 79/D: +2.25rem over the pre-Bloc-79 4.75rem, for the day-scale
+     row (.events-timeline-scale) added below the segments/labels. */
+  height: 7rem;
+  margin: 1rem 0.5rem 1.5rem;
   padding: 0 0.5rem;
 }
 .events-timeline-axis {
@@ -2720,7 +2811,14 @@ body > main h1 {
 }
 .events-timeline-label {
   position: absolute;
-  max-width: 5.5rem;
+  /* Bloc 79/E review: was max-width: 5.5rem with the name forced to a
+     single ellipsized line below — a segment narrower than its own name
+     (cdc example: "Enrôleur de troupes" on a 72h event) got visibly cut.
+     A wider cap plus letting the name wrap (see .events-timeline-name)
+     keeps every name fully readable regardless of segment width, at the
+     cost of sometimes visually overlapping a neighboring label — an
+     acceptable trade against silently losing part of the text. */
+  max-width: 9rem;
 }
 .events-timeline-label-above {
   bottom: 1.1rem;
@@ -2732,14 +2830,42 @@ body > main h1 {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--accent-strong);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 .events-timeline-duration {
   font-size: 0.6rem;
   color: var(--muted);
   font-family: var(--font-mono), monospace;
+}
+/* Bloc 79/D: a fine 24h-tick day scale under the segments/labels — see
+   EventTimeline's own comment (events-reference.tsx) for why it's anchored
+   on the season's fixed end rather than counted forward from 0. */
+.events-timeline-scale {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0;
+  height: 1.3rem;
+}
+.events-timeline-tick-group {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.events-timeline-tick {
+  width: 1px;
+  height: 0.35rem;
+  background: var(--border);
+}
+.events-timeline-tick-label {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.58rem;
+  white-space: nowrap;
 }
 .reference-admin-table input {
   min-width: 9rem;

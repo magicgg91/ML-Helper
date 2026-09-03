@@ -565,11 +565,14 @@
       "select-league": "Wähle eine Liga, um ihre Events zu sehen.",
       "empty": "Noch keine Events für diese Liga.",
       "timeline-label": "Saisonzeitplan",
+      "day-zero": "T0",
+      "day-plus": "T+{day}",
       "columns": {
         "objective": "Ziel",
         "reward": "Belohnung"
       },
-      "no-tiers": "Keine Stufen für dieses Event."
+      "no-tiers": "Keine Stufen für dieses Event.",
+      "final-objective": "Endziel: {objective}"
     }
   },
   "combat-equipment": {
@@ -958,6 +961,7 @@
       "add-tier": "Stufe hinzufügen",
       "events-tiers-summary": "Stufen ({count})",
       "event-row-label": "{field} von Event {row}",
+      "events-position-aria": "Position {row}",
       "tier-row-label": "{field} von Stufe {row} von {event}",
       "templars-presentation-title": "Präsentation",
       "templars-presentation-language-label": "Textsprache",

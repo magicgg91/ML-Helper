@@ -276,6 +276,24 @@ describe("ExpeditionEquipmentSimulator", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Bloc 79/A: the star was left-aligned instead of centered under the
+  // image — .stuff-slot-left (Combat's own centered image+star column,
+  // Bloc 73/D) is the fix, so both the image and the star must sit inside
+  // it now, same as Combat's own slot cell already does.
+  it("wraps the image and star in .stuff-slot-left so the star is centered under the image, not left-aligned (Bloc 79/A)", () => {
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement d’expédition Cape" }),
+      { target: { value: "Légendaire|Vanna" } },
+    );
+    const capeButton = screen.getByRole("button", { name: /Cape/ });
+    const left = capeButton.querySelector(".stuff-slot-left")!;
+    expect(left).toBeInTheDocument();
+    expect(left.querySelector("img")).toHaveClass("stuff-slot-image-expedition");
+    expect(left.querySelector(".star-rating")).toBeInTheDocument();
+  });
+
   it("shows the active slot's own contribution in parentheses next to the total (E.5)", () => {
     renderTool();
     for (const slot of ["Cape", "Longue-vue"]) {
