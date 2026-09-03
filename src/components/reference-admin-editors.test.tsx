@@ -161,7 +161,10 @@ describe("complete lookup table administration", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const { container } = render(
-      <ExpeditionSecondaryAdmin initial={expeditionSecondaryInitial} />,
+      <ExpeditionSecondaryAdmin
+        initial={expeditionSecondaryInitial}
+        locale="fr"
+      />,
     );
     expect(container.querySelectorAll("tbody tr")).toHaveLength(2);
     expect(
@@ -284,7 +287,7 @@ describe("complete lookup table administration", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const { container } = render(
-      <CombatSecondaryAdmin initial={combatSecondaryInitial} />,
+      <CombatSecondaryAdmin initial={combatSecondaryInitial} locale="fr" />,
     );
     expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
     expect(
@@ -541,7 +544,7 @@ describe("complete lookup table administration", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response("{}", { status: 200 }));
     const { container } = render(
-      <CombatSecondaryAdmin initial={combatSecondaryInitial} />,
+      <CombatSecondaryAdmin initial={combatSecondaryInitial} locale="fr" />,
     );
     const labelInput = container.querySelector(
       'input[aria-label="Ligne 1 Indicateur"]',
@@ -550,6 +553,49 @@ describe("complete lookup table administration", () => {
     fireEvent.change(labelInput, { target: { value: "Coût de fusion" } });
     fireEvent.click(container.querySelector("button.primary-button")!);
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
-    expect(body[0].metric_label).toBe("Coût de fusion");
+    expect(body[0].metric_label_fr).toBe("Coût de fusion");
+  });
+
+  // Bloc 76/B fix (Codex review, PR #94): a label typed while the editorial
+  // locale selector is on "fr" must not silently leak into the "en" field
+  // (or vice versa) — each locale keeps its own override, submitted
+  // together in the same PUT so switching the selector never drops
+  // whichever locale isn't currently shown.
+  it("Bloc76/B fix: stores the row label per locale instead of one string that would override next-intl for every visitor", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    const { container } = render(
+      <CombatReferenceScreen
+        initialRows={[...combatReferenceRows]}
+        secondaryInitial={combatSecondaryInitial}
+        incrementsInitial={equipmentStarIncrement}
+      />,
+    );
+    const labelInput = () =>
+      container.querySelector(
+        'input[aria-label="Ligne 1 Indicateur"]',
+      ) as HTMLInputElement;
+    // Default editorial locale is fr. A targeted container query (not
+    // screen.getByLabelText) — this screen's 180-row main table makes
+    // testing-library's label-matching algorithm pathologically slow.
+    fireEvent.change(labelInput(), { target: { value: "Coût de fusion" } });
+
+    fireEvent.change(
+      container.querySelector(".editorial-locale-select select")!,
+      { target: { value: "en" } },
+    );
+    // Switching locale swaps which field the same "Indicateur" input edits
+    // — the en field was never set, so it starts blank, not "Coût de fusion".
+    expect(labelInput().value).toBe("");
+    fireEvent.change(labelInput(), { target: { value: "Merge cost" } });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la page" }),
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body[0].metric_label_fr).toBe("Coût de fusion");
+    expect(body[0].metric_label_en).toBe("Merge cost");
   });
 });

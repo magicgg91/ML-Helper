@@ -143,22 +143,36 @@ export type CombatSecondaryBase = {
   mergeCost: CombatMergeCostBase;
   gemSlots: CombatGemSlotsBase;
   skydust: CombatSkydustBase;
-  // Bloc 76/B: the row's own admin-editable label, straight from storage —
-  // free text, not translated (same convention as other admin-entered text
-  // like set names). Undefined whenever the row has never been (re-)saved
-  // since Bloc 76 shipped (including the pre-Bloc-75 legacy fallback below,
-  // which predates row labels entirely) — callers fall back to their own
-  // locale-aware default translation in that case.
+  // Bloc 76/B, fixed per Codex review on PR #94: the row's own
+  // admin-editable label, stored per locale (fr/en — same convention as
+  // Boutique/Templiers/Events item text: only fr/en are actually captured,
+  // other locales fall back to en) rather than one literal string that
+  // would otherwise override next-intl for every visitor regardless of
+  // their own locale (AGENTS.md: "tout texte visible par l'utilisateur
+  // passe par next-intl"). Both fr/en undefined whenever the row has never
+  // been (re-)saved since Bloc 76 shipped (including the pre-Bloc-75 legacy
+  // fallback below, which predates row labels entirely) — callers fall back
+  // to their own locale-aware default translation in that case.
   labels?: {
-    mergeCost?: string;
-    gemSlots?: string;
-    skydust?: string;
+    mergeCost?: { fr?: string; en?: string };
+    gemSlots?: { fr?: string; en?: string };
+    skydust?: { fr?: string; en?: string };
   };
 };
 
-function rowLabel(row: unknown): string | undefined {
-  const value = (row as { metric_label?: unknown } | undefined)?.metric_label;
-  return typeof value === "string" && value.trim() ? value : undefined;
+function rowLabel(row: unknown): { fr?: string; en?: string } {
+  const record = row as
+    | { metric_label_fr?: unknown; metric_label_en?: unknown }
+    | undefined;
+  const fr =
+    typeof record?.metric_label_fr === "string" && record.metric_label_fr.trim()
+      ? record.metric_label_fr
+      : undefined;
+  const en =
+    typeof record?.metric_label_en === "string" && record.metric_label_en.trim()
+      ? record.metric_label_en
+      : undefined;
+  return { fr, en };
 }
 
 // Bloc 75/A: the 3 previously-separate admin tables (Fusion/Gemmes/
@@ -227,8 +241,8 @@ export type ExpeditionSecondaryBase = {
   dismantle: ExpeditionDismantleBase;
   // Bloc 76/B: see CombatSecondaryBase.labels above — same convention.
   labels?: {
-    mergeCost?: string;
-    dismantle?: string;
+    mergeCost?: { fr?: string; en?: string };
+    dismantle?: { fr?: string; en?: string };
   };
 };
 

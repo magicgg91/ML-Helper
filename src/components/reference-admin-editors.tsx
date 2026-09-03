@@ -8,6 +8,10 @@ import {
   type ReferenceTableHandle,
 } from "./editable-reference-table";
 import { EditorActionBar } from "./editor-action-bar";
+import {
+  EditorialLocaleSelect,
+  type EditorialLocale,
+} from "./editorial-locale-select";
 import { equipmentRarityValues } from "../lib/equipment-rarity";
 import {
   equipmentSkillLabels,
@@ -267,6 +271,14 @@ function useRarityBaseColumns(step = 1) {
 // in globals.css) — wideInputs's fixed 9rem-per-input floor (Combat's old
 // single-row Pouciel/gem-slots tables) doesn't scale to this table's extra
 // leading label column, so it's dropped here in favour of that instead.
+// Bloc 76/B, fixed per Codex review on PR #94: only fr/en are actually
+// captured per label override (same convention as Boutique/Templiers/
+// Events item text below) — any other editorial locale edits the EN field,
+// matching the public page's own non-fr fallback to English.
+function labelFieldLocale(locale: EditorialLocale): "fr" | "en" {
+  return locale === "fr" ? "fr" : "en";
+}
+
 export const CombatSecondaryAdmin = forwardRef<
   ReferenceTableHandle,
   {
@@ -274,32 +286,46 @@ export const CombatSecondaryAdmin = forwardRef<
       mergeCost: CombatMergeCostBase;
       gemSlots: CombatGemSlotsBase;
       skydust: CombatSkydustBase;
-      labels?: { mergeCost?: string; gemSlots?: string; skydust?: string };
+      labels?: {
+        mergeCost?: { fr?: string; en?: string };
+        gemSlots?: { fr?: string; en?: string };
+        skydust?: { fr?: string; en?: string };
+      };
     };
     standalone?: boolean;
+    locale: EditorialLocale;
   }
->(function CombatSecondaryAdmin({ initial, standalone }, ref) {
+>(function CombatSecondaryAdmin({ initial, standalone, locale }, ref) {
   const t = useTranslations("admin.references");
   const rarityColumns = useRarityBaseColumns();
+  // Bloc 76/B fix: the row keeps both metric_label_fr and metric_label_en in
+  // state at once (edited fr text survives switching the selector to en and
+  // back) — only which one is shown as the "Indicateur" column changes with
+  // the active editorial locale. Blank means "no override for this
+  // locale", which the public page then reads as "use the translation".
+  const labelKey = `metric_label_${labelFieldLocale(locale)}` as const;
   const columns: EditableColumn<Record<string, string>>[] = [
-    { key: "metric_label", label: t("secondary-row"), required: true },
+    { key: labelKey, label: t("secondary-row") },
     ...rarityColumns,
   ];
   const initialRows = [
     {
-      metric_label: initial.labels?.mergeCost || t("row-merge-cost"),
+      metric_label_fr: initial.labels?.mergeCost?.fr ?? "",
+      metric_label_en: initial.labels?.mergeCost?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
       ),
     },
     {
-      metric_label: initial.labels?.gemSlots || t("row-gem-slots"),
+      metric_label_fr: initial.labels?.gemSlots?.fr ?? "",
+      metric_label_en: initial.labels?.gemSlots?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.gemSlots[key])]),
       ),
     },
     {
-      metric_label: initial.labels?.skydust || t("row-destruction"),
+      metric_label_fr: initial.labels?.skydust?.fr ?? "",
+      metric_label_en: initial.labels?.skydust?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.skydust[key])]),
       ),
@@ -487,26 +513,33 @@ export const ExpeditionSecondaryAdmin = forwardRef<
     initial: {
       mergeCost: ExpeditionMergeCostBase;
       dismantle: ExpeditionDismantleBase;
-      labels?: { mergeCost?: string; dismantle?: string };
+      labels?: {
+        mergeCost?: { fr?: string; en?: string };
+        dismantle?: { fr?: string; en?: string };
+      };
     };
     standalone?: boolean;
+    locale: EditorialLocale;
   }
->(function ExpeditionSecondaryAdmin({ initial, standalone }, ref) {
+>(function ExpeditionSecondaryAdmin({ initial, standalone, locale }, ref) {
   const t = useTranslations("admin.references");
   const rarityColumns = useRarityBaseColumns();
+  const labelKey = `metric_label_${labelFieldLocale(locale)}` as const;
   const columns: EditableColumn<Record<string, string>>[] = [
-    { key: "metric_label", label: t("secondary-row"), required: true },
+    { key: labelKey, label: t("secondary-row") },
     ...rarityColumns,
   ];
   const initialRows = [
     {
-      metric_label: initial.labels?.mergeCost || t("row-merge-cost"),
+      metric_label_fr: initial.labels?.mergeCost?.fr ?? "",
+      metric_label_en: initial.labels?.mergeCost?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
       ),
     },
     {
-      metric_label: initial.labels?.dismantle || t("row-destruction"),
+      metric_label_fr: initial.labels?.dismantle?.fr ?? "",
+      metric_label_en: initial.labels?.dismantle?.en ?? "",
       ...Object.fromEntries(
         mergeCostRarityKeys.map((key) => [key, String(initial.dismantle[key])]),
       ),
@@ -580,10 +613,16 @@ export function CombatReferenceScreen({
     mergeCost: CombatMergeCostBase;
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
-    labels?: { mergeCost?: string; gemSlots?: string; skydust?: string };
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      gemSlots?: { fr?: string; en?: string };
+      skydust?: { fr?: string; en?: string };
+    };
   };
   incrementsInitial: EquipmentStarIncrements;
 }) {
+  const t = useTranslations("admin.references");
+  const [labelLocale, setLabelLocale] = useState<EditorialLocale>("fr");
   const mainRef = useRef<ReferenceTableHandle>(null);
   const secondaryRef = useRef<ReferenceTableHandle>(null);
   const incrementsRef = useRef<ReferenceTableHandle>(null);
@@ -594,6 +633,14 @@ export function CombatReferenceScreen({
   return (
     <div className="calculator-stack">
       <EditorActionBar backHref="/admin/referentiels" message={status}>
+        {/* Bloc 76/B fix (Codex review, PR #94): the Fusion/Gemmes/
+            Destruction row label is stored per locale — this selector picks
+            which one CombatSecondaryAdmin's "Indicateur" column edits. */}
+        <EditorialLocaleSelect
+          label={t("secondary-label-language")}
+          value={labelLocale}
+          onChange={setLabelLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -610,6 +657,7 @@ export function CombatReferenceScreen({
         ref={secondaryRef}
         initial={secondaryInitial}
         standalone={false}
+        locale={labelLocale}
       />
       <CombatIncrementsAdmin
         ref={incrementsRef}
@@ -635,9 +683,14 @@ export function ExpeditionReferenceScreen({
   secondaryInitial: {
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
-    labels?: { mergeCost?: string; dismantle?: string };
+    labels?: {
+      mergeCost?: { fr?: string; en?: string };
+      dismantle?: { fr?: string; en?: string };
+    };
   };
 }) {
+  const t = useTranslations("admin.references");
+  const [labelLocale, setLabelLocale] = useState<EditorialLocale>("fr");
   const incrementsRef = useRef<ReferenceTableHandle>(null);
   const secondaryRef = useRef<ReferenceTableHandle>(null);
   const mainRef = useRef<ReferenceTableHandle>(null);
@@ -647,6 +700,13 @@ export function ExpeditionReferenceScreen({
   return (
     <div className="calculator-stack">
       <EditorActionBar backHref="/admin/referentiels" message={status}>
+        {/* Bloc 76/B fix (Codex review, PR #94): see the equivalent Combat
+            comment above. */}
+        <EditorialLocaleSelect
+          label={t("secondary-label-language")}
+          value={labelLocale}
+          onChange={setLabelLocale}
+        />
         <button
           className="editor-action editor-action-primary"
           type="button"
@@ -666,6 +726,7 @@ export function ExpeditionReferenceScreen({
         ref={secondaryRef}
         initial={secondaryInitial}
         standalone={false}
+        locale={labelLocale}
       />
       <ExpeditionReferenceAdmin
         ref={mainRef}

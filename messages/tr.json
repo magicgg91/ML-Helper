@@ -965,6 +965,7 @@
         "bonus": "Bonus (%)"
       },
       "secondary-row": "Gösterge",
+      "secondary-label-language": "Gösterge dili",
       "row-merge-cost": "Birleştirme",
       "row-gem-slots": "Mücevherler",
       "row-destruction": "Söküm",

@@ -16,6 +16,10 @@ import { saveReferenceTable, stringField } from "@/services/reference-table-admi
 // Bloc 76/B: metric_label is now editable free text (was a fixed,
 // read-only display value) — stringField sanitizes it the same way every
 // other free-text admin field here already is (set names, guide titles…).
+// Fixed per Codex review on PR #94: stored per locale (fr/en) instead of one
+// literal string, so a save from one locale's admin no longer overrides
+// next-intl's translation for every other locale's visitors — see
+// CombatSecondaryBase.labels in reference-equipment-server.ts.
 export async function PUT(request: Request) {
   const session = await authorizedSession("references.write");
   if (!session) return forbiddenResponse();
@@ -29,14 +33,26 @@ export async function PUT(request: Request) {
   const gemSlots = parseCombatGemSlotsBase(raw[1]);
   const skydust = parseCombatSkydustBase(raw[2]);
   const rows = [
-    { metric_label: stringField(raw[0]?.metric_label), ...mergeCost },
-    { metric_label: stringField(raw[1]?.metric_label), ...gemSlots },
-    { metric_label: stringField(raw[2]?.metric_label), ...skydust },
+    {
+      metric_label_fr: stringField(raw[0]?.metric_label_fr),
+      metric_label_en: stringField(raw[0]?.metric_label_en),
+      ...mergeCost,
+    },
+    {
+      metric_label_fr: stringField(raw[1]?.metric_label_fr),
+      metric_label_en: stringField(raw[1]?.metric_label_en),
+      ...gemSlots,
+    },
+    {
+      metric_label_fr: stringField(raw[2]?.metric_label_fr),
+      metric_label_en: stringField(raw[2]?.metric_label_en),
+      ...skydust,
+    },
   ];
   await saveReferenceTable({
     key: referenceKeys.combatSecondary,
     target: "le Pouciel (fusion, gemmes, destruction) des Équipements de Combat",
-    columns: ["metric_label", ...mergeCostRarityKeys],
+    columns: ["metric_label_fr", "metric_label_en", ...mergeCostRarityKeys],
     rows,
     userId: session.user.id,
     actorRole: session.user.role,

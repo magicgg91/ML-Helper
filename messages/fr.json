@@ -983,6 +983,7 @@
         "bonus": "Bonus (%)"
       },
       "secondary-row": "Indicateur",
+      "secondary-label-language": "Langue de l’indicateur",
       "row-merge-cost": "Fusion",
       "row-gem-slots": "Gemmes",
       "row-destruction": "Destruction",
