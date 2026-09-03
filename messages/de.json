@@ -567,6 +567,7 @@
       "timeline-label": "Saisonzeitplan",
       "day-zero": "T0",
       "day-plus": "T+{day}",
+      "duration-badge": "T{start}-T{end} ({duration})",
       "columns": {
         "objective": "Ziel",
         "reward": "Belohnung"

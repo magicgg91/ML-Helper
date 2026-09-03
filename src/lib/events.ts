@@ -37,10 +37,15 @@ export type EventDuration = (typeof eventDurations)[number];
 // fixed palette, via a dedicated button (never a color field's free-form
 // value), so 2 similar events (cdc example: "Architecte" 72h then 24h) can
 // share a color on purpose instead of relying on their names hashing the
-// same way. 5 base hues x 2 shades (bright/base) = 10 options, all drawn
-// from the site's existing accent tokens except --gold (globals.css,
-// color-palette.test.ts: reserved for legendary-rarity data only, never a
-// generic interface color — so this palette never touches it).
+// same way. 5 base hues x 2 shades (bright/base) = 10 options.
+// Bloc 81/B review: Bloc 80 drew these from the site's shared accent tokens
+// (--violet, --emerald, etc.) — reasonable in principle, but those tokens
+// are tuned for their OWN uses elsewhere (accent, success, badges) and
+// read as too dark/muted for a picker whose whole job is 10 visually
+// distinct, vivid swatches. Dedicated --event-* tokens (globals.css) let
+// this palette be genuinely bright without touching the shared ones — the
+// identifiers below are unchanged (still used as i18n keys too), only
+// eventColorVar's own CSS variable now points at the new namespace.
 export const eventColors = [
   "violet",
   "violet-bright",
@@ -56,7 +61,7 @@ export const eventColors = [
 export type EventColor = (typeof eventColors)[number];
 
 export function eventColorVar(color: EventColor): string {
-  return `var(--${color})`;
+  return `var(--event-${color})`;
 }
 
 // Bloc 77/A: Description is admin free text at the event level (distinct

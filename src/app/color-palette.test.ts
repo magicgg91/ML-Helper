@@ -132,6 +132,42 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     }
   });
 
+  // Bloc 81/B: the event picker's 10 swatches (Bloc 80/F) read as "too dark"
+  // in practice because they reused the shared --violet/--emerald/etc.
+  // tokens, tuned for their own jobs elsewhere (accent, success, badges) —
+  // not for standing alone as vivid, distinct color-tag options. A
+  // dedicated --event-* namespace (theme-invariant, defined once) replaces
+  // them; this locks in genuine vividness (high saturation, mid-to-high
+  // lightness — never the murky/desaturated end of the scale) for all 10.
+  it("Bloc 81/B: the --event-* palette (event-color picker) is genuinely vivid — high saturation, never dark or muted", () => {
+    const names = [
+      "violet",
+      "emerald",
+      "amber",
+      "ember",
+      "sapphire",
+    ].flatMap((base) => [`event-${base}`, `event-${base}-bright`]);
+    expect(names).toHaveLength(10);
+    for (const name of names) {
+      // Emerald's own hue reads darker/less saturated than the other 4 at
+      // equal HSL numbers (a property of green, not a palette flaw) — the
+      // bounds are set loose enough to hold for all 10 while still ruling
+      // out anything genuinely dark (l < 30) or washed-out (s < 55).
+      const { s, l } = hexToHsl(extractHex(darkBlock, name));
+      expect(s, name).toBeGreaterThanOrEqual(55);
+      expect(l, name).toBeGreaterThanOrEqual(30);
+      expect(l, name).toBeLessThanOrEqual(80);
+    }
+  });
+
+  // The tokens are defined once (theme-invariant, no light-theme override)
+  // — this is what actually fixes the tester's complaint, since the old
+  // shared tokens' light-theme "-bright" variants are deliberately DARKER
+  // (for text contrast), the opposite of vivid for a standalone swatch.
+  it("Bloc 81/B: the --event-* tokens are theme-invariant — no light-theme override to go dark", () => {
+    expect(lightBlock).not.toMatch(/--event-/);
+  });
+
   it("Bloc 34/F: keeps WCAG AA text contrast after the dark-theme brightness bump", () => {
     const luminance = (hex: string) => {
       const value = Number.parseInt(hex.slice(1), 16);

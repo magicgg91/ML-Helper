@@ -361,8 +361,11 @@ export function EventsReferenceScreen({
             />
           </div>
           {/* Bloc 77/C: admin-editable per league, never hardcoded — feeds
-              the public timeline's proportional segment widths (Bloc 77/D). */}
-          <label className="calculator-field">
+              the public timeline's proportional segment widths (Bloc 77/D).
+              Bloc 81/C: a plain number 1-366, never needs to fill half the
+              row the way it did by default inside .calculator-fields-inline
+              — events-season-duration-field caps it at a quarter that width. */}
+          <label className="calculator-field events-season-duration-field">
             {t("events-season-duration-label")}
             <input
               type="number"

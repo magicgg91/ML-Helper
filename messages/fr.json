@@ -585,6 +585,7 @@
       "timeline-label": "Chronologie de la saison",
       "day-zero": "J0",
       "day-plus": "J+{day}",
+      "duration-badge": "J{start}-J{end} ({duration})",
       "columns": {
         "objective": "Objectif",
         "reward": "Récompense"

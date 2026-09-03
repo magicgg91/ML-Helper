@@ -81,7 +81,11 @@ describe("Bloc60/77: events data model", () => {
     expect(new Set(eventColors).size).toBe(10); // every option distinct.
     for (const color of eventColors) {
       expect(color).not.toMatch(/^gold/);
-      expect(eventColorVar(color)).toBe(`var(--${color})`);
+      // Bloc 81/B: a dedicated --event-* namespace (globals.css), not the
+      // shared --violet/--emerald/etc. tokens Bloc 80 originally drew from
+      // — those are tuned for their own jobs elsewhere and read as too
+      // dark/muted once used as 10 standalone swatches.
+      expect(eventColorVar(color)).toBe(`var(--event-${color})`);
     }
   });
 

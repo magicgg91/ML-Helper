@@ -567,6 +567,7 @@
       "timeline-label": "Sezon zaman çizelgesi",
       "day-zero": "G0",
       "day-plus": "G+{day}",
+      "duration-badge": "G{start}-G{end} ({duration})",
       "columns": {
         "objective": "Hedef",
         "reward": "Ödül"

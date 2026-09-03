@@ -1402,8 +1402,9 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await expect(details.locator(".events-tile-badge-objective")).toHaveText(
     "1G troupes enrôlées",
   );
+  // Bloc 81/F: the duration badge now also shows the start/end days.
   await expect(details.locator(".events-tile-badge-duration")).toHaveText(
-    "48h",
+    "J0-J2 (48h)",
   );
   // ...but the tier table itself only mounts once opened.
   await expect(details.getByText("100M or + 250 éclats")).not.toBeVisible();

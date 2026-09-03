@@ -1169,6 +1169,35 @@ describe("Bloc 80/C: Événements admin event row is a real grid, aligned across
   });
 });
 
+describe("Bloc 81/C: Événements admin alignment fixes", () => {
+  it("C1: shrinks the season-duration field to 10rem (1/4 of its pre-fix ~40rem), filling the row on mobile", () => {
+    const rule = css.match(
+      /\.events-season-duration-field input\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 10rem;/);
+    const mobileBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.events-season-duration-field input\s*{([\s\S]*?)\n\s*}/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    expect(mobileBlock).toMatch(/width: 100%;/);
+  });
+
+  it("C2, C3: top-aligns the header grid (not bottom) so every column's title lines up, regardless of its control's height", () => {
+    const rule = css.match(/\.events-admin-card-header\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/align-items: start;/);
+    expect(rule).not.toMatch(/align-items: end;/);
+  });
+
+  it("C2: compensates the position badge — which has no title row of its own — so it still lands centered on the Nom input, not the title", () => {
+    const rule = css.match(/\.events-admin-position\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/align-self: start;/);
+    expect(rule).toMatch(/margin-top: 2\.1rem;/);
+  });
+});
+
 describe("Bloc 80/E: Récompense (tier level) is 3x the base field width, Objectif untouched", () => {
   it("sets .events-tiers-table .reference-admin-wide input to 27rem", () => {
     const rule = css.match(

@@ -98,8 +98,10 @@ describe("EventsReferenceTable", () => {
       .getAllByText(/Premier|Second/)
       .map((el) => el.textContent);
     expect(names).toEqual(["Premier", "Second"]);
-    expect(eventsTiles().getByText("24h")).toBeInTheDocument();
-    expect(eventsTiles().getByText("48h")).toBeInTheDocument();
+    // Bloc 81/F: the badge is "Jx-Jy (durée)" now, not a bare "24h" — a
+    // substring match still confirms the hours are in there.
+    expect(eventsTiles().getByText(/24h/)).toBeInTheDocument();
+    expect(eventsTiles().getByText(/48h/)).toBeInTheDocument();
   });
 
   // Bloc 77/A, 79/F: the event's own description shows next to its name —
@@ -217,7 +219,9 @@ describe("EventsReferenceTable", () => {
       // The LAST tier ("3G troupes enrôlées"), never the first one.
       expect(objectiveBadge).toHaveTextContent("3G troupes enrôlées");
       expect(objectiveBadge).toBeVisible();
-      expect(durationBadge).toHaveTextContent("72h");
+      // Bloc 81/F: "Jx-Jy (durée)" — the only event in this league's list,
+      // so it starts at J0 and, at 72h, ends at J3.
+      expect(durationBadge).toHaveTextContent("J0-J3 (72h)");
       expect(durationBadge).toBeVisible();
     });
 
@@ -243,8 +247,9 @@ describe("EventsReferenceTable", () => {
       expect(
         tile.querySelector(".events-tile-badge-objective"),
       ).not.toBeInTheDocument();
+      // Bloc 81/F: the only event in the list, so J0-J1 for a 24h event.
       expect(tile.querySelector(".events-tile-badge-duration")).toHaveTextContent(
-        "24h",
+        "J0-J1 (24h)",
       );
     });
 
@@ -321,7 +326,10 @@ describe("EventsReferenceTable", () => {
       ).toBeCloseTo(100, 5);
     });
 
-    it("shows each segment's event name and duration, and nothing else — never tiers or rewards", () => {
+    // Bloc 81/A: the duration used to repeat here too (name + "72h" per
+    // segment) — now redundant since the tile below already shows it
+    // (Bloc 81/F), so the segment's own label is just the name.
+    it("Bloc81/A: shows each segment's event name only — no duration, tiers, or rewards", () => {
       const catalog = catalogWith({
         diamond: { seasonDurationDays: 14, events: diamondLegendEvents },
       });
@@ -334,8 +342,11 @@ describe("EventsReferenceTable", () => {
       for (const event of diamondLegendEvents) {
         expect(within(timeline).getByText(event.name)).toBeInTheDocument();
       }
-      expect(within(timeline).getAllByText("72h")).toHaveLength(4);
-      expect(within(timeline).getAllByText("24h")).toHaveLength(2);
+      expect(
+        timeline.querySelector(".events-timeline-duration"),
+      ).not.toBeInTheDocument();
+      expect(within(timeline).queryByText(/72h/)).not.toBeInTheDocument();
+      expect(within(timeline).queryByText(/24h/)).not.toBeInTheDocument();
       expect(
         within(timeline).queryByText("1G troupes enrôlées"),
       ).not.toBeInTheDocument();
@@ -352,10 +363,16 @@ describe("EventsReferenceTable", () => {
       expect(document.querySelector(".events-timeline")).not.toBeInTheDocument();
     });
 
-    // Bloc 79/D: a fine 24h-tick day scale, anchored on the season's fixed
-    // end — validated against the same 336h (14-day) Diamant/Légende
-    // example, whose event boundaries land on exact day numbers.
-    it("Bloc79/D: draws a J0..J14 day scale, ticks landing on cumulative event boundaries", () => {
+    // Bloc 81/E: revises Bloc 79/D's flat every-24h scale — a tick now only
+    // marks where an event actually changes (this one's end / the next
+    // one's start), so for the cdc's own 6-event Diamant/Légende example
+    // (72+72+72+72+24+24 = 336h = 14 days) the expected set is exactly
+    // J0, J3, J6, J9, J12, J13 — the 5 boundaries BETWEEN the 6 events,
+    // plus J0 for the season's own start. E6's own end (J14, which happens
+    // to coincide with the season's total length here) is deliberately
+    // NOT a tick: nothing follows E6, so there's no "next event start" to
+    // mark there.
+    it("Bloc81/E: draws a tick only where an event actually changes, not every 24h", () => {
       const catalog = catalogWith({
         diamond: { seasonDurationDays: 14, events: diamondLegendEvents },
       });
@@ -364,18 +381,19 @@ describe("EventsReferenceTable", () => {
 
       const scale = document.querySelector(".events-timeline-scale")!;
       const ticks = scale.querySelectorAll(".events-timeline-tick-group");
-      expect(ticks).toHaveLength(15); // J0..J14 inclusive
+      expect(ticks).toHaveLength(6);
 
-      expect(screen.getByTestId("events-timeline-tick-0")).toHaveTextContent(
-        "J0",
-      );
-      // Event 2 (E2) starts right where E1 (72h = 3 days) ends.
-      expect(screen.getByTestId("events-timeline-tick-3")).toHaveTextContent(
-        "J+3",
-      );
-      expect(screen.getByTestId("events-timeline-tick-14")).toHaveTextContent(
-        "J+14",
-      );
+      const expectedDays = [0, 3, 6, 9, 12, 13];
+      for (const day of expectedDays) {
+        const label = day === 0 ? "J0" : `J+${day}`;
+        expect(screen.getByTestId(`events-timeline-tick-${day}`)).toHaveTextContent(
+          label,
+        );
+      }
+      // Never a tick at J14 — E6's own end, nothing follows it.
+      expect(
+        screen.queryByTestId("events-timeline-tick-14"),
+      ).not.toBeInTheDocument();
 
       function tickLeft(day: number) {
         const style = screen
@@ -386,7 +404,7 @@ describe("EventsReferenceTable", () => {
       }
       expect(tickLeft(0)).toBeCloseTo(0, 5);
       expect(tickLeft(3)).toBeCloseTo((72 / 336) * 100, 5);
-      expect(tickLeft(14)).toBeCloseTo(100, 5);
+      expect(tickLeft(13)).toBeCloseTo((312 / 336) * 100, 5);
     });
 
     // Bloc 80/F: revises Bloc 79/G's auto-derivation-from-name entirely —
@@ -394,7 +412,9 @@ describe("EventsReferenceTable", () => {
     // the timeline segment AND (grey tile background unchanged) the
     // matching tile's title text, so 2 occurrences of the same name only
     // share a color when the admin gives them the same one on purpose.
-    it("Bloc80/F: colors each segment with the event's own chosen color, and colors the matching tile's title the same", () => {
+    // Bloc 81/D: also checks the timeline's OWN name label — not just the
+    // tile's — is written in that same chosen color, not a fixed one.
+    it("Bloc80/F, 81/D: colors each segment (and its own timeline name label) with the event's own chosen color, and colors the matching tile's title the same", () => {
       const catalog = catalogWith({
         diamond: {
           seasonDurationDays: 5,
@@ -430,9 +450,18 @@ describe("EventsReferenceTable", () => {
         const match = style.match(/background: ([^;]+);/);
         return match?.[1];
       }
-      expect(background(0)).toBe("var(--sapphire)");
-      expect(background(1)).toBe("var(--amber-bright)");
-      expect(background(2)).toBe("var(--sapphire)");
+      expect(background(0)).toBe("var(--event-sapphire)");
+      expect(background(1)).toBe("var(--event-amber-bright)");
+      expect(background(2)).toBe("var(--event-sapphire)");
+
+      // Bloc 81/D: the timeline's OWN name labels (not the tiles) match
+      // their segment's color exactly.
+      const timelineNames = Array.from(
+        document.querySelectorAll(".events-timeline .events-timeline-name"),
+      ) as HTMLElement[];
+      expect(timelineNames[0]!.style.color).toBe("var(--event-sapphire)");
+      expect(timelineNames[1]!.style.color).toBe("var(--event-amber-bright)");
+      expect(timelineNames[2]!.style.color).toBe("var(--event-sapphire)");
 
       const tileNames = Array.from(
         document.querySelectorAll(".events-tile-grid .events-tile-name"),
@@ -442,11 +471,11 @@ describe("EventsReferenceTable", () => {
       );
       expect(architecteNames).toHaveLength(2);
       for (const name of architecteNames)
-        expect(name.style.color).toBe("var(--sapphire)");
+        expect(name.style.color).toBe("var(--event-sapphire)");
       const recruiterName = tileNames.find(
         (el) => el.textContent === "Recruteur",
       )!;
-      expect(recruiterName.style.color).toBe("var(--amber-bright)");
+      expect(recruiterName.style.color).toBe("var(--event-amber-bright)");
       // Bloc 80/F: the tile's own background never changes — only its
       // title text color does. Grey stays grey.
       const architecteTile = architecteNames[0]!.closest(".events-tile")!;

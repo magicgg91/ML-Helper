@@ -24,14 +24,27 @@
   --emerald: #4a9179;
   --emerald-bright: #6ab596;
   --ember: #c05a3e;
-  /* Bloc 80/F: the event color picker's 5th base hue — every other base
-     already has a "-bright" partner (amber, emerald, violet, sapphire
-     below); this completes the set at exactly 5 bases x 2 shades = 10
-     fixed options, same lighter-in-dark/darker-in-light relationship as
-     the others. */
-  --ember-bright: #dd7a5c;
   --violet: #8b6bb8;
   --violet-bright: #c9a8ec;
+  /* Bloc 80/F, Bloc 81/B review: the event color picker's own fixed
+     palette (5 base hues x 2 shades = 10 options) — deliberately NOT the
+     --violet/--emerald/etc. tokens above: those are tuned for their own
+     jobs elsewhere (accent, success, badges) and read as too dark/muted
+     once used as 10 standalone swatches a tester actually has to tell
+     apart at a glance. A dedicated namespace, defined once here (no
+     light-theme override below) so the palette stays exactly as vivid in
+     both themes — these are the admin's own arbitrary tag colors, not a
+     theme-adaptive UI accent that needs to dim for contrast. */
+  --event-violet: #8b5cf6;
+  --event-violet-bright: #a78bfa;
+  --event-emerald: #10b981;
+  --event-emerald-bright: #34d399;
+  --event-amber: #f59e0b;
+  --event-amber-bright: #fbbf24;
+  --event-ember: #f43f5e;
+  --event-ember-bright: #fb7185;
+  --event-sapphire: #3b82f6;
+  --event-sapphire-bright: #60a5fa;
   --text: #e9e4d8;
   --text-dim: #9299a6;
   --text-faint: #5c6472;
@@ -74,7 +87,6 @@
      same hues instead of desaturated darks, at a similar or better contrast. */
   --emerald-bright: #065f36;
   --ember: #a7432e;
-  --ember-bright: #7a2d1c;
   --violet: #75549d;
   --violet-bright: #5b21b6;
   --text: #20242b;
@@ -2633,6 +2645,17 @@ body > main h1 {
   border-radius: 0.6rem;
   background: var(--surface-muted);
 }
+/* Bloc 81/C: was flex-growing to fill half of .calculator-fields-inline's
+   row (~40rem measured) — a plain 1-366 number never needed that much
+   room. 10rem is a flat quarter of that. */
+.events-season-duration-field input {
+  width: 10rem;
+}
+@media (max-width: 900px) {
+  .events-season-duration-field input {
+    width: 100%;
+  }
+}
 /* Bloc 80/C: a real grid instead of a wrapping flex row — every card's
    header has the exact same 6 columns (position, name, description,
    duration, color, actions), each sized by its own fixed-width content
@@ -2643,7 +2666,14 @@ body > main h1 {
 .events-admin-card-header {
   display: grid;
   grid-template-columns: repeat(6, auto);
-  align-items: end;
+  /* Bloc 81/C review: was align-items: end — Durée/Couleur's own controls
+     (the button group, the color swatch) are shorter than Nom/Description's
+     input, so bottom-aligning every column pushed their titles down by
+     that same height difference, out of line with Nom/Description's own
+     title row. Top-aligning instead pins every column's title (each
+     field's own first child) to the same row, so they line up regardless
+     of how tall the control underneath happens to be. */
+  align-items: start;
   gap: 0.75rem;
 }
 /* Bloc 80/C review (Codex PR #97): the 6 fixed-width columns (14rem name +
@@ -2677,7 +2707,13 @@ body > main h1 {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 700;
-  align-self: center;
+  /* Bloc 81/C: has no title row above it the way every other column does
+     (Nom, Description, ...), so with the grid's own align-items: start
+     (above) it would land level with THEIR titles, not their input
+     fields — pushed down to align with the values instead, per the bug
+     report ("aligné avec les champs de saisie, pas avec le titre"). */
+  align-self: start;
+  margin-top: 2.1rem;
 }
 /* Bloc 80/C: a fixed width for Nom too — previously unset (stretched to
    whatever the old flex-wrap row left over), which is exactly the kind of
@@ -2943,6 +2979,8 @@ body > main h1 {
 .events-timeline-name {
   font-size: 0.72rem;
   font-weight: 600;
+  /* Bloc 81/D: overridden inline to the event's own chosen color (same one
+     filling the segment) — this stays only as a fallback. */
   color: var(--accent-strong);
   overflow-wrap: break-word;
   white-space: normal;
@@ -2955,11 +2993,6 @@ body > main h1 {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
-}
-.events-timeline-duration {
-  font-size: 0.6rem;
-  color: var(--muted);
-  font-family: var(--font-mono), monospace;
 }
 /* Bloc 79/D: a fine 24h-tick day scale under the segments/labels — see
    EventTimeline's own comment (events-reference.tsx) for why it's anchored
