@@ -1086,23 +1086,33 @@ select {
    never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
    1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
    Used for both the equipment's own star level and each gem's.
-   Review fix: the white fill needs its own fixed dark outline, not
-   var(--border) — that token is a light, near-white grey in the light
-   theme, so a white-filled star sat almost invisible against the equally
-   near-white tile background there. A fixed semi-transparent black
-   outline stays legible against both a light and a dark surface. */
+   Bloc 74/A: the Bloc 73 review fix (a literal #fff fill) still read as
+   near-invisible in the light theme, even with a dark outline — a fixed
+   light color can never work in both themes at once. Using the site's
+   own --foreground token instead resolves per-theme like the rest of
+   the page's text does: the same off-white it already was in dark
+   theme, and the same dark grey/near-black every other label already
+   uses in light theme — verified visually in both, not just by
+   computed contrast ratio (the lesson from Blocs 22/24: a same-hue
+   lightness tweak isn't reliable, a real per-theme value is). */
 .star-rating {
   display: inline-flex;
   gap: 1px;
-  color: #fff;
+  color: var(--foreground);
 }
 .star-rating svg {
   fill: currentColor;
   stroke: rgb(0 0 0 / 55%);
   stroke-width: 1.5px;
 }
+/* Bloc 74/B: was var(--amber-bright), a token that (correctly, for its
+   other uses) resolves to a darker, more saturated amber in the light
+   theme — so these stars silently shifted color across themes instead
+   of staying the fixed "5-8 star tier" yellow they're meant to signal.
+   A literal, non-variable value (matching dark theme's previous
+   --amber-bright, already confirmed good) never gets recalculated. */
 .star-rating-yellow {
-  color: var(--amber-bright);
+  color: #e8a94f;
 }
 /* Bloc 73/D review fix: at the 390px mobile floor, a fully configured
    slot (2.8rem image, a 3-gem column each with up to a 4-icon rating)
