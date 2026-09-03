@@ -961,7 +961,7 @@
       "events-league-label": "Ligue",
       "events-language-label": "Langue du texte",
       "events-season-duration-label": "Durée de la saison (jours)",
-      "events-season-overrun": "La durée cumulée des événements ({total} h) dépasse la durée de la saison ({season} h).",
+      "events-season-overrun": "La durée cumulée des événements ({total}) dépasse la durée de la saison ({season}).",
       "events-table-title": "Liste des événements",
       "add-event": "Ajouter un événement",
       "events-columns": {

@@ -282,8 +282,12 @@ export function EventsReferenceScreen({
           {seasonOverruns[league] && (
             <small className="field-error">
               {t("events-season-overrun", {
-                total: totalEventHours(events),
-                season: leagueData.seasonDurationDays * 24,
+                total: common("duration-hours", {
+                  hours: totalEventHours(events),
+                }),
+                season: common("duration-hours", {
+                  hours: leagueData.seasonDurationDays * 24,
+                }),
               })}
             </small>
           )}

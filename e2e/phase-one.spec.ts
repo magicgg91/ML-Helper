@@ -1384,10 +1384,13 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await publicLeagueGroup.getByRole("button", { name: "Bronze" }).click();
   const details = page.locator("details.events-card");
   await expect(details).toHaveCount(1);
-  await expect(page.getByText("Recruteur")).toBeVisible();
+  // Bloc 77/D: the season timeline above the card list also shows the
+  // event's name, so scope to the card itself rather than an ambiguous
+  // page-wide getByText that would now match both.
+  await expect(details.getByText("Recruteur")).toBeVisible();
   await expect(page.getByText("1G troupes enrôlées")).not.toBeVisible();
 
-  await page.getByText("Recruteur").click();
+  await details.getByText("Recruteur").click();
   await expect(page.getByText("1G troupes enrôlées")).toBeVisible();
   await expect(page.getByText("100M or + 250 éclats")).toBeVisible();
 });
@@ -1406,10 +1409,18 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.goto("/admin/referentiels/reference-events");
   await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
 
-  // Bronze's season shrunk to 1 day (24h) — a single 48h event then
+  // Argent (silver), not Bronze — the earlier Bloc60 test in this same
+  // suite run already added an event to Bronze, and that persists across
+  // tests (same server/db), so Bronze isn't the empty league it looks like
+  // in isolation.
+  await page
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Argent" })
+    .click();
+  // Argent's season shrunk to 1 day (24h) — a single 48h event then
   // overruns it, simpler to set up than piling up several events.
   await page.getByLabel("Durée de la saison (jours)").fill("1");
-  await page.getByTestId("add-event-bronze").click();
+  await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
   await page.getByLabel("Durée de l’événement 1").selectOption("48");
   await page
@@ -1431,7 +1442,8 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
     "/api/admin/guides/references/events",
     {
       data: {
-        bronze: {
+        bronze: { seasonDurationDays: 21, events: [] },
+        silver: {
           seasonDurationDays: 1,
           events: [
             {
@@ -1443,7 +1455,6 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
             },
           ],
         },
-        silver: { seasonDurationDays: 14, events: [] },
         gold: { seasonDurationDays: 14, events: [] },
         platinum: { seasonDurationDays: 14, events: [] },
         diamond: { seasonDurationDays: 14, events: [] },

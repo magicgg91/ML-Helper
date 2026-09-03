@@ -943,7 +943,7 @@
       "events-league-label": "Lig",
       "events-language-label": "Metin dili",
       "events-season-duration-label": "Sezon süresi (gün)",
-      "events-season-overrun": "Etkinliklerin toplam süresi ({total} sa) sezon süresini ({season} sa) aşıyor.",
+      "events-season-overrun": "Etkinliklerin toplam süresi ({total}) sezon süresini ({season}) aşıyor.",
       "events-table-title": "Etkinlik listesi",
       "add-event": "Etkinlik ekle",
       "events-columns": {

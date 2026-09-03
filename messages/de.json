@@ -943,7 +943,7 @@
       "events-league-label": "Liga",
       "events-language-label": "Textsprache",
       "events-season-duration-label": "Saisondauer (Tage)",
-      "events-season-overrun": "Die Gesamtdauer der Events ({total} Std.) übersteigt die Saisondauer ({season} Std.).",
+      "events-season-overrun": "Die Gesamtdauer der Events ({total}) übersteigt die Saisondauer ({season}).",
       "events-table-title": "Event-Liste",
       "add-event": "Event hinzufügen",
       "events-columns": {
