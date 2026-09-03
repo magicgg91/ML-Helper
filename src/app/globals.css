@@ -3032,9 +3032,11 @@ body > main h1 {
   line-clamp: 2;
   overflow: hidden;
 }
-/* Bloc 79/D: a fine 24h-tick day scale under the segments/labels — see
-   EventTimeline's own comment (events-reference.tsx) for why it's anchored
-   on the season's fixed end rather than counted forward from 0. */
+/* Bloc 79/D, Bloc 82/A+B: a fine 24h-tick day scale under the segments/
+   labels — every day gets a tick (Bloc 82/B, "règle graduée"), only the
+   event-transition days (Bloc 81/E, Bloc 82/A — including the season's
+   own end now) get the Jx text label — see EventTimeline's own comment
+   (events-reference.tsx) for the exact day set. */
 .events-timeline-scale {
   position: absolute;
   left: 0.5rem;

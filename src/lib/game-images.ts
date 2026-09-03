@@ -137,11 +137,16 @@ export function skillColor(skill: SkillKey): string {
 // Convention actée cdc section 12 : {family}-{rarity}-{slot}.webp.
 // The catalogs retain their French domain labels, while static asset names use
 // stable English slugs. The slot unambiguously identifies the catalog.
+// Bloc 82/E: the 300-file manifest actually delivered (both Combat and
+// Expedition) settled on "mythical" (not "mythic"), "gauntlets" (not
+// "gauntlet"), and singular family slugs ("troop", "consumable") rather
+// than the plural ones this file originally guessed at ("troops-speed",
+// "troops", "consumables") — updated to match the real files exactly.
 const rarityFileSlugs: Record<string, string> = {
   Commun: "common",
   Rare: "rare",
   Épique: "epic",
-  Mythique: "mythic",
+  Mythique: "mythical",
   Légendaire: "legendary",
 };
 
@@ -149,7 +154,7 @@ const combatFamilyFileSlugs: Record<string, string> = {
   Attaque: "attack",
   Défense: "defense",
   Or: "gold",
-  "Troupes/Vitesse": "troops-speed",
+  "Troupes/Vitesse": "troop",
 };
 
 const combatSlotFileSlugs: Record<string, string> = {
@@ -160,15 +165,15 @@ const combatSlotFileSlugs: Record<string, string> = {
   Bracelet: "bracelet",
   Amulette: "amulet",
   Casque: "helmet",
-  Gantelet: "gauntlet",
+  Gantelet: "gauntlets",
   Bottes: "boots",
 };
 
 const expeditionFamilyFileSlugs: Record<string, string> = {
   Or: "gold",
   Équipement: "equipment",
-  Consommables: "consumables",
-  Troupes: "troops",
+  Consommables: "consumable",
+  Troupes: "troop",
 };
 
 const expeditionSlotFileSlugs: Record<string, string> = {

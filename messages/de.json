@@ -374,7 +374,8 @@
     "result": "Ergebnis",
     "errors": {
       "add-positive-stat": "Füge einen Wert mit mehr als null Slots hinzu.",
-      "select-league": "Wähle eine Liga zur Berechnung."
+      "select-league": "Wähle eine Liga zur Berechnung.",
+      "select-skill": "Wähle eine Fähigkeit zur Berechnung."
     },
     "columns": {
       "skill": "Fähigkeit",

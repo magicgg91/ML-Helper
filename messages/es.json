@@ -374,7 +374,8 @@
     "result": "Resultado",
     "errors": {
       "add-positive-stat": "Añade una estadística con más de cero ranuras.",
-      "select-league": "Elige una liga para calcular."
+      "select-league": "Elige una liga para calcular.",
+      "select-skill": "Elige una habilidad para calcular."
     },
     "columns": {
       "skill": "Habilidad",

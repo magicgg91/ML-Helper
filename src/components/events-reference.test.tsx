@@ -363,37 +363,29 @@ describe("EventsReferenceTable", () => {
       expect(document.querySelector(".events-timeline")).not.toBeInTheDocument();
     });
 
-    // Bloc 81/E: revises Bloc 79/D's flat every-24h scale — a tick now only
-    // marks where an event actually changes (this one's end / the next
-    // one's start), so for the cdc's own 6-event Diamant/Légende example
-    // (72+72+72+72+24+24 = 336h = 14 days) the expected set is exactly
-    // J0, J3, J6, J9, J12, J13 — the 5 boundaries BETWEEN the 6 events,
-    // plus J0 for the season's own start. E6's own end (J14, which happens
-    // to coincide with the season's total length here) is deliberately
-    // NOT a tick: nothing follows E6, so there's no "next event start" to
-    // mark there.
-    it("Bloc81/E: draws a tick only where an event actually changes, not every 24h", () => {
+    // Bloc 81/E: revises Bloc 79/D's flat every-24h scale — a LABELED tick
+    // now only marks where an event actually changes (this one's end /
+    // the next one's start), so for the cdc's own 6-event Diamant/Légende
+    // example (72+72+72+72+24+24 = 336h = 14 days) the expected labeled
+    // set is J0, J3, J6, J9, J12, J13 — the 5 boundaries BETWEEN the 6
+    // events, plus J0 for the season's own start. Bloc 82/A review: the
+    // last event's own end (J14) is a transition too — the season's own
+    // end, exactly the same kind of boundary as any other — so it now
+    // gets a label as well, no longer excluded.
+    it("Bloc82/A: also labels the season's own end (the last event's end), same rule as every other transition", () => {
       const catalog = catalogWith({
         diamond: { seasonDurationDays: 14, events: diamondLegendEvents },
       });
       render(<EventsReferenceTable catalog={catalog} />);
       fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
 
-      const scale = document.querySelector(".events-timeline-scale")!;
-      const ticks = scale.querySelectorAll(".events-timeline-tick-group");
-      expect(ticks).toHaveLength(6);
-
-      const expectedDays = [0, 3, 6, 9, 12, 13];
-      for (const day of expectedDays) {
+      const expectedLabeledDays = [0, 3, 6, 9, 12, 13, 14];
+      for (const day of expectedLabeledDays) {
         const label = day === 0 ? "J0" : `J+${day}`;
-        expect(screen.getByTestId(`events-timeline-tick-${day}`)).toHaveTextContent(
-          label,
-        );
+        expect(
+          screen.getByTestId(`events-timeline-tick-${day}`),
+        ).toHaveTextContent(label);
       }
-      // Never a tick at J14 — E6's own end, nothing follows it.
-      expect(
-        screen.queryByTestId("events-timeline-tick-14"),
-      ).not.toBeInTheDocument();
 
       function tickLeft(day: number) {
         const style = screen
@@ -405,6 +397,35 @@ describe("EventsReferenceTable", () => {
       expect(tickLeft(0)).toBeCloseTo(0, 5);
       expect(tickLeft(3)).toBeCloseTo((72 / 336) * 100, 5);
       expect(tickLeft(13)).toBeCloseTo((312 / 336) * 100, 5);
+      expect(tickLeft(14)).toBeCloseTo(100, 5);
+    });
+
+    // Bloc 82/B: the scale now covers every day of the season (15 ticks for
+    // this 14-day example, day 0 through day 14 inclusive) for a
+    // continuous "règle graduée" effect — only the 7 transition days above
+    // carry the Jx text label; every other day still gets a plain tick
+    // line, with no label at all.
+    it("Bloc82/B: draws a thin unlabeled tick on every non-transition day, keeping the scale continuous", () => {
+      const catalog = catalogWith({
+        diamond: { seasonDurationDays: 14, events: diamondLegendEvents },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+
+      const scale = document.querySelector(".events-timeline-scale")!;
+      const ticks = scale.querySelectorAll(".events-timeline-tick-group");
+      expect(ticks).toHaveLength(15); // days 0..14 inclusive.
+
+      const nonTransitionDays = [1, 2, 4, 5, 7, 8, 10, 11];
+      for (const day of nonTransitionDays) {
+        const group = screen.getByTestId(`events-timeline-tick-${day}`);
+        expect(
+          group.querySelector(".events-timeline-tick"),
+        ).toBeInTheDocument();
+        expect(
+          group.querySelector(".events-timeline-tick-label"),
+        ).not.toBeInTheDocument();
+      }
     });
 
     // Bloc 80/F: revises Bloc 79/G's auto-derivation-from-name entirely —
