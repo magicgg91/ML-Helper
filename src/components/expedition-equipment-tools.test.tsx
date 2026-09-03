@@ -222,9 +222,13 @@ describe("ExpeditionEquipmentSimulator", () => {
       screen.getByRole("combobox", { name: "Équipement d’expédition Cape" }),
       { target: { value: "Légendaire|Vanna" } },
     );
-    expect(screen.getByRole("button", { name: /Cape/ })).toHaveTextContent(
-      "1★",
+    // Bloc 78/B: star level is now a real icon (StarRating), never "N★" text.
+    const capeButton = screen.getByRole("button", { name: /Cape/ });
+    expect(capeButton.querySelectorAll(".star-rating svg")).toHaveLength(1);
+    expect(capeButton.querySelector(".star-rating")).not.toHaveClass(
+      "star-rating-yellow",
     );
+    expect(capeButton).not.toHaveTextContent("1★");
     // Switch to the "Or" filter — its own Cape slot starts empty.
     fireEvent.click(screen.getByRole("button", { name: "Or" }));
     expect(screen.getByRole("button", { name: /Cape/ })).toHaveTextContent(
@@ -235,6 +239,41 @@ describe("ExpeditionEquipmentSimulator", () => {
     expect(screen.getByRole("button", { name: /Cape/ })).not.toHaveTextContent(
       "Vide",
     );
+  });
+
+  it("renders all 8 star tiers as real icons (1-4 white, 5-8 converted to yellow), at the 3.2rem image size, with no gem UI (Bloc 78/B)", () => {
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: /Cape/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement d’expédition Cape" }),
+      { target: { value: "Légendaire|Vanna" } },
+    );
+    const starSelect = screen.getByRole("combobox", {
+      name: "Étoiles équipement d’expédition Cape",
+    });
+    for (let level = 1; level <= 8; level += 1) {
+      fireEvent.change(starSelect, { target: { value: String(level) } });
+      const capeButton = screen.getByRole("button", { name: /Cape/ });
+      const rating = capeButton.querySelector(".star-rating")!;
+      expect(rating).toBeInTheDocument();
+      const yellow = level >= 5;
+      const expectedCount = yellow ? level - 4 : level;
+      expect(rating.querySelectorAll("svg")).toHaveLength(expectedCount);
+      if (yellow) {
+        expect(rating).toHaveClass("star-rating-yellow");
+      } else {
+        expect(rating).not.toHaveClass("star-rating-yellow");
+      }
+      expect(capeButton).not.toHaveTextContent(`${level}★`);
+      const image = capeButton.querySelector("img");
+      expect(image).toHaveClass("stuff-slot-image-expedition");
+    }
+    // No gem component ever displayed — Expedition equipment has no gems.
+    expect(document.querySelector(".stuff-slot-gem")).not.toBeInTheDocument();
+    expect(document.querySelector(".gem-badge")).not.toBeInTheDocument();
+    expect(
+      document.querySelector(".gem-badge-image"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows the active slot's own contribution in parentheses next to the total (E.5)", () => {

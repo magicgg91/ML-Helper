@@ -46,6 +46,9 @@
   --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
+  /* Bloc 78/C: see .star-rating's own comment below — dark theme's
+     --foreground was already fine here, so this just points at it. */
+  --star-white: var(--foreground);
   color-scheme: dark;
 }
 
@@ -82,6 +85,12 @@
   --accent-strong: var(--violet-bright);
   --muted: var(--text-dim);
   --success: var(--emerald-bright);
+  /* Bloc 78/C: --foreground (--text, #20242b) reads as near-black for the
+     small filled star icons specifically, even though every other label
+     uses it fine as running text — reuse --text-dim (the existing
+     "muted but legible" grey, ~4.9:1 against --surface) instead of
+     inventing a new literal or touching --foreground itself. */
+  --star-white: var(--text-dim);
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -1037,9 +1046,20 @@ select {
 /* Bloc 73/E review fix: scoped to Combat only (a 2nd class alongside the
    shared .stuff-slot-image) — the shared rule above is also used by the
    Expedition slot renderer, which doesn't get Bloc 73/D's 2-column split
-   and has no extra room for a bigger image. */
+   and has no extra room for a bigger image.
+   Bloc 78/A: 2.8rem -> 3.2rem. */
 .stuff-slot-image-combat {
-  max-height: 2.8rem;
+  max-height: 3.2rem;
+}
+/* Bloc 78/B: Expedition gets its own modifier class at the same 3.2rem
+   value as Combat's, rather than reusing .stuff-slot-image-combat on
+   Expedition's markup — a class literally named "-combat" has no business
+   appearing in Expedition's DOM even though the two values currently
+   match, and every prior width/size regression here (Blocs 38/Q, 40/B,
+   41/E, 53/B, C, 76/A) came from exactly that kind of cross-feature class
+   reuse. */
+.stuff-slot-image-expedition {
+  max-height: 3.2rem;
 }
 /* Bloc 73/D: replaces the old single-column stack (image, star text, then
    a row of gem badges below) with image+star on the left and the (up to
@@ -1085,20 +1105,32 @@ select {
 /* Bloc 73/D: shared star-rating rendering — real repeated star icons,
    never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
    1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
-   Used for both the equipment's own star level and each gem's.
+   Used for both the equipment's own star level and each gem's, on both
+   Combat (since Bloc 73) and Expedition (since Bloc 78/B).
    Bloc 74/A: the Bloc 73 review fix (a literal #fff fill) still read as
    near-invisible in the light theme, even with a dark outline — a fixed
    light color can never work in both themes at once. Using the site's
-   own --foreground token instead resolves per-theme like the rest of
+   own --foreground token instead resolved per-theme like the rest of
    the page's text does: the same off-white it already was in dark
    theme, and the same dark grey/near-black every other label already
    uses in light theme — verified visually in both, not just by
    computed contrast ratio (the lesson from Blocs 22/24: a same-hue
-   lightness tweak isn't reliable, a real per-theme value is). */
+   lightness tweak isn't reliable, a real per-theme value is).
+   Bloc 78/C review: --foreground's light-theme value (--text, #20242b)
+   turned out to read as near-black for these icons specifically, even
+   though it's the same value every body label already uses — a star
+   icon's small filled shape reads darker at a glance than the same
+   color does as running text. A dedicated --star-white token (not
+   --foreground itself, which every other light-theme label still
+   depends on) lets this one case use a genuinely lighter, still-
+   per-theme value: dark theme keeps the untouched --foreground, light
+   theme reuses the existing --text-dim token (already the site's
+   "muted but legible" grey, ~4.9:1 against --surface) instead of
+   inventing a new literal. */
 .star-rating {
   display: inline-flex;
   gap: 1px;
-  color: var(--foreground);
+  color: var(--star-white);
 }
 .star-rating svg {
   fill: currentColor;
@@ -1128,6 +1160,13 @@ select {
    full 2.8rem image untouched. */
 @media (max-width: 900px) {
   .stuff-slot-image-combat {
+    max-height: 1.6rem;
+  }
+  /* Bloc 78/B: same mobile floor as Combat's own image — Expedition's
+     slot cell has no gem column to fit around, but the larger 3.2rem
+     desktop image still needs the same shrink to avoid overflowing its
+     own cell at the 390px floor. */
+  .stuff-slot-image-expedition {
     max-height: 1.6rem;
   }
   .stuff-slot-layout {
