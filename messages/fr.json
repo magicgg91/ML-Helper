@@ -598,7 +598,6 @@
   "combat-equipment": {
     "name": "Équipements de Combat",
     "empty": "Aucun équipement de combat ne correspond à ces filtres.",
-    "gem-count": "{count, plural, one {# gemme} other {# gemmes}}",
     "columns": {
       "rarity": "Rareté",
       "skill": "Compétence {number}",

@@ -580,7 +580,6 @@
   "combat-equipment": {
     "name": "Savaş Ekipmanı",
     "empty": "Bu filtrelere uyan savaş ekipmanı yok.",
-    "gem-count": "{count} mücevher",
     "columns": {
       "rarity": "Nadirlik",
       "skill": "Yetenek {number}",

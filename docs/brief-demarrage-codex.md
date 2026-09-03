@@ -554,8 +554,10 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 ### Bloc 39 — Référentiels Combat/Expédition : passage du tableau aux tuiles ✅ **Terminé** (PR #61)
 *Notes de livraison : nombre de gemmes par tuile lu depuis `gemSlotsBase` (admin-editable), pas le champ statique `row.gem_slots` — cohérent avec le tableau récap en dessous. Accessibilité : `aria-label` complet par tuile (famille + rareté + set + emplacement) et indice pour lecteur d'écran sur les blocs estompés, sans badge visible — le codage couleur-seule (rareté/famille) était le choix de design assumé du bloc, pas un oubli d'accessibilité à corriger visuellement.*
 
+*⚠️ Retiré (Bloc 83, PR #100) — le badge "nombre de gemmes" en haut à droite de la tuile Combat a été supprimé : les joueurs le percevaient comme un coût Pouciel mal étiqueté "gemmes", jamais demandé, redondant avec le tableau "Pouciel & Gemmes" fusionné (Bloc 75) plus bas sur la page. La bullet ci-dessous ("nombre de gemmes sur Combat uniquement") ne s'applique plus — la tuile Combat n'affiche plus que l'emplacement, l'image et les compétences.*
+
 - Une tuile par équipement, 6 de large, blocs complets par set (3×3 Combat, 3×2 Expédition), même ordre d'emplacements que les simulateurs.
-- Tuile : fond/bordure couleur rareté, image à gauche, nom d'emplacement en haut en couleur de famille, compétences+% empilées à droite (4 lignes Combat, 2 lignes Expédition, valeurs base 1★), nombre de gemmes sur Combat uniquement (si applicable).
+- Tuile : fond/bordure couleur rareté, image à gauche, nom d'emplacement en haut en couleur de famille, compétences+% empilées à droite (4 lignes Combat, 2 lignes Expédition, valeurs base 1★), ~~nombre de gemmes sur Combat uniquement (si applicable)~~ retiré (Bloc 83).
 - Famille et rareté : filtrables + indiqués sur la tuile. Filtre étoile retiré (+ calculs associés). Pas de filtre gemmes. Pas de recherche pour l'instant.
 - Mobile : à tester empiriquement, démarrer à 1 colonne, tenter 2 si lisible.
 

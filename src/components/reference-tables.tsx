@@ -299,7 +299,6 @@ function CombatTile({
   slotNameLabel,
   skillLabel,
   familyColor,
-  gemSlotsBase,
   locale,
   t,
 }: {
@@ -310,15 +309,10 @@ function CombatTile({
   slotNameLabel: (value: string) => string;
   skillLabel: (value: string) => string;
   familyColor: string | undefined;
-  gemSlotsBase: CombatGemSlotsBase;
   locale: string;
   t: ReturnType<typeof useTranslations>;
 }) {
   const rarityVar = `var(--rarity-${rarityClassName(row.rarity)})`;
-  // Codex review (PR #61): read the gem count from the same admin-editable
-  // source as the Gemmes rarity summary below, not the static per-row
-  // gem_slots field — the two can drift once an admin edits gemSlotsBase.
-  const gemCount = gemSlotsBase[row.rarity as keyof CombatGemSlotsBase] ?? 0;
   return (
     <div
       className="reference-tile"
@@ -340,11 +334,6 @@ function CombatTile({
           {slotLabel(row.slot_type)}
           {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
         </span>
-        {gemCount > 0 ? (
-          <span className="reference-tile-gems">
-            {t("gem-count", { count: gemCount })}
-          </span>
-        ) : null}
       </div>
       <div className="reference-tile-body">
         <GameImage
@@ -479,7 +468,6 @@ export function CombatReferenceTable({
                     slotNameLabel={slotNameLabel}
                     skillLabel={skillLabel}
                     familyColor={filterButtonColor(row.family)}
-                    gemSlotsBase={gemSlotsBase}
                     locale={locale}
                     t={t}
                   />

@@ -580,7 +580,6 @@
   "combat-equipment": {
     "name": "Kampfausrüstung",
     "empty": "Keine Kampfausrüstung entspricht diesen Filtern.",
-    "gem-count": "{count, plural, one {# Edelstein} other {# Edelsteine}}",
     "columns": {
       "rarity": "Seltenheit",
       "skill": "Fähigkeit {number}",

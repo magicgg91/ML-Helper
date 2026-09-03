@@ -598,7 +598,6 @@
   "combat-equipment": {
     "name": "Combat Equipment",
     "empty": "No combat equipment matches these filters.",
-    "gem-count": "{count, plural, one {# gem} other {# gems}}",
     "columns": {
       "rarity": "Rarity",
       "skill": "Skill {number}",
