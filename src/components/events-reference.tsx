@@ -3,7 +3,12 @@
 import { useLocale, useTranslations } from "next-intl";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
-import { eventColorSeed, type EventRow, type EventsCatalog } from "../lib/events";
+import {
+  eventColorVar,
+  timelineLabelMaxWidthRem,
+  type EventRow,
+  type EventsCatalog,
+} from "../lib/events";
 
 // Bloc 60 review (Codex PR #81): same fr/en fallback as Consommables'
 // pickLocaleText (Bloc44-review/C) — fr visitors get the French text (or
@@ -12,19 +17,6 @@ import { eventColorSeed, type EventRow, type EventsCatalog } from "../lib/events
 function pickLocaleText(fr: string, en: string, locale: string): string {
   return locale === "fr" ? fr || en : en || fr;
 }
-
-// Bloc 77/D: a small rotating palette of theme-aware accent colors (same
-// CSS custom properties used elsewhere, so it already adapts to both
-// themes) — events carry no promotion/stay/relegation-style category the
-// way Ranking's bands do (rankCategoryShade, src/lib/ranking.ts), so a
-// simple index-based rotation is enough to tell adjacent segments apart.
-const timelineShades = [
-  "var(--violet)",
-  "var(--emerald)",
-  "var(--gold)",
-  "var(--ember)",
-  "var(--amber)",
-];
 
 // Bloc 77/D: the season timeline — same visual principle as Classement's
 // "échelle visuelle" (RankingScale, Bloc 62/F): a horizontal bar with one
@@ -89,12 +81,11 @@ function EventTimeline({
       <div className="events-timeline-axis" />
       {segments.map(({ event, index, left, width }) => {
         const side = index % 2 === 0 ? "above" : "below";
-        // Bloc 79/G: keyed off the event's own NAME, not its index — a
-        // repeated event (e.g. "Architecte" as both a 72h and, later in
-        // the same season, a 24h event) shares a color across every one
-        // of its occurrences instead of each getting a different one.
-        const shade =
-          timelineShades[eventColorSeed(event.name) % timelineShades.length];
+        // Bloc 80/F: the admin's own manual pick (replaces Bloc 79/G's
+        // auto-derivation from the name — abandoned) — 2 occurrences of
+        // the same event still share a color when the admin gives them
+        // the same one on purpose (cdc example: "Architecte" 72h/24h).
+        const shade = eventColorVar(event.color);
         return (
           <div key={index}>
             <div
@@ -113,6 +104,10 @@ function EventTimeline({
             >
               <div
                 className={`events-timeline-label events-timeline-label-${side}`}
+                // Bloc 80/G: proportional to this segment's own share of
+                // the season instead of a flat cap (see
+                // timelineLabelMaxWidthRem's own comment, lib/events.ts).
+                style={{ maxWidth: `${timelineLabelMaxWidthRem(width)}rem` }}
               >
                 <div className="events-timeline-name">{event.name}</div>
                 <div className="events-timeline-duration">
@@ -176,7 +171,15 @@ function EventTile({
     <details className="events-tile">
       <summary className="events-tile-summary">
         <div className="events-tile-heading">
-          <strong className="events-tile-name">{event.name}</strong>
+          {/* Bloc 80/F: the tile's own background stays grey (unchanged) —
+              only the name is written in the event's chosen color, the
+              visual link back to its timeline segment above. */}
+          <strong
+            className="events-tile-name"
+            style={{ color: eventColorVar(event.color) }}
+          >
+            {event.name}
+          </strong>
           <div className="events-tile-badges">
             {finalObjective && (
               <span className="events-tile-badge events-tile-badge-objective">

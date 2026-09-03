@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { eventsReferenceKey } from "@/lib/events-server";
 import {
+  eventColors,
   eventDurations,
   maxSeasonDurationDays,
   totalEventHours,
+  type EventColor,
   type EventDuration,
   type EventRow,
   type EventsCatalog,
@@ -32,6 +34,16 @@ function parseDuration(raw: unknown): EventDuration {
   return value as EventDuration;
 }
 
+// Bloc 80/F: an explicit, admin-picked color from the fixed palette
+// (eventColors) — replaces Bloc 79/G's auto-derivation from the name, so
+// this is now real persisted data that must be validated like duration
+// above, not derived at render time.
+function parseColor(raw: unknown): EventColor {
+  if (!(eventColors as readonly string[]).includes(raw as string))
+    throw new Error("invalid color");
+  return raw as EventColor;
+}
+
 function parseEvent(raw: unknown): EventRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid event");
   const source = raw as Record<string, unknown>;
@@ -41,6 +53,7 @@ function parseEvent(raw: unknown): EventRow {
     description_fr: stringField(source.description_fr),
     description_en: stringField(source.description_en),
     duration: parseDuration(source.duration),
+    color: parseColor(source.color),
     tiers: source.tiers.map(parseTier),
   };
 }

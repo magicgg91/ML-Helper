@@ -1471,6 +1471,7 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
               description_fr: "",
               description_en: "",
               duration: 48,
+              color: "violet",
               tiers: [],
             },
           ],

@@ -13,6 +13,7 @@ const recruiterEvent = {
   description_fr: "Enrôle un maximum de troupes",
   description_en: "Enlist as many troops as possible",
   duration: 72 as const,
+  color: "violet" as const,
   tiers: [
     {
       objective_fr: "1G troupes enrôlées",
@@ -303,6 +304,7 @@ describe("EventsReferenceScreen", () => {
             description_fr: "",
             description_en: "",
             duration: 24,
+            color: "violet",
             tiers: [
               { objective_fr: "", objective_en: "", reward_fr: "R", reward_en: "" },
             ],
@@ -337,5 +339,95 @@ describe("EventsReferenceScreen", () => {
     expect(body.bronze.events[0].name).toBe("Recruteur");
     expect(body.legend.events[0].name).toBe("Autre");
     expect(body.gold.events).toEqual([]);
+  });
+
+  describe("Bloc80: admin alignments + manual color picker", () => {
+    it("Bloc80/A: shows a visible 'Ligue' label above the league buttons", () => {
+      render(<EventsReferenceScreen initialCatalog={emptyEventsCatalog} />);
+      const field = document.querySelector(".calculator-league-field")!;
+      expect(within(field as HTMLElement).getByText("Ligue")).toBeInTheDocument();
+    });
+
+    it("Bloc80/B: puts the season duration field on the same line as the league buttons", () => {
+      render(<EventsReferenceScreen initialCatalog={emptyEventsCatalog} />);
+      const row = document.querySelector(".calculator-fields-inline")!;
+      expect(
+        within(row as HTMLElement).getByRole("group", { name: "Ligue" }),
+      ).toBeInTheDocument();
+      expect(
+        within(row as HTMLElement).getByLabelText("Durée de la saison (jours)"),
+      ).toBeInTheDocument();
+    });
+
+    it("Bloc80/C: every control (position, name, description, duration, color, actions) sits in the same header row, for 2 events", () => {
+      const catalog = catalogWith({
+        bronze: {
+          seasonDurationDays: 21,
+          events: [
+            { ...recruiterEvent, name: "Premier" },
+            { ...recruiterEvent, name: "Second" },
+          ],
+        },
+      });
+      render(<EventsReferenceScreen initialCatalog={catalog} />);
+      for (let i = 0; i < 2; i++) {
+        const card = screen.getByTestId(`event-bronze-${i}`);
+        const header = card.querySelector(".events-admin-card-header")!;
+        expect(header.querySelector(".events-admin-position")).toBeInTheDocument();
+        expect(
+          header.querySelector(".events-admin-name-field"),
+        ).toBeInTheDocument();
+        expect(
+          header.querySelector(".events-admin-description-field"),
+        ).toBeInTheDocument();
+        expect(
+          within(header as HTMLElement).getByRole("group", {
+            name: new RegExp(`Durée.*événement ${i + 1}`),
+          }),
+        ).toBeInTheDocument();
+        expect(header.querySelector(".events-color-picker")).toBeInTheDocument();
+        expect(
+          header.querySelector(".events-admin-card-actions"),
+        ).toBeInTheDocument();
+      }
+    });
+
+    it("Bloc80/E: gives only the Récompense tier column the wide class (3x the base field width)", () => {
+      const catalog = catalogWith({
+        bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+      });
+      render(<EventsReferenceScreen initialCatalog={catalog} />);
+      const table = document.querySelector(".events-tiers-table")!;
+      const headers = table.querySelectorAll("th");
+      expect(headers[0]).not.toHaveClass("reference-admin-wide"); // Objectif.
+      expect(headers[1]).toHaveClass("reference-admin-wide"); // Récompense.
+    });
+
+    it("Bloc80/F: picks a color from the fixed ~10-option palette via a dedicated button, and persists it", async () => {
+      const catalog = catalogWith({
+        bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+      });
+      render(<EventsReferenceScreen initialCatalog={catalog} />);
+      const card = screen.getByTestId("event-bronze-0");
+      const toggle = within(card).getByTestId("event-color-bronze-0");
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+      fireEvent.click(toggle);
+      expect(toggle).toHaveAttribute("aria-expanded", "true");
+      const option = within(card).getByTestId(
+        "event-color-bronze-0-emerald-bright",
+      );
+      expect(option).toHaveAttribute("aria-pressed", "false");
+
+      fireEvent.click(option);
+      // Picking a swatch closes the popup back down.
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+      fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
+      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+      const [, options] = vi.mocked(global.fetch).mock.calls[0];
+      const body = JSON.parse((options as RequestInit).body as string);
+      expect(body.bronze.events[0].color).toBe("emerald-bright");
+    });
   });
 });

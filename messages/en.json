@@ -970,7 +970,20 @@
       "events-columns": {
         "name": "Name",
         "description": "Description",
-        "duration": "Duration"
+        "duration": "Duration",
+        "color": "Color"
+      },
+      "event-colors": {
+        "violet": "Violet",
+        "violet-bright": "Light violet",
+        "emerald": "Emerald",
+        "emerald-bright": "Light emerald",
+        "amber": "Amber",
+        "amber-bright": "Light amber",
+        "ember": "Ember",
+        "ember-bright": "Light ember",
+        "sapphire": "Sapphire",
+        "sapphire-bright": "Light sapphire"
       },
       "tier-columns": {
         "objective": "Objective",

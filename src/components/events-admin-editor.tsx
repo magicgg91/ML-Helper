@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
 import {
@@ -18,9 +18,12 @@ import {
 import {
   emptyEventRow,
   emptyEventTierRow,
+  eventColors,
+  eventColorVar,
   eventDurations,
   maxSeasonDurationDays,
   totalEventHours,
+  type EventColor,
   type EventDuration,
   type EventRow,
   type EventsCatalog,
@@ -61,18 +64,90 @@ const tierColumns = (
       key: objectiveKey,
       label: t("tier-columns.objective"),
       required: true,
-      wide: true,
       inputLabel: (index) => inputLabel(index, t("tier-columns.objective")),
     },
     {
       key: rewardKey,
       label: t("tier-columns.reward"),
       required: true,
+      // Bloc 80/E: 3x the base field width — same .events-tiers-table
+      // .reference-admin-wide scoping as Bloc 79/C's Description field,
+      // Récompense only (Objectif keeps the plain default width).
       wide: true,
       inputLabel: (index) => inputLabel(index, t("tier-columns.reward")),
     },
   ] as EditableColumn<EventTierRow>[];
 };
+
+// Bloc 80/F: a dedicated button per event, opening a fixed ~10-color
+// palette (eventColors) instead of a color field's free-form value — same
+// WAI-ARIA "button trigger + popup" shape as LocaleToggle's own custom
+// listbox (locale-toggle.tsx, Bloc 48/C), simplified to a swatch grid
+// (role="group" of toggle buttons) since there's no linear list to
+// keyboard-navigate here, just a pick-one-of-many grid.
+function EventColorPicker({
+  value,
+  onChange,
+  label,
+  swatchLabel,
+  testId,
+}: {
+  value: EventColor;
+  onChange: (color: EventColor) => void;
+  label: string;
+  swatchLabel: (color: EventColor) => string;
+  testId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  return (
+    <div className="events-color-picker" ref={containerRef}>
+      <button
+        type="button"
+        className="events-color-picker-toggle"
+        style={{ background: eventColorVar(value) }}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label={label}
+        data-testid={testId}
+        onClick={() => setOpen((current) => !current)}
+      />
+      {open && (
+        <div
+          className="events-color-picker-options"
+          role="group"
+          aria-label={label}
+        >
+          {eventColors.map((color) => (
+            <button
+              key={color}
+              type="button"
+              className="events-color-picker-option"
+              style={{ background: eventColorVar(color) }}
+              aria-pressed={value === color}
+              aria-label={swatchLabel(color)}
+              data-testid={`${testId}-${color}`}
+              onClick={() => {
+                onChange(color);
+                setOpen(false);
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Bloc 60: the "Événements" reference — a 3rd reference-catalog level
 // (league -> events -> tiers) on top of the same building blocks every
@@ -160,6 +235,14 @@ export function EventsReferenceScreen({
     updateEvents(
       events.map((event, i) =>
         i === index ? { ...event, duration: value } : event,
+      ),
+    );
+  }
+
+  function updateEventColor(index: number, value: EventColor) {
+    updateEvents(
+      events.map((event, i) =>
+        i === index ? { ...event, color: value } : event,
       ),
     );
   }
@@ -261,44 +344,56 @@ export function EventsReferenceScreen({
         </button>
       </EditorActionBar>
       <section className="admin-panel">
-        <LeagueButtons
-          label={t("events-league-label")}
-          value={league}
-          onChange={(value) => value && setLeague(value)}
-        />
-        {/* Bloc 77/C: admin-editable per league, never hardcoded — feeds
-            the public timeline's proportional segment widths (Bloc 77/D). */}
-        <label className="calculator-field">
-          {t("events-season-duration-label")}
-          <input
-            type="number"
-            min={1}
-            max={maxSeasonDurationDays}
-            step={1}
-            aria-label={t("events-season-duration-label")}
-            value={leagueData.seasonDurationDays}
-            onChange={(e) =>
-              updateSeasonDuration(
-                Math.min(
-                  maxSeasonDurationDays,
-                  Math.max(1, Math.round(Number(e.target.value) || 1)),
-                ),
-              )
-            }
-          />
-          {seasonOverruns[league] && (
-            <small className="field-error">
-              {t("events-season-overrun", {
-                total: common("duration-hours", {
-                  hours: totalEventHours(events),
-                }),
-                season: common("duration-hours", {
-                  hours: leagueData.seasonDurationDays * 24,
-                }),
-              })}
-            </small>
-          )}
-        </label>
+        {/* Bloc 80/A+B: the league buttons get a visible label above them
+            (previously aria-only), and the season duration field sits on
+            the same line — same .calculator-fields-inline +
+            .calculator-league-field pattern already used by every
+            calculator that pairs LeagueButtons with another field
+            (combat-calculators.tsx, Bloc 69/E), reused here rather than
+            invented fresh for the admin editor. */}
+        <div className="calculator-fields-inline">
+          <div className="calculator-field calculator-league-field">
+            {t("events-league-label")}
+            <LeagueButtons
+              label={t("events-league-label")}
+              value={league}
+              onChange={(value) => value && setLeague(value)}
+            />
+          </div>
+          {/* Bloc 77/C: admin-editable per league, never hardcoded — feeds
+              the public timeline's proportional segment widths (Bloc 77/D). */}
+          <label className="calculator-field">
+            {t("events-season-duration-label")}
+            <input
+              type="number"
+              min={1}
+              max={maxSeasonDurationDays}
+              step={1}
+              aria-label={t("events-season-duration-label")}
+              value={leagueData.seasonDurationDays}
+              onChange={(e) =>
+                updateSeasonDuration(
+                  Math.min(
+                    maxSeasonDurationDays,
+                    Math.max(1, Math.round(Number(e.target.value) || 1)),
+                  ),
+                )
+              }
+            />
+            {seasonOverruns[league] && (
+              <small className="field-error">
+                {t("events-season-overrun", {
+                  total: common("duration-hours", {
+                    hours: totalEventHours(events),
+                  }),
+                  season: common("duration-hours", {
+                    hours: leagueData.seasonDurationDays * 24,
+                  }),
+                })}
+              </small>
+            )}
+          </label>
+        </div>
       </section>
       <section className="admin-panel editable-reference">
         <div className="editable-reference-title-row">
@@ -337,7 +432,7 @@ export function EventsReferenceScreen({
                 >
                   {eventIndex + 1}
                 </span>
-                <label className="calculator-field">
+                <label className="calculator-field events-admin-name-field">
                   {t("events-columns.name")}
                   <input
                     aria-label={t("event-row-label", {
@@ -395,6 +490,22 @@ export function EventsReferenceScreen({
                       </button>
                     ))}
                   </div>
+                </div>
+                {/* Bloc 80/F: manual color picker, replacing Bloc 79/G's
+                    auto-derivation from the name entirely — applied to the
+                    public timeline segment and tile title (events-reference.tsx). */}
+                <div className="calculator-field">
+                  {t("events-columns.color")}
+                  <EventColorPicker
+                    value={event.color}
+                    onChange={(color) => updateEventColor(eventIndex, color)}
+                    label={t("event-row-label", {
+                      row: eventIndex + 1,
+                      field: t("events-columns.color"),
+                    })}
+                    swatchLabel={(color) => t(`event-colors.${color}`)}
+                    testId={`event-color-${league}-${eventIndex}`}
+                  />
                 </div>
                 <div className="events-admin-card-actions">
                   <button
@@ -455,6 +566,7 @@ export function EventsReferenceScreen({
                       event: event.name || `#${eventIndex + 1}`,
                     }),
                   )}
+                  tableClassName="events-tiers-table"
                   testIdPrefix={`${league}-${eventIndex}`}
                   onChange={(tiers) => updateTiers(eventIndex, tiers)}
                   onRemove={(tierIndex) => removeTier(eventIndex, tierIndex)}

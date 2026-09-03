@@ -13,6 +13,7 @@ const recruiterEvent = {
   description_fr: "Enrôle un maximum de troupes",
   description_en: "Enlist as many troops as possible",
   duration: 72 as const,
+  color: "violet" as const,
   tiers: [
     {
       objective_fr: "1G troupes enrôlées",
@@ -160,6 +161,7 @@ describe("EventsReferenceTable", () => {
             description_fr: "",
             description_en: "",
             duration: 24,
+            color: "violet",
             tiers: [],
           },
         ],
@@ -229,6 +231,7 @@ describe("EventsReferenceTable", () => {
               description_fr: "",
               description_en: "",
               duration: 24,
+              color: "violet",
               tiers: [],
             },
           ],
@@ -386,18 +389,36 @@ describe("EventsReferenceTable", () => {
       expect(tickLeft(14)).toBeCloseTo(100, 5);
     });
 
-    // Bloc 79/G: a repeated event name (e.g. "Architecte" as a 72h event
-    // early on, then a 24h event later, different tiers each time — 2
-    // independent rows, no uniqueness constraint) shares a color across
-    // every occurrence, keyed off the name alone.
-    it("Bloc79/G: gives 2 occurrences of the same event name the same segment color, distinct from a differently-named neighbor", () => {
+    // Bloc 80/F: revises Bloc 79/G's auto-derivation-from-name entirely —
+    // the color is now the admin's own manual pick per event, applied to
+    // the timeline segment AND (grey tile background unchanged) the
+    // matching tile's title text, so 2 occurrences of the same name only
+    // share a color when the admin gives them the same one on purpose.
+    it("Bloc80/F: colors each segment with the event's own chosen color, and colors the matching tile's title the same", () => {
       const catalog = catalogWith({
         diamond: {
           seasonDurationDays: 5,
           events: [
-            { ...recruiterEvent, name: "Architecte", duration: 72 },
-            { ...recruiterEvent, name: "Recruteur", duration: 24 },
-            { ...recruiterEvent, name: "Architecte", duration: 24 },
+            {
+              ...recruiterEvent,
+              name: "Architecte",
+              duration: 72,
+              color: "sapphire",
+            },
+            {
+              ...recruiterEvent,
+              name: "Recruteur",
+              duration: 24,
+              color: "amber-bright",
+            },
+            // Same color as the 1st "Architecte" — chosen on purpose by
+            // the admin, not derived from the (identical) name.
+            {
+              ...recruiterEvent,
+              name: "Architecte",
+              duration: 24,
+              color: "sapphire",
+            },
           ],
         },
       });
@@ -409,12 +430,27 @@ describe("EventsReferenceTable", () => {
         const match = style.match(/background: ([^;]+);/);
         return match?.[1];
       }
-      const architecteColor1 = background(0);
-      const recruiterColor = background(1);
-      const architecteColor2 = background(2);
-      expect(architecteColor1).toBeDefined();
-      expect(architecteColor1).toBe(architecteColor2);
-      expect(architecteColor1).not.toBe(recruiterColor);
+      expect(background(0)).toBe("var(--sapphire)");
+      expect(background(1)).toBe("var(--amber-bright)");
+      expect(background(2)).toBe("var(--sapphire)");
+
+      const tileNames = Array.from(
+        document.querySelectorAll(".events-tile-grid .events-tile-name"),
+      ) as HTMLElement[];
+      const architecteNames = tileNames.filter(
+        (el) => el.textContent === "Architecte",
+      );
+      expect(architecteNames).toHaveLength(2);
+      for (const name of architecteNames)
+        expect(name.style.color).toBe("var(--sapphire)");
+      const recruiterName = tileNames.find(
+        (el) => el.textContent === "Recruteur",
+      )!;
+      expect(recruiterName.style.color).toBe("var(--amber-bright)");
+      // Bloc 80/F: the tile's own background never changes — only its
+      // title text color does. Grey stays grey.
+      const architecteTile = architecteNames[0]!.closest(".events-tile")!;
+      expect(architecteTile).not.toHaveAttribute("style");
     });
 
     // Bloc 79/E: a name too long for its own segment (cdc example) must
@@ -434,6 +470,47 @@ describe("EventsReferenceTable", () => {
       expect(
         within(timeline).getByText("Enrôleur de troupes"),
       ).toHaveTextContent("Enrôleur de troupes");
+    });
+
+    // Bloc 80/G: the label's own box is sized proportionally to its
+    // segment's share of the season (a wide 72h event gets more room than
+    // a narrow 24h one) instead of Bloc 79/E's flat 9rem cap for every
+    // segment regardless of width.
+    it("Bloc80/G: gives a 72h event's label more room than a narrow 24h event's", () => {
+      const wideCatalog = catalogWith({
+        diamond: {
+          seasonDurationDays: 14,
+          events: [
+            { ...recruiterEvent, name: "Enrôleur de troupes", duration: 72 },
+          ],
+        },
+      });
+      const { unmount } = render(<EventsReferenceTable catalog={wideCatalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+      const wideLabel = document.querySelector(
+        ".events-timeline-label",
+      ) as HTMLElement;
+      const wideMaxWidth = parseFloat(wideLabel.style.maxWidth);
+      unmount();
+
+      const narrowCatalog = catalogWith({
+        bronze: {
+          seasonDurationDays: 21,
+          events: [
+            { ...recruiterEvent, name: "Enrôleur de troupes", duration: 24 },
+          ],
+        },
+      });
+      render(<EventsReferenceTable catalog={narrowCatalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+      const narrowLabel = document.querySelector(
+        ".events-timeline-label",
+      ) as HTMLElement;
+      const narrowMaxWidth = parseFloat(narrowLabel.style.maxWidth);
+
+      expect(wideMaxWidth).toBeGreaterThan(narrowMaxWidth);
+      // Still a readable floor, never collapsing to near-nothing.
+      expect(narrowMaxWidth).toBeGreaterThanOrEqual(4.5);
     });
   });
 });

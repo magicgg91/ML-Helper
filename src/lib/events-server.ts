@@ -2,7 +2,9 @@ import { prisma } from "./prisma";
 import { leagues } from "./player-settings";
 import {
   emptyEventsCatalog,
+  eventColors,
   eventDurations,
+  type EventColor,
   type EventDuration,
   type EventRow,
   type EventsCatalog,
@@ -51,6 +53,16 @@ function normalizeDuration(raw: unknown): EventDuration {
     : eventDurations[0];
 }
 
+// Bloc 80/F: rows saved before this bloc have no "color" field at all —
+// falls back to the palette's first entry, same "first valid value"
+// fallback normalizeDuration above already uses for a missing/invalid
+// duration, instead of throwing on data that predates this column.
+function normalizeColor(raw: unknown): EventColor {
+  return (eventColors as readonly string[]).includes(raw as string)
+    ? (raw as EventColor)
+    : eventColors[0];
+}
+
 function normalizeEvent(raw: unknown): EventRow | null {
   if (!isPlainObject(raw)) return null;
   const rawTiers = Array.isArray(raw.tiers) ? raw.tiers : [];
@@ -61,6 +73,7 @@ function normalizeEvent(raw: unknown): EventRow | null {
     description_en:
       typeof raw.description_en === "string" ? raw.description_en : "",
     duration: normalizeDuration(raw.duration),
+    color: normalizeColor(raw.color),
     tiers: rawTiers
       .map(normalizeTier)
       .filter((tier): tier is EventTierRow => tier !== null),

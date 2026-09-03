@@ -952,7 +952,20 @@
       "events-columns": {
         "name": "Name",
         "description": "Beschreibung",
-        "duration": "Dauer"
+        "duration": "Dauer",
+        "color": "Farbe"
+      },
+      "event-colors": {
+        "violet": "Violett",
+        "violet-bright": "Helles Violett",
+        "emerald": "Smaragd",
+        "emerald-bright": "Helles Smaragd",
+        "amber": "Bernstein",
+        "amber-bright": "Helles Bernstein",
+        "ember": "Glut",
+        "ember-bright": "Helle Glut",
+        "sapphire": "Saphir",
+        "sapphire-bright": "Heller Saphir"
       },
       "tier-columns": {
         "objective": "Ziel",

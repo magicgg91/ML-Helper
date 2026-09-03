@@ -32,6 +32,33 @@ export const emptyEventTierRow: EventTierRow = {
 export const eventDurations = [24, 48, 72] as const;
 export type EventDuration = (typeof eventDurations)[number];
 
+// Bloc 80/F: revises Bloc 79/G's auto-derived-from-name timeline color
+// (abandoned) — an admin now picks each event's color explicitly from this
+// fixed palette, via a dedicated button (never a color field's free-form
+// value), so 2 similar events (cdc example: "Architecte" 72h then 24h) can
+// share a color on purpose instead of relying on their names hashing the
+// same way. 5 base hues x 2 shades (bright/base) = 10 options, all drawn
+// from the site's existing accent tokens except --gold (globals.css,
+// color-palette.test.ts: reserved for legendary-rarity data only, never a
+// generic interface color — so this palette never touches it).
+export const eventColors = [
+  "violet",
+  "violet-bright",
+  "emerald",
+  "emerald-bright",
+  "amber",
+  "amber-bright",
+  "ember",
+  "ember-bright",
+  "sapphire",
+  "sapphire-bright",
+] as const;
+export type EventColor = (typeof eventColors)[number];
+
+export function eventColorVar(color: EventColor): string {
+  return `var(--${color})`;
+}
+
 // Bloc 77/A: Description is admin free text at the event level (distinct
 // from each tier's own Objectif/Récompense) — same fr/en-per-field
 // convention as EventTierRow above, for the same AGENTS.md reason.
@@ -40,6 +67,7 @@ export type EventRow = {
   description_fr: string;
   description_en: string;
   duration: EventDuration;
+  color: EventColor;
   tiers: EventTierRow[];
 };
 
@@ -48,6 +76,7 @@ export const emptyEventRow: EventRow = {
   description_fr: "",
   description_en: "",
   duration: eventDurations[0],
+  color: eventColors[0],
   tiers: [],
 };
 
@@ -95,26 +124,17 @@ export function totalEventHours(events: readonly EventRow[]): number {
   return events.reduce((sum, event) => sum + event.duration, 0);
 }
 
-// Bloc 79/G: an event name can repeat within a season (e.g. "Architecte" as
-// a 72h event early on, then again as a 24h event later, with different
-// tiers each time) — these stay 2 independent rows (no uniqueness
-// constraint on name), but the timeline (Bloc 77/D) should still show them
-// in the same color so a repeat reads as the same event at a glance. A
-// color keyed off the event's own index would give 2 different colors to
-// the same name, so this derives a stable palette index purely from the
-// name string (same name -> same index, always) instead of an admin-
-// editable "color" field, which the task explicitly rules out.
-// Bloc 79 review (Codex PR #96): trimmed first — HTML collapses leading/
-// trailing whitespace on render, so "Architecte" and "Architecte " (a
-// trailing space an admin can easily type without noticing) would
-// otherwise look identical but hash to different palette indexes.
-export function eventColorSeed(name: string): number {
-  const trimmed = name.trim();
-  let hash = 0;
-  for (let i = 0; i < trimmed.length; i += 1) {
-    hash = (hash * 31 + trimmed.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
+// Bloc 80/G: the timeline label's max-width, in rem, adaptive to the
+// event's own share of the season instead of Bloc 79/E's flat 9rem cap —
+// "privilégier l'agrandissement de la zone de texte... avant de basculer
+// sur 2 lignes" (cdc): a wide segment (a 72h event in a typical 14-day
+// season, e.g. ~21% width) gets a box roomy enough for most names to stay
+// on 1 line, while a narrow one (a 24h event in Bronze's 21-day season,
+// ~5% width) still gets a readable floor. -webkit-line-clamp: 2
+// (globals.css, .events-timeline-name) is the hard cap for whatever still
+// doesn't fit — this function only ever influences whether it needs to.
+export function timelineLabelMaxWidthRem(segmentWidthPercent: number): number {
+  return Math.min(15, Math.max(4.5, segmentWidthPercent * 0.55));
 }
 
 export const emptyEventsCatalog: EventsCatalog = Object.fromEntries(
