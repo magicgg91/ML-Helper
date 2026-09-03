@@ -26,7 +26,7 @@ describe("equipmentImagePath", () => {
       "/equipment/combat/gold-legendary-weapon.webp",
     );
     expect(equipmentImagePath("Troupes/Vitesse", "Commun", "Amulette")).toBe(
-      "/equipment/combat/troops-speed-common-amulet.webp",
+      "/equipment/combat/troop-common-amulet.webp",
     );
     expect(equipmentImagePath("Attaque", "Épique", "Bottes")).toBe(
       "/equipment/combat/attack-epic-boots.webp",
@@ -38,7 +38,19 @@ describe("equipmentImagePath", () => {
       "/equipment/expedition/equipment-epic-spyglass.webp",
     );
     expect(equipmentImagePath("Troupes", "Rare", "Sacoche")).toBe(
-      "/equipment/expedition/troops-rare-pouch.webp",
+      "/equipment/expedition/troop-rare-pouch.webp",
+    );
+    expect(equipmentImagePath("Consommables", "Commun", "Cape")).toBe(
+      "/equipment/expedition/consumable-common-cape.webp",
+    );
+  });
+
+  // Bloc 82/E: the 300-file manifest actually delivered by the player
+  // settled on "mythical" (not "mythic") and "gauntlets" (not "gauntlet")
+  // — this file's slug maps were updated to match exactly.
+  it("Bloc82/E: uses 'mythical' for Mythique and 'gauntlets' for Gantelet, matching the delivered files", () => {
+    expect(equipmentImagePath("Attaque", "Mythique", "Gantelet")).toBe(
+      "/equipment/combat/attack-mythical-gauntlets.webp",
     );
   });
 });

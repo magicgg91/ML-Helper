@@ -374,7 +374,8 @@
     "result": "Résultat",
     "errors": {
       "add-positive-stat": "Ajoute une stat avec des emplacements supérieurs à zéro.",
-      "select-league": "Choisis une ligue pour calculer."
+      "select-league": "Choisis une ligue pour calculer.",
+      "select-skill": "Choisis une compétence pour calculer."
     },
     "columns": {
       "skill": "Compétence",

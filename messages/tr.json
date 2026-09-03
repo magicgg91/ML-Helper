@@ -374,7 +374,8 @@
     "result": "Sonuç",
     "errors": {
       "add-positive-stat": "Sıfırdan fazla yuvası olan bir istatistik ekle.",
-      "select-league": "Hesaplamak için bir lig seç."
+      "select-league": "Hesaplamak için bir lig seç.",
+      "select-skill": "Hesaplamak için bir yetenek seç."
     },
     "columns": {
       "skill": "Yetenek",

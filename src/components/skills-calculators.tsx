@@ -50,7 +50,9 @@ import { TabLabel } from "./tab-label";
 
 type GemRow = {
   id: number;
-  skill: SkillKey;
+  // Bloc 82/D: no skill pre-selected — "" is the deliberate "not chosen
+  // yet" state, same principle as league already had.
+  skill: SkillKey | "";
   league: GemLeague | "";
   slots: number;
   target: number;
@@ -276,7 +278,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
   const [totalSlots, setTotalSlots] = useState(27);
   const [nextId, setNextId] = useState(2);
   const [rows, setRows] = useState<GemRow[]>([
-    { id: 1, skill: "striker", league: "", slots: 0, target: 0 },
+    { id: 1, skill: "", league: "", slots: 0, target: 0 },
   ]);
   const allowed = gemFamilies[family];
   const allocated = rows.reduce((sum, row) => sum + row.slots, 0);
@@ -305,13 +307,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
   const changeFamily = (value: GemFamily) => {
     setFamily(value);
     setRows([
-      {
-        id: nextId,
-        skill: gemFamilies[value][0],
-        league: "",
-        slots: 0,
-        target: 0,
-      },
+      { id: nextId, skill: "", league: "", slots: 0, target: 0 },
     ]);
     setNextId((id) => id + 1);
   };
@@ -329,8 +325,8 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
   };
   const results = rows
     .filter(
-      (row): row is GemRow & { league: GemLeague } =>
-        row.slots > 0 && Boolean(row.league),
+      (row): row is GemRow & { skill: SkillKey; league: GemLeague } =>
+        row.slots > 0 && Boolean(row.skill) && Boolean(row.league),
     )
     .map((row) => {
       const result = optimizeGemTarget(
@@ -345,6 +341,9 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
       };
     });
   const totalCost = results.reduce((sum, row) => sum + row.cost, 0);
+  // Bloc 82/D: skill is now just as mandatory as league — checked first
+  // since a row can be missing either or both.
+  const hasMissingSkill = rows.some((row) => row.slots > 0 && !row.skill);
   const hasMissingLeague = rows.some((row) => row.slots > 0 && !row.league);
   return (
     <>
@@ -394,9 +393,12 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
                   aria-label={t("fields.skill-row", { row: index + 1 })}
                   value={row.skill}
                   onChange={(event) =>
-                    update(row.id, { skill: event.target.value as SkillKey })
+                    update(row.id, {
+                      skill: event.target.value as SkillKey | "",
+                    })
                   }
                 >
+                  <option value="">{common("choose")}</option>
                   {allowed.map((skill) => (
                     <option key={skill} value={skill}>
                       {game(`skills.${skill}`)}
@@ -461,12 +463,9 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
           type="button"
           className="secondary-action"
           onClick={() => {
-            const used = rows.map((row) => row.skill);
-            const skill =
-              allowed.find((item) => !used.includes(item)) ?? allowed[0];
             setRows((current) => [
               ...current,
-              { id: nextId, skill, league: "", slots: 0, target: 0 },
+              { id: nextId, skill: "", league: "", slots: 0, target: 0 },
             ]);
             setNextId((id) => id + 1);
           }}
@@ -481,11 +480,21 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
       </section>
       <section className="calculator-card">
         <h3>{t("result")}</h3>
-        {results.length === 0 ? (
+        {hasMissingSkill || hasMissingLeague ? (
+          // Bloc 82/D review (Codex PR #99): a populated row (slots > 0)
+          // missing its skill or league must block the whole result, not
+          // just get silently excluded from `results` while its own slots
+          // still count toward "Emplacements alloués" below — otherwise
+          // the total looks like it covers more than what's actually
+          // shown in the table.
           <p className="ranking-placeholder">
-            {hasMissingLeague
-              ? t("errors.select-league")
-              : t("errors.add-positive-stat")}
+            {hasMissingSkill
+              ? t("errors.select-skill")
+              : t("errors.select-league")}
+          </p>
+        ) : results.length === 0 ? (
+          <p className="ranking-placeholder">
+            {t("errors.add-positive-stat")}
           </p>
         ) : (
           <div className="ranking-table-wrap">
@@ -536,18 +545,21 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
   const common = useTranslations("common");
-  const [skill, setSkill] = useState<SkillKey>("fearless");
+  // Bloc 82/D: no skill pre-selected, same "not chosen yet" principle as
+  // league already had.
+  const [skill, setSkill] = useState<SkillKey | "">("");
   const [league, setLeague] = useState<GemLeague | "">("");
   const [slots, setSlots] = useState(27);
   const [budget, setBudget] = useState(0);
-  const result = league
-    ? optimizeGemBudget(
-        budget,
-        parameters.gemPrice[league],
-        gemValue(skill, league, parameters),
-        slots,
-      )
-    : null;
+  const result =
+    skill && league
+      ? optimizeGemBudget(
+          budget,
+          parameters.gemPrice[league],
+          gemValue(skill, league, parameters),
+          slots,
+        )
+      : null;
   return (
     <>
       <section className="calculator-card">
@@ -556,8 +568,11 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
             {t("fields.skill")}
             <select
               value={skill}
-              onChange={(event) => setSkill(event.target.value as SkillKey)}
+              onChange={(event) =>
+                setSkill(event.target.value as SkillKey | "")
+              }
             >
+              <option value="">{common("choose")}</option>
               {skillKeys.map((key) => (
                 <option key={key} value={key}>
                   {game(`skills.${key}`)}
@@ -604,7 +619,7 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
       </section>
       {!result ? (
         <p className="empty-state" role="status">
-          {t("errors.select-league")}
+          {!skill ? t("errors.select-skill") : t("errors.select-league")}
         </p>
       ) : (
         <section className="calculator-card">

@@ -374,7 +374,8 @@
     "result": "Result",
     "errors": {
       "add-positive-stat": "Add a stat with more than zero slots.",
-      "select-league": "Choose a league to calculate."
+      "select-league": "Choose a league to calculate.",
+      "select-skill": "Choose a skill to calculate."
     },
     "columns": {
       "skill": "Skill",

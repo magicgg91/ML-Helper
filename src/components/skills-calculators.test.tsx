@@ -126,6 +126,78 @@ describe("SkillsCalculators", () => {
       screen.getByRole("spinbutton", { name: "Emplacements ligne 2" }),
     ).toHaveValue(2);
   });
+  // Bloc 82/D: the skill selector must never come pre-filled — the player
+  // has to actively choose one, same "— Choisir —" placeholder pattern
+  // already used for the league selector right next to it, on both modes.
+  it("Bloc82/D: the Gems skill selector has no default value on either mode — '— Choisir —' until the player picks one", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Optimisation" }));
+    const optimizationSkill = screen.getByRole("combobox", {
+      name: "Compétence ligne 1",
+    });
+    expect(optimizationSkill).toHaveValue("");
+    expect(
+      within(optimizationSkill).getByRole("option", { name: "— Choisir —" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    const budgetSkill = screen.getByRole("combobox", { name: "Compétence" });
+    expect(budgetSkill).toHaveValue("");
+    expect(
+      within(budgetSkill).getByRole("option", { name: "— Choisir —" }),
+    ).toBeInTheDocument();
+  });
+
+  // Bloc 82/D review (Codex PR #99): a 2nd row that has allocated slots but
+  // is still missing its skill must block the whole result — previously it
+  // was silently dropped from `results` (which then still rendered the
+  // table, since the 1st row alone made it non-empty) while its own slots
+  // still counted in "Emplacements alloués", making the total look bigger
+  // than what the table actually covered.
+  it("Bloc82/D review: blocks the results table (not just excludes the row) when any populated row is missing its skill", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Optimisation" }));
+
+    // Row 1: fully valid.
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence ligne 1" }),
+      { target: { value: "striker" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 1" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
+      { target: { value: "5" } },
+    );
+
+    // Row 2: allocated slots, but no skill picked.
+    fireEvent.click(screen.getByRole("button", { name: "+ Ajouter une stat" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 2" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements ligne 2" }),
+      { target: { value: "3" } },
+    );
+
+    // Blocked entirely — not a table showing only row 1's partial total.
+    expect(screen.getByText("Choisis une compétence pour calculer.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
   it("shows the budget distribution as the primary result", () => {
     renderWithIntl(
       <SkillsCalculators
@@ -135,6 +207,10 @@ describe("SkillsCalculators", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    // Bloc 82/D: no skill pre-selected any more — pick one explicitly.
+    fireEvent.change(screen.getByRole("combobox", { name: "Compétence" }), {
+      target: { value: "fearless" },
+    });
     const league = screen.getByRole("combobox", { name: "Ligue" });
     expect(league).toHaveValue("");
     fireEvent.change(league, { target: { value: "legend" } });
@@ -515,6 +591,11 @@ describe("SkillsCalculators", () => {
       />,
     );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    // Bloc 82/D: no skill pre-selected any more — pick one explicitly.
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence ligne 1" }),
+      { target: { value: "striker" } },
+    );
     fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 1" }), {
       target: { value: "legend" },
     });

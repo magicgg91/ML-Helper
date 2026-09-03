@@ -428,6 +428,27 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).toBeInTheDocument();
   });
 
+  // Bloc 82/C: a Pouciel cost badge had crept onto the main tiles
+  // themselves — never requested, and redundant with the dedicated merged
+  // table right below (Bloc75/A+B, "Pouciel & Gemmes"). Locks in that the
+  // tiles never carry it, and that the dedicated table still works.
+  it("Bloc82/C: never shows a Pouciel cost badge on the main tiles — only the dedicated table below carries it", () => {
+    renderTables();
+    const block = combatBlock("Spirit Fyra");
+    for (const tile of block.querySelectorAll<HTMLElement>(".reference-tile")) {
+      expect(tile.textContent).not.toMatch(/Pouciel/);
+    }
+    const combatSecondary = screen
+      .getByRole("heading", { name: "Pouciel & Gemmes" })
+      .closest("section")!;
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Fusion/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Destruction/ }),
+    ).toBeInTheDocument();
+  });
+
   // Bloc 76/B: once an admin has saved a custom row label for the visitor's
   // own locale, the public table shows that text instead of its own
   // translated default — verifies both the customized row (Fusion) and an

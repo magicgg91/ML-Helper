@@ -65,26 +65,45 @@ function EventTimeline({
     { cumulativeHours: 0, items: [] },
   ).items;
   // Bloc 81/E: revises Bloc 79/D's fine 24h-tick scale (every day,
-  // unconditionally) — a tick now only marks where an event actually
-  // changes (this event's own end doubling as the next one's start), so
-  // the count and spacing follow the league's real 24h/48h/72h event
-  // durations instead of a flat interval. The very last event's own end
-  // isn't a "change" (nothing follows it to start) and is deliberately
-  // left unmarked; J0 isn't a change either but is kept as the one fixed
-  // reference point for the season's own start. Cumulative hours are
-  // always a whole number of days (every duration is a multiple of 24h),
-  // so day = hours / 24 never needs rounding.
+  // unconditionally, all labeled) — a LABELED tick now only marks where an
+  // event actually changes (this event's own end doubling as the next
+  // one's start), so the labels' count and spacing follow the league's
+  // real 24h/48h/72h event durations instead of a flat interval. J0 isn't
+  // a change either but is kept as the one fixed reference point for the
+  // season's own start. Cumulative hours are always a whole number of
+  // days (every duration is a multiple of 24h), so day = hours / 24 never
+  // needs rounding.
+  // Bloc 82/A review: the LAST event's own end is a transition too — it's
+  // the season's own end, the exact same kind of "this event stops, the
+  // next thing (nothing, here) starts" boundary as every other one — no
+  // longer excluded.
   const cumulativeHoursAfterEachEvent = events.reduce<number[]>(
     (acc, event) => [...acc, (acc[acc.length - 1] ?? 0) + event.duration],
     [],
   );
-  const eventChangeDays = cumulativeHoursAfterEachEvent
-    .slice(0, -1)
-    .map((hours) => hours / 24);
-  const dayTicks = [0, ...eventChangeDays].map((day) => ({
-    day,
-    left: ((day * 24) / totalHours) * 100,
-  }));
+  // Bloc 82/A review (Codex PR #99): the events' own total only has to be
+  // AT MOST the season length (parseLeagueData rejects overrun, never
+  // requires an exact match) — a season can legitimately end later than
+  // its last event. seasonDurationDays is added on its own, independent
+  // of the events' cumulative duration, so the season's true end is
+  // always labeled even when it doesn't coincide with the last event's.
+  const transitionDays = new Set<number>([
+    0,
+    ...cumulativeHoursAfterEachEvent.map((hours) => hours / 24),
+    seasonDurationDays,
+  ]);
+  // Bloc 82/B: the scale itself now covers every day of the season, not
+  // just the transition days — a thin unlabeled tick for a plain day, kept
+  // for continuity ("effet règle graduée"), and the labeled Jx tick only
+  // at an actual transition (transitionDays above).
+  const dayTicks = Array.from(
+    { length: seasonDurationDays + 1 },
+    (_, day) => ({
+      day,
+      left: (day / seasonDurationDays) * 100,
+      isTransition: transitionDays.has(day),
+    }),
+  );
   return (
     <div className="events-timeline" aria-label={ariaLabel}>
       <div className="events-timeline-axis" />
@@ -139,7 +158,7 @@ function EventTimeline({
         );
       })}
       <div className="events-timeline-scale" aria-hidden="true">
-        {dayTicks.map(({ day, left }) => (
+        {dayTicks.map(({ day, left, isTransition }) => (
           <div
             key={day}
             className="events-timeline-tick-group"
@@ -147,9 +166,11 @@ function EventTimeline({
             data-testid={`events-timeline-tick-${day}`}
           >
             <div className="events-timeline-tick" />
-            <div className="events-timeline-tick-label">
-              {day === 0 ? t("day-zero") : t("day-plus", { day })}
-            </div>
+            {isTransition && (
+              <div className="events-timeline-tick-label">
+                {day === 0 ? t("day-zero") : t("day-plus", { day })}
+              </div>
+            )}
           </div>
         ))}
       </div>
