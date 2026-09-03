@@ -1119,19 +1119,95 @@ describe("Bloc 79/A: Expedition's slot star reuses .stuff-slot-left (Combat's ow
   });
 });
 
-describe("Bloc 79/C: Événements admin Description field is 3x a plain field's own width", () => {
-  it("sets .events-admin-description-field input to 27rem, 3x the 9rem a plain field like Nom gets elsewhere in this admin", () => {
-    expect(css).toMatch(
-      /\.events-admin-description-field input\s*{\s*\n\s*width: 27rem;\s*\n}/,
-    );
+describe("Bloc 79/C, 80/D: Événements admin Description field is 3x a plain field's width, then +50% more", () => {
+  it("sets .events-admin-description-field input to 40.5rem — 27rem (Bloc 79/C's 3x) x 1.5 (Bloc 80/D, cumulative)", () => {
+    const rule = css.match(
+      /\.events-admin-description-field input\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 40\.5rem;/);
   });
 
-  it("falls back to filling its row's width on mobile instead of the fixed 27rem", () => {
+  // Bloc 80/C review: shares the row's own 1400px breakpoint (not the
+  // generic 900px), since the fixed 40.5rem only makes sense once the
+  // row itself has stopped being single-column.
+  it("falls back to filling its row's width below 1400px instead of the fixed 40.5rem", () => {
     const mobileBlock = css.match(
-      /@media \(max-width: 900px\) {\s*\n\s*\/\*[\s\S]*?\.events-admin-description-field input[\s\S]*?\n\s*}\n}/,
+      /@media \(max-width: 1400px\) {[\s\S]*?\.events-admin-description-field input[\s\S]*?\n\s*}\n}/,
     )?.[0];
     expect(mobileBlock).toBeDefined();
     expect(mobileBlock).toMatch(/width: 100%;/);
+  });
+});
+
+describe("Bloc 80/C: Événements admin event row is a real grid, aligned across every card", () => {
+  it("lays the header out as a 6-column grid (position, name, description, duration, color, actions), not a wrapping flex row", () => {
+    const rule = css.match(/\.events-admin-card-header\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/display: grid;/);
+    expect(rule).toMatch(/grid-template-columns: repeat\(6, auto\);/);
+  });
+
+  it("gives Nom a fixed width too, same width-per-column requirement the grid above needs to actually line up", () => {
+    const rule = css.match(/\.events-admin-name-field input\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 14rem;/);
+  });
+
+  // Bloc 80/C review (Codex PR #97): the 6 fixed columns (14rem name +
+  // 40.5rem description alone, before position/duration/color/actions and
+  // 5 gaps) need ~1350px of real content width — the generic 900px
+  // breakpoint every other admin field uses left a wide band of common
+  // desktop/laptop viewports (1024–1366px) neither wrapped nor stacked,
+  // just silently overflowing. This row gets its own wider breakpoint.
+  it("stacks to a single column well before the row's own ~1350px content width, not the generic 900px breakpoint", () => {
+    const mobileBlock = css.match(
+      /@media \(max-width: 1400px\) {\s*\n\s*\.events-admin-card-header\s*{([\s\S]*?)\n\s*}/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    expect(mobileBlock).toMatch(/grid-template-columns: 1fr;/);
+  });
+});
+
+describe("Bloc 80/E: Récompense (tier level) is 3x the base field width, Objectif untouched", () => {
+  it("sets .events-tiers-table .reference-admin-wide input to 27rem", () => {
+    const rule = css.match(
+      /\.events-tiers-table \.reference-admin-wide input\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: 27rem;/);
+  });
+
+  it("falls back to filling its row's width on mobile", () => {
+    const mobileBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.events-tiers-table \.reference-admin-wide input\s*{([\s\S]*?)\n\s*}/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    expect(mobileBlock).toMatch(/width: 100%;/);
+  });
+});
+
+describe("Bloc 80/F: the manual color picker's toggle + popup swatch grid", () => {
+  it("styles the toggle as a round swatch button and the popup as a floating grid of round options", () => {
+    const toggle = css.match(/\.events-color-picker-toggle\s*{([\s\S]*?)\n}/)?.[0];
+    expect(toggle).toBeDefined();
+    expect(toggle).toMatch(/border-radius: 999px;/);
+
+    const options = css.match(/\.events-color-picker-options\s*{([\s\S]*?)\n}/)?.[0];
+    expect(options).toBeDefined();
+    expect(options).toMatch(/position: absolute;/);
+
+    const option = css.match(/\.events-color-picker-option\s*{([\s\S]*?)\n}/)?.[0];
+    expect(option).toBeDefined();
+    expect(option).toMatch(/border-radius: 999px;/);
+  });
+
+  it("marks the currently-selected swatch with a visible border", () => {
+    const rule = css.match(
+      /\.events-color-picker-option\[aria-pressed="true"\]\s*{([\s\S]*?)\n}/,
+    )?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/border-color: var\(--foreground\);/);
   });
 });
 
@@ -1144,10 +1220,34 @@ describe("Bloc 79/E: the timeline's event name is never ellipsized/clipped, what
     expect(rule).toMatch(/overflow-wrap: break-word;/);
   });
 
-  it("widens .events-timeline-label's own cap well past the old 5.5rem, so a long name has real room to wrap in", () => {
+  // Bloc 80/G: the flat 9rem cap is gone — max-width is now set inline
+  // per segment (events-reference.tsx, timelineLabelMaxWidthRem), so
+  // .events-timeline-label itself no longer declares one.
+  it("no longer hardcodes a flat max-width on .events-timeline-label — it's set inline per segment instead (Bloc 80/G)", () => {
     const rule = css.match(/\.events-timeline-label\s*{([\s\S]*?)\n}/)?.[0];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/max-width: 9rem;/);
+    expect(rule).not.toMatch(/max-width:/);
+  });
+
+  // Bloc 80/G review: width: auto (the default) shrank the box to its
+  // own min-content — the width of its single longest WORD — instead of
+  // trying to fit the whole name on 1 line first, so a name still wrapped
+  // onto several narrow lines even with plenty of room under the inline
+  // max-width. width: max-content fixes that: it prefers the unwrapped
+  // width up to that cap, only wrapping once the name genuinely overflows.
+  it("sizes .events-timeline-label to its content's preferred width (max-content), not the browser's min-content default", () => {
+    const rule = css.match(/\.events-timeline-label\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/width: max-content;/);
+  });
+});
+
+describe("Bloc 80/G: the timeline name's hard 2-line cap, the fallback once the adaptive box still isn't enough", () => {
+  it("clamps .events-timeline-name to 2 lines, never more", () => {
+    const rule = css.match(/\.events-timeline-name\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/-webkit-line-clamp: 2;/);
+    expect(rule).toMatch(/overflow: hidden;/);
   });
 });
 

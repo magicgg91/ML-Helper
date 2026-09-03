@@ -952,7 +952,20 @@
       "events-columns": {
         "name": "İsim",
         "description": "Açıklama",
-        "duration": "Süre"
+        "duration": "Süre",
+        "color": "Renk"
+      },
+      "event-colors": {
+        "violet": "Mor",
+        "violet-bright": "Açık mor",
+        "emerald": "Zümrüt",
+        "emerald-bright": "Açık zümrüt",
+        "amber": "Kehribar",
+        "amber-bright": "Açık kehribar",
+        "ember": "Kor",
+        "ember-bright": "Açık kor",
+        "sapphire": "Safir",
+        "sapphire-bright": "Açık safir"
       },
       "tier-columns": {
         "objective": "Hedef",

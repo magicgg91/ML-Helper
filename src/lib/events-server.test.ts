@@ -22,6 +22,7 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
       description_fr: "Enrôle des troupes",
       description_en: "Enlist troops",
       duration: 72,
+      color: "emerald-bright",
       tiers: [
         {
           objective_fr: "1G troupes enrôlées",
@@ -82,6 +83,22 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
     expect(result.bronze.events[1].duration).toBe(24);
     expect(result.bronze.events[0]).not.toHaveProperty("startDay");
     expect(result.bronze.events[0]).not.toHaveProperty("endDay");
+  });
+
+  // Bloc 80/F: rows saved before this bloc have no "color" field at all —
+  // same "first valid value" fallback as duration above, not a throw.
+  it("Bloc80/F: normalizes a missing/invalid color back to the palette's first entry", () => {
+    const result = normalizeStoredValue({
+      bronze: {
+        seasonDurationDays: 21,
+        events: [
+          { name: "A", color: "not-a-real-color", tiers: [] },
+          { name: "B", tiers: [] },
+        ],
+      },
+    });
+    expect(result.bronze.events[0].color).toBe("violet");
+    expect(result.bronze.events[1].color).toBe("violet");
   });
 
   it("fills in a missing league as an empty event list with its own default season duration, rather than dropping the whole catalog", () => {

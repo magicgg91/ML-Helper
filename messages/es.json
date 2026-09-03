@@ -952,7 +952,20 @@
       "events-columns": {
         "name": "Nombre",
         "description": "Descripción",
-        "duration": "Duración"
+        "duration": "Duración",
+        "color": "Color"
+      },
+      "event-colors": {
+        "violet": "Violeta",
+        "violet-bright": "Violeta claro",
+        "emerald": "Esmeralda",
+        "emerald-bright": "Esmeralda claro",
+        "amber": "Ámbar",
+        "amber-bright": "Ámbar claro",
+        "ember": "Brasa",
+        "ember-bright": "Brasa claro",
+        "sapphire": "Zafiro",
+        "sapphire-bright": "Zafiro claro"
       },
       "tier-columns": {
         "objective": "Objetivo",
