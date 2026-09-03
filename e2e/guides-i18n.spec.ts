@@ -132,17 +132,17 @@ test("translates combat equipment filters and result columns", async ({
 }) => {
   await page.goto("/referentiels/combat-equipment");
   await switchLocale(page, "fr");
-  // Bloc 35/2.2: Pouciel is no longer a per-row column — it's the title of
-  // its own small rarity-indexed table, so it now appears twice (heading +
-  // row label); scope to the heading to disambiguate.
+  // Bloc 75/A: Pouciel merge cost, gem slots and Pouciel-at-destruction are
+  // now 1 merged table (Fusion/Gemmes/Destruction rows) titled "Pouciel &
+  // Gemmes" instead of "Pouciel" being its own single-row table.
   await expect(
-    page.getByRole("heading", { name: "Pouciel", exact: true }),
+    page.getByRole("heading", { name: "Pouciel & Gemmes", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Famille", { exact: true })).toBeVisible();
 
   await switchLocale(page, "en");
   await expect(
-    page.getByRole("heading", { name: "Skydust", exact: true }),
+    page.getByRole("heading", { name: "Pouciel & Gems", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Family", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Attack" })).toBeVisible();
