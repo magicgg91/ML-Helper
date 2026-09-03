@@ -8,7 +8,8 @@
     "language": "Sprache",
     "theme-light": "Hellen Modus aktivieren",
     "theme-dark": "Dunklen Modus aktivieren",
-    "star-count": "{level} Sterne"
+    "star-count": "{level} Sterne",
+    "duration-hours": "{hours} Std."
   },
   "game": {
     "skills": {
@@ -563,6 +564,7 @@
       "league": "Liga",
       "select-league": "Wähle eine Liga, um ihre Events zu sehen.",
       "empty": "Noch keine Events für diese Liga.",
+      "timeline-label": "Saisonzeitplan",
       "columns": {
         "objective": "Ziel",
         "reward": "Belohnung"
@@ -940,12 +942,14 @@
       "remove": "Entfernen",
       "events-league-label": "Liga",
       "events-language-label": "Textsprache",
+      "events-season-duration-label": "Saisondauer (Tage)",
+      "events-season-overrun": "Die Gesamtdauer der Events ({total}) übersteigt die Saisondauer ({season}).",
       "events-table-title": "Event-Liste",
       "add-event": "Event hinzufügen",
       "events-columns": {
         "name": "Name",
-        "startDay": "Starttag",
-        "endDay": "Endtag"
+        "description": "Beschreibung",
+        "duration": "Dauer"
       },
       "tier-columns": {
         "objective": "Ziel",

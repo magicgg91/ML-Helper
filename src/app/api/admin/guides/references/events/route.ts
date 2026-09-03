@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { eventsReferenceKey } from "@/lib/events-server";
-import type { EventRow, EventsCatalog, EventTierRow } from "@/lib/events";
+import {
+  eventDurations,
+  totalEventHours,
+  type EventDuration,
+  type EventRow,
+  type EventsCatalog,
+  type EventsLeagueData,
+  type EventTierRow,
+} from "@/lib/events";
 import { leagues } from "@/lib/player-settings";
 import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
 
@@ -16,21 +24,46 @@ function parseTier(raw: unknown): EventTierRow {
   };
 }
 
+function parseDuration(raw: unknown): EventDuration {
+  const value = Number(raw);
+  if (!(eventDurations as readonly number[]).includes(value))
+    throw new Error("invalid duration");
+  return value as EventDuration;
+}
+
 function parseEvent(raw: unknown): EventRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid event");
   const source = raw as Record<string, unknown>;
   if (!Array.isArray(source.tiers)) throw new Error("invalid tiers");
   return {
     name: stringField(source.name),
-    startDay: stringField(source.startDay),
-    endDay: stringField(source.endDay),
+    description_fr: stringField(source.description_fr),
+    description_en: stringField(source.description_en),
+    duration: parseDuration(source.duration),
     tiers: source.tiers.map(parseTier),
   };
 }
 
-function parseEvents(rawEvents: unknown): EventRow[] {
-  if (!Array.isArray(rawEvents)) throw new Error("invalid league events");
-  return rawEvents.map(parseEvent);
+function parseSeasonDurationDays(raw: unknown): number {
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0)
+    throw new Error("invalid season duration");
+  return value;
+}
+
+function parseLeagueData(raw: unknown): EventsLeagueData {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw))
+    throw new Error("invalid league data");
+  const source = raw as Record<string, unknown>;
+  if (!Array.isArray(source.events)) throw new Error("invalid league events");
+  const seasonDurationDays = parseSeasonDurationDays(source.seasonDurationDays);
+  const events = source.events.map(parseEvent);
+  // Bloc 77 review (Codex PR #95): reject a schedule that overruns its own
+  // season — events chain back-to-back, so anything past the season length
+  // would push the timeline (Bloc 77/D) past 100%.
+  if (totalEventHours(events) > seasonDurationDays * 24)
+    throw new Error("events overrun season duration");
+  return { seasonDurationDays, events };
 }
 
 export async function PUT(request: Request) {
@@ -42,12 +75,19 @@ export async function PUT(request: Request) {
       throw new Error("invalid catalog");
     const source = body as Record<string, unknown>;
     const catalog: EventsCatalog = Object.fromEntries(
-      leagues.map((league) => [league, parseEvents(source[league])]),
+      leagues.map((league) => [league, parseLeagueData(source[league])]),
     ) as EventsCatalog;
     await saveReferenceTable({
       key: eventsReferenceKey,
       target: "le référentiel Événements",
-      columns: ["name", "startDay", "endDay", "tiers"],
+      columns: [
+        "seasonDurationDays",
+        "name",
+        "description_fr",
+        "description_en",
+        "duration",
+        "tiers",
+      ],
       rows: catalog,
       userId: session.user.id,
       actorRole: session.user.role,

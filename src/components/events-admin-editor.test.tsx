@@ -10,8 +10,9 @@ function catalogWith(overrides: Partial<EventsCatalog>): EventsCatalog {
 
 const recruiterEvent = {
   name: "Recruteur",
-  startDay: "1",
-  endDay: "7",
+  description_fr: "Enrôle un maximum de troupes",
+  description_en: "Enlist as many troops as possible",
+  duration: 72 as const,
   tiers: [
     {
       objective_fr: "1G troupes enrôlées",
@@ -47,7 +48,9 @@ describe("EventsReferenceScreen", () => {
   });
 
   it("Bloc60: each league's event list is entirely independent — switching leagues never bleeds data through", () => {
-    const catalog = catalogWith({ legend: [recruiterEvent] });
+    const catalog = catalogWith({
+      legend: { seasonDurationDays: 14, events: [recruiterEvent] },
+    });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     expect(screen.queryByDisplayValue("Recruteur")).not.toBeInTheDocument();
 
@@ -67,30 +70,107 @@ describe("EventsReferenceScreen", () => {
     expect(screen.queryByTestId("event-gold-0")).not.toBeInTheDocument();
   });
 
-  it("Bloc60: edits an event's name/startDay/endDay fields", () => {
+  it("Bloc60: edits an event's name", () => {
     render(<EventsReferenceScreen initialCatalog={emptyEventsCatalog} />);
     fireEvent.click(screen.getByTestId("add-event-bronze"));
     const card = screen.getByTestId("event-bronze-0");
     fireEvent.change(within(card).getByLabelText(/Nom.*événement 1/), {
       target: { value: "Nouvel Event" },
     });
-    fireEvent.change(within(card).getByLabelText(/Jour de début.*événement 1/), {
-      target: { value: "1" },
-    });
-    fireEvent.change(within(card).getByLabelText(/Jour de fin.*événement 1/), {
-      target: { value: "5" },
-    });
     expect(within(card).getByDisplayValue("Nouvel Event")).toBeInTheDocument();
-    expect(within(card).getByDisplayValue("1")).toBeInTheDocument();
-    expect(within(card).getByDisplayValue("5")).toBeInTheDocument();
+  });
+
+  // Bloc 77/A: Description is a genuine editable field, persisted through
+  // to the saved catalog.
+  it("Bloc77/A: makes an event's Description field editable and persists it", async () => {
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
+    render(<EventsReferenceScreen initialCatalog={catalog} />);
+    const card = screen.getByTestId("event-bronze-0");
+    const descriptionInput = within(card).getByLabelText(
+      /Description.*événement 1/,
+    ) as HTMLInputElement;
+    expect(descriptionInput.value).toBe("Enrôle un maximum de troupes");
+    fireEvent.change(descriptionInput, {
+      target: { value: "Nouvelle description" },
+    });
+    expect(
+      within(card).getByDisplayValue("Nouvelle description"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+    const [, options] = vi.mocked(global.fetch).mock.calls[0];
+    const body = JSON.parse((options as RequestInit).body as string);
+    expect(body.bronze.events[0].description_fr).toBe("Nouvelle description");
+  });
+
+  // Bloc 77/B: startDay/endDay are gone — a single Durée select (24/48/72h)
+  // replaces them, with no trace of the 2 old fields anywhere.
+  it("Bloc77/B: replaces Jour de début/fin with a single Durée select (24h/48h/72h), no trace of the old fields", async () => {
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
+    render(<EventsReferenceScreen initialCatalog={catalog} />);
+    const card = screen.getByTestId("event-bronze-0");
+    expect(
+      within(card).queryByLabelText(/Jour de début/),
+    ).not.toBeInTheDocument();
+    expect(within(card).queryByLabelText(/Jour de fin/)).not.toBeInTheDocument();
+
+    const durationSelect = within(card).getByLabelText(
+      /Durée.*événement 1/,
+    ) as HTMLSelectElement;
+    expect(durationSelect.value).toBe("72");
+    expect(
+      within(durationSelect).getAllByRole("option").map((o) => o.textContent),
+    ).toEqual(["24h", "48h", "72h"]);
+    fireEvent.change(durationSelect, { target: { value: "24" } });
+    expect(durationSelect.value).toBe("24");
+
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+    const [, options] = vi.mocked(global.fetch).mock.calls[0];
+    const body = JSON.parse((options as RequestInit).body as string);
+    expect(body.bronze.events[0].duration).toBe(24);
+    expect(body.bronze.events[0]).not.toHaveProperty("startDay");
+    expect(body.bronze.events[0]).not.toHaveProperty("endDay");
+  });
+
+  // Bloc 77/C: the season duration is editable per league and defaults to
+  // a reasonable value (not 0/blank) — it's never hardcoded, since the
+  // public timeline visual uses it as its denominator.
+  it("Bloc77/C: makes the season duration editable per league, with a reasonable default, and persists it", async () => {
+    render(<EventsReferenceScreen initialCatalog={emptyEventsCatalog} />);
+    const seasonInput = screen.getByLabelText(
+      "Durée de la saison (jours)",
+    ) as HTMLInputElement;
+    expect(Number(seasonInput.value)).toBeGreaterThan(0);
+    expect(seasonInput.value).toBe("21"); // Bronze's own default (cdc).
+
+    fireEvent.click(screen.getByRole("button", { name: "Légende" }));
+    expect(seasonInput.value).toBe("14"); // Légende's own default.
+    fireEvent.change(seasonInput, { target: { value: "16" } });
+    expect(seasonInput.value).toBe("16");
+
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+    const [, options] = vi.mocked(global.fetch).mock.calls[0];
+    const body = JSON.parse((options as RequestInit).body as string);
+    expect(body.legend.seasonDurationDays).toBe(16);
+    expect(body.bronze.seasonDurationDays).toBe(21); // untouched league.
   });
 
   it("Bloc60: reorders events with the move up/down arrows", () => {
     const catalog = catalogWith({
-      bronze: [
-        { ...recruiterEvent, name: "Premier" },
-        { ...recruiterEvent, name: "Second" },
-      ],
+      bronze: {
+        seasonDurationDays: 21,
+        events: [
+          { ...recruiterEvent, name: "Premier" },
+          { ...recruiterEvent, name: "Second" },
+        ],
+      },
     });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     const cards = () => screen.getAllByTestId(/^event-bronze-/);
@@ -110,7 +190,9 @@ describe("EventsReferenceScreen", () => {
   });
 
   it("Bloc60: removes an event after confirmation", () => {
-    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     vi.spyOn(window, "confirm").mockReturnValue(true);
     fireEvent.click(screen.getByTestId("remove-event-bronze-0"));
@@ -118,7 +200,9 @@ describe("EventsReferenceScreen", () => {
   });
 
   it("Bloc60: cancels the removal when the confirmation is declined", () => {
-    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     vi.spyOn(window, "confirm").mockReturnValue(false);
     fireEvent.click(screen.getByTestId("remove-event-bronze-0"));
@@ -126,7 +210,9 @@ describe("EventsReferenceScreen", () => {
   });
 
   it("Bloc60: CRUD on an event's nested tier list reuses EditableDataTable (add/edit/reorder/remove)", () => {
-    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     expect(screen.getByDisplayValue("1G troupes enrôlées")).toBeInTheDocument();
 
@@ -148,7 +234,9 @@ describe("EventsReferenceScreen", () => {
   // Consommables (Bloc 48/A) — tier text is captured per fr/en field, and
   // the toggle switches which one the table edits.
   it("Bloc60 review: switching the locale selector switches the tier table to the English values", () => {
-    const catalog = catalogWith({ bronze: [recruiterEvent] });
+    const catalog = catalogWith({
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+    });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     expect(screen.getByDisplayValue("1G troupes enrôlées")).toBeInTheDocument();
 
@@ -164,16 +252,20 @@ describe("EventsReferenceScreen", () => {
 
   it("Bloc60: blocks save and shows an error when an event has no name or a tier is incomplete", async () => {
     const catalog = catalogWith({
-      bronze: [
-        {
-          name: "",
-          startDay: "",
-          endDay: "",
-          tiers: [
-            { objective_fr: "", objective_en: "", reward_fr: "R", reward_en: "" },
-          ],
-        },
-      ],
+      bronze: {
+        seasonDurationDays: 21,
+        events: [
+          {
+            name: "",
+            description_fr: "",
+            description_en: "",
+            duration: 24,
+            tiers: [
+              { objective_fr: "", objective_en: "", reward_fr: "R", reward_en: "" },
+            ],
+          },
+        ],
+      },
     });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
@@ -187,8 +279,11 @@ describe("EventsReferenceScreen", () => {
 
   it("Bloc60: saves the whole catalog (every league, not just the selected one) in one PUT", async () => {
     const catalog = catalogWith({
-      bronze: [recruiterEvent],
-      legend: [{ ...recruiterEvent, name: "Autre" }],
+      bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+      legend: {
+        seasonDurationDays: 14,
+        events: [{ ...recruiterEvent, name: "Autre" }],
+      },
     });
     render(<EventsReferenceScreen initialCatalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
@@ -196,8 +291,8 @@ describe("EventsReferenceScreen", () => {
     const [url, options] = vi.mocked(global.fetch).mock.calls[0];
     expect(url).toBe("/api/admin/guides/references/events");
     const body = JSON.parse((options as RequestInit).body as string);
-    expect(body.bronze[0].name).toBe("Recruteur");
-    expect(body.legend[0].name).toBe("Autre");
-    expect(body.gold).toEqual([]);
+    expect(body.bronze.events[0].name).toBe("Recruteur");
+    expect(body.legend.events[0].name).toBe("Autre");
+    expect(body.gold.events).toEqual([]);
   });
 });

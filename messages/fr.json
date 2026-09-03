@@ -8,7 +8,8 @@
     "language": "Langue",
     "theme-light": "Activer le mode clair",
     "theme-dark": "Activer le mode sombre",
-    "star-count": "{level} étoiles"
+    "star-count": "{level} étoiles",
+    "duration-hours": "{hours}h"
   },
   "game": {
     "skills": {
@@ -581,6 +582,7 @@
       "league": "Ligue",
       "select-league": "Choisis une ligue pour voir ses événements.",
       "empty": "Aucun événement pour cette ligue pour le moment.",
+      "timeline-label": "Chronologie de la saison",
       "columns": {
         "objective": "Objectif",
         "reward": "Récompense"
@@ -958,12 +960,14 @@
       "empty": "Aucun objet pour l’instant.",
       "events-league-label": "Ligue",
       "events-language-label": "Langue du texte",
+      "events-season-duration-label": "Durée de la saison (jours)",
+      "events-season-overrun": "La durée cumulée des événements ({total}) dépasse la durée de la saison ({season}).",
       "events-table-title": "Liste des événements",
       "add-event": "Ajouter un événement",
       "events-columns": {
         "name": "Nom",
-        "startDay": "Jour de début",
-        "endDay": "Jour de fin"
+        "description": "Description",
+        "duration": "Durée"
       },
       "tier-columns": {
         "objective": "Objectif",

@@ -1007,22 +1007,42 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     expect(mediaBlock).toMatch(/max-height: 1\.6rem;/);
     expect(mediaBlock).toMatch(/\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/);
   });
+
+  // Bloc 78/B: Expedition gets its own mobile floor for the new
+  // .stuff-slot-image-expedition class, alongside Combat's.
+  it("also shrinks Expedition's own image class on mobile, back down to the same 1.6rem floor", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {\s*\n\s*\.stuff-slot-image-combat\s*{([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toBeDefined();
+    expect(mediaBlock).toMatch(
+      /\.stuff-slot-image-expedition\s*{\s*\n\s*max-height: 1\.6rem;/,
+    );
+  });
 });
 
-describe("Bloc 73/E: Combat equipment slot image grows to 2.8rem", () => {
+describe("Bloc 73/E, 78/A: Combat equipment slot image size", () => {
   it("keeps the shared .stuff-slot-image (also used by Expedition) at the original 1.8rem", () => {
     expect(css).toMatch(
       /\.stuff-slot-image\s*{\s*\n\s*max-width: 100%;\s*\n\s*max-height: 1\.8rem;/,
     );
   });
 
-  // Review fix: .stuff-slot-image is shared with the (untouched)
-  // Expedition slot renderer, which has no extra room for a bigger image
-  // — the 2.8rem increase is scoped to a 2nd, Combat-only class instead
-  // of the shared one.
+  // Review fix: .stuff-slot-image is shared with the Expedition slot
+  // renderer, which (until Bloc 78/B) had no extra room for a bigger
+  // image — the increase is scoped to a 2nd, Combat-only class instead
+  // of the shared one. Bloc 78/A: 2.8rem -> 3.2rem.
   it("raises the size only for Combat, via a 2nd class alongside the shared one", () => {
     expect(css).toMatch(
-      /\.stuff-slot-image-combat\s*{\s*\n\s*max-height: 2\.8rem;\s*\n}/,
+      /\.stuff-slot-image-combat\s*{\s*\n\s*max-height: 3\.2rem;\s*\n}/,
+    );
+  });
+
+  // Bloc 78/B: Expedition now gets the same enlargement, via its OWN 2nd
+  // class rather than reusing the Combat-named one on Expedition markup.
+  it("gives Expedition the same 3.2rem size, via its own dedicated class, not a reuse of the Combat one", () => {
+    expect(css).toMatch(
+      /\.stuff-slot-image-expedition\s*{\s*\n\s*max-height: 3\.2rem;\s*\n}/,
     );
   });
 });
@@ -1033,10 +1053,10 @@ describe("Bloc 73/E: Combat equipment slot image grows to 2.8rem", () => {
 // the rest of the page's text (off-white in dark, dark grey/near-black in
 // light), instead of a same-hue lightness tweak (the Bloc 22/24 lesson:
 // that kind of fix isn't reliable — a real per-theme value is).
-describe("Bloc 74/A: white-tier stars use the theme's own --foreground, not a fixed #fff", () => {
-  it("resolves the base star color per theme instead of a literal white", () => {
+describe("Bloc 74/A, 78/C: white-tier stars use a dedicated --star-white token, not a fixed #fff or the shared --foreground", () => {
+  it("resolves the base star color via --star-white instead of a literal white or the shared --foreground", () => {
     expect(css).toMatch(
-      /\.star-rating\s*{\s*\n\s*display: inline-flex;\s*\n\s*gap: 1px;\s*\n\s*color: var\(--foreground\);/,
+      /\.star-rating\s*{\s*\n\s*display: inline-flex;\s*\n\s*gap: 1px;\s*\n\s*color: var\(--star-white\);/,
     );
   });
 
@@ -1044,6 +1064,29 @@ describe("Bloc 74/A: white-tier stars use the theme's own --foreground, not a fi
     const baseRule = css.match(/\.star-rating\s*{([\s\S]*?)\n}/)?.[0];
     expect(baseRule).toBeDefined();
     expect(baseRule).not.toMatch(/amber/);
+  });
+
+  // Bloc 78/C: --foreground's light-theme value (#20242b) read as
+  // near-black for the small filled star icons specifically, even though
+  // it's the exact value every other light-theme label already uses —
+  // --star-white gets its own, genuinely lighter value in light theme
+  // (reusing the existing --text-dim token) without touching --foreground
+  // itself, which every other label still depends on.
+  it("points --star-white at --foreground in dark theme (unchanged, already fine) and at --text-dim in light theme (lighter, not near-black)", () => {
+    const darkBlock = css.match(
+      /:root,\s*\n:root\[data-theme="dark"\] {([\s\S]*?)\n}/,
+    )?.[0];
+    expect(darkBlock).toBeDefined();
+    expect(darkBlock).toMatch(/--star-white: var\(--foreground\);/);
+
+    const lightBlock = css.match(
+      /:root\[data-theme="light"\] {([\s\S]*?)\n}/,
+    )?.[0];
+    expect(lightBlock).toBeDefined();
+    expect(lightBlock).toMatch(/--star-white: var\(--text-dim\);/);
+    // Never the same literal --foreground reference light theme used
+    // before — that's the exact regression this fix undoes.
+    expect(lightBlock).not.toMatch(/--star-white: var\(--foreground\);/);
   });
 });
 

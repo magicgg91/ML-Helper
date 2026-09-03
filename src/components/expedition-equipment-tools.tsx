@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { StarRating } from "./star-rating";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   equipmentRarityTranslationKeys,
@@ -207,11 +208,14 @@ function SlotCell({
             <GameImage
               src={equipmentImagePath(item.family, rarity, slot)}
               alt={item.set_name}
-              className="stuff-slot-image"
+              className="stuff-slot-image stuff-slot-image-expedition"
               fallback={null}
             />
           ) : null}
-          <small>{state.star}★</small>
+          {/* Bloc 78/B: adopts Combat's real star-icon rendering (Bloc 73/D)
+              instead of "N★" text — same StarRating component, no gems
+              here since Expedition equipment never carries any (Bloc 75). */}
+          <StarRating level={state.star} />
         </>
       ) : (
         <small>{t("empty-slot")}</small>

@@ -1340,8 +1340,12 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await page
     .getByLabel("Nom de l’événement 1")
     .fill("Recruteur");
-  await page.getByLabel("Jour de début de l’événement 1").fill("1");
-  await page.getByLabel("Jour de fin de l’événement 1").fill("7");
+  await page
+    .getByLabel("Description de l’événement 1")
+    .fill("Enrôle des troupes pour la ligue.");
+  await page
+    .getByLabel("Durée de l’événement 1")
+    .selectOption("48");
   // The tier list is inside a collapsible <details>, closed by default —
   // open it before its "+" add-tier button becomes clickable.
   await page.getByText("Paliers (0)").click();
@@ -1380,12 +1384,85 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await publicLeagueGroup.getByRole("button", { name: "Bronze" }).click();
   const details = page.locator("details.events-card");
   await expect(details).toHaveCount(1);
-  await expect(page.getByText("Recruteur")).toBeVisible();
+  // Bloc 77/D: the season timeline above the card list also shows the
+  // event's name, so scope to the card itself rather than an ambiguous
+  // page-wide getByText that would now match both.
+  await expect(details.getByText("Recruteur")).toBeVisible();
   await expect(page.getByText("1G troupes enrôlées")).not.toBeVisible();
 
-  await page.getByText("Recruteur").click();
+  await details.getByText("Recruteur").click();
   await expect(page.getByText("1G troupes enrôlées")).toBeVisible();
   await expect(page.getByText("100M or + 250 éclats")).toBeVisible();
+});
+
+test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns the season, and the PUT route rejects it too", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/referentiels/reference-events");
+  await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
+
+  // Argent (silver), not Bronze — the earlier Bloc60 test in this same
+  // suite run already added an event to Bronze, and that persists across
+  // tests (same server/db), so Bronze isn't the empty league it looks like
+  // in isolation.
+  await page
+    .getByRole("group", { name: "Ligue" })
+    .getByRole("button", { name: "Argent" })
+    .click();
+  // Argent's season shrunk to 1 day (24h) — a single 48h event then
+  // overruns it, simpler to set up than piling up several events.
+  await page.getByLabel("Durée de la saison (jours)").fill("1");
+  await page.getByTestId("add-event-silver").click();
+  await page.getByLabel("Nom de l’événement 1").fill("Trop long");
+  await page.getByLabel("Durée de l’événement 1").selectOption("48");
+  await page
+    .getByRole("button", { name: "Enregistrer toute la page" })
+    .click();
+
+  await expect(page.getByRole("status")).toHaveText(
+    "Corrige les champs signalés avant l’enregistrement.",
+  );
+  await expect(
+    page.getByText(
+      "La durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
+    ),
+  ).toBeVisible();
+
+  // Defense in depth: the PUT route rejects the same overrunning shape too,
+  // even sent directly (bypassing the admin editor's own client-side check).
+  const response = await page.request.put(
+    "/api/admin/guides/references/events",
+    {
+      data: {
+        bronze: { seasonDurationDays: 21, events: [] },
+        silver: {
+          seasonDurationDays: 1,
+          events: [
+            {
+              name: "Trop long",
+              description_fr: "",
+              description_en: "",
+              duration: 48,
+              tiers: [],
+            },
+          ],
+        },
+        gold: { seasonDurationDays: 14, events: [] },
+        platinum: { seasonDurationDays: 14, events: [] },
+        diamond: { seasonDurationDays: 14, events: [] },
+        legend: { seasonDurationDays: 14, events: [] },
+      },
+    },
+  );
+  expect(response.status()).toBe(400);
 });
 
 test("direct admin URLs enforce all six roles", async ({ browser }) => {
