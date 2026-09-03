@@ -58,6 +58,13 @@ export const emptyEventRow: EventRow = {
 // back-to-back-event mechanic, Argent-Légende run 14). Bronze still gets
 // its own editable value for consistency; the timeline simply has nothing
 // to draw for a league with no events yet.
+// Bloc 79 review (Codex PR #96): the public timeline (Bloc 79/D) generates
+// one tick element per day of this value on every render — shared between
+// the admin editor (client-side cap) and the PUT route (the real boundary)
+// so an unbounded/typo'd season length (1000000, say) can't blow up that
+// render. 366 covers any real season (cdc's longest is 21 days).
+export const maxSeasonDurationDays = 366;
+
 const defaultSeasonDurationDays: Record<League, number> = {
   bronze: 21,
   silver: 14,
@@ -86,6 +93,28 @@ export type EventsCatalog = Record<League, EventsLeagueData>;
 // and the PUT route use this to reject that state before it can be saved.
 export function totalEventHours(events: readonly EventRow[]): number {
   return events.reduce((sum, event) => sum + event.duration, 0);
+}
+
+// Bloc 79/G: an event name can repeat within a season (e.g. "Architecte" as
+// a 72h event early on, then again as a 24h event later, with different
+// tiers each time) — these stay 2 independent rows (no uniqueness
+// constraint on name), but the timeline (Bloc 77/D) should still show them
+// in the same color so a repeat reads as the same event at a glance. A
+// color keyed off the event's own index would give 2 different colors to
+// the same name, so this derives a stable palette index purely from the
+// name string (same name -> same index, always) instead of an admin-
+// editable "color" field, which the task explicitly rules out.
+// Bloc 79 review (Codex PR #96): trimmed first — HTML collapses leading/
+// trailing whitespace on render, so "Architecte" and "Architecte " (a
+// trailing space an admin can easily type without noticing) would
+// otherwise look identical but hash to different palette indexes.
+export function eventColorSeed(name: string): number {
+  const trimmed = name.trim();
+  let hash = 0;
+  for (let i = 0; i < trimmed.length; i += 1) {
+    hash = (hash * 31 + trimmed.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
 }
 
 export const emptyEventsCatalog: EventsCatalog = Object.fromEntries(

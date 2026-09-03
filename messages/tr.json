@@ -565,11 +565,14 @@
       "select-league": "Etkinliklerini görmek için bir lig seç.",
       "empty": "Bu lig için henüz etkinlik yok.",
       "timeline-label": "Sezon zaman çizelgesi",
+      "day-zero": "G0",
+      "day-plus": "G+{day}",
       "columns": {
         "objective": "Hedef",
         "reward": "Ödül"
       },
-      "no-tiers": "Bu etkinlik için kademe yok."
+      "no-tiers": "Bu etkinlik için kademe yok.",
+      "final-objective": "Son hedef: {objective}"
     }
   },
   "combat-equipment": {
@@ -958,6 +961,7 @@
       "add-tier": "Kademe ekle",
       "events-tiers-summary": "Kademeler ({count})",
       "event-row-label": "{row}. etkinliğin {field}",
+      "events-position-aria": "Konum {row}",
       "tier-row-label": "{event} etkinliğinin {row}. kademesinin {field}",
       "templars-presentation-title": "Sunum",
       "templars-presentation-language-label": "Metin dili",

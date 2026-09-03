@@ -61,12 +61,12 @@ describe("EventsReferenceTable", () => {
 
   // Bloc60: entirely independent per league — switching leagues swaps the
   // whole event list, never mixing data from another league.
-  // Bloc 77/D put each event's own name in 2 places now (its collapsible
-  // card AND the timeline segment above it) — these pre-existing tests
-  // scope their queries to .events-list (the card list) to keep targeting
-  // the card, not the timeline label that now also carries the same text.
-  function eventsList() {
-    return within(document.querySelector(".events-list") as HTMLElement);
+  // Bloc 77/D put each event's own name in 2 places now (its tile AND the
+  // timeline segment above it) — these tests scope their queries to
+  // .events-tile-grid to keep targeting the tile, not the timeline label
+  // that also carries the same text.
+  function eventsTiles() {
+    return within(document.querySelector(".events-tile-grid") as HTMLElement);
   }
 
   it("Bloc60: shows a fully independent event list per league", () => {
@@ -78,7 +78,7 @@ describe("EventsReferenceTable", () => {
     expect(screen.queryByText("Recruteur")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Légende" }));
-    expect(eventsList().getByText("Recruteur")).toBeInTheDocument();
+    expect(eventsTiles().getByText("Recruteur")).toBeInTheDocument();
   });
 
   it("Bloc77/B: lists events in order, each showing its name and duration in hours", () => {
@@ -93,25 +93,25 @@ describe("EventsReferenceTable", () => {
     });
     render(<EventsReferenceTable catalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    const names = eventsList()
+    const names = eventsTiles()
       .getAllByText(/Premier|Second/)
       .map((el) => el.textContent);
     expect(names).toEqual(["Premier", "Second"]);
-    expect(eventsList().getByText("24h")).toBeInTheDocument();
-    expect(eventsList().getByText("48h")).toBeInTheDocument();
+    expect(eventsTiles().getByText("24h")).toBeInTheDocument();
+    expect(eventsTiles().getByText("48h")).toBeInTheDocument();
   });
 
-  // Bloc 77/A: the event's own description shows in the collapsible card.
-  it("Bloc77/A: shows the event's own description once opened", () => {
+  // Bloc 77/A, 79/F: the event's own description shows next to its name —
+  // visible even with the tile closed, not gated behind opening it.
+  it("Bloc79/F: shows the event's own description right away, tile still closed", () => {
     const catalog = catalogWith({
       bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
     });
     render(<EventsReferenceTable catalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    fireEvent.click(eventsList().getByText("Recruteur"));
-    expect(
-      screen.getByText("Enrôle un maximum de troupes"),
-    ).toBeVisible();
+    const tile = document.querySelector("details.events-tile")!;
+    expect(tile).not.toHaveAttribute("open");
+    expect(screen.getByText("Enrôle un maximum de troupes")).toBeVisible();
   });
 
   // Bloc60: each event is a collapsible block, closed by default.
@@ -122,11 +122,13 @@ describe("EventsReferenceTable", () => {
     render(<EventsReferenceTable catalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
 
-    const details = document.querySelector("details.events-card")!;
+    const details = document.querySelector("details.events-tile")!;
     expect(details).not.toHaveAttribute("open");
+    // The first tier's own objective/reward only exist inside the table —
+    // the always-visible badge only ever carries the LAST tier's objective.
     expect(screen.queryByText("1G troupes enrôlées")).not.toBeVisible();
 
-    fireEvent.click(eventsList().getByText("Recruteur"));
+    fireEvent.click(within(details as HTMLElement).getByText("Recruteur"));
     expect(details).toHaveAttribute("open");
     expect(screen.getByText("1G troupes enrôlées")).toBeVisible();
     expect(screen.getByText("100M or + 250 éclats")).toBeVisible();
@@ -141,7 +143,8 @@ describe("EventsReferenceTable", () => {
     });
     render(<EventsReferenceTable catalog={catalog} />, "en");
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    fireEvent.click(eventsList().getByText("Recruteur"));
+    const details = document.querySelector("details.events-tile")!;
+    fireEvent.click(within(details as HTMLElement).getByText("Recruteur"));
     expect(screen.getByText("1B troops enlisted")).toBeVisible();
     expect(screen.getByText("100M gold + 250 shards")).toBeVisible();
     expect(screen.queryByText("1G troupes enrôlées")).not.toBeInTheDocument();
@@ -164,8 +167,107 @@ describe("EventsReferenceTable", () => {
     });
     render(<EventsReferenceTable catalog={catalog} />);
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    fireEvent.click(eventsList().getByText("Vide"));
+    fireEvent.click(eventsTiles().getByText("Vide"));
     expect(screen.getByText("Aucun palier pour cet événement.")).toBeVisible();
+  });
+
+  // Bloc 79/I: the tile itself is the collapsible unit, with a 2-per-row
+  // (1 mobile) grey grid replacing Bloc 60's plain block list, and 2
+  // badges (final-tier objective, duration) always visible on the tile.
+  describe("Bloc79/I: tile grid", () => {
+    it("lays out events as a 2-per-row grid, chronological order, no image", () => {
+      const catalog = catalogWith({
+        bronze: {
+          seasonDurationDays: 21,
+          events: [
+            { ...recruiterEvent, name: "Premier" },
+            { ...recruiterEvent, name: "Second" },
+          ],
+        },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+      const grid = document.querySelector(".events-tile-grid")!;
+      const tiles = grid.querySelectorAll(":scope > details.events-tile");
+      expect(tiles).toHaveLength(2);
+      expect(tiles[0]).toHaveTextContent("Premier");
+      expect(tiles[1]).toHaveTextContent("Second");
+      expect(grid.querySelector("img")).not.toBeInTheDocument();
+      // Bloc 79/H: the admin's position indicator is purely internal —
+      // never rendered on the public side.
+      expect(
+        grid.querySelector(".events-admin-position"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows the final tier's objective and the duration as 2 badges, visible with the tile closed", () => {
+      const catalog = catalogWith({
+        bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+      const tile = document.querySelector("details.events-tile") as HTMLElement;
+      expect(tile).not.toHaveAttribute("open");
+      const objectiveBadge = tile.querySelector(
+        ".events-tile-badge-objective",
+      )!;
+      const durationBadge = tile.querySelector(".events-tile-badge-duration")!;
+      // The LAST tier ("3G troupes enrôlées"), never the first one.
+      expect(objectiveBadge).toHaveTextContent("3G troupes enrôlées");
+      expect(objectiveBadge).toBeVisible();
+      expect(durationBadge).toHaveTextContent("72h");
+      expect(durationBadge).toBeVisible();
+    });
+
+    it("shows no objective badge for an event with no tiers, duration badge still shows", () => {
+      const catalog = catalogWith({
+        bronze: {
+          seasonDurationDays: 21,
+          events: [
+            {
+              name: "Vide",
+              description_fr: "",
+              description_en: "",
+              duration: 24,
+              tiers: [],
+            },
+          ],
+        },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+      const tile = document.querySelector("details.events-tile") as HTMLElement;
+      expect(
+        tile.querySelector(".events-tile-badge-objective"),
+      ).not.toBeInTheDocument();
+      expect(tile.querySelector(".events-tile-badge-duration")).toHaveTextContent(
+        "24h",
+      );
+    });
+
+    it("clicking the tile opens it, revealing every tier (Objectif + Récompense), clicking again closes it", () => {
+      const catalog = catalogWith({
+        bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+      const tile = document.querySelector("details.events-tile") as HTMLElement;
+      const summary = tile.querySelector("summary")!;
+      expect(tile).not.toHaveAttribute("open");
+
+      fireEvent.click(summary);
+      expect(tile).toHaveAttribute("open");
+      const table = tile.querySelector("table")!;
+      expect(within(table).getByText("1G troupes enrôlées")).toBeVisible();
+      expect(within(table).getByText("100M or + 250 éclats")).toBeVisible();
+      // The last tier's objective also duplicates the always-visible badge
+      // above — scoped to the table to avoid an ambiguous match.
+      expect(within(table).getByText("3G troupes enrôlées")).toBeVisible();
+      expect(within(table).getByText("300M or + 5 saphirs")).toBeVisible();
+
+      fireEvent.click(summary);
+      expect(tile).not.toHaveAttribute("open");
+    });
   });
 
   // Bloc 77/D: the season timeline — validated against the cdc's own
@@ -245,6 +347,93 @@ describe("EventsReferenceTable", () => {
       render(<EventsReferenceTable catalog={emptyEventsCatalog} />);
       fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
       expect(document.querySelector(".events-timeline")).not.toBeInTheDocument();
+    });
+
+    // Bloc 79/D: a fine 24h-tick day scale, anchored on the season's fixed
+    // end — validated against the same 336h (14-day) Diamant/Légende
+    // example, whose event boundaries land on exact day numbers.
+    it("Bloc79/D: draws a J0..J14 day scale, ticks landing on cumulative event boundaries", () => {
+      const catalog = catalogWith({
+        diamond: { seasonDurationDays: 14, events: diamondLegendEvents },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+
+      const scale = document.querySelector(".events-timeline-scale")!;
+      const ticks = scale.querySelectorAll(".events-timeline-tick-group");
+      expect(ticks).toHaveLength(15); // J0..J14 inclusive
+
+      expect(screen.getByTestId("events-timeline-tick-0")).toHaveTextContent(
+        "J0",
+      );
+      // Event 2 (E2) starts right where E1 (72h = 3 days) ends.
+      expect(screen.getByTestId("events-timeline-tick-3")).toHaveTextContent(
+        "J+3",
+      );
+      expect(screen.getByTestId("events-timeline-tick-14")).toHaveTextContent(
+        "J+14",
+      );
+
+      function tickLeft(day: number) {
+        const style = screen
+          .getByTestId(`events-timeline-tick-${day}`)
+          .getAttribute("style")!;
+        const match = style.match(/left: ([\d.]+)%/);
+        return match ? Number(match[1]) : NaN;
+      }
+      expect(tickLeft(0)).toBeCloseTo(0, 5);
+      expect(tickLeft(3)).toBeCloseTo((72 / 336) * 100, 5);
+      expect(tickLeft(14)).toBeCloseTo(100, 5);
+    });
+
+    // Bloc 79/G: a repeated event name (e.g. "Architecte" as a 72h event
+    // early on, then a 24h event later, different tiers each time — 2
+    // independent rows, no uniqueness constraint) shares a color across
+    // every occurrence, keyed off the name alone.
+    it("Bloc79/G: gives 2 occurrences of the same event name the same segment color, distinct from a differently-named neighbor", () => {
+      const catalog = catalogWith({
+        diamond: {
+          seasonDurationDays: 5,
+          events: [
+            { ...recruiterEvent, name: "Architecte", duration: 72 },
+            { ...recruiterEvent, name: "Recruteur", duration: 24 },
+            { ...recruiterEvent, name: "Architecte", duration: 24 },
+          ],
+        },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+
+      function background(index: number) {
+        const style = segmentStyle(index);
+        const match = style.match(/background: ([^;]+);/);
+        return match?.[1];
+      }
+      const architecteColor1 = background(0);
+      const recruiterColor = background(1);
+      const architecteColor2 = background(2);
+      expect(architecteColor1).toBeDefined();
+      expect(architecteColor1).toBe(architecteColor2);
+      expect(architecteColor1).not.toBe(recruiterColor);
+    });
+
+    // Bloc 79/E: a name too long for its own segment (cdc example) must
+    // stay fully readable, never cut down to an ellipsis.
+    it("Bloc79/E: shows a long event name in full, even on a segment it doesn't fit in", () => {
+      const catalog = catalogWith({
+        diamond: {
+          seasonDurationDays: 14,
+          events: [{ ...recruiterEvent, name: "Enrôleur de troupes", duration: 72 }],
+        },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+      const timeline = document.querySelector(
+        ".events-timeline",
+      ) as HTMLElement;
+      expect(
+        within(timeline).getByText("Enrôleur de troupes"),
+      ).toHaveTextContent("Enrôleur de troupes");
     });
   });
 });

@@ -19,6 +19,7 @@ import {
   emptyEventRow,
   emptyEventTierRow,
   eventDurations,
+  maxSeasonDurationDays,
   totalEventHours,
   type EventDuration,
   type EventRow,
@@ -272,11 +273,17 @@ export function EventsReferenceScreen({
           <input
             type="number"
             min={1}
+            max={maxSeasonDurationDays}
             step={1}
             aria-label={t("events-season-duration-label")}
             value={leagueData.seasonDurationDays}
             onChange={(e) =>
-              updateSeasonDuration(Math.max(1, Number(e.target.value) || 1))
+              updateSeasonDuration(
+                Math.min(
+                  maxSeasonDurationDays,
+                  Math.max(1, Math.round(Number(e.target.value) || 1)),
+                ),
+              )
             }
           />
           {seasonOverruns[league] && (
@@ -316,6 +323,20 @@ export function EventsReferenceScreen({
               data-testid={`event-${league}-${eventIndex}`}
             >
               <div className="events-admin-card-header">
+                {/* Bloc 79/H: purely informative, computed from the event's
+                    current position in the array — never persisted, never
+                    shown on the public side. The move-up/down arrows below
+                    already reorder the array; this just surfaces where an
+                    event currently sits. */}
+                <span
+                  className="events-admin-position"
+                  data-testid={`event-position-${league}-${eventIndex}`}
+                  aria-label={t("events-position-aria", {
+                    row: eventIndex + 1,
+                  })}
+                >
+                  {eventIndex + 1}
+                </span>
                 <label className="calculator-field">
                   {t("events-columns.name")}
                   <input
@@ -333,7 +354,10 @@ export function EventsReferenceScreen({
                     <small className="field-error">{eventErrors.name}</small>
                   )}
                 </label>
-                <label className="calculator-field">
+                {/* Bloc 79/C: 3x wider than a plain field like Nom above —
+                    Description is free text and was cramped at the same
+                    default width. */}
+                <label className="calculator-field events-admin-description-field">
                   {t("events-columns.description")}
                   <input
                     aria-label={t("event-row-label", {
@@ -346,28 +370,32 @@ export function EventsReferenceScreen({
                     }
                   />
                 </label>
-                <label className="calculator-field">
+                {/* Bloc 79/B: buttons instead of a <select> — same
+                    .family-buttons/role=group pattern as LeagueButtons
+                    (Bloc 61), for a fixed 3-choice enum this is a single
+                    click instead of an open-select-then-pick interaction. */}
+                <div className="calculator-field">
                   {t("events-columns.duration")}
-                  <select
+                  <div
+                    className="family-buttons"
+                    role="group"
                     aria-label={t("event-row-label", {
                       row: eventIndex + 1,
                       field: t("events-columns.duration"),
                     })}
-                    value={event.duration}
-                    onChange={(e) =>
-                      updateEventDuration(
-                        eventIndex,
-                        Number(e.target.value) as EventDuration,
-                      )
-                    }
                   >
                     {eventDurations.map((duration) => (
-                      <option key={duration} value={duration}>
+                      <button
+                        key={duration}
+                        type="button"
+                        aria-pressed={event.duration === duration}
+                        onClick={() => updateEventDuration(eventIndex, duration)}
+                      >
                         {common("duration-hours", { hours: duration })}
-                      </option>
+                      </button>
                     ))}
-                  </select>
-                </label>
+                  </div>
+                </div>
                 <div className="events-admin-card-actions">
                   <button
                     className="secondary-action"

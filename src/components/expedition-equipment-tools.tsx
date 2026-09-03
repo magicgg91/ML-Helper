@@ -203,7 +203,14 @@ function SlotCell({
     >
       <span>{game(`slots.${expeditionSlotTranslationKeys[slot]}`)}</span>
       {rarity ? (
-        <>
+        // Bloc 79/A: reuses .stuff-slot-left (Bloc 73/D) — the same
+        // "centered image+star column" layout Combat's own left column
+        // already uses, not a Combat-specific class (its name is purely
+        // positional, not feature-named): without it, the button's own
+        // column flex has no cross-axis alignment, so the star (an
+        // inline-flex element with no intrinsic width to stretch) sat at
+        // the left edge instead of centered under the image.
+        <span className="stuff-slot-left">
           {item ? (
             <GameImage
               src={equipmentImagePath(item.family, rarity, slot)}
@@ -216,7 +223,7 @@ function SlotCell({
               instead of "N★" text — same StarRating component, no gems
               here since Expedition equipment never carries any (Bloc 75). */}
           <StarRating level={state.star} />
-        </>
+        </span>
       ) : (
         <small>{t("empty-slot")}</small>
       )}

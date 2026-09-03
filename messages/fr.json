@@ -583,11 +583,14 @@
       "select-league": "Choisis une ligue pour voir ses événements.",
       "empty": "Aucun événement pour cette ligue pour le moment.",
       "timeline-label": "Chronologie de la saison",
+      "day-zero": "J0",
+      "day-plus": "J+{day}",
       "columns": {
         "objective": "Objectif",
         "reward": "Récompense"
       },
-      "no-tiers": "Aucun palier pour cet événement."
+      "no-tiers": "Aucun palier pour cet événement.",
+      "final-objective": "Objectif final : {objective}"
     }
   },
   "combat-equipment": {
@@ -976,6 +979,7 @@
       "add-tier": "Ajouter un palier",
       "events-tiers-summary": "Paliers ({count})",
       "event-row-label": "{field} de l’événement {row}",
+      "events-position-aria": "Position {row}",
       "tier-row-label": "{field} du palier {row} de {event}",
       "templars-presentation-title": "Présentation",
       "templars-presentation-language-label": "Langue du texte",

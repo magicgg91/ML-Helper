@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
-import type { EventRow, EventsCatalog } from "../lib/events";
+import { eventColorSeed, type EventRow, type EventsCatalog } from "../lib/events";
 
 // Bloc 60 review (Codex PR #81): same fr/en fallback as Consommables'
 // pickLocaleText (Bloc44-review/C) — fr visitors get the French text (or
@@ -50,6 +50,7 @@ function EventTimeline({
   ariaLabel: string;
 }) {
   const common = useTranslations("common");
+  const t = useTranslations("references.events");
   if (events.length === 0 || seasonDurationDays <= 0) return null;
   const totalHours = seasonDurationDays * 24;
   const segments = events.reduce<{
@@ -70,11 +71,30 @@ function EventTimeline({
     }),
     { cumulativeHours: 0, items: [] },
   ).items;
+  // Bloc 79/D: a fine 24h-tick day scale under the segments. Anchored on
+  // the season's own fixed length (day seasonDurationDays, at 100%) and
+  // counted backward in 24h steps down to day 0 (0%) — the live game's
+  // actual season opening is a variable 12-16h window, only its reset/end
+  // is a fixed instant, so the end is the one point worth anchoring on
+  // (this produces the same positions as counting forward from 0 here,
+  // since seasonDurationDays is always a whole number of days, but keeps
+  // the code honest about which end is actually fixed).
+  const dayTicks = Array.from({ length: seasonDurationDays + 1 }, (_, i) => {
+    const day = seasonDurationDays - i;
+    const hoursFromEnd = i * 24;
+    return { day, left: ((totalHours - hoursFromEnd) / totalHours) * 100 };
+  });
   return (
     <div className="events-timeline" aria-label={ariaLabel}>
       <div className="events-timeline-axis" />
       {segments.map(({ event, index, left, width }) => {
         const side = index % 2 === 0 ? "above" : "below";
+        // Bloc 79/G: keyed off the event's own NAME, not its index — a
+        // repeated event (e.g. "Architecte" as both a 72h and, later in
+        // the same season, a 24h event) shares a color across every one
+        // of its occurrences instead of each getting a different one.
+        const shade =
+          timelineShades[eventColorSeed(event.name) % timelineShades.length];
         return (
           <div key={index}>
             <div
@@ -82,7 +102,7 @@ function EventTimeline({
               style={{
                 left: `${left}%`,
                 width: `${width}%`,
-                background: timelineShades[index % timelineShades.length],
+                background: shade,
               }}
               title={`${event.name} — ${common("duration-hours", { hours: event.duration })}`}
               data-testid={`events-timeline-segment-${index}`}
@@ -103,11 +123,37 @@ function EventTimeline({
           </div>
         );
       })}
+      <div className="events-timeline-scale" aria-hidden="true">
+        {dayTicks.map(({ day, left }) => (
+          <div
+            key={day}
+            className="events-timeline-tick-group"
+            style={{ left: `${left}%` }}
+            data-testid={`events-timeline-tick-${day}`}
+          >
+            <div className="events-timeline-tick" />
+            <div className="events-timeline-tick-label">
+              {day === 0 ? t("day-zero") : t("day-plus", { day })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function EventCard({
+// Bloc 79/I: revises Bloc 60's plain collapsible block into a tile — same
+// grey-card treatment as Boutique's own tiles (.consumable-tile), minus the
+// image (events carry none) and with 2 highlighted badges instead of
+// Boutique's single cost badge. The tile itself IS the collapsible unit
+// (a <details>, its <summary> holding title + badges + description so
+// they stay visible closed — Bloc 79/F), not a separate element wrapping
+// one. Deliberately its own classes rather than literally reusing
+// .consumable-tile: this repo's own history (Blocs 38/Q, 40/B, 41/E, 53/B,
+// C, 76/A, 78/B) is a repeated lesson that a same-value class shared
+// across 2 different features is exactly what breaks the next time either
+// one changes independently.
+function EventTile({
   event,
   t,
   locale,
@@ -122,15 +168,30 @@ function EventCard({
     event.description_en,
     locale,
   );
+  const lastTier = event.tiers[event.tiers.length - 1];
+  const finalObjective = lastTier
+    ? pickLocaleText(lastTier.objective_fr, lastTier.objective_en, locale)
+    : null;
   return (
-    <details className="events-card">
-      <summary className="events-card-summary">
-        <span className="events-card-name">{event.name}</span>
-        <span className="events-card-duration">
-          {common("duration-hours", { hours: event.duration })}
-        </span>
+    <details className="events-tile">
+      <summary className="events-tile-summary">
+        <div className="events-tile-heading">
+          <strong className="events-tile-name">{event.name}</strong>
+          <div className="events-tile-badges">
+            {finalObjective && (
+              <span className="events-tile-badge events-tile-badge-objective">
+                {finalObjective}
+              </span>
+            )}
+            <span className="events-tile-badge events-tile-badge-duration">
+              {common("duration-hours", { hours: event.duration })}
+            </span>
+          </div>
+        </div>
+        {description && (
+          <p className="events-tile-description">{description}</p>
+        )}
       </summary>
-      {description && <p className="events-card-description">{description}</p>}
       {event.tiers.length === 0 ? (
         <p className="admin-empty">{t("no-tiers")}</p>
       ) : (
@@ -167,10 +228,14 @@ function EventCard({
 
 // Bloc 60: the 7th reference — league buttons (Bloc 61 pattern, synced to
 // Player Settings via useSyncedLeague, same as Level Up/Classement) at the
-// top, then that league's own fully independent event list, each event a
-// collapsible block (closed by default) revealing its tier table.
+// top, then that league's own fully independent event list.
 // Bloc 77/D: the timeline visual sits above that list, built from the same
 // league data (events + seasonDurationDays).
+// Bloc 79/I: below the timeline, a 2-per-row (1 on mobile) tile grid in
+// chronological order replaces Bloc 60's plain collapsible-block list —
+// same coloring/layout family as Boutique's own tile grid, for visual
+// consistency across référentiels now that every one of them (Boutique,
+// Templiers, Gemmes, this) is tile-based.
 export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
   const t = useTranslations("references.events");
   const locale = useLocale();
@@ -203,9 +268,9 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
             seasonDurationDays={leagueData!.seasonDurationDays}
             ariaLabel={t("timeline-label")}
           />
-          <div className="events-list">
+          <div className="events-tile-grid">
             {events.map((event, index) => (
-              <EventCard event={event} t={t} locale={locale} key={index} />
+              <EventTile event={event} t={t} locale={locale} key={index} />
             ))}
           </div>
         </>

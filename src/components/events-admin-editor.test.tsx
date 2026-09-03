@@ -106,9 +106,10 @@ describe("EventsReferenceScreen", () => {
     expect(body.bronze.events[0].description_fr).toBe("Nouvelle description");
   });
 
-  // Bloc 77/B: startDay/endDay are gone — a single Durée select (24/48/72h)
+  // Bloc 77/B: startDay/endDay are gone — a single Durée control (24/48/72h)
   // replaces them, with no trace of the 2 old fields anywhere.
-  it("Bloc77/B: replaces Jour de début/fin with a single Durée select (24h/48h/72h), no trace of the old fields", async () => {
+  // Bloc 79/B: that control is now a 3-button group, not a <select>.
+  it("Bloc77/B, 79/B: replaces Jour de début/fin with a Durée button group (24h/48h/72h), no trace of the old fields or a select", async () => {
     const catalog = catalogWith({
       bronze: { seasonDurationDays: 21, events: [recruiterEvent] },
     });
@@ -119,15 +120,18 @@ describe("EventsReferenceScreen", () => {
     ).not.toBeInTheDocument();
     expect(within(card).queryByLabelText(/Jour de fin/)).not.toBeInTheDocument();
 
-    const durationSelect = within(card).getByLabelText(
-      /Durée.*événement 1/,
-    ) as HTMLSelectElement;
-    expect(durationSelect.value).toBe("72");
-    expect(
-      within(durationSelect).getAllByRole("option").map((o) => o.textContent),
-    ).toEqual(["24h", "48h", "72h"]);
-    fireEvent.change(durationSelect, { target: { value: "24" } });
-    expect(durationSelect.value).toBe("24");
+    const durationGroup = within(card).getByRole("group", {
+      name: /Durée.*événement 1/,
+    });
+    expect(within(durationGroup).queryByRole("combobox")).not.toBeInTheDocument();
+    const buttons = within(durationGroup).getAllByRole("button");
+    expect(buttons.map((b) => b.textContent)).toEqual(["24h", "48h", "72h"]);
+    expect(buttons[2]).toHaveAttribute("aria-pressed", "true"); // 72h, from recruiterEvent.
+    expect(buttons[0]).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(buttons[0]); // 24h.
+    expect(buttons[0]).toHaveAttribute("aria-pressed", "true");
+    expect(buttons[2]).toHaveAttribute("aria-pressed", "false");
 
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer toute la page" }));
     await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
@@ -187,6 +191,45 @@ describe("EventsReferenceScreen", () => {
     expect(
       within(reordered[1]).getByDisplayValue("Premier"),
     ).toBeInTheDocument();
+  });
+
+  // Bloc 79/H: a non-editable position number (1, 2, 3…), purely
+  // informative — reflects the array's current order and updates the
+  // instant the move-up/down arrows change it, never persisted, never
+  // shown on the public side (checked in events-reference.test.tsx).
+  it("Bloc79/H: shows each event's current position, staying in sync after reordering", () => {
+    const catalog = catalogWith({
+      bronze: {
+        seasonDurationDays: 21,
+        events: [
+          { ...recruiterEvent, name: "Premier" },
+          { ...recruiterEvent, name: "Second" },
+        ],
+      },
+    });
+    render(<EventsReferenceScreen initialCatalog={catalog} />);
+    expect(
+      screen.getByTestId("event-position-bronze-0"),
+    ).toHaveTextContent("1");
+    expect(
+      screen.getByTestId("event-position-bronze-1"),
+    ).toHaveTextContent("2");
+
+    fireEvent.click(screen.getByTestId("move-down-event-bronze-0"));
+    // Same testids (keyed by array index, not by event identity) now show
+    // the reordered content — position 1 still reads "1", position 2 "2":
+    // it's the array slot's own index, not attached to a specific event.
+    expect(
+      within(screen.getByTestId("event-bronze-0")).getByDisplayValue(
+        "Second",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("event-position-bronze-0"),
+    ).toHaveTextContent("1");
+    expect(
+      screen.getByTestId("event-position-bronze-1"),
+    ).toHaveTextContent("2");
   });
 
   it("Bloc60: removes an event after confirmation", () => {
