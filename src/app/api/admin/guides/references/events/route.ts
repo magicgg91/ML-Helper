@@ -3,6 +3,7 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { eventsReferenceKey } from "@/lib/events-server";
 import {
   eventDurations,
+  totalEventHours,
   type EventDuration,
   type EventRow,
   type EventsCatalog,
@@ -55,10 +56,14 @@ function parseLeagueData(raw: unknown): EventsLeagueData {
     throw new Error("invalid league data");
   const source = raw as Record<string, unknown>;
   if (!Array.isArray(source.events)) throw new Error("invalid league events");
-  return {
-    seasonDurationDays: parseSeasonDurationDays(source.seasonDurationDays),
-    events: source.events.map(parseEvent),
-  };
+  const seasonDurationDays = parseSeasonDurationDays(source.seasonDurationDays);
+  const events = source.events.map(parseEvent);
+  // Bloc 77 review (Codex PR #95): reject a schedule that overruns its own
+  // season — events chain back-to-back, so anything past the season length
+  // would push the timeline (Bloc 77/D) past 100%.
+  if (totalEventHours(events) > seasonDurationDays * 24)
+    throw new Error("events overrun season duration");
+  return { seasonDurationDays, events };
 }
 
 export async function PUT(request: Request) {

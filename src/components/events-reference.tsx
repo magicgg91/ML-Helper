@@ -49,6 +49,7 @@ function EventTimeline({
   seasonDurationDays: number;
   ariaLabel: string;
 }) {
+  const common = useTranslations("common");
   if (events.length === 0 || seasonDurationDays <= 0) return null;
   const totalHours = seasonDurationDays * 24;
   const segments = events.reduce<{
@@ -83,7 +84,7 @@ function EventTimeline({
                 width: `${width}%`,
                 background: timelineShades[index % timelineShades.length],
               }}
-              title={`${event.name} — ${event.duration}h`}
+              title={`${event.name} — ${common("duration-hours", { hours: event.duration })}`}
               data-testid={`events-timeline-segment-${index}`}
             />
             <div
@@ -95,7 +96,7 @@ function EventTimeline({
               >
                 <div className="events-timeline-name">{event.name}</div>
                 <div className="events-timeline-duration">
-                  {event.duration}h
+                  {common("duration-hours", { hours: event.duration })}
                 </div>
               </div>
             </div>
@@ -115,6 +116,7 @@ function EventCard({
   t: (key: string) => string;
   locale: string;
 }) {
+  const common = useTranslations("common");
   const description = pickLocaleText(
     event.description_fr,
     event.description_en,
@@ -124,7 +126,9 @@ function EventCard({
     <details className="events-card">
       <summary className="events-card-summary">
         <span className="events-card-name">{event.name}</span>
-        <span className="events-card-duration">{event.duration}h</span>
+        <span className="events-card-duration">
+          {common("duration-hours", { hours: event.duration })}
+        </span>
       </summary>
       {description && <p className="events-card-description">{description}</p>}
       {event.tiers.length === 0 ? (

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { emptyEventRow, emptyEventsCatalog, emptyEventTierRow } from "./events";
+import {
+  emptyEventRow,
+  emptyEventsCatalog,
+  emptyEventTierRow,
+  totalEventHours,
+} from "./events";
 import { leagues } from "./player-settings";
 
 describe("Bloc60/77: events data model", () => {
@@ -47,5 +52,19 @@ describe("Bloc60/77: events data model", () => {
       reward_fr: "",
       reward_en: "",
     });
+  });
+
+  // Bloc 77 review (Codex PR #95): the admin editor and the PUT route both
+  // need the same cumulative-hours figure to reject a schedule overrunning
+  // its own season — a small shared helper instead of duplicating the sum.
+  it("totalEventHours sums every event's duration, 0 for an empty list", () => {
+    expect(totalEventHours([])).toBe(0);
+    expect(
+      totalEventHours([
+        { ...emptyEventRow, duration: 72 },
+        { ...emptyEventRow, duration: 72 },
+        { ...emptyEventRow, duration: 24 },
+      ]),
+    ).toBe(168);
   });
 });

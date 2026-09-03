@@ -19,6 +19,7 @@ import {
   emptyEventRow,
   emptyEventTierRow,
   eventDurations,
+  totalEventHours,
   type EventDuration,
   type EventRow,
   type EventsCatalog,
@@ -91,10 +92,17 @@ export function EventsReferenceScreen({
   initialCatalog: EventsCatalog;
 }) {
   const t = useTranslations("admin.references");
+  const common = useTranslations("common");
   const [league, setLeague] = useState<League>(leagues[0]);
   const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [catalog, setCatalog] = useState<EventsCatalog>(initialCatalog);
   const [errors, setErrors] = useState<CatalogErrors>(emptyCatalogErrors);
+  const [seasonOverruns, setSeasonOverruns] = useState<Record<League, boolean>>(
+    () => Object.fromEntries(leagues.map((l) => [l, false])) as Record<
+      League,
+      boolean
+    >,
+  );
   const [status, setStatus] = useState("");
 
   const lang = fieldLocale(locale);
@@ -186,9 +194,11 @@ export function EventsReferenceScreen({
 
   function validateAll() {
     const nextErrors = emptyCatalogErrors();
+    const nextSeasonOverruns = { ...seasonOverruns };
     let valid = true;
     for (const catalogLeague of leagues) {
-      nextErrors[catalogLeague] = catalog[catalogLeague].events.map((event) => {
+      const catalogLeagueData = catalog[catalogLeague];
+      nextErrors[catalogLeague] = catalogLeagueData.events.map((event) => {
         const tierErrors: FieldErrors = {};
         event.tiers.forEach((tier, tierIndex) => {
           if (!tier[objectiveKey].trim())
@@ -201,8 +211,17 @@ export function EventsReferenceScreen({
         if (nameError) valid = false;
         return { name: nameError, tiers: tierErrors };
       });
+      // Bloc 77 review (Codex PR #95): events chain back-to-back, so a
+      // league whose events add up to more than its own season length would
+      // overflow the timeline (Bloc 77/D) — block the save instead.
+      const overruns =
+        totalEventHours(catalogLeagueData.events) >
+        catalogLeagueData.seasonDurationDays * 24;
+      nextSeasonOverruns[catalogLeague] = overruns;
+      if (overruns) valid = false;
     }
     setErrors(nextErrors);
+    setSeasonOverruns(nextSeasonOverruns);
     return valid;
   }
 
@@ -260,6 +279,14 @@ export function EventsReferenceScreen({
               updateSeasonDuration(Math.max(1, Number(e.target.value) || 1))
             }
           />
+          {seasonOverruns[league] && (
+            <small className="field-error">
+              {t("events-season-overrun", {
+                total: totalEventHours(events),
+                season: leagueData.seasonDurationDays * 24,
+              })}
+            </small>
+          )}
         </label>
       </section>
       <section className="admin-panel editable-reference">
@@ -332,7 +359,7 @@ export function EventsReferenceScreen({
                   >
                     {eventDurations.map((duration) => (
                       <option key={duration} value={duration}>
-                        {duration}h
+                        {common("duration-hours", { hours: duration })}
                       </option>
                     ))}
                   </select>

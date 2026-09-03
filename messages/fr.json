@@ -8,7 +8,8 @@
     "language": "Langue",
     "theme-light": "Activer le mode clair",
     "theme-dark": "Activer le mode sombre",
-    "star-count": "{level} étoiles"
+    "star-count": "{level} étoiles",
+    "duration-hours": "{hours}h"
   },
   "game": {
     "skills": {
@@ -960,6 +961,7 @@
       "events-league-label": "Ligue",
       "events-language-label": "Langue du texte",
       "events-season-duration-label": "Durée de la saison (jours)",
+      "events-season-overrun": "La durée cumulée des événements ({total} h) dépasse la durée de la saison ({season} h).",
       "events-table-title": "Liste des événements",
       "add-event": "Ajouter un événement",
       "events-columns": {

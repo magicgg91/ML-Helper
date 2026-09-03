@@ -80,6 +80,14 @@ export type EventsLeagueData = {
 // ever shared between leagues.
 export type EventsCatalog = Record<League, EventsLeagueData>;
 
+// Bloc 77 review (Codex PR #95): events chain back-to-back with no gaps, so
+// a league whose events add up to more than its own season length would
+// overflow past 100% on the timeline (Bloc 77/D) — both the admin editor
+// and the PUT route use this to reject that state before it can be saved.
+export function totalEventHours(events: readonly EventRow[]): number {
+  return events.reduce((sum, event) => sum + event.duration, 0);
+}
+
 export const emptyEventsCatalog: EventsCatalog = Object.fromEntries(
   leagues.map((league) => [
     league,
