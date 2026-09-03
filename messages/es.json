@@ -580,7 +580,6 @@
   "combat-equipment": {
     "name": "Equipo de Combate",
     "empty": "Ningún equipo de combate coincide con estos filtros.",
-    "gem-count": "{count, plural, one {# gema} other {# gemas}}",
     "columns": {
       "rarity": "Rareza",
       "skill": "Habilidad {number}",

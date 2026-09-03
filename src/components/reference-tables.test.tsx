@@ -152,40 +152,6 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(screen.queryByText(/★/)).not.toBeInTheDocument();
   });
 
-  it("shows the gem count only on Combat tiles whose rarity actually has gem slots", () => {
-    renderTables();
-    const legendary = combatBlock("Spirit Fyra"); // gem_slots: "3"
-    expect(legendary.querySelectorAll(".reference-tile-gems").length).toBe(9);
-    const commun = Array.from(
-      document.querySelectorAll<HTMLElement>(".reference-tile-block"),
-    ).find((block) => block.dataset.rarity === "Commun")!;
-    // Commun has 0 gem slots (defaultCombatGemSlotsBase.Commun) everywhere.
-    expect(commun.querySelectorAll(".reference-tile-gems").length).toBe(0);
-  });
-
-  it("Codex review (PR #61): reads the tile gem count from gemSlotsBase, not the static row.gem_slots field", () => {
-    // Spirit Fyra's rows all carry gem_slots: "3" in the default catalog —
-    // override gemSlotsBase.Légendaire to a different value and confirm the
-    // tile follows the admin-editable config, the same source the Gemmes
-    // rarity summary table below already reads from.
-    render(
-      <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <CombatReferenceTable
-          rows={combatReferenceRows}
-          secondaryBase={{
-            mergeCost: defaultCombatMergeCostBase,
-            gemSlots: { ...defaultCombatGemSlotsBase, Légendaire: 7 },
-            skydust: defaultCombatSkydustBase,
-          }}
-        />
-      </NextIntlClientProvider>,
-    );
-    const block = combatBlock("Spirit Fyra");
-    const gemLabels = block.querySelectorAll(".reference-tile-gems");
-    expect(gemLabels.length).toBe(9);
-    for (const label of gemLabels) expect(label.textContent).toContain("7");
-  });
-
   it("Codex review (PR #61): exposes family alongside rarity in each tile's accessible name", () => {
     renderTables();
     const block = combatBlock("Spirit Fyra");
@@ -312,8 +278,9 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     for (const block of blocks) expect(block.getAttribute("style")).toBeNull();
   });
 
-  it("never shows a gem count on Expedition tiles", () => {
+  it("Bloc83: never shows a gem-count badge on Combat or Expedition tiles — the element no longer exists at all", () => {
     renderTables();
+    expect(document.querySelectorAll(".reference-tile-gems").length).toBe(0);
     fireEvent.click(
       screen.getByRole("tab", { name: "Équipements d’Expédition" }),
     );
@@ -428,16 +395,31 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).toBeInTheDocument();
   });
 
-  // Bloc 82/C: a Pouciel cost badge had crept onto the main tiles
-  // themselves — never requested, and redundant with the dedicated merged
-  // table right below (Bloc75/A+B, "Pouciel & Gemmes"). Locks in that the
-  // tiles never carry it, and that the dedicated table still works.
-  it("Bloc82/C: never shows a Pouciel cost badge on the main tiles — only the dedicated table below carries it", () => {
+  // Bloc 82/C claimed this was already fixed ("the code never renders it"),
+  // locked in by a test that only checked tile.textContent for the literal
+  // word "Pouciel" — but the actual badge rendered was the tile's own
+  // .reference-tile-gems "X gemmes" span (real Pouciel data mislabeled as a
+  // gem count), which never contains that word, so the old test passed
+  // while the badge stayed fully visible in the real app (confirmed by the
+  // player after the PR merged). Bloc 83: the badge is now removed from
+  // CombatTile entirely — this test inspects the actual rendered
+  // .reference-tile-head of every single tile across every Combat set (not
+  // just one), so a badge re-appearing under any name/class would fail it,
+  // not just one spelled "Pouciel". The dedicated merged table below still
+  // carries the real numbers.
+  it("Bloc83: no Combat tile, across any set/rarity/family, carries a cost/count badge next to its slot label", () => {
     renderTables();
-    const block = combatBlock("Spirit Fyra");
-    for (const tile of block.querySelectorAll<HTMLElement>(".reference-tile")) {
-      expect(tile.textContent).not.toMatch(/Pouciel/);
+    const tiles = document.querySelectorAll<HTMLElement>(".reference-tile");
+    expect(tiles.length).toBeGreaterThan(50); // sanity: every set rendered
+    for (const tile of tiles) {
+      const head = tile.querySelector<HTMLElement>(".reference-tile-head")!;
+      // The head must contain nothing but the slot label — no second badge
+      // element of any class, and no stray numeric+unit text alongside it.
+      expect(head.children.length).toBe(1);
+      expect(head.children[0]!.className).toBe("reference-tile-slot");
+      expect(head.textContent).not.toMatch(/\d+\s*(gemmes?|pouciel)/i);
     }
+    expect(document.querySelectorAll(".reference-tile-gems").length).toBe(0);
     const combatSecondary = screen
       .getByRole("heading", { name: "Pouciel & Gemmes" })
       .closest("section")!;

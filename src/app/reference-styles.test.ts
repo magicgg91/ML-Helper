@@ -182,7 +182,9 @@ describe("Bloc 39: Combat/Expedition reference tile grid", () => {
       expect(messages.references.filters).not.toHaveProperty("star-level");
       expect(messages["combat-equipment"]).not.toHaveProperty("row-count");
       expect(messages["expedition-equipment"]).not.toHaveProperty("row-count");
-      expect(messages["combat-equipment"]).toHaveProperty("gem-count");
+      // Bloc 83: the tile-level gem-count badge is gone entirely (it was
+      // the mislabeled "cost badge" regression) — the key no longer exists.
+      expect(messages["combat-equipment"]).not.toHaveProperty("gem-count");
       // Bloc 40/D-F: the "dimmed, doesn't match filters" hint no longer
       // applies now that filtering hides tiles outright.
       expect(messages.references.filters).not.toHaveProperty("dimmed-hint");

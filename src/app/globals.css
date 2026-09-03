@@ -2304,11 +2304,6 @@ select,
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-.reference-tile-gems {
-  color: var(--muted);
-  font-size: 0.64rem;
-  white-space: nowrap;
-}
 .reference-tile-body {
   display: flex;
   gap: 0.5rem;
