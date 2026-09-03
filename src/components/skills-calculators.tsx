@@ -480,13 +480,21 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
       </section>
       <section className="calculator-card">
         <h3>{t("result")}</h3>
-        {results.length === 0 ? (
+        {hasMissingSkill || hasMissingLeague ? (
+          // Bloc 82/D review (Codex PR #99): a populated row (slots > 0)
+          // missing its skill or league must block the whole result, not
+          // just get silently excluded from `results` while its own slots
+          // still count toward "Emplacements alloués" below — otherwise
+          // the total looks like it covers more than what's actually
+          // shown in the table.
           <p className="ranking-placeholder">
             {hasMissingSkill
               ? t("errors.select-skill")
-              : hasMissingLeague
-                ? t("errors.select-league")
-                : t("errors.add-positive-stat")}
+              : t("errors.select-league")}
+          </p>
+        ) : results.length === 0 ? (
+          <p className="ranking-placeholder">
+            {t("errors.add-positive-stat")}
           </p>
         ) : (
           <div className="ranking-table-wrap">

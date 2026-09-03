@@ -400,6 +400,33 @@ describe("EventsReferenceTable", () => {
       expect(tickLeft(14)).toBeCloseTo(100, 5);
     });
 
+    // Bloc 82/A review (Codex PR #99): the events' own total only has to be
+    // AT MOST the season length (the PUT route rejects overrun, never
+    // requires an exact match) — a season can legitimately end later than
+    // its last event, leaving a trailing gap. The season's true end
+    // (seasonDurationDays, J+21 here) must still be labeled even though
+    // it doesn't coincide with the lone 1-day event's own end (J+1).
+    it("Bloc82/A review: labels the season's true end even when it doesn't coincide with the last event's end (a season shorter... a trailing gap)", () => {
+      const catalog = catalogWith({
+        bronze: {
+          seasonDurationDays: 21,
+          events: [{ ...recruiterEvent, duration: 24 }],
+        },
+      });
+      render(<EventsReferenceTable catalog={catalog} />);
+      fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+
+      // The last (only) event's own end, day 1 — still a transition.
+      expect(screen.getByTestId("events-timeline-tick-1")).toHaveTextContent(
+        "J+1",
+      );
+      // The season's true end, day 21 — must be labeled too, even though
+      // no event reaches it.
+      expect(screen.getByTestId("events-timeline-tick-21")).toHaveTextContent(
+        "J+21",
+      );
+    });
+
     // Bloc 82/B: the scale now covers every day of the season (15 ticks for
     // this 14-day example, day 0 through day 14 inclusive) for a
     // continuous "règle graduée" effect — only the 7 transition days above

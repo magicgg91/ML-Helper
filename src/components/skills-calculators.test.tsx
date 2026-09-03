@@ -154,6 +154,50 @@ describe("SkillsCalculators", () => {
     ).toBeInTheDocument();
   });
 
+  // Bloc 82/D review (Codex PR #99): a 2nd row that has allocated slots but
+  // is still missing its skill must block the whole result — previously it
+  // was silently dropped from `results` (which then still rendered the
+  // table, since the 1st row alone made it non-empty) while its own slots
+  // still counted in "Emplacements alloués", making the total look bigger
+  // than what the table actually covered.
+  it("Bloc82/D review: blocks the results table (not just excludes the row) when any populated row is missing its skill", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Optimisation" }));
+
+    // Row 1: fully valid.
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Compétence ligne 1" }),
+      { target: { value: "striker" } },
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 1" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements ligne 1" }),
+      { target: { value: "5" } },
+    );
+
+    // Row 2: allocated slots, but no skill picked.
+    fireEvent.click(screen.getByRole("button", { name: "+ Ajouter une stat" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue ligne 2" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements ligne 2" }),
+      { target: { value: "3" } },
+    );
+
+    // Blocked entirely — not a table showing only row 1's partial total.
+    expect(screen.getByText("Choisis une compétence pour calculer.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
   it("shows the budget distribution as the primary result", () => {
     renderWithIntl(
       <SkillsCalculators

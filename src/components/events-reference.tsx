@@ -81,9 +81,16 @@ function EventTimeline({
     (acc, event) => [...acc, (acc[acc.length - 1] ?? 0) + event.duration],
     [],
   );
+  // Bloc 82/A review (Codex PR #99): the events' own total only has to be
+  // AT MOST the season length (parseLeagueData rejects overrun, never
+  // requires an exact match) — a season can legitimately end later than
+  // its last event. seasonDurationDays is added on its own, independent
+  // of the events' cumulative duration, so the season's true end is
+  // always labeled even when it doesn't coincide with the last event's.
   const transitionDays = new Set<number>([
     0,
     ...cumulativeHoursAfterEachEvent.map((hours) => hours / 24),
+    seasonDurationDays,
   ]);
   // Bloc 82/B: the scale itself now covers every day of the season, not
   // just the transition days — a thin unlabeled tick for a plain day, kept
