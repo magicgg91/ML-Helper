@@ -34,15 +34,20 @@
      apart at a glance. A dedicated namespace, defined once here (no
      light-theme override below) so the palette stays exactly as vivid in
      both themes — these are the admin's own arbitrary tag colors, not a
-     theme-adaptive UI accent that needs to dim for contrast. */
+     theme-adaptive UI accent that needs to dim for contrast.
+     2nd review: relabeled to plain color names (violet/vert/jaune/rouge/
+     bleu, event-colors.* below) — amber and ember are recolored to an
+     actual yellow and red (they previously leaned orange and pink/rose)
+     and emerald to a cleaner leaf green (it previously leaned teal), so
+     each swatch pair genuinely reads as its own labeled color. */
   --event-violet: #8b5cf6;
   --event-violet-bright: #a78bfa;
-  --event-emerald: #10b981;
-  --event-emerald-bright: #34d399;
-  --event-amber: #f59e0b;
-  --event-amber-bright: #fbbf24;
-  --event-ember: #f43f5e;
-  --event-ember-bright: #fb7185;
+  --event-emerald: #16a34a;
+  --event-emerald-bright: #4ade80;
+  --event-amber: #eab308;
+  --event-amber-bright: #facc15;
+  --event-ember: #ef4444;
+  --event-ember-bright: #f87171;
   --event-sapphire: #3b82f6;
   --event-sapphire-bright: #60a5fa;
   --text: #e9e4d8;

@@ -957,16 +957,16 @@
         "color": "Farbe"
       },
       "event-colors": {
-        "violet": "Violett",
+        "violet": "Dunkles Violett",
         "violet-bright": "Helles Violett",
-        "emerald": "Smaragd",
-        "emerald-bright": "Helles Smaragd",
-        "amber": "Bernstein",
-        "amber-bright": "Helles Bernstein",
-        "ember": "Glut",
-        "ember-bright": "Helle Glut",
-        "sapphire": "Saphir",
-        "sapphire-bright": "Heller Saphir"
+        "emerald": "Dunkles Grün",
+        "emerald-bright": "Helles Grün",
+        "amber": "Dunkles Gelb",
+        "amber-bright": "Helles Gelb",
+        "ember": "Dunkles Rot",
+        "ember-bright": "Helles Rot",
+        "sapphire": "Dunkles Blau",
+        "sapphire-bright": "Helles Blau"
       },
       "tier-columns": {
         "objective": "Ziel",

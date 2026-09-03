@@ -957,16 +957,16 @@
         "color": "Color"
       },
       "event-colors": {
-        "violet": "Violeta",
+        "violet": "Violeta oscuro",
         "violet-bright": "Violeta claro",
-        "emerald": "Esmeralda",
-        "emerald-bright": "Esmeralda claro",
-        "amber": "Ámbar",
-        "amber-bright": "Ámbar claro",
-        "ember": "Brasa",
-        "ember-bright": "Brasa claro",
-        "sapphire": "Zafiro",
-        "sapphire-bright": "Zafiro claro"
+        "emerald": "Verde oscuro",
+        "emerald-bright": "Verde claro",
+        "amber": "Amarillo oscuro",
+        "amber-bright": "Amarillo claro",
+        "ember": "Rojo oscuro",
+        "ember-bright": "Rojo claro",
+        "sapphire": "Azul oscuro",
+        "sapphire-bright": "Azul claro"
       },
       "tier-columns": {
         "objective": "Objetivo",
