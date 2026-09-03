@@ -1128,9 +1128,12 @@ describe("Bloc 79/C, 80/D: Événements admin Description field is 3x a plain fi
     expect(rule).toMatch(/width: 40\.5rem;/);
   });
 
-  it("falls back to filling its row's width on mobile instead of the fixed 40.5rem", () => {
+  // Bloc 80/C review: shares the row's own 1400px breakpoint (not the
+  // generic 900px), since the fixed 40.5rem only makes sense once the
+  // row itself has stopped being single-column.
+  it("falls back to filling its row's width below 1400px instead of the fixed 40.5rem", () => {
     const mobileBlock = css.match(
-      /@media \(max-width: 900px\) {[\s\S]*?\.events-admin-description-field input[\s\S]*?\n\s*}\n}/,
+      /@media \(max-width: 1400px\) {[\s\S]*?\.events-admin-description-field input[\s\S]*?\n\s*}\n}/,
     )?.[0];
     expect(mobileBlock).toBeDefined();
     expect(mobileBlock).toMatch(/width: 100%;/);
@@ -1151,9 +1154,15 @@ describe("Bloc 80/C: Événements admin event row is a real grid, aligned across
     expect(rule).toMatch(/width: 14rem;/);
   });
 
-  it("falls back to a single stacked column on mobile", () => {
+  // Bloc 80/C review (Codex PR #97): the 6 fixed columns (14rem name +
+  // 40.5rem description alone, before position/duration/color/actions and
+  // 5 gaps) need ~1350px of real content width — the generic 900px
+  // breakpoint every other admin field uses left a wide band of common
+  // desktop/laptop viewports (1024–1366px) neither wrapped nor stacked,
+  // just silently overflowing. This row gets its own wider breakpoint.
+  it("stacks to a single column well before the row's own ~1350px content width, not the generic 900px breakpoint", () => {
     const mobileBlock = css.match(
-      /@media \(max-width: 900px\) {\s*\n\s*\.events-admin-card-header\s*{([\s\S]*?)\n\s*}/,
+      /@media \(max-width: 1400px\) {\s*\n\s*\.events-admin-card-header\s*{([\s\S]*?)\n\s*}/,
     )?.[0];
     expect(mobileBlock).toBeDefined();
     expect(mobileBlock).toMatch(/grid-template-columns: 1fr;/);

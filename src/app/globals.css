@@ -2646,7 +2646,17 @@ body > main h1 {
   align-items: end;
   gap: 0.75rem;
 }
-@media (max-width: 900px) {
+/* Bloc 80/C review (Codex PR #97): the 6 fixed-width columns (14rem name +
+   40.5rem description alone is 54.5rem, before the position/duration/
+   color/actions controls and 5 gaps) need roughly 1350px of actual
+   content width to lay out on one row without overflowing — measured
+   directly (a viewport under ~1345px genuinely doesn't fit it, wherever
+   the shared admin-panel/card padding lands). The generic 900px
+   breakpoint every other admin field here uses is far too narrow for
+   this specific row, so it gets its own, much wider one instead — a
+   typical 1024–1280px laptop viewport stacks it single-column rather
+   than silently overflowing or pushing the action buttons off-screen. */
+@media (max-width: 1400px) {
   .events-admin-card-header {
     grid-template-columns: 1fr;
   }
@@ -2685,10 +2695,12 @@ body > main h1 {
 .events-admin-description-field input {
   width: 40.5rem;
 }
-@media (max-width: 900px) {
-  /* The fixed widths overflow a phone-width viewport — fall back to
-     filling whatever width the (now single-column, see the grid's own
-     900px rule above) row actually has. */
+/* Bloc 80/C review: matches the grid's own 1400px stacking breakpoint
+   above — the fixed 14rem/40.5rem widths only make sense once the row
+   has stopped being a single column, so this has to fall back at the
+   same width the grid does, not the generic 900px every other field
+   here uses. */
+@media (max-width: 1400px) {
   .events-admin-name-field input,
   .events-admin-description-field input {
     width: 100%;
