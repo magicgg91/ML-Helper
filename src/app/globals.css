@@ -1109,10 +1109,16 @@ select {
    other uses) resolves to a darker, more saturated amber in the light
    theme — so these stars silently shifted color across themes instead
    of staying the fixed "5-8 star tier" yellow they're meant to signal.
-   A literal, non-variable value (matching dark theme's previous
-   --amber-bright, already confirmed good) never gets recalculated. */
+   A literal, non-variable value never gets recalculated by theme.
+   Review fix: reusing dark theme's old --amber-bright (#e8a94f) verbatim
+   left only ~1.83:1 contrast against the light theme's --surface
+   (#f0f2f5), well under the WCAG 1.4.11 non-text 3:1 floor. A single
+   fixed hue can't be maximally readable on both a near-black and a
+   near-white background at once, so #a8710a was chosen as the
+   mid-luminance value that clears 3:1 on both (~3.54:1 dark, ~3.72:1
+   light) while staying recognizably gold. */
 .star-rating-yellow {
-  color: #e8a94f;
+  color: #a8710a;
 }
 /* Bloc 73/D review fix: at the 390px mobile floor, a fully configured
    slot (2.8rem image, a 3-gem column each with up to a 4-icon rating)

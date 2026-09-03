@@ -981,7 +981,7 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     );
     // Bloc 74/B replaced the var(--amber-bright) reference — see that
     // block below for the current (fixed-value) rule.
-    expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: #e8a94f;/);
+    expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: #a8710a;/);
   });
 
   // Review fix: var(--border) is a light, near-white grey in the light
@@ -1052,11 +1052,16 @@ describe("Bloc 74/A: white-tier stars use the theme's own --foreground, not a fi
 // darker/more-saturated value in the light theme — so the "5-8★" yellow
 // silently shifted color across themes instead of staying the fixed tier
 // color it's meant to be. Now a literal, non-variable value.
+// Review fix: the first literal chosen (#e8a94f, dark theme's old
+// --amber-bright verbatim) only reached ~1.83:1 contrast against the
+// light theme's --surface, under the WCAG 1.4.11 non-text 3:1 floor.
+// #a8710a is a mid-luminance gold that clears 3:1 against both theme
+// surfaces (~3.54:1 dark, ~3.72:1 light).
 describe("Bloc 74/B: yellow-tier stars use a fixed literal color, never a theme variable", () => {
   it("sets .star-rating-yellow to a literal hex value, not any var(...)", () => {
     const rule = css.match(/\.star-rating-yellow\s*{([\s\S]*?)\n}/)?.[0];
     expect(rule).toBeDefined();
     expect(rule).not.toMatch(/var\(/);
-    expect(rule).toMatch(/color: #e8a94f;/);
+    expect(rule).toMatch(/color: #a8710a;/);
   });
 });
