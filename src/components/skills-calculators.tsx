@@ -39,6 +39,10 @@ import type {
   ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { defaultExpeditionStarIncrements } from "../lib/reference-equipment";
+import {
+  equipmentStarIncrement,
+  type EquipmentStarIncrements,
+} from "../lib/equipment";
 import { NumberStepper } from "./number-stepper";
 import { StuffSimulator } from "./equipment-tools";
 import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
@@ -68,6 +72,7 @@ function gemDistributionLabel(
 export function SkillsCalculators({
   templarParameters = defaultTemplarParameters,
   combatRows,
+  combatIncrements = equipmentStarIncrement,
   expeditionRows,
   expeditionIncrements = defaultExpeditionStarIncrements,
   gemParameters = defaultGemParameters,
@@ -84,6 +89,7 @@ export function SkillsCalculators({
 }: {
   templarParameters?: TemplarParameters;
   combatRows: readonly CombatReferenceRow[];
+  combatIncrements?: EquipmentStarIncrements;
   expeditionRows: readonly ExpeditionReferenceRow[];
   expeditionIncrements?: ExpeditionStarIncrements;
   gemParameters?: GemParameters;
@@ -192,7 +198,11 @@ export function SkillsCalculators({
         </button>
       </nav>
       {active === "simulator" ? (
-        <StuffSimulator combatRows={combatRows} gemParameters={gemParameters} />
+        <StuffSimulator
+          combatRows={combatRows}
+          gemParameters={gemParameters}
+          increments={combatIncrements}
+        />
       ) : active === "expedition" ? (
         <ExpeditionEquipmentSimulator
           rows={expeditionRows}

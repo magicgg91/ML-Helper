@@ -9,7 +9,11 @@ import {
 } from "./editable-reference-table";
 import { EditorActionBar } from "./editor-action-bar";
 import { equipmentRarityValues } from "../lib/equipment-rarity";
-import { equipmentSkillLabels, equipmentSlotLayout } from "../lib/equipment";
+import {
+  equipmentSkillLabels,
+  equipmentSlotLayout,
+  type EquipmentStarIncrements,
+} from "../lib/equipment";
 import {
   expeditionStatKeys,
   mergeCostRarityKeys,
@@ -248,72 +252,100 @@ function useRarityBaseColumns(step = 1) {
     }));
   return columns;
 }
-function rarityBaseInitialRows(initial: Record<string, number>) {
-  return [
+// Bloc 75/A: Combat's 3 previously-separate single-metric tables (Pouciel
+// merge cost, gem slots, Pouciel-at-destruction) merged into 1 table —
+// columns = the 5 rarities (shared with every other rarity-keyed table
+// here), 3 fixed-order rows labelled Fusion/Gemmes/Destruction via a
+// leading read-only column. Storage is genuinely merged too (see
+// getCombatSecondaryBase in reference-equipment-server.ts), not just this
+// table's display — one PUT now saves all 3 quantities together.
+export const CombatSecondaryAdmin = forwardRef<
+  ReferenceTableHandle,
+  {
+    initial: {
+      mergeCost: CombatMergeCostBase;
+      gemSlots: CombatGemSlotsBase;
+      skydust: CombatSkydustBase;
+    };
+    standalone?: boolean;
+  }
+>(function CombatSecondaryAdmin({ initial, standalone }, ref) {
+  const t = useTranslations("admin.references");
+  const rarityColumns = useRarityBaseColumns();
+  const columns: EditableColumn<Record<string, string>>[] = [
+    { key: "metric_label", label: t("secondary-row"), readOnly: true },
+    ...rarityColumns,
+  ];
+  const initialRows = [
+    {
+      metric_label: t("row-merge-cost"),
+      ...Object.fromEntries(
+        mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
+      ),
+    },
+    {
+      metric_label: t("row-gem-slots"),
+      ...Object.fromEntries(
+        mergeCostRarityKeys.map((key) => [key, String(initial.gemSlots[key])]),
+      ),
+    },
+    {
+      metric_label: t("row-destruction"),
+      ...Object.fromEntries(
+        mergeCostRarityKeys.map((key) => [key, String(initial.skydust[key])]),
+      ),
+    },
+  ];
+  return (
+    <EditableReferenceTable
+      ref={ref}
+      standalone={standalone}
+      wideInputs
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/combat-equipment-secondary"
+      description={t("combat-secondary-description")}
+      descriptionAsTitle
+    />
+  );
+});
+
+// Bloc 75/C: Combat's per-skill star increments — promoted from a hardcoded
+// lookup (equipmentStarIncrement, src/lib/equipment.ts) to genuine admin
+// config, mirroring ExpeditionIncrementsAdmin exactly (same grid layout,
+// same 1-row-of-N-columns shape, one column per skill instead of per stat).
+export const CombatIncrementsAdmin = forwardRef<
+  ReferenceTableHandle,
+  { initial: EquipmentStarIncrements; standalone?: boolean }
+>(function CombatIncrementsAdmin({ initial, standalone }, ref) {
+  const t = useTranslations("admin.references");
+  const game = useTranslations("game");
+  const columns: EditableColumn<Record<string, string>>[] =
+    equipmentSkillLabels.map((key) => ({
+      key,
+      label: game(`skills.${skillKeys[key]}`),
+      type: "number",
+      min: 0,
+      step: 0.01,
+      required: true,
+      narrow: true,
+    }));
+  const initialRows = [
     Object.fromEntries(
-      mergeCostRarityKeys.map((key) => [key, String(initial[key])]),
+      equipmentSkillLabels.map((key) => [key, String(initial[key])]),
     ),
   ];
-}
-
-// Bloc 35/6.1: Combat's Pouciel-at-destruction, promoted from a hardcoded
-// per-rarity lookup to genuine admin config — same pattern as
-// ExpeditionMergeCostAdmin (1 row, 5 rarity columns).
-export const CombatSkydustAdmin = forwardRef<
-  ReferenceTableHandle,
-  { initial: CombatSkydustBase; standalone?: boolean }
->(function CombatSkydustAdmin({ initial, standalone }, ref) {
-  const t = useTranslations("admin.references");
   return (
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
       wideInputs
-      initialRows={rarityBaseInitialRows(initial)}
-      columns={useRarityBaseColumns()}
-      endpoint="/api/admin/guides/references/combat-equipment-skydust"
-      description={t("combat-skydust-description")}
-    />
-  );
-});
-
-// Bloc 35/6.1: same treatment for Combat's gem slots per rarity.
-export const CombatGemSlotsAdmin = forwardRef<
-  ReferenceTableHandle,
-  { initial: CombatGemSlotsBase; standalone?: boolean }
->(function CombatGemSlotsAdmin({ initial, standalone }, ref) {
-  const t = useTranslations("admin.references");
-  return (
-    <EditableReferenceTable
-      ref={ref}
-      standalone={standalone}
-      wideInputs
-      initialRows={rarityBaseInitialRows(initial)}
-      columns={useRarityBaseColumns()}
-      endpoint="/api/admin/guides/references/combat-equipment-gem-slots"
-      description={t("combat-gem-slots-description")}
-    />
-  );
-});
-
-// Bloc 42/A: Combat's Pouciel merge cost per rarity — same pattern as
-// CombatSkydustAdmin/CombatGemSlotsAdmin above (1 row, 5 rarity columns,
-// table layout, never existed in code until this bloc despite being fully
-// confirmed in the cdc for a long time).
-export const CombatMergeCostAdmin = forwardRef<
-  ReferenceTableHandle,
-  { initial: CombatMergeCostBase; standalone?: boolean }
->(function CombatMergeCostAdmin({ initial, standalone }, ref) {
-  const t = useTranslations("admin.references");
-  return (
-    <EditableReferenceTable
-      ref={ref}
-      standalone={standalone}
-      wideInputs
-      initialRows={rarityBaseInitialRows(initial)}
-      columns={useRarityBaseColumns()}
-      endpoint="/api/admin/guides/references/combat-equipment-merge-cost"
-      description={t("combat-merge-cost-description")}
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/combat-equipment-increments"
+      description={t("combat-increments-description")}
+      descriptionAsTitle
+      layout="grid"
     />
   );
 });
@@ -432,50 +464,50 @@ export const ExpeditionIncrementsAdmin = forwardRef<
   );
 });
 
-// Bloc 40/B: switched to the grid layout (same one ExpeditionIncrementsAdmin
-// already uses) — the table layout's wideInputs rule (min-width: 18rem ×
-// 5 fixed columns = 90rem) always overflowed the page, forcing horizontal
-// scroll no matter the viewport. The grid's 5 equal 1fr columns (still
-// floored at 12rem via wideInputs) fill the available width instead.
-export const ExpeditionMergeCostAdmin = forwardRef<
+// Bloc 75/B: Expedition's 2 previously-separate single-metric tables
+// (Terradust merge cost, Terradust-at-dismantle) merged into 1 table, same
+// pattern as CombatSecondaryAdmin above — 2 fixed-order rows labelled
+// Fusion/Destruction via a leading read-only column. Storage genuinely
+// merged too (getExpeditionSecondaryBase).
+export const ExpeditionSecondaryAdmin = forwardRef<
   ReferenceTableHandle,
-  { initial: ExpeditionMergeCostBase; standalone?: boolean }
->(function ExpeditionMergeCostAdmin({ initial, standalone }, ref) {
+  {
+    initial: {
+      mergeCost: ExpeditionMergeCostBase;
+      dismantle: ExpeditionDismantleBase;
+    };
+    standalone?: boolean;
+  }
+>(function ExpeditionSecondaryAdmin({ initial, standalone }, ref) {
   const t = useTranslations("admin.references");
+  const rarityColumns = useRarityBaseColumns();
+  const columns: EditableColumn<Record<string, string>>[] = [
+    { key: "metric_label", label: t("secondary-row"), readOnly: true },
+    ...rarityColumns,
+  ];
+  const initialRows = [
+    {
+      metric_label: t("row-merge-cost"),
+      ...Object.fromEntries(
+        mergeCostRarityKeys.map((key) => [key, String(initial.mergeCost[key])]),
+      ),
+    },
+    {
+      metric_label: t("row-destruction"),
+      ...Object.fromEntries(
+        mergeCostRarityKeys.map((key) => [key, String(initial.dismantle[key])]),
+      ),
+    },
+  ];
   return (
     <EditableReferenceTable
       ref={ref}
       standalone={standalone}
       wideInputs
-      layout="grid"
-      initialRows={rarityBaseInitialRows(initial)}
-      columns={useRarityBaseColumns()}
-      endpoint="/api/admin/guides/references/expedition-equipment-merge-cost"
-      description={t("expedition-merge-cost-description")}
-      descriptionAsTitle
-    />
-  );
-});
-
-// Bloc 35/5.2: Expedition's Terradust-on-dismantle per rarity — unconfirmed
-// in the cdc, so it defaults to 0 for every rarity (AskUserQuestion
-// resolution) and is fully admin-editable, same pattern as merge-cost.
-// Bloc 40/B: same grid-layout fix as merge-cost, above.
-export const ExpeditionDismantleAdmin = forwardRef<
-  ReferenceTableHandle,
-  { initial: ExpeditionDismantleBase; standalone?: boolean }
->(function ExpeditionDismantleAdmin({ initial, standalone }, ref) {
-  const t = useTranslations("admin.references");
-  return (
-    <EditableReferenceTable
-      ref={ref}
-      standalone={standalone}
-      wideInputs
-      layout="grid"
-      initialRows={rarityBaseInitialRows(initial)}
-      columns={useRarityBaseColumns()}
-      endpoint="/api/admin/guides/references/expedition-equipment-dismantle"
-      description={t("expedition-dismantle-description")}
+      initialRows={initialRows}
+      columns={columns}
+      endpoint="/api/admin/guides/references/expedition-equipment-secondary"
+      description={t("expedition-secondary-description")}
       descriptionAsTitle
     />
   );
@@ -527,21 +559,22 @@ function useCombinedSave(
 
 export function CombatReferenceScreen({
   initialRows,
-  skydustInitial,
-  gemSlotsInitial,
-  mergeCostInitial,
+  secondaryInitial,
+  incrementsInitial,
 }: {
   initialRows: CombatReferenceRow[];
-  skydustInitial: CombatSkydustBase;
-  gemSlotsInitial: CombatGemSlotsBase;
-  mergeCostInitial: CombatMergeCostBase;
+  secondaryInitial: {
+    mergeCost: CombatMergeCostBase;
+    gemSlots: CombatGemSlotsBase;
+    skydust: CombatSkydustBase;
+  };
+  incrementsInitial: EquipmentStarIncrements;
 }) {
   const mainRef = useRef<ReferenceTableHandle>(null);
-  const skydustRef = useRef<ReferenceTableHandle>(null);
-  const gemSlotsRef = useRef<ReferenceTableHandle>(null);
-  const mergeCostRef = useRef<ReferenceTableHandle>(null);
+  const secondaryRef = useRef<ReferenceTableHandle>(null);
+  const incrementsRef = useRef<ReferenceTableHandle>(null);
   const { status, saveAll, saveAllLabel } = useCombinedSave([
-    [skydustRef, gemSlotsRef, mergeCostRef],
+    [secondaryRef, incrementsRef],
     [mainRef],
   ]);
   return (
@@ -555,22 +588,18 @@ export function CombatReferenceScreen({
           {saveAllLabel}
         </button>
       </EditorActionBar>
-      {/* Bloc 41/D: Pouciel and gem-slots moved ahead of the 180-row main
-          table — they're short, single-row config tables that were easy to
-          miss scrolled past all that. Bloc 42/A: merge-cost joins them. */}
-      <CombatSkydustAdmin
-        ref={skydustRef}
-        initial={skydustInitial}
+      {/* Bloc 41/D: Pouciel/gem-slots moved ahead of the 180-row main table
+          — short, single-row config tables that were easy to miss scrolled
+          past all that. Bloc 75/A: now 1 merged table (Fusion/Gemmes/
+          Destruction). Bloc 75/C: per-skill star increments join them. */}
+      <CombatSecondaryAdmin
+        ref={secondaryRef}
+        initial={secondaryInitial}
         standalone={false}
       />
-      <CombatGemSlotsAdmin
-        ref={gemSlotsRef}
-        initial={gemSlotsInitial}
-        standalone={false}
-      />
-      <CombatMergeCostAdmin
-        ref={mergeCostRef}
-        initial={mergeCostInitial}
+      <CombatIncrementsAdmin
+        ref={incrementsRef}
+        initial={incrementsInitial}
         standalone={false}
       />
       <CombatReferenceAdmin
@@ -585,20 +614,20 @@ export function CombatReferenceScreen({
 export function ExpeditionReferenceScreen({
   initialRows,
   incrementsInitial,
-  mergeCostInitial,
-  dismantleInitial,
+  secondaryInitial,
 }: {
   initialRows: ExpeditionReferenceRow[];
   incrementsInitial: ExpeditionStarIncrements;
-  mergeCostInitial: ExpeditionMergeCostBase;
-  dismantleInitial: ExpeditionDismantleBase;
+  secondaryInitial: {
+    mergeCost: ExpeditionMergeCostBase;
+    dismantle: ExpeditionDismantleBase;
+  };
 }) {
   const incrementsRef = useRef<ReferenceTableHandle>(null);
-  const mergeCostRef = useRef<ReferenceTableHandle>(null);
-  const dismantleRef = useRef<ReferenceTableHandle>(null);
+  const secondaryRef = useRef<ReferenceTableHandle>(null);
   const mainRef = useRef<ReferenceTableHandle>(null);
   const { status, saveAll, saveAllLabel } = useCombinedSave([
-    [incrementsRef, mergeCostRef, dismantleRef, mainRef],
+    [incrementsRef, secondaryRef, mainRef],
   ]);
   return (
     <div className="calculator-stack">
@@ -616,14 +645,11 @@ export function ExpeditionReferenceScreen({
         initial={incrementsInitial}
         standalone={false}
       />
-      <ExpeditionMergeCostAdmin
-        ref={mergeCostRef}
-        initial={mergeCostInitial}
-        standalone={false}
-      />
-      <ExpeditionDismantleAdmin
-        ref={dismantleRef}
-        initial={dismantleInitial}
+      {/* Bloc 75/B: merge-cost + dismantle now 1 merged table (Fusion/
+          Destruction). */}
+      <ExpeditionSecondaryAdmin
+        ref={secondaryRef}
+        initial={secondaryInitial}
         standalone={false}
       />
       <ExpeditionReferenceAdmin

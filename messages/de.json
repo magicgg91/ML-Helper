@@ -576,9 +576,11 @@
     "gem-count": "{count, plural, one {# Edelstein} other {# Edelsteine}}",
     "columns": {
       "rarity": "Seltenheit",
-      "skydust": "Himmelsstaub",
-      "gems": "Edelsteine",
-      "skill": "Fähigkeit {number}"
+      "skill": "Fähigkeit {number}",
+      "secondary-title": "Pouciel & Edelsteine",
+      "row-merge": "Fusion",
+      "row-gems": "Edelsteine",
+      "row-destruction": "Zerlegung"
     },
     "complete-in-admin": "In der Verwaltung vervollständigen"
   },
@@ -591,7 +593,9 @@
       "family": "Familie",
       "slot": "Slot",
       "secondary-stat": "Zweitwert",
-      "dismantle-terradust": "Terrastaub bei Zerlegung"
+      "secondary-title": "Terrastaub",
+      "row-merge": "Fusion",
+      "row-destruction": "Zerlegung"
     }
   },
   "crossReference": {
@@ -883,12 +887,8 @@
       "templars-detail": "20 exakte bearbeitbare Kosten",
       "page-title": "Referenztabelle — {name}",
       "combat-description": "Alle 180 Zeilen und jeder Wert können einzeln bearbeitet werden. Gib einen unbekannten Wert erst ein, nachdem du ihn im Spiel bestätigt hast.",
-      "combat-skydust-description": "Himmelsstaub bei Zerlegung, pro Seltenheit (gemeinsam für alle Sets dieser Seltenheit).",
-      "combat-gem-slots-description": "Edelsteinslots, pro Seltenheit (gemeinsam für alle Sets dieser Seltenheit).",
       "expedition-description": "Detail der Expeditionsausrüstung",
       "expedition-increments-description": "Werte pro Stern für die Statistiken der Expeditionsausrüstung",
-      "expedition-merge-cost-description": "Terrastaub-Fusionskosten pro Seltenheit (Kosten = K × 2^(n-1))",
-      "expedition-dismantle-description": "Terrastaub bei Zerlegung pro Seltenheit",
       "templars-description": "Jede exakte Stufenkosten können einzeln bearbeitet werden.",
       "columns": {
         "set-name": "Set-Name",
@@ -963,7 +963,14 @@
         "description": "Beschreibung",
         "temple-base": "Tempel-Basis",
         "bonus": "Bonus (%)"
-      }
+      },
+      "secondary-row": "Kennzahl",
+      "row-merge-cost": "Fusion",
+      "row-gem-slots": "Edelsteine",
+      "row-destruction": "Zerlegung",
+      "combat-secondary-description": "Pouciel (Fusion, Zerlegung) und Edelsteinslots, pro Seltenheit.",
+      "expedition-secondary-description": "Terrastaub (Fusion, Zerlegung), pro Seltenheit.",
+      "combat-increments-description": "Werte pro Stern für die Fähigkeiten der Kampfausrüstung"
     },
     "common": {
       "back": "Zurück"

@@ -1086,23 +1086,39 @@ select {
    never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
    1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
    Used for both the equipment's own star level and each gem's.
-   Review fix: the white fill needs its own fixed dark outline, not
-   var(--border) — that token is a light, near-white grey in the light
-   theme, so a white-filled star sat almost invisible against the equally
-   near-white tile background there. A fixed semi-transparent black
-   outline stays legible against both a light and a dark surface. */
+   Bloc 74/A: the Bloc 73 review fix (a literal #fff fill) still read as
+   near-invisible in the light theme, even with a dark outline — a fixed
+   light color can never work in both themes at once. Using the site's
+   own --foreground token instead resolves per-theme like the rest of
+   the page's text does: the same off-white it already was in dark
+   theme, and the same dark grey/near-black every other label already
+   uses in light theme — verified visually in both, not just by
+   computed contrast ratio (the lesson from Blocs 22/24: a same-hue
+   lightness tweak isn't reliable, a real per-theme value is). */
 .star-rating {
   display: inline-flex;
   gap: 1px;
-  color: #fff;
+  color: var(--foreground);
 }
 .star-rating svg {
   fill: currentColor;
   stroke: rgb(0 0 0 / 55%);
   stroke-width: 1.5px;
 }
+/* Bloc 74/B: was var(--amber-bright), a token that (correctly, for its
+   other uses) resolves to a darker, more saturated amber in the light
+   theme — so these stars silently shifted color across themes instead
+   of staying the fixed "5-8 star tier" yellow they're meant to signal.
+   A literal, non-variable value never gets recalculated by theme.
+   Review fix: reusing dark theme's old --amber-bright (#e8a94f) verbatim
+   left only ~1.83:1 contrast against the light theme's --surface
+   (#f0f2f5), well under the WCAG 1.4.11 non-text 3:1 floor. A single
+   fixed hue can't be maximally readable on both a near-black and a
+   near-white background at once, so #a8710a was chosen as the
+   mid-luminance value that clears 3:1 on both (~3.54:1 dark, ~3.72:1
+   light) while staying recognizably gold. */
 .star-rating-yellow {
-  color: var(--amber-bright);
+  color: #a8710a;
 }
 /* Bloc 73/D review fix: at the 390px mobile floor, a fully configured
    slot (2.8rem image, a 3-gem column each with up to a 4-icon rating)

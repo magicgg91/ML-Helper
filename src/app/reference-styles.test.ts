@@ -975,11 +975,13 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     );
   });
 
-  it("defines the shared star-rating rendering (white by default, converts fully to a distinct yellow past level 4)", () => {
+  it("defines the shared star-rating rendering (converts fully to a distinct yellow past level 4)", () => {
     expect(css).toMatch(
       /\.star-rating svg\s*{\s*\n\s*fill: currentColor;/,
     );
-    expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: var\(--amber-bright\);/);
+    // Bloc 74/B replaced the var(--amber-bright) reference — see that
+    // block below for the current (fixed-value) rule.
+    expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: #a8710a;/);
   });
 
   // Review fix: var(--border) is a light, near-white grey in the light
@@ -1022,5 +1024,44 @@ describe("Bloc 73/E: Combat equipment slot image grows to 2.8rem", () => {
     expect(css).toMatch(
       /\.stuff-slot-image-combat\s*{\s*\n\s*max-height: 2\.8rem;\s*\n}/,
     );
+  });
+});
+
+// Bloc 74/A: the Bloc 73/D review fix (a literal #fff fill) still read as
+// near-invisible in the light theme — a fixed light color can never work
+// in both themes. Switching to var(--foreground) resolves per-theme like
+// the rest of the page's text (off-white in dark, dark grey/near-black in
+// light), instead of a same-hue lightness tweak (the Bloc 22/24 lesson:
+// that kind of fix isn't reliable — a real per-theme value is).
+describe("Bloc 74/A: white-tier stars use the theme's own --foreground, not a fixed #fff", () => {
+  it("resolves the base star color per theme instead of a literal white", () => {
+    expect(css).toMatch(
+      /\.star-rating\s*{\s*\n\s*display: inline-flex;\s*\n\s*gap: 1px;\s*\n\s*color: var\(--foreground\);/,
+    );
+  });
+
+  it("leaves the yellow tier's own color rule completely separate (tested in Bloc 74/B below), so this fix never touches 5-8★", () => {
+    const baseRule = css.match(/\.star-rating\s*{([\s\S]*?)\n}/)?.[0];
+    expect(baseRule).toBeDefined();
+    expect(baseRule).not.toMatch(/amber/);
+  });
+});
+
+// Bloc 74/B: .star-rating-yellow used to reference var(--amber-bright),
+// a token that (correctly, for its other uses) resolves to a different,
+// darker/more-saturated value in the light theme — so the "5-8★" yellow
+// silently shifted color across themes instead of staying the fixed tier
+// color it's meant to be. Now a literal, non-variable value.
+// Review fix: the first literal chosen (#e8a94f, dark theme's old
+// --amber-bright verbatim) only reached ~1.83:1 contrast against the
+// light theme's --surface, under the WCAG 1.4.11 non-text 3:1 floor.
+// #a8710a is a mid-luminance gold that clears 3:1 against both theme
+// surfaces (~3.54:1 dark, ~3.72:1 light).
+describe("Bloc 74/B: yellow-tier stars use a fixed literal color, never a theme variable", () => {
+  it("sets .star-rating-yellow to a literal hex value, not any var(...)", () => {
+    const rule = css.match(/\.star-rating-yellow\s*{([\s\S]*?)\n}/)?.[0];
+    expect(rule).toBeDefined();
+    expect(rule).not.toMatch(/var\(/);
+    expect(rule).toMatch(/color: #a8710a;/);
   });
 });

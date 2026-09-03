@@ -594,10 +594,11 @@
     "gem-count": "{count, plural, one {# gem} other {# gems}}",
     "columns": {
       "rarity": "Rarity",
-      "skydust": "Skydust",
-      "gems": "Gems",
       "skill": "Skill {number}",
-      "merge-cost": "Merge cost (Skydust)"
+      "secondary-title": "Pouciel & Gems",
+      "row-merge": "Merge",
+      "row-gems": "Gems",
+      "row-destruction": "Dismantle"
     },
     "complete-in-admin": "Complete in administration"
   },
@@ -610,7 +611,9 @@
       "family": "Family",
       "slot": "Slot",
       "secondary-stat": "Secondary stat",
-      "dismantle-terradust": "Terradust on dismantle"
+      "secondary-title": "Terradust",
+      "row-merge": "Merge",
+      "row-destruction": "Dismantle"
     }
   },
   "crossReference": {
@@ -902,12 +905,8 @@
       "templars-detail": "20 exact editable costs",
       "page-title": "Reference table — {name}",
       "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
-      "combat-skydust-description": "Skydust on dismantle, per rarity (shared by every set of that rarity).",
-      "combat-gem-slots-description": "Gem slots, per rarity (shared by every set of that rarity).",
       "expedition-description": "Expedition equipment detail",
       "expedition-increments-description": "Per-star increments for the Expedition Equipment stats",
-      "expedition-merge-cost-description": "Terradust merge cost per rarity (Cost = K × 2^(n-1))",
-      "expedition-dismantle-description": "Terradust on dismantle per rarity",
       "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",
@@ -957,7 +956,6 @@
       "move-down": "Move down",
       "actions": "Actions",
       "empty": "No items yet.",
-      "combat-merge-cost-description": "Pouciel merge cost, per rarity (K in Cost = K × 2^(n-1), n = starting star).",
       "events-league-label": "League",
       "events-language-label": "Text language",
       "events-table-title": "Event list",
@@ -983,7 +981,14 @@
         "description": "Description",
         "temple-base": "Temple base",
         "bonus": "Bonus (%)"
-      }
+      },
+      "secondary-row": "Metric",
+      "row-merge-cost": "Merge",
+      "row-gem-slots": "Gems",
+      "row-destruction": "Dismantle",
+      "combat-secondary-description": "Pouciel (merge, dismantle) and gem slots, per rarity.",
+      "expedition-secondary-description": "Terradust (merge, dismantle), per rarity.",
+      "combat-increments-description": "Per-star increments for the Combat Equipment skills"
     },
     "common": {
       "back": "Back"

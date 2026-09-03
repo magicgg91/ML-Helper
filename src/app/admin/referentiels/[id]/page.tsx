@@ -8,13 +8,11 @@ import {
 import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
 import { EventsReferenceScreen } from "@/components/events-admin-editor";
 import {
-  getCombatGemSlotsBase,
-  getCombatMergeCostBase,
   getCombatReferenceRows,
-  getCombatSkydustBase,
-  getExpeditionDismantleBase,
-  getExpeditionMergeCostBase,
+  getCombatSecondaryBase,
+  getCombatStarIncrements,
   getExpeditionReferenceRows,
+  getExpeditionSecondaryBase,
   getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
 import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
@@ -50,16 +48,14 @@ export default async function EditReferentielPage({
         {combat ? (
           <CombatReferenceScreen
             initialRows={await getCombatReferenceRows()}
-            skydustInitial={await getCombatSkydustBase()}
-            gemSlotsInitial={await getCombatGemSlotsBase()}
-            mergeCostInitial={await getCombatMergeCostBase()}
+            secondaryInitial={await getCombatSecondaryBase()}
+            incrementsInitial={await getCombatStarIncrements()}
           />
         ) : (
           <ExpeditionReferenceScreen
             initialRows={await getExpeditionReferenceRows()}
             incrementsInitial={await getExpeditionStarIncrements()}
-            mergeCostInitial={await getExpeditionMergeCostBase()}
-            dismantleInitial={await getExpeditionDismantleBase()}
+            secondaryInitial={await getExpeditionSecondaryBase()}
           />
         )}
       </main>

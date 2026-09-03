@@ -594,10 +594,11 @@
     "gem-count": "{count, plural, one {# gemme} other {# gemmes}}",
     "columns": {
       "rarity": "Rareté",
-      "skydust": "Pouciel",
-      "gems": "Gemmes",
       "skill": "Compétence {number}",
-      "merge-cost": "Coût de fusion (Pouciel)"
+      "secondary-title": "Pouciel & Gemmes",
+      "row-merge": "Fusion",
+      "row-gems": "Gemmes",
+      "row-destruction": "Destruction"
     },
     "complete-in-admin": "À compléter en admin"
   },
@@ -610,7 +611,9 @@
       "family": "Famille",
       "slot": "Emplacement",
       "secondary-stat": "Stat secondaire",
-      "dismantle-terradust": "Terradust à la destruction"
+      "secondary-title": "Terradust",
+      "row-merge": "Fusion",
+      "row-destruction": "Destruction"
     }
   },
   "crossReference": {
@@ -902,12 +905,8 @@
       "templars-detail": "20 coûts exacts éditables",
       "page-title": "Référentiel — {name}",
       "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
-      "combat-skydust-description": "Pouciel à la destruction, par rareté (valeur commune à tous les sets de cette rareté).",
-      "combat-gem-slots-description": "Emplacements de gemmes, par rareté (valeur commune à tous les sets de cette rareté).",
       "expedition-description": "Détail des équipements d’expédition",
       "expedition-increments-description": "Incréments par étoile des statistiques d’Équipements d’Expédition",
-      "expedition-merge-cost-description": "Coût de fusion en Terradust par rareté (Coût = K × 2^(n-1))",
-      "expedition-dismantle-description": "Terradust à la destruction par rareté",
       "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
         "set-name": "Nom du set",
@@ -957,7 +956,6 @@
       "move-down": "Descendre",
       "actions": "Actions",
       "empty": "Aucun objet pour l’instant.",
-      "combat-merge-cost-description": "Coût de fusion en Pouciel, par rareté (K dans Coût = K × 2^(n-1), n = étoile de départ).",
       "events-league-label": "Ligue",
       "events-language-label": "Langue du texte",
       "events-table-title": "Liste des événements",
@@ -983,7 +981,14 @@
         "description": "Description",
         "temple-base": "Base Temple",
         "bonus": "Bonus (%)"
-      }
+      },
+      "secondary-row": "Indicateur",
+      "row-merge-cost": "Fusion",
+      "row-gem-slots": "Gemmes",
+      "row-destruction": "Destruction",
+      "combat-secondary-description": "Pouciel (fusion, destruction) et emplacements de gemmes, par rareté.",
+      "expedition-secondary-description": "Terradust (fusion, destruction), par rareté.",
+      "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat"
     },
     "common": {
       "back": "Retour"

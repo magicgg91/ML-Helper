@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
@@ -12,6 +18,8 @@ import { expeditionSlotLayout } from "../lib/expedition-equipment";
 import {
   combatReferenceRows,
   defaultCombatGemSlotsBase,
+  defaultCombatMergeCostBase,
+  defaultCombatSkydustBase,
   expeditionReferenceRows,
 } from "../lib/reference-equipment";
 
@@ -163,7 +171,11 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable
           rows={combatReferenceRows}
-          gemSlotsBase={{ ...defaultCombatGemSlotsBase, Légendaire: 7 }}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: { ...defaultCombatGemSlotsBase, Légendaire: 7 },
+            skydust: defaultCombatSkydustBase,
+          }}
         />
       </NextIntlClientProvider>,
     );
@@ -382,21 +394,36 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("Bloc35 2.2 (kept): still shows the Pouciel/Gemmes/Terradust rarity-indexed tables", () => {
+  // Bloc 75/A+B: the 3 Combat tables (Pouciel merge cost, gem slots, Pouciel
+  // at destruction) and 2 Expedition tables (Terradust merge cost,
+  // Terradust at dismantle) are now genuinely merged into 1 table each —
+  // one row per metric (Fusion/Gemmes/Destruction, Fusion/Destruction)
+  // instead of one whole table per metric.
+  it("Bloc75/A+B: shows Combat's merged Pouciel table and Expedition's merged Terradust table", () => {
     renderTables();
-    const skydustTable = screen
-      .getByRole("heading", { name: "Pouciel" })
+    const combatSecondary = screen
+      .getByRole("heading", { name: "Pouciel & Gemmes" })
       .closest("section")!;
-    expect(skydustTable.textContent).toContain("160");
-    const gemsTable = screen
-      .getByRole("heading", { name: "Gemmes" })
-      .closest("section")!;
-    expect(gemsTable.textContent).toContain("3");
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Fusion/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Gemmes/ }),
+    ).toHaveTextContent("3");
+    expect(
+      within(combatSecondary).getByRole("row", { name: /Destruction/ }),
+    ).toHaveTextContent("160");
     fireEvent.click(
       screen.getByRole("tab", { name: "Équipements d’Expédition" }),
     );
+    const expeditionSecondary = screen
+      .getByRole("heading", { name: "Terradust" })
+      .closest("section")!;
     expect(
-      screen.getByRole("heading", { name: "Terradust à la destruction" }),
+      within(expeditionSecondary).getByRole("row", { name: /Fusion/ }),
+    ).toHaveTextContent("600");
+    expect(
+      within(expeditionSecondary).getByRole("row", { name: /Destruction/ }),
     ).toBeInTheDocument();
   });
 
@@ -405,15 +432,19 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable
           rows={combatReferenceRows}
-          gemSlotsBase={{ ...defaultCombatGemSlotsBase, Légendaire: 1200 }}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: { ...defaultCombatGemSlotsBase, Légendaire: 1200 },
+            skydust: defaultCombatSkydustBase,
+          }}
         />
       </NextIntlClientProvider>,
     );
-    const gemsTable = screen
-      .getByRole("heading", { name: "Gemmes" })
+    const secondaryTable = screen
+      .getByRole("heading", { name: "Pouciel & Gemmes" })
       .closest("section")!;
-    expect(gemsTable.textContent).toContain("1.2k");
-    expect(gemsTable.textContent).not.toContain("1200");
+    expect(secondaryTable.textContent).toContain("1.2k");
+    expect(secondaryTable.textContent).not.toContain("1200");
   });
 });
 

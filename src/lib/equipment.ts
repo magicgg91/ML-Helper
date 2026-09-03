@@ -79,6 +79,32 @@ export const equipmentStarIncrement: Record<EquipmentSkill, number> = {
   Vitesse: 5,
 };
 
+// Bloc 75/C: promoted from a hardcoded lookup to genuine admin config,
+// mirroring ExpeditionStarIncrements exactly (reference-equipment.ts) — the
+// cdc-confirmed values above become the defaults, still used as-is when no
+// admin override is stored.
+export type EquipmentStarIncrements = Record<EquipmentSkill, number>;
+
+export function parseEquipmentStarIncrements(
+  value: unknown,
+): EquipmentStarIncrements {
+  const source =
+    value && typeof value === "object"
+      ? (value as Partial<EquipmentStarIncrements>)
+      : {};
+  return Object.fromEntries(
+    equipmentSkillLabels.map((key) => {
+      const parsed = Number(source[key]);
+      return [
+        key,
+        Number.isFinite(parsed) && parsed >= 0
+          ? parsed
+          : equipmentStarIncrement[key],
+      ];
+    }),
+  ) as EquipmentStarIncrements;
+}
+
 const allowlist: Record<
   EquipmentBlock,
   Partial<Record<EquipmentFamily, readonly EquipmentSkill[]>>
@@ -145,8 +171,9 @@ export function equipmentValueAtStar(
   skill: EquipmentSkill,
   base: number,
   star: number,
+  increments: EquipmentStarIncrements = equipmentStarIncrement,
 ): number {
-  return valueAtStar(base, equipmentStarIncrement[skill], star);
+  return valueAtStar(base, increments[skill], star);
 }
 
 export function equipmentOptions(
@@ -200,6 +227,7 @@ export function computeEquipmentSlot(
   state: EquipmentSlotState,
   rows: readonly CombatReferenceRow[] = combatEquipmentData,
   gemParameters: GemParameters = defaultGemParameters,
+  increments: EquipmentStarIncrements = equipmentStarIncrement,
 ) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
   const item = findEquipment(slot, state.equipment, rows);
@@ -211,7 +239,11 @@ export function computeEquipmentSlot(
         Number.isFinite(value) &&
         isEquipmentSkillAllowed(block, item.family as EquipmentFamily, skill)
       ) {
-        add(total, skill, equipmentValueAtStar(skill, value, state.star));
+        add(
+          total,
+          skill,
+          equipmentValueAtStar(skill, value, state.star, increments),
+        );
       }
     }
   }
@@ -237,11 +269,19 @@ export function computeStuffBlock(
   slots: EquipmentSlotState[],
   rows: readonly CombatReferenceRow[] = combatEquipmentData,
   gemParameters: GemParameters = defaultGemParameters,
+  increments: EquipmentStarIncrements = equipmentStarIncrement,
 ) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
   equipmentSlotLayout.forEach((slot, index) => {
     Object.entries(
-      computeEquipmentSlot(block, slot, slots[index], rows, gemParameters),
+      computeEquipmentSlot(
+        block,
+        slot,
+        slots[index],
+        rows,
+        gemParameters,
+        increments,
+      ),
     ).forEach(([skill, value]) => add(total, skill as EquipmentSkill, value));
   });
   return total;
@@ -251,11 +291,12 @@ export function computeStuffGlobal(
   state: StuffState,
   rows: readonly CombatReferenceRow[] = combatEquipmentData,
   gemParameters: GemParameters = defaultGemParameters,
+  increments: EquipmentStarIncrements = equipmentStarIncrement,
 ) {
   const total: Partial<Record<EquipmentSkill, number>> = {};
   equipmentBlocks.forEach((block) => {
     Object.entries(
-      computeStuffBlock(block, state[block], rows, gemParameters),
+      computeStuffBlock(block, state[block], rows, gemParameters, increments),
     ).forEach(([skill, value]) => add(total, skill as EquipmentSkill, value));
   });
   return total;

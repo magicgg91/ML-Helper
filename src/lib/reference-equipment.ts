@@ -1,5 +1,9 @@
 import { combatEquipmentData, expeditionEquipmentData } from "./equipment-data";
-import { equipmentStarIncrement, type EquipmentSkill } from "./equipment";
+import {
+  equipmentStarIncrement,
+  type EquipmentSkill,
+  type EquipmentStarIncrements,
+} from "./equipment";
 import { valueAtStar } from "./star-progression";
 
 export type CombatReferenceRow = {
@@ -38,15 +42,11 @@ export function combatValueAtStar(
   skill: string,
   raw: string,
   star: number,
+  increments: EquipmentStarIncrements = equipmentStarIncrement,
 ): number | null {
   const base = Number(raw);
-  if (!raw || !Number.isFinite(base) || !(skill in equipmentStarIncrement))
-    return null;
-  return valueAtStar(
-    base,
-    equipmentStarIncrement[skill as EquipmentSkill],
-    star,
-  );
+  if (!raw || !Number.isFinite(base) || !(skill in increments)) return null;
+  return valueAtStar(base, increments[skill as EquipmentSkill], star);
 }
 
 // The 10 expedition stats (4 primary + 6 secondary), keyed the same way

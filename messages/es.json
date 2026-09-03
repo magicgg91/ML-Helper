@@ -576,9 +576,11 @@
     "gem-count": "{count, plural, one {# gema} other {# gemas}}",
     "columns": {
       "rarity": "Rareza",
-      "skydust": "Polvo celeste",
-      "gems": "Gemas",
-      "skill": "Habilidad {number}"
+      "skill": "Habilidad {number}",
+      "secondary-title": "Pouciel y gemas",
+      "row-merge": "Fusión",
+      "row-gems": "Gemas",
+      "row-destruction": "Desmontaje"
     },
     "complete-in-admin": "Completar en la administración"
   },
@@ -591,7 +593,9 @@
       "family": "Familia",
       "slot": "Ranura",
       "secondary-stat": "Estadística secundaria",
-      "dismantle-terradust": "Terrapolvo al desmontar"
+      "secondary-title": "Terrapolvo",
+      "row-merge": "Fusión",
+      "row-destruction": "Desmontaje"
     }
   },
   "crossReference": {
@@ -883,12 +887,8 @@
       "templars-detail": "20 costes exactos editables",
       "page-title": "Tabla de referencia — {name}",
       "combat-description": "Las 180 filas y cada valor se pueden editar individualmente. Introduce un valor desconocido solo después de confirmarlo en el juego.",
-      "combat-skydust-description": "Polvo celeste al desmontar, por rareza (compartido por cada set de esa rareza).",
-      "combat-gem-slots-description": "Ranuras de gema, por rareza (compartidas por cada set de esa rareza).",
       "expedition-description": "Detalle del equipo de expedición",
       "expedition-increments-description": "Incrementos por estrella para las estadísticas del Equipo de Expedición",
-      "expedition-merge-cost-description": "Coste de fusión en Terrapolvo por rareza (Coste = K × 2^(n-1))",
-      "expedition-dismantle-description": "Terrapolvo al desmontar por rareza",
       "templars-description": "Cada coste exacto de nivel se puede editar individualmente.",
       "columns": {
         "set-name": "Nombre del set",
@@ -963,7 +963,14 @@
         "description": "Descripción",
         "temple-base": "Base de templo",
         "bonus": "Bono (%)"
-      }
+      },
+      "secondary-row": "Indicador",
+      "row-merge-cost": "Fusión",
+      "row-gem-slots": "Gemas",
+      "row-destruction": "Desmontaje",
+      "combat-secondary-description": "Pouciel (fusión, desmontaje) y ranuras de gema, por rareza.",
+      "expedition-secondary-description": "Terrapolvo (fusión, desmontaje), por rareza.",
+      "combat-increments-description": "Incrementos por estrella para las habilidades del Equipo de Combate"
     },
     "common": {
       "back": "Atrás"
