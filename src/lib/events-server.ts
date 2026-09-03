@@ -2,8 +2,11 @@ import { prisma } from "./prisma";
 import { leagues } from "./player-settings";
 import {
   emptyEventsCatalog,
+  eventDurations,
+  type EventDuration,
   type EventRow,
   type EventsCatalog,
+  type EventsLeagueData,
   type EventTierRow,
 } from "./events";
 
@@ -19,7 +22,13 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // as consumables-server.ts's freshEmptyCatalog (Bloc 58 regression).
 function freshEmptyCatalog(): EventsCatalog {
   return Object.fromEntries(
-    leagues.map((league) => [league, [] as EventRow[]]),
+    leagues.map((league) => [
+      league,
+      {
+        seasonDurationDays: emptyEventsCatalog[league].seasonDurationDays,
+        events: [] as EventRow[],
+      },
+    ]),
   ) as EventsCatalog;
 }
 
@@ -35,16 +44,45 @@ function normalizeTier(raw: unknown): EventTierRow | null {
   };
 }
 
+function normalizeDuration(raw: unknown): EventDuration {
+  const value = typeof raw === "number" ? raw : Number(raw);
+  return (eventDurations as readonly number[]).includes(value)
+    ? (value as EventDuration)
+    : eventDurations[0];
+}
+
 function normalizeEvent(raw: unknown): EventRow | null {
   if (!isPlainObject(raw)) return null;
   const rawTiers = Array.isArray(raw.tiers) ? raw.tiers : [];
   return {
     name: typeof raw.name === "string" ? raw.name : "",
-    startDay: typeof raw.startDay === "string" ? raw.startDay : "",
-    endDay: typeof raw.endDay === "string" ? raw.endDay : "",
+    description_fr:
+      typeof raw.description_fr === "string" ? raw.description_fr : "",
+    description_en:
+      typeof raw.description_en === "string" ? raw.description_en : "",
+    duration: normalizeDuration(raw.duration),
     tiers: rawTiers
       .map(normalizeTier)
       .filter((tier): tier is EventTierRow => tier !== null),
+  };
+}
+
+function normalizeSeasonDurationDays(raw: unknown, fallback: number): number {
+  const value = typeof raw === "number" ? raw : Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function normalizeLeagueData(raw: unknown, fallback: number): EventsLeagueData {
+  if (!isPlainObject(raw)) return { seasonDurationDays: fallback, events: [] };
+  const rawEvents = Array.isArray(raw.events) ? raw.events : [];
+  return {
+    seasonDurationDays: normalizeSeasonDurationDays(
+      raw.seasonDurationDays,
+      fallback,
+    ),
+    events: rawEvents
+      .map(normalizeEvent)
+      .filter((event): event is EventRow => event !== null),
   };
 }
 
@@ -52,11 +90,10 @@ export function normalizeStoredValue(value: unknown): EventsCatalog {
   if (!isPlainObject(value)) return emptyEventsCatalog;
   const grouped = freshEmptyCatalog();
   for (const league of leagues) {
-    const rawEvents = value[league];
-    if (!Array.isArray(rawEvents)) continue;
-    grouped[league] = rawEvents
-      .map(normalizeEvent)
-      .filter((event): event is EventRow => event !== null);
+    grouped[league] = normalizeLeagueData(
+      value[league],
+      emptyEventsCatalog[league].seasonDurationDays,
+    );
   }
   return grouped;
 }

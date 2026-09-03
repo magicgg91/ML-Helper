@@ -25,28 +25,67 @@ export const emptyEventTierRow: EventTierRow = {
   reward_en: "",
 };
 
-// An event's own duration is 2 free-text fields too (day range or a plain
-// duration string) rather than real dates — Million Lords events are
-// scheduled by in-season day number, not a calendar date.
+// Bloc 77/B: events chain back-to-back with no gaps within a season (the
+// next one starts exactly when the previous ends) — the deployable
+// information about an event's timing is purely its own duration, never a
+// calendar day/date. Fixed to 3 known values (cdc), not free text.
+export const eventDurations = [24, 48, 72] as const;
+export type EventDuration = (typeof eventDurations)[number];
+
+// Bloc 77/A: Description is admin free text at the event level (distinct
+// from each tier's own Objectif/Récompense) — same fr/en-per-field
+// convention as EventTierRow above, for the same AGENTS.md reason.
 export type EventRow = {
   name: string;
-  startDay: string;
-  endDay: string;
+  description_fr: string;
+  description_en: string;
+  duration: EventDuration;
   tiers: EventTierRow[];
 };
 
 export const emptyEventRow: EventRow = {
   name: "",
-  startDay: "",
-  endDay: "",
+  description_fr: "",
+  description_en: "",
+  duration: eventDurations[0],
   tiers: [],
+};
+
+// Bloc 77/C: each league's own season length in days, admin-editable —
+// never hardcoded, since it's the denominator the timeline visual
+// (Bloc 77/D) uses to size every event's segment proportionally, and a
+// league's season can differ (cdc: Bronze runs 21 days with none of this
+// back-to-back-event mechanic, Argent-Légende run 14). Bronze still gets
+// its own editable value for consistency; the timeline simply has nothing
+// to draw for a league with no events yet.
+const defaultSeasonDurationDays: Record<League, number> = {
+  bronze: 21,
+  silver: 14,
+  gold: 14,
+  platinum: 14,
+  diamond: 14,
+  legend: 14,
+};
+
+// Bloc 77: a league's events are no longer the catalog's whole value — its
+// season duration lives alongside the event list, both scoped per league
+// (structure from the cdc: Ligue -> Durée de la saison + Liste d'Events).
+export type EventsLeagueData = {
+  seasonDurationDays: number;
+  events: EventRow[];
 };
 
 // Bloc 60: entirely independent per league — order, duration, and the
 // whole event list itself, not just which tiers/rewards apply. No data is
 // ever shared between leagues.
-export type EventsCatalog = Record<League, EventRow[]>;
+export type EventsCatalog = Record<League, EventsLeagueData>;
 
 export const emptyEventsCatalog: EventsCatalog = Object.fromEntries(
-  leagues.map((league) => [league, [] as EventRow[]]),
+  leagues.map((league) => [
+    league,
+    {
+      seasonDurationDays: defaultSeasonDurationDays[league],
+      events: [] as EventRow[],
+    },
+  ]),
 ) as EventsCatalog;

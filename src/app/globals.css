@@ -2632,8 +2632,75 @@ body > main h1 {
   font-size: 0.85rem;
   font-weight: 400;
 }
+/* Bloc 77/A: the event's own free-text description, shown inside the
+   collapsible card above the tier table — distinct from the timeline
+   visual below, which is strictly name + duration (cdc). */
+.events-card-description {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
 .events-card table {
   margin-top: 0.75rem;
+}
+/* Bloc 77/D: the season timeline — same visual principle as .ranking-scale
+   (Bloc 62/F) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
+   76/A all fought width/style regressions from reusing another feature's
+   classes here): no percentile ticks or player-position line, since this
+   isn't a 0–100% rank scale — segments are sized by cumulative event
+   duration over the league's season length instead. */
+.events-timeline {
+  position: relative;
+  height: 4.75rem;
+  margin: 1rem 0.5rem 2.75rem;
+  padding: 0 0.5rem;
+}
+.events-timeline-axis {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 1.75rem;
+  height: 2px;
+  background: var(--border);
+}
+.events-timeline-segment {
+  position: absolute;
+  top: 1.3rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  border-inline: 1px solid var(--bg-panel);
+}
+.events-timeline-marker {
+  position: absolute;
+  top: 1.75rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.events-timeline-label {
+  position: absolute;
+  max-width: 5.5rem;
+}
+.events-timeline-label-above {
+  bottom: 1.1rem;
+}
+.events-timeline-label-below {
+  top: 1.1rem;
+}
+.events-timeline-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.events-timeline-duration {
+  font-size: 0.6rem;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
 }
 .reference-admin-table input {
   min-width: 9rem;

@@ -563,6 +563,7 @@
       "league": "Liga",
       "select-league": "Elige una liga para ver sus eventos.",
       "empty": "Aún no hay eventos para esta liga.",
+      "timeline-label": "Cronología de la temporada",
       "columns": {
         "objective": "Objetivo",
         "reward": "Recompensa"
@@ -940,12 +941,13 @@
       "remove": "Eliminar",
       "events-league-label": "Liga",
       "events-language-label": "Idioma del texto",
+      "events-season-duration-label": "Duración de la temporada (días)",
       "events-table-title": "Lista de eventos",
       "add-event": "Añadir un evento",
       "events-columns": {
         "name": "Nombre",
-        "startDay": "Día de inicio",
-        "endDay": "Día de fin"
+        "description": "Descripción",
+        "duration": "Duración"
       },
       "tier-columns": {
         "objective": "Objetivo",

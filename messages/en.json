@@ -581,6 +581,7 @@
       "league": "League",
       "select-league": "Choose a league to see its events.",
       "empty": "No events for this league yet.",
+      "timeline-label": "Season timeline",
       "columns": {
         "objective": "Objective",
         "reward": "Reward"
@@ -958,12 +959,13 @@
       "empty": "No items yet.",
       "events-league-label": "League",
       "events-language-label": "Text language",
+      "events-season-duration-label": "Season duration (days)",
       "events-table-title": "Event list",
       "add-event": "Add an event",
       "events-columns": {
         "name": "Name",
-        "startDay": "Start day",
-        "endDay": "End day"
+        "description": "Description",
+        "duration": "Duration"
       },
       "tier-columns": {
         "objective": "Objective",

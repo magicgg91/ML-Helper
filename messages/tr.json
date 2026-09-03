@@ -563,6 +563,7 @@
       "league": "Lig",
       "select-league": "Etkinliklerini görmek için bir lig seç.",
       "empty": "Bu lig için henüz etkinlik yok.",
+      "timeline-label": "Sezon zaman çizelgesi",
       "columns": {
         "objective": "Hedef",
         "reward": "Ödül"
@@ -940,12 +941,13 @@
       "remove": "Kaldır",
       "events-league-label": "Lig",
       "events-language-label": "Metin dili",
+      "events-season-duration-label": "Sezon süresi (gün)",
       "events-table-title": "Etkinlik listesi",
       "add-event": "Etkinlik ekle",
       "events-columns": {
         "name": "İsim",
-        "startDay": "Başlangıç günü",
-        "endDay": "Bitiş günü"
+        "description": "Açıklama",
+        "duration": "Süre"
       },
       "tier-columns": {
         "objective": "Hedef",

@@ -2,24 +2,42 @@ import { describe, expect, it } from "vitest";
 import { emptyEventRow, emptyEventsCatalog, emptyEventTierRow } from "./events";
 import { leagues } from "./player-settings";
 
-describe("Bloc60: events data model", () => {
-  it("starts with an empty event list for every league — no starting data", () => {
-    for (const league of leagues) expect(emptyEventsCatalog[league]).toEqual([]);
+describe("Bloc60/77: events data model", () => {
+  it("starts with an empty event list and a reasonable default season duration for every league", () => {
+    for (const league of leagues) {
+      expect(emptyEventsCatalog[league].events).toEqual([]);
+      expect(emptyEventsCatalog[league].seasonDurationDays).toBeGreaterThan(0);
+    }
   });
 
-  it("gives every league its own independent array (no shared reference)", () => {
+  it("Bloc77/C: defaults Bronze's season to 21 days and every other league to 14, matching the cdc", () => {
+    expect(emptyEventsCatalog.bronze.seasonDurationDays).toBe(21);
+    for (const league of leagues)
+      if (league !== "bronze")
+        expect(emptyEventsCatalog[league].seasonDurationDays).toBe(14);
+  });
+
+  it("gives every league its own independent event array (no shared reference)", () => {
     for (const a of leagues)
       for (const b of leagues)
-        if (a !== b) expect(emptyEventsCatalog[a]).not.toBe(emptyEventsCatalog[b]);
+        if (a !== b)
+          expect(emptyEventsCatalog[a].events).not.toBe(
+            emptyEventsCatalog[b].events,
+          );
   });
 
-  it("emptyEventRow starts with no tiers and empty fields", () => {
+  // Bloc 77/B: startDay/endDay are gone entirely, replaced by a single
+  // fixed-enum duration field — events chain back-to-back within a season.
+  it("Bloc77/B: emptyEventRow starts with a valid duration, no tiers, no trace of startDay/endDay", () => {
     expect(emptyEventRow).toEqual({
       name: "",
-      startDay: "",
-      endDay: "",
+      description_fr: "",
+      description_en: "",
+      duration: 24,
       tiers: [],
     });
+    expect(emptyEventRow).not.toHaveProperty("startDay");
+    expect(emptyEventRow).not.toHaveProperty("endDay");
   });
 
   it("emptyEventTierRow has both fr/en free-text fields empty, no structured sub-fields", () => {

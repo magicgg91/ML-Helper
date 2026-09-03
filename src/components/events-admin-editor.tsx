@@ -18,6 +18,8 @@ import {
 import {
   emptyEventRow,
   emptyEventTierRow,
+  eventDurations,
+  type EventDuration,
   type EventRow,
   type EventsCatalog,
   type EventTierRow,
@@ -79,6 +81,10 @@ const tierColumns = (
 // list can't reuse EditableDataTable directly (a table row can't host a
 // collapsible nested table), so it's a custom card list with the same
 // icon-based add/remove/reorder controls.
+// Bloc 77: a league's data is now { seasonDurationDays, events } instead of
+// a bare event array — the season length is admin-editable per league
+// (never hardcoded) since Bloc 77/D's timeline visual uses it as the
+// denominator for every event's proportional segment width.
 export function EventsReferenceScreen({
   initialCatalog,
 }: {
@@ -94,11 +100,23 @@ export function EventsReferenceScreen({
   const lang = fieldLocale(locale);
   const objectiveKey = lang === "fr" ? "objective_fr" : "objective_en";
   const rewardKey = lang === "fr" ? "reward_fr" : "reward_en";
-  const events = catalog[league];
+  const descriptionKey = lang === "fr" ? "description_fr" : "description_en";
+  const leagueData = catalog[league];
+  const events = leagueData.events;
   const leagueErrors = errors[league];
 
   function updateEvents(nextEvents: EventRow[]) {
-    setCatalog((current) => ({ ...current, [league]: nextEvents }));
+    setCatalog((current) => ({
+      ...current,
+      [league]: { ...current[league], events: nextEvents },
+    }));
+  }
+
+  function updateSeasonDuration(value: number) {
+    setCatalog((current) => ({
+      ...current,
+      [league]: { ...current[league], seasonDurationDays: value },
+    }));
   }
 
   function addEvent() {
@@ -119,12 +137,20 @@ export function EventsReferenceScreen({
 
   function updateEventField(
     index: number,
-    field: "name" | "startDay" | "endDay",
+    field: "name" | "description_fr" | "description_en",
     value: string,
   ) {
     updateEvents(
       events.map((event, i) =>
         i === index ? { ...event, [field]: value } : event,
+      ),
+    );
+  }
+
+  function updateEventDuration(index: number, value: EventDuration) {
+    updateEvents(
+      events.map((event, i) =>
+        i === index ? { ...event, duration: value } : event,
       ),
     );
   }
@@ -162,7 +188,7 @@ export function EventsReferenceScreen({
     const nextErrors = emptyCatalogErrors();
     let valid = true;
     for (const catalogLeague of leagues) {
-      nextErrors[catalogLeague] = catalog[catalogLeague].map((event) => {
+      nextErrors[catalogLeague] = catalog[catalogLeague].events.map((event) => {
         const tierErrors: FieldErrors = {};
         event.tiers.forEach((tier, tierIndex) => {
           if (!tier[objectiveKey].trim())
@@ -220,6 +246,21 @@ export function EventsReferenceScreen({
           value={league}
           onChange={(value) => value && setLeague(value)}
         />
+        {/* Bloc 77/C: admin-editable per league, never hardcoded — feeds
+            the public timeline's proportional segment widths (Bloc 77/D). */}
+        <label className="calculator-field">
+          {t("events-season-duration-label")}
+          <input
+            type="number"
+            min={1}
+            step={1}
+            aria-label={t("events-season-duration-label")}
+            value={leagueData.seasonDurationDays}
+            onChange={(e) =>
+              updateSeasonDuration(Math.max(1, Number(e.target.value) || 1))
+            }
+          />
+        </label>
       </section>
       <section className="admin-panel editable-reference">
         <div className="editable-reference-title-row">
@@ -262,30 +303,39 @@ export function EventsReferenceScreen({
                   )}
                 </label>
                 <label className="calculator-field">
-                  {t("events-columns.startDay")}
+                  {t("events-columns.description")}
                   <input
                     aria-label={t("event-row-label", {
                       row: eventIndex + 1,
-                      field: t("events-columns.startDay"),
+                      field: t("events-columns.description"),
                     })}
-                    value={event.startDay}
+                    value={event[descriptionKey]}
                     onChange={(e) =>
-                      updateEventField(eventIndex, "startDay", e.target.value)
+                      updateEventField(eventIndex, descriptionKey, e.target.value)
                     }
                   />
                 </label>
                 <label className="calculator-field">
-                  {t("events-columns.endDay")}
-                  <input
+                  {t("events-columns.duration")}
+                  <select
                     aria-label={t("event-row-label", {
                       row: eventIndex + 1,
-                      field: t("events-columns.endDay"),
+                      field: t("events-columns.duration"),
                     })}
-                    value={event.endDay}
+                    value={event.duration}
                     onChange={(e) =>
-                      updateEventField(eventIndex, "endDay", e.target.value)
+                      updateEventDuration(
+                        eventIndex,
+                        Number(e.target.value) as EventDuration,
+                      )
                     }
-                  />
+                  >
+                    {eventDurations.map((duration) => (
+                      <option key={duration} value={duration}>
+                        {duration}h
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <div className="events-admin-card-actions">
                   <button
