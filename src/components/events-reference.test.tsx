@@ -455,13 +455,16 @@ describe("EventsReferenceTable", () => {
       expect(background(2)).toBe("var(--event-sapphire)");
 
       // Bloc 81/D: the timeline's OWN name labels (not the tiles) match
-      // their segment's color exactly.
+      // their segment's color — Bloc 81/D review (Codex PR #98): via the
+      // theme-aware eventTextColorVar (one token per hue, base and bright
+      // share it), not the raw theme-invariant swatch variable, which read
+      // as low-contrast text on the light theme's own light backgrounds.
       const timelineNames = Array.from(
         document.querySelectorAll(".events-timeline .events-timeline-name"),
       ) as HTMLElement[];
-      expect(timelineNames[0]!.style.color).toBe("var(--event-sapphire)");
-      expect(timelineNames[1]!.style.color).toBe("var(--event-amber-bright)");
-      expect(timelineNames[2]!.style.color).toBe("var(--event-sapphire)");
+      expect(timelineNames[0]!.style.color).toBe("var(--event-text-sapphire)");
+      expect(timelineNames[1]!.style.color).toBe("var(--event-text-amber)");
+      expect(timelineNames[2]!.style.color).toBe("var(--event-text-sapphire)");
 
       const tileNames = Array.from(
         document.querySelectorAll(".events-tile-grid .events-tile-name"),
@@ -471,11 +474,11 @@ describe("EventsReferenceTable", () => {
       );
       expect(architecteNames).toHaveLength(2);
       for (const name of architecteNames)
-        expect(name.style.color).toBe("var(--event-sapphire)");
+        expect(name.style.color).toBe("var(--event-text-sapphire)");
       const recruiterName = tileNames.find(
         (el) => el.textContent === "Recruteur",
       )!;
-      expect(recruiterName.style.color).toBe("var(--event-amber-bright)");
+      expect(recruiterName.style.color).toBe("var(--event-text-amber)");
       // Bloc 80/F: the tile's own background never changes — only its
       // title text color does. Grey stays grey.
       const architecteTile = architecteNames[0]!.closest(".events-tile")!;

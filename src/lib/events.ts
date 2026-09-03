@@ -64,6 +64,20 @@ export function eventColorVar(color: EventColor): string {
   return `var(--event-${color})`;
 }
 
+// Bloc 81/D review (Codex PR #98): the timeline name and tile title write
+// this color directly as TEXT over the page/tile background, not just as a
+// swatch fill — --event-* is deliberately theme-invariant (see its own
+// comment in globals.css) so it stays vivid for swatches/segments in both
+// themes, but that same vividness reads as low-contrast text once the
+// light theme's own light backgrounds are behind it. A separate,
+// theme-aware token per HUE (base and bright share one — the swatch
+// already carries that distinction, the text only needs to name its hue
+// legibly) fixes the text case without touching the swatch/segment color.
+export function eventTextColorVar(color: EventColor): string {
+  const hue = color.replace(/-bright$/, "");
+  return `var(--event-text-${hue})`;
+}
+
 // Bloc 77/A: Description is admin free text at the event level (distinct
 // from each tier's own Objectif/Récompense) — same fr/en-per-field
 // convention as EventTierRow above, for the same AGENTS.md reason.

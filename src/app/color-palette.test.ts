@@ -160,12 +160,54 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     }
   });
 
-  // The tokens are defined once (theme-invariant, no light-theme override)
-  // — this is what actually fixes the tester's complaint, since the old
-  // shared tokens' light-theme "-bright" variants are deliberately DARKER
-  // (for text contrast), the opposite of vivid for a standalone swatch.
-  it("Bloc 81/B: the --event-* tokens are theme-invariant — no light-theme override to go dark", () => {
-    expect(lightBlock).not.toMatch(/--event-/);
+  // The swatch/segment tokens are defined once (theme-invariant, no
+  // light-theme override) — this is what actually fixes the tester's
+  // complaint, since the old shared tokens' light-theme "-bright" variants
+  // are deliberately DARKER (for text contrast), the opposite of vivid for
+  // a standalone swatch. --event-text-* (Bloc 81/D review) is the one
+  // deliberate exception — see the contrast test below.
+  it("Bloc 81/B: the --event-* swatch/segment tokens are theme-invariant — no light-theme override to go dark", () => {
+    expect(lightBlock).not.toMatch(/--event-(?!text-)/);
+  });
+
+  // Bloc 81/D review (Codex PR #98): the timeline name and tile title
+  // write --event-text-* directly as text color, over the light theme's
+  // own light surfaces (--bg-panel, --surface-muted) — regression-tests
+  // the exact bug Codex flagged (e.g. the old --event-amber-bright,
+  // #fbbf24, measured ~1.5:1 against --bg-panel there).
+  it("Bloc 81/D review: --event-text-* clears WCAG AA (4.5:1) against every light-theme surface it's read against", () => {
+    const luminance = (hex: string) => {
+      const value = Number.parseInt(hex.slice(1), 16);
+      const channels = [
+        (value >> 16) & 255,
+        (value >> 8) & 255,
+        value & 255,
+      ].map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return (
+        channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+      );
+    };
+    const contrast = (foreground: string, background: string) => {
+      const [lighter, darker] = [
+        luminance(foreground),
+        luminance(background),
+      ].sort((a, b) => b - a);
+      return (lighter! + 0.05) / (darker! + 0.05);
+    };
+    for (const hue of ["violet", "emerald", "amber", "ember", "sapphire"]) {
+      const text = extractHex(lightBlock, `event-text-${hue}`);
+      for (const surface of ["bg", "bg-panel", "surface-muted"]) {
+        expect(
+          contrast(text, extractHex(lightBlock, surface)),
+          `event-text-${hue} vs --${surface}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
   });
 
   it("Bloc 34/F: keeps WCAG AA text contrast after the dark-theme brightness bump", () => {

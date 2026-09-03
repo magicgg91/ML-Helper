@@ -50,6 +50,21 @@
   --event-ember-bright: #f87171;
   --event-sapphire: #3b82f6;
   --event-sapphire-bright: #60a5fa;
+  /* Bloc 81/D review (Codex PR #98): the timeline name and tile title use
+     this as literal TEXT color, not a swatch fill — the --event-* values
+     above are deliberately theme-invariant (fine as a swatch in either
+     theme) but that's exactly what makes them low-contrast as text once
+     the light theme's own light backgrounds sit behind them. One
+     theme-aware token per hue (not per shade — the swatch itself already
+     carries the base/bright distinction, the text only needs to name its
+     hue) keeps this block's default equal to the vivid dark-theme reading;
+     the light-theme block below overrides with WCAG-AA-safe darker
+     reads instead. */
+  --event-text-violet: #c4b5fd;
+  --event-text-emerald: #4ade80;
+  --event-text-amber: #facc15;
+  --event-text-ember: #fca5a5;
+  --event-text-sapphire: #93c5fd;
   --text: #e9e4d8;
   --text-dim: #9299a6;
   --text-faint: #5c6472;
@@ -99,6 +114,17 @@
   --text-faint: #858b95;
   --sapphire: #3d63b0;
   --sapphire-bright: #1e40af;
+  /* Bloc 81/D review: darker, WCAG-AA-safe reads of the same 5 hues (each
+     clears 4.5:1 against every light-theme surface, --surface-muted —
+     the tile background — included) — the swatch/segment tokens
+     themselves stay untouched (no override here, above in the shared
+     block), so the picker and the timeline bar stay just as vivid as in
+     dark theme. */
+  --event-text-violet: #5b21b6;
+  --event-text-emerald: #166534;
+  --event-text-amber: #92400e;
+  --event-text-ember: #991b1b;
+  --event-text-sapphire: #1e40af;
   --summary-total: #8f3210;
   --background: var(--bg);
   --foreground: var(--text);
@@ -2716,9 +2742,16 @@ body > main h1 {
      (Nom, Description, ...), so with the grid's own align-items: start
      (above) it would land level with THEIR titles, not their input
      fields — pushed down to align with the values instead, per the bug
-     report ("aligné avec les champs de saisie, pas avec le titre"). */
+     report ("aligné avec les champs de saisie, pas avec le titre"). Only
+     makes sense in the 6-column desktop layout — reset for the stacked
+     layout below (Bloc 81/C review, Codex PR #98). */
   align-self: start;
   margin-top: 2.1rem;
+}
+@media (max-width: 1400px) {
+  .events-admin-position {
+    margin-top: 0;
+  }
 }
 /* Bloc 80/C: a fixed width for Nom too — previously unset (stretched to
    whatever the old flex-wrap row left over), which is exactly the kind of

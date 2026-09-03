@@ -5,6 +5,7 @@ import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 import {
   eventColorVar,
+  eventTextColorVar,
   timelineLabelMaxWidthRem,
   type EventRow,
   type EventsCatalog,
@@ -121,10 +122,14 @@ function EventTimeline({
                     redundant since the tile below already shows it
                     (Bloc 81/F), so the segment's own label is just the
                     name. Bloc 81/D: written in the event's own chosen
-                    color, the same one filling the segment above it. */}
+                    color — Bloc 81/D review (Codex PR #98): via
+                    eventTextColorVar, a theme-aware safe read of that
+                    same hue, not the vivid theme-invariant swatch value
+                    itself (illegible as text on the light theme's own
+                    light backgrounds). */}
                 <div
                   className="events-timeline-name"
-                  style={{ color: shade }}
+                  style={{ color: eventTextColorVar(event.color) }}
                 >
                   {event.name}
                 </div>
@@ -192,10 +197,12 @@ function EventTile({
         <div className="events-tile-heading">
           {/* Bloc 80/F: the tile's own background stays grey (unchanged) —
               only the name is written in the event's chosen color, the
-              visual link back to its timeline segment above. */}
+              visual link back to its timeline segment above. Bloc 81/D
+              review (Codex PR #98): via eventTextColorVar — see its
+              comment in events-reference.tsx's timeline segment above. */}
           <strong
             className="events-tile-name"
-            style={{ color: eventColorVar(event.color) }}
+            style={{ color: eventTextColorVar(event.color) }}
           >
             {event.name}
           </strong>
