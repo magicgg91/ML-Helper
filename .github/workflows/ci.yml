@@ -93,6 +93,20 @@ jobs:
             --header "X-GitHub-Api-Version: 2022-11-28" \
             "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             --data '{"state":"failure","context":"docker-compose/health","description":"Docker Compose app container did not become healthy"}'
+      # Bloc 84: a plain `docker push` of the image loaded in the step above
+      # started failing deterministically with "unknown blob" (2 runs in a
+      # row, immediately on the first layer, no prior occurrence in 225+
+      # runs) — a known Docker/buildx bug where the classic `docker push`
+      # path mishandles an image loaded via `buildx build --load` on runners
+      # using the containerd image store. Fix per docker/build-push-action's
+      # own "test before push" guidance: push via a second buildx invocation
+      # instead of the local Docker engine's push — it reuses this job's
+      # builder/cache (near-instant, no rebuild) and uploads through
+      # BuildKit's own registry client, which doesn't hit this bug.
       - name: Push image
-        run: docker push ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
 
