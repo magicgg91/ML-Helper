@@ -576,9 +576,11 @@
     "gem-count": "{count} mücevher",
     "columns": {
       "rarity": "Nadirlik",
-      "skydust": "Gökyüzü Tozu",
-      "gems": "Mücevherler",
-      "skill": "Yetenek {number}"
+      "skill": "Yetenek {number}",
+      "secondary-title": "Pouciel ve Mücevherler",
+      "row-merge": "Birleştirme",
+      "row-gems": "Mücevherler",
+      "row-destruction": "Söküm"
     },
     "complete-in-admin": "Yönetim panelinde tamamla"
   },
@@ -591,7 +593,9 @@
       "family": "Aile",
       "slot": "Yuva",
       "secondary-stat": "İkincil istatistik",
-      "dismantle-terradust": "Sökümde Terra Tozu"
+      "secondary-title": "Terra Tozu",
+      "row-merge": "Birleştirme",
+      "row-destruction": "Söküm"
     }
   },
   "crossReference": {
@@ -883,12 +887,8 @@
       "templars-detail": "20 kesin düzenlenebilir maliyet",
       "page-title": "Referans tablosu — {name}",
       "combat-description": "180 satırın tamamı ve her değer ayrı ayrı düzenlenebilir. Bilinmeyen bir değeri yalnızca oyunda onayladıktan sonra gir.",
-      "combat-skydust-description": "Sökümde Gökyüzü Tozu, nadirliğe göre (o nadirlikteki her set tarafından paylaşılır).",
-      "combat-gem-slots-description": "Mücevher yuvaları, nadirliğe göre (o nadirlikteki her set tarafından paylaşılır).",
       "expedition-description": "Keşif ekipmanı detayı",
       "expedition-increments-description": "Keşif Ekipmanı istatistikleri için yıldız başına artışlar",
-      "expedition-merge-cost-description": "Nadirliğe göre Terra Tozu birleştirme maliyeti (Maliyet = K × 2^(n-1))",
-      "expedition-dismantle-description": "Nadirliğe göre sökümde Terra Tozu",
       "templars-description": "Her kesin seviye maliyeti ayrı ayrı düzenlenebilir.",
       "columns": {
         "set-name": "Set adı",
@@ -963,7 +963,14 @@
         "description": "Açıklama",
         "temple-base": "Tapınak temeli",
         "bonus": "Bonus (%)"
-      }
+      },
+      "secondary-row": "Gösterge",
+      "row-merge-cost": "Birleştirme",
+      "row-gem-slots": "Mücevherler",
+      "row-destruction": "Söküm",
+      "combat-secondary-description": "Pouciel (birleştirme, söküm) ve mücevher yuvaları, nadirliğe göre.",
+      "expedition-secondary-description": "Terra Tozu (birleştirme, söküm), nadirliğe göre.",
+      "combat-increments-description": "Savaş Ekipmanı yetenekleri için yıldız başına artışlar"
     },
     "common": {
       "back": "Geri"

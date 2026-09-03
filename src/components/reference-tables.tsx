@@ -30,6 +30,7 @@ import {
   defaultCombatMergeCostBase,
   defaultCombatSkydustBase,
   defaultExpeditionDismantleBase,
+  defaultExpeditionMergeCostBase,
   defaultExpeditionStarIncrements,
   expeditionValueAtStar,
   mergeCostRarityKeys,
@@ -38,6 +39,7 @@ import {
   type CombatReferenceRow,
   type CombatSkydustBase,
   type ExpeditionDismantleBase,
+  type ExpeditionMergeCostBase,
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
@@ -72,15 +74,20 @@ export function formatPercent(value: number | null, locale: string) {
 // 5-column rarity-indexed table replaces what used to be a redundant column
 // on every row of the main table — one row of values, rarity as columns,
 // same layout as the admin config table it's sourced from.
-function RarityValueTable({
+// Bloc 75/A+B: was 3 separate 1-row tables for Combat (Pouciel merge cost,
+// gem slots, Pouciel-at-destruction) and, once merge cost joins the public
+// display here, 2 for Expedition (Terradust merge cost, Terradust-at-
+// dismantle) — now genuinely 1 table each, one row per metric, same 5
+// rarity columns every rarity-keyed table here already uses.
+function RarityValueMergedTable({
   title,
   rarityColumnLabel,
-  base,
+  rows,
   rarityLabel,
 }: {
   title: string;
   rarityColumnLabel: string;
-  base: Record<string, number>;
+  rows: Array<{ label: string; base: Record<string, number> }>;
   rarityLabel: (value: string) => string;
 }) {
   return (
@@ -96,12 +103,14 @@ function RarityValueTable({
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">{title}</th>
-            {mergeCostRarityKeys.map((key) => (
-              <td key={key}>{formatGameNumber(base[key])}</td>
-            ))}
-          </tr>
+          {rows.map((row) => (
+            <tr key={row.label}>
+              <th scope="row">{row.label}</th>
+              {mergeCostRarityKeys.map((key) => (
+                <td key={key}>{formatGameNumber(row.base[key])}</td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
     </section>
@@ -366,15 +375,21 @@ function CombatTile({
 
 export function CombatReferenceTable({
   rows,
-  skydustBase = defaultCombatSkydustBase,
-  gemSlotsBase = defaultCombatGemSlotsBase,
-  mergeCostBase = defaultCombatMergeCostBase,
+  secondaryBase = {
+    mergeCost: defaultCombatMergeCostBase,
+    gemSlots: defaultCombatGemSlotsBase,
+    skydust: defaultCombatSkydustBase,
+  },
 }: {
   rows: readonly CombatReferenceRow[];
-  skydustBase?: CombatSkydustBase;
-  gemSlotsBase?: CombatGemSlotsBase;
-  mergeCostBase?: CombatMergeCostBase;
+  secondaryBase?: {
+    mergeCost: CombatMergeCostBase;
+    gemSlots: CombatGemSlotsBase;
+    skydust: CombatSkydustBase;
+  };
 }) {
+  const { mergeCost: mergeCostBase, gemSlots: gemSlotsBase, skydust: skydustBase } =
+    secondaryBase;
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
   const game = useTranslations("game");
@@ -452,22 +467,14 @@ export function CombatReferenceTable({
           ))}
         </div>
       ) : null}
-      <RarityValueTable
-        title={t("columns.skydust")}
+      <RarityValueMergedTable
+        title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
-        base={skydustBase}
-        rarityLabel={rarityLabel}
-      />
-      <RarityValueTable
-        title={t("columns.gems")}
-        rarityColumnLabel={t("columns.rarity")}
-        base={gemSlotsBase}
-        rarityLabel={rarityLabel}
-      />
-      <RarityValueTable
-        title={t("columns.merge-cost")}
-        rarityColumnLabel={t("columns.rarity")}
-        base={mergeCostBase}
+        rows={[
+          { label: t("columns.row-merge"), base: mergeCostBase },
+          { label: t("columns.row-gems"), base: gemSlotsBase },
+          { label: t("columns.row-destruction"), base: skydustBase },
+        ]}
         rarityLabel={rarityLabel}
       />
       {/* Bloc 54/A: this direction (reference -> tool) was missing entirely
@@ -581,11 +588,17 @@ function ExpeditionTile({
 export function ExpeditionReferenceTable({
   rows,
   increments = defaultExpeditionStarIncrements,
-  dismantleBase = defaultExpeditionDismantleBase,
+  secondaryBase = {
+    mergeCost: defaultExpeditionMergeCostBase,
+    dismantle: defaultExpeditionDismantleBase,
+  },
 }: {
   rows: readonly ExpeditionReferenceRow[];
   increments?: ExpeditionStarIncrements;
-  dismantleBase?: ExpeditionDismantleBase;
+  secondaryBase?: {
+    mergeCost: ExpeditionMergeCostBase;
+    dismantle: ExpeditionDismantleBase;
+  };
 }) {
   const locale = useLocale();
   const t = useTranslations("expedition-equipment");
@@ -659,10 +672,16 @@ export function ExpeditionReferenceTable({
           ))}
         </div>
       ) : null}
-      <RarityValueTable
-        title={t("columns.dismantle-terradust")}
+      <RarityValueMergedTable
+        title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
-        base={dismantleBase}
+        rows={[
+          { label: t("columns.row-merge"), base: secondaryBase.mergeCost },
+          {
+            label: t("columns.row-destruction"),
+            base: secondaryBase.dismantle,
+          },
+        ]}
         rarityLabel={rarityLabel}
       />
       {/* Bloc 54/A: this direction (reference -> tool) was missing entirely

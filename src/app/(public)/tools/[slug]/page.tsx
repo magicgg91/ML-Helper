@@ -14,6 +14,7 @@ import {
 } from "../../../../lib/admin-formulas-server";
 import {
   getCombatReferenceRows,
+  getCombatStarIncrements,
   getExpeditionReferenceRows,
   getExpeditionStarIncrements,
 } from "../../../../lib/reference-equipment-server";
@@ -85,6 +86,7 @@ export default async function ToolPage({
         <SkillsCalculators
           templarParameters={await getTemplarParameters()}
           combatRows={await getCombatReferenceRows()}
+          combatIncrements={await getCombatStarIncrements()}
           expeditionRows={await getExpeditionReferenceRows()}
           expeditionIncrements={await getExpeditionStarIncrements()}
           gemParameters={await getGemParameters()}

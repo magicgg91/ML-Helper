@@ -73,12 +73,10 @@ vi.mock("@/lib/events-server", () => ({
 }));
 vi.mock("@/lib/reference-equipment-server", () => ({
   getCombatReferenceRows: async () => [],
-  getCombatSkydustBase: async () => ({}),
-  getCombatGemSlotsBase: async () => ({}),
-  getCombatMergeCostBase: async () => ({}),
+  getCombatSecondaryBase: async () => ({}),
   getExpeditionReferenceRows: async () => [],
   getExpeditionStarIncrements: async () => ({}),
-  getExpeditionDismantleBase: async () => ({}),
+  getExpeditionSecondaryBase: async () => ({}),
 }));
 vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),

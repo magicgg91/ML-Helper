@@ -9,12 +9,10 @@ import {
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { referenceCatalog } from "@/lib/reference-catalog";
 import {
-  getCombatGemSlotsBase,
-  getCombatMergeCostBase,
   getCombatReferenceRows,
-  getCombatSkydustBase,
-  getExpeditionDismantleBase,
+  getCombatSecondaryBase,
   getExpeditionReferenceRows,
+  getExpeditionSecondaryBase,
   getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
 import { LevelUpReference } from "@/components/level-up-reference";
@@ -76,9 +74,7 @@ export default async function ReferencePage({
         slug === "combat-equipment" ? (
           <CombatReferenceTable
             rows={await getCombatReferenceRows()}
-            skydustBase={await getCombatSkydustBase()}
-            gemSlotsBase={await getCombatGemSlotsBase()}
-            mergeCostBase={await getCombatMergeCostBase()}
+            secondaryBase={await getCombatSecondaryBase()}
           />
         ) : slug === "level-up" ? (
           <LevelUpReference parameters={await getLevelUpParameters()} />
@@ -97,7 +93,7 @@ export default async function ReferencePage({
           <ExpeditionReferenceTable
             rows={await getExpeditionReferenceRows()}
             increments={await getExpeditionStarIncrements()}
-            dismantleBase={await getExpeditionDismantleBase()}
+            secondaryBase={await getExpeditionSecondaryBase()}
           />
         )
       ) : (

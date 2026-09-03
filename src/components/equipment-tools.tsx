@@ -19,6 +19,7 @@ import {
   equipmentOptions,
   equipmentSkillLabels,
   equipmentSlotLayout,
+  equipmentStarIncrement,
   findEquipment,
   gemSlotsByRarity,
   skillKeyByLabel,
@@ -28,6 +29,7 @@ import {
   type EquipmentSkill,
   type EquipmentSlot,
   type EquipmentSlotState,
+  type EquipmentStarIncrements,
   type StuffState,
 } from "../lib/equipment";
 import { rarityClassName } from "../lib/equipment-rarity";
@@ -419,9 +421,11 @@ function SlotEditor({
 export function StuffSimulator({
   combatRows,
   gemParameters = defaultGemParameters,
+  increments = equipmentStarIncrement,
 }: {
   combatRows: readonly CombatReferenceRow[];
   gemParameters?: GemParameters;
+  increments?: EquipmentStarIncrements;
 }) {
   const t = useTranslations("stuff-simulator");
   const game = useTranslations("game");
@@ -459,8 +463,8 @@ export function StuffSimulator({
     if (loaded) localStorage.setItem(storageKey, JSON.stringify(state));
   }, [loaded, state]);
   const global = useMemo(
-    () => computeStuffGlobal(state, combatRows, gemParameters),
-    [state, combatRows, gemParameters],
+    () => computeStuffGlobal(state, combatRows, gemParameters, increments),
+    [state, combatRows, gemParameters, increments],
   );
   function transferToPlayerSettings() {
     const equipmentSkills = emptySkills();
@@ -503,6 +507,7 @@ export function StuffSimulator({
           state[activeFamily][activeIndex],
           combatRows,
           gemParameters,
+          increments,
         );
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
