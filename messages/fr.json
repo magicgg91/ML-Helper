@@ -670,7 +670,8 @@
       "guides": "Guides",
       "content": "Conditions d’utilisation",
       "users": "Utilisateurs",
-      "logs": "Historique"
+      "logs": "Historique",
+      "config": "Configuration"
     },
     "account": {
       "change-password": "Changer mon mot de passe",
@@ -1130,6 +1131,32 @@
       "title": "Accès interdit",
       "description": "Ton rôle ne permet pas d’accéder à cette section ou d’effectuer cette action.",
       "back": "Retour au tableau de bord"
+    },
+    "config": {
+      "eyebrow": "Configuration",
+      "title": "Langues",
+      "intro": "Active ou désactive la visibilité de chaque langue sur le site public. Les fichiers de traduction restent inchangés. L’anglais et le français sont toujours actifs.",
+      "columns": {
+        "language": "Langue",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "locked-tooltip": "Langue de base — toujours active",
+      "saving": "Enregistrement…",
+      "save-error": "Échec de l’enregistrement (HTTP {status}).",
+      "state-saved": "{language} est maintenant {state}.",
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

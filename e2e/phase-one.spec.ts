@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import * as OTPAuth from "otpauth";
 
 test.describe.configure({ mode: "serial" });
@@ -170,9 +170,10 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", "/guides/guide-visible");
-  await expect(
-    page.getByRole("link", { name: /Templiers/ }),
-  ).toHaveAttribute("href", "/referentiels/templars");
+  await expect(page.getByRole("link", { name: /Templiers/ })).toHaveAttribute(
+    "href",
+    "/referentiels/templars",
+  );
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
   });
@@ -365,7 +366,9 @@ test("Progression is a Référentiels reference and keeps Silver unconfirmed", a
     legend: "Légende",
   };
   for (const league of ["bronze", "gold", "platinum", "diamond", "legend"]) {
-    await leagueGroup.getByRole("button", { name: leagueLabels[league] }).click();
+    await leagueGroup
+      .getByRole("button", { name: leagueLabels[league] })
+      .click();
     await expect(page.getByRole("table").first()).toBeVisible();
   }
   await leagueGroup.getByRole("button", { name: "Argent" }).click();
@@ -685,9 +688,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   );
 
   await page.getByRole("tab", { name: "Templiers" }).click();
-  await expect(
-    page.getByRole("link", { name: /Templiers$/ }),
-  ).toHaveAttribute("href", "/referentiels/templars");
+  await expect(page.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
+    "href",
+    "/referentiels/templars",
+  );
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
   // Point 1: one shared level range applies to all 5 skills at once.
@@ -912,9 +916,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // Bloc 66/B: exact match — the presentation editor sharing this page now
   // also carries 5 editable "Base Temple N" fields (Bloc 68/C), whose
   // accessible names otherwise substring-match this same "Base" locator.
-  await page
-    .getByRole("spinbutton", { name: "Base", exact: true })
-    .fill("200");
+  await page.getByRole("spinbutton", { name: "Base", exact: true }).fill("200");
   await page
     .locator(".editor-action-bar")
     .getByRole("button", { name: "Enregistrer les paramètres" })
@@ -1302,13 +1304,9 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   // no dead tile on the homepage or the /referentiels index, no dead
   // search result — until an admin activates it.
   await page.goto("/");
-  await expect(
-    page.getByRole("link", { name: /Événements/ }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(0);
   await page.goto("/referentiels");
-  await expect(
-    page.getByRole("link", { name: /Événements/ }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(0);
   await page.getByRole("searchbox").fill("événements");
   await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(0);
   await page.getByRole("searchbox").fill("");
@@ -1326,9 +1324,7 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
 
   // Bloc 60 review (Codex PR #81): now visible in public discovery too.
   await page.goto("/referentiels");
-  await expect(
-    page.getByRole("link", { name: /Événements/ }),
-  ).toHaveCount(1);
+  await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(1);
 
   await page.goto("/admin/referentiels");
   await row.getByRole("link", { name: "Éditer" }).click();
@@ -1341,9 +1337,7 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   ).toHaveAttribute("aria-pressed", "true");
 
   await page.getByTestId("add-event-bronze").click();
-  await page
-    .getByLabel("Nom de l’événement 1")
-    .fill("Recruteur");
+  await page.getByLabel("Nom de l’événement 1").fill("Recruteur");
   await page
     .getByLabel("Description de l’événement 1")
     .fill("Enrôle des troupes pour la ligue.");
@@ -1378,9 +1372,7 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   // Public: entirely independent per league — Légende stays empty while
   // Bronze has the event just saved; the event is closed by default.
   await page.goto("/referentiels/events");
-  await expect(
-    page.getByRole("heading", { name: "Événements" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Événements" })).toBeVisible();
   const publicLeagueGroup = page.getByRole("group", { name: "Ligue" });
   await publicLeagueGroup.getByRole("button", { name: "Légende" }).click();
   await expect(page.getByRole("status")).toHaveText(
@@ -1448,9 +1440,7 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
     .getByRole("group", { name: "Durée de l’événement 1" })
     .getByRole("button", { name: "48h" })
     .click();
-  await page
-    .getByRole("button", { name: "Enregistrer toute la page" })
-    .click();
+  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
 
   await expect(page.getByRole("status")).toHaveText(
     "Corrige les champs signalés avant l’enregistrement.",
@@ -1661,9 +1651,9 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
       await expect(
         page.getByRole("heading", { name: "Dernières actions" }),
       ).toHaveCount(0);
-      await expect(
-        page.getByRole("link", { name: "Historique" }),
-      ).toHaveCount(0);
+      await expect(page.getByRole("link", { name: "Historique" })).toHaveCount(
+        0,
+      );
       await expect(
         page.getByRole("link", { name: "Utilisateurs" }),
       ).toHaveCount(0);
@@ -2083,10 +2073,9 @@ test("no league button group ever causes a scrollbar on itself, at mobile or des
       expect(info.scrollHeight, `${label} #${i} vertical`).toBeLessThanOrEqual(
         info.clientHeight + 1,
       );
-      expect(
-        info.scrollWidth,
-        `${label} #${i} horizontal`,
-      ).toBeLessThanOrEqual(info.clientWidth + 1);
+      expect(info.scrollWidth, `${label} #${i} horizontal`).toBeLessThanOrEqual(
+        info.clientWidth + 1,
+      );
     }
   }
 
@@ -2096,9 +2085,7 @@ test("no league button group ever causes a scrollbar on itself, at mobile or des
     await page.goto("/tools/villes");
     await page.getByText("Paramètres du joueur", { exact: true }).click();
     await assertNoScroll(`w${width} PlayerSettings+CityCost`);
-    await page
-      .getByRole("tab", { name: "Niveau Max Atteignable" })
-      .click();
+    await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
     await assertNoScroll(`w${width} CityMaxLevel`);
     await page.getByRole("tab", { name: "Production", exact: true }).click();
     await assertNoScroll(`w${width} CityProduction`);
@@ -2118,4 +2105,189 @@ test("no league button group ever causes a scrollbar on itself, at mobile or des
     await page.goto("/referentiels/level-up");
     await assertNoScroll(`w${width} LevelUp`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 90: admin language visibility. These tests live in this file (rather
+// than a separate spec) on purpose: they create/rely on the Super Admin, and
+// this file runs in serial mode, so they run after the "first launch" test
+// above — a separate parallel spec would race that test's pristine-DB
+// assumption by creating the Super Admin first. Each test re-enables any
+// locale it disables so the rest of the suite is unaffected.
+// ---------------------------------------------------------------------------
+
+const B90_ROOT = {
+  username: "rootadmin",
+  password: "correct-horse-battery-staple",
+};
+
+async function b90EnsureRoot(page: Page) {
+  const setup = await page.request.post("/api/admin/setup", { data: B90_ROOT });
+  expect([201, 409]).toContain(setup.status());
+}
+
+async function b90Login(page: Page, username: string, password: string) {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill(username);
+  await page.getByLabel(/Password|Mot de passe/).fill(password);
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+}
+
+async function b90SetLocaleActive(page: Page, locale: string, active: boolean) {
+  const response = await page.request.patch("/api/admin/config/locales", {
+    data: { locale, active },
+  });
+  expect(response.ok(), `toggle ${locale}=${active}`).toBeTruthy();
+}
+
+// Bloc 90/A: the Configuration tab is reachable only by admin/super_admin —
+// both in the UI (nav link + page) and via a forged API request.
+test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
+  browser,
+}) => {
+  test.setTimeout(60_000);
+  const rootContext = await browser.newContext();
+  const root = await rootContext.newPage();
+  await b90EnsureRoot(root);
+  await b90Login(root, B90_ROOT.username, B90_ROOT.password);
+
+  await expect(root.getByRole("link", { name: "Configuration" })).toBeVisible();
+  const configResponse = await root.goto("/admin/config");
+  expect(configResponse?.status()).toBe(200);
+  await expect(root.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+
+  const created = await root.request.post("/api/admin/users", {
+    data: {
+      username: "b90-tools",
+      role: "tools_manager",
+      password: "role-test-password",
+    },
+  });
+  expect([201, 409]).toContain(created.status());
+  await rootContext.close();
+
+  const toolsContext = await browser.newContext();
+  const tools = await toolsContext.newPage();
+  await b90Login(tools, "b90-tools", "role-test-password");
+  await expect(tools.getByRole("link", { name: "Configuration" })).toHaveCount(
+    0,
+  );
+  const denied = await tools.goto("/admin/config");
+  expect(denied?.status()).toBe(403);
+  await expect(
+    tools.getByRole("heading", { name: "Accès interdit" }),
+  ).toBeVisible();
+  const forged = await tools.request.patch("/api/admin/config/locales", {
+    data: { locale: "de", active: false },
+  });
+  expect(forged.status()).toBe(403);
+  await toolsContext.close();
+});
+
+// Bloc 90/D: EN and FR can never be deactivated — their toggles are locked in
+// the UI, and a forged API request to disable them is rejected.
+test("Bloc 90/D: English and French cannot be deactivated", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await b90EnsureRoot(page);
+  await b90Login(page, B90_ROOT.username, B90_ROOT.password);
+  await page.goto("/admin/config");
+
+  for (const locale of ["en", "fr"]) {
+    await expect(page.getByTestId(`locale-locked-${locale}`)).toBeDisabled();
+    await expect(page.getByTestId(`locale-toggle-${locale}`)).toHaveCount(0);
+  }
+  for (const locale of ["de", "es", "tr"])
+    await expect(page.getByTestId(`locale-toggle-${locale}`)).toBeEnabled();
+
+  for (const locale of ["en", "fr"]) {
+    const forged = await page.request.patch("/api/admin/config/locales", {
+      data: { locale, active: false },
+    });
+    expect(forged.status(), `deactivate ${locale}`).toBe(422);
+  }
+  await context.close();
+});
+
+// Bloc 90/B+C+E: deactivating a language persists in the DB, removes it from
+// the public selector, and renders a visitor whose cookie points at it in
+// English — while its JSON files stay put (its content still renders once
+// re-enabled).
+test("Bloc 90/B+C+E: deactivating DE hides it publicly and redirects to EN", async ({
+  browser,
+}) => {
+  test.setTimeout(60_000);
+  const adminContext = await browser.newContext();
+  const admin = await adminContext.newPage();
+  await b90EnsureRoot(admin);
+  await b90Login(admin, B90_ROOT.username, B90_ROOT.password);
+
+  await b90SetLocaleActive(admin, "de", false);
+
+  // Bloc 90/B: persisted — a reload of the tab shows DE inactive.
+  await admin.goto("/admin/config");
+  const deRow = admin.getByRole("row").filter({ hasText: "Deutsch" });
+  await expect(deRow).toContainText(/Inactive|Disabled/);
+
+  // Bloc 90/C: the public selector no longer offers DE, but still offers the
+  // other active locales.
+  const publicContext = await browser.newContext();
+  const visitor = await publicContext.newPage();
+  await visitor.goto("/");
+  await visitor.locator(".locale-select-trigger").click();
+  const codes = await visitor.getByRole("option").allInnerTexts();
+  expect(codes).not.toContain("DE");
+  expect(codes).toEqual(expect.arrayContaining(["EN", "FR", "ES", "TR"]));
+  await publicContext.close();
+
+  // Bloc 90/E: a visitor whose NEXT_LOCALE cookie is the now-disabled DE is
+  // rendered in English (html lang="en").
+  const staleContext = await browser.newContext();
+  await staleContext.addCookies([
+    { name: "NEXT_LOCALE", value: "de", url: "http://127.0.0.1:3000" },
+  ]);
+  const stale = await staleContext.newPage();
+  await stale.goto("/");
+  await expect(stale.locator("html")).toHaveAttribute("lang", "en");
+  await staleContext.close();
+
+  // Cleanup: re-enable DE and confirm its content renders again (files intact).
+  await b90SetLocaleActive(admin, "de", true);
+  const reContext = await browser.newContext();
+  await reContext.addCookies([
+    { name: "NEXT_LOCALE", value: "de", url: "http://127.0.0.1:3000" },
+  ]);
+  const rehydrated = await reContext.newPage();
+  await rehydrated.goto("/");
+  await expect(rehydrated.locator("html")).toHaveAttribute("lang", "de");
+  await reContext.close();
+  await adminContext.close();
+});
+
+// Bloc 90/F: the public deactivation never blocks admin content editing in
+// that language — the editorial locale picker still offers it and its fields
+// stay editable.
+test("Bloc 90/F: admin can still edit content in a deactivated language", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await b90EnsureRoot(page);
+  await b90Login(page, B90_ROOT.username, B90_ROOT.password);
+
+  await b90SetLocaleActive(page, "es", false);
+
+  await page.goto("/admin/guides/new");
+  const picker = page.getByLabel("Langue du guide");
+  await expect(picker.locator("option", { hasText: "ES" })).toHaveCount(1);
+  await picker.selectOption("es");
+  const title = page.getByLabel("Titre (ES)");
+  await title.fill("Título en español");
+  await expect(title).toHaveValue("Título en español");
+
+  await b90SetLocaleActive(page, "es", true);
+  await context.close();
 });

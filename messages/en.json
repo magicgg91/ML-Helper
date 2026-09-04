@@ -670,7 +670,8 @@
       "guides": "Guides",
       "content": "Terms of use",
       "users": "Users",
-      "logs": "History"
+      "logs": "History",
+      "config": "Configuration"
     },
     "account": {
       "change-password": "Change my password",
@@ -1130,6 +1131,32 @@
       "title": "Access forbidden",
       "description": "Your role does not allow access to this section or action.",
       "back": "Back to dashboard"
+    },
+    "config": {
+      "eyebrow": "Configuration",
+      "title": "Languages",
+      "intro": "Enable or disable each language's visibility on the public site. The translation files stay untouched. English and French are always active.",
+      "columns": {
+        "language": "Language",
+        "status": "Status",
+        "action": "Action"
+      },
+      "active": "Enabled",
+      "inactive": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "locked-tooltip": "Base language — always active",
+      "saving": "Saving…",
+      "save-error": "Save failed (HTTP {status}).",
+      "state-saved": "{language} is now {state}.",
+      "server-error": "Unable to reach the server. Try again later.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

@@ -652,7 +652,8 @@
       "guides": "Anleitungen",
       "content": "Nutzungsbedingungen",
       "users": "Benutzer",
-      "logs": "Verlauf"
+      "logs": "Verlauf",
+      "config": "Konfiguration"
     },
     "account": {
       "change-password": "Mein Passwort ändern",
@@ -1112,6 +1113,32 @@
       "title": "Zugriff verweigert",
       "description": "Deine Rolle erlaubt keinen Zugriff auf diesen Bereich oder diese Aktion.",
       "back": "Zurück zum Dashboard"
+    },
+    "config": {
+      "eyebrow": "Konfiguration",
+      "title": "Sprachen",
+      "intro": "Aktiviere oder deaktiviere die Sichtbarkeit jeder Sprache auf der öffentlichen Website. Die Übersetzungsdateien bleiben unverändert. Englisch und Französisch sind immer aktiv.",
+      "columns": {
+        "language": "Sprache",
+        "status": "Status",
+        "action": "Aktion"
+      },
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren",
+      "locked-tooltip": "Basissprache — immer aktiv",
+      "saving": "Wird gespeichert…",
+      "save-error": "Speichern fehlgeschlagen (HTTP {status}).",
+      "state-saved": "{language} ist jetzt {state}.",
+      "server-error": "Server nicht erreichbar. Versuche es später erneut.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

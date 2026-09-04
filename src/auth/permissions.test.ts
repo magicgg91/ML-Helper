@@ -99,6 +99,25 @@ describe("admin role permissions", () => {
     expect(can("read_only", "dashboard.view")).toBe(true);
   });
 
+  // Bloc 90/A: the Configuration tab (language visibility) is reserved to
+  // admin and super_admin — every manager/read role is denied, read and write.
+  it("Bloc90/A: reserves configuration to admin and super_admin", () => {
+    for (const capability of [
+      "configuration.read",
+      "configuration.write",
+    ] as const) {
+      expect(can("super_admin", capability)).toBe(true);
+      expect(can("admin", capability)).toBe(true);
+      for (const role of [
+        "guides_manager",
+        "references_manager",
+        "tools_manager",
+        "read_only",
+      ] as const)
+        expect(can(role, capability)).toBe(false);
+    }
+  });
+
   it("reserves legal content reads and writes to the Super Admin", () => {
     for (const role of [
       "admin",

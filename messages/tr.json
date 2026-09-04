@@ -652,7 +652,8 @@
       "guides": "Rehberler",
       "content": "Kullanım koşulları",
       "users": "Kullanıcılar",
-      "logs": "Geçmiş"
+      "logs": "Geçmiş",
+      "config": "Yapılandırma"
     },
     "account": {
       "change-password": "Şifremi değiştir",
@@ -1112,6 +1113,32 @@
       "title": "Erişim yasak",
       "description": "Rolün bu bölüme veya işleme erişime izin vermiyor.",
       "back": "Kontrol paneline dön"
+    },
+    "config": {
+      "eyebrow": "Yapılandırma",
+      "title": "Diller",
+      "intro": "Her dilin herkese açık sitedeki görünürlüğünü aç veya kapat. Çeviri dosyaları değişmeden kalır. İngilizce ve Fransızca her zaman etkindir.",
+      "columns": {
+        "language": "Dil",
+        "status": "Durum",
+        "action": "İşlem"
+      },
+      "active": "Etkin",
+      "inactive": "Devre dışı",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "locked-tooltip": "Temel dil — her zaman etkin",
+      "saving": "Kaydediliyor…",
+      "save-error": "Kaydetme başarısız (HTTP {status}).",
+      "state-saved": "{language} artık {state}.",
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {
