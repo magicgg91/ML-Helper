@@ -21,6 +21,7 @@ import {
   type EquipmentSlot,
 } from "../lib/equipment";
 import { expeditionSlotLayout } from "../lib/expedition-equipment";
+import { formatSkillPercentValue } from "../lib/skill-percent";
 import { rarityClassName } from "../lib/equipment-rarity";
 import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
 import { formatGameNumber } from "../lib/city-calculators";
@@ -82,9 +83,9 @@ const expeditionFamilies = [
 ] as const;
 
 export function formatPercent(value: number | null, locale: string) {
-  return value === null
-    ? "—"
-    : `${value.toLocaleString(locale, { maximumFractionDigits: 2 })}%`;
+  // Bloc 87/A: skill percentages (gem/equipment contributions) round to 1
+  // decimal with standard rounding — see formatSkillPercentValue.
+  return value === null ? "—" : `${formatSkillPercentValue(value, locale)}%`;
 }
 
 // Bloc 35/2.2: the destruction-currency value is constant per rarity, so a

@@ -325,7 +325,7 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
           label={t("league")}
           value={league}
           onChange={setLeague}
-          className="league-buttons-grid"
+          className="league-buttons-grid league-buttons-half"
         />
       </section>
       {!league ? (
