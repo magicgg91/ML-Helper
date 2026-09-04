@@ -172,4 +172,35 @@ describe("CombatCalculators", () => {
     // Bloc 88/E: no percentage anywhere in the tool.
     expect(tile).not.toHaveTextContent("%");
   });
+
+  // Bloc 89/B: each result value now sits in its own nested mini-tile
+  // (.demo-attack-inner-tile) inside the main result tile — the wall and the
+  // maximum-troops values in two distinct inner tiles. The lighter grey,
+  // centering, 50% width and equal thirds are paint/geometry, covered by the
+  // e2e spec.
+  it("Bloc89/B: wall and troops each sit in their own nested mini-tile", () => {
+    view();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    );
+    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
+    fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
+
+    const wallTile = screen
+      .getByTestId("demo-wall")
+      .closest(".demo-attack-inner-tile") as HTMLElement | null;
+    const troopsTile = screen
+      .getByTestId("demo-troops")
+      .closest(".demo-attack-inner-tile") as HTMLElement | null;
+    expect(wallTile).not.toBeNull();
+    expect(troopsTile).not.toBeNull();
+    // Two distinct inner tiles, both inside the main result tile.
+    expect(wallTile).not.toBe(troopsTile);
+    const tile = screen.getByTestId("demo-wall").closest(".demo-attack-tile");
+    expect(tile).toContainElement(wallTile);
+    expect(tile).toContainElement(troopsTile);
+    // They keep the shared .total-box styling hook.
+    expect(wallTile).toHaveClass("total-box");
+    expect(troopsTile).toHaveClass("total-box");
+  });
 });
