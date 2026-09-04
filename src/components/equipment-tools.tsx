@@ -34,6 +34,7 @@ import {
 } from "../lib/equipment";
 import { rarityClassName } from "../lib/equipment-rarity";
 import {
+  emptyCombatSlotIconPath,
   equipmentImagePath,
   equipmentSkillColors,
   filterButtonColor,
@@ -305,7 +306,15 @@ function SlotCell({
           ) : null}
         </div>
       ) : (
-        <small>{t("empty-slot")}</small>
+        // Bloc 85/A: an icon representing the slot's own equipment type,
+        // faded, in place of the plain "Vide" text — falls back to that
+        // text if the icon file is ever missing (GameImage's onError path).
+        <GameImage
+          src={emptyCombatSlotIconPath(slot)}
+          alt={t("empty-slot")}
+          className="stuff-slot-image stuff-slot-image-combat stuff-slot-image-empty"
+          fallback={<small>{t("empty-slot")}</small>}
+        />
       )}
     </button>
   );

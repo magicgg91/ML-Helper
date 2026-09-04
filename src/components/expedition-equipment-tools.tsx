@@ -26,7 +26,11 @@ import {
   type ExpeditionSlotState,
 } from "../lib/expedition-equipment";
 import { rarityClassName } from "../lib/equipment-rarity";
-import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
+import {
+  emptyExpeditionSlotIconPath,
+  equipmentImagePath,
+  filterButtonColor,
+} from "../lib/game-images";
 import {
   defaultExpeditionStarIncrements,
   type ExpeditionReferenceRow,
@@ -225,7 +229,14 @@ function SlotCell({
           <StarRating level={state.star} />
         </span>
       ) : (
-        <small>{t("empty-slot")}</small>
+        // Bloc 85/B: same treatment as Combat (Bloc 85/A) — a faded icon for
+        // the slot's own equipment type instead of the plain "Vide" text.
+        <GameImage
+          src={emptyExpeditionSlotIconPath(slot)}
+          alt={t("empty-slot")}
+          className="stuff-slot-image stuff-slot-image-expedition stuff-slot-image-empty"
+          fallback={<small>{t("empty-slot")}</small>}
+        />
       )}
     </button>
   );
