@@ -38,8 +38,15 @@ export function LocaleToggle({ locales }: { locales: string[] }) {
   const [pending, startTransition] = useTransition();
   function change(nextLocale: string) {
     if (nextLocale === locale) return;
+    // Codex P2: usePathname() drops the query string, so a switch from
+    // /fr/tools/competences?open=gems would otherwise land on
+    // /en/tools/competences and reset the open calculator tab (tools/[slug]
+    // reads `open` from searchParams). Re-attach the live query — read from
+    // window in the click handler so the component stays statically
+    // renderable (useSearchParams() would opt every page into dynamic).
+    const query = typeof window === "undefined" ? "" : window.location.search;
     startTransition(() => {
-      router.replace(pathname, { locale: nextLocale });
+      router.replace(`${pathname}${query}`, { locale: nextLocale });
     });
   }
   const [open, setOpen] = useState(false);

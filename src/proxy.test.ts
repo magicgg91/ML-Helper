@@ -86,6 +86,18 @@ describe("Bloc 91/E1: locale-prefixed routing", () => {
     expect(res.headers.get("location")).toBeNull();
     expect(forwardedLocale(res)).toBe("en");
   });
+
+  it("forwards the pathname and query string to the layout (Codex P2: disabled-locale redirect keeps deep-link state)", () => {
+    const res = proxy(
+      makeRequest({ path: "/de/tools/competences?open=templars" }),
+    );
+    expect(res.headers.get("x-middleware-request-x-pathname")).toBe(
+      "/de/tools/competences",
+    );
+    expect(res.headers.get("x-middleware-request-x-search")).toBe(
+      "?open=templars",
+    );
+  });
 });
 
 describe("M2/F2: middleware security", () => {

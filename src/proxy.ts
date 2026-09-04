@@ -115,7 +115,10 @@ function renderWithLocale(request: NextRequest, locale: string) {
   requestHeaders.set(localeHeader, locale);
   // Bloc 90/E1: the layout can't otherwise see the pathname — forward it so a
   // disabled-locale /[locale]/ URL can redirect to its English equivalent.
+  // The query string travels in its own header (Codex P2) so that redirect
+  // preserves deep-link state (e.g. ?open=templars selecting a calculator).
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  requestHeaders.set("x-search", request.nextUrl.search);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("content-security-policy", csp);
   return response;

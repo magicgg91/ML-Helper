@@ -31,9 +31,14 @@ export default async function LocaleLayout({
   if (!isAlwaysActiveLocale(locale)) {
     const active = await getActiveLocales();
     if (!active.includes(locale)) {
-      const pathname = (await headers()).get("x-pathname") ?? `/${locale}`;
+      const requestHeaders = await headers();
+      const pathname = requestHeaders.get("x-pathname") ?? `/${locale}`;
+      // Codex P2: keep the query string so a disabled-locale deep link like
+      // /de/tools/competences?open=templars redirects to its English
+      // equivalent WITH ?open=templars, not a bare /en/tools/competences.
+      const search = requestHeaders.get("x-search") ?? "";
       const rest = pathname.replace(new RegExp(`^/${locale}(?=/|$)`), "");
-      redirect(`/${fallbackLocale}${rest}`);
+      redirect(`/${fallbackLocale}${rest}${search}`);
     }
   }
 

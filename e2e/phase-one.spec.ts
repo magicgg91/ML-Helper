@@ -2337,6 +2337,15 @@ test("Bloc 91/E1: the 5 languages have their own URL, with distinct hreflang and
   // The language selector navigates to the same page under the chosen locale.
   await page.goto("/fr/tools");
   await page.locator(".locale-select-trigger").click();
-  await page.getByRole("option", { name: "EN" }).click();
+  await page.getByRole("option", { name: "EN", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/tools$/);
+
+  // Codex P2: a language switch keeps the query string, so a deep link like
+  // ?open=gems (which tools/[slug] reads to pick a calculator tab) survives.
+  // exact: true — the competences page's league <select> has EN-substring
+  // options ("Argent", "Légende") that a fuzzy name match would also catch.
+  await page.goto("/fr/tools/competences?open=gems");
+  await page.locator(".locale-select-trigger").click();
+  await page.getByRole("option", { name: "EN", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/tools\/competences\?open=gems$/);
 });
