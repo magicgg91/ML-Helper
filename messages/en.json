@@ -1149,7 +1149,14 @@
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
       "state-saved": "{language} is now {state}.",
-      "server-error": "Unable to reach the server. Try again later."
+      "server-error": "Unable to reach the server. Try again later.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

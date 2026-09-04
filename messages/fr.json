@@ -1149,7 +1149,14 @@
       "saving": "Enregistrement…",
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "state-saved": "{language} est maintenant {state}.",
-      "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

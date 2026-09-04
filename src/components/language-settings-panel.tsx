@@ -22,18 +22,12 @@ export type LanguageRow = {
   locked: boolean;
 };
 
-// Bloc 90: language endonyms — a language's name in its own language, so they
-// read the same whatever the admin UI locale is (no 5×5 translation matrix).
-const endonyms: Record<string, string> = {
-  en: "English",
-  fr: "Français",
-  de: "Deutsch",
-  es: "Español",
-  tr: "Türkçe",
-};
-
 export function LanguageSettingsPanel({ rows }: { rows: LanguageRow[] }) {
   const t = useTranslations("admin.config");
+  // Language names come from next-intl like every other fixed UI string
+  // (AGENTS.md) — the values are endonyms, so they read the same in every
+  // admin UI locale, but they still flow through the translation files.
+  const languageName = (locale: string) => t(`languages.${locale}`);
   const [languages, setLanguages] = useState(rows);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
@@ -59,7 +53,7 @@ export function LanguageSettingsPanel({ rows }: { rows: LanguageRow[] }) {
       );
       setMessage(
         t("state-saved", {
-          language: endonyms[row.locale] ?? row.locale.toUpperCase(),
+          language: languageName(row.locale),
           state: t(row.active ? "inactive" : "active").toLocaleLowerCase(),
         }),
       );
@@ -97,7 +91,7 @@ export function LanguageSettingsPanel({ rows }: { rows: LanguageRow[] }) {
                     >
                       {row.locale.toUpperCase()}
                     </span>
-                    {endonyms[row.locale] ?? row.locale.toUpperCase()}
+                    {languageName(row.locale)}
                   </TableCell>
                   <TableCell
                     className={

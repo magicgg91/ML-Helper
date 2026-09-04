@@ -1131,7 +1131,14 @@
       "saving": "Kaydediliyor…",
       "save-error": "Kaydetme başarısız (HTTP {status}).",
       "state-saved": "{language} artık {state}.",
-      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene."
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

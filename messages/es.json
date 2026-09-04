@@ -1131,7 +1131,14 @@
       "saving": "Guardando…",
       "save-error": "Error al guardar (HTTP {status}).",
       "state-saved": "{language} ahora está {state}.",
-      "server-error": "No se puede conectar con el servidor. Inténtalo más tarde."
+      "server-error": "No se puede conectar con el servidor. Inténtalo más tarde.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
     }
   },
   "roles": {

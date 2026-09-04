@@ -17,6 +17,11 @@ vi.mock("../components/locale-toggle", () => ({
 vi.mock("../i18n/config", () => ({
   getAvailableLocales: async () => ["en", "fr"],
 }));
+// Bloc 90: the public layout now sources the selector's locales from the DB
+// (getActiveLocales) rather than the filesystem — stub it here.
+vi.mock("@/lib/locale-settings", () => ({
+  getActiveLocales: async () => ["en", "fr"],
+}));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
   getLocale: async () => "fr",

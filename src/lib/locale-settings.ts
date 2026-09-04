@@ -44,16 +44,14 @@ export async function getLocaleActiveState(): Promise<
 }
 
 // The launched locales currently visible to the public, in launchLocales
-// order. Falls open to all launched locales if the DB read fails, so a
-// transient DB error never hides every language (or trips a build-time
-// render) — degrading to "show everything" rather than "show nothing".
+// order. A DB read failure propagates (fail loud) rather than being swallowed:
+// silently falling open to every locale would re-expose a language an admin
+// deliberately hid, and AGENTS.md forbids silent failures around Prisma. This
+// matches getCalculatorAvailability, which the public layout already calls
+// without a fallback, so a DB outage fails the same pages the same way.
 export async function getActiveLocales(): Promise<LaunchLocale[]> {
-  try {
-    const state = await getLocaleActiveState();
-    return launchLocales.filter((locale) => state[locale]);
-  } catch {
-    return [...launchLocales];
-  }
+  const state = await getLocaleActiveState();
+  return launchLocales.filter((locale) => state[locale]);
 }
 
 // Bloc 90/E: which locale a page renders in, given the visitor's NEXT_LOCALE
