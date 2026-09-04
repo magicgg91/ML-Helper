@@ -8,6 +8,8 @@ import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
 import { pageTitle } from "@/lib/page-title";
 import { pageMetadata } from "@/lib/page-metadata";
+import { JsonLd } from "@/components/json-ld";
+import { articleJsonLd } from "@/lib/structured-data";
 
 export async function generateMetadata({
   params,
@@ -57,6 +59,18 @@ export default async function GuidePage({
   const categories = parseGuideCategories(guide.category);
   return (
     <main className="public-main">
+      {/* Bloc 91/M4: Article structured data (dates, language, cover). */}
+      <JsonLd
+        data={articleJsonLd({
+          locale,
+          path: `/guides/${slug}`,
+          title: localizedText(guide.title, locale) || slug,
+          author: guide.author,
+          publishedTime: guide.publishedAt?.toISOString(),
+          modifiedTime: guide.updatedAt?.toISOString(),
+          image: guide.coverImage,
+        })}
+      />
       <article className="guide-shell">
         <p className="eyebrow">
           {t("detail.eyebrow", {

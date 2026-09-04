@@ -64,3 +64,36 @@ test("each tool category and reference has its own description (no shared templa
   // The whole point of E2: these used to share one generic string each.
   expect(new Set([villes, combat, gems, templars]).size).toBe(4);
 });
+
+test("Bloc 91/M6: 308-redirects a renamed reference slug to its current URL", async ({
+  request,
+}) => {
+  const res = await request.get("/fr/referentiels/gemmes", {
+    maxRedirects: 0,
+  });
+  expect(res.status()).toBe(308);
+  expect(res.headers()["location"]).toMatch(/\/fr\/referentiels\/gems$/);
+});
+
+test("Bloc 91/M6: serves a translated 404 with noindex for an unknown URL", async ({
+  page,
+}) => {
+  const res = await page.goto("/fr/page-inexistante");
+  expect(res?.status()).toBe(404);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Page introuvable" }),
+  ).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
+});
+
+test("Bloc 91/M4: emits JSON-LD structured data on public pages", async ({
+  page,
+}) => {
+  await page.goto("/fr/tools/villes");
+  const ld = page.locator('script[type="application/ld+json"]');
+  await expect(ld).toHaveCount(1);
+  expect(await ld.textContent()).toContain("WebApplication");
+});

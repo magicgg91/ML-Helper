@@ -11,6 +11,8 @@ import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 import { defaultOgImagePath, ogLocale } from "@/lib/page-metadata";
+import { JsonLd } from "@/components/json-ld";
+import { websiteJsonLd } from "@/lib/structured-data";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, meta, locale] = await Promise.all([
@@ -63,6 +65,8 @@ export default async function HomePage() {
     ]);
   return (
     <main className="public-main">
+      {/* Bloc 91/M4: WebSite + Organization structured data for the home page. */}
+      <JsonLd data={websiteJsonLd(locale)} />
       {/* Bloc 34/D: a short intro sentence replaces the carousel/hero — the
           tool category grid below is the actual point of the homepage and
           should stay visible without scrolling. Bloc 91/E5: the page now

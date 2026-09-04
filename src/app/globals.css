@@ -67,7 +67,13 @@
   --event-text-sapphire: #93c5fd;
   --text: #e9e4d8;
   --text-dim: #9299a6;
-  --text-faint: #5c6472;
+  /* Bloc 91/M8: raised from #5c6472 (WCAG ~2.5:1, failed AA). Codex review: the
+     value must clear 4.5:1 on the DARKEST surface it lands on — the raised
+     panel (#29303d) behind .login-card small — not just the page bg/panels, so
+     #9298a4 (4.58:1 there) rather than #8a919d (4.18:1). In dark mode that puts
+     faint at essentially --text-dim's level: the AA floor for muted text on the
+     raised panel, so the two tiers necessarily converge here. */
+  --text-faint: #9298a4;
   --rarity-commun: #8a8f98;
   --rarity-rare: #4a9179;
   --rarity-epique: #5b8bc9;
@@ -110,8 +116,10 @@
   --violet: #75549d;
   --violet-bright: #5b21b6;
   --text: #20242b;
-  --text-dim: #626976;
-  --text-faint: #858b95;
+  /* Bloc 91/M8: darkened from #626976 (WCAG ~4.05:1) / #858b95 (~2.5:1) so
+     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim. */
+  --text-dim: #5b6270;
+  --text-faint: #666d78;
   --sapphire: #3d63b0;
   --sapphire-bright: #1e40af;
   /* Bloc 81/D review: darker, WCAG-AA-safe reads of the same 5 hues (each
@@ -4297,4 +4305,38 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   .split-reference-tables {
     grid-template-columns: 1fr;
   }
+}
+
+/* Bloc 91/M6: the translated custom 404 page (src/app/not-found.tsx). */
+.not-found {
+  max-width: 40rem;
+  margin: clamp(2rem, 8vw, 5rem) auto;
+  padding: 0 1.25rem;
+  text-align: center;
+}
+.not-found h1 {
+  font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+  margin: 0 0 0.75rem;
+}
+.not-found p {
+  color: var(--text-dim);
+  margin: 0 0 1.75rem;
+}
+.not-found-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.not-found-links a {
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+.not-found-links a:hover {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
 }

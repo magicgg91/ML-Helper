@@ -1168,5 +1168,10 @@
     "references_manager": "Référentiels",
     "tools_manager": "Araç Yöneticisi",
     "read_only": "Salt Okunur"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Bu sayfa mevcut değil veya taşındı. Buradan devam edebilirsin:",
+    "home": "Ana sayfa"
   }
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { CityCalculators } from "../../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../../components/skills-calculators";
@@ -57,11 +57,9 @@ export default async function ToolPage({
   const { open } = await searchParams;
   const tools = await getTranslations("tools");
   const active = await getCalculatorAvailability();
-  // Bloc 50/1b: /referentiels is now its own independent root (no longer a
-  // #references section embedded in /guides) — this legacy redirect stub
-  // (kept for old bookmarks/backlinks to the pre-Bloc-33 /tools/referentiels
-  // URL) now points there instead.
-  if (slug === "referentiels") redirect("/referentiels");
+  // Bloc 91/M6 (Codex review): the legacy /tools/referentiels bookmark is now
+  // 308-redirected to /referentiels by next.config.ts redirects() (was a 307
+  // redirect() here), so it never reaches this page any more.
   if (!["villes", "combat", "classement", "competences"].includes(slug))
     notFound();
   if (slug === "combat") {

@@ -1186,5 +1186,10 @@
     "references_manager": "Référentiels",
     "tools_manager": "Gestion Outils",
     "read_only": "Lecture Seule"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "Cette page n’existe pas ou a été déplacée. Voici par où continuer :",
+    "home": "Accueil"
   }
 }
