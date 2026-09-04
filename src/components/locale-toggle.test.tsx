@@ -1,24 +1,19 @@
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LocaleToggle } from "./locale-toggle";
 
-const refresh = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh }),
+// Bloc 91/E1: the toggle now switches language by navigating to the same page
+// under the target locale's URL (next-intl router.replace), not by writing the
+// NEXT_LOCALE cookie. Override the global navigation stub with spies so those
+// navigation calls can be asserted.
+const replace = vi.fn();
+vi.mock("@/i18n/navigation", () => ({
+  usePathname: () => "/tools",
+  useRouter: () => ({ replace }),
 }));
 
-// Doesn't use the app's own renderWithIntl helper — this file needs to
-// control the active `locale` prop directly, which that helper doesn't
-// expose the same way for a component under test rather than the page.
 function renderToggle(locale = "fr", locales = ["en", "fr"]) {
   return render(
     <NextIntlClientProvider
@@ -40,20 +35,13 @@ function listbox() {
 
 afterEach(cleanup);
 
-// Bloc 48/C: a native <select>'s open direction is decided by the
-// browser/OS (viewport space + which option is selected) — occasionally
-// upward, forcing an unwanted page scroll. Replaced by a custom ARIA
-// listbox (button trigger + role="listbox" popup) whose popup is always
-// `position: absolute`, anchored below the trigger — verified here via its
-// structure/classes and interaction behavior, not literal pixel geometry
-// (outside what jsdom can render).
-describe("LocaleToggle (Bloc 48/C: custom listbox, always opens downward)", () => {
+describe("LocaleToggle (Bloc 48/C listbox, Bloc 91/E1 URL navigation)", () => {
   beforeEach(() => {
-    localStorage.clear();
-    refresh.mockReset();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+    replace.mockReset();
+    // Reset the URL so window.location.search is clean for each test (the
+    // toggle re-attaches the live query string when switching locale).
+    window.history.replaceState({}, "", "/");
   });
-  afterEach(() => vi.unstubAllGlobals());
 
   it("renders a single button trigger, not a native select", () => {
     renderToggle();
@@ -67,7 +55,7 @@ describe("LocaleToggle (Bloc 48/C: custom listbox, always opens downward)", () =
     expect(trigger()).toHaveTextContent("FR");
   });
 
-  it("opens a listbox positioned to always anchor below the trigger, regardless of which locale is active", () => {
+  it("opens a listbox anchored below the trigger, regardless of the active locale", () => {
     for (const locale of ["en", "fr"]) {
       renderToggle(locale);
       fireEvent.click(trigger());
@@ -96,47 +84,48 @@ describe("LocaleToggle (Bloc 48/C: custom listbox, always opens downward)", () =
     );
   });
 
-  it("selects an option by click, persists the choice, refreshes, and closes the listbox", async () => {
+  it("Bloc 91/E1: selecting an option navigates to the same page in the new locale, and closes the listbox", () => {
     renderToggle("fr");
     fireEvent.click(trigger());
     fireEvent.click(screen.getByRole("option", { name: "EN" }));
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/locale", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ locale: "en" }),
-      });
-      expect(refresh).toHaveBeenCalledOnce();
-    });
-    expect(localStorage.getItem("mlhelper_locale")).toBe("en");
+    expect(replace).toHaveBeenCalledWith("/tools", { locale: "en" });
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
-  it("navigates and selects with the keyboard (ArrowUp then Enter)", async () => {
+  it("Codex P2: keeps the current query string when switching locale", () => {
+    // usePathname() is mocked to "/tools"; the toggle re-attaches the live
+    // ?open=gems so switching language doesn't reset the open calculator tab.
+    window.history.replaceState({}, "", "/fr/tools?open=gems");
+    renderToggle("fr");
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "EN" }));
+    expect(replace).toHaveBeenCalledWith("/tools?open=gems", { locale: "en" });
+  });
+
+  it("Bloc 91/E1: keyboard ArrowUp then Enter navigates to the highlighted locale", () => {
     // Opens with the active locale ("fr", index 1) highlighted — ArrowUp
-    // moves the highlight to "en" (index 0), Enter selects it.
+    // moves to "en" (index 0), Enter selects it.
     renderToggle("fr", ["en", "fr"]);
     fireEvent.click(trigger());
     fireEvent.keyDown(listbox(), { key: "ArrowUp" });
     fireEvent.keyDown(listbox(), { key: "Enter" });
-
-    await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith("/api/locale", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ locale: "en" }),
-      }),
-    );
+    expect(replace).toHaveBeenCalledWith("/tools", { locale: "en" });
   });
 
-  it("closes without selecting on Escape and returns focus to the trigger", () => {
+  it("does not navigate when the active locale is re-selected", () => {
+    renderToggle("fr");
+    fireEvent.click(trigger());
+    fireEvent.click(screen.getByRole("option", { name: "FR" }));
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("closes without navigating on Escape and returns focus to the trigger", () => {
     renderToggle("fr");
     fireEvent.click(trigger());
     fireEvent.keyDown(listbox(), { key: "Escape" });
     expect(screen.queryByRole("listbox")).toBeNull();
     expect(trigger()).toHaveFocus();
-    expect(fetch).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it("closes when clicking outside the component", () => {
@@ -145,48 +134,5 @@ describe("LocaleToggle (Bloc 48/C: custom listbox, always opens downward)", () =
     expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.mouseDown(document.body);
     expect(screen.queryByRole("listbox")).toBeNull();
-  });
-
-  // Bloc 47/B: a previously-saved choice (e.g. the cookie got cleared
-  // separately from localStorage) is re-applied on mount, same pattern as
-  // ThemeToggle restoring "mlhelper_theme".
-  it("Bloc 47/B: re-applies a saved locale on mount when it differs from the active one", async () => {
-    localStorage.setItem("mlhelper_locale", "en");
-    renderToggle("fr", ["en", "fr"]);
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/locale", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ locale: "en" }),
-      });
-      expect(refresh).toHaveBeenCalledOnce();
-    });
-  });
-
-  // Codex review (PR #70): a non-2xx (or rejected) /api/locale request must
-  // never be treated as a success — no stale localStorage write, no
-  // refresh, so the sync-on-mount effect keeps retrying instead of getting
-  // stuck believing an unsaved locale is already active.
-  it("Codex review: does not persist or refresh when the server rejects the change", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
-    renderToggle("fr");
-    fireEvent.click(trigger());
-    fireEvent.click(screen.getByRole("option", { name: "EN" }));
-
-    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
-    expect(refresh).not.toHaveBeenCalled();
-    expect(localStorage.getItem("mlhelper_locale")).toBeNull();
-  });
-
-  it("Codex review: does not persist or refresh when the request itself fails", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
-    renderToggle("fr");
-    fireEvent.click(trigger());
-    fireEvent.click(screen.getByRole("option", { name: "EN" }));
-
-    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
-    expect(refresh).not.toHaveBeenCalled();
-    expect(localStorage.getItem("mlhelper_locale")).toBeNull();
   });
 });

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { LogFilterInput } from "@/lib/log-filters";
@@ -56,7 +57,7 @@ export function LogFilterForm({
           </label>
           <Button type="submit">{t("filter-apply")}</Button>
           <Button variant="ghost" asChild>
-            <a href="/admin/logs">{t("filter-reset")}</a>
+            <Link href="/admin/logs">{t("filter-reset")}</Link>
           </Button>
         </form>
       </CardContent>

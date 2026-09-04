@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { CityCalculators } from "../../../../components/city-calculators";
-import { RankingCalculator } from "../../../../components/ranking-calculator";
-import { SkillsCalculators } from "../../../../components/skills-calculators";
-import { CombatCalculators } from "../../../../components/combat-calculators";
-import { getRankingConfig } from "../../../../lib/ranking";
-import { getCalculatorAvailability } from "../../../../lib/calculators-server";
+import { CityCalculators } from "../../../../../components/city-calculators";
+import { RankingCalculator } from "../../../../../components/ranking-calculator";
+import { SkillsCalculators } from "../../../../../components/skills-calculators";
+import { CombatCalculators } from "../../../../../components/combat-calculators";
+import { getRankingConfig } from "../../../../../lib/ranking";
+import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
 import {
   getCityParameters,
   getTemplarParameters,
   getCombatParameters,
   getGemParameters,
-} from "../../../../lib/admin-formulas-server";
+} from "../../../../../lib/admin-formulas-server";
 import {
   getCombatReferenceRows,
   getCombatStarIncrements,
   getExpeditionReferenceRows,
   getExpeditionStarIncrements,
-} from "../../../../lib/reference-equipment-server";
-import { getTranslations } from "next-intl/server";
-import { pageTitle } from "../../../../lib/page-title";
-import { languageAlternates } from "../../../../lib/site-url";
+} from "../../../../../lib/reference-equipment-server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { pageTitle } from "../../../../../lib/page-title";
+import { canonicalUrl, languageAlternates } from "../../../../../lib/site-url";
 
 const toolTitleKeys: Record<string, string> = {
   villes: "cities",
@@ -31,7 +31,7 @@ const toolTitleKeys: Record<string, string> = {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/tools/[slug]">): Promise<Metadata> {
+}: PageProps<"/[locale]/tools/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const key = toolTitleKeys[slug];
   if (!key) return {};
@@ -42,14 +42,17 @@ export async function generateMetadata({
   return {
     title: pageTitle(publicTranslations("tools"), tools(key)),
     description: tools("subtitle"),
-    alternates: { languages: languageAlternates(`/tools/${slug}`) },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), `/tools/${slug}`),
+      languages: languageAlternates(`/tools/${slug}`),
+    },
   };
 }
 
 export default async function ToolPage({
   params,
   searchParams,
-}: PageProps<"/tools/[slug]">) {
+}: PageProps<"/[locale]/tools/[slug]">) {
   const { slug } = await params;
   const { open } = await searchParams;
   const tools = await getTranslations("tools");

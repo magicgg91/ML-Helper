@@ -2,10 +2,40 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToolCategoryNav } from "./tool-category-nav";
 
+// Bloc 91/E1: ToolCategoryNav now reads usePathname (and renders Link) from the
+// locale-aware @/i18n/navigation, so override the global setup stub here with
+// one whose pathname is mutable per test.
 let pathname = "/tools";
-vi.mock("next/navigation", () => ({
-  usePathname: () => pathname,
-}));
+vi.mock("@/i18n/navigation", async () => {
+  const { createElement } = await import("react");
+  return {
+    Link: ({
+      href,
+      children,
+      ...props
+    }: {
+      href: unknown;
+      children?: unknown;
+      [key: string]: unknown;
+    }) =>
+      createElement(
+        "a",
+        { href: typeof href === "string" ? href : "#", ...props },
+        children as never,
+      ),
+    usePathname: () => pathname,
+    useRouter: () => ({
+      push: () => {},
+      replace: () => {},
+      prefetch: () => {},
+      back: () => {},
+      forward: () => {},
+      refresh: () => {},
+    }),
+    redirect: () => {},
+    getPathname: () => pathname,
+  };
+});
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) =>
     ({
@@ -84,7 +114,9 @@ describe("ToolCategoryNav", () => {
       />,
     );
     const combatButton = screen.getByRole("button", { name: /^Combat/ });
-    const classementButton = screen.getByRole("button", { name: /^Classement/ });
+    const classementButton = screen.getByRole("button", {
+      name: /^Classement/,
+    });
     expect(combatButton.querySelector(".tab-coming-soon")).not.toBeNull();
     expect(classementButton.querySelector(".tab-coming-soon")).not.toBeNull();
   });

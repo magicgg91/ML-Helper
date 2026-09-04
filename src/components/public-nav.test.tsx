@@ -8,10 +8,40 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
+// Bloc 91/E1: PublicNav now reads usePathname (and renders Link) from the
+// locale-aware @/i18n/navigation, so override the global setup stub here with
+// one whose pathname is mutable per test.
 let pathname = "/tools";
-vi.mock("next/navigation", () => ({
-  usePathname: () => pathname,
-}));
+vi.mock("@/i18n/navigation", async () => {
+  const { createElement } = await import("react");
+  return {
+    Link: ({
+      href,
+      children,
+      ...props
+    }: {
+      href: unknown;
+      children?: unknown;
+      [key: string]: unknown;
+    }) =>
+      createElement(
+        "a",
+        { href: typeof href === "string" ? href : "#", ...props },
+        children as never,
+      ),
+    usePathname: () => pathname,
+    useRouter: () => ({
+      push: () => {},
+      replace: () => {},
+      prefetch: () => {},
+      back: () => {},
+      forward: () => {},
+      refresh: () => {},
+    }),
+    redirect: () => {},
+    getPathname: () => pathname,
+  };
+});
 
 afterEach(cleanup);
 

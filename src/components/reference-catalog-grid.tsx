@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { CalculatorAvailability } from "../lib/calculator-catalog";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import { sortByLabel } from "../lib/sort-by-label";
@@ -44,8 +44,7 @@ export function ReferenceCatalogGrid({
     (reference) => t(`catalog.${reference.slug}`),
     locale,
   );
-  const entries =
-    limit === undefined ? available : available.slice(0, limit);
+  const entries = limit === undefined ? available : available.slice(0, limit);
   return (
     <div className="tool-category-grid">
       {entries.map((reference) => (

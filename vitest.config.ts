@@ -10,5 +10,10 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // Bloc 91/E1: next-intl's client navigation (createNavigation) does a bare
+    // `import "next/navigation"`; inlining next-intl lets vitest resolve it
+    // through Next's package exports instead of failing from next-intl's own
+    // nested node_modules.
+    server: { deps: { inline: ["next-intl"] } },
   },
 });

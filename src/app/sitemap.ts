@@ -3,7 +3,8 @@ import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { referenceCatalog } from "@/lib/reference-catalog";
-import { absoluteUrl, languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { defaultLaunchLocale } from "@/lib/translations";
 
 // Bloc 42/J: /tools/[slug] only ever resolves these 4 category slugs
 // (src/app/(public)/tools/[slug]/page.tsx) — individual calculators don't
@@ -16,7 +17,9 @@ function entry(
   lastModified?: Date,
 ): MetadataRoute.Sitemap[number] {
   return {
-    url: absoluteUrl(path),
+    // Bloc 91/E1: the canonical URL is the default-locale (FR) prefixed one;
+    // the other 4 languages ride along as hreflang alternates.
+    url: canonicalUrl(defaultLaunchLocale, path),
     ...(lastModified ? { lastModified } : {}),
     changeFrequency,
     alternates: { languages: languageAlternates(path) },

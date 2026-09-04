@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferentielsPage, {
   generateMetadata,
-} from "./(public)/referentiels/page";
+} from "./[locale]/(public)/referentiels/page";
 
 // Bloc 52/A: the index page's title was "Tous les référentiels" — shortened
 // to just "Référentiels" for the <title> metadata, matching /guides's own
@@ -28,6 +28,8 @@ vi.mock("@/components/reference-catalog-grid", () => ({
   ReferenceCatalogGrid: () => <div data-testid="reference-catalog-grid" />,
 }));
 vi.mock("@/lib/site-url", () => ({
+  canonicalUrl: (locale: string, path: string) =>
+    `https://ml-helper.com/${locale}${path}`,
   languageAlternates: () => ({}),
 }));
 // Bloc 60 review (Codex PR #81): the page now fetches availability itself

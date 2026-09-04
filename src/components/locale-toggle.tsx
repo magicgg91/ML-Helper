@@ -1,9 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { useLocaleChange } from "./use-locale-change";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type KeyboardEvent,
+} from "react";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 const listboxId = "locale-listbox";
 
@@ -21,7 +27,28 @@ const listboxId = "locale-listbox";
 // unaffected.
 export function LocaleToggle({ locales }: { locales: string[] }) {
   const t = useTranslations("common");
-  const { locale, change, pending } = useLocaleChange(locales);
+  // Bloc 91/E1: switching language now navigates to the same page under the
+  // target locale's URL (/fr/tools → /en/tools) via next-intl navigation,
+  // instead of writing the NEXT_LOCALE cookie and refreshing. usePathname()
+  // here returns the locale-stripped path, so router.replace re-applies the
+  // chosen locale prefix.
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  function change(nextLocale: string) {
+    if (nextLocale === locale) return;
+    // Codex P2: usePathname() drops the query string, so a switch from
+    // /fr/tools/competences?open=gems would otherwise land on
+    // /en/tools/competences and reset the open calculator tab (tools/[slug]
+    // reads `open` from searchParams). Re-attach the live query — read from
+    // window in the click handler so the component stays statically
+    // renderable (useSearchParams() would opt every page into dynamic).
+    const query = typeof window === "undefined" ? "" : window.location.search;
+    startTransition(() => {
+      router.replace(`${pathname}${query}`, { locale: nextLocale });
+    });
+  }
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.max(locales.indexOf(locale), 0),

@@ -163,16 +163,16 @@ test("tool routes alone expose persistent player settings", async ({
   // directly (the same ToolCategoryGrid as /tools).
   await expect(page.getByRole("link", { name: /Villes/ })).toHaveAttribute(
     "href",
-    "/tools/villes",
+    new RegExp("/tools/villes$"),
   );
   // Bloc 34/E: the most recent guides + the built references are directly
   // clickable from the homepage, no detour via /guides.
   await expect(
     page.getByRole("link", { name: /Guide visible/ }),
-  ).toHaveAttribute("href", "/guides/guide-visible");
+  ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
   await expect(page.getByRole("link", { name: /Templiers/ })).toHaveAttribute(
     "href",
-    "/referentiels/templars",
+    new RegExp("/referentiels/templars$"),
   );
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
@@ -663,13 +663,13 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   // reference's own title, not a generic "Voir le référentiel complet".
   await expect(
     page.getByRole("link", { name: "Équipements de Combat" }),
-  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   // Bloc 36/A: same cross-link pattern already verified for Templiers below.
   await expect(
     page.getByRole("main").getByRole("link", { name: "Gemmes" }),
-  ).toHaveAttribute("href", "/referentiels/gems");
+  ).toHaveAttribute("href", new RegExp("/referentiels/gems$"));
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   // Bloc 82/D: no skill pre-selected any more — pick one explicitly.
   await page
@@ -690,7 +690,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(page.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
     "href",
-    "/referentiels/templars",
+    new RegExp("/referentiels/templars$"),
   );
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
@@ -731,10 +731,10 @@ test("Reference tables filter combat and expedition equipment", async ({
   const referentielsGrid = page.locator(".tool-category-grid");
   await expect(
     referentielsGrid.getByRole("link", { name: /Équipements de Combat/ }),
-  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
   await expect(
     referentielsGrid.getByRole("link", { name: /Équipements d’Expédition/ }),
-  ).toHaveAttribute("href", "/referentiels/expedition-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/expedition-equipment$"));
 
   await page.goto("/referentiels/combat-equipment");
   // Bloc 39: table rows became tiles grouped into per-set blocks — no
@@ -2290,4 +2290,62 @@ test("Bloc 90/F: admin can still edit content in a deactivated language", async 
 
   await b90SetLocaleActive(page, "es", true);
   await context.close();
+});
+
+// Bloc 91/E1: locale-prefixed public routing. Runs last (serial file), after
+// the Bloc 90 tests have re-enabled every locale, so all 5 are active here.
+test("Bloc 91/E1: the 5 languages have their own URL, with distinct hreflang and canonical", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  // Each launched locale renders at its own /[locale]/ URL with a matching
+  // <html lang>.
+  for (const locale of ["fr", "en", "de", "es", "tr"]) {
+    const response = await page.goto(`/${locale}/tools`);
+    expect(response?.status(), `${locale} status`).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+  }
+
+  // An unprefixed public URL redirects to a locale-prefixed one.
+  await page.goto("/tools");
+  expect(page.url()).toMatch(/\/(fr|en|de|es|tr)\/tools$/);
+
+  // hreflang: 5 distinct locale alternates + x-default, all pointing at
+  // language-specific URLs (E1's core SEO fix).
+  await page.goto("/fr/tools");
+  const alternates = page.locator('link[rel="alternate"][hreflang]');
+  await expect(alternates).toHaveCount(6);
+  const hrefs = await alternates.evaluateAll((links) =>
+    links.map((l) => `${l.getAttribute("hreflang")}=${l.getAttribute("href")}`),
+  );
+  expect(hrefs).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/fr=.*\/fr\/tools$/),
+      expect.stringMatching(/en=.*\/en\/tools$/),
+      expect.stringMatching(/de=.*\/de\/tools$/),
+      expect.stringMatching(/x-default=.*\/fr\/tools$/),
+    ]),
+  );
+
+  // canonical is the current locale's own URL.
+  await page.goto("/en/tools");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    /\/en\/tools$/,
+  );
+
+  // The language selector navigates to the same page under the chosen locale.
+  await page.goto("/fr/tools");
+  await page.locator(".locale-select-trigger").click();
+  await page.getByRole("option", { name: "EN", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/tools$/);
+
+  // Codex P2: a language switch keeps the query string, so a deep link like
+  // ?open=gems (which tools/[slug] reads to pick a calculator tab) survives.
+  // exact: true — the competences page's league <select> has EN-substring
+  // options ("Argent", "Légende") that a fuzzy name match would also catch.
+  await page.goto("/fr/tools/competences?open=gems");
+  await page.locator(".locale-select-trigger").click();
+  await page.getByRole("option", { name: "EN", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/tools\/competences\?open=gems$/);
 });

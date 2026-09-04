@@ -2,11 +2,12 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferencePage, {
   generateMetadata,
-} from "./(public)/referentiels/[slug]/page";
+} from "./[locale]/(public)/referentiels/[slug]/page";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { defaultCalculatorAvailability } from "@/lib/calculator-catalog";
 
 vi.mock("next-intl/server", () => ({
+  getLocale: async () => "fr",
   getTranslations: async (namespace: string) => {
     const catalog: Record<string, string> = {
       "catalog.combat-equipment": "Équipements de Combat",
@@ -94,17 +95,21 @@ afterEach(cleanup);
 describe("ReferencePage metadata (Bloc 42/J)", () => {
   it("sets a non-empty description and hreflang alternates for all 5 locales", async () => {
     const metadata = await generateMetadata({
-      params: Promise.resolve({ slug: "combat-equipment" }),
+      params: Promise.resolve({ locale: "fr", slug: "combat-equipment" }),
       searchParams: Promise.resolve({}),
     });
     expect(metadata.description).toBeTruthy();
     const languages = metadata.alternates?.languages as
       Record<string, string> | undefined;
     expect(languages?.fr).toBe(
-      "https://ml-helper.com/referentiels/combat-equipment",
+      "https://ml-helper.com/fr/referentiels/combat-equipment",
     );
     expect(languages?.["x-default"]).toBe(
-      "https://ml-helper.com/referentiels/combat-equipment",
+      "https://ml-helper.com/fr/referentiels/combat-equipment",
+    );
+    // Bloc 91/E1: canonical resolves to the active locale's prefixed URL.
+    expect(metadata.alternates?.canonical).toBe(
+      "https://ml-helper.com/fr/referentiels/combat-equipment",
     );
   });
 });
@@ -113,7 +118,7 @@ describe("ReferencePage", () => {
   it("Bloc35 1.3: gives the title a one-line class, same treatment as the tools page", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "expedition-equipment" }),
+        params: Promise.resolve({ locale: "fr", slug: "expedition-equipment" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -128,7 +133,7 @@ describe("ReferencePage", () => {
   it("Bloc67: routes the 'level-up' slug to LevelUpReference, labelled Progression", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "level-up" }),
+        params: Promise.resolve({ locale: "fr", slug: "level-up" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -140,7 +145,7 @@ describe("ReferencePage", () => {
   it("Bloc36/A: routes the new 'gems' slug to GemsReferenceTable, the 5th reference actually built", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "gems" }),
+        params: Promise.resolve({ locale: "fr", slug: "gems" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -154,7 +159,7 @@ describe("ReferencePage", () => {
   it("Bloc48/F: routes the 'shop' slug to ConsumablesReferenceTable, labelled Boutique", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "shop" }),
+        params: Promise.resolve({ locale: "fr", slug: "shop" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -167,7 +172,7 @@ describe("ReferencePage", () => {
   it("Bloc60: routes the 'events' slug to EventsReferenceTable when active", async () => {
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "events" }),
+        params: Promise.resolve({ locale: "fr", slug: "events" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -185,7 +190,7 @@ describe("ReferencePage", () => {
     });
     const { unmount } = render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "events" }),
+        params: Promise.resolve({ locale: "fr", slug: "events" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -195,7 +200,7 @@ describe("ReferencePage", () => {
 
     render(
       await ReferencePage({
-        params: Promise.resolve({ slug: "events" }),
+        params: Promise.resolve({ locale: "fr", slug: "events" }),
         searchParams: Promise.resolve({}),
       }),
     );

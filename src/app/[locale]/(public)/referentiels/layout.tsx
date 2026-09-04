@@ -4,6 +4,6 @@
 // This layout is now a passthrough, same shape as tools/layout.tsx.
 export default function ReferentielsLayout({
   children,
-}: LayoutProps<"/referentiels">) {
+}: LayoutProps<"/[locale]/referentiels">) {
   return children;
 }

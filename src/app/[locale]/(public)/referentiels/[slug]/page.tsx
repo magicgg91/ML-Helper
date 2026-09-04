@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   CombatReferenceTable,
   ExpeditionReferenceTable,
@@ -28,11 +28,11 @@ import {
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/referentiels/[slug]">): Promise<Metadata> {
+}: PageProps<"/[locale]/referentiels/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) return {};
@@ -45,6 +45,7 @@ export async function generateMetadata({
     title: name,
     description: publicT("descriptions.reference-detail", { name }),
     alternates: {
+      canonical: canonicalUrl(await getLocale(), `/referentiels/${slug}`),
       languages: languageAlternates(`/referentiels/${slug}`),
     },
   };
@@ -52,7 +53,7 @@ export async function generateMetadata({
 
 export default async function ReferencePage({
   params,
-}: PageProps<"/referentiels/[slug]">) {
+}: PageProps<"/[locale]/referentiels/[slug]">) {
   // Bloc 62/I review: forces per-request dynamic rendering — otherwise
   // Next has no dynamic API call to detect on this route (only a direct
   // Prisma read via getCalculatorAvailability) and statically caches the

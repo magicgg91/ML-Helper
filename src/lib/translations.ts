@@ -3,6 +3,11 @@
 export const launchLocales = ["fr", "en", "de", "es", "tr"] as const;
 export const plannedLocales = ["fr", "en", "es", "de", "pl", "tr"] as const;
 export type LaunchLocale = (typeof launchLocales)[number];
+// Bloc 91/E1: the site's default locale, kept here (Edge-safe, no node:fs)
+// so src/i18n/routing.ts — imported by the Edge middleware — can reach it
+// without pulling in src/i18n/config.ts's filesystem reads. Mirrors
+// config.ts's own defaultLocale.
+export const defaultLaunchLocale: LaunchLocale = "fr";
 
 export function translationRecord(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};

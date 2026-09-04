@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { ToolCategoryGrid } from "@/components/tool-category-grid";
 import { getLocale, getTranslations } from "next-intl/server";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, tools] = await Promise.all([
@@ -12,13 +12,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("tools"),
     description: tools("subtitle"),
-    alternates: { languages: languageAlternates("/tools") },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), "/tools"),
+      languages: languageAlternates("/tools"),
+    },
   };
 }
 
 export default async function ToolsPage() {
   const active = await getCalculatorAvailability();
-  const [t, locale] = await Promise.all([getTranslations("tools"), getLocale()]);
+  const [t, locale] = await Promise.all([
+    getTranslations("tools"),
+    getLocale(),
+  ]);
   return (
     <main className="public-main">
       <h1 className="tools-page-title">{t("title")}</h1>

@@ -1,4 +1,42 @@
 import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
+
+// Bloc 91/E1: unit tests render components in isolation, without the Next.js
+// router context next-intl's locale-aware navigation needs. Stub it globally
+// so a public `<Link href="/tools">` just renders an <a href="/tools"> the way
+// next/link did before E1. Tests that need to assert navigation (e.g.
+// locale-toggle) override this with their own spy-based mock.
+vi.mock("@/i18n/navigation", async () => {
+  const { createElement } = await import("react");
+  const noopRouter = {
+    push: () => {},
+    replace: () => {},
+    prefetch: () => {},
+    back: () => {},
+    forward: () => {},
+    refresh: () => {},
+  };
+  return {
+    Link: ({
+      href,
+      children,
+      ...props
+    }: {
+      href: unknown;
+      children?: unknown;
+      [key: string]: unknown;
+    }) =>
+      createElement(
+        "a",
+        { href: typeof href === "string" ? href : "#", ...props },
+        children as never,
+      ),
+    usePathname: () => "/",
+    useRouter: () => noopRouter,
+    redirect: () => {},
+    getPathname: () => "/",
+  };
+});
 
 // jsdom doesn't implement matchMedia — default to "no preference matched"
 // so existing tests (which don't care about it) keep working; tests that

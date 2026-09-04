@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import GuidesPage, { generateMetadata } from "./(public)/guides/page";
+import GuidesPage, { generateMetadata } from "./[locale]/(public)/guides/page";
 
 // Bloc 53/D: /guides' on-screen h1 now reuses the homepage's own guides
 // intro title/phrase (Home.guidesTitle/guidesDescription) instead of the
@@ -26,6 +26,8 @@ vi.mock("@/components/guides-hub", () => ({
   GuidesHub: () => <div data-testid="guides-hub" />,
 }));
 vi.mock("@/lib/site-url", () => ({
+  canonicalUrl: (locale: string, path: string) =>
+    `https://ml-helper.com/${locale}${path}`,
   languageAlternates: () => ({}),
 }));
 

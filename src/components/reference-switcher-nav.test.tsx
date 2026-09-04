@@ -2,10 +2,40 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReferenceSwitcherNav } from "./reference-switcher-nav";
 
+// Bloc 91/E1: ReferenceSwitcherNav now reads usePathname (and renders Link)
+// from the locale-aware @/i18n/navigation, so override the global setup stub
+// here with one whose pathname is mutable per test.
 let pathname = "/referentiels";
-vi.mock("next/navigation", () => ({
-  usePathname: () => pathname,
-}));
+vi.mock("@/i18n/navigation", async () => {
+  const { createElement } = await import("react");
+  return {
+    Link: ({
+      href,
+      children,
+      ...props
+    }: {
+      href: unknown;
+      children?: unknown;
+      [key: string]: unknown;
+    }) =>
+      createElement(
+        "a",
+        { href: typeof href === "string" ? href : "#", ...props },
+        children as never,
+      ),
+    usePathname: () => pathname,
+    useRouter: () => ({
+      push: () => {},
+      replace: () => {},
+      prefetch: () => {},
+      back: () => {},
+      forward: () => {},
+      refresh: () => {},
+    }),
+    redirect: () => {},
+    getPathname: () => pathname,
+  };
+});
 
 const catalog: Record<string, string> = {
   "catalog.combat-equipment": "Équipements de Combat",
@@ -110,7 +140,9 @@ describe("ReferenceSwitcherNav", () => {
       "Gemmes",
       "Progression",
     ];
-    expect(labels).toEqual([...expected].sort((a, b) => a.localeCompare(b, "fr")));
+    expect(labels).toEqual(
+      [...expected].sort((a, b) => a.localeCompare(b, "fr")),
+    );
   });
 
   // Bloc 62/I: an inactive reference (e.g. Events before an admin activates

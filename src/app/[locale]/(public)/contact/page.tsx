@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact-form";
-import { getTranslations } from "next-intl/server";
-import { languageAlternates } from "@/lib/site-url";
+import { getLocale, getTranslations } from "next-intl/server";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, contact] = await Promise.all([
@@ -11,7 +11,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("contact"),
     description: contact("lead"),
-    alternates: { languages: languageAlternates("/contact") },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), "/contact"),
+      languages: languageAlternates("/contact"),
+    },
   };
 }
 
