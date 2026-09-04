@@ -65,6 +65,7 @@ export default async function GuidePage({
           locale,
           path: `/guides/${slug}`,
           title: localizedText(guide.title, locale) || slug,
+          author: guide.author,
           publishedTime: guide.publishedAt?.toISOString(),
           modifiedTime: guide.updatedAt?.toISOString(),
           image: guide.coverImage,

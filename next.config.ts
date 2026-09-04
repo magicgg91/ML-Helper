@@ -64,6 +64,13 @@ const nextConfig: NextConfig = {
         destination: "/:locale/referentiels/:slug",
         permanent: true,
       },
+      // Codex review: this legacy URL previously only 307-redirected from the
+      // tool page — make it a permanent 308 here, consistent with the others.
+      {
+        source: `${withLocale}/tools/referentiels`,
+        destination: "/:locale/referentiels",
+        permanent: true,
+      },
     ];
   },
 };

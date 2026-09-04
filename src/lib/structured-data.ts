@@ -29,10 +29,13 @@ export function websiteJsonLd(locale: string): JsonLdObject[] {
 }
 
 // A guide: an Article with its dates, language and (when set) cover image.
+// Codex review: the guide stores its own author, so use it (a Person) rather
+// than emitting the site organization as both author and publisher.
 export function articleJsonLd(input: {
   locale: string;
   path: string;
   title: string;
+  author?: string;
   publishedTime?: string;
   modifiedTime?: string;
   image?: string | null;
@@ -44,7 +47,9 @@ export function articleJsonLd(input: {
     headline: input.title,
     inLanguage: input.locale,
     mainEntityOfPage: url,
-    author: organization,
+    author: input.author
+      ? { "@type": "Person", name: input.author }
+      : organization,
     publisher: organization,
     ...(input.publishedTime ? { datePublished: input.publishedTime } : {}),
     ...(input.modifiedTime ? { dateModified: input.modifiedTime } : {}),

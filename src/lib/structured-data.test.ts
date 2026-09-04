@@ -19,11 +19,12 @@ describe("structured-data (Bloc 91/M4)", () => {
     expect(data[1].url).toBe("https://ml-helper.com/");
   });
 
-  it("emits an Article with dates, language and image for a guide", () => {
+  it("emits an Article with the guide's author, dates, language and image", () => {
     const data = articleJsonLd({
       locale: "en",
       path: "/guides/x",
       title: "Guide X",
+      author: "Jane Doe",
       publishedTime: "2026-01-01T00:00:00.000Z",
       modifiedTime: "2026-02-01T00:00:00.000Z",
       image: "https://cdn.example/x.png",
@@ -32,13 +33,19 @@ describe("structured-data (Bloc 91/M4)", () => {
     expect(data.headline).toBe("Guide X");
     expect(data.inLanguage).toBe("en");
     expect(data.mainEntityOfPage).toBe("https://ml-helper.com/en/guides/x");
+    // Codex review: the guide's own author (Person), site org only as publisher.
+    expect(data.author).toEqual({ "@type": "Person", name: "Jane Doe" });
+    expect((data.publisher as Record<string, unknown>).name).toBe("ML-Helper");
     expect(data.datePublished).toBe("2026-01-01T00:00:00.000Z");
     expect(data.dateModified).toBe("2026-02-01T00:00:00.000Z");
     expect(data.image).toBe("https://cdn.example/x.png");
   });
 
-  it("omits image and dates when a guide has none", () => {
+  it("falls back to the organization as author and omits image/dates when absent", () => {
     const data = articleJsonLd({ locale: "fr", path: "/guides/y", title: "Y" });
+    expect((data.author as Record<string, unknown>)["@type"]).toBe(
+      "Organization",
+    );
     expect(data.image).toBeUndefined();
     expect(data.datePublished).toBeUndefined();
     expect(data.dateModified).toBeUndefined();
