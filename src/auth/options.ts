@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { clientIp } from "@/lib/client-ip";
 import {
   clearFailedLogins,
   isLoginAllowed,
@@ -12,13 +13,25 @@ import { decryptTotpSecret, verifyTotpToken } from "./totp";
 const dummyPasswordHash =
   "$2b$12$o0zC4LJ5O4xjjcsEVbOFcuFFOvK/WdxyTe1DSZ6D0T7HJzAYQ4NqW";
 
-export async function authorizeAdminCredentials(credentials?: {
-  username?: string;
-  password?: string;
-  totp?: string;
-}) {
+// M4: NextAuth passes the incoming request as the 2nd `authorize` argument;
+// its headers are a plain object. Extract the real client IP so throttling
+// can be scoped per (account + IP) and per IP.
+function requestIp(req?: { headers?: Record<string, string | undefined> }) {
+  return clientIp(
+    req?.headers?.["x-forwarded-for"],
+    req?.headers?.["x-real-ip"],
+  );
+}
+
+export async function authorizeAdminCredentials(
+  credentials:
+    | { username?: string; password?: string; totp?: string }
+    | undefined,
+  req?: { headers?: Record<string, string | undefined> },
+) {
   if (!credentials?.username || !credentials.password) return null;
-  if (!(await isLoginAllowed(credentials.username))) return null;
+  const ip = requestIp(req);
+  if (!(await isLoginAllowed(credentials.username, ip))) return null;
   const user = await prisma.user.findUnique({
     where: { username: credentials.username },
   });
@@ -37,13 +50,13 @@ export async function authorizeAdminCredentials(credentials?: {
       ),
     );
   if (!user || !passwordMatches || !totpMatches) {
-    await registerFailedLogin(credentials.username);
+    await registerFailedLogin(credentials.username, ip);
     return null;
   }
   if (!user.active) {
     throw new Error("account_disabled");
   }
-  await clearFailedLogins(credentials.username);
+  await clearFailedLogins(credentials.username, ip);
   await prisma.user.update({
     where: { id: user.id },
     data: { lastLoginAt: new Date() },

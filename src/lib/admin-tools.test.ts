@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { adminToolEditHref, referenceToolSlugs } from "./admin-tools";
+import {
+  adminToolEditHref,
+  isReferenceCalculatorSlug,
+  referenceToolSlugs,
+} from "./admin-tools";
 
 describe("admin tool editor routing", () => {
   it("lists Templiers among the independent references, not excluded from the Outils table (Bloc 33/G)", () => {
@@ -50,5 +54,15 @@ describe("admin tool editor routing", () => {
   it("Bloc60: lists Events among the independent references, with no shared tool to edit — falls through to /admin/referentiels/reference-events", () => {
     expect(referenceToolSlugs).toContain("events");
     expect(adminToolEditHref("events")).toBeUndefined();
+  });
+
+  // M1 (bloc de correctifs B): the generic tools toggle route uses this to
+  // reject reference slugs, so a tools_manager can't flip a reference's
+  // public visibility via /api/admin/tools/[id].
+  it("M1: recognizes every reference slug, and only references", () => {
+    for (const slug of referenceToolSlugs)
+      expect(isReferenceCalculatorSlug(slug)).toBe(true);
+    for (const slug of ["ranking", "city-cost", "demo-attack-troops", "gems"])
+      expect(isReferenceCalculatorSlug(slug)).toBe(false);
   });
 });

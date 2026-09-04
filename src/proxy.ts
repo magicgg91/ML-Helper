@@ -13,6 +13,7 @@ const cookieName = "NEXT_LOCALE";
 // the admin UI render in that language (with neither of the toggle's own
 // 2 buttons showing as selected) the moment they opened /admin.
 const adminLocales = ["en", "fr"];
+const mutationMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 // Bloc 47/B: picks the best-matching supported locale out of an
 // Accept-Language header (e.g. "de-DE,de;q=0.9,en;q=0.8"), falling back
@@ -37,42 +38,99 @@ export function detectLocale(header: string | null): string {
   return match?.tag ?? defaultLocale;
 }
 
-// Detects the visitor's browser language on their very first request (no
-// NEXT_LOCALE cookie yet) and applies it immediately — mutating the
-// request's own cookie jar (not just the response's) so this exact render
-// already picks it up in src/i18n/request.ts, instead of only taking
-// effect from the next request onward. Also clamps the locale used to
-// render /admin routes to EN/FR (Bloc 47/C review): the admin chrome
-// shares the same NEXT_LOCALE cookie as the public site, so without this
-// a visitor's ES/DE/TR public preference would otherwise leak into the
-// admin UI even though AdminLocaleToggle only ever offers EN/FR. The
-// clamp only affects *this* request's render — the real, unclamped
-// preference persisted to the browser cookie is never touched by it, so
-// public pages keep working normally regardless of what was last shown
-// in admin.
-// Named "proxy", not "middleware" — Next 16 renamed the file convention
-// (src/middleware.ts is deprecated in favor of src/proxy.ts / a `proxy`
-// export), and this app is already on 16.3.0.
+// M2 (bloc de correctifs C): a fresh per-request nonce authorizes exactly
+// the inline scripts this app emits — the pre-paint theme script in the
+// root layout and Next's own framework/flight scripts (Next reads the
+// nonce from the request-side CSP header below and stamps it on those).
+// btoa/getRandomValues are the Edge-runtime-safe primitives (no Buffer).
+function makeNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes));
+}
+
+function contentSecurityPolicy(nonce: string): string {
+  const dev = process.env.NODE_ENV !== "production";
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
+    // Next's dev overlay / React refresh need eval; never in production.
+    dev ? "'unsafe-eval'" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const connectSrc = ["'self'", dev ? "ws:" : ""].filter(Boolean).join(" ");
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    // Admin cover images accept external https URLs (F1 restricts them to
+    // http/https); data: covers the TOTP QR code and inlined icons.
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    // React/Tailwind inject inline styles; styles are a far lower XSS risk
+    // than scripts, which stay nonce-gated above.
+    "style-src 'self' 'unsafe-inline'",
+    `script-src ${scriptSrc}`,
+    `connect-src ${connectSrc}`,
+  ].join("; ");
+}
+
+// F2 (bloc de correctifs F): defense-in-depth CSRF guard for state-changing
+// API calls, on top of the SameSite=Lax session cookie. It keys off the
+// browser's Sec-Fetch-Site metadata header — origin-independent, so it can't
+// be tripped by the reverse proxy rewriting Host — and rejects only a
+// request the browser itself labels cross-site. Anything else (same-origin,
+// same-site, a user-initiated "none", or a non-browser client that sends no
+// Sec-Fetch-Site at all — curl, health probes) is allowed; those don't carry
+// the ambient session cookie a CSRF attack would rely on.
+function isCrossOriginMutation(request: NextRequest): boolean {
+  if (!mutationMethods.has(request.method)) return false;
+  return request.headers.get("sec-fetch-site") === "cross-site";
+}
+
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // API routes: no locale/CSP handling (they return JSON), just the F2
+  // same-origin guard for mutations.
+  if (pathname.startsWith("/api")) {
+    if (isCrossOriginMutation(request))
+      return new NextResponse("forbidden", { status: 403 });
+    return NextResponse.next();
+  }
+
   const cookieLocale = request.cookies.get(cookieName)?.value;
   const isFirstVisit = cookieLocale === undefined;
   const detected =
     cookieLocale ?? detectLocale(request.headers.get("accept-language"));
-
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const isAdminRoute = pathname.startsWith("/admin");
   const renderLocale =
     isAdminRoute && !adminLocales.includes(detected) ? "en" : detected;
 
-  if (!isFirstVisit && renderLocale === cookieLocale)
-    return NextResponse.next();
+  const nonce = makeNonce();
+  const csp = contentSecurityPolicy(nonce);
 
-  request.cookies.set(cookieName, renderLocale);
+  // Only mutate the request's own cookie jar when the render locale actually
+  // differs from the cookie (first visit, or the admin clamp) — this is what
+  // makes THIS render pick it up (Bloc 47/B), and keeping it conditional
+  // preserves the "no change, no override" behavior the tests pin down.
+  if (renderLocale !== cookieLocale) request.cookies.set(cookieName, renderLocale);
+
   // A plain Headers instance (not `request` itself) — passing the
   // NextRequest object directly trips an internal `instanceof Headers`
   // check when the two don't resolve to the exact same Headers class.
-  const response = NextResponse.next({
-    request: { headers: new Headers(request.headers) },
-  });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  // Next reads the nonce from this request-side CSP header and applies it to
+  // its own inline scripts.
+  requestHeaders.set("content-security-policy", csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("content-security-policy", csp);
   if (isFirstVisit) {
     // Persists the real detected locale (unclamped) so future public
     // visits still get the visitor's actual browser language — only the
@@ -87,5 +145,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

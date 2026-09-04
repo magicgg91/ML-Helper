@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
+import { isReferenceCalculatorSlug } from "@/lib/admin-tools";
 import { prisma } from "@/lib/prisma";
 import { auditMessage } from "@/lib/audit-message";
 
@@ -18,7 +19,11 @@ export async function PATCH(
     return NextResponse.json({ error: "invalid_visibility" }, { status: 400 });
   const { id } = await params;
   const before = await prisma.calculator.findUnique({ where: { id } });
-  if (!before)
+  // M1: this endpoint governs *tools* (calculators.toggle). The 7 reference
+  // rows share the Calculator table but are toggled only through the
+  // references.write route — treat them as not found here so a tools_manager
+  // can't flip a reference's public visibility by targeting its id directly.
+  if (!before || isReferenceCalculatorSlug(before.slug))
     return NextResponse.json({ error: "tool_not_found" }, { status: 404 });
   const tool = await prisma.$transaction(async (tx) => {
     const updated = await tx.calculator.update({

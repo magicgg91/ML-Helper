@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
@@ -21,6 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();
   const locale = await getLocale();
+  // M2: the CSP (src/proxy.ts) is nonce-based — the pre-paint theme script
+  // below is inline, so it must carry the request's nonce or the browser
+  // refuses to run it. The nonce is published on the x-nonce request header
+  // by the middleware.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -33,6 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             through to the matchMedia read instead of silently keeping the
             CSS dark default. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){var saved=null;try{saved=localStorage.getItem("mlhelper_theme");}catch(e){}var theme=saved==="light"||saved==="dark"?saved:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=theme;})();`,
           }}

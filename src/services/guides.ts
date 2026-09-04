@@ -14,6 +14,20 @@ const localeContent = z.object({
   excerpt: z.string().trim().max(320),
   content: z.string().max(100_000),
 });
+
+// F1 (bloc de correctifs F): the cover image is rendered as an <img src>.
+// z.url() alone also accepts javascript:/data:/vbscript: URLs — inert for
+// script execution in a modern browser, but a latent sink (tracking,
+// unwanted outbound requests). Restrict it to an http(s) URL (the shape the
+// guide editor always stores) or the empty string.
+const coverImageUrl = z.union([
+  z
+    .url()
+    .refine((value) => /^https?:\/\//i.test(value), {
+      message: "cover image must be an http(s) URL",
+    }),
+  z.literal(""),
+]);
 const emptyLocaleContent = { title: "", excerpt: "", content: "" };
 // Bloc 44 review: a request that omits a DE/ES/TR locale entirely (every
 // caller predating this bloc, e.g. e2e's raw API calls) is just as valid
@@ -37,7 +51,7 @@ export const guideInputSchema = z
       .max(120)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     category: z.array(z.enum(guideCategories)).min(1),
-    coverImage: z.union([z.url(), z.literal("")]),
+    coverImage: coverImageUrl,
     translations: z.object({
       fr: localeContent,
       en: localeContent,

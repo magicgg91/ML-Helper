@@ -25,6 +25,16 @@ export const cityToolSlugs = [
   "city-production",
 ] as const;
 
+// M1 (bloc de correctifs B): the 7 references are Calculator rows too, but
+// their public visibility must only ever be toggled through the
+// references-governed route (references.write), never the generic tools
+// toggle (calculators.toggle). This predicate lets that route reject a
+// reference id — same class of bug as the Bloc 59 purge fix (one endpoint
+// allowing a business action another correctly refuses for the same role).
+export function isReferenceCalculatorSlug(slug: string): boolean {
+  return (referenceToolSlugs as readonly string[]).includes(slug);
+}
+
 // Returns undefined for tools with no named numeric parameters to edit
 // (cdc section 8: admin only ever edits named numeric parameters, never a
 // free-form formula) — those tools keep only the activate/deactivate action.

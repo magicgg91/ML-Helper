@@ -62,6 +62,43 @@ describe("Bloc 47/B: proxy", () => {
   });
 });
 
+describe("M2/F2: middleware security", () => {
+  it("sets a nonce-based Content-Security-Policy on page responses", () => {
+    const response = proxy(makeRequest({ path: "/guides" }));
+    const csp = response.headers.get("content-security-policy");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toMatch(/script-src [^;]*'nonce-[^']+'/);
+  });
+
+  it("blocks a cross-site mutating API request (F2)", () => {
+    const headers = new Headers();
+    headers.set("sec-fetch-site", "cross-site");
+    const request = new NextRequest("https://example.com/api/admin/users", {
+      method: "POST",
+      headers,
+    });
+    expect(proxy(request).status).toBe(403);
+  });
+
+  it("allows a same-origin mutating API request (F2)", () => {
+    const headers = new Headers();
+    headers.set("sec-fetch-site", "same-origin");
+    const request = new NextRequest("https://example.com/api/admin/users", {
+      method: "POST",
+      headers,
+    });
+    expect(proxy(request).status).not.toBe(403);
+  });
+
+  it("allows a non-browser API request with no Origin/Sec-Fetch-Site (F2)", () => {
+    const request = new NextRequest("https://example.com/api/contact", {
+      method: "POST",
+    });
+    expect(proxy(request).status).not.toBe(403);
+  });
+});
+
 // Bloc 47/C review: AdminLocaleToggle only ever offers EN/FR, but without
 // this clamp the admin chrome would still render in whatever the shared
 // NEXT_LOCALE cookie holds (e.g. ES/DE/TR picked while browsing publicly),
@@ -78,18 +115,27 @@ describe("Bloc 47/C review: admin locale clamp", () => {
     expect(response.cookies.get("NEXT_LOCALE")).toBeUndefined();
   });
 
+  // M2: the middleware now always forwards a per-request CSP + nonce, so it
+  // always builds a NextResponse.next({ request }) — the assertion shifts
+  // from "no request-cookie override at all" to "the render locale is not
+  // clamped to something else".
   it("leaves an already-admin-safe cookie locale untouched for /admin", () => {
     const response = proxy(
       makeRequest({ cookie: "NEXT_LOCALE=fr", path: "/admin" }),
     );
-    expect(response.headers.get("x-middleware-request-cookie")).toBeNull();
+    const cookie = response.headers.get("x-middleware-request-cookie");
+    expect(cookie === null || cookie.includes("NEXT_LOCALE=fr")).toBe(true);
+    expect(cookie ?? "").not.toContain("NEXT_LOCALE=en");
+    expect(response.cookies.get("NEXT_LOCALE")).toBeUndefined();
   });
 
   it("does not clamp public routes even when the cookie holds an admin-unsupported locale", () => {
     const response = proxy(
       makeRequest({ cookie: "NEXT_LOCALE=es", path: "/guides" }),
     );
-    expect(response.headers.get("x-middleware-request-cookie")).toBeNull();
+    const cookie = response.headers.get("x-middleware-request-cookie");
+    expect(cookie === null || cookie.includes("NEXT_LOCALE=es")).toBe(true);
+    expect(cookie ?? "").not.toContain("NEXT_LOCALE=en");
   });
 
   it("clamps a first-visit /admin request too, while still persisting the real detected locale for public use", () => {

@@ -64,4 +64,32 @@ describe("guideInputSchema", () => {
     if (!result.success) return;
     expect(result.data.translations.de.title).toBe("Titel");
   });
+
+  // F1 (bloc de correctifs F): coverImage is rendered as an <img src>.
+  const baseTranslations = {
+    fr: { title: "Titre", excerpt: "Résumé", content: "Contenu" },
+    en: { title: "Title", excerpt: "Summary", content: "Content" },
+  };
+  function withCover(coverImage: string) {
+    return guideInputSchema.safeParse({
+      slug: "cover-guide",
+      category: ["debuter"],
+      coverImage,
+      translations: baseTranslations,
+    });
+  }
+
+  it("F1: accepts an https or http cover URL, and the empty string", () => {
+    expect(withCover("https://cdn.example/x.webp").success).toBe(true);
+    expect(withCover("http://cdn.example/x.webp").success).toBe(true);
+    expect(withCover("").success).toBe(true);
+  });
+
+  it("F1: rejects javascript:/data:/vbscript: cover URLs", () => {
+    expect(withCover("javascript:alert(1)").success).toBe(false);
+    expect(withCover("data:text/html,<script>alert(1)</script>").success).toBe(
+      false,
+    );
+    expect(withCover("vbscript:msgbox(1)").success).toBe(false);
+  });
 });

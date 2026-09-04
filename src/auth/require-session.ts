@@ -3,10 +3,14 @@ import { forbidden, redirect } from "next/navigation";
 import { authOptions } from "./options";
 import { can, type AdminCapability } from "./permissions";
 import { isAdminRole } from "./roles";
+import { liveSession } from "./session-freshness";
 import { hasSuperAdmin } from "../services/setup-superadmin";
 export async function requireAdminSession() {
   if (!(await hasSuperAdmin())) redirect("/admin/setup");
-  const session = await getServerSession(authOptions);
+  // E1: revalidate against the live user row so a deactivated/deleted
+  // account is bounced to /login and a demoted one is evaluated on its
+  // current role, on the very next admin page it loads.
+  const session = await liveSession(await getServerSession(authOptions));
   if (!session?.user) redirect("/login");
   if (!isAdminRole(session.user.role)) forbidden();
   return session;
