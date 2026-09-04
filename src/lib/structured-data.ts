@@ -57,6 +57,25 @@ export function articleJsonLd(input: {
   };
 }
 
+// Bloc 91/M7: a breadcrumb trail (paired with the visible <Breadcrumb>). Each
+// item's `path` is the locale-stripped route ("/", "/tools", "/tools/villes");
+// canonicalUrl turns it into the absolute, locale-prefixed URL schema.org wants.
+export function breadcrumbJsonLd(
+  locale: string,
+  items: { path: string; label: string }[],
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.label,
+      item: canonicalUrl(locale, item.path),
+    })),
+  };
+}
+
 // A tool page: a free web application in the game category.
 export function webApplicationJsonLd(input: {
   locale: string;

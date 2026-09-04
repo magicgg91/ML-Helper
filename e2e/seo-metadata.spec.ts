@@ -93,7 +93,34 @@ test("Bloc 91/M4: emits JSON-LD structured data on public pages", async ({
   page,
 }) => {
   await page.goto("/fr/tools/villes");
-  const ld = page.locator('script[type="application/ld+json"]');
-  await expect(ld).toHaveCount(1);
-  expect(await ld.textContent()).toContain("WebApplication");
+  const ld = await page
+    .locator('script[type="application/ld+json"]')
+    .allTextContents();
+  // A tool page carries both its WebApplication and (Bloc 91/M7) its
+  // BreadcrumbList.
+  expect(ld.some((t) => t.includes("WebApplication"))).toBe(true);
+  expect(ld.some((t) => t.includes("BreadcrumbList"))).toBe(true);
+});
+
+test("Bloc 91/M7: deep pages show a breadcrumb trail", async ({ page }) => {
+  await page.goto("/fr/tools/villes");
+  const crumb = page.getByRole("navigation", { name: /Ariane|Breadcrumb/ });
+  await expect(crumb.getByRole("link", { name: "Accueil" })).toBeVisible();
+  await expect(crumb.getByRole("link", { name: "Outils" })).toBeVisible();
+  // The current page is the last crumb (not a link).
+  await expect(crumb.getByText("Villes")).toBeVisible();
+});
+
+test("Bloc 91/M7: the footer links to every main section", async ({ page }) => {
+  await page.goto("/fr/tools");
+  const footer = page.getByRole("contentinfo");
+  for (const name of [
+    "Outils",
+    "Référentiels",
+    "Guides",
+    "Contact",
+    "Mentions légales",
+  ]) {
+    await expect(footer.getByRole("link", { name })).toBeVisible();
+  }
 });

@@ -55,9 +55,17 @@ export default async function PublicLayout({
         </div>
       </header>
       {children}
+      {/* Bloc 91/M7: the footer linked only /legal — give it the main
+          site sections too, so every page cross-links the whole site. */}
       <footer className="public-footer">
-        <span>ML-Helper</span>
-        <Link href="/legal">{t("legal")}</Link>
+        <span className="public-footer-brand">ML-Helper</span>
+        <nav className="public-footer-nav" aria-label={navigation("footer")}>
+          <Link href="/tools">{navigation("tools")}</Link>
+          <Link href="/referentiels">{navigation("referentiels")}</Link>
+          <Link href="/guides">{navigation("guides")}</Link>
+          <Link href="/contact">{t("contact")}</Link>
+          <Link href="/legal">{t("legal")}</Link>
+        </nav>
       </footer>
     </div>
   );

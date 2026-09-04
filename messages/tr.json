@@ -434,7 +434,10 @@
     "tools": "Araçlar",
     "referentiels": "Referans tabloları",
     "guides": "Rehberler",
-    "menu": "Menü"
+    "menu": "Menü",
+    "footer": "Alt bilgi",
+    "home": "Ana sayfa",
+    "breadcrumb": "İçerik haritası"
   },
   "search": {
     "label": "Sitede ara",

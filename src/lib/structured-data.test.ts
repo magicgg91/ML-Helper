@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   articleJsonLd,
+  breadcrumbJsonLd,
   webApplicationJsonLd,
   websiteJsonLd,
 } from "./structured-data";
@@ -49,6 +50,27 @@ describe("structured-data (Bloc 91/M4)", () => {
     expect(data.image).toBeUndefined();
     expect(data.datePublished).toBeUndefined();
     expect(data.dateModified).toBeUndefined();
+  });
+
+  it("emits a BreadcrumbList with positioned, absolute-URL items", () => {
+    const data = breadcrumbJsonLd("fr", [
+      { path: "/", label: "Accueil" },
+      { path: "/tools", label: "Outils" },
+      { path: "/tools/villes", label: "Villes" },
+    ]);
+    expect(data["@type"]).toBe("BreadcrumbList");
+    const items = data.itemListElement as Array<Record<string, unknown>>;
+    expect(items).toHaveLength(3);
+    expect(items[0]).toMatchObject({
+      position: 1,
+      name: "Accueil",
+      item: "https://ml-helper.com/fr",
+    });
+    expect(items[2]).toMatchObject({
+      position: 3,
+      name: "Villes",
+      item: "https://ml-helper.com/fr/tools/villes",
+    });
   });
 
   it("emits a free WebApplication in the game category for a tool", () => {
