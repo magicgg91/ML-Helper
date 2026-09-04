@@ -1668,10 +1668,12 @@ select {
    filters each fill their own half of the .reference-filters row (already a
    1fr 1fr grid, so the two groups are side by side at 50/50) — the buttons
    flex-fill their group instead of clustering at content width. Mobile keeps
-   its dedicated 2-col / 2+3 grids above. */
+   its dedicated 2-col / 2+3 grids above. Scoped to .reference-filters-equipment
+   (the Combat/Expedition Filters only) so Boutique's shared .reference-filter-
+   grid-2 category filter stays untouched (Codex review on PR #104). */
 @media (min-width: 901px) {
-  .reference-filters .reference-filter-grid-2 button,
-  .reference-filters .reference-filter-grid-rarity button {
+  .reference-filters-equipment .reference-filter-grid-2 button,
+  .reference-filters-equipment .reference-filter-grid-rarity button {
     flex: 1 1 0;
     min-width: max-content;
   }

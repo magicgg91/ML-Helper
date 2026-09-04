@@ -161,7 +161,10 @@ function Filters({
   const t = useTranslations("references");
   const game = useTranslations("game");
   return (
-    <div className="reference-filters" aria-label={t("filters.label")}>
+    <div
+      className="reference-filters reference-filters-equipment"
+      aria-label={t("filters.label")}
+    >
       <div>
         <span className="filter-label">{t("filters.family")}</span>
         <div className="family-buttons reference-filter-grid-2">
