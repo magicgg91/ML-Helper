@@ -394,8 +394,13 @@ test("Progression is a Référentiels reference and keeps Silver unconfirmed", a
   await leagueGroup.getByRole("button", { name: "Argent" }).click();
   await expect(page.getByRole("status")).toContainText("non encore confirmée");
   await expect(page.getByRole("table")).toHaveCount(0);
-  await page.goto("/tools/level-up");
-  await expect(page).toHaveTitle(/404|Not Found/i);
+  // Bloc 91/M6: an unknown tool slug now renders the translated custom 404
+  // (was Next's English default, whose title matched /404|Not Found/).
+  const levelUpResponse = await page.goto("/tools/level-up");
+  expect(levelUpResponse?.status()).toBe(404);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Page introuvable" }),
+  ).toBeVisible();
 });
 
 test("calculator pages only repeat names in their navigation tabs", async ({
