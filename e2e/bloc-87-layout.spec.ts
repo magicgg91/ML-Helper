@@ -26,15 +26,18 @@ async function contentWidthRatio(
   page: import("@playwright/test").Page,
   selector: string,
 ) {
-  return page.locator(selector).first().evaluate((el) => {
-    const parent = el.parentElement!;
-    const style = getComputedStyle(parent);
-    const content =
-      parent.clientWidth -
-      parseFloat(style.paddingLeft) -
-      parseFloat(style.paddingRight);
-    return el.getBoundingClientRect().width / content;
-  });
+  return page
+    .locator(selector)
+    .first()
+    .evaluate((el) => {
+      const parent = el.parentElement!;
+      const style = getComputedStyle(parent);
+      const content =
+        parent.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight);
+      return el.getBoundingClientRect().width / content;
+    });
 }
 
 // Bloc 87/B: the Progression (and Événement) league picker occupies 50% of
@@ -77,8 +80,7 @@ for (const slug of ["combat-equipment", "expedition-equipment"]) {
     expect(Math.abs(g0!.width - g1!.width)).toBeLessThan(4);
     // Same line (vertical ranges overlap) and side by side (left/right).
     const overlapsVertically =
-      Math.max(g0!.y, g1!.y) <
-      Math.min(g0!.y + g0!.height, g1!.y + g1!.height);
+      Math.max(g0!.y, g1!.y) < Math.min(g0!.y + g0!.height, g1!.y + g1!.height);
     expect(overlapsVertically).toBe(true);
     expect(g0!.x + g0!.width).toBeLessThanOrEqual(g1!.x + 2);
 

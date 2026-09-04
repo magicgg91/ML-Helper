@@ -79,12 +79,12 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   await search.fill("visible");
   await expect(
     page.getByRole("link", { name: /Guide visible/ }),
-  ).toHaveAttribute("href", "/guides/guide-visible");
+  ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
 
   await search.fill("équipements de combat");
   await expect(
     page.getByRole("link", { name: /Équipements de Combat/ }),
-  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
 
   // Bloc 36/A: "gemmes" now matches both the Gems tool and its new
   // reference, sharing the exact same label — scope to the tool's exact
@@ -92,7 +92,7 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   await search.fill("gemmes");
   await expect(
     page.getByRole("link", { name: "Outil Gemmes" }),
-  ).toHaveAttribute("href", "/tools/competences");
+  ).toHaveAttribute("href", new RegExp("/tools/competences$"));
 
   await search.fill("introuvable");
   await expect(page.getByText("Aucun résultat.")).toBeVisible();
@@ -104,7 +104,7 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   await searchEn.fill("visible");
   await expect(
     page.getByRole("link", { name: /Visible guide/ }),
-  ).toHaveAttribute("href", "/guides/guide-visible");
+  ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
 });
 
 test("translates the interface around a localized published guide", async ({

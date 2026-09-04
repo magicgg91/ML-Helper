@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { getActiveLocales, isAlwaysActiveLocale } from "@/lib/locale-settings";
 import { fallbackLocale } from "@/i18n/config";
+import { HtmlLangSync } from "@/components/html-lang-sync";
 
 // Bloc 91/E1: pre-renders the 5 locale segments.
 export function generateStaticParams() {
@@ -40,5 +41,16 @@ export default async function LocaleLayout({
   // locale from here instead of the request headers when prerendering).
   setRequestLocale(locale);
 
-  return children;
+  // Bloc 91/E1: a locale-scoped provider (nested inside the root one, which
+  // still covers admin/login). Unlike the root layout — a shared ancestor that
+  // is NOT re-rendered when only the [locale] segment changes — this layout
+  // re-renders on every locale switch, so useLocale()/useTranslations() stay in
+  // sync after a soft navigation between languages (e.g. the LocaleToggle).
+  const messages = await getMessages();
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <HtmlLangSync locale={locale} />
+      {children}
+    </NextIntlClientProvider>
+  );
 }

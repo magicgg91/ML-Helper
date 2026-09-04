@@ -163,16 +163,16 @@ test("tool routes alone expose persistent player settings", async ({
   // directly (the same ToolCategoryGrid as /tools).
   await expect(page.getByRole("link", { name: /Villes/ })).toHaveAttribute(
     "href",
-    "/tools/villes",
+    new RegExp("/tools/villes$"),
   );
   // Bloc 34/E: the most recent guides + the built references are directly
   // clickable from the homepage, no detour via /guides.
   await expect(
     page.getByRole("link", { name: /Guide visible/ }),
-  ).toHaveAttribute("href", "/guides/guide-visible");
+  ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
   await expect(page.getByRole("link", { name: /Templiers/ })).toHaveAttribute(
     "href",
-    "/referentiels/templars",
+    new RegExp("/referentiels/templars$"),
   );
   const publicThemeToggle = page.getByRole("button", {
     name: "Activer le mode clair",
@@ -663,13 +663,13 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   // reference's own title, not a generic "Voir le référentiel complet".
   await expect(
     page.getByRole("link", { name: "Équipements de Combat" }),
-  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
   // Bloc 36/A: same cross-link pattern already verified for Templiers below.
   await expect(
     page.getByRole("main").getByRole("link", { name: "Gemmes" }),
-  ).toHaveAttribute("href", "/referentiels/gems");
+  ).toHaveAttribute("href", new RegExp("/referentiels/gems$"));
   await page.getByRole("tab", { name: "Budget disponible" }).click();
   // Bloc 82/D: no skill pre-selected any more — pick one explicitly.
   await page
@@ -690,7 +690,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.getByRole("tab", { name: "Templiers" }).click();
   await expect(page.getByRole("link", { name: /Templiers$/ })).toHaveAttribute(
     "href",
-    "/referentiels/templars",
+    new RegExp("/referentiels/templars$"),
   );
   await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("3");
   await expect(page.getByTestId("templar-cost")).toHaveText("599 Pouciel");
@@ -731,10 +731,10 @@ test("Reference tables filter combat and expedition equipment", async ({
   const referentielsGrid = page.locator(".tool-category-grid");
   await expect(
     referentielsGrid.getByRole("link", { name: /Équipements de Combat/ }),
-  ).toHaveAttribute("href", "/referentiels/combat-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
   await expect(
     referentielsGrid.getByRole("link", { name: /Équipements d’Expédition/ }),
-  ).toHaveAttribute("href", "/referentiels/expedition-equipment");
+  ).toHaveAttribute("href", new RegExp("/referentiels/expedition-equipment$"));
 
   await page.goto("/referentiels/combat-equipment");
   // Bloc 39: table rows became tiles grouped into per-set blocks — no
