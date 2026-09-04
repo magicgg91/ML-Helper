@@ -199,3 +199,28 @@ export function equipmentImagePath(
 
   return `/equipment/${directory}/${familySlugs[family] ?? slugify(family)}-${rarityFileSlugs[rarity] ?? slugify(rarity)}-${slotSlugs[slot] ?? slugify(slot)}.webp`;
 }
+
+// Bloc 85: a separate slug map for the empty-slot placeholder icons
+// (`item-<slot>.webp`) — the delivered files use their own English names
+// for 2 Combat slots (Amulette -> "pendant", Gantelet -> "gloves") that
+// don't match combatSlotFileSlugs's ("amulet", "gauntlets"), which names
+// files for an actually-selected equipment's tile image instead.
+const combatEmptySlotIconFileSlugs: Record<string, string> = {
+  Amulette: "pendant",
+  Casque: "helmet",
+  Bracelet: "bracelet",
+  Anneau: "ring",
+  Ceinture: "belt",
+  Gantelet: "gloves",
+  Arme: "weapon",
+  Bottes: "boots",
+  Bouclier: "shield",
+};
+
+export function emptyCombatSlotIconPath(slot: string): string {
+  return `/equipment/combat/item-${combatEmptySlotIconFileSlugs[slot] ?? slugify(slot)}.webp`;
+}
+
+export function emptyExpeditionSlotIconPath(slot: string): string {
+  return `/equipment/expedition/item-exped-${expeditionSlotFileSlugs[slot] ?? slugify(slot)}.webp`;
+}

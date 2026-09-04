@@ -1111,6 +1111,11 @@ select {
 .stuff-slot-image-expedition {
   max-height: 3.2rem;
 }
+/* Bloc 85: faded, so the icon reads as an empty-slot placeholder rather
+   than a real selected item. */
+.stuff-slot-image-empty {
+  opacity: 0.35;
+}
 /* Bloc 73/D: replaces the old single-column stack (image, star text, then
    a row of gem badges below) with image+star on the left and the (up to
    3) gems stacked in a column on the right — kept isolated in its own

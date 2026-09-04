@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  emptyCombatSlotIconPath,
+  emptyExpeditionSlotIconPath,
   equipmentImagePath,
   equipmentSkillColors,
   filterButtonColor,
@@ -51,6 +53,64 @@ describe("equipmentImagePath", () => {
   it("Bloc82/E: uses 'mythical' for Mythique and 'gauntlets' for Gantelet, matching the delivered files", () => {
     expect(equipmentImagePath("Attaque", "Mythique", "Gantelet")).toBe(
       "/equipment/combat/attack-mythical-gauntlets.webp",
+    );
+  });
+});
+
+describe("emptyCombatSlotIconPath (Bloc 85/A)", () => {
+  it("matches the 9 delivered item-*.webp files exactly, including the 2 that diverge from equipmentImagePath's own slug names", () => {
+    // Amulette -> "pendant" (not "amulet") and Gantelet -> "gloves" (not
+    // "gauntlets") in these placeholder icons — a separate naming decision
+    // from the real-equipment tile images' own slugs.
+    expect(emptyCombatSlotIconPath("Amulette")).toBe(
+      "/equipment/combat/item-pendant.webp",
+    );
+    expect(emptyCombatSlotIconPath("Gantelet")).toBe(
+      "/equipment/combat/item-gloves.webp",
+    );
+    expect(emptyCombatSlotIconPath("Casque")).toBe(
+      "/equipment/combat/item-helmet.webp",
+    );
+    expect(emptyCombatSlotIconPath("Bracelet")).toBe(
+      "/equipment/combat/item-bracelet.webp",
+    );
+    expect(emptyCombatSlotIconPath("Anneau")).toBe(
+      "/equipment/combat/item-ring.webp",
+    );
+    expect(emptyCombatSlotIconPath("Ceinture")).toBe(
+      "/equipment/combat/item-belt.webp",
+    );
+    expect(emptyCombatSlotIconPath("Arme")).toBe(
+      "/equipment/combat/item-weapon.webp",
+    );
+    expect(emptyCombatSlotIconPath("Bottes")).toBe(
+      "/equipment/combat/item-boots.webp",
+    );
+    expect(emptyCombatSlotIconPath("Bouclier")).toBe(
+      "/equipment/combat/item-shield.webp",
+    );
+  });
+});
+
+describe("emptyExpeditionSlotIconPath (Bloc 85/B)", () => {
+  it("matches the 6 delivered item-exped-*.webp files exactly", () => {
+    expect(emptyExpeditionSlotIconPath("Cape")).toBe(
+      "/equipment/expedition/item-exped-cape.webp",
+    );
+    expect(emptyExpeditionSlotIconPath("Longue-vue")).toBe(
+      "/equipment/expedition/item-exped-spyglass.webp",
+    );
+    expect(emptyExpeditionSlotIconPath("Sacoche")).toBe(
+      "/equipment/expedition/item-exped-pouch.webp",
+    );
+    expect(emptyExpeditionSlotIconPath("Boussole")).toBe(
+      "/equipment/expedition/item-exped-compass.webp",
+    );
+    expect(emptyExpeditionSlotIconPath("Torche")).toBe(
+      "/equipment/expedition/item-exped-torch.webp",
+    );
+    expect(emptyExpeditionSlotIconPath("Pioche")).toBe(
+      "/equipment/expedition/item-exped-pickaxe.webp",
     );
   });
 });

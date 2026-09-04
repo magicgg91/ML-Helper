@@ -135,6 +135,7 @@ describe("ExpeditionEquipmentSimulator", () => {
         screen.getByText("Clique sur un emplacement pour le configurer."),
       ).toBeInTheDocument(),
     );
+    // Bloc 85/B: "Vide" is now an icon (alt text), not plain text.
     for (const slot of [
       "Cape",
       "Longue-vue",
@@ -144,8 +145,10 @@ describe("ExpeditionEquipmentSimulator", () => {
       "Pioche",
     ])
       expect(
-        screen.getByRole("button", { name: new RegExp(slot) }),
-      ).toHaveTextContent("Vide");
+        within(
+          screen.getByRole("button", { name: new RegExp(slot) }),
+        ).getByRole("img", { name: "Vide" }),
+      ).toBeInTheDocument();
   });
 
   it("shows all 10 skills in the fixed Bloc 31/E.2 order, including those still at 0%", () => {
@@ -231,9 +234,12 @@ describe("ExpeditionEquipmentSimulator", () => {
     expect(capeButton).not.toHaveTextContent("1★");
     // Switch to the "Or" filter — its own Cape slot starts empty.
     fireEvent.click(screen.getByRole("button", { name: "Or" }));
-    expect(screen.getByRole("button", { name: /Cape/ })).toHaveTextContent(
-      "Vide",
-    );
+    // Bloc 85/B: "Vide" is now an icon (alt text), not plain text.
+    expect(
+      within(
+        screen.getByRole("button", { name: /Cape/ }),
+      ).getByRole("img", { name: "Vide" }),
+    ).toBeInTheDocument();
     // Switch back to "Personnalisé" — the earlier selection is still there.
     fireEvent.click(screen.getByRole("button", { name: "Personnalisé" }));
     expect(screen.getByRole("button", { name: /Cape/ })).not.toHaveTextContent(
@@ -365,5 +371,27 @@ describe("ExpeditionEquipmentSimulator", () => {
       "Consommables",
       "Troupes",
     ]);
+  });
+
+  // Bloc 85/B: an icon representing the slot's own equipment type replaces
+  // the plain "Vide" text once no equipment is selected for it.
+  it("shows the slot's own empty-state icon on all 6 Expedition slots", () => {
+    renderTool();
+    const expectedIconBySlot: Record<string, string> = {
+      Cape: "/equipment/expedition/item-exped-cape.webp",
+      "Longue-vue": "/equipment/expedition/item-exped-spyglass.webp",
+      Bourse: "/equipment/expedition/item-exped-pouch.webp",
+      Boussole: "/equipment/expedition/item-exped-compass.webp",
+      Torche: "/equipment/expedition/item-exped-torch.webp",
+      Pioche: "/equipment/expedition/item-exped-pickaxe.webp",
+    };
+    for (const [label, expectedSrc] of Object.entries(expectedIconBySlot)) {
+      const button = screen.getByRole("button", {
+        name: new RegExp(`^${label}`),
+      });
+      const icon = within(button).getByRole("img", { name: "Vide" });
+      expect(icon).toHaveAttribute("src", expectedSrc);
+      expect(button).not.toHaveTextContent("Vide");
+    }
   });
 });

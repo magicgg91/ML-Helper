@@ -396,7 +396,10 @@ describe("equipment tools", () => {
     // config isn't shared or overwritten.
     selectFamily("Attaque");
     const attaqueAmulet = screen.getByRole("button", { name: /Amulette/ });
-    expect(attaqueAmulet).toHaveTextContent("Vide");
+    // Bloc 85/A: "Vide" is now an icon (alt text), not plain text.
+    expect(
+      within(attaqueAmulet).getByRole("img", { name: "Vide" }),
+    ).toBeInTheDocument();
     // The global aggregate still reflects Défense's contribution even
     // though Défense's block isn't the one on screen right now.
     box = within(globalSummarySection())
@@ -613,5 +616,30 @@ describe("equipment tools", () => {
     );
     const saved = JSON.parse(localStorage.getItem(playerStorageKey)!);
     expect(saved.equipmentSkills.striker).toBe(0);
+  });
+
+  // Bloc 85/A: an icon representing the slot's own equipment type replaces
+  // the plain "Vide" text once no equipment is selected for it.
+  it("shows the slot's own empty-state icon on all 9 Combat slots", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const expectedIconBySlot: Record<string, string> = {
+      Amulette: "/equipment/combat/item-pendant.webp",
+      Casque: "/equipment/combat/item-helmet.webp",
+      Bracelet: "/equipment/combat/item-bracelet.webp",
+      Anneau: "/equipment/combat/item-ring.webp",
+      Ceinture: "/equipment/combat/item-belt.webp",
+      Gantelet: "/equipment/combat/item-gloves.webp",
+      Arme: "/equipment/combat/item-weapon.webp",
+      Bottes: "/equipment/combat/item-boots.webp",
+      Bouclier: "/equipment/combat/item-shield.webp",
+    };
+    for (const [slot, expectedSrc] of Object.entries(expectedIconBySlot)) {
+      const button = screen.getByRole("button", {
+        name: new RegExp(`^${slot}`),
+      });
+      const icon = within(button).getByRole("img", { name: "Vide" });
+      expect(icon).toHaveAttribute("src", expectedSrc);
+      expect(button).not.toHaveTextContent("Vide");
+    }
   });
 });
