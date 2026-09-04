@@ -265,7 +265,7 @@
       "league": "Ligue de l’attaquant"
     },
     "wall": "Remparts de la cible",
-    "maximum": "Troupes maximum ({percentage} %)"
+    "maximum": "Troupes maximum"
   },
   "ranking": {
     "name": "Classement",

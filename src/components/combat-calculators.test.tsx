@@ -122,20 +122,54 @@ describe("CombatCalculators", () => {
     expect(screen.getByTestId("demo-troops")).toHaveClass("emerald");
   });
 
-  // Bloc 69/E: a visible "Ligue de l’attaquant" title above the buttons
-  // (previously the field carried no visible label at all), sharing the
-  // row with the tool's other field instead of being isolated on its own
-  // (Bloc 68/J+K), and the mobile 2x3 grid class.
-  it("Bloc69/E: gives the league field a visible title and the mobile 2x3 grid class", () => {
+  // Bloc 88/A: the league block keeps its visible "Ligue de l’attaquant"
+  // title and the mobile 2x3 grid class (league-buttons-grid), and its
+  // buttons now take 50% of the full-width block on desktop
+  // (league-buttons-half). The city-level field moved out to the result
+  // tile (Bloc 88/C), so the league field is no longer on a shared inline
+  // row.
+  it("Bloc88/A: the league block has a visible title, the 2x3 grid class and the 50% modifier", () => {
     view();
     fireEvent.click(
       screen.getByRole("tab", { name: "Troupes en attaque démo" }),
     );
     const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    const wrapper = league.closest(".calculator-fields-inline")
-      ?.firstElementChild;
+    const wrapper = league.closest(".demo-attack-league-field");
     expect(wrapper).toContainElement(league);
     expect(wrapper).toHaveTextContent("Ligue de l’attaquant");
     expect(league).toHaveClass("league-buttons-grid");
+    expect(league).toHaveClass("league-buttons-half");
+  });
+
+  // Bloc 88/C-E: the target-city-level field lives inside the result tile,
+  // editing it recalculates live, and no percentage is shown anywhere.
+  it("Bloc88/C-E: city-level field is in the tile, recalculates live, shows no percentage", () => {
+    view();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    );
+    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
+    fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
+
+    const tile = screen.getByTestId("demo-wall").closest(".demo-attack-tile");
+    expect(tile).not.toBeNull();
+    // The city-level field is inside the tile, next to the results.
+    const cityLevel = screen.getByRole("spinbutton", {
+      name: "Niveau de ville visée",
+    });
+    expect(tile).toContainElement(cityLevel);
+    expect(tile).toContainElement(screen.getByTestId("demo-troops"));
+
+    // Live recalculation: raising the city level changes both values.
+    const wallBefore = screen.getByTestId("demo-wall").textContent;
+    const troopsBefore = screen.getByTestId("demo-troops").textContent;
+    fireEvent.change(cityLevel, { target: { value: "50" } });
+    expect(screen.getByTestId("demo-wall").textContent).not.toBe(wallBefore);
+    expect(screen.getByTestId("demo-troops").textContent).not.toBe(
+      troopsBefore,
+    );
+
+    // Bloc 88/E: no percentage anywhere in the tool.
+    expect(tile).not.toHaveTextContent("%");
   });
 });

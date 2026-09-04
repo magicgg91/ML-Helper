@@ -861,6 +861,49 @@ select {
 .city-maxlevel-gold-field .unit-input {
   grid-template-columns: minmax(0, 1fr) 3.15rem;
 }
+/* Bloc 88/B-D: Demo Attack Troops result tile — a grey Boutique-style tile
+   (same --surface-muted background as .consumable-tile) sitting below the
+   full-width league block. Desktop: the still-editable target-city-level
+   field sits on one row next to the walls and maximum-troops results
+   (Bloc 88/C-D). The two result values reuse .total-box's label/value (and
+   .value.emerald) styling but drop its own border/background so they read as
+   plain tile content rather than boxes-in-a-box. */
+.demo-attack-tile {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.demo-attack-tile-level {
+  flex: 0 0 auto;
+}
+.demo-attack-tile-results {
+  display: flex;
+  gap: 1.5rem;
+  flex: 1 1 auto;
+}
+.demo-attack-tile-results .total-box {
+  flex: 1 1 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.demo-attack-tile-empty {
+  flex: 1 1 auto;
+  margin: 0;
+}
+/* Bloc 88/F: mobile keeps the league buttons' 2x3 grid (league-buttons-grid,
+   unchanged) and stacks the tile — the city-level field on its own line,
+   then the walls + maximum-troops results together on the next line. */
+@media (max-width: 900px) {
+  .demo-attack-tile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
 .calculator-field {
   display: grid;
   gap: 0.4rem;

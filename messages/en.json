@@ -265,7 +265,7 @@
       "league": "Attacker league"
     },
     "wall": "Target walls",
-    "maximum": "Maximum troops ({percentage}%)"
+    "maximum": "Maximum troops"
   },
   "ranking": {
     "name": "Ranking",
