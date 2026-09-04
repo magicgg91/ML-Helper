@@ -12,12 +12,17 @@ test("switches the public navigation language and falls back to English", async 
   // trigger + role="listbox" popup), not a native <select>.
   const trigger = page.getByRole("button", { name: /Language|Langue/ });
   const listbox = page.getByRole("listbox", { name: /Language|Langue/ });
+  // Bloc 91/M7: the footer now repeats the section links, so scope to the
+  // header nav to keep the locale-switch assertion unambiguous.
+  const primaryNav = page.getByRole("navigation", {
+    name: "Navigation principale",
+  });
   await trigger.click();
   await listbox.getByRole("option", { name: "EN" }).click();
-  await expect(page.getByRole("link", { name: "Tools" })).toBeVisible();
+  await expect(primaryNav.getByRole("link", { name: "Tools" })).toBeVisible();
 
   await trigger.click();
   await listbox.getByRole("option", { name: "FR" }).click();
-  await expect(page.getByRole("link", { name: "Outils" })).toBeVisible();
+  await expect(primaryNav.getByRole("link", { name: "Outils" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin area" })).toHaveCount(0);
 });
