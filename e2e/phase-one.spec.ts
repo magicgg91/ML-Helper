@@ -1752,7 +1752,6 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
     if (roleCase.username === "role-readonly") {
       const blockedMutations = [
         page.request.post("/api/admin/users", { data: {} }),
-        page.request.post("/api/admin/setup", { data: {} }),
         page.request.patch("/api/admin/users/unknown-user", { data: {} }),
         page.request.delete("/api/admin/users/unknown-user"),
         page.request.delete("/api/admin/logs", { data: {} }),
@@ -1781,6 +1780,14 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
       ];
       for (const mutation of blockedMutations)
         expect((await mutation).status()).toBe(403);
+
+      // F4: once the platform is set up, /api/admin/setup is closed to
+      // everyone — the explicit "already completed" guard runs before the
+      // role check, so it answers 409 (a stronger guarantee than the
+      // per-role 403 above) rather than 403.
+      expect(
+        (await page.request.post("/api/admin/setup", { data: {} })).status(),
+      ).toBe(409);
 
       const ownPassword = await page.request.patch(
         "/api/admin/profile/password",
