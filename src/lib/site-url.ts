@@ -1,4 +1,4 @@
-import { launchLocales } from "./translations";
+import { launchLocales, defaultLaunchLocale } from "./translations";
 
 // Bloc 42/J: NEXTAUTH_URL is already the app's "public origin" env var
 // (.env.example: "Public origin used by NextAuth callbacks and cookies") —
@@ -14,17 +14,28 @@ export function absoluteUrl(path: string): string {
   return `${siteUrl}${path}`;
 }
 
-// Bloc 42/J: locale here is cookie-driven (src/i18n/request.ts), never part
-// of the URL — this app has exactly one URL per page, shown in whichever
-// of the 5 launched languages the visitor's cookie selects. Every hreflang
-// alternate (including x-default) therefore points at that same URL: the
-// closest honest signal a search engine can get from this app's actual
-// (cookie-based, not path-segmented) i18n architecture, without claiming
-// language-specific URLs that don't exist.
+// Bloc 91/E1: locale now lives in the URL (/[locale]/…). Turns an unprefixed
+// public path ("/tools", "/") into its locale-prefixed form ("/en/tools",
+// "/fr"). The home path collapses to "/{locale}" (no trailing slash).
+export function localizedPath(locale: string, path: string): string {
+  return path === "/" || path === "" ? `/${locale}` : `/${locale}${path}`;
+}
+
+// The canonical absolute URL for a page in a given locale.
+export function canonicalUrl(locale: string, path: string): string {
+  return absoluteUrl(localizedPath(locale, path));
+}
+
+// Bloc 91/E1: each of the 5 launched languages now has its own real URL, so
+// hreflang alternates point at distinct, valid locale-prefixed URLs (with
+// x-default → the French URL, the site's default locale). Fixes the previous
+// scheme where all 6 alternates pointed at the same cookie-driven URL.
 export function languageAlternates(path: string): Record<string, string> {
-  const url = absoluteUrl(path);
   return Object.fromEntries([
-    ...launchLocales.map((locale) => [locale, url]),
-    ["x-default", url],
+    ...launchLocales.map((locale) => [
+      locale,
+      absoluteUrl(localizedPath(locale, path)),
+    ]),
+    ["x-default", absoluteUrl(localizedPath(defaultLaunchLocale, path))],
   ]);
 }

@@ -1,11 +1,11 @@
 import { connection } from "next/server";
-import { PlayerSettingsPanel } from "../../../../components/player-settings-panel";
-import { ToolCategoryNav } from "../../../../components/tool-category-nav";
-import { getCalculatorAvailability } from "../../../../lib/calculators-server";
+import { PlayerSettingsPanel } from "../../../../../components/player-settings-panel";
+import { ToolCategoryNav } from "../../../../../components/tool-category-nav";
+import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
 
 export default async function ToolDetailLayout({
   children,
-}: LayoutProps<"/tools/[slug]">) {
+}: LayoutProps<"/[locale]/tools/[slug]">) {
   await connection();
   const active = await getCalculatorAvailability();
   const availability = {

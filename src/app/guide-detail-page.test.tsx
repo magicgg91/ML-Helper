@@ -1,6 +1,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import GuidePage, { generateMetadata } from "./(public)/guides/[slug]/page";
+import GuidePage, {
+  generateMetadata,
+} from "./[locale]/(public)/guides/[slug]/page";
 
 let guide: Record<string, unknown> | null = null;
 
@@ -53,15 +55,19 @@ describe("GuidePage metadata (Bloc 42/J)", () => {
       content: { fr: "# Bonjour", en: "# Hello" },
     };
     const metadata = await generateMetadata({
-      params: Promise.resolve({ slug: "mon-guide" }),
+      params: Promise.resolve({ locale: "fr", slug: "mon-guide" }),
       searchParams: Promise.resolve({}),
     });
     expect(metadata.description).toBe("Résumé du guide");
     const languages = metadata.alternates?.languages as
       Record<string, string> | undefined;
-    expect(languages?.fr).toBe("https://ml-helper.com/guides/mon-guide");
+    expect(languages?.fr).toBe("https://ml-helper.com/fr/guides/mon-guide");
     expect(languages?.["x-default"]).toBe(
-      "https://ml-helper.com/guides/mon-guide",
+      "https://ml-helper.com/fr/guides/mon-guide",
+    );
+    // Bloc 91/E1: canonical resolves to the active locale's prefixed URL.
+    expect(metadata.alternates?.canonical).toBe(
+      "https://ml-helper.com/fr/guides/mon-guide",
     );
   });
 
@@ -74,7 +80,7 @@ describe("GuidePage metadata (Bloc 42/J)", () => {
       content: { fr: "# Bonjour" },
     };
     const metadata = await generateMetadata({
-      params: Promise.resolve({ slug: "guide-sans-excerpt" }),
+      params: Promise.resolve({ locale: "fr", slug: "guide-sans-excerpt" }),
       searchParams: Promise.resolve({}),
     });
     expect(metadata.description).toBeTruthy();
@@ -95,7 +101,7 @@ describe("GuidePage metadata (Bloc 42/J)", () => {
       content: { fr: "# Bonjour", en: "# Hello" },
     };
     const metadata = await generateMetadata({
-      params: Promise.resolve({ slug: "guide-fr-excerpt-only" }),
+      params: Promise.resolve({ locale: "fr", slug: "guide-fr-excerpt-only" }),
       searchParams: Promise.resolve({}),
     });
     expect(metadata.description).not.toBe("Résumé en français uniquement");
@@ -116,7 +122,7 @@ describe("GuidePage — untranslated guide content placeholder", () => {
     };
     render(
       await GuidePage({
-        params: Promise.resolve({ slug: "mon-guide" }),
+        params: Promise.resolve({ locale: "fr", slug: "mon-guide" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -137,7 +143,7 @@ describe("GuidePage — untranslated guide content placeholder", () => {
     };
     render(
       await GuidePage({
-        params: Promise.resolve({ slug: "en-only-guide" }),
+        params: Promise.resolve({ locale: "fr", slug: "en-only-guide" }),
         searchParams: Promise.resolve({}),
       }),
     );
@@ -157,7 +163,7 @@ describe("GuidePage — untranslated guide content placeholder", () => {
     };
     render(
       await GuidePage({
-        params: Promise.resolve({ slug: "fr-en-guide" }),
+        params: Promise.resolve({ locale: "fr", slug: "fr-en-guide" }),
         searchParams: Promise.resolve({}),
       }),
     );

@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { hasSuperAdmin } from "../../services/setup-superadmin";
+import { hasSuperAdmin } from "../../../services/setup-superadmin";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { ToolCategoryGrid } from "@/components/tool-category-grid";
 import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Home");
   return {
     title: "ML Helper",
     description: t("intro"),
-    alternates: { languages: languageAlternates("/") },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), "/"),
+      languages: languageAlternates("/"),
+    },
   };
 }
 

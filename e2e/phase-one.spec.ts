@@ -2291,3 +2291,52 @@ test("Bloc 90/F: admin can still edit content in a deactivated language", async 
   await b90SetLocaleActive(page, "es", true);
   await context.close();
 });
+
+// Bloc 91/E1: locale-prefixed public routing. Runs last (serial file), after
+// the Bloc 90 tests have re-enabled every locale, so all 5 are active here.
+test("Bloc 91/E1: the 5 languages have their own URL, with distinct hreflang and canonical", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  // Each launched locale renders at its own /[locale]/ URL with a matching
+  // <html lang>.
+  for (const locale of ["fr", "en", "de", "es", "tr"]) {
+    const response = await page.goto(`/${locale}/tools`);
+    expect(response?.status(), `${locale} status`).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+  }
+
+  // An unprefixed public URL redirects to a locale-prefixed one.
+  await page.goto("/tools");
+  expect(page.url()).toMatch(/\/(fr|en|de|es|tr)\/tools$/);
+
+  // hreflang: 5 distinct locale alternates + x-default, all pointing at
+  // language-specific URLs (E1's core SEO fix).
+  await page.goto("/fr/tools");
+  const alternates = page.locator('link[rel="alternate"][hreflang]');
+  await expect(alternates).toHaveCount(6);
+  const hrefs = await alternates.evaluateAll((links) =>
+    links.map((l) => `${l.getAttribute("hreflang")}=${l.getAttribute("href")}`),
+  );
+  expect(hrefs).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/fr=.*\/fr\/tools$/),
+      expect.stringMatching(/en=.*\/en\/tools$/),
+      expect.stringMatching(/de=.*\/de\/tools$/),
+      expect.stringMatching(/x-default=.*\/fr\/tools$/),
+    ]),
+  );
+
+  // canonical is the current locale's own URL.
+  await page.goto("/en/tools");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    /\/en\/tools$/,
+  );
+
+  // The language selector navigates to the same page under the chosen locale.
+  await page.goto("/fr/tools");
+  await page.locator(".locale-select-trigger").click();
+  await page.getByRole("option", { name: "EN" }).click();
+  await expect(page).toHaveURL(/\/en\/tools$/);
+});

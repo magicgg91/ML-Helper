@@ -1,10 +1,10 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import PublicLayout from "./(public)/layout";
-import ToolsLayout from "./(public)/tools/layout";
-import ToolDetailLayout from "./(public)/tools/[slug]/layout";
-import ReferentielsLayout from "./(public)/referentiels/layout";
-import ReferentielDetailLayout from "./(public)/referentiels/[slug]/layout";
+import PublicLayout from "./[locale]/(public)/layout";
+import ToolsLayout from "./[locale]/(public)/tools/layout";
+import ToolDetailLayout from "./[locale]/(public)/tools/[slug]/layout";
+import ReferentielsLayout from "./[locale]/(public)/referentiels/layout";
+import ReferentielDetailLayout from "./[locale]/(public)/referentiels/[slug]/layout";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 
@@ -62,7 +62,7 @@ describe("public layouts", () => {
       <NextIntlClientProvider locale="fr" messages={messages}>
         {await PublicLayout({
           children: <p>Accueil</p>,
-          params: Promise.resolve({}),
+          params: Promise.resolve({ locale: "fr" }),
         })}
       </NextIntlClientProvider>,
     );
@@ -76,7 +76,7 @@ describe("public layouts", () => {
       <NextIntlClientProvider locale="fr" messages={messages}>
         {await PublicLayout({
           children: <p>Accueil</p>,
-          params: Promise.resolve({}),
+          params: Promise.resolve({ locale: "fr" }),
         })}
       </NextIntlClientProvider>,
     );
@@ -103,7 +103,7 @@ describe("public layouts", () => {
 
   it("keeps the tools landing page limited to its category content", () => {
     render(
-      <ToolsLayout params={Promise.resolve({})}>
+      <ToolsLayout params={Promise.resolve({ locale: "fr" })}>
         <p>Catégories</p>
       </ToolsLayout>,
     );
@@ -120,7 +120,7 @@ describe("public layouts", () => {
       <NextIntlClientProvider locale="fr" messages={messages}>
         {await ToolDetailLayout({
           children: <p>Outils</p>,
-          params: Promise.resolve({ slug: "villes" }),
+          params: Promise.resolve({ locale: "fr", slug: "villes" }),
         })}
       </NextIntlClientProvider>,
     );
@@ -134,7 +134,7 @@ describe("public layouts", () => {
   // them as a text nav there was redundant.
   it("Bloc52/B: the /referentiels index layout is a bare passthrough, no switcher nav", () => {
     render(
-      <ReferentielsLayout params={Promise.resolve({})}>
+      <ReferentielsLayout params={Promise.resolve({ locale: "fr" })}>
         <p>Référentiels</p>
       </ReferentielsLayout>,
     );
@@ -159,7 +159,7 @@ describe("public layouts", () => {
           // this assertion ambiguous between the page's own content and
           // the nav's own "Boutique" link.
           children: <p>Contenu de la page</p>,
-          params: Promise.resolve({ slug: "shop" }),
+          params: Promise.resolve({ locale: "fr", slug: "shop" }),
         })}
       </NextIntlClientProvider>,
     );

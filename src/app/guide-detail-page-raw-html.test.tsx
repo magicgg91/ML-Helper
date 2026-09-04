@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import GuidePage from "./(public)/guides/[slug]/page";
+import GuidePage from "./[locale]/(public)/guides/[slug]/page";
 
 // Bloc 56: unlike guide-detail-page.test.tsx (which mocks MarkdownRenderer
 // away to isolate the page's translation-fallback logic), this file renders
@@ -34,7 +34,7 @@ describe("GuidePage — Bloc 56: raw HTML support", () => {
     };
     render(
       await GuidePage({
-        params: Promise.resolve({ slug: "guide-avec-image" }),
+        params: Promise.resolve({ locale: "fr", slug: "guide-avec-image" }),
         searchParams: Promise.resolve({}),
       }),
     );

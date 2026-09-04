@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 // Bloc 50/1b: dedicated index for the /referentiels root, now independent
 // from /guides (the reference grid used to live embedded inside the
@@ -16,7 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("references");
   return {
     title: t("title"),
-    alternates: { languages: languageAlternates("/referentiels") },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), "/referentiels"),
+      languages: languageAlternates("/referentiels"),
+    },
   };
 }
 

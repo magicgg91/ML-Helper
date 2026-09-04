@@ -9,7 +9,7 @@ import { getCalculatorAvailability } from "@/lib/calculators-server";
 // pattern as tools/[slug]/layout.tsx.
 export default async function ReferentielDetailLayout({
   children,
-}: LayoutProps<"/referentiels/[slug]">) {
+}: LayoutProps<"/[locale]/referentiels/[slug]">) {
   // Bloc 62/I review: same connection() fix as [slug]/page.tsx — forces
   // per-request dynamic rendering so an admin toggle actually reaches this
   // nav (it now shows inactive references too, not just filters them out).

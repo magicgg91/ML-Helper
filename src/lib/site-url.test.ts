@@ -24,13 +24,31 @@ describe("site-url", () => {
     expect(siteUrl).toBe("https://ml-helper.com");
   });
 
-  it("builds an alternate entry for every launched locale plus x-default, all pointing at the same URL", async () => {
+  it("builds a distinct locale-prefixed alternate for every launched locale plus an x-default pointing at the French URL", async () => {
     vi.stubEnv("NEXTAUTH_URL", "https://ml-helper.com");
     const { languageAlternates } = await import("./site-url");
     const alternates = languageAlternates("/guides");
     for (const locale of launchLocales)
-      expect(alternates[locale]).toBe("https://ml-helper.com/guides");
-    expect(alternates["x-default"]).toBe("https://ml-helper.com/guides");
+      expect(alternates[locale]).toBe(`https://ml-helper.com/${locale}/guides`);
+    expect(alternates["x-default"]).toBe("https://ml-helper.com/fr/guides");
     expect(Object.keys(alternates)).toHaveLength(launchLocales.length + 1);
+  });
+
+  it("collapses the home path to /{locale} (no trailing slash) in the alternates", async () => {
+    vi.stubEnv("NEXTAUTH_URL", "https://ml-helper.com");
+    const { languageAlternates } = await import("./site-url");
+    const alternates = languageAlternates("/");
+    for (const locale of launchLocales)
+      expect(alternates[locale]).toBe(`https://ml-helper.com/${locale}`);
+    expect(alternates["x-default"]).toBe("https://ml-helper.com/fr");
+  });
+
+  it("localizedPath / canonicalUrl prefix the locale, collapsing home to /{locale}", async () => {
+    vi.stubEnv("NEXTAUTH_URL", "https://ml-helper.com");
+    const { localizedPath, canonicalUrl } = await import("./site-url");
+    expect(localizedPath("en", "/guides")).toBe("/en/guides");
+    expect(localizedPath("fr", "/")).toBe("/fr");
+    expect(canonicalUrl("de", "/tools")).toBe("https://ml-helper.com/de/tools");
+    expect(canonicalUrl("fr", "/")).toBe("https://ml-helper.com/fr");
   });
 });

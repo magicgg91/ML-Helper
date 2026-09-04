@@ -7,11 +7,11 @@ import { hasLocalizedText, localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
 import { pageTitle } from "@/lib/page-title";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/guides/[slug]">): Promise<Metadata> {
+}: PageProps<"/[locale]/guides/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const locale = await getLocale();
   const guide = await prisma.guide.findFirst({
@@ -31,13 +31,16 @@ export async function generateMetadata({
     description: hasLocalizedText(guide.excerpt, locale)
       ? localizedText(guide.excerpt, locale)
       : t("descriptions.guide-fallback"),
-    alternates: { languages: languageAlternates(`/guides/${slug}`) },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), `/guides/${slug}`),
+      languages: languageAlternates(`/guides/${slug}`),
+    },
   };
 }
 
 export default async function GuidePage({
   params,
-}: PageProps<"/guides/[slug]">) {
+}: PageProps<"/[locale]/guides/[slug]">) {
   const { slug } = await params;
   await connection();
   const locale = await getLocale();

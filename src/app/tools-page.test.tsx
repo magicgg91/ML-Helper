@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import ToolsPage, { generateMetadata } from "./(public)/tools/page";
+import ToolsPage, { generateMetadata } from "./[locale]/(public)/tools/page";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
@@ -33,8 +33,12 @@ describe("ToolsPage metadata (Bloc 42/J)", () => {
     expect(metadata.description).toBeTruthy();
     const languages = metadata.alternates?.languages as
       Record<string, string> | undefined;
-    expect(languages?.fr).toBe("https://ml-helper.com/tools");
-    expect(languages?.["x-default"]).toBe("https://ml-helper.com/tools");
+    expect(languages?.fr).toBe("https://ml-helper.com/fr/tools");
+    expect(languages?.["x-default"]).toBe("https://ml-helper.com/fr/tools");
+    // Bloc 91/E1: canonical resolves to the active locale's prefixed URL.
+    expect(metadata.alternates?.canonical).toBe(
+      "https://ml-helper.com/fr/tools",
+    );
   });
 });
 

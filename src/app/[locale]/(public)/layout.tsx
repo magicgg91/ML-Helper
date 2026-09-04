@@ -1,15 +1,17 @@
-import Link from "next/link";
-import { ThemeToggle } from "../../components/theme-toggle";
-import { LocaleToggle } from "../../components/locale-toggle";
-import { PublicNav } from "../../components/public-nav";
-import { SiteSearch } from "../../components/site-search";
+import { Link } from "@/i18n/navigation";
+import { ThemeToggle } from "../../../components/theme-toggle";
+import { LocaleToggle } from "../../../components/locale-toggle";
+import { PublicNav } from "../../../components/public-nav";
+import { SiteSearch } from "../../../components/site-search";
 import { getActiveLocales } from "@/lib/locale-settings";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 
-export default async function PublicLayout({ children }: LayoutProps<"/">) {
+export default async function PublicLayout({
+  children,
+}: LayoutProps<"/[locale]">) {
   // Bloc 90/C: the public language selector lists only the currently-active
   // locales — a deactivated language disappears from it (its JSON files stay
   // in the repo, only hidden).

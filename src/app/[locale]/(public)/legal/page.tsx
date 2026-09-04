@@ -4,14 +4,17 @@ import { defaultLegalNoticeContent, legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 import { getLocale, getTranslations } from "next-intl/server";
-import { languageAlternates } from "@/lib/site-url";
+import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Public");
   return {
     title: t("legal"),
     description: t("descriptions.legal"),
-    alternates: { languages: languageAlternates("/legal") },
+    alternates: {
+      canonical: canonicalUrl(await getLocale(), "/legal"),
+      languages: languageAlternates("/legal"),
+    },
   };
 }
 
