@@ -167,10 +167,13 @@ function DemoAttackTroops({
           />
         </div>
       </section>
-      {/* Bloc 88/B-E: a grey Boutique-style tile below (not beside) the
-          league block, holding the still-editable target-city-level field
+      {/* Bloc 88/B-E → Bloc 89: a grey Boutique-style tile below (not beside)
+          the league block, holding the still-editable target-city-level field
           (Bloc 88/C) next to the wall + maximum-troops results (Bloc 88/D),
-          the percentage removed (Bloc 88/E). */}
+          the percentage removed (Bloc 88/E). Bloc 89: the tile is half-width
+          on desktop (A) with its three parts in equal thirds (D), and each
+          result value moves into its own nested, slightly-lighter mini-tile
+          with centered content (B-C). */}
       <div className="demo-attack-tile">
         <label className="calculator-field demo-attack-tile-level">
           {t("fields.city-level")}
@@ -184,13 +187,13 @@ function DemoAttackTroops({
         </label>
         {result ? (
           <div className="demo-attack-tile-results">
-            <div className="total-box">
+            <div className="total-box demo-attack-inner-tile">
               <span className="label">{t("wall")}</span>
               <strong className="value" data-testid="demo-wall">
                 {formatGameNumber(result.wall)}
               </strong>
             </div>
-            <div className="total-box">
+            <div className="total-box demo-attack-inner-tile">
               <span className="label">{t("maximum")}</span>
               <strong className="value emerald" data-testid="demo-troops">
                 {formatGameNumber(result.troops)}

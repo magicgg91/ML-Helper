@@ -861,43 +861,87 @@ select {
 .city-maxlevel-gold-field .unit-input {
   grid-template-columns: minmax(0, 1fr) 3.15rem;
 }
-/* Bloc 88/B-D: Demo Attack Troops result tile — a grey Boutique-style tile
-   (same --surface-muted background as .consumable-tile) sitting below the
-   full-width league block. Desktop: the still-editable target-city-level
-   field sits on one row next to the walls and maximum-troops results
-   (Bloc 88/C-D). The two result values reuse .total-box's label/value (and
-   .value.emerald) styling but drop its own border/background so they read as
-   plain tile content rather than boxes-in-a-box. */
+/* Bloc 88 → Bloc 89: Demo Attack Troops result tile — a grey Boutique-style
+   tile (same --surface-muted background as .consumable-tile) sitting below the
+   full-width league block. Bloc 89 retouches: the tile spans only 50% of the
+   width on desktop (Bloc 89/A); its three parts — the still-editable
+   target-city-level field and the two result values — share it in equal thirds
+   (Bloc 89/D); each result value now sits in its own nested mini-tile, a
+   slightly lighter grey than the main tile with its content centered
+   (Bloc 89/B-C). Mobile keeps the Bloc 88/F stack: the city-level field on its
+   own line, the two mini-tiles together on the next line. */
 .demo-attack-tile {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
+  align-items: stretch;
+  gap: 1rem;
   padding: 0.9rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   background: var(--surface-muted);
 }
 .demo-attack-tile-level {
-  flex: 0 0 auto;
+  min-width: 0;
 }
 .demo-attack-tile-results {
   display: flex;
-  gap: 1.5rem;
-  flex: 1 1 auto;
+  gap: 1rem;
 }
-.demo-attack-tile-results .total-box {
+.demo-attack-tile-results > .total-box {
   flex: 1 1 0;
-  padding: 0;
+}
+/* Bloc 89/B-C: each result value in its own nested mini-tile — a slightly
+   lighter grey than the main tile (white mixed into --surface-muted so it
+   lightens in both light and dark themes), with its label and value centered.
+   The base .total-box border/background are overridden here. */
+.demo-attack-inner-tile.total-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
   border: none;
-  background: transparent;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--surface-muted), #fff 14%);
+  text-align: center;
+}
+.demo-attack-inner-tile .label {
+  margin-bottom: 0;
 }
 .demo-attack-tile-empty {
   flex: 1 1 auto;
   margin: 0;
 }
+/* Bloc 89/A + /D: on desktop the tile is half-width, and its three parts —
+   the city-level field and the two mini-tiles (lifted out of their flex
+   wrapper with display:contents so they become direct grid items of the tile)
+   — each take an equal third. A 3-column grid with minmax(0, 1fr) tracks gives
+   truly equal thirds regardless of each part's own content width, which plain
+   flex (grow from a 0 basis) does not: the number stepper and the value labels
+   have different min-content sizes, so flex biased the widths. */
+@media (min-width: 901px) {
+  .demo-attack-tile {
+    width: 50%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+  .demo-attack-tile-results {
+    display: contents;
+  }
+  /* Codex review (PR #106): in the first-visit empty state (no league yet)
+     the grid holds only the city-level field and the prompt, so the prompt
+     would auto-place into column 2 and leave column 3 empty (flex:1 is inert
+     under grid). Span it across both result columns instead, while the three
+     equal columns still apply once the two result mini-tiles exist. */
+  .demo-attack-tile-empty {
+    grid-column: 2 / -1;
+  }
+}
 /* Bloc 88/F: mobile keeps the league buttons' 2x3 grid (league-buttons-grid,
    unchanged) and stacks the tile — the city-level field on its own line,
-   then the walls + maximum-troops results together on the next line. */
+   then the two result mini-tiles together on the next line. */
 @media (max-width: 900px) {
   .demo-attack-tile {
     flex-direction: column;
