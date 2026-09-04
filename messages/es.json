@@ -652,7 +652,8 @@
       "guides": "Guías",
       "content": "Términos de uso",
       "users": "Usuarios",
-      "logs": "Historial"
+      "logs": "Historial",
+      "config": "Configuración"
     },
     "account": {
       "change-password": "Cambiar mi contraseña",
@@ -1112,6 +1113,25 @@
       "title": "Acceso prohibido",
       "description": "Tu rol no permite acceder a esta sección o acción.",
       "back": "Volver al panel"
+    },
+    "config": {
+      "eyebrow": "Configuración",
+      "title": "Idiomas",
+      "intro": "Activa o desactiva la visibilidad de cada idioma en el sitio público. Los archivos de traducción no se modifican. El inglés y el francés siempre están activos.",
+      "columns": {
+        "language": "Idioma",
+        "status": "Estado",
+        "action": "Acción"
+      },
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "locked-tooltip": "Idioma base — siempre activo",
+      "saving": "Guardando…",
+      "save-error": "Error al guardar (HTTP {status}).",
+      "state-saved": "{language} ahora está {state}.",
+      "server-error": "No se puede conectar con el servidor. Inténtalo más tarde."
     }
   },
   "roles": {

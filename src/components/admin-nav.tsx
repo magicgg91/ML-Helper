@@ -15,6 +15,7 @@ const links: Array<{
     | "referentiels"
     | "guides"
     | "content"
+    | "config"
     | "users"
     | "logs";
   capability: AdminCapability;
@@ -42,6 +43,11 @@ const links: Array<{
   },
   { href: "/admin/users", label: "users", capability: "users.read" },
   { href: "/admin/logs", label: "logs", capability: "logs.view" },
+  {
+    href: "/admin/config",
+    label: "config",
+    capability: "configuration.read",
+  },
 ];
 
 export function AdminNav({ role }: { role: string }) {

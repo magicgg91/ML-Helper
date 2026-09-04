@@ -17,6 +17,11 @@ export const adminCapabilities = [
   "references.write",
   "content.read",
   "content.write",
+  // Bloc 90: the admin Configuration tab (language visibility). Restricted to
+  // super_admin (all) and admin (via the filter below) — the 4 manager/read
+  // roles have explicit capability sets that never include it.
+  "configuration.read",
+  "configuration.write",
 ] as const;
 
 export type AdminCapability = (typeof adminCapabilities)[number];

@@ -114,3 +114,16 @@ model StaticContent {
 
   @@map("static_content")
 }
+
+// Bloc 90: per-locale public visibility. One row per locale that has been
+// toggled; a locale with no row defaults to active. The 5 translation JSON
+// files stay static in the repo — this only governs whether a language shows
+// in the public selector (never the admin editorial locales, which keep all
+// 5). EN/FR are always active and are enforced in code, never stored inactive.
+model LocaleSetting {
+  locale    String   @id
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("locale_settings")
+}
