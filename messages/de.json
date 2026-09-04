@@ -265,7 +265,7 @@
       "league": "Liga des Angreifers"
     },
     "wall": "Zielmauern",
-    "maximum": "Maximale Truppen ({percentage}%)"
+    "maximum": "Maximale Truppen"
   },
   "ranking": {
     "name": "Rangliste",

@@ -152,51 +152,57 @@ function DemoAttackTroops({
     : null;
   return (
     <div className="calculator-stack">
+      {/* Bloc 88/A: the league block stays full-width; only its buttons take
+          50% of it (league-buttons-half, desktop) — mobile keeps the 2x3
+          grid (league-buttons-grid). Auto-selection from Player Settings is
+          unchanged (useSyncedLeague). */}
       <section className="calculator-card">
-        <div className="calculator-fields-inline">
-          <div className="calculator-field calculator-league-field">
-            {t("fields.league")}
-            <LeagueButtons
-              label={t("fields.league")}
-              value={league}
-              onChange={setLeague}
-              className="league-buttons-grid"
-            />
-          </div>
-          <label className="calculator-field">
-            {t("fields.city-level")}
-            <NumberStepper
-              label={t("fields.city-level")}
-              value={cityLevel}
-              min={1}
-              max={200}
-              onChange={(value) => setCityLevel(Math.floor(value))}
-            />
-          </label>
+        <div className="calculator-field demo-attack-league-field">
+          {t("fields.league")}
+          <LeagueButtons
+            label={t("fields.league")}
+            value={league}
+            onChange={setLeague}
+            className="league-buttons-grid league-buttons-half"
+          />
         </div>
       </section>
-      {result ? (
-        <section className="calculator-card result-grid">
-          <div className="total-box">
-            <span className="label">{t("wall")}</span>
-            <strong className="value" data-testid="demo-wall">
-              {formatGameNumber(result.wall)}
-            </strong>
+      {/* Bloc 88/B-E: a grey Boutique-style tile below (not beside) the
+          league block, holding the still-editable target-city-level field
+          (Bloc 88/C) next to the wall + maximum-troops results (Bloc 88/D),
+          the percentage removed (Bloc 88/E). */}
+      <div className="demo-attack-tile">
+        <label className="calculator-field demo-attack-tile-level">
+          {t("fields.city-level")}
+          <NumberStepper
+            label={t("fields.city-level")}
+            value={cityLevel}
+            min={1}
+            max={200}
+            onChange={(value) => setCityLevel(Math.floor(value))}
+          />
+        </label>
+        {result ? (
+          <div className="demo-attack-tile-results">
+            <div className="total-box">
+              <span className="label">{t("wall")}</span>
+              <strong className="value" data-testid="demo-wall">
+                {formatGameNumber(result.wall)}
+              </strong>
+            </div>
+            <div className="total-box">
+              <span className="label">{t("maximum")}</span>
+              <strong className="value emerald" data-testid="demo-troops">
+                {formatGameNumber(result.troops)}
+              </strong>
+            </div>
           </div>
-          <div className="total-box">
-            <span className="label">
-              {t("maximum", { percentage: result.percentage })}
-            </span>
-            <strong className="value emerald" data-testid="demo-troops">
-              {formatGameNumber(result.troops)}
-            </strong>
-          </div>
-        </section>
-      ) : (
-        <p className="empty-state" role="status">
-          {t("select-league")}
-        </p>
-      )}
+        ) : (
+          <p className="empty-state demo-attack-tile-empty" role="status">
+            {t("select-league")}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
