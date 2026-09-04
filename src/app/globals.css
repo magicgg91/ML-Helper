@@ -1648,6 +1648,36 @@ select {
     gap: 0.35rem;
   }
 }
+/* Bloc 87/B: on desktop, the Événements/Progression league picker occupies
+   50% of the available width — the same rule already applied to the
+   Villes/Troupes/Classement tools (Bloc 70/71) — its 6 buttons sharing that
+   half equally (flex-fill, each at least its label's width). Scoped to the
+   .league-buttons-half opt-in so the many *other* .league-buttons-grid users
+   (Villes, Classement, Player settings…) stay untouched. Mobile keeps the
+   3-column grid above. */
+@media (min-width: 901px) {
+  .family-buttons.league-buttons-half {
+    width: 50%;
+  }
+  .family-buttons.league-buttons-half button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
+/* Bloc 87/C: on desktop, the Combat/Expedition reference family and rarity
+   filters each fill their own half of the .reference-filters row (already a
+   1fr 1fr grid, so the two groups are side by side at 50/50) — the buttons
+   flex-fill their group instead of clustering at content width. Mobile keeps
+   its dedicated 2-col / 2+3 grids above. Scoped to .reference-filters-equipment
+   (the Combat/Expedition Filters only) so Boutique's shared .reference-filter-
+   grid-2 category filter stays untouched (Codex review on PR #104). */
+@media (min-width: 901px) {
+  .reference-filters-equipment .reference-filter-grid-2 button,
+  .reference-filters-equipment .reference-filter-grid-rarity button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
 .secondary-action {
   padding: 0.6rem 0.85rem;
   border: 1px solid var(--border);

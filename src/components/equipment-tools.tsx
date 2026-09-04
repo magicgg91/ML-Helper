@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { formatSkillPercentValue } from "../lib/skill-percent";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   equipmentFamilyTranslationKeys,
@@ -79,8 +80,8 @@ function Summary({
 }) {
   const locale = useLocale();
   const game = useTranslations("game");
-  const pct = (value: number) =>
-    value.toLocaleString(locale, { maximumFractionDigits: 2 });
+  // Bloc 87/A: skill percentages round to 1 decimal (standard rounding).
+  const pct = (value: number) => formatSkillPercentValue(value, locale);
   // Bloc 32/D.5: always show all 10 skills, sorted by their *displayed*
   // label, defaulting a skill with no configured contribution to 0%
   // instead of hiding it. Sorting the internal (French) skill keys instead

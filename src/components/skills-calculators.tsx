@@ -1,8 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
 import { formatGameNumber } from "../lib/city-calculators";
+import { formatSkillPercentValue } from "../lib/skill-percent";
 import { filterButtonColor, skillColor } from "../lib/game-images";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
@@ -274,6 +275,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
   const common = useTranslations("common");
+  const locale = useLocale();
   const [family, setFamily] = useState<GemFamily>("attack");
   const [totalSlots, setTotalSlots] = useState(27);
   const [nextId, setNextId] = useState(2);
@@ -522,7 +524,9 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
                         t("no-gems"),
                       )}
                     </td>
-                    <td>{row.result.actualStat}%</td>
+                    <td>
+                      {formatSkillPercentValue(row.result.actualStat, locale)}%
+                    </td>
                     <td>{formatGameNumber(row.cost)}</td>
                   </tr>
                 ))}
@@ -545,6 +549,7 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
   const t = useTranslations("gems");
   const game = useTranslations("game");
   const common = useTranslations("common");
+  const locale = useLocale();
   // Bloc 82/D: no skill pre-selected, same "not chosen yet" principle as
   // league already had.
   const [skill, setSkill] = useState<SkillKey | "">("");
@@ -641,7 +646,7 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
             />
             <Result
               label={t("obtained-stat")}
-              value={`${result.actualStat}%`}
+              value={`${formatSkillPercentValue(result.actualStat, locale)}%`}
               tone="emerald"
             />
             <Result

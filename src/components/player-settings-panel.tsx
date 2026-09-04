@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
+import { formatSkillPercentValue } from "../lib/skill-percent";
 import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
@@ -214,10 +215,12 @@ export function PlayerSettingsPanel() {
               (skillGroup, groupIndex) => (
                 <span className="player-summary-skill-group" key={groupIndex}>
                   {skillGroup.map((key, index) => {
+                    // Bloc 87/A: the transferred player summary shows skill
+                    // percentages too — round them to 1 decimal like every
+                    // other skill-% display, so Transfer can't reintroduce a
+                    // 2-decimal value (Codex review on PR #104).
                     const format = (value: number) =>
-                      value.toLocaleString(locale, {
-                        maximumFractionDigits: 2,
-                      });
+                      formatSkillPercentValue(value, locale);
                     const breakdown = isTemplarKey(key)
                       ? templeSkillBreakdown(key, settings)
                       : null;

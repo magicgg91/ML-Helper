@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { formatSkillPercentValue } from "../lib/skill-percent";
 import { StarRating } from "./star-rating";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
@@ -144,8 +145,8 @@ function Summary({
 }) {
   const locale = useLocale();
   const game = useTranslations("game");
-  const pct = (value: number) =>
-    value.toLocaleString(locale, { maximumFractionDigits: 2 });
+  // Bloc 87/A: skill percentages round to 1 decimal (standard rounding).
+  const pct = (value: number) => formatSkillPercentValue(value, locale);
   // Bloc 31/E.3: always show all 10 stats, including when every one of
   // them is still at 0% (a fresh loadout, or an unused filter) — unlike
   // Combat's summary, which hides zero-contribution skills entirely. Kept
