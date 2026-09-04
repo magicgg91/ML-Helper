@@ -32,12 +32,12 @@ export default function Image() {
       <div
         style={{
           marginTop: 12,
-          fontSize: 48,
+          fontSize: 52,
           color: "#b79be0",
           letterSpacing: 1,
         }}
       >
-        Million Lords · outils &amp; guides
+        Million Lords
       </div>
     </div>,
     { ...size },

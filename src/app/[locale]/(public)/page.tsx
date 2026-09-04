@@ -28,6 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: url, languages: languageAlternates("/") },
     openGraph: {
+      type: "website",
+      siteName: "ML-Helper",
       title: meta("siteTitle"),
       description,
       url,

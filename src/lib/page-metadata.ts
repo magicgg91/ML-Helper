@@ -74,7 +74,11 @@ export function pageMetadata({
   const branded = brandedTitle(title);
   // A guide's own cover when it has one, otherwise the site-wide share image.
   const image = article?.image ?? defaultOgImagePath;
+  // A page-level openGraph REPLACES the root layout's rather than deep-merging
+  // it (Codex P2), so restate siteName here — and set og:type explicitly per
+  // branch (required basic OG field) rather than relying on inheritance.
   const common = {
+    siteName: "ML-Helper",
     title: branded,
     description,
     url,
@@ -84,8 +88,6 @@ export function pageMetadata({
       .map((other) => ogLocale(other)),
     images: [image],
   };
-  // Without `article`, og:type is left unset here and inherits the root
-  // layout's "website"; with it, this page overrides to "article".
   const openGraph: Metadata["openGraph"] = article
     ? {
         ...common,
@@ -95,7 +97,7 @@ export function pageMetadata({
           : {}),
         ...(article.modifiedTime ? { modifiedTime: article.modifiedTime } : {}),
       }
-    : common;
+    : { ...common, type: "website" };
   return {
     title,
     description,

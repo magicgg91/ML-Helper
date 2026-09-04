@@ -43,11 +43,14 @@ describe("page-metadata (Bloc 91/E2+E3)", () => {
     );
 
     const og = meta.openGraph as {
+      type: string;
+      siteName: string;
       title: string;
       description: string;
       url: string;
       locale: string;
       alternateLocale: string[];
+      images: string[];
     };
     // og:title IS branded (Next does not derive it from the document title).
     expect(og.title).toBe("Villes | ML-Helper · Million Lords");
@@ -56,9 +59,40 @@ describe("page-metadata (Bloc 91/E2+E3)", () => {
     expect(og.locale).toBe("en_US");
     expect(og.alternateLocale).toContain("fr_FR");
     expect(og.alternateLocale).not.toContain("en_US");
+    // Codex P2: a page-level openGraph replaces the layout's, so these must be
+    // restated per page rather than inherited.
+    expect(og.type).toBe("website");
+    expect(og.siteName).toBe("ML-Helper");
+    expect(og.images).toEqual(["/opengraph-image"]);
 
     const tw = meta.twitter as { title: string; description: string };
     expect(tw.title).toBe("Villes | ML-Helper · Million Lords");
     expect(tw.description).toBe("Une description propre.");
+  });
+
+  it("switches og:type to article and carries dates + cover for a guide", () => {
+    const meta = pageMetadata({
+      locale: "fr",
+      path: "/guides/mon-guide",
+      title: "Guides — Mon guide",
+      description: "Résumé.",
+      article: {
+        publishedTime: "2026-01-01T00:00:00.000Z",
+        modifiedTime: "2026-02-01T00:00:00.000Z",
+        image: "https://cdn.example/cover.png",
+      },
+    });
+    const og = meta.openGraph as {
+      type: string;
+      siteName: string;
+      publishedTime: string;
+      modifiedTime: string;
+      images: string[];
+    };
+    expect(og.type).toBe("article");
+    expect(og.siteName).toBe("ML-Helper");
+    expect(og.publishedTime).toBe("2026-01-01T00:00:00.000Z");
+    expect(og.modifiedTime).toBe("2026-02-01T00:00:00.000Z");
+    expect(og.images).toEqual(["https://cdn.example/cover.png"]);
   });
 });
