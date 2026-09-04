@@ -6,18 +6,19 @@ import { localizedText } from "@/lib/translations";
 import { GuidesHub } from "@/components/guides-hub";
 import { getTranslations } from "next-intl/server";
 import { parseGuideCategories } from "@/lib/guide-categories";
-import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { pageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Public");
-  return {
+  const [t, locale] = await Promise.all([
+    getTranslations("Public"),
+    getLocale(),
+  ]);
+  return pageMetadata({
+    locale,
+    path: "/guides",
     title: t("guides"),
     description: t("descriptions.guides"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), "/guides"),
-      languages: languageAlternates("/guides"),
-    },
-  };
+  });
 }
 
 export default async function GuidesPage() {

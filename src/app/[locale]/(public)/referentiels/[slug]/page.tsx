@@ -28,7 +28,7 @@ import {
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
-import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { pageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata({
   params,
@@ -36,19 +36,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) return {};
-  const [t, publicT] = await Promise.all([
+  const [t, locale] = await Promise.all([
     getTranslations("references"),
-    getTranslations("Public"),
+    getLocale(),
   ]);
-  const name = t(`catalog.${reference.slug}`);
-  return {
-    title: name,
-    description: publicT("descriptions.reference-detail", { name }),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), `/referentiels/${slug}`),
-      languages: languageAlternates(`/referentiels/${slug}`),
-    },
-  };
+  // Bloc 91/E2: each reference now has its own description
+  // (references.descriptions.<slug>) instead of the single templated
+  // "{name} reference…" phrase that made all 7 indistinguishable; Bloc 91/E3
+  // adds the OG/Twitter card.
+  return pageMetadata({
+    locale,
+    path: `/referentiels/${slug}`,
+    title: t(`catalog.${reference.slug}`),
+    description: t(`descriptions.${reference.slug}`),
+  });
 }
 
 export default async function ReferencePage({

@@ -128,7 +128,13 @@
     "combat-tabs": "Herramientas de combate",
     "skills-tabs": "Herramientas de habilidades",
     "calculator-unavailable": "Desactivada — no disponible actualmente",
-    "calculators-unavailable": "Estas herramientas no están disponibles temporalmente."
+    "calculators-unavailable": "Estas herramientas no están disponibles temporalmente.",
+    "descriptions": {
+      "cities": "Calcula el coste, la producción y las recompensas de tus ciudades en Million Lords: coste y nivel máximo, producción de oro y ganancia de XP por nivel.",
+      "combat": "Herramientas de combate para Million Lords: tasa de XP, tropas de ataque demo para atacante y objetivo, y tropas enemigas para preparar cada asalto.",
+      "ranking": "Estima tu progreso en la clasificación de Million Lords: tu rango actual y los puntos de victoria que necesitas para alcanzar el rango que buscas.",
+      "skills": "Optimiza tu equipo y tus habilidades en Million Lords: equipo de combate y de expedición, gemas y templarios, con los costes de fusión."
+    }
   },
   "player-settings": {
     "title": "Ajustes del jugador",
@@ -446,7 +452,10 @@
     "guides": "Guías",
     "contact": "Contacto",
     "admin": "Administración",
-    "legal": "Aviso legal"
+    "legal": "Aviso legal",
+    "meta": {
+      "siteTitle": "ML-Helper — Herramientas y guías de Million Lords"
+    }
   },
   "contact": {
     "eyebrow": "Contacto",
@@ -468,6 +477,7 @@
     "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde."
   },
   "Home": {
+    "h1": "Herramientas y guías de Million Lords",
     "intro": "ML Helper reúne las herramientas y referencias de la comunidad para ayudarte a planificar cada decisión en Million Lords.",
     "toolsEyebrow": "Simular",
     "toolsTitle": "Decide con las cifras correctas",
@@ -575,6 +585,16 @@
       },
       "no-tiers": "Sin niveles para este evento.",
       "final-objective": "Objetivo final: {objective}"
+    },
+    "description": "Encuentra todos los datos verificados por la comunidad de Million Lords: equipo, gemas, templarios, progresión y tienda, en tablas de referencia claras.",
+    "descriptions": {
+      "combat-equipment": "Todo el equipo de combate de Million Lords: habilidades por pieza, rareza, familias, costes de fusión y desmantelamiento y ranuras de gemas.",
+      "expedition-equipment": "Todo el equipo de expedición de Million Lords: rareza, familia, ranura, estadística secundaria y costes de fusión y desmantelamiento.",
+      "level-up": "Tabla de progresión de Million Lords por liga: XP necesaria, tropas y recompensas nivel por nivel, del Bronce a la Leyenda.",
+      "templars": "Coste de los templarios de Million Lords: Polvo celeste del nivel inicial al objetivo, bonificación por templario y total, en una tabla completa.",
+      "gems": "Todas las gemas de Million Lords: bonificación por habilidad y por liga, ranuras y coste de fusión en zafiros, con optimización multihabilidad.",
+      "shop": "Referencia de la tienda de Million Lords: consumibles y datos verificados por la comunidad para gastar en el momento adecuado.",
+      "events": "Referencia de los eventos de Million Lords: datos y recompensas verificados por la comunidad para preparar cada evento."
     }
   },
   "combat-equipment": {

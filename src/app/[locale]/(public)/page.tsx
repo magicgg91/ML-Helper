@@ -10,15 +10,34 @@ import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { defaultOgImagePath, ogLocale } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Home");
+  const [t, meta, locale] = await Promise.all([
+    getTranslations("Home"),
+    getTranslations("Public.meta"),
+    getLocale(),
+  ]);
+  const url = canonicalUrl(locale, "/");
+  const description = t("intro");
+  // Bloc 91/E2: no `title` here on purpose — the homepage inherits the root
+  // layout's title.default (the brand name) rather than a page title run
+  // through the "%s | …" template, which would double-brand it. og:title is
+  // the same brand name (Bloc 91/E3).
   return {
-    title: "ML Helper",
-    description: t("intro"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), "/"),
-      languages: languageAlternates("/"),
+    description,
+    alternates: { canonical: url, languages: languageAlternates("/") },
+    openGraph: {
+      title: meta("siteTitle"),
+      description,
+      url,
+      locale: ogLocale(locale),
+      images: [defaultOgImagePath],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta("siteTitle"),
+      description,
     },
   };
 }
@@ -44,8 +63,13 @@ export default async function HomePage() {
     <main className="public-main">
       {/* Bloc 34/D: a short intro sentence replaces the carousel/hero — the
           tool category grid below is the actual point of the homepage and
-          should stay visible without scrolling. */}
+          should stay visible without scrolling. Bloc 91/E5: the page now
+          opens on a real <h1> carrying the "outils et guides Million Lords"
+          positioning (the homepage previously had no h1 at all); it is styled
+          to read as the intro's lead line, the descriptive sentence stays a
+          <p> beneath it. */}
       <section className="home-intro">
+        <h1>{t("h1")}</h1>
         <p>{t("intro")}</p>
       </section>
       <section className="home-tools">

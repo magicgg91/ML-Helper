@@ -136,9 +136,20 @@ export function proxy(request: NextRequest) {
   }
 
   // Metadata / asset routes (sitemap.xml, robots.txt, *.png/.ico/.webmanifest,
-  // opengraph-image, …): never locale-prefixed, and they render their own
-  // non-HTML content, so no locale header or CSP is needed.
+  // …): never locale-prefixed, and they render their own non-HTML content, so
+  // no locale header or CSP is needed.
   if (/\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Bloc 91/E3: the generated metadata image routes (opengraph-image and the
+  // icon/twitter-image conventions) live at the app root with NO file
+  // extension, so the check above misses them — without this they'd be treated
+  // as an unprefixed public page and 308-redirected to /fr/opengraph-image,
+  // which doesn't exist, breaking every social share card.
+  if (
+    /^\/(opengraph-image|twitter-image|icon|apple-icon)(\/|$)/.test(pathname)
+  ) {
     return NextResponse.next();
   }
 

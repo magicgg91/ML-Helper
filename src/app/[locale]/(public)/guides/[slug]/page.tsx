@@ -7,7 +7,7 @@ import { hasLocalizedText, localizedText } from "@/lib/translations";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { parseGuideCategories } from "@/lib/guide-categories";
 import { pageTitle } from "@/lib/page-title";
-import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { pageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata({
   params,
@@ -19,7 +19,9 @@ export async function generateMetadata({
   });
   if (!guide) return {};
   const t = await getTranslations("Public");
-  return {
+  return pageMetadata({
+    locale,
+    path: `/guides/${slug}`,
     title: pageTitle(t("guides"), localizedText(guide.title, locale) || slug),
     // Bloc 42/J: the guide's own excerpt when THIS locale actually has one
     // — much more useful than a generic sentence — falling back to a
@@ -31,11 +33,14 @@ export async function generateMetadata({
     description: hasLocalizedText(guide.excerpt, locale)
       ? localizedText(guide.excerpt, locale)
       : t("descriptions.guide-fallback"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), `/guides/${slug}`),
-      languages: languageAlternates(`/guides/${slug}`),
+    // Bloc 91/E3: a guide is an article — its OG card carries the publish and
+    // last-modified dates and the cover image when one is set.
+    article: {
+      publishedTime: guide.publishedAt?.toISOString(),
+      modifiedTime: guide.updatedAt?.toISOString(),
+      image: guide.coverImage,
     },
-  };
+  });
 }
 
 export default async function GuidePage({

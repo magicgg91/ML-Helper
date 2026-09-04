@@ -128,7 +128,13 @@
     "combat-tabs": "Savaş araçları",
     "skills-tabs": "Yetenek araçları",
     "calculator-unavailable": "Devre dışı — şu anda kullanılamıyor",
-    "calculators-unavailable": "Bu araçlar geçici olarak kullanılamıyor."
+    "calculators-unavailable": "Bu araçlar geçici olarak kullanılamıyor.",
+    "descriptions": {
+      "cities": "Million Lords'ta şehirlerinin maliyetini, üretimini ve ödüllerini hesapla: seviye başına maliyet ve maksimum seviye, altın üretimi ve XP kazancı.",
+      "combat": "Million Lords için savaş araçları: XP kazanç oranı, saldıran ve hedef için demo saldırı birlikleri ve her saldırıyı planlamak için düşman birlikleri.",
+      "ranking": "Million Lords sıralamasındaki ilerlemeni tahmin et: mevcut sıralaman ve hedeflediğin sıralamaya ulaşmak için gereken zafer puanları.",
+      "skills": "Million Lords'ta ekipmanını ve yeteneklerini optimize et: savaş ve keşif ekipmanları, mücevherler ve tapınakçılar, birleştirme maliyetleriyle."
+    }
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
@@ -446,7 +452,10 @@
     "guides": "Rehberler",
     "contact": "İletişim",
     "admin": "Yönetim",
-    "legal": "Yasal bildirim"
+    "legal": "Yasal bildirim",
+    "meta": {
+      "siteTitle": "ML-Helper — Million Lords araçları ve rehberleri"
+    }
   },
   "contact": {
     "eyebrow": "İletişim",
@@ -468,6 +477,7 @@
     "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene."
   },
   "Home": {
+    "h1": "Million Lords araçları ve rehberleri",
     "intro": "ML Helper, Million Lords'ta her kararını planlamana yardımcı olmak için topluluğun araçlarını ve referanslarını bir araya getirir.",
     "toolsEyebrow": "Simüle Et",
     "toolsTitle": "Doğru rakamlarla karar ver",
@@ -575,6 +585,16 @@
       },
       "no-tiers": "Bu etkinlik için kademe yok.",
       "final-objective": "Son hedef: {objective}"
+    },
+    "description": "Million Lords için toplulukça doğrulanmış tüm verileri bul: ekipman, mücevherler, tapınakçılar, ilerleme ve mağaza, net referans tablolarında.",
+    "descriptions": {
+      "combat-equipment": "Million Lords'taki tüm savaş ekipmanları: parça başına yetenekler, nadirlik, aileler, birleştirme ve sökme maliyetleri ve mücevher yuvaları.",
+      "expedition-equipment": "Million Lords'taki tüm keşif ekipmanları: nadirlik, aile, yuva, ikincil istatistik ve birleştirme ve sökme maliyetleri.",
+      "level-up": "Lige göre Million Lords ilerleme tablosu: gereken XP, birlikler ve seviye seviye ödüller, Bronz'dan Efsane'ye kadar.",
+      "templars": "Million Lords tapınakçı maliyetleri: başlangıç seviyesinden hedef seviyeye Gökyüzü Tozu, tapınakçı başına ve toplam bonus, tam bir tabloda.",
+      "gems": "Million Lords'taki tüm mücevherler: yetenek ve lig başına bonus, yuvalar ve safir cinsinden birleştirme maliyeti, çoklu yetenek optimizasyonuyla.",
+      "shop": "Million Lords mağaza referansı: sarf malzemeleri ve doğru anda harcama yapman için toplulukça doğrulanmış veriler.",
+      "events": "Million Lords etkinlik referansı: her etkinliğe hazırlanman için toplulukça doğrulanmış veriler ve ödüller."
     }
   },
   "combat-equipment": {

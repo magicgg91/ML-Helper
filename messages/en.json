@@ -128,7 +128,13 @@
     "combat-tabs": "Combat tools",
     "skills-tabs": "Skill tools",
     "calculator-unavailable": "Disabled — currently unavailable",
-    "calculators-unavailable": "These tools are temporarily unavailable."
+    "calculators-unavailable": "These tools are temporarily unavailable.",
+    "descriptions": {
+      "cities": "Work out the cost, production and rewards of your cities in Million Lords: cost and maximum level, gold production and XP gain for every level.",
+      "combat": "Combat tools for Million Lords: XP gain rate, demo attack troops for both attacker and target, and enemy troops to plan every assault.",
+      "ranking": "Estimate your ranking progress in Million Lords: your current rank and the victory points you need to reach the rank you are aiming for.",
+      "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
+    }
   },
   "player-settings": {
     "title": "Player settings",
@@ -453,6 +459,9 @@
       "guide-fallback": "A Million Lords guide on ML Helper.",
       "admin": "ML Helper administration area.",
       "reference-detail": "{name} reference for Million Lords on ML Helper: data verified by the community."
+    },
+    "meta": {
+      "siteTitle": "ML-Helper — Million Lords tools and guides"
     }
   },
   "contact": {
@@ -475,6 +484,7 @@
     "error-not-configured": "Email sending isn't configured right now, please try again later."
   },
   "Home": {
+    "h1": "Million Lords tools and guides",
     "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
     "toolsEyebrow": "Simulate",
     "toolsTitle": "Make decisions with the right numbers",
@@ -593,6 +603,16 @@
       },
       "no-tiers": "No tiers for this event.",
       "final-objective": "Final objective: {objective}"
+    },
+    "description": "Find every community-verified number for Million Lords: equipment, gems, templars, progression and shop, gathered into clear reference tables.",
+    "descriptions": {
+      "combat-equipment": "Every combat equipment in Million Lords: skills per piece, rarity, families, merge and dismantle costs, and gem slots.",
+      "expedition-equipment": "Every expedition equipment in Million Lords: rarity, family, slot, secondary stat, and merge and dismantle costs.",
+      "level-up": "Million Lords progression table by league: required XP, troops and rewards level by level, from Bronze to Legend.",
+      "templars": "Templar costs in Million Lords: Skydust from your starting level to your target level, bonus per templar and total bonus, in a full table.",
+      "gems": "Every gem in Million Lords: bonus per skill and per league, slots and the merge cost in sapphires, with multi-skill optimisation.",
+      "shop": "Million Lords shop reference: consumables and community-verified data to help you spend at the right moment.",
+      "events": "Million Lords events reference: community-verified data and rewards to help you prepare for every event."
     }
   },
   "combat-equipment": {
