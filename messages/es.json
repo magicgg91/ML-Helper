@@ -1168,5 +1168,10 @@
     "references_manager": "Référentiels",
     "tools_manager": "Gestor de herramientas",
     "read_only": "Solo lectura"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Esta página no existe o se ha movido. Aquí puedes continuar:",
+    "home": "Inicio"
   }
 }

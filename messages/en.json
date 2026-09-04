@@ -1186,5 +1186,10 @@
     "references_manager": "Référentiels",
     "tools_manager": "Tools Manager",
     "read_only": "Read Only"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn’t exist or has moved. Here is where to go next:",
+    "home": "Home"
   }
 }
