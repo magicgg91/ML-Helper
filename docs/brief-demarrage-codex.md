@@ -4,95 +4,12 @@ Ce document est le point d'entrée pour démarrer le développement. Il résume 
 
 Domaine cible : `ml-helper.com`.
 
-**📍 État d'avancement (à mettre à jour au fil des tâches) :** Phase 0 (setup) ✅ validée et poussée. Phase 1 (fondations : schéma Prisma, auth, back-office minimal) ✅ validée et mergée. **Phase 2 (site public + tous les simulateurs déjà spécifiés) ✅ entièrement validée et mergée** — Villes, Classement, Compétences (Gemmes/Templiers/Simulateur de Stuff/Comparateur), Référentiels sont tous fonctionnels **(⚠️ mais leur emplacement dans la navigation a changé depuis — voir "Restructuration navigation" en tête de la liste unifiée, section 4)**. **Blocs 0 à 53 (Bloc 10 inclus) de la Liste unifiée (section 4) tous ✅ terminés et mergés sur dev.** L'audit de conformité du 29/08/2026 (bug Platine, Pouciel Combat, Level Up Argent, etc.) est résolu via le Bloc 42. **Référentiel "Boutique" (ex-Consommables/Bloc 43, enrichi Bloc 46, restructuré et renommé Bloc 48) construit et stable, 6ᵉ référentiel réel — l'un des 3 chantiers jamais cadrés est résolu. Site opérationnel en 5 langues (EN/FR/DE/ES/TR), sélecteur de langue public en listbox custom.** Restent, non bloquants : 36 images Combat encore manquantes (Bloc 10, à compléter plus tard). **Il ne reste plus qu'1 seul chantier réellement jamais cadré : Combat (Fight/Enemy Troops)** — le contenu des guides restants est un travail éditorial continu, pas un chantier de cadrage au même sens.
+**📍 État d'avancement (à mettre à jour au fil des tâches) :** Phase 0 (setup) ✅ validée et poussée. Phase 1 (fondations : schéma Prisma, auth, back-office minimal) ✅ validée et mergée. **Phase 2 (site public + tous les simulateurs déjà spécifiés) ✅ entièrement validée et mergée** — Villes, Classement, Compétences (Gemmes/Templiers/Simulateur de Stuff/Comparateur), Référentiels sont tous fonctionnels **(⚠️ mais leur emplacement dans la navigation a changé depuis — voir "Restructuration navigation" en tête de la liste unifiée, section 4)**. **Blocs 0 à 85 (Bloc 10 inclus) de la Liste unifiée (section 4) tous ✅ terminés et mergés sur dev.** L'audit de conformité du 29/08/2026 (bug Platine, Pouciel Combat, Level Up Argent, etc.) est résolu via le Bloc 42. **7 référentiels réels désormais construits** : Équipements de Combat, Équipement d'Expédition, Progression (ex-Level Up, renommé Bloc 67), Templiers (renommé et enrichi d'une présentation en tuiles au Bloc 66), Gemmes, Boutique (ex-Consommables/Bloc 43, enrichi Bloc 46, restructuré et renommé Bloc 48, intro simplifiée en tableau structuré Bloc 58), et **Événement (Bloc 60, construit vide/inactif — le joueur remplira progressivement)**. Site opérationnel en 5 langues (EN/FR/DE/ES/TR), sélecteur de ligue généralisé en boutons sur la plupart des outils/référentiels (Bloc 61/68 — exception assumée : sélecteurs liés aux Gemmes restent en select box), rendu mobile largement retravaillé (Bloc 68). **Images d'équipement Combat/Expédition désormais complètes (180/180 + 120/120, Bloc 82)** — plus aucune image manquante. **Bloc 63 (revue mobile tableaux) en attente de la liste précise des pages avant envoi.** **Il ne reste plus qu'1 seul chantier réellement jamais cadré : Combat (Fight/Enemy Troops)** — le contenu des guides restants est un travail éditorial continu, pas un chantier de cadrage au même sens. **📌 Note de workflow (01/09/2026) : le porteur de projet utilise désormais principalement Claude Code plutôt que Codex** pour l'implémentation — les prompts continuent d'être rédigés de la même façon, terme générique à privilégier dans les échanges futurs.
 
 ---
 
-## 0. Setup à faire avant tout développement fonctionnel
 
-### Repo & branches
-1. Créer le repo GitHub **privé**, aucune licence pour l'instant
-2. Créer la branche `dev` (branche de travail active — tout le développement s'y passe)
-3. `main` — branche par défaut du repo, joue le rôle de `prod` : **protégée**, PR obligatoire pour merger, même en solo (le garde-fou est la CI, pas la review humaine)
-4. Ne jamais pousser directement sur `main`
-
-### Scaffold technique
-- Next.js (React + TypeScript)
-- Prisma + SQLite (penser au `binaryTargets` musl pour Alpine dès le schéma initial — voir cahier des charges section 2 bis, sinon le build plante avec une erreur peu explicite)
-- NextAuth.js (Credentials Provider configuré pour `username`, pas email — configuration explicite requise, ce n'est pas le comportement par défaut)
-- next-intl, structure prête pour EN/FR au lancement (ES/DE en cible, pas à câbler maintenant)
-- Variables CSS custom properties dès les premiers composants (mode clair/sombre prévu dès le départ, pas de couleurs codées en dur)
-
-### Tests automatisés — à écrire dès le départ, pas ajoutés après coup
-- **Unitaires** : Vitest
-- **Composants/Frontend** : React Testing Library
-- **E2E** : Playwright
-- Même un projet vide doit sortir de cette étape avec une suite de tests qui tourne (smoke tests), pas juste la config posée
-
-### Pipeline GitHub Actions
-| Déclencheur | Actions |
-|---|---|
-| Push/PR vers `dev` | Lint + tests unitaires + composants + e2e, **puis build + push de l'image Docker taguée `:dev`** sur ghcr.io |
-| PR vers `main` (ouverture/mise à jour) | Suite de tests complète, obligatoire avant d'autoriser le merge |
-| Merge vers `main` | Build + push de l'image Docker taguée `:latest` sur ghcr.io |
-
-Déploiement réel (pull + relance du conteneur sur le serveur) reste **manuel**, pas d'outil d'auto-déploiement à mettre en place.
-
-### Dockerfile
-Multi-stage : une étape dépendances + build, image finale minimale avec le build Next.js compilé en mode `standalone`, base `node:alpine`. Persistance via bind mount (`/app/data` ← dossier hôte), pas de volume Docker nommé.
-
----
-
-## 1. Phase 1 — Fondations (avant tout outil public)
-
-- Schéma Prisma complet : Guide, Calculateur, Formule (paramètres numériques nommés — **pas de champ formule libre éditable**, voir cahier des charges section 6), Table de référence (`lookup_table`), Utilisateur, Log, Contenu statique
-- Auth admin (NextAuth, 5 rôles : Super Admin / Admin / Gestion Guides / Gestion Outils / Lecture Seule — droits détaillés section 3.2 du cahier des charges)
-- Back-office minimal : `/admin` (dashboard vide), `/admin/users` (CRUD, Super Admin uniquement), `/admin/logs` (lecture + purge manuelle par plage de dates)
-- Système de logs (qui a fait quoi, quand, sur quoi — voir section 6 bis)
-
-**Definition of done phase 1 :** un Super Admin peut se connecter, créer un compte Admin, et voir les logs de cette création. Rien de public encore.
-
----
-
-## 2. Phase 2 — Site public + outils déjà spécifiés
-
-C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifié** dans le cahier des charges (section 7) — pas de zone d'ombre fonctionnelle, uniquement de l'implémentation.
-
-**⚠️ Avant de commencer cette phase, lire `AGENTS.md` section "Référence UI/logique — le prototype fait foi".** `docs/prototype-ml-helper-unifie.html` est l'implémentation de référence à porter — plus fiable que le texte seul sur les détails fins (formules, restrictions, comportements d'UI).
-
-### Pages publiques
-`/`, `/tools`, `/tools/[slug]`, `/guides`, `/guides/[slug]` (contenu réel pas encore rédigé, structure suffit), `/contact`, `/legal`, `/login`
-
-### Paramètres du joueur (localStorage, pas de compte joueur nécessaire)
-- Niveau, ligue, VP
-- **"Compétences avec équipement"** : 10 % éditables directement (stuff seul, sans les points — voir note ci-dessous)
-- **"Distribution des points"** : outil de planification séparé, calcule le % à partir de points investis (base par ligue + taux par point, plafonds, prérequis avec auto-remplissage et blocage si budget insuffisant)
-- Templiers personnels (5 types, 0-20 chacun)
-- Bonus de Temple du Clan (5 champs, saisie directe, minimums = base du temple, pas aligné sur le taux Templier de chaque stat)
-- Sélecteur d'unité (×1/k/M/G) sur les grands champs numériques issus de la progression du jeu (VP, or disponible...) — **exception : le budget en saphirs (Gemmes, mode Budget disponible) n'en a pas**, saisie directe
-- Stepper −/+ sur tous les champs nombre (pas les flèches natives du navigateur), y compris les champs générés dynamiquement
-
-**⚠️ Point de modélisation à garder en tête :** "Compétences avec équipement" et "Distribution des points" sont volontairement **indépendants** — le premier est la valeur réellement utilisée par tous les calculateurs, le second est un outil de simulation qui n'écrit pas dans le premier automatiquement.
-
-### Catégorie Villes
-- **Coût de Ville** (City Cost) — formules villes section 7.1, ligue Légende confirmée
-- **Niveau Max Atteignable** (City Max Level) — nécessite une recherche itérative, pas une formule directe (codé en dur, pas éditable en admin — voir section 7.1)
-- **Production** (fusion de 3 anciens calculateurs) — production par ville, production totale détaillée (base/dont stuff/dont temple), récompenses (heures de production → bonus), et case "reskill full-prod"
-
-### Catégorie Classement
-- **Ranking** — convertisseur position ↔ pourcentage, seuils et récompenses par ligue (Légende/Diamant/Argent complets, Bronze/Or/Platine partiels — à compléter en admin une fois les données confirmées)
-
-### Catégorie Compétences
-- **Simulateur de Stuff** — 4 blocs (Attaque/Défense/Or/Vitesse), grille 3×3 par bloc, catalogues mixtes pour Or (Or+Troupes-Vitesse) et Défense (Défense+Or), **liste blanche stricte des compétences comptabilisées par bloc et par famille d'objet** (ex: bloc Or = Prospérité + Recruteur uniquement, pas les autres compétences que les objets Or possèdent réellement — voir section 7.1)
-- **Comparaison de stuff** — mêmes 4 blocs et catalogues mixtes que le Simulateur, sélecteur de set explicite (rareté + nom + famille) pour lever l'ambiguïté d'un catalogue mixte
-- **Gemmes** — 2 modes : Optimisation (multi-stat, mix de plusieurs compétences sur les mêmes emplacements avec ligue indépendante par ligne) et Budget disponible (saphirs, une seule compétence à la fois) — formule et algorithmes entièrement spécifiés section 7.1
-- **Templiers** — table de coût exacte (pas une formule), 5 types indépendants
-
-### Catégorie Référentiels
-- **Équipements de Combat** — tableau filtrable, formule de progression par étoile **100% confirmée** (additive, incrément par compétence — table complète en section 7.1), 30 lignes de valeurs encore vides à laisser éditables en admin
-- **Équipement d'Expédition** — tableau filtrable, formule par étoile confirmée pour 2 stats sur 10 seulement (repli sur hypothèse non fiable pour les 8 autres, à garder visible comme tel dans l'UI)
-
-**Definition of done phase 2 :** un visiteur peut utiliser tous les calculateurs ci-dessus sans compte, avec persistance de ses paramètres en localStorage, en EN et FR.
+**📦 Archive** : les sections Setup/Phase 0-2 et le détail des Blocs 0 à 59 (tous terminés) ont été déplacés dans `docs/brief-archive-blocs-0-59.md`, pour alléger ce document — l'état d'avancement ci-dessus reste à jour, ce fichier ne contient plus que le travail en cours et les blocs récents (60+).
 
 ---
 
@@ -102,11 +19,7 @@ C'est la plus grosse phase. Tout ce qui suit est **déjà entièrement spécifi�
 
 **📋 Le détail complet du backlog restant (UI/UX, admin, technique) est en section 4 "Liste unifiée"**, organisée par ordre d'implémentation recommandé — pas dupliqué ici.
 
-Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt côté produit :
-- **Combat** (Level Up, Fight, Enemy Troops) — catégorie non spécifiée pour ces 3-là, à cadrer avec le porteur de projet avant de coder. **Mais 2 simulateurs y sont déjà spécifiés et prototypés** : Taux de gain d'XP (point 31) et Troupes max en attaque démo (point 32), prêts à envoyer à Codex indépendamment du reste.
-- **Contenu des guides** — le modèle est prêt, rédaction en cours (via ChatGPT, hors périmètre Codex) — voir `docs/cahier-des-charges-ml-helper.md` section 10 pour le plan complet (56 guides, 8 catégories) et le suivi ✅/⬜
-- **Référentiel Consommables** — structure connue (photo/nom/description/coût en saphirs), reste à collecter la liste des objets
-- **ES/DE/PL/TR** — prévu dans l'architecture i18n mais pas prioritaire
+Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt côté produit — **liste à jour dans la section "Gros chantiers en attente de cadrage" en fin de ce document**, pas dupliquée ici pour éviter toute désynchronisation entre les deux.
 
 ---
 
@@ -117,7 +30,7 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 - **Arrondi** : entier pour les quantités absolues (or, troupes, coûts), décimales conservées pour les pourcentages
 - **Formules jamais exposées côté public** — uniquement les résultats, jamais `VP = 20 × 1.115^(n-1)` visible pour un joueur
 - Toute donnée encore marquée "non confirmé"/"hypothèse" dans le cahier des charges doit rester **éditable en admin** avec sa valeur actuelle par défaut, pas bloquante pour livrer la fonctionnalité
-- **Formule additive par étoile (`base + incrément × (n−1)`) commune Combat/Expédition** — actuellement écrite uniquement pour le Combat (`equipmentValueAtStar()` dans `src/lib/equipment.ts`), à extraire en helper neutre partagé (voir cahier des charges section 7.1, note d'implémentation ajoutée lors de l'audit Bloc 6) **dans la même tâche que la construction du calculateur Expédition** — ne pas la recopier telle quelle pour l'équipement d'expédition, et ne pas faire l'extraction avant, tant que le second appelant n'existe pas encore
+- **✅ Formule additive par étoile — RÉSOLU** : le helper partagé `valueAtStar(base, increment, star)` est bien extrait de `equipmentValueAtStar()` et réutilisé par Combat et Expédition (voir cahier des charges section 7.1) — plus une zone d'ombre, gardé ici comme rappel de convention de factorisation (AGENTS.md) pour toute future mécanique similaire à partager entre 2+ calculateurs.
 - **✅ Règle de rythme (01/09/2026) — ne pas créer de nouveau bloc de mon initiative.** Un nouveau bloc ne se crée que sur demande explicite du porteur de projet, ou tant que le bloc précédent n'est pas au moins envoyé à Codex/Claude Code (en cours ou mergé) — pas de blocs qui s'accumulent en préparation sans être envoyés.
 
 ---
@@ -126,605 +39,261 @@ Pas de zone d'ombre technique, juste du contenu/périmètre pas encore prêt cô
 
 *Consolidée à partir du backlog UI/UX et du suivi d'implémentation du cahier des charges. **Réorganisée par ordre de dépendance** (fondations avant ce qui en dépend) plutôt que par simple priorité visuelle — voir logique de tri en préambule de chaque bloc. Les numéros entre parenthèses `(point X)` renvoient à la numérotation d'origine, utilisée ailleurs dans ce document et dans le cahier des charges. Mise à jour au fil de l'eau, cocher/rayer au fur et à mesure.*
 
-### Bloc 0 — Restructuration de navigation, décidée ✅ **Terminé** (PR [#8](https://github.com/magicgg91/ML-Helper/pull/8))
-*Actée en discussion, y compris l'organisation admin.*
-
-- **Référentiels sortis de "Outils", rejoignent "Guides"** — "Outils" devient réservé aux vrais simulateurs (Villes/Combat/Classement/Compétences). Une seule entrée de menu "Guides", avec **2 sections distinctes à l'intérieur de la même page** : "Guides" (texte) et "Référentiels" (tables), chacune avec ses propres cartes de catégorie et son propre filtrage — pas de fusion de contenu, juste co-localisation dans la navigation. Détail complet en section 3.1 du cahier des charges (routes en section 4).
-- **Liens croisés obligatoires** — puisque les référentiels ne sont plus adjacents aux simulateurs qui les utilisent, chaque simulateur concerné doit avoir un lien direct ("Voir le référentiel complet") vers le référentiel pertinent. Concerne au minimum : Simulateur de Stuff et Comparaison de stuff → Référentiel Équipements de Combat.
-- **✅ Organisation admin décidée** — l'admin Référentiels suit l'admin Guides, pas l'admin Outils. Le rôle **"Gestion Guides" édite désormais aussi les référentiels** (ne modifie pas la validation de publication réservée à Admin/Super Admin) ; le rôle **"Gestion Outils" ne couvre plus que les simulateurs**. Voir section 3.2 du cahier des charges (table des rôles mise à jour).
-
-### Bloc 1 — Bug actif, à corriger en premier ✅ **Terminé** (PR [#9](https://github.com/magicgg91/ML-Helper/pull/9))
-*Isolé, rapide, sur du contenu déjà publié.*
-
-- **Guides — moteur de rendu markdown cassé** *(point 25)* : le markdown n'est pas correctement interprété à l'affichage d'un guide publié. Utiliser **`react-markdown`** + **`remark-gfm`** (tableaux, listes de tâches, strikethrough) pour le rendu côté page publique `/guides/[slug]`, plus **`rehype-sanitize`** par précaution. Vérifier blocs de code, tableaux, listes, citations, liens.
-
-### Bloc 2 — Fondation : internationalisation ✅ **Terminé** (2a PR [#10](https://github.com/magicgg91/ML-Helper/pull/10), 2b PR [#11](https://github.com/magicgg91/ML-Helper/pull/11), 2c PR [#12](https://github.com/magicgg91/ML-Helper/pull/12), 2d PR [#13](https://github.com/magicgg91/ML-Helper/pull/13))
-*À faire avant tout le reste pour éviter de retoucher deux fois chaque écran (une fois pour le contenu, une fois pour l'i18n). Découpé en sous-tâches : 2a (fondation technique) → 2b (pages publiques Outils) → 2c (Guides + Référentiels) → 2d (admin).*
-
-- **Internationalisation incomplète — architecture simplifiée et précisée (2 mécanismes seulement)** *(point 1)* : Absolument tout texte d'interface, **public ET admin, sans aucune exception** (y compris les labels internes admin de Formule/Table de référence, pas de traitement spécial) → **fichiers de traduction statiques next-intl**, un JSON par langue, clé technique (`key`/`slug`) de chaque enregistrement comme clé de traduction. **Seule exception : contenu éditorial dynamique** (guides, mentions légales) → reste en JSON par locale en base, puisque c'est du contenu créé dynamiquement, pas fixe. **Règle de repli : traduction manquante → affichage en anglais par défaut**, sur les deux mécanismes. Objectif concret : ajouter une langue = ajouter un fichier JSON (+ compléter les objets JSON existants pour le contenu éditorial), zéro modification de code. Détail complet en section 3.3 du cahier des charges.
-
-### Bloc 3 — Fondation : restructuration admin ✅ **Terminé** (mergé — n° de PR non communiqué, probablement #14 vu la numérotation)
-*Un seul gros bloc cohérent, nécessaire avant le chargement de contenu qui en dépend (bloc 4). Suppose le Bloc 0 déjà fait (l'organisation Guides+Référentiels doit être en place avant de construire les tableaux admin).*
-
-- **Nommage "Outils" partout, y compris admin** *(point 8)* — "Calculateur"/"Simulateurs" (comme terme englobant) ne doivent plus apparaître nulle part côté utilisateur — "Outils" est le terme final (rôle admin renommé "Gestion Outils"), à répercuter dans le code.
-- **Tableau admin Outils (simulateurs uniquement)** *(point 9, révisé)* (`/admin/tools`) — colonnes Nom/Statut/Actions, bouton "Modifier" par ligne. **Les référentiels n'y sont plus** — ils rejoignent le tableau admin Guides (voir Bloc 0), même pattern (colonne Type : Guide / Référentiel).
-- **Cas Villes — point d'édition partagé** *(point 10)* — les 3 simulateurs Villes doivent pointer vers la même pop-up d'édition des paramètres (VP/Remparts/Coût/multiplicateurs Army-Gold par ligue, toutes les valeurs sont maintenant connues, section 7.1) — pas de duplication.
-- **Édition des référentiels à revoir** *(point 11)* — dropdowns pour rareté/famille/emplacement/compétence, pouciel et emplacements gemmes non éditables (auto-calculés), filtres en haut du tableau. **À construire dans le tableau admin Guides, pas Outils** (voir ci-dessus).
-- **Templiers — remplacer la table de coût par la formule** *(point 12)* — 2 paramètres nommés (base=150, ratio=1,3) au lieu d'une `lookup_table` à 21 lignes.
-- **Bouton retour manquant dans les pages d'édition admin** *(point 13)*.
-- **Éditeur Classement dédié (jamais formellement numéroté avant, à ajouter)** — l'édition admin des seuils/récompenses par ligue du Classement se fait via un blob JSON brut, à remplacer par une UI dédiée par ligue (bouton "+" pour ajouter un rang/seuil, champs de saisie individuels par ligne). Généraliser en **composant de table éditable réutilisable** plutôt que de le refaire pour chaque `lookup_table` (Templiers, équipements) — cohérent avec le point 11 ci-dessus.
-
-### Bloc 4 — Contenu à charger (dépend du bloc 3) ✅ **Terminé** (PR [#15](https://github.com/magicgg91/ML-Helper/pull/15))
-*Rapide une fois l'admin prêt.*
-
-- **Contenu des mentions légales** *(point 14)* — texte français rédigé (section 6 bis du cahier des charges), à charger comme valeur par défaut si pas déjà fait.
-- **Multiplicateurs Villes par ligue** *(point 15)* — toutes les valeurs sont maintenant confirmées (6 ligues), à charger en admin une fois le point d'édition partagé (bloc 3) construit.
-
-### Bloc 5 — Nouveaux simulateurs Combat + référentiel Level Up ✅ **Terminé** (PR [#16](https://github.com/magicgg91/ML-Helper/pull/16))
-*Entièrement spécifiés, faible risque, indépendants du reste — bon calage pour souffler après les blocs 2-3. **Deux natures différentes à ne pas mélanger dans l'implémentation : 5a = vrais simulateurs (→ `/tools`), 5b = référentiel (→ `/guides`, section Référentiels, jamais `/tools`).***
-
-**5a — Simulateurs (Outils, catégorie Combat) :**
-- **Combat — Taux de gain d'XP** *(point 31)* — ✅ Résolu et prototypé (formule + seuils confirmés, UI construite dans `docs/prototype-ml-helper-unifie.html` : un champ VP, mode attaquant/cible, sortie en tableau des 5 paliers avec plage de VP adverse). Voir section 7.1 du cahier des charges. **Prêt à être envoyé comme tâche Codex, reproduire fidèlement le prototype.**
-- **Combat — Troupes max envoyées en "attaque démo"** *(point 32)* — ✅ Résolu : formule confirmée (`TroupesMax = X% × Remparts(niveau_ville_visée)`, X selon la ligue de l'attaquant : Bronze 100%, Argent 50%, Or/Platine 40%, Diamant/Légende 30%). Vitesse d'attaque réduite = information seulement, **pas à intégrer au calcul**. **Prêt à être envoyé comme tâche Codex.**
-
-**5b — Référentiel (section Référentiels de `/guides`, PAS Outils) :**
-- **Level Up (référentiel, pas calculateur)** *(inclus dans le point 18)* — **🚨 catégorie thématique Combat mais nature référentiel : rejoint `/guides/referentiels/level-up` aux côtés d'Équipements de Combat/Expédition, jamais `/tools`, malgré le regroupement historique avec 5a dans ce bloc.** Formule troupes ✅ verrouillée pour **Légende, Diamant et Bronze (identique pour les trois)**, ✅ verrouillée séparément pour **Platine** (formule distincte), ✅ verrouillée séparément pour **Or** (formule distincte, ne pas confondre avec Légende malgré une ressemblance trompeuse aux petits niveaux — voir piège méthodologique en section 7.1 du cdc), ✅ **formule d'XP requis par niveau verrouillée** (universelle, identique sur les 6 ligues, régression exacte sur 110 points), cycle de coffres tous les 10 niveaux ✅ **confirmé universel sur les 6 ligues** (Coffre→Urne→Coffret à bijoux→Jarre→Caisse, boucle de 5, identique partout — seules les formules de troupes varient par ligue) — contenu exact des coffres couvert par le guide Level Up plutôt que la donnée structurée. **Reste : données troupes Argent, seule donnée manquante pour ce référentiel** (XP et cycle de coffres déjà universels, donc déjà connus pour Argent aussi) — **peut être envoyé dès maintenant pour 5 ligues sur 6** (Légende/Diamant/Bronze/Platine/Or, XP et coffres complets), Argent complété plus tard.
-
-### Bloc 6 — UI/UX : alignement visuel Dev ↔ Prototype ✅ **Terminé** (via Claude Code, PR [#23](https://github.com/magicgg91/ML-Helper/pull/23), 8 commits — 219 tests/59 fichiers verts, e2e à confirmer en CI réelle, pas vérifiable en local)
-*Ordre d'exécution réel convenu : 5 → 7 → 8 → 9 → 6. Portée légèrement élargie par rapport à la spec initiale (voir 2 points ajoutés en fin de liste).*
-
-- **Alignement Dev ↔ Prototype** *(point 2)* et **Paramètres du joueur — résumé manquant en repli** *(point 3)* — ✅ **Terminé** (PR [#24](https://github.com/magicgg91/ML-Helper/pull/24), 246 tests/65 fichiers).
-- **Simulateur de Stuff — rendu des emplacements** *(point 4)* — couleur de rareté sur la case, gemmes visibles avec ligue+étoiles+couleur de compétence (palette exacte en section 7.1 du cahier des charges).
-- **Classement — barre visuelle** *(point 5)* — indicateur rouge de position exacte, libellés hors barre en quinconce, couleurs par catégorie (Descente/Maintien/Montée, clair→foncé).
-- **Calculateurs Villes — affichage des résultats** *(point 6)* — base ville seule en premier, détail Stuff/Temple séparé, total en évidence (reprendre le pattern déjà en place sur Production).
-- **Page d'accueil simulateurs — carte pas assez cliquable** *(point 7)* — tout le cadre doit l'être, pas juste le compteur.
-- **Page des guides — cartes** *(points 35+36, fusionnés)* — entièrement cliquables, 3 par ligne au lieu de 5.
-- **🆕 Boutons admin plus soignés, partout** *(élargi depuis le Bloc 7ter, qui ne l'avait fait que sur l'éditeur de guides)* — étendre le même traitement visuel à tous les boutons admin (tableaux Outils/Guides, actions CRUD, connexion), pas juste l'écran d'édition markdown.
-- **🆕 Placeholders pour images manquantes** *(nouveau — voir cdc section 12, décision ajoutée)* — les images d'équipements/gemmes seront ajoutées progressivement, pas toutes d'un coup. Le site ne doit jamais afficher une icône d'image cassée : composant de repli visuel tant que le fichier n'existe pas encore sur le serveur.
-
-### Bloc 7 — Guides : technique complémentaire ✅ **Terminé** (PR [#17](https://github.com/magicgg91/ML-Helper/pull/17))
-*Même écran d'édition à retoucher, logique de les grouper.*
-
-- **Guides — éditeur markdown à améliorer** *(point 26)* — remplacer la zone de texte brute par **`@uiw/react-md-editor`** (coloration syntaxique, aperçu en direct côte à côte, toolbar optionnelle) — reste un éditeur markdown-natif, pas de blocs WYSIWYG. L'aperçu doit utiliser le même moteur que le rendu public (`react-markdown`+`remark-gfm`, bloc 1) pour cohérence exacte.
-- **Éditeur de guides — sélecteur de catégories multiples** *(point 30)* — un guide peut appartenir à plusieurs catégories à la fois (champ `category` passé de enum simple à tableau). L'éditeur admin doit permettre de cocher/sélectionner une ou plusieurs des 8 catégories, pas un menu déroulant à choix unique. Impacte aussi l'affichage public.
-- **Éditeur de guide — champ image représentative** *(point 37)* — le champ `cover_image` existe déjà dans le modèle de données (section 5) mais n'est pas encore exposé dans l'éditeur admin. Ajouter un sélecteur d'image, affichée à gauche de la carte sur la page de liste.
-
-### Bloc 7bis — Correctifs de mise en page éditeur (retour d'usage post-Bloc 7) ✅ **Terminé** (PR [#18](https://github.com/magicgg91/ML-Helper/pull/18))
-*Rapide, isolé, même écran que le Bloc 7 — à faire avant le Bloc 8 pendant que c'est frais.*
-
-- **Sélecteur de catégories multiples trop encombrant** — rendre plus compact (liste déroulante à choix multiples ou puces/chips repliables plutôt qu'une liste de 8 cases à cocher en pleine largeur).
-- **Sélecteur de langue trop encombrant** — remplacer par une liste déroulante compacte, pas d'onglets ni d'accordéon (cdc section 6, décision précisée).
-- **Proportions éditeur/aperçu à corriger** — l'aperçu en direct prend trop de hauteur/place ; la zone de saisie markdown est trop petite en largeur et en hauteur. Rééquilibrer en faveur de la zone de saisie.
-- **Éditeur mentions légales aligné sur l'éditeur de guides** *(cdc section 3.1, révisé)* — bascule du simple textarea prévu initialement vers le même `@uiw/react-md-editor` que les guides (Bloc 7), pour cohérence entre les deux écrans d'édition markdown du site.
-
-### Bloc 7ter — Aperçu intégré, boutons repositionnés, thème clair (2e retour d'usage post-Bloc 7bis) ✅ **Terminé** (PR [#20](https://github.com/magicgg91/ML-Helper/pull/20))
-*Rapide, isolé, même écran encore — dernier passage sur cet éditeur avant de passer à autre chose.*
-
-- **Aperçu intégré à l'éditeur, panneau séparé supprimé** — `@uiw/react-md-editor` a un mode aperçu natif, pas besoin du panneau construit en Bloc 7. Configurer l'aperçu natif avec les mêmes plugins que le rendu public (`remark-gfm` + `rehype-sanitize`) pour ne pas perdre la cohérence exacte avec ce que voit le joueur — ne pas se contenter des réglages par défaut de la bibliothèque. Conséquence : l'éditeur peut prendre toute la largeur disponible.
-- **Boutons Enregistrer/Publier + messages de confirmation en haut**, à côté du bouton retour (actuellement en bas de page).
-- **Style des boutons à améliorer** — plus soignés, cohérents avec l'identité visuelle du reste du site.
-- **Thème clair** pour l'éditeur (actuellement en mode sombre par défaut, thème natif de la bibliothèque) — cohérence avec le reste de l'admin.
-
-### Bloc 8 — Admin : sécurité et accès ✅ **Terminé** (PR [#19](https://github.com/magicgg91/ML-Helper/pull/19))
-*Bloc indépendant, ne bloque rien d'autre.*
-
-- **Nouveau rôle admin "Lecture Seule"** *(point 27)* — accès en consultation uniquement à toutes les sections admin, aucune action de mutation possible nulle part (bloqué côté serveur). Cas d'usage : montrer l'envers du décor sans donner de droit d'édition. Détail en section 3.2 du cahier des charges (table des rôles, 5e ligne).
-- **Retirer le lien vers l'administration du dashboard public** *(point 28)*.
-- **Refonte de la page de connexion** *(point 29)* — mise en page plus soignée (centrée, cadrée), et sécurisation renforcée :
-    - Limitation des tentatives (rate limiting) avec blocage temporaire après N échecs consécutifs
-    - Messages d'erreur génériques (ne pas révéler si c'est le username ou le mot de passe qui est incorrect)
-    - **2FA (TOTP)** — code à usage unique via une app d'authentification, génération de la clé secrète et QR code lors de l'activation, vérification à chaque connexion
-
-### Bloc 9 — Petits ajustements ponctuels ✅ **Terminé** (PR [#21](https://github.com/magicgg91/ML-Helper/pull/21))
-*Rapides, glissables n'importe où — "pendant qu'on y est" plutôt qu'une tâche dédiée.*
-
-- **Coût de Ville — contrainte niveau cible > niveau de départ** *(point 22)* — le niveau cible doit toujours être strictement supérieur au niveau de départ (minimum +1), avec ajustement automatique dans les deux sens.
-- **Aucune ligue sélectionnée par défaut, partout** *(point 23, périmètre étendu)* — Paramètres du joueur, Classement, Gemmes (Optimisation + Budget), Simulateur de Stuff, Comparateur de stuff, Troupes attaque démo, Level Up, **Villes (Coût de Ville, Niveau Max, Production — nouveau sélecteur à construire, cdc section 7.1)** : tous les sélecteurs de ligue doivent démarrer vides (placeholder "— Choisir —"), avec repli propre côté calcul tant qu'aucune ligue n'est choisie. **Exception (Classement, Troupes attaque démo, Level Up, Villes)** : ces sélecteurs s'alignent automatiquement sur la ligue du joueur dès qu'elle est définie — **y compris au chargement initial si déjà en cache (localStorage)**. Si le sélecteur dépendant a déjà une valeur choisie manuellement, elle n'est pas écrasée. **Raison d'être pour Villes, à noter pour Codex** : permettre de tester les valeurs d'une autre ligue que la sienne (ex: simuler pour quelqu'un d'autre), pas juste refléter son propre profil — contrairement à l'implémentation actuelle qui lit `player-league` directement sans sélecteur dédié (voir prototype avant mise à jour). **Placement du sélecteur : toujours en première position (le plus à gauche) dans la grille d'inputs**, avant Nombre de villes/Niveau de départ/etc. — cohérent sur les 3 calculateurs Villes, voir prototype à jour.
-- **🚨 Nettoyage — champs de traduction obsolètes en admin** *(nouveau, trouvé en vérifiant l'admin après le Bloc 2b)* — le cdc a explicitement retiré 3 champs du modèle de données au profit des fichiers de traduction statiques next-intl (section 6, cdc) : `name` d'un Calculateur/Outil, `label` d'une Formule, `label` d'une Table de référence. Chacun garde son `slug`/`key` technique comme clé de traduction. **Cette bascule n'a jamais été suivie d'un nettoyage de l'admin** : les champs de saisie de traduction par enregistrement (nom FR/EN d'un outil, etc.) sont toujours visibles dans l'édition admin de plusieurs outils (Troupes attaque démo, Simulateur de Stuff, au moins) alors qu'ils n'ont plus d'effet ou n'auraient jamais dû survivre à la migration i18n. **À faire** : supprimer ces champs de saisie de l'UI admin partout où ils traînent encore (probablement tous les outils, pas seulement les 2 repérés), confirmer qu'aucun champ Prisma correspondant ne subsiste non plus si le Bloc 2b/2d ne l'avait pas déjà fait au niveau du schéma.
-
-### Bloc 10 — Assets : images ✅ **Terminé** (structure + intégration confirmées par le porteur de projet, 31/08/2026)
-- **Séparation `public/equipment/` en 2 sous-dossiers** (`public/equipment/combat/`, `public/equipment/expedition/`) faite, plus `public/gems/` déjà correct — convention de nommage confirmée bonne.
-- **Images intégrées** (gemmes + équipements), remplacent les couleurs/badges texte dans les simulateurs et référentiels concernés.
-- **⚠️ Non bloquant : 36 fichiers Combat encore manquants** (Casque/Gantelet/Bottes pour Commun/Rare/Épique, motif déjà connu, cdc section 12) — à compléter plus tard par le porteur de projet, ne bloque rien d'ici là.
-
-### Bloc 11 — Refonte compacte de l'UI admin (shadcn/ui) + lien site public ✅ **Terminé** (PR [#25](https://github.com/magicgg91/ML-Helper/pull/25), 4 commits — 254 tests verts, e2e à confirmer en CI réelle)
-*Nouveau, retour joueur après le Bloc 6. Indépendant du reste.*
-
-- **Vérifier si `shadcn/ui` est déjà partiellement utilisé** dans l'admin (`package.json`/imports) — si oui, étendre son usage plutôt que réinstaller. Si non présent du tout, l'installer (décision actée, voir cdc section 8).
-- **Compacter tableaux et boutons via `shadcn/ui`** — trop volumineux et mal alignés actuellement (retour direct du joueur), sur l'ensemble de l'admin (Outils, Guides, Utilisateurs, Logs), pas un écran en particulier. Composants `Table`/`Button`/`Card` de `shadcn/ui` comme base.
-- **Lien vers le site public dans la barre du haut**, à côté des boutons utilisateur/thème déjà en place, ouverture dans un nouvel onglet.
-- **Navigation principale en sidebar gauche**, plus en barre du haut (pattern `shadcn/ui`) — barre du haut réduite aux contrôles utilitaires (utilisateur, thème, lien site public), sidebar gauche pour les liens principaux (Dashboard, Outils, Guides, Utilisateurs, Logs).
-
-### Bloc 11bis — Retour de la navigation admin en barre du haut ✅ **Terminé** (PR [#26](https://github.com/magicgg91/ML-Helper/pull/26), 4 commits — 258 tests verts)
-*Correction rapide, revient sur un choix du Bloc 11 (sidebar) — trop de place prise sur le contenu.*
-
-- **Ramener la navigation principale (Dashboard, Outils, Guides, Utilisateurs, Logs) dans la barre du haut**, aux côtés des contrôles déjà présents (utilisateur, thème, lien site public). Retirer la sidebar gauche introduite au Bloc 11.
-- Garder tout le reste du Bloc 11 (composants shadcn/ui compacts sur les tableaux/boutons) — seule la position de la navigation change, pas la densité visuelle obtenue.
-- **Boutons d'action des tableaux encore trop volumineux** (Éditer/Activer/Supprimer) — les compacter, **sans passer par un menu déroulant** (refusé) : boutons icône-seule avec tooltip, ou tout autre traitement gardant les actions visibles et cliquables directement.
-- **Sélecteur de langue de la barre du haut — pas de menu déroulant non plus** (même retour que ci-dessus) : garder des boutons/toggle visibles directement (ex: "FR | EN" cliquables), pas un menu à ouvrir.
-- **🐛 Bug — éditeur markdown illisible en thème sombre** : le fond de l'éditeur reste correctement forcé en clair, mais le texte hérite de la couleur claire du thème sombre du site (texte clair sur fond clair). Verrouiller aussi la couleur du texte en sombre dans l'éditeur, indépendamment du thème actif du site (cdc section 3.1, note ajoutée).
-
-### Bloc 12 — Filtres admin (Logs, Guides) + navigation publique ✅ **Terminé** (détails de validation non communiqués)
-*Nouveau, retour joueur après le Bloc 11. Indépendant du reste.*
-
-- **Filtres sur `/admin/logs`** — par utilisateur, par mot dans le message affiché (généré dynamiquement, pas un champ stocké — filtrer sur le texte affiché), par plage de date.
-- **Filtre par Type sur `/admin/guides`** — bouton de filtre Guide/Référentiel, pas un menu déroulant (cohérent avec le Bloc 11bis).
-- **Sélecteur de langue public aligné sur l'admin** — même pattern `AdminLocaleToggle` (FR/EN cliquables, pas de dropdown), à généraliser plutôt que dupliquer un composant équivalent.
-- **Navigation publique mise en avant** — jugée trop discrète actuellement. Piste proposée : boutons plutôt que simples liens texte, pas une contrainte stricte.
-
-### Bloc 13 — Refonte visuelle des cartes de la section Guides ✅ **Terminé** (PR [#28](https://github.com/magicgg91/ML-Helper/pull/28), 4 commits — 277 tests verts)
-*Nouveau, isolé du Bloc 12. Indépendant du reste.*
-
-- **Refonte visuelle des cartes de la section Guides** — jugées trop plates. Image de couverture pleine largeur en haut (plus à gauche), badge de catégorie visible sur la carte, hover state (élévation/ombre ou léger zoom), filtres en pills/chips cliquables (pas de dropdown). Référence : pattern "responsive card grid" Tailwind classique. Latitude large sur l'implémentation, pas de contrainte à garder la structure actuelle.
-
-### Bloc 14 — Barre du haut publique : débordement mobile ✅ **Terminé** (PR [#29](https://github.com/magicgg91/ML-Helper/pull/29), 1 commit — 280 tests verts)
-*Nouveau, discussion suite au Bloc 12. Indépendant du reste.*
-
-- **Menu hamburger pour les liens de navigation uniquement** (Outils/Guides/etc.), qui passent actuellement sur 2 lignes sur mobile faute de place.
-- **Thème et langue restent hors du hamburger**, visibles à côté de l'icône ☰ — déjà en icône-seule (pas de texte), donc pas la source du débordement. Les garder à un clic direct plutôt que de les enfouir dans le menu (réglages consultés à la volée, pas des choix ponctuels).
-
-### Bloc 15 — Nouvelle palette de couleurs (violet accent, doré réservé Légendaire) ✅ **Terminé** (PR [#30](https://github.com/magicgg91/ML-Helper/pull/30), 4 commits — 284 tests verts)
-*Nouveau, discussion suite au Bloc 12. Indépendant du reste. Impacte public ET admin — un seul système de design.*
-
-- **Violet (couleur Mythique déjà utilisée pour les raretés) comme accent principal de l'UI** — boutons, liens actifs, focus. Remplace le doré utilisé actuellement.
-- **Doré réservé exclusivement aux données de jeu réellement Légendaire** (badges de rareté, mise en avant d'objets légendaires) — ne plus l'utiliser comme couleur d'interface générique, pour préserver son signal.
-- **Mode sombre** : fond bleu-nuit/anthracite — jamais noir pur, jamais de teinte brune.
-- **Mode clair** : fond légèrement teinté (pas de blanc pur), même famille de couleur que le mode sombre.
-- **Un seul système de design** — mêmes couleurs sur le site public et l'admin, pas deux palettes distinctes.
-- **⚠️ Ne pas oublier** : la bordure dorée ajoutée au hover des cartes Guides (Bloc 13, PR #28) doit passer au violet avec le reste — vérifier tout hover/accent ajouté depuis l'ancienne palette.
-
-### Bloc 16 — Recherche globale + retrait des pills sur Référentiels ✅ **Terminé** (PR [#32](https://github.com/magicgg91/ML-Helper/pull/32), 2 commits — 303 tests verts)
-*Nouveau, retour joueur post-Bloc 13. Indépendant du reste.*
-
-- **Recherche globale sur tout le site** — remplace la recherche actuelle limitée à la section Guides. Doit chercher dans les guides, les référentiels ET les outils/simulateurs, avec résultats routés vers le bon endroit selon le type de contenu trouvé. Accessible depuis n'importe quelle page (probablement dans la barre de nav, cohérente avec sa mise en avant au Bloc 14) plutôt que limitée à la page Guides.
-- **Retirer les pills de filtre par catégorie sur la page Référentiels** — pas de notion de catégorie à filtrer pour les référentiels (ce sont des items individuels, peu nombreux), contrairement aux Guides. Simple liste/grille sans filtre de premier niveau. Les filtres internes de chaque référentiel (rareté/famille/emplacement/compétence) restent inchangés.
-
-### Bloc 14bis — Bug menu mobile caché derrière le contenu de l'accueil ✅ **Terminé** (PR [#31](https://github.com/magicgg91/ML-Helper/pull/31), 1 commit)
-*Correction rapide, bug trouvé après le Bloc 14 (hamburger).*
-
-- **Le menu hamburger déplié se retrouve masqué derrière la première tuile de la page d'accueil sur mobile** — problème de z-index/empilement, le menu doit toujours passer au-dessus du contenu de la page, quelle que soit la page.
-
-### Bloc 17 — Audit des plafonds de compétences (vérification, pas nouvelle donnée) ✅ **Terminé** (PR [#33](https://github.com/magicgg91/ML-Helper/pull/33), avec Bloc 16bis — 316 tests verts)
-*Nouveau, doute soulevé après le résumé joueur du Bloc 6 suite (PR #24) qui ne mentionnait que le plafond Bravoure/Intrépide.*
-
-- **Vérifier que tous les plafonds de compétence du cdc (section 7.1, table des 10 compétences) sont bien appliqués partout où une valeur totale de compétence est calculée/affichée** — pas seulement dans le résumé joueur replié. Plafonds à respecter : **Récupération (Cautious) max 50%**, **Intrépide/Bravoure max 90% (75% en Légende)**, aucun plafond pour les 7 autres compétences.
-- Concerne au minimum : le résumé joueur replié (Bloc 6 suite), le champ de saisie "Statistiques données par l'équipement", et tout calculateur utilisant `getPersonalSkill()`.
-- Corriger tout endroit où le plafond Récupération (50%) ou Bravoure/Intrépide (90%/75%) ne serait pas appliqué.
-- **Résultat** : `skillPercent()` déjà correct partout. Résumé joueur replié + champ équipement avaient Récupération totalement absente ET Bravoure/Intrépide en 90% fixe au lieu de 75% en Légende — corrigés, unifiés dans `skillCapForLeague()`.
-
-### Bloc 16bis — Recherche globale : fermeture au clic extérieur ✅ **Terminé** (PR [#33](https://github.com/magicgg91/ML-Helper/pull/33), avec Bloc 17)
-*Correction rapide, suite au Bloc 16.*
-
-- **Cliquer en dehors du champ de recherche doit fermer la recherche** (le dropdown de résultats et/ou le champ lui-même, selon ce qui est actuellement ouvert).
-
-### Bloc 18 — Récompenses de production : calculateur autonome ✅ **Terminé** (PR [#34](https://github.com/magicgg91/ML-Helper/pull/34), 2 commits — 322 tests verts)
-*Nouveau, sorti du calculateur Production (retour joueur). Indépendant du reste.*
-
-- **Extraire "Récompenses" du calculateur Production** en un calculateur autonome ("Récompenses de production"), nouvel onglet dans la catégorie Villes. Production perd sa sous-section Récompenses, garde Par ville + Total.
-- **2 blocs séparés (Or / Troupes)**, chacun avec : production de base (brute, sans bonus, saisie directe avec sélecteur d'unité ×1/k/M/G/T, paliers 0,1) et heures reçues (paliers 0,5) → bonus obtenu.
-- Formule inchangée : `bonus = production_base × heures` (cdc section 7.1, Calculateur 4bis).
-- **Déjà porté dans le prototype** — reproduis fidèlement (2 panneaux séparés, pas un formulaire à 4 champs mélangés).
-
-### Bloc 19 — Nav active, formulaire de contact, nettoyage admin ✅ **Terminé** (1re partie : PR [#35](https://github.com/magicgg91/ML-Helper/pull/35), 6 commits — 339 tests verts ; 2e partie : PR [#36](https://github.com/magicgg91/ML-Helper/pull/36) et PR [#37](https://github.com/magicgg91/ML-Helper/pull/37), détails de validation non communiqués)
-*Nouveau, retour joueur. Sujets indépendants entre eux, groupés parce que rapides individuellement.*
-
-- ✅ **État actif sur les boutons de navigation publique** — le bouton de la page actuellement affichée doit être visuellement distinct des autres.
-- ✅ **Formulaire de contact** (`/contact`, route déjà prévue, jamais construite) : email (obligatoire), objet (liste déroulante — *Signaler une erreur de donnée* / *Suggestion d'amélioration* / *Problème technique / bug* / *Autre*, à ajuster si besoin), message (texte libre). Envoi par email via SMTP, **paramètres (URL/compte/mot de passe) en variables d'environnement dans le `docker-compose`**, jamais en base ni dans l'admin.
-- ✅ **Mettre à jour le texte des mentions légales déjà en base** (chargé au Bloc 4) — la section "Données personnelles" doit mentionner ce que collecte le formulaire de contact (email, objet, message — non conservés en base, envoyés par email uniquement). Texte exact dans le cdc section 6 bis.
-- ✅ **Compteur de référentiels sur le dashboard admin** — actuellement seuls guides et outils sont comptés (actifs/total) ; ajouter référentiels (activés/total) à côté.
-- ⏳ **Pas de titre de page redondant en admin** — le bouton actif de la nav suffit à indiquer où on est, retirer les titres de page qui le répètent.
-- ⏳ **Utilisateurs — activer/désactiver un compte** (sans le supprimer), en plus de créer/modifier/supprimer déjà existant. Compte désactivé ne peut plus se connecter, message dédié.
-- ⏳ **Compteur utilisateurs sur le dashboard admin** (total/actifs).
-- ⏳ **Édition d'un Outil alignée sur l'édition d'un Guide** — actuellement différente (bouton retour différent, Enregistrer + confirmation en bas). Aligner sur le pattern du Bloc 7ter.
-- ⏳ **Renommer "Contenu statique" → "Conditions d'utilisation"** en admin.
-- ⏳ **Pagination de l'historique par lot de 20** (`/admin/logs`).
-- ⏳ **Nettoyage de texte parasite** : *"Un outil inactif reste annoncé au public, mais il est grisé et impossible à ouvrir."* (admin Outils), *"Crée, traduis et soumets les guides à validation."* (admin Guides), *"Texte des mentions légales (Markdown)"* (admin Conditions d'utilisation).
-- ⏳ **Page `/contact` à rendre plus soignée visuellement, contenu centré** (retour joueur post-Bloc 19 1re partie).
-- ⏳ **Bug — compteur "guides publiés" du dashboard trompeur** : compte tous les guides `published` sans tenir compte de `is_active`, alors qu'un guide publié mais désactivé est invisible côté public. Corriger le numérateur pour ne compter que `published ET is_active=true`. Ne pas fusionner `is_active` avec le statut de publication (décision volontaire, cdc section 5).
-
-### Bloc 20 — Titre d'onglet, recherche, Paramètres du joueur (nettoyage + temple + résumé) ✅ **Terminé** (PR [#39](https://github.com/magicgg91/ML-Helper/pull/39), 8 points + migration localStorage pour compatibilité des données existantes)
-*Sujets groupés, plusieurs liés au même panneau Paramètres du joueur. Indépendant du reste.*
-
-- **Jamais "Admin" dans le titre d'onglet des pages publiques.** Accueil = "ML Helper" seul. Autres pages = nom de la page visitée (Guides, Outils, Contact) — pas de préfixe/suffixe répétitif.
-- **Paramètres du joueur (Outils) — espace manquant avant le résumé** : trop collé actuellement, ajouter un espacement.
-- **Barre de recherche — texte du placeholder** : mécanisme de traduction déjà fonctionnel, juste le texte à changer pour "Rechercher" (FR) / "Search" (EN).
-- **Retirer 2 phrases parasites** (jamais spécifiées) : *"Outil de planification uniquement : il ne modifie jamais les compétences avec équipement."* et *"Valeurs réellement utilisées par les outils. Elles restent indépendantes de la distribution des points."*
-- **Renommer "Templiers personnels" → "Templiers"**, et **"Bonus de temple du clan" → "Bonus de temple (clan)"** (clan entre parenthèses).
-- **Simplifier la saisie du Bonus de temple (clan)** — le joueur saisit désormais uniquement la **contribution des Templiers du clan** (ex: 260% pour Vitesse, lisible directement sur l'écran de temple en jeu), plus le total. La base du temple (déjà connue par stat, cdc section 7.1) s'ajoute automatiquement, calculée par l'outil : `Bonus_total = base_temple + Templiers_clan_saisi`.
-- **Résumé replié enrichi** — pour les 5 compétences concernées par le temple (Attaque/Défense/Prospérité/Recruteur/Vitesse), afficher le total suivi du détail entre parenthèses : `Atq 600 (400 + 120 + 80)` où 400 = Équipement, 120 = Points, 80 = Temple (clan). Les 5 autres compétences (sans bonus de temple) restent en 2 composantes, comme avant. Plafonds (90%/75%/50%) appliqués sur le total final.
-- **Code couleur cohérent** entre les 3 blocs de saisie (Équipement / Points / Temple clan) et le résumé replié — même couleur pour la même composante aux deux endroits, pour repérer visuellement d'où vient chaque chiffre.
-
-### Bloc 21 — Admin Outils : traductions manquantes, édition Villes partagée, colonne catégorie ✅ **Terminé** (PR [#40](https://github.com/magicgg91/ML-Helper/pull/40), 361 tests verts — audit a trouvé 2/5 points déjà corrects : seul `ranking.name` mistraduit, édition Villes déjà bien partagée)
-*Nouveau, retour joueur. Indépendant du reste.*
-
-- **🚨 Supprimer le bloc "Textes multilingues" de l'édition de chaque outil** — a survécu au nettoyage du Bloc 9 (qui avait retiré la gestion de traduction par enregistrement, décision cdc section 6). Le composant lui-même doit disparaître de l'écran d'édition, pas juste être vidé de contenu. Concerne tous les outils, y compris ceux listés au point suivant.
-- **Traductions de noms d'outils incomplètes dans le tableau admin (colonne Nom)** — au moins Taux de gain d'XP, Simulateur de Stuff, Comparaison de stuff, **Ranking (doit afficher "Classement" en FR)**, Gemmes, Troupes en attaque démo, Récompenses de Production. Auditer tout le tableau, corriger via next-intl.
-- **Un outil sans aucun paramètre numérique éditable n'a pas de bouton "Modifier"** — seule l'action activer/désactiver reste disponible. Comportement normal, pas une anomalie à corriger.
-- **Revérifier le point d'édition partagé Villes** (déjà décidé, cdc section 8) — Coût de Ville et Niveau Max Atteignable semblent avoir des points d'édition séparés en pratique. Le bouton "Modifier" des 3 simulateurs Villes (Coût de Ville, Niveau Max, Production) doit mener au même endroit, pas 3 formulaires indépendants.
-- **Ajouter une colonne "Catégorie"** au tableau admin Outils (Villes/Combat/Classement/Compétences), à côté de Nom/Statut/Actions.
-
-### Bloc 22 — Corrections résumé Paramètres joueur (retour de test post-Bloc 20) ✅ **Terminé** (PR [#41](https://github.com/magicgg91/ML-Helper/pull/41), 5 commits — 6/8 points réglés, 2 points partiels → voir Bloc 24)
-*8 bugs isolés trouvés en testant le Bloc 20. Indépendant du reste.*
-
-- **Ligne 2 du résumé trop longue** — déborde en 1 ligne au lieu de se répartir sur 2 lignes de longueur équilibrée (~5/5 compétences). Corriger le point de repli.
-- **Couleur du total identique à la couleur de la composante Équipement** — les deux sont indiscernables. Le total doit avoir sa propre couleur, distincte des 3 composantes (Équipement/Points/Temple clan).
-- **Contraste des couleurs insuffisant en thème clair** — lisibles en thème sombre, pas en thème clair. Les 4 couleurs (total + 3 composantes) doivent rester distinctement lisibles sur les 2 thèmes.
-- **Champs "Bonus de temple (clan)" doivent accepter des décimales avec le bon pas par stat** — un templier unique donne un bonus fractionnaire (Attaque/Défense : pas 0,25% ; Or/Recruteur : pas 0,5% ; Vitesse : pas 1%, table cdc section 7.1). Actuellement probablement limité aux entiers.
-- **Titres d'onglet des pages individuelles, précisés** (suite du Bloc 20) :
-  - Page d'un outil : `"Outils — [Catégorie]"` — la catégorie, pas le nom précis du simulateur (ex: "Outils — Classement", "Outils — Villes" pour Coût de Ville/Niveau Max/Production).
-  - Page d'un guide : `"Guides — [Titre du guide]"` — le titre précis cette fois (ex: "Guides — Bien choisir et rejoindre un clan").
-- **Page d'accueil Outils, grille mobile à 2 colonnes** — sur mobile, actuellement pas organisé en grille régulière. À corriger : **2 catégories par ligne**, et à l'intérieur d'une catégorie, **2 outils par ligne**.
-- **Menu de navigation collé en haut sur mobile** — ajouter un petit espace (quelques px) au-dessus.
-- **Créer la structure de dossiers pour les images équipements/gemmes** (préparation Bloc 10) — cohérente avec les conventions de nommage déjà actées (cdc sections 11-12 : `{famille}-{rareté}-{emplacement}.webp` pour les équipements, manifeste des 60 fichiers gemmes en section 11). **Rapporter le chemin exact créé dans la réponse** — les fichiers seront déposés manuellement ensuite, pas par cette tâche.
-
-### Bloc 23 — Éditeurs admin manquants (Taux de gain d'XP, Troupes attaque démo) + audit ✅ **Terminé** (PR [#43](https://github.com/magicgg91/ML-Helper/pull/43), 376 tests verts — audit a trouvé 2 vrais bugs de câblage : Stuff lisait un import statique bypassant la DB admin, Gemmes n'avait aucune valeur stockée du tout)
-*Trouvé pendant l'audit du Bloc 21. Plus lourd que le Bloc 22 (vraie UI à construire), séparé pour ça. Indépendant du reste.*
-
-- **🚨 Éditeurs admin manquants — Taux de gain d'XP et Troupes attaque démo** : ces 2 outils ont des paramètres de formule réellement stockés (seuils/paliers pour l'un, % par ligue pour l'autre — cdc section 7.1) mais **aucun éditeur admin fonctionnel n'a jamais existé** pour les modifier — l'ancien écran "traductions" ne touchait que des champs inutilisés. Pas une régression, un manque préexistant révélé en nettoyant. Construire un éditeur dédié pour chacun, même pattern que `CityParametersEditor`/`TemplarParametersEditor`.
-- **Audit plus large : tout outil avec des valeurs qui devraient être éditables mais n'apparaissent nulle part en admin** — vérifier qu'aucun autre outil n'a le même genre de trou (paramètres stockés mais jamais exposés à l'édition). Construire l'éditeur manquant partout où c'est trouvé, pas seulement les 2 déjà identifiés. **Liste précise à vérifier un par un (aucun des 6 n'a actuellement de bouton "Modifier")** : Récompenses de Production, Troupes en attaque démo, Gemmes, Comparaison de stuff, Simulateur de Stuff, Taux de gain d'XP. **Hypothèse à confirmer, pas à supposer vraie** : Comparaison de stuff et Simulateur de Stuff n'auraient rien à éditer eux-mêmes, puisqu'ils lisent uniquement le référentiel Équipements de Combat (déjà éditable ailleurs, admin Guides) — mais vérifier réellement plutôt que de l'assumer. **Gemmes en particulier mérite un vrai examen** : ce simulateur a des valeurs de base par compétence/ligue et des prix d'achat qui ressemblent à de vraies données de jeu stockées (cdc section 7.1/11), pas juste une lecture d'un référentiel externe comme Stuff — à vérifier si un éditeur manque réellement ici. Pour chaque outil de la liste, rapporter explicitement : "rien à éditer, correct" ou "éditeur manquant, construit".
-
-### Bloc 24 — Résumé Paramètres joueur : contraste clair + split 5/5 en desktop (2e retour post-Bloc 22) ✅ **Terminé** (PR [#42](https://github.com/magicgg91/ML-Helper/pull/42), 3 commits — 366 tests verts)
-*2 points pas complètement réglés par le Bloc 22. Indépendant du reste.*
-
-- **Contraste thème clair toujours insuffisant** malgré la 1re correction — garder les mêmes teintes de base qu'en thème sombre (orange/bleu/vert/violet), ajuster seulement luminosité/saturation pour atteindre le contraste WCAG AA (4,5:1) sur fond clair, pas une palette différente.
-- **Split 5/5 des compétences ne s'applique qu'en dessous d'un certain seuil de largeur** — en desktop, tout reste sur 1 seule ligne. Doit s'appliquer partout, y compris desktop, indépendamment de la largeur d'écran disponible.
-
-### Bloc 25 — Refonte du calculateur Templiers (plage partagée, plus de sélecteur de compétence) ✅ **Terminé** (PR [#46](https://github.com/magicgg91/ML-Helper/pull/46), 4 commits — 382 tests verts)
-*Nouveau, retour joueur. Indépendant du reste.*
-
-- **Remplacer le sélecteur de compétence + 5 champs indépendants par une plage de niveau partagée** : un seul champ Niveau de départ, un seul champ Niveau cible, appliqués aux 5 compétences en même temps.
-- **Coût affiché une seule fois** (formule universelle `Coût(n) = arrondi(150 × 1,3^(n−1))`, indépendante de la compétence — pas besoin de le répéter 5 fois).
-- **5 lignes détaillées en dessous, une par compétence (Attaque/Défense/Or/Recruteur/Vitesse), avec 3 valeurs chacune** :
-  - **Bonus par Templier** — le taux fixe de cette compétence (ex: "0,25%/Templier" pour Attaque)
-  - **Total au niveau cible** — `cible × taux`, le bonus total si le joueur a "cible" Templiers de cette compétence
-  - **Gain (départ → cible)** — `(cible − départ) × taux`, ce qu'apporte spécifiquement cette montée en niveau
-  Taux déjà confirmés : Attaque/Défense 0,25%, Or/Recruteur 0,5%, Vitesse 1% (par niveau, cdc section 7.1).
-- Simplification assumée : l'outil ne modélise plus "combien j'ai actuellement par compétence" (potentiellement différent pour chacune), il répond à "si je monte un templier de X à Y, ça coûte combien et ça rapporte combien par compétence".
-- **Nouveau référentiel "Coût des Templiers"** (`/guides/referentiels/templiers`) — la table complète niveaux 1-20 (déjà dans le cdc section 7.1), consultable indépendamment du calculateur. **4ᵉ référentiel réellement construit** (Combat, Expédition, Level Up existent déjà ; Consommables reclassé dans les docs mais pas encore construit, données pas collectées).
-- **Liens croisés réciproques** entre le calculateur Templiers (`/tools`) et ce nouveau référentiel — même pattern que Simulateur de Stuff ↔ référentiel Équipements de Combat (Bloc 0) : le calculateur pointe vers "Voir la table complète", le référentiel pointe vers "Utiliser le simulateur".
-- **Boutons de sélection des catégories Outils, mobile — tailles à uniformiser** : actuellement Villes/Combat/Classement tiennent sur 1 ligne mais Compétences (plus long) se retrouve seul sur la ligne suivante. Uniformiser la taille des boutons pour un vrai découpage 2 par ligne, cohérent avec la décision déjà prise au Bloc 22 pour la grille de cartes de la même page.
-- **🚨 3e tentative — résumé Paramètres joueur toujours pas assez lisible/coloré en thème clair** (malgré les corrections des Blocs 22 et 24, qui avaient déjà validé le contraste WCAG AA à 8:1 mesuré) : passer sur des **variantes flashy/vives** des couleurs déjà utilisées plutôt que de continuer à ajuster finement la luminosité — priorité au ressenti visuel du joueur plutôt qu'à la seule mesure de contraste, qui ne suffit visiblement pas à elle seule.
-
-### Bloc 26 — Migration Combat vers l'anglais (fichiers + code) + doc déploiement ✅ **Terminé** (PR [#48](https://github.com/magicgg91/ML-Helper/pull/48), commit d03739e)
-*Décidé mais pas prioritaire — Expédition déjà basculée (script fourni), Combat a suivi. Complété avec un audit de la doc de déploiement dans la même PR.*
-
-- **144 fichiers Équipement de Combat renommés en anglais** (mapping : familles `attaque/defense/or/troupes-vitesse` → `attack/defense/gold/troops-speed`, raretés `commun/rare/epique/mythique/legendaire` → `common/rare/epic/mythic/legendary`, emplacements `arme/bouclier/ceinture/anneau/bracelet/amulette/casque/gantelet/bottes` → `weapon/shield/belt/ring/bracelet/amulet/helmet/gauntlet/boots`) — 143 renommages physiques (1 fichier déjà conforme, no-op).
-- **Références code mises à jour** (`equipmentImagePath`, tests simulateur/référentiel) — Expédition non touché.
-- **Doc de déploiement auditée et complétée** : variables réellement utilisées documentées (`DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, 5 réglages SMTP host/port séparés — pas une URL SMTP unique comme envisagé initialement, `ML_HELPER_IMAGE` pour sélectionner le tag Docker). ⚠️ **Divergences à trancher/documenter** : fichier SQLite nommé `database.db` (cdc mentionnait `db.sqlite`) ; format SMTP en host/port séparés plutôt qu'URL — Guillaume a choisi de ne pas trancher dans l'immédiat ("on verra, pas grave pour le moment, j'alignerai"), cdc pas encore mis à jour sur ces 2 points. Confirmé : aucune variable de bootstrap Super Admin résiduelle (flux `/admin/setup` uniquement).
-
-### Bloc 27 — i18n restant : admin en anglais, mentions légales EN, Classement traduit + bug CSS ✅ **Terminé** (PR #47 — 4/4 points validés)
-*Nouveau, retour joueur. Sujets indépendants, groupés. Indépendant du reste.*
-
-- ✅ **Noms d'Outils/Guides/Référentiels en admin suivent désormais la langue admin sélectionnée** — statut initialement ambigu à la livraison (rapporté comme "sauté selon décision du porteur de projet", jamais communiquée de ce côté) : **clarifié, c'était une erreur de rapport — le point est bien implémenté et fonctionnel, suit correctement la locale admin.**
-- **Mentions légales en anglais** — texte complet rédigé, cdc section 6 bis (juste après la version française). À charger comme second contenu localisé, même mécanisme JSON par locale déjà en place.
-- **Classement — Ligue cible et Récompenses traduites** — actuellement en français uniquement ("Montée Or", "100 saphirs, 7 accélérations de troupes, 6 gemmes"). Passer par une structure de données (type de mouvement + ligue en enum ; récompenses en liste `{type, quantité}` avec type en enum) rendue via next-intl, pas une chaîne de caractères french-only stockée telle quelle.
-- **Bug cascade CSS `.tool-category-grid`** (trouvé au Bloc 25, hors scope à l'époque) — même bug que celui corrigé sur la grille mobile Outils au Bloc 25, confirmé présent ici aussi. Même traitement.
-
-### Bloc 28 — Classement (arrondi) + Simulateur de Stuff (5 points) ✅ **Terminé** (PR [#49](https://github.com/magicgg91/ML-Helper/pull/49), 424 tests verts)
-*Nouveau, retour joueur. Sujets indépendants, groupés. Indépendant du reste.*
-
-- **Classement — bug d'arrondi des rangs de seuil** : `rankStart`/`rankEnd` arrondis au plus proche (`Math.round`) pouvaient afficher un rang supérieur à la réalité, induisant le joueur en erreur sur son maintien/sa relégation (ex: 94,5 places → n'affiche jamais 95, le 95e joueur redescend réellement). Corrigé en arrondi strictement vers le bas (`Math.floor`), prototype mis à jour en cohérence.
-- **Simulateur de Stuff, 5 points** :
-  1. Badge/texte de rareté retiré des cases de la grille 3×3 (couleur de la case suffit, redondant depuis l'intégration des vraies images) — le sélecteur d'équipement du panneau de configuration ("Rareté — Nom du set (Famille)") reste inchangé.
-  2. Mise en évidence de la case sélectionnée renforcée, avec bordure d'accent reliant visuellement le panneau de configuration ouvert à la case correspondante.
-  3. "Récapitulatif — toutes familles confondues" renommé en "Récapitulatif des compétences d'équipement".
-  4. Compétences plafonnées (Récupération max 50% ; Intrépide/Bravoure max 90%/75% selon la ligue des Paramètres du joueur) : affichage du plafond suivi de la valeur réelle entre parenthèses quand elle dépasse le plafond (ex: "50% (51,5%)").
-  5. **Nouveau : bouton de transfert vers les Paramètres du joueur** — copie les valeurs obtenues dans le bloc "Statistiques données par l'équipement" uniquement (jamais Points de compétence ni Bonus de temple), avec confirmation visuelle après clic.
-
-### Bloc 29 — Simulateur d'Équipement d'Expédition + renommage Stuff → Équipement de Combat ✅ **Terminé** (PR [#50](https://github.com/magicgg91/ML-Helper/pull/50), 424 tests verts)
-*Nouveau, retour joueur + données de jeu collectées. Indépendant du reste.*
-
-- **A — Référentiel Équipement d'Expédition enrichi** : les 10 stats sur 10 ont désormais un incrément par étoile confirmé (était 2/10) — valeurs par défaut éditables en admin, l'extrapolation aux raretés non-Légendaire n'étant pas elle-même confirmée. Coût de fusion en Terradust chargé comme 5 constantes indépendantes, confirmées (Commun 600, Rare 1100, Épique 2000, Mythique 4000, Légendaire 8000 — pas de doublement uniforme par palier contrairement au Combat). Confirmé : aucun emplacement de gemme sur l'équipement d'expédition, à aucune rareté.
-- **B — Helper `valueAtStar()` extrait et partagé** entre Combat et Expédition (élimine la duplication de `equipmentValueAtStar()`).
-- **C — Nouveau calculateur : Simulateur d'Équipement d'Expédition** (catégorie Compétences, `/tools`) — grille 2×3 (Cape/Longue-vue/Bourse en ligne 1, Boussole/Torche/Pioche en ligne 2), sans gemmes, sans plafond, résumé agrégé, localStorage indépendant, lien croisé vers le référentiel.
-- **D — Renommage** : "Simulateur de Stuff" → "Simulateur d'Équipement de Combat" ; "Comparaison/Comparateur de stuff" → "Comparateur d'Équipement de Combat" — libellé uniquement (next-intl), slug technique inchangé.
-- **E — Panneau de config Combat compacté** : en-tête "Gemmes (N emplacements)" retiré entièrement ; chaque ligne de gemme simplifiée en un seul libellé "Gemme N" (plus de titres séparés compétence/étoile/ligue par ligne).
-
-
-### Bloc 30 — Admin Guides : point d'édition manquant sur le référentiel Templiers ✅ **Terminé** (PR [#51](https://github.com/magicgg91/ML-Helper/pull/51))
-*Retour joueur. Indépendant du reste.*
-
-- Le référentiel Templiers (tableau admin Guides) n'avait pas de bouton "Modifier" — sa donnée sous-jacente (2 paramètres de formule `base`/`ratio`) n'a pas la forme `lookup_table` attendue par le pattern d'édition standard des référentiels.
-- Corrigé en pointant ce bouton vers `TemplarParametersEditor` (`/admin/tools/templars`), déjà utilisé par le calculateur Templiers — un seul point d'édition partagé, `requireCapability`/`authorizedSession` étendus pour accepter une liste de capacités (sémantique OR) afin qu'un `guides_manager` y accède sans `calculators.write`.
-- Bug connexe corrigé au passage : la route d'activation/désactivation avait une liste blanche codée en dur qui aurait renvoyé 404 pour Templiers aussi.
-- Audit confirmé : Combat/Expédition/Level Up restent de vraies `lookup_table` (pas le même trou) ; "Consommables" n'est pas un référentiel séparé (nom de stat d'Expédition), cohérent avec le fait qu'il n'a jamais été construit.
-
-### Bloc 31 — Renommages, suppression Comparateur, réordonnancement, Équipement d'Expédition, compacité Équipement de Combat, chevauchement Classement ✅ **Terminé** (PR [#52](https://github.com/magicgg91/ML-Helper/pull/52), 5 commits, A-J)
-*Nouveau, retour joueur. Indépendant du reste.*
-
-- **A** — Renommage libellé (next-intl, slug inchangé) : "Simulateur d'Équipement de Combat" → "Équipement de Combat" ; "Simulateur d'Équipement d'Expédition" → "Équipement d'Expédition".
-- **B** — Suppression complète du Comparateur d'Équipement de Combat (route, entrée admin, composants, tests — pas juste désactivé).
-- **C** — Nouvel ordre des outils, catégorie Compétences : Équipement de Combat, Équipement d'Expédition, Gemmes, Templiers.
-- **D** — "Récapitulatif des statistiques d'expédition" → "Récapitulatif des compétences d'expédition".
-- **E** — Équipement d'Expédition, 6 évolutions : boutons de filtre par famille (Personnalisé/Or/Équipement combat/Consommables/Troupes) avec **persistance indépendante par filtre** (5 configurations distinctes en localStorage) ; ordre des 10 compétences revu ; les 10 toujours affichées y compris à 0% ; disposition desktop 2×5 ; contribution de l'emplacement sélectionné entre parenthèses (même pattern que Combat).
-- **F** — Équipement de Combat : colonne récapitulatif réduite à ~50% de largeur.
-- **G** — Équipement de Combat : grille élargie, disposition de case en 2 colonnes internes (image+étoiles à gauche, gemmes empilées à droite).
-- **H** — Boutons de filtre compacts sur une seule ligne + couleurs sémantiques (famille/compétence), sur 4 écrans : Équipement de Combat, référentiels Équipements de Combat/Expédition, Gemmes.
-- **I** — Bouton de transfert de compétences (Bloc 28) déplacé sur la ligne de titre "Récapitulatif des compétences d'équipement".
-- **J** — Classement : correction du chevauchement de rang entre deux plages adjacentes — chaînage des plages (borne de départ = borne de fin de la plage précédente + 1), pour ne plus jamais partager un rang entre deux plages.
-
-### Bloc 32 — Admin Guides (3 corrections) + mentions légales + placeholders dashboard + refonte Équipement de Combat ✅ **Terminé** (PR [#53](https://github.com/magicgg91/ML-Helper/pull/53), 4 commits)
-*Retour joueur + testeur. Indépendant du reste.*
-
-- **A** — Admin Guides : bouton activer/désactiver Templiers restauré (routé via `/admin/tools`, `calculators.toggle` — pas la route référentiels, pour ne pas casser le correctif anti-escalade de privilèges du Bloc 30) ; boutons de filtre violets ; "Nouveau" déplacé sur la ligne de filtre.
-- **B** — Mentions légales : sélecteur de langue déplacé dans la barre d'actions.
-- **C** — Dashboard public : 2 placeholders "bientôt disponible" (Combat, Troupes ennemies), avant les 2 outils fonctionnels, dans l'ordre requis.
-- **D/E** — Refonte écran Équipement de Combat : cases en ligne unique restaurées, une seule famille affichée à la fois (structure de données inchangée — les 4 restent équipées/agrégées en parallèle), résumés par famille supprimés, résumé global toujours les 10 compétences par ordre alphabétique avec parenthèses sur la même ligne pour l'emplacement sélectionné, boutons de famille + bouton de transfert repositionnés sous le résumé ; ligne de filtre et parenthèses Expédition alignées sur le même modèle.
-
-### Bloc 33 — Retours testeur : accueil, thème, Coût de Ville, page Outils, bug Templiers ✅ **Terminé** (PR [#54](https://github.com/magicgg91/ML-Helper/pull/54), 10 commits, +938/-370, A-N)
-*Nouveau, retour testeur. Indépendant du reste.*
-
-- **A** — Accueil : catégories d'outils affichées directement (1 clic), section Guides/Référentiels en dessous. `/tools` et `/guides` restent inchangés et accessibles via la nav.
-- **B** — Thème : détection automatique de la préférence système (`prefers-color-scheme`) au lieu de sombre forcé par défaut ; bouton de bascule manuel inchangé.
-- **C** — Coût de Ville : fusion des 2 blocs de résultats en un seul bloc "Total" complet (Coût/VP/Production multipliés par le nombre de villes, Remparts non multiplié) — corrige une 1re version de la décision qui supprimait à tort des informations (Remparts) au lieu de fusionner.
-- **D** — Coût de Ville : sélection automatique au focus sur le champ niveau cible (prérempli à 2, actuellement il faut l'effacer manuellement) — vérifier et corriger aussi les autres champs numériques préremplis du site si le même problème existe.
-- **E** — Page Outils : texte "Ouvrir la catégorie" retiré des tuiles (toute la tuile est cliquable).
-- **F** — Page Outils : titre "Outils" retiré, sous-titre "Choisis ton domaine" → "Choisis ton outil", sur une seule ligne.
-- **G** — 🐛 Bug : activation de l'outil Templiers et du référentiel Templiers pas indépendantes (désactiver l'un désactive l'autre) — à corriger en gardant le partage des paramètres de formule et du point d'édition, mais avec 2 statuts actif/inactif distincts.
-- **H** — Équipement de Combat : bouton de transfert vers les Paramètres (repositionné au Bloc 32 sur la ligne des boutons de famille) affiné — aligné à droite sur cette ligne, couleur distincte en accent violet (au lieu du même style que les boutons de famille), surbrillance au clic.
-- **I** — Équipement de Combat : disposition du récapitulatif global — les 10 compétences occupent tout l'espace disponible, 2 lignes de 5 par défaut sur desktop (même principe qu'Équipement d'Expédition, Bloc 31 E.4), responsive selon la largeur d'écran.
-- **J** — Équipement d'Expédition : le bouton "Personnalisé" doit avoir une couleur distincte des 4 boutons de famille (Or, Équipement combat, Consommables, Troupes), puisqu'il ne correspond à aucune famille en particulier.
-- **K** — Équipement de Combat : le message de confirmation du bouton de transfert (Bloc 28) doit disparaître automatiquement après 5 secondes maximum, au lieu de rester affiché indéfiniment.
-- **L** — Niveau Max Atteignable : même traitement que Coût de Ville (point C) — fusionner les 2 blocs de résultats en un seul bloc "Total" complet, sans perte d'info. Vérifier contre le code réel (le cdc peut être incomplet sur la structure actuelle des outputs, comme ça l'était pour Coût de Ville).
-- **M** — Admin Guides : vérifier que "Tous" est bien sélectionné par défaut (censé être livré au Bloc 32, pas confirmé explicitement dans le résumé de PR).
-- **N** — Tous les outils désactivés/pas encore implémentés déjà visibles dans l'UI : le simple grisé ne suffit pas (retour testeur — clic sans effet, confusion). Ajouter un texte "Bientôt disponible" affiché en permanence, pas seulement au survol (invisible sur mobile). S'applique partout, pas seulement aux 2 placeholders Combat du Bloc 32.
-
-
-### Bloc 34 — Corrections mobile + accueil + thème ✅ **Terminé** (PR #55, branche `claude/ml-helper-bloc-34-mobile-home-theme`, 4 commits)
-*Nouveau, retour testeur. Indépendant du reste.*
-
-- **A** — Équipement de Combat, mobile : récapitulatif passe en 2 colonnes (5 lignes de 2), même comportement que le récapitulatif Équipement d'Expédition sur mobile (pas cohérent entre les deux outils actuellement). *(Vérifié en PR #55 : déjà correct depuis le Bloc 33, aucun changement nécessaire.)*
-- **B** — Équipement de Combat + Équipement d'Expédition, mobile : les boutons de sélection de famille passent sur 2 lignes au lieu de rester sur une seule ligne avec scroll horizontal (le scroll horizontal est indésirable sur ces 2 écrans).
-- **C** — 🐛 Bug introduit par le Bloc 33 (D) : la validation min/max en temps réel (à chaque frappe) sur le champ niveau cible empêche de taper un nombre à plusieurs chiffres commençant par un chiffre inférieur au minimum (ex: taper "100" quand le minimum est 2 — le "1" tapé en premier réinitialise le champ avant d'avoir pu continuer). Corriger en ne validant qu'au blur/à la soumission, jamais à chaque frappe. Vérifier tous les champs numériques avec contrainte similaire.
-- **D** — Accueil : le bloc hero (image défilante/carrousel + accroche "Prépare ta prochaine progression.") reste trop imposant, contradictoire avec l'objectif de rapidité de la refonte Bloc 33. Remplacé par une phrase d'introduction courte, sans carrousel, au-dessus de la grille de catégories.
-- **E** — Accueil : contenu précis de la section Guides/Référentiels — les 3 guides les plus récents (tri par date, pas de sélection éditoriale manuelle) + les 4 référentiels réellement construits (Combat, Expédition, Level Up, Templiers), même logique d'accès direct qu'avec les outils.
-- **F** — Thème sombre légèrement éclairci (2e retour dans ce sens) — ajustement léger de luminosité sur le fond bleu-nuit/anthracite déjà en place, pas un changement de teinte ni de palette.
-
-### Bloc 35 — Refonte des pages référentiels (public + admin) + alignement style admin transverse ✅ **Terminé** (PR #57, 525 tests, 90 fichiers)
-*Nouveau, retour testeur. Indépendant du reste. Regroupé par élément concerné (10 sections), chaque section précise son périmètre exact.*
-
-**Section 1 — [Tous les référentiels, public] :** 1.1 retrait "Consulter le référentiel" (tuile déjà cliquable) ; 1.2 bandeau de bascule entre référentiels ; 1.3 titre de page sur une seule ligne.
-
-**Section 2 — [Référentiel Combat + Expédition, public] :** 2.1 colonne image en 1ère position puis rareté, noms des sets traduits ; 2.2 retrait colonnes Pouciel/Terradust du tableau principal → tableau séparé par rareté.
-
-**Section 3 — [Référentiel Combat uniquement, public] :** 3.1 ordre des boutons de famille corrigé (Attaque, Défense, Or, Vitesse).
-
-**Section 4 — [Référentiel Expédition uniquement, public] :** 4.1 boutons de famille sans scroll horizontal (zone élargie) ; 4.2 coquille "Équipement d'expédition" → "Équipements d'expédition".
-
-**Section 5 — [Référentiel Expédition, admin] :** 5.1 grille pour les incréments (évite scroll horizontal) ; 5.2 nouvelle table Terradust au démantèlement (1 champ/rareté) ; 5.3 colonnes % réduites ; 5.4 ordre des colonnes (Famille, Rareté, Nom du set, Emplacement, Valeur stat primaire, Stat secondaire, Valeur stat secondaire) ; 5.5 titres dédiés pour les 3 tableaux.
-
-**Section 6 — [Référentiel Combat, admin] :** 6.1 retrait Pouciel/Gemmes → 2 tableaux dédiés par rareté ; 6.2 ordre des colonnes (Famille, Rareté, Nom du set, Emplacement, Compétence 1-4 + Valeur 1-4) ; 6.3 colonnes de valeur réduites.
-
-**Section 7 — [Référentiel Templiers, admin] :** 7.1 🐛 bug retour contextuel manquant sur `TemplarParametersEditor` (ramène toujours vers Outils, même depuis Guides).
-
-**Section 8 — [Outil Gemmes, admin] :** 8.1 colonnes réduites ; 8.2 tableau "prix d'achat" occupant la largeur disponible ; 8.3 en-têtes = nom de ligue seul ; 8.4 renommage "Prix d'achat des gemmes par ligue (en saphirs)".
-
-**Section 9 — [Outil Classement, admin] :** 9.1 largeur des colonnes numériques à ajuster.
-
-**Section 10 — [Tous les outils et référentiels, admin, transverse] :** 10.1 boutons d'enregistrement visibles partout ; 10.2 un seul bouton d'enregistrement dans un bandeau (retour/enregistrer/confirmation) ; 10.3 alignement global du style sur la référence Templiers ; 10.4 centrage des champs select/saisie.
-
-### Bloc 36 — Nouveau référentiel Gemmes + intégration des images de catégorie d'outils ✅ **Terminé** (PR [#58](https://github.com/magicgg91/ML-Helper/pull/58), 547 tests)
+### Bloc 60 — 7ᵉ référentiel : "Événement" (quêtes personnelles par ligue) ✅ **Terminé** (PR #81, 834 tests)
+*Note de livraison : validation locale complète documentée (tsc/eslint clean, Playwright réel). **2 correctifs de review Codex traités avant merge** : localisation FR/EN des paliers, et masquage des référentiels inactifs de la découverte publique (recherche/sitemap) — pas seulement de la nav.*
+*Nouveau. Indépendant du reste. Structure discutée en détail, exemple concret fourni (Légende/Recruteur, 7 paliers). Construit vide, toggle inactif par défaut — le joueur remplira progressivement.*
+
+- Structure à 3 niveaux : Ligue (sélecteur synchronisé Paramètres joueur) → liste d'Events **entièrement indépendante par ligue** (ordre + durée compris) → chaque event a un nom, un jour de début/fin, et un bloc repliable listant ses Paliers (nombre variable par event) → chaque palier = 2 champs texte libre (Objectif, Récompense), même principe que les récompenses de palier du référentiel Classement.
+- Admin : sélecteur de ligue, puis CRUD complet sur les events (ajout/suppression/réordonnancement, pattern Boutique) + CRUD imbriqué sur les paliers de chaque event (ajout/suppression/édition).
+- Slug : `/referentiels/events` (anglais). Libellé public : "Événement" (nom de travail, risque de confusion avec les events spéciaux de saison — à reconsidérer plus tard).
+- Rôle `references_manager` a accès complet, comme les 6 autres référentiels.
+- **Construit vide (aucune donnée de départ), toggle actif/inactif laissé sur inactif** — masqué du public jusqu'à ce que le joueur ait assez de contenu pour l'activer lui-même.
+
+### Bloc 61 — Sélecteur de ligue en boutons : référentiel Level Up + outil Classement ✅ **Terminé** (PR #80)
 *Nouveau. Indépendant du reste.*
 
-**A — Nouveau référentiel Gemmes**
-- Nouveau référentiel `/guides/referentiels/gems`, 5ᵉ référentiel réellement construit.
-- 1 tableau, 6 colonnes (Bronze/Argent/Or/Platine/Diamant/Légende), 11 lignes : coût en saphirs (ligne 1, Bronze non applicable) + 10 compétences par ordre alphabétique avec valeurs `y` déjà verrouillées.
-- Image de gemme par cellule (60 images déjà en place dans `public/gems`, 1 par compétence × ligue).
-- Lien croisé avec le calculateur Gemmes.
-- Point d'édition admin partagé avec le calculateur Gemmes (même principe que Templiers) — construit correctement dès le départ : statuts actif/inactif indépendants, retour contextuel (Guides→Guides, Outils→Outils) — pour éviter les 2 bugs déjà rencontrés sur ce pattern côté Templiers (Blocs 30 et 35).
+### Bloc 62 — Admin Boutique (alignement + gras) + tri alphabétique admin + retours Classement + image Événement + bandeau référentiels/outils ✅ **Terminé** (PR #82, 862 tests)
+*Nouveau. Indépendant du reste. Fusionne l'ancien Bloc 63.*
 
-**B — Intégration des 4 images de catégorie d'outils**
-- 4 images générées par IA, validées par le joueur, déposées dans `public/tools/` (**cities.webp, fight.webp, ranking.webp, skills.webp** — noms en anglais, cohérent avec AGENTS.md).
-- Remplacent le placeholder/icône actuel des tuiles de catégorie, sur l'accueil ET sur `/tools` (un seul point de résolution du chemin, pas de duplication).
-- Repli propre si un fichier manque (même principe qu'équipements/gemmes, cdc section 11).
-- **Décision structurelle associée** : `public/tools/` et `public/guides/` comme 2 dossiers racine distincts pour les assets images — `public/guides/` réservé pour les futures illustrations de guides (structure exacte pas encore définie).
+- **A** — 🐛 Boutons de la colonne Actions (Bloc 53) actuellement empilés verticalement — doivent être alignés horizontalement, côte à côte.
+- **B** — Support d'un texte en gras dans les champs Nom/Description des tableaux (Intro + 4 catégories) — syntaxe `**gras**`, via un simple regex dédié à ces champs (pas la bibliothèque markdown complète/`rehype-raw` du Bloc 58/56, juste le gras). Rendu identique admin/public.
+- **C** — Tri alphabétique (par nom affiché, langue active EN/FR) des entrées sur `/admin/tools` ET `/admin/referentiels` — remplace l'ordre actuel (probablement ordre d'insertion), pour un repérage plus rapide.
+- **D** — [Outil Classement, retour post-Bloc 61] Barre de filtre/saisie : label "Ligue" manquant au-dessus des boutons de ligue. 2 options, au choix de l'implémentation la plus cohérente avec l'existant : (a) ajouter le label "Ligue" au-dessus des boutons, pour matcher les 2 autres champs (% et rang) ; (b) retirer tout label au-dessus des 3 champs, et à la place mettre le libellé de chaque champ juste avant le champ lui-même (inline), de façon cohérente sur les 3.
+- **E** — [Outil Classement] Renommer "Nombre total de joueurs (déduit)" → "Nombre total de joueurs" (retirer le qualificatif — confirmé malgré la marge d'erreur trouvée au point G).
+- **F** — [Outil Classement] Badge conservé, mais intégré visuellement à l'échelle visuelle existante plutôt que d'occuper un espace dédié séparé (pas de solution précise imposée, au choix de l'implémentation la plus naturelle). Retirer aussi le titre "Échelle visuelle" (`visual-scale`) — la zone reste, seul le titre disparaît.
+- **G** — 🐛 Règle d'arrondi précisée par le joueur (corrige le diagnostic initial) : toutes les lignes de palier utilisent l'arrondi vers le bas SAUF la ligne 100% (nombre total de joueurs), qui doit utiliser `Math.ceil` (arrondi vers le haut) — actuellement elle utilise aussi l'arrondi vers le bas, à tort. Exemple exact : rang 137, 86,71% → brut 157,998 → attendu 158 (ceil), affiché 157 (bug). Corriger uniquement la ligne 100%, ne pas toucher aux autres lignes (déjà correctes). Le badge "total calculé" doit utiliser la même règle `Math.ceil` (pas `Math.round`, les deux coïncident dans cet exemple mais divergeraient ailleurs).
+- **H** — `referential-events.webp` déposée dans `public/referentials/` (même dossier que les 7 autres images de référentiel) — remplacer le placeholder actuel de la tuile Événement (accueil + page `/referentiels`) par cette image, même traitement que les autres (`aspect-ratio: 1`, repli si fichier absent).
+- **I** — Bandeau de bascule référentiels (nav de section, Bloc 50) trop chargé avec 7 référentiels. [Desktop uniquement, mobile déjà OK] 4 référentiels par ligne max, 2ᵉ ligne au-delà. Ordre alphabétique. **⚠️ Nuance avec la règle du Bloc 60** (masquage complet de la découverte externe/SEO) : ce bandeau doit au contraire afficher aussi les référentiels inactifs, avec astérisque de couleur + "Bientôt disponible" en couleur — visible mais non cliquable (cohérent avec le pattern outils, point J).
+- **J** — Renforcer le pattern "Bientôt disponible" (Bloc 33) : tous les outils désactivés/pas encore disponibles affichent un astérisque de couleur en plus du texte "Bientôt disponible", lui aussi en couleur (au lieu du texte simple actuel) — même traitement que le bandeau référentiels (I), partout où le pattern Bloc 33 s'applique déjà (nav, dashboard, `/tools`).
 
-### Bloc 37 — Retours de test sur le Bloc 35 (admin + public) ✅ **Terminé** (PR [#59](https://github.com/magicgg91/ML-Helper/pull/59), 562 tests, 3 commits)
-*Nouveau, retour de test. Indépendant du reste.*
+### Bloc 63 — Revue mobile d'autres pages à tableaux (hors outils Villes) ⏳ **En attente de la liste précise des pages, pas encore prêt à envoyer**
+*Périmètre resserré (01/09/2026) — les outils Villes sont traités séparément (voir "Gros chantiers en attente", refonte tuiles Villes, qui couvre aussi bien desktop que mobile).*
 
-- **A** — [Tous les outils et référentiels, admin] Colonnes de valeurs numériques encore trop larges malgré le correctif Bloc 35 — réduction insuffisante, à resserrer davantage.
-- **B** — [Référentiel Expédition uniquement, admin/public] Le correctif "zone élargie" du Bloc 35 a suréagi — les filtres (select box) s'étirent sur toute la largeur disponible. Les dimensionner à leur contenu, pas en largeur 100%.
-- **C** — [Référentiel Expédition uniquement, admin] La grille des incréments par étoile (Bloc 35) provoque un chevauchement des cases. Basculer sur 2 lignes plutôt que la grille actuelle. Terradust et coût de fusion (2 autres tableaux du même écran) sont corrects, ne pas y toucher.
-- **D** — [Référentiel Combat uniquement, admin] Même symptôme que B : filtres de famille en select box trop longues, à dimensionner à leur contenu.
-- **E** — [Référentiel Combat + Expédition, admin] Le bandeau unique retour/enregistrer (Bloc 35) n'est pas encore correct sur ces 2 écrans, qui ont plusieurs tableaux par page (Combat : principal + Pouciel + Gemmes ; Expédition : incréments + Terradust + coût de fusion). Le bandeau doit être en haut de page, avec un seul bouton qui enregistre l'ensemble des tableaux en une seule action.
-- **F** — [Outil Gemmes uniquement, admin] Cases trop petites après la réduction du Bloc 35 (scroll horizontal bien résolu). Augmenter la taille des cases d'environ 50%.
-- **G** — [Référentiel Combat uniquement, public + admin] Affichage trompeur "À compléter en admin" pour les équipements à moins de 4 compétences. Ajouter un choix "Rien" dans le sélecteur admin (distinct de "non renseigné") → affichage public "—" au lieu de "À compléter en admin".
-- **H** — [Référentiels Combat + Expédition, public] Compétence/valeur sur la même ligne (au lieu de nom puis valeur en dessous).
-- **I** — [Référentiels Combat + Expédition, public] Retrait de la barre de recherche ; filtres redimensionnés : Famille 1/3, Rareté 1/3, niveau d'étoile 20% aligné à droite ; hauteur du sélecteur d'étoile alignée avec Famille/Rareté.
-- **K** — [Page d'un référentiel, public] Style du bandeau de bascule entre référentiels aligné exactement sur le bandeau de boutons de famille utilisé à l'intérieur d'un outil (ex: Équipement de Combat/Expédition) — pas sur les tuiles de catégorie de la page Outils/Accueil.
+- Sans impact sur le rendu desktop. **✅ Confirmé : Templiers, Gemmes et Boutique sont OK desktop ET mobile**, sortent de cette liste.
+- Reste potentiellement : référentiel Level Up/Progression, et/ou des écrans admin à tableaux.
+- **Pas encore assez d'information pour envoyer ce bloc** — liste précise toujours en attente du joueur.
 
-### Bloc 38 — Retours de test Gemmes/référentiels + accueil/Outils + cohérence images + admin ✅ **Terminé** (PR [#60](https://github.com/magicgg91/ML-Helper/pull/60), 584 tests, 6 commits)
-*Découverte pendant le travail : R n'était pas un bug (déjà correctement stylé, confirmé par capture avant/après) ; L (titres tronqués) avait pour vraie cause une règle CSS générique `.public-main > h1` écrasant la taille de police des titres par spécificité, sur Outils ET tous les référentiels — corrigée.*
-*Nouveau, retour de test. Indépendant du reste.*
-
-- **A à F** — [Référentiel Gemmes uniquement, public] 6 corrections retour de test : largeur des colonnes de ligue strictement identique ; image de gemme agrandie à 3rem (au lieu de 2,2rem) ; % affiché à côté de l'image, pas en dessous ; titre et contenu des colonnes centrés ; 🐛 ne pas simplifier le coût en k/M pour ce référentiel (afficher "3000", pas "3K") ; 🐛 bug de traduction anglais des compétences — mapping exact déjà verrouillé dans le cdc (Attaque=Striker, Défense=Guardian, Bravoure=Brave, Prospérité=Prosperous, Vitesse=Rusher, Récupération=Cautious, Intrépide=Fearless, Recruteur=Recruiter, Charognard=Scavenger, Recycleur=Salvager) à respecter exactement.
-- **G** — [Référentiels Combat + Expédition, public] Uniformiser la taille des images d'équipement à 3rem, même taille que l'image de gemme (point B) — cohérence visuelle entre les 3 référentiels.
-- **H** — [Page Outils/Accueil, public] Div conteneur de l'image de catégorie (`.tool-category-image`) en `aspect-ratio: 1` (carré strict).
-- **I** — [Accueil, public] Espacement excessif entre la phrase d'intro et la grille d'outils — classe `.home-tools`, `margin-top` à diminuer de moitié.
-- **J** — [Accueil, public] La phrase d'intro Guides se casse avec "sereinement" isolé sur la 2e ligne — à corriger (largeur, reformulation ou césure choisie).
-- **K** — [Page Outils, public] Unifier avec l'accueil : "Choisis ton outil" → "Décide avec les bons chiffres" ; ajouter la même phrase d'intro que l'accueil ("Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.").
-- **L** — [Tous les référentiels, public] Titres de page tronqués — réduire la taille de police du titre et/ou élargir la largeur du bloc conteneur.
-- **M** — [Référentiel Level Up uniquement, public] Tableau à aligner sur le style déjà utilisé par Coût des Templiers et Gemmes (qui partagent déjà un style cohérent entre eux) — pas une amélioration isolée. Points à répliquer : alternance de couleur de ligne (blanc/gris clair), encadrement (bordure), séparation visuelle claire entre les 2 colonnes de tableaux (disposition en 2 paires Niveau/Valeur côte à côte).
-- **N** — [Accueil/Guides, public] Grille de référentiels : préciser 4 colonnes maximum par ligne (pas de nombre de colonnes variable) — avec 5 référentiels, 4 sur la 1ère ligne + 1 sur la 2ᵉ.
-- **O** — [Accueil/Guides + page Outils, public] Intégrer les 5 images de vignette référentiel déposées dans `public/referentials/` (remplacent les placeholders), avec `aspect-ratio: 1` comme les images de catégorie. ⚠️ Corriger `referentials-temples.webp` → `referential-temples.webp` (incohérence de pluriel) avant intégration.
-- **P** — [Tous les outils et référentiels, admin] Retirer les flèches d'incrément/décrément sur les champs de saisie numériques — saisie clavier uniquement.
-- **Q** — [Référentiels Combat + Expédition uniquement, admin] Doubler la largeur des blocs de saisie numériques (~2× la largeur actuelle) — les champs eux-mêmes, pas les colonnes déjà resserrées.
-- **R** — [Page d'un référentiel, public] 🐛 Régression : le correctif du Bloc 37 point K (style du bandeau de bascule aligné sur le bandeau de famille des outils) ne produit aucun changement visible, testé avec cache vidé. Investiguer concrètement (vérifier le bon sélecteur/composant ciblé) plutôt que réappliquer aveuglément — capture avant/après à l'appui dans le rapport de PR.
-
-### Bloc 39 — Référentiels Combat/Expédition : passage du tableau aux tuiles ✅ **Terminé** (PR #61)
-*Notes de livraison : nombre de gemmes par tuile lu depuis `gemSlotsBase` (admin-editable), pas le champ statique `row.gem_slots` — cohérent avec le tableau récap en dessous. Accessibilité : `aria-label` complet par tuile (famille + rareté + set + emplacement) et indice pour lecteur d'écran sur les blocs estompés, sans badge visible — le codage couleur-seule (rareté/famille) était le choix de design assumé du bloc, pas un oubli d'accessibilité à corriger visuellement.*
-
-*⚠️ Retiré (Bloc 83, PR #100) — le badge "nombre de gemmes" en haut à droite de la tuile Combat a été supprimé : les joueurs le percevaient comme un coût Pouciel mal étiqueté "gemmes", jamais demandé, redondant avec le tableau "Pouciel & Gemmes" fusionné (Bloc 75) plus bas sur la page. La bullet ci-dessous ("nombre de gemmes sur Combat uniquement") ne s'applique plus — la tuile Combat n'affiche plus que l'emplacement, l'image et les compétences.*
-
-- Une tuile par équipement, 6 de large, blocs complets par set (3×3 Combat, 3×2 Expédition), même ordre d'emplacements que les simulateurs.
-- Tuile : fond/bordure couleur rareté, image à gauche, nom d'emplacement en haut en couleur de famille, compétences+% empilées à droite (4 lignes Combat, 2 lignes Expédition, valeurs base 1★), ~~nombre de gemmes sur Combat uniquement (si applicable)~~ retiré (Bloc 83).
-- Famille et rareté : filtrables + indiqués sur la tuile. Filtre étoile retiré (+ calculs associés). Pas de filtre gemmes. Pas de recherche pour l'instant.
-- Mobile : à tester empiriquement, démarrer à 1 colonne, tenter 2 si lisible.
-
-
-### Bloc 40 — Correctifs référentiels : bandeau, admin Expédition, tuiles Combat/Expédition ✅ **Terminé** (PR #62, 601 tests, 4 commits)
-*Notes de livraison : A — bandeau réutilise `category-nav`/`category-btn`, pleine largeur au lieu de pills. B — tables Expédition passées en grille fluide. C — `.reference-admin-narrow` 3,25rem → 6,5rem. D/E/F — filtres cumulatifs, tout sélectionné par défaut, masquage réel au DOM. G — texte centré. H — `.reference-tile-skills` → 0,69em.*
-*Nouveau, retour de test. Indépendant du reste.*
-
-- **A** — [Page d'un référentiel, public] 🐛 Le bandeau de bascule référentiels s'affiche en rangée de boutons individuels, pas en bandeau pleine largeur comme le bandeau outils depuis la page d'un outil — corriger structurellement (conteneur/layout, pas juste les classes de bouton). Réouvre une conclusion "déjà correct" du Bloc 38, incomplète.
-- **B** — [Référentiel Expédition uniquement, admin] Scroll horizontal toujours présent sur le tableau coût de fusion ET le tableau Terradust au démantèlement — doivent occuper toute la largeur disponible, sans scroll.
-- **C** — [Référentiels Combat + Expédition, admin] Doubler à nouveau la largeur des champs numériques de valeurs de stats/compétences — le doublement du Bloc 38 ne suffit pas encore pour ces champs précis.
-- **D** — [Tuiles référentiels Combat/Expédition, public] Toutes les tuiles affichées par défaut, couleur de rareté normale (pas de surbrillance/ombrage par défaut).
-- **E** — [Tuiles référentiels Combat/Expédition, public] Toutes les familles sélectionnées par défaut. Rareté cumulative comme famille (multi-sélection).
-- **F** — [Tuiles référentiels Combat/Expédition, public] Désélectionner un filtre (rareté ou famille) masque complètement les tuiles correspondantes — annule le comportement "surbrillance/ombrage" livré au Bloc 39.
-- **G** — [Tuiles référentiels Combat/Expédition, public] Le texte des compétences doit être centré sur sa colonne au sein de la tuile.
-- **H** — [Tuiles référentiel Expédition uniquement, public] 🐛 "Consommables" et son % doivent tenir sur la même ligne (actuellement retour à la ligne). Correctif fourni : classe CSS `.reference-tile-skills` à `0,69em`. Pas de souci côté Combat.
-
-### Bloc 41 — Ordre des familles, correctifs grille tuiles, admin Combat ✅ **Terminé** (PR #63, 608 tests, 5 commits)
-
-- Ordre familles Combat : Attaque, Défense, Or, Vitesse (déjà l'ordre acté ailleurs sur le site).
-- Ordre familles Expédition : Or, Équipement combat, Consommables, Troupes (déjà l'ordre des boutons de filtre acté au Bloc 31).
-- S'applique à la fois à l'ordre des boutons de filtre ET à l'ordre d'affichage des blocs de set dans la grille de tuiles.
-- 🐛 Un set isolé en fin de grille (après filtrage, nombre de sets impair) s'étire sur toute la largeur au lieu de garder sa taille normale (50% de la grille, 3 colonnes sur 6). Corriger via une grille à colonnes fixes, pas de flex-grow sur le dernier élément.
-- ✅ Bandeau de bascule référentiels confirmé bon par test réel (Bloc 40). Petit ajustement : ajouter un espace vertical entre ce bandeau et les tableaux/tuiles de données qui suivent.
-- [Référentiel Combat uniquement, admin] Réordonner les tableaux : Pouciel et nombre de gemmes (Bloc 35, point 6.1) en premier, avant le tableau principal des compétences.
-- [Référentiel Combat uniquement, admin] Limiter la largeur des champs numériques sur ces 2 tableaux (Pouciel, Gemmes) — actuellement trop larges, provoquent un retour à la ligne par rangée et un scroll vertical excessif de la page.
-
-
-### Bloc 42 — Correctifs audit + guides non traduits + qualité transverse (composant partagé, testid, SEO) ✅ **Terminé** (PR #68, 668 tests ; point E laissé de côté, à discuter plus tard)
-*Fusionne l'audit du 29/08, l'ancien Bloc 45 (guides + largeur admin Consommables), et 3 nouveaux points de qualité transverse. Le bug Platine (+2 au lieu de +1 point/niveau) a déjà été corrigé pendant l'audit lui-même (commit `bdec46f`), pas repris ici.*
-
-**Issu de l'audit (29/08/2026) :**
-- **A** — Implémenter le coût de fusion en Pouciel pour l'Équipement de Combat (`combatMergeCost`, formule `K(rareté) × 2^(n−1)`, K=20/40/80/160/320 — verrouillée depuis longtemps, jamais construite). Même principe que `expeditionMergeCost()` déjà existant côté Expédition, tableau public par rareté à créer en miroir.
-- **B** — Level Up : ajouter Argent au type `LevelUpParameters["troops"]` et un champ de saisie dans l'éditeur admin (actuellement juste un texte "non confirmé", aucun champ) — conforme à la règle AGENTS.md sur les données non confirmées restant éditables.
-- **C** — Corriger `--gold` utilisé à tort pour le bouton de filtre famille "Or" (réservé au Légendaire par son propre commentaire de code) — remplacer par une couleur de famille distincte, cohérente avec le thème clair/sombre.
-- **D** — Nettoyer la clé de traduction orpheline `Navigation.admin` (présente en EN, absente en FR) — clé morte, sans usage en production détecté.
-- **E** — ⏸️ Mis de côté, à rediscuter plus tard (retiré de la portée immédiate du bloc) : Simulateur d'Équipement d'Expédition, indicateur visuel discret sur les raretés non-Légendaire pour signaler les incréments extrapolés — rien n'est encore tranché.
-
-**Guides + admin Consommables (ex-Bloc 45) :**
-- **F** — Guides : placeholder visible si un guide n'a pas de contenu dans la langue active (toute langue, y compris FR/EN entre eux) — plutôt que le repli silencieux. Portée limitée au contenu des guides, le reste garde le repli silencieux EN.
-- **G** — [Admin uniquement] Zone markdown Consommables trop large — **vraie cause trouvée** : le tableau affiche Nom(FR)/Nom(EN)/Description(FR)/Description(EN) en colonnes séparées simultanément. **Correctif de fond** : le sélecteur de langue déjà en haut de page doit piloter aussi les colonnes du tableau (n'afficher que la langue active), pas juste la zone markdown — passe le tableau de 6 à 4 colonnes. `overflow-x: auto` en sécurité complémentaire, plus la seule réponse.
-
-**Qualité transverse, nouveaux points :**
-- **H** — Composant/classe CSS partagé pour les champs numériques compacts d'admin, appliqué rétroactivement sur tous les écrans existants — le même problème de largeur a été corrigé indépendamment 5 fois (Combat, Expédition, Gemmes, Classement, Consommables), à chaque fois après coup.
-- **I** — Attributs `data-testid` stables sur les éléments interactifs clés (filtres, lignes de tableau, champs, boutons), migration progressive des tests e2e depuis le texte/la structure DOM — priorité aux écrans les plus souvent refondus.
-- **J** — SEO de base : `sitemap.xml` dynamique (5 langues), meta description par page (jamais vide), `hreflang` sur chaque page. Analytics (Umami, code de suivi au moment de la mise en public) et sauvegarde base (gérée manuellement) hors périmètre.
-
-**Hors bloc, actions manuelles du joueur (pas des tâches Codex)** :
-- Reporter en admin les 21 lignes (7 sets) d'Équipement de Combat désormais confirmées (Bard, Journeyman, Thief, Adventurer, Knight, Shopkeeper, Soldier).
-- Confirmer/compléter Classement Platine (palier 75% toujours absent).
-
-### Bloc 43 — Nouveau référentiel Consommables ✅ **Terminé**
-*Slug public : `/guides/referentiels/consommables` (français — corrigé en review Codex PR #66/commit `7506da6` après un 1er essai en anglais au Bloc 43 ; identifiants internes/fichiers/routes API/clés DB restent en anglais). 38 lignes livrées (28 objets + 10 lignes de palier de quantité), traduites en EN. Les 4 objets sans coût confirmé (Renommer ville/clan, Nouveau départ, Changement de ville principale) laissés vides plutôt qu'inventés. **Autres correctifs de review (PR #66)** : sauvegarde unique pour intro+tableau (au lieu de 2 boutons séparés) ; repli fr→en manquant pour DE/ES/TR corrigé ; le champ "Category" suggéré par le bot de review n'existe dans aucune spec — non implémenté, fil de discussion laissé ouvert plutôt que d'inventer.
-
-- Nouveau référentiel `/guides/referentiels/consommables`, 6ᵉ référentiel réellement construit.
-- Page publique en 2 zones : texte libre éditable en markdown (icônes Saphirs/Inventaire, texte devises d'événement) + tableau des 28 objets en dessous.
-- CRUD complet en admin (ajout/suppression libre de lignes) — différence structurelle avec les autres référentiels au catalogue fixe.
-- Conseillers inclus. Coûts en saphirs jamais compactés (règle générale, cdc section 3.3).
-- Cas particulier : "Changement de ville principale" (1er gratuit, puis payant) — pas un prix fixe, à traiter en description plutôt qu'en colonne coût.
-- 4 objets encore sans coût chiffré (Renommer ville, Renommer clan, Nouveau départ, Changement de ville principale) — champ vide, éditable en admin.
-- Paliers de quantité (×5, ×10) : objets distincts plutôt qu'une colonne agrégée (ex: "Coffre" et "Coffre ×5" séparés) — 1 colonne coût unique côté public.
-- Réordonnancement des lignes en admin par flèches monter/descendre d'1 position (pas de glisser-déposer, pas de raccourci haut/bas).
-
-### Bloc 44 — Activer Allemand/Espagnol/Turc au niveau du code ✅ **Terminé** (PR #66, 638 tests)
-*Notes de livraison : `getAvailableLocales()` lisait déjà `messages/*.json` dynamiquement, le vrai travail a été de généraliser tous les endroits codés en dur sur fr/en (`launchLocales`, `services/guides.ts`, éditeurs mentions-légales/intro-Consommables). **Bugs trouvés et corrigés en review Codex (commit `7506da6`)** : (1) chaîne vide explicite cassait le repli EN (clé vide ≠ clé absente) — corrigé ; (2) repli fr→en manquant pour DE/ES/TR — corrigé ; (3) slug public Consommables livré en anglais par erreur — recorrigé en français (`consommables`), identifiants internes restent en anglais ; (4) sauvegarde intro+tableau unifiée en une seule action. **✅ Traductions complétées (30/08/2026)** : les 27 clés ajoutées par le Bloc 43 (admin.references.*, references.consommables.*) traduites en DE/ES/TR — parité stricte 794/794 confirmée contre le en.json à jour, aucun écart de placeholder, formes plurielles ICU valides.*
-
-- Ajouter DE/ES/TR à la config next-intl (routing, middleware).
-- Sélecteur de langue public + bascule de langue admin : 5 langues disponibles.
-- Vérifier le mécanisme de repli EN et l'absence de liste de langues codée en dur limitée à EN/FR.
-- Pas de contenu à construire (guides, mentions légales) dans cette tâche — activation technique uniquement.
-
-### Bloc 46 — Référentiel Consommables : images, réordonnancement, catégorisation ✅ **Terminé** (PR #69, 652 tests)
-*Nouveau. Indépendant du reste. Le point catégorisation fait écho à un fil de discussion resté ouvert au Bloc 43 (champ "Category" suggéré par la review Codex, non implémenté à l'époque faute de base spec).*
-
-- **A** — [Public] Images agrandies à 5rem (au lieu de la taille actuelle) — différent des 3rem déjà actés pour les images d'équipement/gemmes (Bloc 38), propre à ce référentiel.
-- **B** — [Admin] Boutons de réordonnancement "Move up"/"Move down" (Bloc 43) → icônes flèches (↑/↓) plutôt qu'en texte. Comportement inchangé, rendu visuel seul.
-- **C** — Nouvelle catégorisation, 4 catégories : Expédition, Conseillers, Équipement (coffres/coffrets/urnes/jarres), Inventaire (le reste). Admin : sélecteur de catégorie par consommable, à l'ajout et à l'édition. Public : ligne de boutons de filtre (même principe que famille/rareté) + colonne dédiée dans le tableau.
-
-### Bloc 47 — Sélecteur de langue public : select stylé + détection navigateur ✅ **Terminé** (PR #70, 698 tests)
-*⚠️ Clôture déduite du contexte (Bloc 48 remplace le `<select>` natif livré ici par une listbox custom, ce qui implique que ce bloc était déjà mergé) — pas de confirmation explicite reçue à l'époque, à corriger si erroné. Migration `middleware.ts` → `src/proxy.ts` (Next.js 16). Bug réel corrigé au point D : `localizedText()`/`pickLocaleText()` repliaient sur le français avant l'anglais.*
-*Nouveau. Indépendant du reste. Annule la règle "pas de select pour la langue" (posée à l'origine pour 2 langues, plus tenable à 5).*
-
-- **A** — Remplacer les boutons de langue publics par un `<select>` — stylé pour matcher l'esthétique des boutons actuels, pas un rendu natif brut du navigateur.
-- **B** — Détection de la langue du navigateur au premier chargement (parmi les 5 supportées, repli `defaultLocale=fr` sinon), puis persistance du choix (détecté ou modifié manuellement) en localStorage — même principe que la détection de thème (Bloc 34, point B).
-- **C** — `AdminLocaleToggle` (langue de l'interface admin elle-même — menus/boutons/libellés) restreint à EN/FR uniquement, retour en arrière sur l'extension à 5 langues du Bloc 44. **Ne pas confondre avec** les sélecteurs de langue par contenu éditorial (guides, mentions légales, intro Consommables), qui gardent bien les 5 langues — c'est leur contenu qui est vu du public. Les traductions DE/ES/TR déjà faites pour `admin.*` restent en fichier (inoffensif), juste inutilisées.
-- **D** — 🐛 Retour testeur : le repli anglais côté public affiche du français au lieu de l'anglais — même confusion `defaultLocale` (fr) vs filet de sécurité (doit être anglais) déjà corrigée pour un cas précis en admin au Bloc 44, pas généralisée à toute la partie publique. Vérifier l'ensemble du mécanisme (texte fixe + contenu dynamique JSON par locale) et corriger.
-
-### Bloc 48 — Référentiel Boutique (ex-Consommables) : 4 tableaux, correctifs, renommage ✅ **Terminé** (PR #71, 722 tests)
-*Notes de livraison : A/C vérifiés en navigateur réel avec captures, comme explicitement demandé. **3 découvertes en cours de route** : (1) bug `site-search.ts` (slug/calculatorSlug divergents, aurait dupliqué l'entrée Boutique en recherche) — corrigé ; (2) review Codex a trouvé les potions pas re-hébergées dans le chemin de lecture "grouped-shape" — corrigé avant merge ; (3) 4 specs e2e cassées par le passage `<select>` natif → listbox custom — corrigées. Merge propre, aucun fil ouvert.*
+### Bloc 64 — Tri public référentiels/outils + Boutique en tuiles + retrait aperçu admin + Level Up/Templiers + revirements Classement ✅ **Terminé** (PR #83, 871 tests)
+*Notes de livraison : **G** — bug caché trouvé uniquement par capture d'écran réelle, pas par les tests (largeur `13rem` figée du Bloc 62 qui écrasait le stepper % à 6px une fois le label passé inline) — corrigé, 84px à toutes les largeurs testées (1400→375px). **B** — retrait complet du point d'extension `EditableColumn.preview`, pas juste ses 2 usages. **D/E** — réutilisation propre : `.split-reference-tables` partagée plutôt que dupliquer la grille Level Up, sélecteur `nav-button` étendu plutôt que recopié. **A** — le tri couvre aussi les sections teaser de l'accueil, composants partagés avec les pages dédiées.*
 *Nouveau. Indépendant du reste.*
 
-**A — 🐛 Régression réouverte (marquée livrée au Bloc 42/PR #68, toujours présente)** : admin édition Consommables, le tableau affiche encore Nom(FR)/Nom(EN)/Description(FR)/Description(EN) en colonnes séparées au lieu de suivre le sélecteur de langue en haut de page. Repartir de zéro, vérifier en navigateur avant de redéclarer livré.
+- **A** — Tri alphabétique des tuiles côté public, sur `/tools` ET `/referentiels` (complète le tri admin du Bloc 62).
+- **B** — [Admin Boutique] Retirer l'aperçu rendu affiché sous les champs Nom/Description (gras, Bloc 62/B) — prend de la place inutilement, vérification faite directement sur la page publique.
+- **C** — Remplacer les 4 tableaux de catégorie Boutique (public uniquement, pas l'admin ni le tableau Intro) par des grilles de tuiles : 2 de large sur desktop, 1 colonne mobile. Image à gauche (5rem, Bloc 46), à droite nom en gras puis description. **✅ Tarif confirmé : badge en haut à droite de la tuile, aligné avec le nom.**
+- **D** — [Référentiel Level Up] Styliser les contrôles de pagination (Précédent/Suivant/page) comme les boutons de navigation déjà utilisés ailleurs sur le site (ex: sélecteur de ligue en boutons, Bloc 61) — remplace le rendu par défaut actuel.
+- **E** — [Référentiel Templiers] Afficher le tableau en 2 colonnes × 10 lignes, dans le style déjà utilisé par Level Up (2 paires de colonnes Niveau/Valeur), mais figé à 10 lignes par colonne, pas de pagination (20 lignes au total).
+- **F** — [Tuiles Boutique] Couleur des tuiles en gris, tarif en saphirs en violet (couleur d'accent du site).
+- **G** — 🚨 [Outil Classement] Revirement : "Nombre total de joueurs" → "Nombre estimé de joueurs" (annule le renommage du Bloc 62, réintroduit un qualificatif différent).
+- **H** — 🚨 [Outil Classement] Confirmation : option (b) du Bloc 62/D retenue — libellé de chaque champ (Ligue, %, rang) placé juste avant le champ lui-même, pas de label au-dessus. Corriger si l'option (a) a été implémentée à la place.
 
-**B — Révision structurelle de la catégorisation (Bloc 46)** : 4 tableaux séparés par catégorie (Expédition, Conseillers, Équipement, Inventaire) au lieu d'un tableau unique avec select + colonne Type.
-- Public : 4 tableaux titrés, filtres masquent complètement le tableau correspondant (même principe que Combat/Expédition, Bloc 41).
-- Admin : même structure en miroir, bouton "Ajouter" propre à chaque tableau (catégorie implicite, plus de select), suppression par ligne, réordonnancement scopé par catégorie.
-- Migrer les données déjà catégorisées au Bloc 46 dans le bon tableau.
-
-**C — 🐛 Sélecteur de langue public (Bloc 47) s'ouvre dans le mauvais sens** : le style est bon, mais la liste s'ouvre à l'emplacement de l'option sélectionnée (comportement natif du `<select>`, variable selon navigateur/OS) — parfois vers le haut avec scroll vertical de la page. Doit toujours s'ouvrir vers le bas. ⚠️ Un `<select>` natif ne permet pas de contrôler ça fiablement — remplacer par un menu déroulant personnalisé (listbox custom, accessible clavier) probablement nécessaire.
-
-**D — Ordre des 4 tableaux de catégorie : alphabétique** — Conseillers, Équipement, Expédition, Inventaire. S'applique à l'ordre des tableaux ET des boutons de filtre (synchronisés). À l'intérieur de chaque catégorie, l'ordre reste celui défini en admin (flèches, scopées par catégorie) — l'alphabétique ne concerne que les 4 catégories entre elles.
-
-**E — Donnée : les 3 potions (25/50/75 PV) vont dans la catégorie Expédition**, pas Inventaire.
-
-**F — Renommage complet "Consommables" → "Boutique"** — libellé public partout (titre, nav, tuiles, liens croisés) + URL `/guides/referentiels/consommables` → `/guides/referentiels/shop`. Changement direct, pas de redirection (pas encore de trafic indexé à préserver). Identifiants internes (fichiers, routes API, clés DB) inchangés.
-
-### Bloc 49 — Référentiel Boutique, admin : bouton Ajouter en icône + confirmation de suppression ✅ **Terminé** (PR #72, 727 tests)
-*Note technique : `EditableDataTable` (composant partagé avec Classement) a reçu 2 props opt-in pour les nouveaux comportements — Classement totalement inaffecté.*
+### Bloc 65 — Boutique (Intro en tuiles + largeur admin + images 6rem) + refonte Gemmes en tuiles ✅ **Terminé** (PR #84)
 *Nouveau. Indépendant du reste.*
 
-- Bouton "Ajouter" simplifié en icône "+", sur la même ligne que le titre du tableau (au lieu du libellé verbeux "Ajouter (Équipement)" etc.).
-- Suppression d'une ligne : icône croix rouge, avec message de confirmation avant suppression effective (manquant actuellement).
+- **A** — Le tableau "Intro" (Image/Nom/Description, Bloc 58) passe aussi en tuiles comme les 4 tableaux de catégorie (Bloc 64) — mais sans aucun badge tarif (entrées informatives, pas des objets à prix).
+- **B** — [Admin Boutique] Élargir encore la colonne/le champ Description — il reste de la marge inutilisée, les colonnes doivent occuper toute la largeur disponible du tableau. Toujours aucun scroll horizontal (contrainte inchangée).
+- **C** — Images du référentiel Boutique : 5rem → 6rem (tuiles de catégorie + tuiles Intro une fois livrées).
+- **D** — Refonte du référentiel Gemmes en tuiles, remplace le tableau 11×7 (illisible mobile, serré desktop). 1 tuile par compétence (couleur = couleur déjà associée à la compétence), mini-tableau interne 3 lignes (ligues / % / image gemme), colonnes égales, contenu centré. Comparaison multi-ligues préservée (contrairement au pattern mono-ligue de Level Up/Classement/Troupes attaque démo, pas adapté ici). Même design desktop et mobile, confirmé. **+ Tuile "Coût" supplémentaire, en premier avant les compétences, pleine largeur sur desktop, couleur grise** — 2 lignes (ligues / coût en saphirs pour 1 gemme), pas d'image.
+- **E** — [Outil Classement] La barre boutons de ligue + % + rang (Bloc 61) doit prendre toute la largeur du bloc — complète la contrainte "une seule ligne" du Bloc 61, désormais aussi "pleine largeur".
 
-### Bloc 50 — 🚨 Chantier majeur : séparer Référentiels de Guides (public + admin, nouveau rôle) ✅ **Terminé** (PR #73, 742 tests)
-*Notes de livraison : Groupe 1 (rôle + routing) ✅. Groupe 2 — **un vrai bug de verrouillage de rôle trouvé et corrigé** pendant le split admin. Groupe 3 — recherche/sitemap déjà corrects (rien à faire), une redirection legacy périmée corrigée, e2e mis à jour avec la couverture des rôles. **Bug trouvé uniquement par le passage navigateur réel (Playwright) : crash Server→Client Component sur les props fonction, sur chaque page `/referentiels`** — invisible aux tests unitaires, corrigé et vérifié en dev server réel. 2 échecs e2e intermittents (`/tools` timeouts) confirmés comme flakiness pré-existante sur `dev` non modifié, pas une régression de ce bloc.*
-*Nouveau. Refonte structurante, discutée en détail avant spécification (6 questions tranchées). Impact large : routing, admin, rôles, navigation, recherche, sitemap.*
+### Bloc 66 — Référentiel Templiers : renommage + présentation en tuiles + harmonisation titre + coût ✅ **Terminé** (PR #85, 901 tests)
+*Nouveau. Indépendant du reste.*
+*Note de livraison : correctif additionnel apporté — titre de section du tableau de coût simplifié dans les 5 langues ("Table de coût exacte" → "Table de coût", et équivalents EN/DE/ES/TR), "exacte" jugé redondant.*
 
-- **A** — Nouvelle racine `/referentiels/*` (au lieu de `/guides/referentiels/*`). 6 slugs, tous en anglais : `combat-equipment`, `expedition-equipment`, `level-up`, `shop`, `templars` (renommé depuis `templiers`), `gems` (renommé depuis `gemmes`) — identifiants internes inchangés.
-- **B** — Nouveau rôle `references_manager` ("Référentiels"), scopé aux référentiels. `guides_manager`/`calculators_manager` perdent les droits référentiels (sauf Templiers/Gemmes via Outils, données partagées — accepté). `admin`/`super_admin` gardent tout, `read_only` inchangé.
-- **C** — Admin : 2 menus distincts (Guides, Référentiels), colonne "Type" retirée, filtre "Guides/Référentiels/Tous" (Bloc 32) supprimé.
-- **D** — Nav publique : 3 entrées de premier niveau — Outils, Référentiels, Guides (dans cet ordre).
-- **E** — Le bandeau de bascule entre référentiels devient la nav principale de la section `/referentiels`.
-- **F** — Pas de migration automatique de droits (pas de vrai user admin externe pour l'instant).
-- **G** — Accueil éclaté en 3 sections (remplace la section combinée du Bloc 34) : Outils, puis Référentiels (4 colonnes max, 2 lignes max — jusqu'à 8), puis Guides (3 colonnes, 2 lignes max — jusqu'à 6, contre 3 précédemment).
+- **A** — Renommer "Coût des Templiers" → "Templiers" (titre, nav, tuile accueil/`/referentiels`, bandeau de bascule). Penser à corriger le lien croisé réciproque depuis l'outil Templiers, qui référence probablement encore l'ancien nom. ⚠️ Conséquence attendue et automatique : le tri alphabétique (Blocs 62/64) repositionne "Templiers" (T) après tout ce qui commence par une lettre antérieure, au lieu de sa position sous "Coût des Templiers" (C) — comportement attendu partout où ce tri s'applique (accueil, `/referentiels`, bandeau, admin), pas un bug.
+- **B** — Nouvelle section de présentation en tuiles, insérée avant le tableau de coût (structure 2×10 du Bloc 64 inchangée) : 5 templiers (associés chacun à une compétence — Attaque, Défense, Or, Recruteur, Vitesse).
+  - Admin : même pattern que Boutique (tableau simple). Champs : Image, Nom, Description, Base Temple, Bonus. Pas de boutons d'action (jeu fixe de 5 templiers, ordre alphabétique déjà défini).
+  - Public : tuile colorée selon la compétence associée (palette déjà en place, même principe que Gemmes/Bloc 65). Image à gauche 6rem (cohérent Boutique/Bloc 65). Titre "Templier [Compétence]" (ex: "Templier Recruteur"). En dessous : Base Temple, puis Bonus donné par 1 templier.
+- **C** — Titre des tuiles harmonisé à 1.1rem, sur les 3 référentiels à tuiles : Boutique, Gemmes, Templiers.
+- **D** — 🐛 Tableau de coût Templiers : (1) ne jamais compacter le chiffre en k/M, valeur complète affichée (ex: 21929 pour le 20ᵉ niveau) ; (2) afficher la devise Pouciel, actuellement absente — en-tête "Coût (Pouciel)" attendu.
 
-⚠️ **Impact transverse à vérifier avant/pendant l'implémentation** : `site-search.ts` (déjà corrigé une fois au Bloc 48 sur un souci de slug), sitemap/hreflang (Bloc 42), accueil (grille Guides/Référentiels déjà construite au Bloc 34 — la logique change-t-elle avec la nouvelle nav ?).
+### Bloc 67 — Renommer Level Up → Progression + retours référentiel Templiers ✅ **Terminé** (PR #86, 906 tests)
+*Nouveau. Indépendant du reste.*
+*Notes de livraison : A vérifié en live FR (captures à l'appui), source unique `references.catalog.level-up`, cohérent avec le pattern Boutique/Templiers. **Trouvaille en auditant les liens croisés : le sens outil→référentiel (Taux de gain d'XP → Progression) était carrément absent**, pas juste mal ciblé — ajouté, cohérent avec toutes les autres paires référentiel/outil. **C — cause racine confirmée** : Base Temple/Bonus avaient été rendus lecture seule/calculés pendant la review Codex du Bloc 66 (PR #85) — reverti, éditable et persisté à nouveau, vérifié en live pour les 5 templiers (admin → sauvegarde → reflet public). Valeur vide affiche désormais "—" côté public plutôt qu'un "%" cassé.*
 
-### Bloc 51 — Référentiel Boutique : intégration de l'image de vignette ✅ **Terminé** (livré avec le Bloc 52, PR #74)
+- **A** — Renommer "Level Up" → "Progression" (nom pas français). Titre, nav, tuile accueil/`/referentiels`, bandeau de bascule, texte des liens croisés réciproques (calculateur Combat ↔ ce référentiel). Slug d'URL inchangé (`/referentiels/level-up`) — même principe que Boutique/Templiers, libellé public en français découplé de l'identifiant technique en anglais.
+- **B** — Images `templar-striker.webp`, `templar-guardian.webp`, `templar-prosperous.webp`, `templar-recruiter.webp`, `templar-rusher.webp` déposées dans `public/templars/` — à intégrer sur les 5 tuiles Templiers (remplace tout placeholder utilisé à la livraison du Bloc 66).
+- **C** — 🐛 Écart signalé : Base Temple et Bonus doivent être éditables en admin — déjà spécifié au Bloc 66 (déjà mergé), retour testeur suggérant que ce n'est pas le cas en pratique. Vérifier et corriger, pas une nouvelle fonctionnalité.
+- **D** — Renommer le libellé "Bonus donné par 1 templier" → "Bonus par templier" (raccourci).
+
+### Bloc 68 — Templiers + Boutique mobile + couleur titre + Paramètres joueur + généralisation boutons de ligue + grilles mobile référentiels ✅ **Terminé** (PR #87, 938 tests)
+*Note de livraison : les 14 points (A-N) vérifiés visuellement en live (desktop + mobile). Non-régressions explicitement confirmées : sélecteurs Gemmes (Simulateur Combat + outil Gemmes) toujours en select box, ordre de rareté inversé (Légendaire→Commun) préservé sur la grille mobile Combat/Expédition.*
 *Nouveau. Indépendant du reste.*
 
-- `referential-shop.webp` déposée dans `public/referentials/` (même dossier que les 5 autres images de référentiel).
-- Remplacer le placeholder actuel de la tuile Boutique (accueil + page `/referentiels`) par cette image — même traitement que les 5 autres (`aspect-ratio: 1`, repli si fichier absent).
+- **A** — Grille de tuiles Templiers (Bloc 66) : 3 colonnes sur desktop (5 templiers = 3+2), au lieu du nombre non explicitement fixé à la livraison (probablement 2 par défaut). Mobile inchangé (1 colonne).
+- **B** — [Tuiles Boutique, mobile uniquement] Tarif en saphirs repositionné sous le titre au lieu du badge en haut à droite. Desktop inchangé (badge en haut à droite, Bloc 64).
+- **C** — [Outil Templiers] Refonte complète mobile + desktop. Mobile : champs Niveau départ/cible empilés verticalement. Desktop : fusionner le bloc de saisie et le bloc "Coût total" en un seul bloc compact, 3 colonnes égales (Niveau départ | Niveau cible | Coût total). Desktop et mobile identiques : résultats en tuiles plutôt qu'en tableau, mêmes caractéristiques que le référentiel Templiers (tuile colorée, image 6rem, titre nom du Templier) — contenu : Bonus par templier, Bonus total donné par le nombre de templiers, Gain départ-cible (3 valeurs déjà spécifiées, juste un changement de mise en forme).
+- **D** — 🐛 Titre/phrase `/tools` et `/referentiels` en violet, mais pas sur l'accueil malgré le même texte réutilisé (Bloc 38/53). Aligner l'accueil sur le violet des pages dédiées.
+- **E** — [Paramètres du joueur] Libellé "Ligue non définie" au lieu de "— Choisir —" quand aucune ligue n'est choisie.
+- **F** — [Paramètres du joueur] Sélecteur de ligue en boutons plutôt qu'en select box, même principe que Classement/Level Up (Bloc 61).
+- **G** — [Paramètres du joueur, mobile uniquement] Le résumé (ligue · niveau · VP · nombre de templiers) doit apparaître en dessous du titre "Paramètres".
+- **H** — [Paramètres du joueur, mobile uniquement] Champs Niveau et VP/unité sur la même ligne.
+- **I** — [Paramètres du joueur, mobile uniquement] Saisie compétences/points/templiers/bonus de temple en 2 colonnes (2 compétences par ligne).
+- **J** — [Outil Troupes en attaque démo] Sélecteur de ligue en boutons plutôt qu'en select box, même principe que Level Up/Classement (Bloc 61) — étend le pattern à ce 3ᵉ outil.
+- **K** — [Outils Villes : Coût de Ville, Niveau Max Atteignable, Production] Sélecteur de ligue en boutons plutôt qu'en select box. ⚠️ Pas une généralisation universelle — le pattern boutons ne s'applique QUE là où c'est explicitement indiqué. **Exclusion explicite : les sélecteurs de ligue liés aux Gemmes (Simulateur d'Équipement de Combat + outil Gemmes) restent en select box**, ne pas y toucher.
+- **L** — [Référentiel Boutique, mobile uniquement] Boutons de filtre catégorie (Conseillers/Équipement/Expédition/Inventaire) en grille 2×2, prenant toute la largeur disponible — au lieu de leur disposition actuelle.
+- **M** — [Référentiels Équipement de Combat et Équipement d'Expédition, mobile uniquement] Même traitement grille pleine largeur. Filtre famille (4 chacun) : grille 2×2. Filtre rareté (5 raretés) : 2 lignes réparties 2+3 — ligne 1 Légendaire/Mythique, ligne 2 Épique/Rare/Commun. ⚠️ Ordre du plus rare au plus commun, volontairement inversé par rapport à l'ordre standard Commun→Légendaire utilisé ailleurs — pas une erreur à corriger.
+- **N** — [Référentiels Événement et Progression, mobile uniquement] Boutons de sélection de ligue en 2 lignes de 3 boutons, prenant toute la largeur disponible (6 ligues = 3+3) — au lieu de leur disposition actuelle.
 
-### Bloc 52 — Retours de test sur le Bloc 50 (titre, bandeau, style Boutique) ✅ **Terminé** (PR #74, 749 tests)
-*C et D confirmés traités ensemble (encadrement filtres + intro vérifié via capture contre la page Combat) — pas un point manqué, juste un décompte "4" au lieu de "5" dans le résumé.*
-*Nouveau, retour de test. Indépendant du reste.*
+### Bloc 69 — Bandeau + outil Templiers + Paramètres joueur + outil Villes (boutons de ligue) ✅ **Terminé** (PR #88, 954 tests + nouveau test e2e permanent anti-régression scroll)
+*Nouveau. Indépendant du reste.*
 
-- **A** — Titre de la page liste `/referentiels` : "Référentiels" tout court, pas "Tous les référentiels".
-- **B** — Le bandeau de bascule entre référentiels ne doit apparaître que sur la page d'un référentiel précis, jamais sur la page liste `/referentiels` (qui affiche déjà les 6 référentiels en tuiles avec image — redondant sinon).
-- **C** — [Référentiel Boutique, public] Barre de filtres (catégories) : même style encadré que les autres pages référentiel (ex: Équipement de Combat).
-- **D** — [Référentiel Boutique, public] Zone de texte markdown (intro) également dans un cadre du même style que le reste du site.
-- **E** — [Référentiel Boutique, admin] Retirer les textes explicatifs superflus au-dessus des zones ("Zone de texte...", "Ajoute, réordonne...").
+- **A** — 🐛 Mobile, bandeau de bascule référentiels : le bouton "Équipement d'Expédition" passe sur 2 lignes (OK), mais "Boutique" (même ligne de grille) hérite de cette hauteur sans être centré verticalement dedans. Corriger : centrage vertical du contenu de bouton, généralisé à tous les bandeaux du site (référentiels ET outils), pas juste ce cas précis.
+- **B** — 🐛 [Outil Templiers] Unité redondante après la valeur "Bonus par templier" — le libellé du champ indique déjà l'unité de contexte, pas la peine de la répéter après le chiffre (ex: "0,25%" seul, pas de texte redondant après).
+- **C** — [Outil Templiers] Ajouter un contrôle de validation : niveau cible doit être au minimum niveau départ + 1. Comportement identique à celui déjà en place sur l'outil Villes — appliqué après la saisie, au relâchement/perte de focus du champ, pas en temps réel.
+- **D** — [Paramètres du joueur] Desktop : ajouter le titre "Ligue" au-dessus des boutons (absent à la livraison du Bloc 68), réduire les champs Niveau et VP à 25% chacun. Mobile : réduire le champ Niveau de 10%, largeur libérée redistribuée au champ VP (toujours sur la même ligne). 🚨 Nouvelle contrainte universelle (voir F) : pas de scroll vertical pour les boutons de ligue.
+- **E** — [Outil Villes : Coût de Ville/Niveau Max/Production, ET Troupes en attaque démo] Desktop : ajouter le titre "Ligue" au-dessus des boutons, positionner ce bloc sur la même ligne que les autres champs de saisie. Mobile : boutons de ligue en 2 lignes de 3, pleine largeur (même pattern qu'Événement/Progression, Bloc 68/N). ⚠️ **Classement N'EST PAS concerné** — confirmé explicitement, garde son style actuel (label inline, Bloc 64 inchangé).
+- **F** — 🚨 Nouvelle contrainte universelle, tous les sélecteurs de ligue en boutons : pas de scroll vertical. S'applique à Paramètres joueur (D), outils Villes + Troupes attaque démo (E), et tous les autres déjà livrés au Bloc 68 (Level Up/Progression, Classement — celui-ci inclus dans cette contrainte malgré son exclusion du point E, Événement) — vérifier/corriger partout.
+- **G** — [Outil Classement, mobile uniquement] Refonte différente du desktop (qui reste inchangé, label inline — Bloc 64). Titre au-dessus de chaque section ("Ligue", "Pourcentage actuel", "Rang actuel"). Boutons de ligue en 2 lignes de 3, pleine largeur. Champs de saisie (% et rang) en pleine largeur.
 
-### Bloc 53 — Boutique admin (colonnes) + intro Guides/Référentiels + liens croisés (refonte + bug) ✅ **Terminé** (PR #75, 768 tests)
-*Notes de livraison : A-C vérifié à 5 largeurs (1440→400px), zéro débordement horizontal à chacune. F — couverture étendue au-delà de la demande : Level Up avait le même bug, en plus de Gemmes/Templiers.*
-*Nouveau, retour de test post-Bloc 50. Indépendant du reste. Fusionne les anciens Blocs 53 et 54.*
+### Bloc 70 — Largeur bloc ligue à 50% + libellés tuiles Templiers raccourcis ✅ **Terminé** (PR #89, 958 tests)
+*Note de livraison : ratio 50% vérifié précisément via `getBoundingClientRect` sur les 4 outils, Paramètres joueur confirmé non affecté (périmètre respecté), libellés tuiles Templiers confirmés raccourcis.*
+*Nouveau. Indépendant du reste.*
 
-- **A** — [Admin Boutique] Boutons monter/descendre + suppression regroupés dans une seule colonne "Actions" (au lieu de colonnes séparées).
-- **B** — [Admin Boutique] Champs de saisie (Nom, Description) élargis à la largeur de leur colonne — trop d'espace vide entre chaque champ actuellement.
-- **C** — [Admin Boutique] Colonne Description légèrement élargie (texte plus long que les autres colonnes).
-- ⚠️ Contrainte impérative (A-C) : toujours aucun scroll horizontal après ces ajustements — vérifier concrètement en navigateur.
-- **D** — Titre + phrase d'intro pour `/referentiels` et `/guides`, même traitement que `/tools` (Bloc 38) — les deux couples existent déjà sur l'accueil, à réutiliser tel quel (pas de nouveau texte à écrire). `/guides` : couple existant `Home.guidesTitle`/`Home.guidesDescription` (contenu exact à reprendre depuis `messages/fr.json`, pas vérifié précisément dans cet échange). `/referentiels` : "Retrouve les données clés" / "Retrouve les tableaux de référence pour connaître les coûts, statistiques et paliers exacts du jeu, aussi bien pour les équipements, les gemmes ou bien les templiers que pour les consommables de la boutique."
-- **E** — Liens croisés outil↔référentiel, refonte visuelle : bandeau centré "Aller plus loin en vérifiant le référentiel/outil" avec mini-carte (miniature du référentiel réutilisée, Bloc 51), remplace le lien texte brut actuel. Libellé adapté au sens du lien.
-- **F** — 🐛 Bug lien croisé : le lien référentiel→outil ne mène pas à l'outil précis (ex: depuis Gemmes, atterrit sur `/tools` catégorie Compétences générique, pas le calculateur Gemmes). Corriger pour pointer vers l'URL exacte de l'outil. Vérifier sur tous les référentiels concernés (Gemmes, Templiers), pas seulement Gemmes.
+- **A** — Le bloc de sélection de ligue (titre + boutons, Bloc 69/E) occupe 50% de la largeur de sa ligne partagée avec les autres champs de saisie, sur les outils Villes (Coût de Ville/Niveau Max/Production) et Troupes en attaque démo. ✅ Périmètre confirmé par le joueur — uniquement ces outils modifiés au Bloc 69, pas une généralisation.
+- **B** — [Outil Templiers, contenu des tuiles] "Bonus total au niveau X" → "Bonus total" ; "Gain départ-cible" → "Gain".
 
----
+### Bloc 71 — Niveau Max Atteignable (largeur) + Classement (boutons ligue) + Paramètres joueur (mise en ligne) ✅ **Terminé** (PR #90, 969 tests)
+*Note de livraison : point B — mobile Classement confirmé inchangé (non-régression). Point C — correctif du gras confirmé appliqué uniformément sur tous les emplacements de boutons de ligue, pas seulement Classement.*
+*Nouveau. Indépendant du reste.*
 
-### Vérifications de données restantes (non bloquantes, pas des tâches Codex)
-- **9 lignes de valeurs manquantes** *(point 16, révisé — 9 sets sur 10 confirmés)* — Équipements de Combat, 3 sets restants Rare/Épique (section 7.1).
-- **8 stats sur 10 encore à confirmer** *(point 17)* — Équipement d'Expédition (seules Équipement +0,2/★ et Vitalité +2,5/★ le sont).
-- **Rappel pour le futur calculateur Expédition** — sa formule de progression par étoile est déjà confirmée additive, identique au Combat (cahier des charges section 7.1). Ne pas dupliquer `equipmentValueAtStar()` : extraire un helper partagé (`valueAtStar(base, increment, star)`) au moment de construire ce calculateur, voir "Rappels transverses" ci-dessus.
+- **A** — [Outil Niveau Max Atteignable, desktop] Réduire de 30% chacun : champ Nombre de villes, champ Niveau de départ, sélecteur d'unité du champ Or disponible (×1/k/M/G/T). Espace libéré donné au champ Or disponible lui-même.
+- **B** — 🚨 Revirement : Classement rejoint le traitement Villes/Troupes attaque démo (annule l'exclusion explicite du Bloc 69). Desktop : titre "Ligue" au-dessus des boutons + 50% de largeur (Bloc 69/70). Ne pas confondre avec le point mobile spécifique de Classement (Bloc 69/G), qui reste inchangé.
+- **C** — Le texte des boutons de sélection de ligue ne doit pas être en gras (contrairement au rendu actuel) — aligner le style sur les boutons déjà utilisés dans Paramètres du joueur.
+- **D** — [Paramètres du joueur, desktop] Ligue, Niveau et VP passent sur la même ligne, répartition à 4 : Ligue 50%, Niveau joueur 20%, VP 20%, unité VP 10%. Remplace la répartition "25% chacun" du Bloc 68 (qui ne prévoyait pas Ligue sur la même ligne).
+
+### Bloc 72 — Retouches mobile : Gemmes (Simulateur Combat + Optimisation) + Équipement Combat/Expédition ✅ **Terminé** (PR #91, 980 tests)
+*Nouveau. Indépendant du reste.*
+
+- **A** — [Mobile uniquement, Simulateur d'Équipement de Combat] Ligne de configuration d'une gemme (Compétence + Étoiles + Ligue, 3 champs) : le label "Gemme X" passe au-dessus des 3 champs au lieu de rester en début de ligne, pour libérer toute la largeur. Desktop inchangé.
+- **B** — [Mobile uniquement, outil Optimisation Gemmes] Boutons de sélection de famille/compétence : pleine largeur, tout en restant sur une seule ligne.
+- **C** — [Mobile uniquement, Simulateur d'Équipement de Combat] Boutons de sélection compétence (filtre famille) en pleine largeur, toujours sur une seule ligne. Le bouton "Transférer en Paramètres joueur" prend aussi toute la largeur, sur la 2ᵉ ligne.
+- **D** — [Mobile uniquement, Simulateur d'Équipement d'Expédition] Boutons de filtre famille en pleine largeur — 1ʳᵉ ligne 3 boutons, 2ᵉ ligne 2 boutons (5 filtres : Personnalisé, Or, Équipement, Consommables, Troupes).
+
+### Bloc 73 — 🐛 Régressions boutons ligue 50% + hauteur champs + révision disposition case équipement ✅ **Terminé** (PR #92)
+*Nouveau. Indépendant du reste.*
+
+- **A** — 🐛 [Paramètres du joueur, desktop] Le ratio 50% pour les boutons de ligue (Bloc 71) n'est pas correct en pratique malgré la livraison — régression confirmée, à corriger.
+- **B** — [Paramètres du joueur] Les champs Niveau et VP sont trop grands en hauteur — doivent faire la même hauteur que les autres champs de saisie du panneau (référence : Compétences ou Points).
+- **C** — 🐛 [Outil Classement, desktop] Le ratio 50% pour les boutons de ligue (Bloc 71) n'est pas correct en pratique malgré la livraison — régression confirmée, à corriger.
+- **D** — 🚨 [Simulateur d'Équipement de Combat] RÉVISION MAJEURE de la disposition de case, remplace le Bloc 32. Gemmes passent à droite de l'image (empilées en colonne) au lieu d'en dessous. Nouveau système d'étoiles visuelles (icônes, jamais de texte "3★") pour équipement ET gemmes : 1-4★ = étoiles blanches, 5-8★ = conversion complète en étoiles jaunes (5★=1 jaune, 8★=4 jaunes). Plafond pratique à 8, pas de palier au-delà du jaune pour l'instant. Composant de rendu d'étoiles partagé entre équipement et gemmes. **Conserver le rendu actuel facilement récupérable (historique Git propre, `git revert` simple) au cas où le joueur voudrait revenir en arrière une fois le changement vu en pratique.**
+- **E** — [Simulateur d'Équipement de Combat] Images d'équipement agrandies à 2.8rem (classe CSS `.stuff-slot-image`).
+
+### Bloc 74 — 🐛 2 bugs de couleur des étoiles (Simulateur Équipement Combat) ✅ **Terminé** (PR #93, 1002 tests)
+*Note de livraison : blanc via token adaptatif `--foreground` (réagit au thème). Jaune en littéral fixe, **ajusté en review à `#a8710a`** (la valeur reprise du thème sombre avait un contraste insuffisant en thème clair — corrigé pour un contraste équilibré ~3,5:1 sur les 2 thèmes) — vérifié en live sur les 2 thèmes × 8 paliers d'étoile.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — Étoiles blanches (1-4★, Bloc 73) illisibles en thème clair, bon en thème sombre. Passer en gris foncé pour le thème clair uniquement (étoiles jaunes 5-8★ non concernées). ⚠️ Précédent connu (Bloc 22/24) : ajuster juste la luminosité s'était révélé insuffisant, il avait fallu changer de teinte — bien tester le rendu réel, pas se fier au seul contraste WCAG calculé.
+- **B** — 🐛 Bug distinct : les étoiles jaunes (5-8★) changent de teinte entre thème sombre et thème clair (deviennent plus foncées en clair) — probablement liées par erreur à une variable de thème. Corriger pour une couleur jaune fixe, identique dans les deux thèmes.
+
+### Bloc 75 — Fusion tableaux secondaires par rareté (Combat + Expédition) + parité admin incréments Combat ✅ **Terminé** (PR #93)
+*Note de livraison : A — tableau fusionné Combat (Fusion/Gemmes/Destruction) public+admin. B — tableau fusionné Expédition (Fusion/Destruction), coût de fusion enfin visible côté public. C — 10 compétences Combat éditables en admin, câblées dans le calcul du Simulateur de Stuff, vérifié de bout en bout (persistance DB, décalage du calcul). CI : une assertion e2e obsolète cassée par la fusion, rattrapée avant merge.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — [Référentiel Équipements de Combat] 3 tableaux (Pouciel fusion, Gemmes par rareté, Pouciel destruction) fusionnés en 1 seul : colonnes = raretés, 3 lignes = Fusion/Gemmes/Destruction. Public ET admin.
+- **B** — [Référentiel Équipement d'Expédition] Même principe, 2 lignes (pas de gemmes) : Fusion/Destruction. Le coût de fusion Terradust existe déjà en admin (`expeditionMergeCost()`) mais n'est pas affiché côté public — corriger en même temps, donnée déjà existante, pas de nouveau calcul.
+- **C** — 🐛 [Référentiel Équipements de Combat, admin] Écart de parité : les incréments par étoile/compétence sont éditables en admin pour Expédition (grille dédiée), mais codés en dur pour Combat (`equipmentValueAtStar()`). Ajouter une grille admin éditable équivalente pour Combat.
+
+### Bloc 76 — Tableaux fusionnés Bloc 75 (admin) : largeur des champs + libellé de ligne éditable ✅ **Terminé** (PR #94, 1005 tests)
+*Note de livraison : aucun débordement horizontal vérifié à 4 largeurs d'écran ; édition des libellés persistée et reflétée côté public, testé sur les 2 tableaux (Combat et Expédition).*
+*Nouveau. Indépendant du reste.*
+
+- **A** — [Admin, tableaux fusionnés du Bloc 75 : Terradust Expédition, Pouciel+Gemmes Combat] Champs de saisie en pleine largeur disponible, sans scroll horizontal.
+- **B** — L'indicateur de ligne (libellé "Fusion"/"Gemmes"/"Destruction" en tête de ligne) devient éditable en admin, texte ajustable librement.
+
+### Bloc 77 — Référentiel Événement : révision structure (Description + Durée + visuel timeline) ✅ **Terminé** (PR #95, 1018 tests)
+*Note de livraison : vérifié en live avec l'exemple exact Diamant/Légende du cdc (6 events, 336h) — remplit la barre à exactement 100%, segments proportionnels corrects.*
+*Nouveau. Indépendant du reste. Référentiel construit vide/inactif (Bloc 60), aucune donnée réelle à migrer.*
+
+- Ajouter un champ **Description** (texte libre) au niveau de chaque event.
+- **Retirer "Jour de début/jour de fin"**, remplacé par un champ **Durée** seul (24h/48h/72h).
+- **Ajouter un champ "Durée de la saison" éditable, au niveau de chaque ligue** (pas 14 jours figé en dur) — sert de dénominateur au visuel.
+- La position de chaque event dans le cycle se calcule par cumul des durées des events précédents dans l'ordre (pas de saisie de jour de début).
+- **Visuel** : barre horizontale façon "échelle visuelle" du Classement (Bloc 62/F) — cycle de la durée de saison de cette ligue, chaque event = segment proportionnel à sa durée, positionné par cumul. **Montre uniquement nom + durée de l'event, jamais les paliers ni récompenses** — le détail complet reste dans les blocs repliables déjà prévus (Bloc 60), en dessous, 2 zones distinctes.
+
+### Bloc 78 — Images Combat 3.2rem + extension Expédition + retouche gris étoiles ✅ **Terminé** (même PR #95 que le Bloc 77)
+*Nouveau. Indépendant du reste.*
+
+- **A** — Images d'équipement du Simulateur d'Équipement de Combat (`.stuff-slot-image`, fixées à 2.8rem au Bloc 73) agrandies à 3.2rem.
+- **B** — Étendre au Simulateur d'Équipement d'Expédition : même système de rendu d'étoiles que Combat (Bloc 73, 1-4★ blanc/5-8★ jaune) + même taille d'image 3.2rem. ⚠️ Pas de gemmes sur l'équipement d'Expédition (Bloc 75) — seul le rendu de l'étoile de l'équipement est concerné.
+- **C** — 🐛 Le gris des étoiles blanches en thème clair (Bloc 74) est trop foncé, se confond avec du noir. Éclaircir légèrement — s'applique partout où ce système est en place (Combat + Expédition une fois B livré).
+
+### Bloc 79 — Étoile Expédition + retours référentiel Événement (Bloc 77) ✅ **Terminé** (PR #96)
+*Note de livraison : vérifié en live, cas Architecte 72h→24h (couleurs partagées), correctif texte tronqué, mise en page mobile des badges.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — 🐛 [Simulateur Équipement Expédition] L'étoile affichée en dessous de l'image d'équipement (Bloc 78) doit être centrée horizontalement.
+- **B** — [Admin référentiel Événement] Sélection de la durée (24h/48h/72h) en boutons, pas en select box.
+- **C** — [Admin référentiel Événement] Champ Description agrandi ×3 en largeur.
+- **D** — [Public référentiel Événement] Ajouter une échelle avec traits fins tous les 24h sur le visuel timeline (Bloc 77), calée sur la fin de saison (fixe) plutôt que le début (variable). Repères : J0 = début saison, J+3 = début event suivant, ..., J13/J14 = fin.
+- **E** — 🐛 [Public référentiel Événement] Nom d'event tronqué sur le visuel timeline si trop long pour son segment (ex: "Enrôleur de troupes" sur 72h) — corriger.
+- **F** — [Public référentiel Événement] Description de l'event affichée à côté du nom, même bloc repliable fermé.
+- **G** — Un même nom d'event peut apparaître plusieurs fois dans une saison (durées/objectifs différents, ex: "Architecte" 72h en début + 24h en fin) — 2 events distincts en base, mais couleur dérivée automatiquement du champ Nom sur le visuel timeline, pour que les occurrences d'un même type d'event partagent la même couleur sans saisie manuelle.
+- **H** — [Admin] Indicateur de position numérique (1, 2, 3...), non éditable, calculé automatiquement selon la position dans la liste (réordonnancement par flèches déjà existant). Purement informatif, jamais affiché côté public.
+- **I** — 🚨 RÉVISION : affichage public en tuiles, remplace le "bloc repliable" simple. Visuel timeline inchangé en haut. En dessous : grille de tuiles 2/ligne desktop (1 mobile), ordre chronologique, tuiles grises (comme Boutique, pas de couleur par nom ici). Contenu : titre + description (pas d'image), 2 badges = objectif du dernier palier + Durée de l'event — côte à côte en desktop, en dessous du titre en mobile. Clic sur la tuile = déplie/replie tous les paliers.
+
+### Bloc 80 — Référentiel Événement : alignements admin + tailles champs + sélecteur de couleur ✅ **Terminé** (PR #97, 1061 tests)
+*Note de livraison : F — palette 5 teintes × 2 nuances, nouveau token `--ember-bright` (évite le token réservé `--gold`). G — vraie régression trouvée en vérification live (label s'effondrant sur son mot le plus long, indépendamment de la largeur) — corrigée avant merge, capture d'écran + mesure DOM à l'appui.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — [Admin] Label "Ligue" au-dessus des boutons de sélection de ligue.
+- **B** — [Admin] "Durée de la saison" alignée sur la même ligne que les boutons de ligue.
+- **C** — [Admin] Aligner par event : numéro d'event, Nom, Description, Durée, sélecteur de couleur (point F), boutons d'action.
+- **D** — [Admin] Champ Description agrandi de +50% supplémentaire (s'ajoute au ×3 du Bloc 79).
+- **E** — [Admin] Champ Récompense (paliers) agrandi ×3.
+- **F** — 🚨 RÉVISION : sélecteur de couleur manuel par event (~10 options), remplace l'auto-dérivation par nom du Bloc 79. Timeline : segment coloré. Tuiles publiques : fond reste gris, titre écrit dans la couleur choisie.
+- **G** — [Public, visuel timeline] Affiner le correctif du texte tronqué (Bloc 79) : retour à la ligne limité à 2 lignes max, mais pas la solution privilégiée en premier — pour un segment large (ex: 72h), 1 ligne devrait suffire, privilégier l'agrandissement de la zone de texte plutôt que de passer sur 2 lignes dès que possible.
+
+### Bloc 81 — Référentiel Événement : visuel + palette + alignement admin fin ✅ **Terminé** (PR #98, 1066 tests)
+*Note de livraison : tests d'alignement CSS admin et de vivacité de palette ajoutés spécifiquement, assertion e2e obsolète corrigée.*
+*Nouveau. Indépendant du reste. ⚠️ Dépend du Bloc 80 (PR #97) — vérifier son merge avant de démarrer.*
+
+- **A** — [Public, visuel timeline] Ne plus afficher la durée sur le segment — devenue redondante depuis que les tuiles (Bloc 79) l'affichent déjà en badge. Le segment n'affiche plus que le nom de l'event.
+- **B** — [Admin] Remplacer la palette de couleur (10 options, Bloc 80) par 5 couleurs × 2 nuances, plus vives et moins sombres que la palette livrée.
+- **C** — [Admin] 3 correctifs d'alignement : champ "Durée de la saison" réduit à 1/4 de sa taille actuelle ; numéro d'event aligné avec les champs de saisie (pas le titre des colonnes) ; titres "Durée" et "Couleur" mal alignés avec les autres titres de colonne — corriger. Si besoin pour l'alignement d'ensemble, réduire le champ Description de 10%.
+- **D** — [Public, visuel timeline] Vérifier/corriger que le nom de l'event écrit sur le segment est bien dans la couleur choisie pour cet event (pas une couleur de texte fixe indépendante).
+- **E** — [Public, visuel timeline, desktop ET mobile] Règle finale : n'afficher un repère que là où un changement d'event a lieu (fin/début), pas un repère systématique tous les 24h — ex: J0, J3, J6..., adapté aux durées réelles de la ligue. Remplace la règle "tous les 24h" du Bloc 79, sans distinction desktop/mobile.
+- **F** — [Public, tuiles] Le badge Durée intègre aussi les jours de début/fin : format "Jx-Jy (durée)", ex: "J0-J3 (72h)".
+
+### Bloc 82 — Visuel timeline Événement + retrait coût Pouciel + sélecteur compétence Gemmes + remplacement images équipement ✅ **Terminé** (PR #99, 1073 tests)
+*Note de livraison : C — badge "320 gemmes" confirmé présent en production avant merge (capture d'écran), retrait à vérifier concrètement post-merge (voir cdc). E — vraie trouvaille : décalage de nommage entre le code (attendait une forme différente de troop/consumable) et les fichiers fournis, aurait cassé 25-50% de chaque set — signalé et corrigé après confirmation du joueur, pas détectable depuis une vérification texte du cdc seule.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — 🐛 Le dernier repère (fin de saison, ex: J14) ne s'affiche pas sur le visuel timeline (Bloc 81). La fin du dernier event = fin de saison, c'est une transition comme les autres — corriger pour qu'il apparaisse comme les repères intermédiaires.
+- **B** — Pour les jours qui ne sont pas une transition d'event (sans label Jx), afficher malgré tout un fin trait vertical à cette position (effet règle graduée continue) — seuls les jours de transition affichent le texte du label, les autres n'ont qu'un simple trait sans valeur d'axe écrite.
+- **C** — 🐛 [Référentiel Équipements de Combat, pas le simulateur — correction de portée] Retirer le coût en Pouciel affiché en haut à droite des tuiles principales (Bloc 39, ajout jamais demandé) — fusion ET destruction, à retirer tous les deux. L'info reste disponible dans le tableau dédié plus bas sur la même page (Bloc 75), pas besoin de la dupliquer ici.
+- **D** — [Calculateur Gemmes, 2 modes : Optimisation et Budget disponible] Le sélecteur de compétence ne doit avoir aucune valeur par défaut — remplacer par "— Choisir —" (placeholder générique déjà utilisé ailleurs sur le site).
+- **E** — Remplacer intégralement `public/equipment/combat/` (180 fichiers) et `public/equipment/expedition/` (120 fichiers) par le nouveau jeu fourni par le joueur (36 fichiers Combat manquants récupérés + repasse qualité sur l'ensemble des 2 dossiers). Nomenclature vérifiée conforme à la convention déjà en place (cdc section 12) — aucun changement de convention, juste un remplacement de fichiers. ⚠️ Fichiers à fournir directement à Claude Code (zips), pas transférables depuis cette conversation.
+
+### Bloc 83 — 🐛 RÉGRESSION : badge Pouciel/"gemmes" toujours présent malgré le Bloc 82 ✅ **Terminé** (PR #100)
+*Cause racine confirmée : le test du Bloc 82 cherchait le texte littéral "Pouciel" — absent, donc test vert à tort. Le vrai badge visible était `.reference-tile-gems` ("X gemmes"), une donnée légitime mais affichée là où elle ne devait pas l'être, avec un libellé "gemmes" (jamais "Pouciel") qui expliquait pourquoi l'ancien test ne l'attrapait jamais — exactement ce que le joueur avait repéré sur sa capture. Correctif : retrait complet (valeur, libellé, prop, CSS morte, clé de traduction orpheline sur les 5 langues) — le vrai tableau "Pouciel & Gemmes" plus bas reste intact (vérifié : 320 pour la fusion Légendaire toujours affiché). Vérification en Playwright réel sur `/referentiels/combat-equipment` : 0 badge sur les 180 tuiles rendues, captures d'écran du set "Spirit Fyra" exact du rapport joueur (badge disparu) + du tableau dédié (toujours là). Nouveau test de régression basé sur la structure DOM réelle, pas juste une recherche de texte.*
+*Nouveau. Indépendant du reste. Reprise d'un point supposé fermé — vérification visuelle réelle obligatoire avant de reclore.*
+
+- Le badge (affichant "320 gemmes" — valeur + libellé tous les deux à corriger, voir historique complet dans le cahier des charges) est **toujours visible sur les tuiles du référentiel Équipements de Combat après le merge de la PR #99**, malgré la fermeture du Bloc 82/C et un test de non-régression censé couvrir son absence.
+- **Ne pas se fier à une inspection de code seule** — le diagnostic précédent ("aucun badge dans le code") s'est révélé faux. **Vérification visuelle réelle en navigateur obligatoire avant de considérer ce point résolu**, capture d'écran ou description précise de ce qui a été vu à l'appui.
+- **⚠️ Confirmé par le joueur : il s'agit bien du RÉFÉRENTIEL Équipements de Combat** (`/referentiels/combat-equipment`) — **pas le Simulateur de Stuff**. Ne pas confondre les deux composants, qui partagent une disposition de tuile visuellement proche.
+- Objectif inchangé : **retirer entièrement ce badge** (valeur + libellé), sur toutes les tuiles, toutes raretés/familles/sets. L'info Pouciel reste disponible dans le tableau dédié (Bloc 75) plus bas sur la même page.
+
+### Bloc 84 — 🐛 Titre tronqué en mobile sur /referentiels et /tools ✅ **Terminé** (PR #102)
+*Cause racine : le CSS nowrap+shrink-to-fit ne prenait pas en compte la largeur réelle de la police Cinzel en taille mobile. Trouvaille au passage : un bug d'ordre de cascade CSS qui aurait silencieusement empêché le correctif de s'appliquer sur `/referentiels`, corrigé aussi.*
+*Nouveau. Indépendant du reste.*
+
+- [Mobile uniquement] Le titre est tronqué sur `/referentiels` ("Retrouve les données clés") ET sur `/tools` ("Décide avec les bons chiffres") — doit passer à la ligne au lieu d'être coupé.
+
+### Bloc 85 — Simulateurs Combat + Expédition : icône par emplacement vide ✅ **Terminé** (PR #103)
+*Note de livraison : écart de nommage trouvé entre les slugs attendus (`amulet`/`gauntlets`, cdc section 12) et les fichiers réellement livrés (`pendant`/`gloves`) — contourné via une table de correspondance dédiée, aucun 404.*
+*Nouveau. Indépendant du reste.*
+
+- **A** — [Simulateur Combat] Remplacer le texte "Vide" par l'icône `item-{emplacement}.webp` (9 fichiers déposés dans `public/equipment/combat/`) quand aucun équipement n'est sélectionné pour cet emplacement.
+- **B** — [Simulateur Expédition] Même traitement : icône `item-exped-{emplacement}.webp` (6 fichiers déposés dans `public/equipment/expedition/`).
 
 ### Gros chantiers en attente de cadrage (pas prêts pour Codex)
 - **Combat — Fight, Enemy Troops** *(reste du point 18)* — non spécifiés, à cadrer avec toi avant de coder.
 - **Contenu des guides** *(point 19)* — modèle et éditeur prêts, rédaction en cours (via ChatGPT) — voir `docs/cahier-des-charges-ml-helper.md` section 10 (56 guides, 8 catégories, suivi ✅/⬜).
-- **Référentiel Consommables** *(point 20, reclassé — n'est plus un simulateur)* — structure connue : photo/nom/description/**catégorie (Expédition/Stuff/Jeu)**/coût en saphirs, prix fixes (pas de variation par ligue), tri par catégorie puis alphabétique (cdc section 6.2). Liste des objets à collecter.
-- **ES/DE/PL/TR** *(point 21)* — prévu dans l'architecture i18n, pas prioritaire.
+- **Langue Polonaise (PL)** *(point 21)* — seule langue encore non construite (DE/ES/TR livrés et en prod depuis le Bloc 44), pas prioritaire.
+- **Refonte visuelle en tuiles des outils Villes** (Coût de Ville, Niveau Max Atteignable, Production) — idée du joueur (01/09/2026), pas encore cadrée. Objectif : harmoniser avec le reste de l'app (référentiels + Boutique/Templiers/Gemmes déjà en tuiles), améliorer la lisibilité, n'afficher que l'info utile. **Portée confirmée : desktop ET mobile**, ces 3 outils sont jugés moyens aux deux largeurs, pas juste un souci mobile. Rien de précis pour l'instant, nécessite une vraie session de cadrage avant prompt.
+- **Question en attente — l'outil Templiers est-il redondant avec le référentiel Templiers ?** Discussion du 01/09/2026 : le référentiel affiche déjà coût unitaire ET cumulé par niveau (soustraction suffit pour un coût départ→cible), et le bonus/gain personnalisé reste facile à calculer soi-même selon le joueur. **Décidé pour l'instant : l'outil est conservé**, question ouverte pour plus tard. Si retrait futur : impact sur `/tools`, les liens croisés réciproques (Bloc 53/54/67), et tout travail en cours sur cet outil au moment de la décision.
+- **🚩 Configurateur d'avatar joueur, comme dans le jeu — explicitement V2** (décision du joueur : priorité à la finition de la V1). Mécanique envisagée : composition en calques (cheveux/visage/barbe/yeux/bouche, un bouton de défilement par composant, aperçu recomposé en temps réel). Assets déjà disponibles. Reste à trancher : mécanisme technique de composition, cohérence des calques entre races/genres. Session de cadrage reportée après V1.
+- **🚩 Configurateur de bannière de clan, comme dans le jeu — explicitement V2**, même décision. Même principe que le configurateur d'avatar. Session de cadrage reportée après V1.
 
 ### Résolu (gardé pour traçabilité)
 - ~~Renommage de la catégorie "Classement"~~ *(point 33)* → **✅ Résolu : on garde "Classement"**, pas de renommage prévu.
