@@ -19,8 +19,7 @@ import {
   getExpeditionStarIncrements,
 } from "../../../../../lib/reference-equipment-server";
 import { getLocale, getTranslations } from "next-intl/server";
-import { pageTitle } from "../../../../../lib/page-title";
-import { canonicalUrl, languageAlternates } from "../../../../../lib/site-url";
+import { pageMetadata } from "../../../../../lib/page-metadata";
 
 const toolTitleKeys: Record<string, string> = {
   villes: "cities",
@@ -35,18 +34,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const key = toolTitleKeys[slug];
   if (!key) return {};
-  const [publicTranslations, tools] = await Promise.all([
-    getTranslations("Public"),
+  const [tools, locale] = await Promise.all([
     getTranslations("tools"),
+    getLocale(),
   ]);
-  return {
-    title: pageTitle(publicTranslations("tools"), tools(key)),
-    description: tools("subtitle"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), `/tools/${slug}`),
-      languages: languageAlternates(`/tools/${slug}`),
-    },
-  };
+  // Bloc 91/E2: each of the 4 categories now has its own description
+  // (tools.descriptions.<key>) instead of the shared tools.subtitle, so the
+  // pages are distinguishable in a SERP; Bloc 91/E3 adds the OG/Twitter card.
+  return pageMetadata({
+    locale,
+    path: `/tools/${slug}`,
+    title: tools(key),
+    description: tools(`descriptions.${key}`),
+  });
 }
 
 export default async function ToolPage({

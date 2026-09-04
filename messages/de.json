@@ -128,7 +128,13 @@
     "combat-tabs": "Kampf-Werkzeuge",
     "skills-tabs": "Fähigkeiten-Werkzeuge",
     "calculator-unavailable": "Deaktiviert — derzeit nicht verfügbar",
-    "calculators-unavailable": "Diese Werkzeuge sind vorübergehend nicht verfügbar."
+    "calculators-unavailable": "Diese Werkzeuge sind vorübergehend nicht verfügbar.",
+    "descriptions": {
+      "cities": "Berechne Kosten, Produktion und Belohnungen deiner Städte in Million Lords: Kosten und Maximalstufe, Goldproduktion und XP-Gewinn pro Stufe.",
+      "combat": "Kampf-Tools für Million Lords: XP-Gewinnrate, Demo-Angriffstruppen für Angreifer und Ziel sowie feindliche Truppen zur Planung jedes Angriffs.",
+      "ranking": "Schätze deinen Ranglisten-Fortschritt in Million Lords: deinen aktuellen Rang und die Siegpunkte, die du für deinen Zielrang brauchst.",
+      "skills": "Optimiere Ausrüstung und Fähigkeiten in Million Lords: Kampf- und Expeditionsausrüstung, Edelsteine und Templer, inklusive Fusionskosten."
+    }
   },
   "player-settings": {
     "title": "Spielereinstellungen",
@@ -446,7 +452,10 @@
     "guides": "Anleitungen",
     "contact": "Kontakt",
     "admin": "Verwaltung",
-    "legal": "Impressum"
+    "legal": "Impressum",
+    "meta": {
+      "siteTitle": "ML-Helper — Million Lords: Tools und Guides"
+    }
   },
   "contact": {
     "eyebrow": "Kontakt",
@@ -468,6 +477,7 @@
     "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut."
   },
   "Home": {
+    "h1": "Million Lords: Tools und Guides",
     "intro": "ML Helper vereint die Werkzeuge und Referenzen der Community, um dir zu helfen, jede Entscheidung in Million Lords zu planen.",
     "toolsEyebrow": "Simulieren",
     "toolsTitle": "Entscheide mit den richtigen Zahlen",
@@ -575,6 +585,16 @@
       },
       "no-tiers": "Keine Stufen für dieses Event.",
       "final-objective": "Endziel: {objective}"
+    },
+    "description": "Finde alle von der Community geprüften Zahlen für Million Lords: Ausrüstung, Edelsteine, Templer, Fortschritt und Shop in klaren Referenztabellen.",
+    "descriptions": {
+      "combat-equipment": "Alle Kampfausrüstung in Million Lords: Fähigkeiten pro Teil, Seltenheit, Familien, Fusions- und Zerlegungskosten und Edelstein-Slots.",
+      "expedition-equipment": "Alle Expeditionsausrüstung in Million Lords: Seltenheit, Familie, Slot, Sekundärwert und Fusions- und Zerlegungskosten.",
+      "level-up": "Million-Lords-Fortschrittstabelle nach Liga: benötigte XP, Truppen und Belohnungen Stufe für Stufe, von Bronze bis Legende.",
+      "templars": "Templerkosten in Million Lords: Himmelsstaub vom Start- bis zum Zielniveau, Bonus pro Templer und Gesamtbonus in einer vollständigen Tabelle.",
+      "gems": "Alle Edelsteine in Million Lords: Bonus pro Fähigkeit und pro Liga, Slots und Fusionskosten in Saphiren, mit Multi-Fähigkeiten-Optimierung.",
+      "shop": "Million-Lords-Shop-Referenz: Verbrauchsgüter und von der Community geprüfte Daten, um im richtigen Moment auszugeben.",
+      "events": "Million-Lords-Event-Referenz: von der Community geprüfte Daten und Belohnungen, um dich auf jedes Event vorzubereiten."
     }
   },
   "combat-equipment": {

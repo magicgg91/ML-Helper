@@ -3992,6 +3992,17 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .home-intro {
   max-width: 46rem;
 }
+/* Bloc 91/E5: the page's real <h1>. Kept at the intro sentence's own type
+   scale (a lead line, not a banner) so promoting the homepage to a proper
+   heading hierarchy doesn't change the visual weight of this block — only a
+   touch more emphasis and a small gap above the descriptive sentence. */
+.home-intro h1 {
+  margin: 0 0 0.4rem;
+  color: var(--text);
+  font-size: clamp(1.35rem, 1.6vw + 1rem, 1.75rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
 .home-intro p {
   margin: 0;
   color: var(--text);

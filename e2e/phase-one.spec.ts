@@ -151,7 +151,9 @@ test("tool routes alone expose persistent player settings", async ({
   page,
 }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("ML Helper");
+  // Bloc 91/E2: the homepage inherits the brand default title; every other
+  // page gets "<title> | ML-Helper · Million Lords" via the root template.
+  await expect(page).toHaveTitle("ML-Helper — Outils et guides Million Lords");
   await expect(page.getByPlaceholder("Rechercher")).toBeVisible();
   // Bloc 34/D: the carousel/hero is gone — a short intro sentence in its
   // place, the tool category grid as the actual homepage content.
@@ -159,6 +161,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(page.locator(".home-intro p")).toHaveText(
     "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
   );
+  // Bloc 91/E5: the homepage now opens on a real <h1> (it previously had
+  // none — the intro was a bare <p>, breaking the heading hierarchy).
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Outils et guides Million Lords",
+    }),
+  ).toBeVisible();
   // Bloc 33/A: the homepage gives 1-click access to a tool category
   // directly (the same ToolCategoryGrid as /tools).
   await expect(page.getByRole("link", { name: /Villes/ })).toHaveAttribute(
@@ -191,7 +201,7 @@ test("tool routes alone expose persistent player settings", async ({
     "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
   );
   await page.goto("/guides");
-  await expect(page).toHaveTitle("Guides");
+  await expect(page).toHaveTitle("Guides | ML-Helper · Million Lords");
   await expect(
     page.getByRole("heading", { name: "Visible guide" }),
   ).toBeVisible();
@@ -208,7 +218,7 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
 
   await page.goto("/tools");
-  await expect(page).toHaveTitle("Outils");
+  await expect(page).toHaveTitle("Outils | ML-Helper · Million Lords");
   await expect(page.locator(".tool-category-card")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(
@@ -227,7 +237,7 @@ test("tool routes alone expose persistent player settings", async ({
   // la catégorie" text to click on.
   await page.getByRole("link", { name: /^Villes/ }).click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
-  await expect(page).toHaveTitle("Outils — Villes");
+  await expect(page).toHaveTitle("Villes | ML-Helper · Million Lords");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
@@ -256,7 +266,17 @@ test("tool routes alone expose persistent player settings", async ({
     }),
   ).toHaveValue("12.5");
   await page.goto("/guides/guide-visible");
-  await expect(page).toHaveTitle("Guides — Guide visible");
+  await expect(page).toHaveTitle(
+    "Guides — Guide visible | ML-Helper · Million Lords",
+  );
+  // Bloc 91/E3: a guide is an Open Graph article with its publish time.
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
+    "content",
+    "article",
+  );
+  await expect(
+    page.locator('meta[property="article:published_time"]'),
+  ).toHaveCount(1);
   await expect(
     page.getByRole("heading", { name: "Guide visible" }),
   ).toBeVisible();

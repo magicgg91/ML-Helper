@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import { siteUrl } from "@/lib/site-url";
+import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
 
 // Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
@@ -16,8 +18,30 @@ import "./globals.css";
 // same as every real page's own metadata already does. Reuses the exact
 // same string as the homepage's own intro sentence.
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Home");
-  return { title: "ML Helper", description: t("intro") };
+  const [t, meta, locale] = await Promise.all([
+    getTranslations("Home"),
+    getTranslations("Public.meta"),
+    getLocale(),
+  ]);
+  // Bloc 91/E2: metadataBase lets every URL-based field (OG images, canonicals)
+  // resolve from a single origin; the title template puts the brand and the
+  // "Million Lords" keyword on every page's <title> automatically, and the
+  // default names the site for pages (login, admin fallbacks) that don't set a
+  // title of their own. Bloc 91/E3: a site-wide Open Graph identity + Twitter
+  // summary card so shared links (Discord, Reddit) render with an image — the
+  // per-page og:title/description are filled in by each page (see
+  // pageMetadata), and the default OG image comes from opengraph-image.tsx.
+  return {
+    metadataBase: new URL(siteUrl),
+    title: { default: meta("siteTitle"), template: titleTemplate },
+    description: t("intro"),
+    openGraph: {
+      siteName: "ML-Helper",
+      type: "website",
+      locale: ogLocale(locale),
+    },
+    twitter: { card: "summary_large_image" },
+  };
 }
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();

@@ -87,6 +87,13 @@ describe("Bloc 91/E1: locale-prefixed routing", () => {
     expect(forwardedLocale(res)).toBe("en");
   });
 
+  it("does not locale-redirect the generated OG image route (Bloc 91/E3)", () => {
+    const res = proxy(makeRequest({ path: "/opengraph-image" }));
+    // Must pass straight through — a 308 to /fr/opengraph-image would break it.
+    expect(res.headers.get("location")).toBeNull();
+    expect(res.status).not.toBe(308);
+  });
+
   it("forwards the pathname and query string to the layout (Codex P2: disabled-locale redirect keeps deep-link state)", () => {
     const res = proxy(
       makeRequest({ path: "/de/tools/competences?open=templars" }),

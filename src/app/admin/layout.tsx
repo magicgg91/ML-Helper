@@ -24,7 +24,11 @@ import { prisma } from "@/lib/prisma";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Public");
   return {
-    title: `ML-Helper ${t("admin")}`,
+    // Bloc 91/E2: `absolute` opts the (noindex) admin area out of the public
+    // "%s | ML-Helper · Million Lords" title template introduced on the root
+    // layout, which would otherwise double-brand it as
+    // "ML-Helper Administration | ML-Helper · Million Lords".
+    title: { absolute: `ML-Helper ${t("admin")}` },
     description: t("descriptions.admin"),
     robots: { index: false, follow: false },
   };

@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
-import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { pageMetadata } from "@/lib/page-metadata";
 
 // Bloc 50/1b: dedicated index for the /referentiels root, now independent
 // from /guides (the reference grid used to live embedded inside the
@@ -13,14 +13,18 @@ import { canonicalUrl, languageAlternates } from "@/lib/site-url";
 // inactive-by-default reference, Events, actually exposed the gap) so
 // ReferenceCatalogGrid can hide inactive references from this index too.
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("references");
-  return {
+  const [t, locale] = await Promise.all([
+    getTranslations("references"),
+    getLocale(),
+  ]);
+  // Bloc 91/E2: the index had no description at all (it inherited the
+  // homepage intro) — now its own references.description.
+  return pageMetadata({
+    locale,
+    path: "/referentiels",
     title: t("title"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), "/referentiels"),
-      languages: languageAlternates("/referentiels"),
-    },
-  };
+    description: t("description"),
+  });
 }
 
 export default async function ReferentielsPage() {

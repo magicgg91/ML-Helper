@@ -2,21 +2,22 @@ import type { Metadata } from "next";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
 import { ToolCategoryGrid } from "@/components/tool-category-grid";
 import { getLocale, getTranslations } from "next-intl/server";
-import { canonicalUrl, languageAlternates } from "@/lib/site-url";
+import { pageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [t, tools] = await Promise.all([
+  const [t, tools, locale] = await Promise.all([
     getTranslations("Public"),
     getTranslations("tools"),
+    getLocale(),
   ]);
-  return {
+  // The /tools index keeps the section-wide tools.subtitle — it describes the
+  // hub, not a single category (those get their own description, Bloc 91/E2).
+  return pageMetadata({
+    locale,
+    path: "/tools",
     title: t("tools"),
     description: tools("subtitle"),
-    alternates: {
-      canonical: canonicalUrl(await getLocale(), "/tools"),
-      languages: languageAlternates("/tools"),
-    },
-  };
+  });
 }
 
 export default async function ToolsPage() {
