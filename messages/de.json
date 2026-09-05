@@ -633,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Expeditionsausrüstung",
-    "unconfirmed-label": "Unbestätigte Annahme",
     "empty": "Keine Expeditionsausrüstung entspricht diesen Filtern.",
     "columns": {
       "rarity": "Seltenheit",

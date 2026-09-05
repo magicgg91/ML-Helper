@@ -37,6 +37,26 @@ describe("ExpeditionEquipmentSimulator", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 
+  // Bloc 93/F6: the slot button reveals the shared editor panel elsewhere in
+  // the DOM. Bloc 92/L6 wired that relationship on Combat only; this is the
+  // Expédition half of the same pattern.
+  it("exposes the slot button's control of the editor panel and its open state", () => {
+    renderTool();
+    const cape = screen.getByRole("button", { name: /Cape/ });
+    expect(cape).toHaveAttribute("aria-expanded", "false");
+    expect(cape).toHaveAttribute("aria-controls", "expedition-slot-editor");
+    // The referenced panel must actually exist, or the attribute is a dead link.
+    const panel = document.getElementById("expedition-slot-editor");
+    expect(panel).not.toBeNull();
+
+    fireEvent.click(cape);
+    expect(cape).toHaveAttribute("aria-expanded", "true");
+    expect(panel).toHaveClass("stuff-editor-panel-active");
+
+    fireEvent.click(cape);
+    expect(cape).toHaveAttribute("aria-expanded", "false");
+  });
+
   it("shows the 10-stat grid at 0% for a completely empty loadout, not an empty-summary message (E.3)", () => {
     renderTool();
     const summary = summarySection();

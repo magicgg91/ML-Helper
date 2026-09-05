@@ -633,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Équipements d’Expédition",
-    "unconfirmed-label": "Hypothèse non confirmée",
     "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
     "columns": {
       "rarity": "Rareté",

@@ -75,3 +75,37 @@ export type ReferenceSlug = (typeof referenceCatalog)[number]["slug"];
 export function referenceHref(slug: ReferenceSlug) {
   return `/referentiels/${slug}` as const;
 }
+
+// Bloc 93/M4: the other direction of the same cross-link. Bloc 53/F gave the
+// tool pages a `?open=<tab>` contract so a reference can land on a precise
+// calculator, but the 5 links using it were written as string literals and
+// nothing tied them to the tabs the pages actually accept — a renamed tab
+// would have silently degraded each link to "whichever tab is first".
+// Listing the tabs here makes toolHref("combat", "gems") a type error, and
+// gives the tool page one source of truth to validate `?open=` against.
+export const toolTabs = {
+  combat: ["xp", "demo"],
+  competences: ["simulator", "expedition", "gems", "templars"],
+} as const;
+
+export type TabbedToolSlug = keyof typeof toolTabs;
+export type ToolTab<Slug extends TabbedToolSlug> =
+  (typeof toolTabs)[Slug][number];
+
+export function toolHref<Slug extends TabbedToolSlug>(
+  slug: Slug,
+  tab: ToolTab<Slug>,
+) {
+  return `/tools/${slug}?open=${tab}` as const;
+}
+
+/** Narrows a raw `?open=` value to a tab the given tool actually has. */
+export function toolTab<Slug extends TabbedToolSlug>(
+  slug: Slug,
+  value: string | string[] | undefined,
+): ToolTab<Slug> | undefined {
+  return typeof value === "string" &&
+    (toolTabs[slug] as readonly string[]).includes(value)
+    ? (value as ToolTab<Slug>)
+    : undefined;
+}

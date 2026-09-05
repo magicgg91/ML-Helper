@@ -112,7 +112,7 @@ export function computeExpeditionSlot(
     state.star,
     increments,
   );
-  if (primary.value !== null) add(total, item.family, primary.value);
+  if (primary !== null) add(total, item.family, primary);
   if (item.secondary_stat_name) {
     const secondaryStat = item.secondary_stat_name.replace("_expé", "");
     const secondary = expeditionValueAtStar(
@@ -121,7 +121,7 @@ export function computeExpeditionSlot(
       state.star,
       increments,
     );
-    if (secondary.value !== null) add(total, secondaryStat, secondary.value);
+    if (secondary !== null) add(total, secondaryStat, secondary);
   }
   return total;
 }

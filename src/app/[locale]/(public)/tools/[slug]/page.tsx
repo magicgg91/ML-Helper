@@ -20,6 +20,7 @@ import {
 } from "../../../../../lib/reference-equipment-server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { pageMetadata } from "../../../../../lib/page-metadata";
+import { toolTab } from "../../../../../lib/reference-catalog";
 
 const toolTitleKeys: Record<string, string> = {
   villes: "cities",
@@ -74,7 +75,7 @@ export default async function ToolPage({
             xp: active["xp-gain-rate"],
             demo: active["demo-attack-troops"],
           }}
-          initialTool={open === "xp" || open === "demo" ? open : undefined}
+          initialTool={toolTab("combat", open)}
           levelUpReferenceActive={active["level-up"]}
         />
       </main>
@@ -97,14 +98,7 @@ export default async function ToolPage({
             templars: active.templars,
             expedition: active["expedition-equipment-simulator"],
           }}
-          initialTool={
-            open === "simulator" ||
-            open === "expedition" ||
-            open === "gems" ||
-            open === "templars"
-              ? open
-              : undefined
-          }
+          initialTool={toolTab("competences", open)}
         />
       </main>
     );

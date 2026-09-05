@@ -86,6 +86,24 @@ describe("equipment tools", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 
+  // Bloc 93/F6: Combat's half of the same relationship — wired in Bloc 92/L6
+  // but never covered, which is how the Expédition gap went unnoticed.
+  it("exposes the slot button's control of the editor panel and its open state", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
+    expect(amulet).toHaveAttribute("aria-expanded", "false");
+    expect(amulet).toHaveAttribute("aria-controls", "stuff-slot-editor");
+    const panel = document.getElementById("stuff-slot-editor");
+    expect(panel).not.toBeNull();
+
+    fireEvent.click(amulet);
+    expect(amulet).toHaveAttribute("aria-expanded", "true");
+    expect(panel).toHaveClass("stuff-editor-panel-active");
+
+    fireEvent.click(amulet);
+    expect(amulet).toHaveAttribute("aria-expanded", "false");
+  });
+
   // Bloc 93/E1: mirrors the Expédition test above — a saved value of an
   // earlier shape used to reach the renderer, which indexes
   // state[family][index].equipment/.star/.gems directly, and crashed the
@@ -493,9 +511,10 @@ describe("equipment tools", () => {
     // Switching back to Défense shows the earlier selection untouched.
     selectFamily("Défense");
     expect(
-      within(
-        screen.getByRole("button", { name: /Amulette/ }),
-      ).getByRole("img", { name: "1 étoiles" }),
+      within(screen.getByRole("button", { name: /Amulette/ })).getByRole(
+        "img",
+        { name: "1 étoiles" },
+      ),
     ).toBeInTheDocument();
   });
 

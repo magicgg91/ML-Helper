@@ -633,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Keşif Ekipmanı",
-    "unconfirmed-label": "Doğrulanmamış varsayım",
     "empty": "Bu filtrelere uyan keşif ekipmanı yok.",
     "columns": {
       "rarity": "Nadirlik",

@@ -106,18 +106,23 @@ export function parseExpeditionStarIncrements(
   ) as ExpeditionStarIncrements;
 }
 
+// Bloc 93/M3: returns `number | null`, the same contract as combatValueAtStar.
+// This used to return `{ value, confirmed }`, but `confirmed: false` was only
+// ever paired with `value: null` — the invariant confirmed === (value !== null)
+// held on every branch, so the flag carried no information the value didn't,
+// and the "unconfirmed" badge it gated (a non-null value that is not confirmed)
+// was unreachable. Both the flag and that badge are gone rather than kept as an
+// API suggesting a confirmed/extrapolated distinction that never existed.
 export function expeditionValueAtStar(
   stat: string,
   raw: string,
   star: number,
   increments: ExpeditionStarIncrements = defaultExpeditionStarIncrements,
-): { value: number | null; confirmed: boolean } {
+): number | null {
   const base = Number(raw);
-  if (!raw || !Number.isFinite(base)) return { value: null, confirmed: false };
+  if (!raw || !Number.isFinite(base)) return null;
   const increment = increments[stat as ExpeditionStatKey];
-  return increment === undefined
-    ? { value: null, confirmed: false }
-    : { value: valueAtStar(base, increment, star), confirmed: true };
+  return increment === undefined ? null : valueAtStar(base, increment, star);
 }
 
 // Terradust merge cost (cdc 7.1): Coût(rareté, n) = K(rareté) × 2^(n-1),

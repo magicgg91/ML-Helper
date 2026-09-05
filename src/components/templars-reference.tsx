@@ -8,7 +8,7 @@ import {
 } from "../lib/templar-parameters";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 import { skillColor } from "../lib/game-images";
 import { templarKeys, type TemplarKey } from "../lib/player-settings";
 import type {
@@ -151,7 +151,7 @@ export function TemplarsReferenceTable({
         ))}
       </section>
       <CrossReferenceLink
-        href="/tools/competences?open=templars"
+        href={toolHref("competences", "templars")}
         title={t("name")}
         image={templarsReference.image}
         fallbackImage={templarsReference.fallbackImage}

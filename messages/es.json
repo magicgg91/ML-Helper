@@ -633,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Equipo de Expedición",
-    "unconfirmed-label": "Suposición no confirmada",
     "empty": "Ningún equipo de expedición coincide con estos filtros.",
     "columns": {
       "rarity": "Rareza",

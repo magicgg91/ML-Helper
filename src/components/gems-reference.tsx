@@ -8,7 +8,7 @@ import { leagues, skillKeys, type SkillKey } from "../lib/player-settings";
 import { GameImage } from "./game-image";
 import { formatPercent } from "./reference-tables";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 65/D: one tile per skill, replacing the 11 x 7 matrix table that
 // needed a horizontal scroll on a phone and was already cramped on
@@ -142,7 +142,7 @@ export function GemsReferenceTable({
         ))}
       </div>
       <CrossReferenceLink
-        href="/tools/competences?open=gems"
+        href={toolHref("competences", "gems")}
         title={t("name")}
         image={gemsReference.image}
         fallbackImage={gemsReference.fallbackImage}
