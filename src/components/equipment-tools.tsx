@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { formatSkillPercentValue } from "../lib/skill-percent";
+import { formatSkillPercentValue } from "../lib/format";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
   equipmentFamilyTranslationKeys,

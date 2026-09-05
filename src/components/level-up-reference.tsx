@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { formatGameNumber } from "../lib/city-calculators";
+import { formatGameNumber } from "../lib/format";
 import {
   levelUpChestAt,
   levelUpTroopsAt,

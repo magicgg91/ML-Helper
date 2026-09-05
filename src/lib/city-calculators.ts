@@ -179,26 +179,3 @@ export function calculateReward(base: number, hours: number): number {
   return base * hours;
 }
 
-export function formatGameNumber(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  const absolute = Math.abs(rounded);
-  const units = [
-    { threshold: 1e15, suffix: "P" },
-    { threshold: 1e12, suffix: "T" },
-    { threshold: 1e9, suffix: "G" },
-    { threshold: 1e6, suffix: "M" },
-    { threshold: 1e3, suffix: "k" },
-  ];
-  for (let index = 0; index < units.length; index += 1) {
-    const unit = units[index];
-    if (absolute < unit.threshold) continue;
-    let compact = absolute / unit.threshold;
-    if (compact >= 999.995 && index > 0) {
-      const next = units[index - 1];
-      compact = absolute / next.threshold;
-      return `${rounded < 0 ? "-" : ""}${compact.toFixed(2).replace(/\.?0+$/, "")}${next.suffix}`;
-    }
-    return `${rounded < 0 ? "-" : ""}${compact.toFixed(2).replace(/\.?0+$/, "")}${unit.suffix}`;
-  }
-  return Math.round(rounded).toLocaleString("fr-FR");
-}

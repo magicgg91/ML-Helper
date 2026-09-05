@@ -109,7 +109,10 @@ describe("TemplarsReferenceTable", () => {
     const level20Row = tables[1].querySelectorAll("tbody tr")[9];
     const cells = level20Row.querySelectorAll("td");
     expect(cells[0]).toHaveTextContent("20");
-    expect(cells[1]).toHaveTextContent("21929");
+    // Bloc 93/F4: exact figure, now with the locale's thousands separator
+    // (U+202F in French) instead of a bare digit run — the "never compacted"
+    // rule of Bloc 66/D is unchanged and still asserted below.
+    expect(cells[1].textContent).toBe("21\u202f929");
     expect(cells[1].textContent).not.toMatch(/[kKmMgG]/);
   });
 

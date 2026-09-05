@@ -2,8 +2,10 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
-import { formatGameNumber } from "../lib/city-calculators";
-import { formatSkillPercentValue } from "../lib/skill-percent";
+import {
+  formatGameNumber,
+  formatSkillPercentValue,
+} from "../lib/format";
 import { filterButtonColor, skillColor } from "../lib/game-images";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";

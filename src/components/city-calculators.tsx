@@ -2,13 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { formatGameNumber } from "../lib/format";
 import {
   bonusBreakdown,
   calculateProduction,
   calculateReward,
   cityStatsAt,
   cityUpgradeCost,
-  formatGameNumber,
   maximumReachableLevel,
 } from "../lib/city-calculators";
 import { templePercent, type PlayerSettings } from "../lib/player-settings";

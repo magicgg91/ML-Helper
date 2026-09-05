@@ -9,6 +9,7 @@ import {
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
+import { formatExactNumber } from "../lib/format";
 import { skillColor } from "../lib/game-images";
 import { templarKeys, type TemplarKey } from "../lib/player-settings";
 import type {
@@ -139,9 +140,13 @@ export function TemplarsReferenceTable({
                       <td>{index + 1}</td>
                       {/* Bloc 66/D: unlike other reference tables, this cost
                           must never be compacted to k/M — the task's own
-                          spec example shows the full digit sequence. */}
-                      <td>{Math.round(item)}</td>
-                      <td>{Math.round(cumulative[index])}</td>
+                          spec example shows the full digit sequence.
+                          Bloc 93/F4: still uncompacted, but through
+                          formatExactNumber so the thousands separators match
+                          the rest of the site (the ranking table already
+                          printed "12 345" where this printed "12345"). */}
+                      <td>{formatExactNumber(item, locale)}</td>
+                      <td>{formatExactNumber(cumulative[index], locale)}</td>
                     </tr>
                   );
                 })}

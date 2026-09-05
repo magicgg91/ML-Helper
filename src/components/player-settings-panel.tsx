@@ -5,7 +5,7 @@ import { useEffect, useMemo } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
 import { usePersistedState } from "./use-persisted-state";
-import { formatSkillPercentValue } from "../lib/skill-percent";
+import { formatSkillPercentValue } from "../lib/format";
 import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
