@@ -42,6 +42,32 @@ describe("EditableDataTable", () => {
     expect(onRemove).toHaveBeenCalledWith(0);
   });
 
+  it("Bloc 92/A11y (M4/L3): links the field error via aria-describedby and marks required columns", () => {
+    render(
+      <EditableDataTable
+        rows={[{ name: "", amount: "1" }]}
+        columns={columns}
+        onChange={vi.fn()}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        addLabel="Ajouter"
+        removeLabel="Retirer"
+        emptyLabel="Aucune ligne"
+        errors={{ "0:name": "Le nom est obligatoire" }}
+      />,
+    );
+    const nameInput = screen.getByLabelText("Nom 1");
+    // L3: required columns expose aria-required to assistive tech.
+    expect(nameInput).toHaveAttribute("aria-required", "true");
+    // M4: the invalid field points at the id of its visible error text.
+    expect(nameInput).toHaveAttribute("aria-invalid", "true");
+    const describedBy = nameInput.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy!)).toHaveTextContent(
+      "Le nom est obligatoire",
+    );
+  });
+
   it("Bloc43: offers row reordering only when onMove is provided, disabled at the boundaries", () => {
     const onMove = vi.fn();
     render(
@@ -216,7 +242,9 @@ describe("EditableDataTable", () => {
         actionsLabel="Actions"
       />,
     );
-    const headers = screen.getAllByRole("columnheader").map((h) => h.textContent);
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((h) => h.textContent);
     expect(headers).toEqual(["Nom", "Montant", "Actions"]);
     expect(
       screen.queryByRole("columnheader", { name: "Monter" }),
@@ -253,7 +281,9 @@ describe("EditableDataTable", () => {
     const firstRowCells = screen.getAllByRole("row")[1].querySelectorAll("td");
     const actionsCell = firstRowCells[firstRowCells.length - 1];
     expect(actionsCell.className).toBe("");
-    const inner = actionsCell.querySelector(":scope > .reference-admin-move-cell");
+    const inner = actionsCell.querySelector(
+      ":scope > .reference-admin-move-cell",
+    );
     expect(inner).not.toBeNull();
     expect(inner?.tagName).toBe("DIV");
     expect(inner?.querySelectorAll("button")).toHaveLength(3);

@@ -30,6 +30,10 @@ export function UsersManager({
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  // Bloc 92/A11y (M4): which user's inline password field currently carries the
+  // "too short" error, so it's tied to that specific input rather than only the
+  // shared page-level status message.
+  const [pwErrorUserId, setPwErrorUserId] = useState<string | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>(
     {},
   );
@@ -66,9 +70,11 @@ export function UsersManager({
   }
   async function update(user: UserRow) {
     const password = passwords[user.id];
+    setPwErrorUserId(null);
     if (password && password.length < 12) {
-      setMessage(t("admin.users.password-too-short"));
-      setSuccess(false);
+      // Bloc 92/A11y (M4): surface the error on the field itself (role="alert"
+      // + aria-describedby below), not only in the shared page-level status.
+      setPwErrorUserId(user.id);
       return;
     }
     const response = await fetch(`/api/admin/users/${user.id}`, {
@@ -217,16 +223,33 @@ export function UsersManager({
                         <input
                           className={inputClass}
                           aria-label={`${t("admin.users.password")} ${user.username}`}
+                          aria-invalid={pwErrorUserId === user.id}
+                          aria-describedby={
+                            pwErrorUserId === user.id
+                              ? `password-error-${user.id}`
+                              : undefined
+                          }
                           type="password"
                           minLength={12}
                           value={passwords[user.id] ?? ""}
-                          onChange={(event) =>
+                          onChange={(event) => {
                             setPasswords({
                               ...passwords,
                               [user.id]: event.target.value,
-                            })
-                          }
+                            });
+                            if (pwErrorUserId === user.id)
+                              setPwErrorUserId(null);
+                          }}
                         />
+                        {pwErrorUserId === user.id && (
+                          <small
+                            className="field-error"
+                            id={`password-error-${user.id}`}
+                            role="alert"
+                          >
+                            {t("admin.users.password-too-short")}
+                          </small>
+                        )}
                         <Button
                           size="icon"
                           variant="secondary"
