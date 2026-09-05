@@ -105,6 +105,11 @@ export function PlayerSettingsPanel() {
       window.dispatchEvent(
         new CustomEvent(playerSettingsChangedEvent, { detail: value }),
       ),
+    // This panel has always read storage on a microtask, unlike the two
+    // simulators. It matters here: a macrotask lets the Stuff simulator's
+    // transfer (and the user's own edits) land first, and the deferred read
+    // then overwrites them.
+    schedule: queueMicrotask,
   });
 
   // Picks up a write from another source (e.g. the Stuff simulator's

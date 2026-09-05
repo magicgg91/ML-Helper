@@ -15,6 +15,23 @@ type PersistedStateOptions<T> = {
   serialize?: (value: T) => string;
   /** Runs after each write, for callers that broadcast their changes. */
   onPersist?: (value: T) => void;
+  /**
+   * How the initial read is deferred. Defaults to a macrotask, which is what
+   * both simulators used.
+   *
+   * Bloc 93 CI: the player settings panel used `queueMicrotask`, and folding
+   * it into this hook silently moved it to `setTimeout`. That is not
+   * equivalent — a macrotask lets user interaction and external writes land
+   * BEFORE the deferred read, which then overwrites them with what storage
+   * held. It reproduced as a genuinely racy test under CPU contention
+   * (~1 failure in 8 here, 0 in 10 on the pre-refactor code). Callers keep
+   * whichever scheduling they had.
+   */
+  schedule?: (run: () => void) => void;
+};
+
+const scheduleMacrotask = (run: () => void) => {
+  window.setTimeout(run, 0);
 };
 
 /**
@@ -37,13 +54,16 @@ export function usePersistedState<T>(
     parse,
     serialize = JSON.stringify,
     onPersist,
+    schedule = scheduleMacrotask,
   }: PersistedStateOptions<T>,
 ): [T, Dispatch<SetStateAction<T>>, boolean] {
   const [value, setValue] = useState<T>(initial);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    let cancelled = false;
+    schedule(() => {
+      if (cancelled) return;
       try {
         const saved = window.localStorage.getItem(key);
         if (saved !== null) {
@@ -55,8 +75,12 @@ export function usePersistedState<T>(
         // value; the simulator stays usable either way.
       }
       setLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
+    });
+    // Guards against the deferred read landing after unmount (queueMicrotask
+    // cannot be cancelled the way clearTimeout cancels a timer).
+    return () => {
+      cancelled = true;
+    };
     // Mount-only on purpose: re-reading storage after the user has started
     // editing would discard their in-progress work.
     // eslint-disable-next-line react-hooks/exhaustive-deps

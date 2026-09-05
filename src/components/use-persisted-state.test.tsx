@@ -22,15 +22,18 @@ const key = "mlhelper_test_counter";
 function Probe({
   serialize,
   onPersist,
+  schedule,
 }: {
   serialize?: (value: Counter) => string;
   onPersist?: (value: Counter) => void;
+  schedule?: (run: () => void) => void;
 } = {}) {
   const [value, setValue, loaded] = usePersistedState<Counter>(key, {
     initial: () => ({ count: 0 }),
     parse: parseCounter,
     serialize,
     onPersist,
+    schedule,
   });
   return (
     <button type="button" onClick={() => setValue({ count: value.count + 1 })}>
@@ -109,6 +112,53 @@ describe("usePersistedState", () => {
       ),
     );
     expect(onPersist).toHaveBeenCalledWith({ count: 1 });
+  });
+
+  // Bloc 93 CI: folding the player settings panel into this hook silently
+  // moved its initial read from a microtask to a macrotask. That is not an
+  // equivalent refactor — a macrotask lets user edits and external writes
+  // land first, and the deferred read then overwrites them. It showed up as
+  // a test that failed ~1 run in 8 under CPU contention (0 in 10 on the
+  // pre-refactor code). These pin the contract in both directions.
+  describe("schedule", () => {
+    it("defers to a macrotask by default, after any pending microtask", async () => {
+      localStorage.setItem(key, JSON.stringify({ count: 7 }));
+      render(<Probe />);
+      // A microtask queued now still runs before the default read lands.
+      let microtaskRanFirst = false;
+      queueMicrotask(() => {
+        microtaskRanFirst =
+          screen.getByRole("button").textContent === "loading:0";
+      });
+      await waitFor(() =>
+        expect(screen.getByRole("button")).toHaveTextContent("loaded:7"),
+      );
+      expect(microtaskRanFirst).toBe(true);
+    });
+
+    it("reads on a microtask when the caller asks for one", async () => {
+      localStorage.setItem(key, JSON.stringify({ count: 7 }));
+      render(<Probe schedule={queueMicrotask} />);
+      // Already applied by the time a macrotask gets its turn — which is what
+      // stops an interaction in the same tick from being overwritten.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(screen.getByRole("button")).toHaveTextContent("loaded:7");
+    });
+
+    it("does not apply a read that resolves after unmount", async () => {
+      localStorage.setItem(key, JSON.stringify({ count: 7 }));
+      let deferred: (() => void) | undefined;
+      const { unmount } = render(
+        <Probe
+          schedule={(run) => {
+            deferred = run;
+          }}
+        />,
+      );
+      unmount();
+      // Running it now must not touch an unmounted tree.
+      expect(() => deferred?.()).not.toThrow();
+    });
   });
 
   it("stays usable when storage itself throws", async () => {
