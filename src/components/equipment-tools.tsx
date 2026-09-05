@@ -47,6 +47,7 @@ import {
 } from "../lib/gem-parameters";
 import {
   emptySkills,
+  leagues,
   skillCapForLeague,
   type League,
   type LeagueSelection,
@@ -66,11 +67,35 @@ const storageKey = "mlhelper_stuff_simulator";
 // changed it) reached the DOM and crashed the simulator — a white screen with
 // no way out but clearing site data, since the bad value was reloaded on every
 // visit. JSON.parse's try/catch only ever caught syntactically invalid JSON.
+// Bloc 93/E1 (Codex PR #118): each gem is validated, not just the array that
+// holds them. `gems: [null]` — a stale or hand-edited entry — passed an
+// Array.isArray check, and both consumers then dereference the element
+// (`gem.skill` in computeStuffBlock and in SlotCell's filter below),
+// reproducing the very white screen this guard exists to prevent. The skill
+// and league are checked against their real domains rather than merely being
+// strings: skillKeyByLabel[gem.skill] is undefined for an unknown label, and
+// that undefined flows into gemValue().
+function isValidGem(value: unknown): value is EquipmentGem {
+  if (typeof value !== "object" || value === null) return false;
+  const { skill, star, league } = value as Partial<EquipmentGem>;
+  if (typeof star !== "number" || !Number.isFinite(star)) return false;
+  if (
+    typeof skill !== "string" ||
+    (skill !== "none" &&
+      !(equipmentSkillLabels as readonly string[]).includes(skill))
+  )
+    return false;
+  return (
+    typeof league === "string" &&
+    (league === "" || (leagues as readonly string[]).includes(league))
+  );
+}
+
 function isValidSlotState(value: unknown): value is EquipmentSlotState {
   if (typeof value !== "object" || value === null) return false;
   const { equipment, star, gems } = value as Partial<EquipmentSlotState>;
   if (typeof star !== "number") return false;
-  if (!Array.isArray(gems)) return false;
+  if (!Array.isArray(gems) || !gems.every(isValidGem)) return false;
   if (equipment === null) return true;
   return (
     typeof equipment === "object" &&

@@ -161,6 +161,34 @@ describe("usePersistedState", () => {
     });
   });
 
+  // Bloc 93 (Codex PR #118): onPersist tells other mounted copies that storage
+  // changed, and the settings panel reacts by RE-READING storage. Announcing a
+  // write that never landed (quota, private mode) would hand it the old stored
+  // value and silently revert the edit the user just made.
+  it("does not broadcast a write that failed", async () => {
+    const onPersist = vi.fn();
+    render(<Probe onPersist={onPersist} />);
+    await waitFor(() =>
+      expect(screen.getByRole("button")).toHaveTextContent("loaded:0"),
+    );
+    onPersist.mockClear();
+
+    const setItem = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("QuotaExceededError");
+      });
+    act(() => screen.getByRole("button").click());
+    expect(onPersist).not.toHaveBeenCalled();
+    // The UI still reflects the edit; only the broadcast is withheld.
+    expect(screen.getByRole("button")).toHaveTextContent("loaded:1");
+    setItem.mockRestore();
+
+    // A later successful write broadcasts normally.
+    act(() => screen.getByRole("button").click());
+    await waitFor(() => expect(onPersist).toHaveBeenCalledWith({ count: 2 }));
+  });
+
   it("stays usable when storage itself throws", async () => {
     const getItem = vi
       .spyOn(Storage.prototype, "getItem")

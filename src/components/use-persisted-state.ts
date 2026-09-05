@@ -91,7 +91,12 @@ export function usePersistedState<T>(
     try {
       window.localStorage.setItem(key, serialize(value));
     } catch {
-      // A failed write (private mode, quota) must not break the UI.
+      // A failed write (private mode, quota) must not break the UI. It must
+      // also not be broadcast (Codex PR #118): onPersist tells other mounted
+      // copies that storage changed, and the settings panel reacts by
+      // re-reading it. Announcing a write that never landed would hand it the
+      // OLD stored value and revert the edit the user just made.
+      return;
     }
     onPersist?.(value);
     // `serialize`/`onPersist`/`parse` are typically inline closures; keying the

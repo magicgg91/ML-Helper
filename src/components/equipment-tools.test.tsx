@@ -14,6 +14,7 @@ import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
 import { combatEquipmentData } from "../lib/equipment-data";
+import { equipmentSlotLayout } from "../lib/equipment";
 import {
   defaultPlayerSettings,
   emptySkills,
@@ -82,6 +83,31 @@ function renderTool(tool: React.ReactNode) {
   );
 }
 
+// Bloc 93/E1: the real layout is 9 slots per family. Building the fixture from
+// equipmentSlotLayout rather than a hand-counted literal is what makes the gem
+// cases below actually reach the gem check — a wrong slot count is rejected by
+// the length guard first, and the test would pass without proving anything.
+function savedStateWithGems(gems: unknown) {
+  const family = (withGems: boolean) =>
+    equipmentSlotLayout.map((_, index) => ({
+      // Slot 0 carries a real equipment selection: the slot editor only
+      // renders its gem rows once one is chosen, so an empty slot would make
+      // the "no gem rows" assertion below true either way.
+      equipment:
+        withGems && index === 0
+          ? { rarity: "Légendaire", setName: "Spirit Fyra" }
+          : null,
+      star: 1,
+      gems: withGems && index === 0 ? gems : [],
+    }));
+  return JSON.stringify({
+    attack: family(true),
+    defense: family(false),
+    gold: family(false),
+    speed: family(false),
+  });
+}
+
 describe("equipment tools", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
@@ -125,6 +151,7 @@ describe("equipment tools", () => {
         speed: [],
       }),
     ],
+    ["a gems array holding a null entry", savedStateWithGems([null])],
     [
       "a slot missing its gems array (shape before gems were added)",
       JSON.stringify({
@@ -160,6 +187,43 @@ describe("equipment tools", () => {
         ).toBeInTheDocument();
     },
   );
+
+  // Bloc 93/E1 (Codex PR #118): only `gems: [null]` actually crashes today —
+  // the renderer filters the other malformed shapes out harmlessly. They must
+  // still be rejected: an unknown skill reaches skillKeyByLabel[gem.skill] as
+  // undefined and flows into gemValue(). "No slot crashed" cannot tell
+  // accepted from rejected here, so this counts the gem rows the slot editor
+  // renders — a discarded state leaves the slot with none.
+  it.each([
+    ["a gem missing its fields", savedStateWithGems([{ star: 1 }])],
+    [
+      "a gem naming a skill that does not exist",
+      savedStateWithGems([
+        { skill: "Téléportation", star: 1, league: "bronze" },
+      ]),
+    ],
+    [
+      "a gem naming a league that does not exist",
+      savedStateWithGems([{ skill: "Attaque", star: 1, league: "obsidienne" }]),
+    ],
+    [
+      "a gem whose star is not a number",
+      savedStateWithGems([
+        { skill: "Attaque", star: "trois", league: "bronze" },
+      ]),
+    ],
+  ])("discards the whole saved state for %s", async (_label, saved) => {
+    localStorage.setItem("mlhelper_stuff_simulator", saved);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = await screen.findByRole("button", { name: /Amulette/ });
+    fireEvent.click(amulet);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      ).toBeInTheDocument(),
+    );
+    expect(document.querySelectorAll(".stuff-gem-row")).toHaveLength(0);
+  });
 
   it("keeps a saved value that still matches the current shape", async () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
