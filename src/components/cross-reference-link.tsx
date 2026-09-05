@@ -36,9 +36,11 @@ export function CrossReferenceLink({
           <GameImage
             src={image}
             alt=""
+            width={500}
+            height={500}
             fallback={
               // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-              <img src={fallbackImage} alt="" />
+              <img src={fallbackImage} alt="" width={500} height={500} />
             }
           />
         </span>

@@ -272,6 +272,8 @@ function SlotCell({
                 src={equipmentImagePath(item.family, rarity, slot)}
                 alt={item.set_name}
                 className="stuff-slot-image stuff-slot-image-combat"
+                width={256}
+                height={256}
                 fallback={null}
               />
             ) : null}
@@ -287,6 +289,8 @@ function SlotCell({
                       src={gemImagePath(skillKeyByLabel[gem.skill], gem.league)}
                       alt={title}
                       className="gem-badge-image"
+                      width={256}
+                      height={256}
                       fallback={
                         <span
                           className="gem-badge"
@@ -314,6 +318,8 @@ function SlotCell({
           src={emptyCombatSlotIconPath(slot)}
           alt={t("empty-slot")}
           className="stuff-slot-image stuff-slot-image-combat stuff-slot-image-empty"
+          width={256}
+          height={256}
           fallback={<small>{t("empty-slot")}</small>}
         />
       )}

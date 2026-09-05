@@ -13,12 +13,22 @@ export function GameImage({
   alt,
   className,
   fallback,
+  width,
+  height,
   eager = false,
 }: {
   src: string;
   alt: string;
   className?: string;
   fallback: ReactNode;
+  // Bloc 91/M2: the image's intrinsic pixel dimensions, so the browser can
+  // reserve the right box (and aspect ratio) before the file loads instead of
+  // reflowing when it arrives. The display size stays controlled by CSS — these
+  // are belt-and-braces alongside the classes' own fixed sizing. Pass the
+  // source dimensions (game icons are square, e.g. 256×256), not the rendered
+  // px, so max-height-constrained slots keep their intrinsic-capped size.
+  width: number;
+  height: number;
   // Bloc 36/B: the first tool category tile is the page's LCP element on
   // both the homepage and /tools — same "villes" special-case the old
   // next/image usage had, ported here so switching to GameImage doesn't
@@ -33,6 +43,8 @@ export function GameImage({
       src={src}
       alt={alt}
       className={className}
+      width={width}
+      height={height}
       loading={eager ? "eager" : "lazy"}
       onError={() => setFailedSrc(src)}
     />

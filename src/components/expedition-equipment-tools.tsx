@@ -221,6 +221,8 @@ function SlotCell({
               src={equipmentImagePath(item.family, rarity, slot)}
               alt={item.set_name}
               className="stuff-slot-image stuff-slot-image-expedition"
+              width={256}
+              height={256}
               fallback={null}
             />
           ) : null}
@@ -236,6 +238,8 @@ function SlotCell({
           src={emptyExpeditionSlotIconPath(slot)}
           alt={t("empty-slot")}
           className="stuff-slot-image stuff-slot-image-expedition stuff-slot-image-empty"
+          width={256}
+          height={256}
           fallback={<small>{t("empty-slot")}</small>}
         />
       )}

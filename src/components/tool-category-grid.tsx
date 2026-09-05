@@ -87,6 +87,8 @@ export function ToolCategoryGrid({
                 <GameImage
                   src={category.image}
                   alt=""
+                  width={500}
+                  height={500}
                   // Bloc 64/A review: whichever tile the sort puts first is
                   // the LCP image, so eager-loading follows the rendered
                   // position — it used to name Villes, which is only first
@@ -94,7 +96,12 @@ export function ToolCategoryGrid({
                   eager={index === 0}
                   fallback={
                     // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-                    <img src={category.fallbackImage} alt="" />
+                    <img
+                      src={category.fallbackImage}
+                      alt=""
+                      width={500}
+                      height={500}
+                    />
                   }
                 />
               </div>

@@ -344,6 +344,8 @@ function CombatTile({
           src={equipmentImagePath(row.family, row.rarity, row.slot_type)}
           alt={row.set_name}
           className="reference-equipment-image"
+          width={256}
+          height={256}
           fallback={null}
         />
         <div className="reference-tile-skills">
@@ -604,6 +606,8 @@ function ExpeditionTile({
           src={equipmentImagePath(row.family, row.rarity, row.slot)}
           alt={row.set_name}
           className="reference-equipment-image"
+          width={256}
+          height={256}
           fallback={null}
         />
         <div className="reference-tile-skills">

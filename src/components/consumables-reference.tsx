@@ -102,6 +102,8 @@ function ReferenceTileGrid({
                 src={row.image}
                 alt={name}
                 className="reference-equipment-image consumable-tile-image"
+                width={256}
+                height={256}
                 fallback={null}
               />
               <div className="consumable-tile-body">
