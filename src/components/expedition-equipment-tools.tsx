@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { formatSkillPercentValue } from "../lib/skill-percent";
 import { StarRating } from "./star-rating";
@@ -38,6 +38,7 @@ import {
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
+import { usePersistedState } from "./use-persisted-state";
 
 const storageKey = "mlhelper_expedition_equipment_simulator";
 
@@ -84,6 +85,14 @@ function isValidExpeditionConfigs(value: unknown): value is ExpeditionConfigs {
   return expeditionFilterOrder.every((filter) =>
     isValidExpeditionState(source[filter]),
   );
+}
+
+// Malformed or stale-shape data (an incompatible earlier version, manual
+// tampering) must not crash the simulator: returning undefined falls back to
+// the default empty configs instead of trusting an unvalidated value.
+function parseExpeditionConfigs(raw: string): ExpeditionConfigs | undefined {
+  const parsed: unknown = JSON.parse(raw);
+  return isValidExpeditionConfigs(parsed) ? parsed : undefined;
 }
 
 function statLabel(
@@ -344,30 +353,11 @@ export function ExpeditionEquipmentSimulator({
     (item) => item.slug === "expedition-equipment",
   )!;
   const [filter, setFilter] = useState<ExpeditionFilter>("custom");
-  const [configs, setConfigs] = useState<ExpeditionConfigs>(
-    createEmptyExpeditionConfigs,
+  const [configs, setConfigs] = usePersistedState<ExpeditionConfigs>(
+    storageKey,
+    { initial: createEmptyExpeditionConfigs, parse: parseExpeditionConfigs },
   );
-  const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<number>();
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          const parsed: unknown = JSON.parse(saved);
-          // Malformed or stale-shape data (an incompatible earlier version,
-          // manual tampering) must not crash the simulator: fall back to
-          // the default empty configs instead of trusting an unvalidated value.
-          if (isValidExpeditionConfigs(parsed)) setConfigs(parsed);
-        }
-      } catch {}
-      setLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    if (loaded) localStorage.setItem(storageKey, JSON.stringify(configs));
-  }, [loaded, configs]);
   const state = configs[filter];
   const totals = computeExpeditionTotal(state, rows, increments);
   const selected =

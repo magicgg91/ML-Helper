@@ -459,6 +459,12 @@
     "legal": "Impressum",
     "meta": {
       "siteTitle": "ML-Helper — Million Lords: Tools und Guides"
+    },
+    "descriptions": {
+      "admin": "Verwaltungsbereich von ML Helper.",
+      "guide-fallback": "Eine Million-Lords-Anleitung auf ML Helper.",
+      "guides": "Anleitungen und Referenztabellen für Million Lords: Kosten, Werte und Spielmechaniken, von der Community geprüft.",
+      "legal": "Impressum der Website ML Helper."
     }
   },
   "contact": {
@@ -537,7 +543,8 @@
     "empty": "Noch keine veröffentlichte Anleitung.",
     "no-results": "Keine Anleitung entspricht diesen Filtern.",
     "detail": {
-      "eyebrow": "Anleitung in {category}"
+      "eyebrow": "Anleitung in {category}",
+      "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt."
     }
   },
   "references": {
@@ -573,7 +580,17 @@
         "name": "Name"
       },
       "cost-with-unit": "{cost, plural, one {# Saphir} other {# Saphire}}",
-      "cost-unknown": "Nicht festgelegt"
+      "cost-unknown": "Nicht festgelegt",
+      "categories": {
+        "advisors": "Berater",
+        "equipment": "Ausrüstung",
+        "expedition": "Expedition",
+        "inventory": "Inventar"
+      },
+      "filters": {
+        "category": "Kategorie",
+        "label": "Nach Kategorie filtern"
+      }
     },
     "events": {
       "league": "Liga",

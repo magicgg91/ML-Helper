@@ -56,8 +56,47 @@ import { usePlayerSettings } from "./use-player-settings";
 import type { CombatReferenceRow } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { StarRating } from "./star-rating";
+import { usePersistedState } from "./use-persisted-state";
 
 const storageKey = "mlhelper_stuff_simulator";
+
+// Bloc 93/E1: the shape guard Expédition has had since Bloc 31/E.1 and Combat
+// lacked. `state[family][index].equipment/.star/.gems` is indexed straight by
+// the renderer, so a saved value from an earlier shape (Blocs 32/73/85 each
+// changed it) reached the DOM and crashed the simulator — a white screen with
+// no way out but clearing site data, since the bad value was reloaded on every
+// visit. JSON.parse's try/catch only ever caught syntactically invalid JSON.
+function isValidSlotState(value: unknown): value is EquipmentSlotState {
+  if (typeof value !== "object" || value === null) return false;
+  const { equipment, star, gems } = value as Partial<EquipmentSlotState>;
+  if (typeof star !== "number") return false;
+  if (!Array.isArray(gems)) return false;
+  if (equipment === null) return true;
+  return (
+    typeof equipment === "object" &&
+    equipment !== null &&
+    typeof (equipment as Partial<EquipmentSelection>).rarity === "string" &&
+    typeof (equipment as Partial<EquipmentSelection>).setName === "string"
+  );
+}
+
+function isValidStuffState(value: unknown): value is StuffState {
+  if (typeof value !== "object" || value === null) return false;
+  const source = value as Record<string, unknown>;
+  return equipmentBlocks.every((block) => {
+    const slots = source[block];
+    return (
+      Array.isArray(slots) &&
+      slots.length === equipmentSlotLayout.length &&
+      slots.every(isValidSlotState)
+    );
+  });
+}
+
+function parseStuffState(raw: string): StuffState | undefined {
+  const parsed: unknown = JSON.parse(raw);
+  return isValidStuffState(parsed) ? parsed : undefined;
+}
 // Bloc 33/K: confirmation clears itself well under the 5s cap.
 const TRANSFER_CONFIRMATION_TIMEOUT_MS = 3000;
 const leagueOptions = [
@@ -451,8 +490,10 @@ export function StuffSimulator({
   const crossReference = useTranslations("crossReference");
   const references = useTranslations("references");
   const playerSettings = usePlayerSettings();
-  const [state, setState] = useState<StuffState>(createEmptyStuffState);
-  const [loaded, setLoaded] = useState(false);
+  const [state, setState] = usePersistedState<StuffState>(storageKey, {
+    initial: createEmptyStuffState,
+    parse: parseStuffState,
+  });
   const [active, setActive] = useState<Partial<Record<EquipmentBlock, number>>>(
     {},
   );
@@ -468,19 +509,6 @@ export function StuffSimulator({
   const combatEquipmentReference = referenceCatalog.find(
     (item) => item.slug === "combat-equipment",
   )!;
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) setState(JSON.parse(saved));
-      } catch {}
-      setLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    if (loaded) localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [loaded, state]);
   const global = useMemo(
     () => computeStuffGlobal(state, combatRows, gemParameters, increments),
     [state, combatRows, gemParameters, increments],

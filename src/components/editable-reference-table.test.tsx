@@ -457,3 +457,152 @@ describe("EditableReferenceTable", () => {
     ).not.toBeNull();
   });
 });
+
+// Bloc 93/E3: both tables in this file namespace their error element ids per
+// instance. Today's admin screens co-mount tables whose column keys happen to
+// be disjoint, so no collision is reachable — these tests pin the guarantee
+// for the case the audit flagged as latent: two tables sharing a column key.
+describe("Bloc 93/E3: error ids stay unique across co-mounted tables", () => {
+  const sharedColumns: EditableColumn<Row>[] = [
+    { key: "name", label: "Nom", required: true },
+    { key: "amount", label: "Montant", type: "number", min: 1, required: true },
+  ];
+
+  it("EditableDataTable: two instances with identical column keys", () => {
+    render(
+      <>
+        <EditableDataTable
+          rows={[{ name: "", amount: "1" }]}
+          columns={sharedColumns}
+          onChange={vi.fn()}
+          addLabel="Ajouter"
+          removeLabel="Retirer"
+          emptyLabel="Aucune ligne"
+          errors={{ "0:name": "Erreur de la première table" }}
+        />
+        <EditableDataTable
+          rows={[{ name: "", amount: "1" }]}
+          columns={sharedColumns}
+          onChange={vi.fn()}
+          addLabel="Ajouter"
+          removeLabel="Retirer"
+          emptyLabel="Aucune ligne"
+          errors={{ "0:name": "Erreur de la seconde table" }}
+        />
+      </>,
+    );
+    const [first, second] = screen.getAllByLabelText("Nom 1");
+    const firstId = first.getAttribute("aria-describedby");
+    const secondId = second.getAttribute("aria-describedby");
+    expect(firstId).toBeTruthy();
+    expect(secondId).toBeTruthy();
+    expect(firstId).not.toBe(secondId);
+    // Each field resolves to its own table's message, not the first one's.
+    expect(document.getElementById(firstId!)).toHaveTextContent(
+      "Erreur de la première table",
+    );
+    expect(document.getElementById(secondId!)).toHaveTextContent(
+      "Erreur de la seconde table",
+    );
+  });
+
+  it("EditableReferenceTable: two instances with identical column keys", () => {
+    render(
+      <>
+        <EditableReferenceTable
+          initialRows={[{ name: "", amount: "5" }]}
+          columns={sharedColumns}
+          endpoint="/api/admin/guides/references/first"
+          description="Première table"
+        />
+        <EditableReferenceTable
+          initialRows={[{ name: "", amount: "5" }]}
+          columns={sharedColumns}
+          endpoint="/api/admin/guides/references/second"
+          description="Seconde table"
+        />
+      </>,
+    );
+    // Save only the second table first: with unprefixed ids, the first
+    // table's still-pristine field would already resolve to this error.
+    const saveButtons = screen.getAllByRole("button", {
+      name: "Enregistrer toute la table",
+    });
+    fireEvent.click(saveButtons[1]);
+    const [pristine, invalid] = screen.getAllByLabelText("Ligne 1 Nom");
+    expect(invalid).toHaveAttribute("aria-invalid", "true");
+    expect(pristine).toHaveAttribute("aria-invalid", "false");
+    expect(pristine).not.toHaveAttribute("aria-describedby");
+
+    // Now both tables report an error on the same column key — the exact
+    // collision the audit flagged. Each field must resolve to its own.
+    fireEvent.click(saveButtons[0]);
+    const fields = screen.getAllByLabelText("Ligne 1 Nom");
+    const ids = fields.map((field) => field.getAttribute("aria-describedby"));
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(2);
+    for (const id of ids)
+      expect(document.getElementById(id!)).toHaveTextContent(
+        "Ce champ est obligatoire.",
+      );
+    const errorNodes = [...document.querySelectorAll(".field-error")];
+    expect(errorNodes).toHaveLength(2);
+    expect(new Set(errorNodes.map((node) => node.id)).size).toBe(2);
+  });
+
+  it("marks an invalid select with field-invalid, like an invalid input", () => {
+    const selectColumns: EditableColumn<Row>[] = [
+      {
+        key: "name",
+        label: "Nom",
+        type: "select",
+        required: true,
+        options: [
+          { value: "", label: "—" },
+          { value: "alpha", label: "Alpha" },
+        ],
+      },
+      { key: "amount", label: "Montant", type: "number", min: 1 },
+    ];
+    render(
+      <EditableReferenceTable
+        initialRows={[{ name: "", amount: "5" }]}
+        columns={selectColumns}
+        endpoint="/api/admin/guides/references/example"
+        description="Table de test"
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer toute la table" }),
+    );
+    const select = screen.getByLabelText("Ligne 1 Nom");
+    expect(select.tagName).toBe("SELECT");
+    expect(select).toHaveAttribute("aria-invalid", "true");
+    expect(select).toHaveClass("field-invalid");
+  });
+
+  it("applies the wide column class in both tables", () => {
+    const wideColumns: EditableColumn<Row>[] = [
+      { key: "name", label: "Nom", wide: true },
+      { key: "amount", label: "Montant", narrow: true },
+    ];
+    const { container } = render(
+      <EditableReferenceTable
+        initialRows={[{ name: "Alpha", amount: "1" }]}
+        columns={wideColumns}
+        endpoint="/api/admin/guides/references/example"
+        description="Table de test"
+      />,
+    );
+    // Bloc 93/E3: this table used to accept `wide` and drop it silently.
+    expect(
+      container.querySelectorAll("td.reference-admin-wide").length,
+    ).toBeGreaterThan(0);
+    expect(
+      container.querySelectorAll("th.reference-admin-wide").length,
+    ).toBeGreaterThan(0);
+    expect(
+      container.querySelectorAll(".reference-admin-narrow").length,
+    ).toBeGreaterThan(0);
+  });
+});

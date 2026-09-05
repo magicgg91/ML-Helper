@@ -86,6 +86,90 @@ describe("equipment tools", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 
+  // Bloc 93/E1: mirrors the Expédition test above — a saved value of an
+  // earlier shape used to reach the renderer, which indexes
+  // state[family][index].equipment/.star/.gems directly, and crashed the
+  // simulator. Each case is a shape the key genuinely held or could hold
+  // across Blocs 32/73/85.
+  it.each([
+    ["a non-object", JSON.stringify("attack")],
+    ["an unkeyed object", JSON.stringify({ not: "a stuff state" })],
+    [
+      "a pre-family flat slot array (shape before Bloc 32)",
+      JSON.stringify([{ equipment: null, star: 1, gems: [] }]),
+    ],
+    [
+      "a family whose slot count no longer matches the layout",
+      JSON.stringify({
+        attack: [{ equipment: null, star: 1, gems: [] }],
+        defense: [],
+        gold: [],
+        speed: [],
+      }),
+    ],
+    [
+      "a slot missing its gems array (shape before gems were added)",
+      JSON.stringify({
+        attack: Array.from({ length: 6 }, () => ({
+          equipment: null,
+          star: 1,
+        })),
+        defense: Array.from({ length: 6 }, () => ({
+          equipment: null,
+          star: 1,
+        })),
+        gold: Array.from({ length: 6 }, () => ({ equipment: null, star: 1 })),
+        speed: Array.from({ length: 6 }, () => ({ equipment: null, star: 1 })),
+      }),
+    ],
+  ])(
+    "falls back to an empty stuff state instead of crashing on %s",
+    async (_label, saved) => {
+      localStorage.setItem("mlhelper_stuff_simulator", saved);
+      renderTool(<StuffSimulator combatRows={combatRows} />);
+      // The simulator renders its slot grid rather than throwing, and every
+      // slot is empty — the stale value was discarded, not partially trusted.
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: /Amulette/ }),
+        ).toBeInTheDocument(),
+      );
+      for (const slot of ["Amulette", "Casque", "Bracelet", "Anneau"])
+        expect(
+          within(
+            screen.getByRole("button", { name: new RegExp(slot) }),
+          ).getByRole("img", { name: "Vide" }),
+        ).toBeInTheDocument();
+    },
+  );
+
+  it("keeps a saved value that still matches the current shape", async () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    fireEvent.click(screen.getByRole("button", { name: /Amulette/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    await waitFor(() =>
+      expect(localStorage.getItem("mlhelper_stuff_simulator")).toContain(
+        "Spirit Fyra",
+      ),
+    );
+    const saved = localStorage.getItem("mlhelper_stuff_simulator")!;
+    cleanup();
+
+    localStorage.setItem("mlhelper_stuff_simulator", saved);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("button", { name: /Amulette/ })).getByRole(
+          "img",
+          { name: /Spirit Fyra|Légendaire/ },
+        ),
+      ).toBeInTheDocument(),
+    );
+  });
+
   it("toggles a simulator slot and persists an exact set", async () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
     // Bloc 54/B: the label is now folded inside the button itself, so the

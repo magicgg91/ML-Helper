@@ -1,9 +1,10 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
+import { usePersistedState } from "./use-persisted-state";
 import { formatSkillPercentValue } from "../lib/skill-percent";
 import { templarRates } from "../lib/gems-templars";
 import {
@@ -91,16 +92,20 @@ export function PlayerSettingsPanel() {
   const locale = useLocale();
   const t = useTranslations("player-settings");
   const game = useTranslations("game");
-  const [settings, setSettings] = useState(defaultPlayerSettings);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      const saved = window.localStorage.getItem(playerStorageKey);
-      if (saved) setSettings(safePlayerSettings(saved));
-      setLoaded(true);
-    });
-  }, []);
+  // Bloc 93/F3: shares the load/loaded/save triplet with both simulators.
+  // `safePlayerSettings` migrates rather than rejects (it always returns a
+  // value), so this `parse` never yields undefined — the version stamp lives
+  // in `serialize`, and the cross-source broadcast in `onPersist`.
+  const [settings, setSettings] = usePersistedState(playerStorageKey, {
+    initial: defaultPlayerSettings,
+    parse: safePlayerSettings,
+    serialize: (value) =>
+      JSON.stringify({ ...value, v: currentSettingsVersion }),
+    onPersist: (value) =>
+      window.dispatchEvent(
+        new CustomEvent(playerSettingsChangedEvent, { detail: value }),
+      ),
+  });
 
   // Picks up a write from another source (e.g. the Stuff simulator's
   // transfer button) while this panel is already mounted. Guarded by a
@@ -123,19 +128,8 @@ export function PlayerSettingsPanel() {
       window.removeEventListener(playerSettingsChangedEvent, syncFromStorage);
       window.removeEventListener("storage", syncFromStorage);
     };
-  }, []);
+  }, [setSettings]);
 
-  useEffect(() => {
-    if (loaded) {
-      window.localStorage.setItem(
-        playerStorageKey,
-        JSON.stringify({ ...settings, v: currentSettingsVersion }),
-      );
-      window.dispatchEvent(
-        new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
-      );
-    }
-  }, [loaded, settings]);
 
   const available = availableSkillPoints(settings.level, settings.league);
   const allocated = allocatedSkillPoints(settings.skillPoints);
