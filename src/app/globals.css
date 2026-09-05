@@ -800,6 +800,16 @@ select {
 .calculator-card p {
   margin-top: 0;
 }
+/* Bloc 91/M5: a calculator/summary card title is a real section heading under
+   the tool page's <h1>, so it is now an <h2> (was an <h3> that skipped a
+   level). This shared class keeps its rendered size exactly at the previous
+   UA <h3> default (1.17rem on the 16px root, bold) so the retag is a
+   semantics-only change with no visual regression. Sub-blocks inside a card
+   (e.g. .production-block h3) stay <h3>, one level below their card title. */
+.calculator-heading {
+  margin: 0 0 1rem;
+  font-size: 1.17rem;
+}
 .calculator-card > p,
 .calculator-note {
   color: var(--muted);

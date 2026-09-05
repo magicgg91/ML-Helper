@@ -63,9 +63,9 @@ function TemplarPresentationTile({
         fallback={null}
       />
       <div className="templars-tile-body">
-        <h3 className="templars-tile-title">
+        <h2 className="templars-tile-title">
           {t("presentation.tile-title", { name })}
-        </h3>
+        </h2>
         <p className="templars-tile-stat">
           {t("presentation.temple-base-label")} : {formatStat(row.temple_base)}
         </p>

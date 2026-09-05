@@ -119,7 +119,7 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
         ) : (
           <>
             <RankingScale bands={bands} percentage={percentage} />
-            <h3>{t("ranking-ranges")}</h3>
+            <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
             <div className="ranking-table-wrap">
               <table className="ranking-table">
                 <thead>

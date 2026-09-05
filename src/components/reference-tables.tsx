@@ -460,7 +460,7 @@ export function CombatReferenceTable({
               data-family={set.family}
               data-rarity={set.rarity}
             >
-              <h3 className="reference-tile-block-title">{set.set_name}</h3>
+              <h2 className="reference-tile-block-title">{set.set_name}</h2>
               <div className="reference-tile-grid">
                 {set.rows.map((row) => (
                   <CombatTile
@@ -697,7 +697,7 @@ export function ExpeditionReferenceTable({
               data-family={set.family}
               data-rarity={set.rarity}
             >
-              <h3 className="reference-tile-block-title">{set.set_name}</h3>
+              <h2 className="reference-tile-block-title">{set.set_name}</h2>
               <div className="reference-tile-grid">
                 {set.rows.map((row) => (
                   <ExpeditionTile

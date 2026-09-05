@@ -40,10 +40,12 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     return Array.from(
       document.querySelectorAll<HTMLElement>(".reference-tile-block"),
     ).find((block) =>
-      // startsWith, not ===: a dimmed block's h3 also carries a trailing
+      // startsWith, not ===: a dimmed block's title also carries a trailing
       // sr-only hint (Codex review, PR #61) that's part of the same text
       // content in jsdom even though it's visually hidden.
-      block.querySelector("h3")?.textContent?.startsWith(setName),
+      // Bloc 91/M5: the set title is an <h2> now (was an <h3> that skipped a
+      // level under the reference page's <h1>).
+      block.querySelector("h2")?.textContent?.startsWith(setName),
     )!;
   }
 
