@@ -1,0 +1,1197 @@
+{
+  "common": {
+    "choose": "— Seç —",
+    "none": "Yok",
+    "decrease": "{label} azalt",
+    "increase": "{label} artır",
+    "select-league": "Hesaplamak için bir lig seç.",
+    "language": "Dil",
+    "theme-light": "Açık modu etkinleştir",
+    "theme-dark": "Koyu modu etkinleştir",
+    "star-count": "{level} yıldız",
+    "duration-hours": "{hours} sa"
+  },
+  "game": {
+    "skills": {
+      "striker": "Saldırgan",
+      "brave": "Cesaret",
+      "scavenger": "Yağmacı",
+      "guardian": "Koruyucu",
+      "fearless": "Korkusuzluk",
+      "prosperous": "Refah",
+      "recruiter": "Askere Alan",
+      "cautious": "Tedbir",
+      "salvager": "Kurtarıcı",
+      "rusher": "Atılganlık"
+    },
+    "skills-short": {
+      "striker": "Sld",
+      "brave": "Ces",
+      "scavenger": "Yğm",
+      "guardian": "Kor",
+      "fearless": "Kks",
+      "prosperous": "Rfh",
+      "recruiter": "Ask",
+      "cautious": "Tdb",
+      "salvager": "Krt",
+      "rusher": "Atl"
+    },
+    "templars": {
+      "striker": "Saldırı",
+      "guardian": "Savunma",
+      "prosperous": "Altın",
+      "recruiter": "Askere Alan",
+      "rusher": "Hız"
+    },
+    "leagues": {
+      "bronze": "Bronz",
+      "silver": "Gümüş",
+      "gold": "Altın",
+      "platinum": "Platin",
+      "diamond": "Elmas",
+      "legend": "Efsane"
+    },
+    "leagues-short": {
+      "bronze": "Br",
+      "silver": "Gü",
+      "gold": "Al",
+      "platinum": "Pl",
+      "diamond": "El",
+      "legend": "Ef"
+    },
+    "families": {
+      "attack": "Saldırı",
+      "defense": "Savunma",
+      "gold": "Altın",
+      "equipment": "Ekipman",
+      "consumables": "Tüketim Malzemeleri",
+      "troops": "Birlikler",
+      "speed": "Hız",
+      "troops-speed": "Birlik/Hız"
+    },
+    "rarities": {
+      "common": "Yaygın",
+      "rare": "Nadir",
+      "epic": "Destansı",
+      "mythic": "Mitik",
+      "legendary": "Efsanevi"
+    },
+    "slots": {
+      "amulet": "Tılsım",
+      "helmet": "Miğfer",
+      "bracelet": "Bilezik",
+      "ring": "Yüzük",
+      "belt": "Kemer",
+      "gauntlet": "Eldiven",
+      "weapon": "Silah",
+      "boots": "Çizme",
+      "shield": "Kalkan",
+      "cloak": "Pelerin",
+      "spyglass": "Dürbün",
+      "pouch": "Kese",
+      "compass": "Pusula",
+      "torch": "Meşale",
+      "pickaxe": "Kazma"
+    },
+    "weapon-types": {
+      "hammer": "Çekiç",
+      "bow": "Yay",
+      "spear": "Mızrak",
+      "axe": "Balta",
+      "saber": "Kılıç (Saber)",
+      "sword": "Kılıç",
+      "halberd": "Teber"
+    },
+    "stats": {
+      "vitality": "Canlılık",
+      "perception": "Algı",
+      "recovery": "İyileşme",
+      "speed": "Hız",
+      "dodge": "Kaçınma",
+      "luck": "Şans"
+    }
+  },
+  "tools": {
+    "title": "Doğru rakamlarla karar ver",
+    "subtitle": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
+    "cities": "Şehirler",
+    "combat": "Savaş",
+    "combat-simulator": "Savaş",
+    "enemy-troops": "Düşman Birlikleri",
+    "ranking": "Sıralama",
+    "skills": "Yetenekler",
+    "count": "{count, plural, =0 {Kullanılabilir araç yok} other {# araç kullanılabilir}}",
+    "comingSoon": "Yakında",
+    "unavailable": "Şu anda kullanılamıyor",
+    "navigation-label": "Araç kategorileri",
+    "city-tabs": "Şehir araçları",
+    "combat-tabs": "Savaş araçları",
+    "skills-tabs": "Yetenek araçları",
+    "calculator-unavailable": "Devre dışı — şu anda kullanılamıyor",
+    "calculators-unavailable": "Bu araçlar geçici olarak kullanılamıyor.",
+    "descriptions": {
+      "cities": "Million Lords'ta şehirlerinin maliyetini, üretimini ve ödüllerini hesapla: seviye başına maliyet ve maksimum seviye, altın üretimi ve XP kazancı.",
+      "combat": "Million Lords için savaş araçları: XP kazanç oranı, saldıran ve hedef için demo saldırı birlikleri ve her saldırıyı planlamak için düşman birlikleri.",
+      "ranking": "Million Lords sıralamasındaki ilerlemeni tahmin et: mevcut sıralaman ve hedeflediğin sıralamaya ulaşmak için gereken zafer puanları.",
+      "skills": "Million Lords'ta ekipmanını ve yeteneklerini optimize et: savaş ve keşif ekipmanları, mücevherler ve tapınakçılar, birleştirme maliyetleriyle."
+    }
+  },
+  "player-settings": {
+    "title": "Oyuncu ayarları",
+    "summary": "{league} · Seviye {level} · {vp} VP · {templarTotal, plural, other {# tapınak şövalyesi}}",
+    "league": "Lig",
+    "league-undefined": "Lig belirlenmedi",
+    "player-level": "Oyuncu seviyesi",
+    "player-vp": "Oyuncu VP'si",
+    "vp-unit": "VP birimi",
+    "equipment-skills": {
+      "title": "Ekipmanla yetenekler",
+      "field": "Ekipmanla {skill}"
+    },
+    "skill-points": {
+      "title": "Yetenek puanı dağılımı",
+      "available": "Kullanılabilir",
+      "allocated": "Ayrılmış",
+      "remaining": "Kalan",
+      "reset": "Sıfırla",
+      "field": "{skill} puanları"
+    },
+    "templars": {
+      "title": "Tapınak Şövalyeleri",
+      "field": "{templar} tapınak şövalyesi"
+    },
+    "clan-temple": {
+      "title": "Tapınak bonusu (klan)",
+      "help": "Yalnızca klanın Tapınak Şövalyesi katkısını gir (örneğin Hız için 260). Onaylanmış istatistik başına tapınak tabanı, gösterilen toplama otomatik olarak eklenir.",
+      "field": "{templar} Tapınağı"
+    }
+  },
+  "city-cost": {
+    "name": "Şehir Maliyeti",
+    "fields": {
+      "league": "Lig",
+      "city-count": "Şehir sayısı",
+      "start-level": "Başlangıç seviyesi",
+      "target-level": "Hedef seviye"
+    },
+    "start": "Başlangıç",
+    "target": "Hedef",
+    "wall": "Sur",
+    "gold-hour": "Altın/sa",
+    "army-hour": "Ordu/sa",
+    "gold-unit": "altın",
+    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "cost-total": "Toplam maliyet",
+    "vp-gained": "Kazanılan toplam VP",
+    "gold-transition": "Altın/sa önce → sonra",
+    "army-transition": "Ordu/sa önce → sonra"
+  },
+  "city-max-level": {
+    "name": "Ulaşılabilir Maksimum Seviye",
+    "fields": {
+      "league": "Lig",
+      "city-count": "Şehir sayısı",
+      "start-level": "Başlangıç seviyesi",
+      "available-gold": "Kullanılabilir altın",
+      "gold-unit": "Kullanılabilir altın birimi"
+    },
+    "wall": "Sur",
+    "gold-hour": "Altın/sa",
+    "army-hour": "Ordu/sa",
+    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "reachable-level": "Ulaşılabilir hedef seviye",
+    "remaining-gold": "Kalan altın",
+    "vp-gained": "Kazanılan toplam VP",
+    "gold-transition": "Altın/sa önce → sonra",
+    "army-transition": "Ordu/sa önce → sonra"
+  },
+  "city-production": {
+    "name": "Üretim",
+    "fields": {
+      "league": "Lig",
+      "city-count": "Şehir sayısı",
+      "average-level": "Ortalama şehir seviyesi"
+    },
+    "per-city-base": "Şehir başına — taban",
+    "vp": "VP",
+    "wall": "Sur",
+    "gold-hour": "Altın/sa",
+    "army-hour": "Ordu/sa",
+    "gold-total": "💰 Altın — Toplam üretim",
+    "troops-total": "⚔️ Birlikler — Toplam üretim",
+    "base": "Taban",
+    "equipment": "Ekipman",
+    "temple": "Tapınak",
+    "vp-total": "Toplam VP",
+    "full-production": {
+      "title": "Tam üretim yeniden dağıtımı",
+      "note": "Mevcut {points} puanın tamamı yatırılarak, taban üretimden hesaplanan simülasyon.",
+      "gold": "Tam Refah ile altın",
+      "troops": "Tam Askere Alan ile birlikler"
+    }
+  },
+  "city-rewards": {
+    "name": "Üretim Ödülleri",
+    "gold": {
+      "title": "Altın",
+      "base": "Taban altın üretimi",
+      "base-unit": "Altın üretim birimi",
+      "hours": "Alınan altın saatleri",
+      "bonus": "Elde edilen altın bonusu"
+    },
+    "troops": {
+      "title": "Birlikler",
+      "base": "Taban birlik üretimi",
+      "base-unit": "Birlik üretim birimi",
+      "hours": "Alınan birlik saatleri",
+      "bonus": "Elde edilen birlik bonusu"
+    }
+  },
+  "xp-gain-rate": {
+    "name": "XP Kazanım Oranı",
+    "mode-label": "XP hesaplama modu",
+    "modes": {
+      "attacker": "Ben saldıranım",
+      "target": "Ben hedefim"
+    },
+    "fields": {
+      "my-vp": "VP'm",
+      "unit": "VP birimi"
+    },
+    "columns": {
+      "rate": "XP kazanım oranı",
+      "opponent-vp": "Rakip VP aralığı"
+    }
+  },
+  "demo-attack-troops": {
+    "name": "Deneme Saldırı Birlikleri",
+    "select-league": "Hesaplamak için bir lig seç.",
+    "fields": {
+      "city-level": "Hedef şehir seviyesi",
+      "league": "Saldıranın ligi"
+    },
+    "wall": "Hedef surları",
+    "maximum": "Maksimum birlik"
+  },
+  "ranking": {
+    "name": "Sıralama",
+    "fields": {
+      "league": "Lig",
+      "percentage": "Mevcut yüzden",
+      "rank": "Mevcut sıralaman"
+    },
+    "undefined": "Yönetim panelinde tanımlanacak",
+    "total-players": "Tahmini oyuncu sayısı",
+    "errors": {
+      "select-league": "Hesaplamak için bir lig seç.",
+      "positive-percentage": "Hesaplamak için 0'dan büyük bir yüzde gir.",
+      "missing-bands": "{league} ligi için eşikler ve ödüller yönetim panelinde tanımlanmalıdır."
+    },
+    "ranking-ranges": "Sıralama aralıkları",
+    "columns": {
+      "range": "Aralık",
+      "rank": "Aralık sırası",
+      "target-league": "Hedef lig",
+      "reward": "Ödül"
+    },
+    "movements": {
+      "promotion": "{league} ligine yükselme",
+      "stay": "{league} liginde kalma",
+      "relegation": "{league} ligine düşme"
+    },
+    "reward-types": {
+      "sapphires": "{count} safir",
+      "speedups": "{count} hızlandırma",
+      "gems": "{count} mücevher"
+    },
+    "scale-label": "%100'den %0'a sıralama ölçeği",
+    "segment-tooltip": "%{threshold}–{start} · {target} · {reward}"
+  },
+  "stuff-simulator": {
+    "name": "Savaş Ekipmanı",
+    "global-summary": "Ekipman yetenekleri özeti",
+    "transfer": "Oyuncu Ayarlarına aktar",
+    "transferred": "Oyuncu Ayarlarına aktarıldı!",
+    "empty-slot": "Boş",
+    "select-slot": "Yapılandırmak için bir yuvaya tıkla.",
+    "equipment-label": "Ekipman ({slot})",
+    "equipment-aria": "{block} ekipmanı {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Yok",
+    "star-level": "Yıldız seviyesi",
+    "equipment-stars-aria": "{block} ekipman yıldızları {slot}",
+    "no-gem-slot": "Bu nadirlikte mücevher yuvası yok",
+    "family-filter-label": "Aileye göre filtrele",
+    "gem": {
+      "row": "Mücevher {index}",
+      "skill": "Mücevher yeteneği {index}",
+      "stars": "Mücevher yıldızları {index}",
+      "league": "Mücevher ligi {index}"
+    }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Keşif Ekipmanı",
+    "summary-title": "Keşif yetenekleri özeti",
+    "empty-summary": "Yapılandırılmış ekipman yok",
+    "empty-slot": "Boş",
+    "select-slot": "Yapılandırmak için bir yuvaya tıkla.",
+    "equipment-label": "Ekipman ({slot})",
+    "equipment-aria": "Keşif ekipmanı {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Yok",
+    "star-level": "Yıldız seviyesi",
+    "equipment-stars-aria": "Keşif ekipmanı yıldızları {slot}",
+    "filters": {
+      "label": "Ekipman türüne göre filtrele",
+      "custom": "Özel",
+      "gold": "Altın",
+      "equipment": "Savaş Ekipmanı",
+      "consumables": "Tüketim Malzemeleri",
+      "troops": "Birlikler"
+    }
+  },
+  "gems": {
+    "name": "Mücevherler",
+    "mode-label": "Mücevher modu",
+    "modes": {
+      "optimize": "Optimizasyon",
+      "budget": "Kullanılabilir bütçe"
+    },
+    "optimization": {
+      "title": "Çoklu yetenek optimizasyonu"
+    },
+    "family-label": "Mücevher ailesi",
+    "fields": {
+      "available-slots": "Kullanılabilir yuvalar",
+      "skill": "Yetenek",
+      "skill-row": "Yetenek satırı {row}",
+      "league": "Lig",
+      "league-row": "Lig satırı {row}",
+      "allocated-slots": "Ayrılan yuvalar",
+      "slots-row": "Yuva satırı {row}",
+      "target-stat": "Hedef istatistik (%)",
+      "target-row": "Hedef istatistik satırı {row}",
+      "budget-slots": "Bütçe yuvaları",
+      "available-budget": "Safir cinsinden kullanılabilir bütçe"
+    },
+    "remove-row": "{row} satırını kaldır",
+    "add-stat": "+ İstatistik ekle",
+    "allocated-summary": "Ayrılan yuvalar",
+    "result": "Sonuç",
+    "errors": {
+      "add-positive-stat": "Sıfırdan fazla yuvası olan bir istatistik ekle.",
+      "select-league": "Hesaplamak için bir lig seç.",
+      "select-skill": "Hesaplamak için bir yetenek seç."
+    },
+    "columns": {
+      "skill": "Yetenek",
+      "league": "Lig",
+      "slots": "Yuvalar",
+      "distribution": "Dağılım",
+      "stat": "Elde edilen istatistik",
+      "cost": "Maliyet"
+    },
+    "total-cost": "Toplam maliyet",
+    "sapphires": "safir",
+    "optimal-distribution": "Optimal dağılım",
+    "base-gems": "Satın alınacak temel mücevherler",
+    "used-slots": "Kullanılan yuvalar",
+    "obtained-stat": "Elde edilen istatistik",
+    "actual-cost": "Gerçek maliyet",
+    "remaining-budget": "Kalan bütçe",
+    "gem-count": "{count} mücevher {level}★",
+    "no-gems": "Mücevher yok",
+    "reference": {
+      "price-row": "Safir maliyeti"
+    }
+  },
+  "templars": {
+    "name": "Tapınak Şövalyeleri",
+    "fields": {
+      "start-level": "Başlangıç seviyesi",
+      "target-level": "Hedef seviye"
+    },
+    "total-cost": "Toplam maliyet",
+    "skydust": "Gökyüzü Tozu",
+    "bonus-per-templar": "Tapınak şövalyesi başına bonus",
+    "total-bonus": "Toplam bonus",
+    "gain": "Kazanç",
+    "rate-value": "%{rate}",
+    "cost-table": "Maliyet tablosu",
+    "columns": {
+      "skill": "Yetenek",
+      "level": "Ulaşılan seviye",
+      "level-cost": "Seviye maliyeti (Gökyüzü Tozu)",
+      "cumulative-cost": "Kümülatif maliyet (Gökyüzü Tozu)"
+    },
+    "presentation": {
+      "tile-title": "{name} Tapınak Şövalyesi",
+      "temple-base-label": "Tapınak temeli",
+      "bonus-label": "Tapınak şövalyesi başına bonus"
+    }
+  },
+  "Navigation": {
+    "tools": "Araçlar",
+    "referentiels": "Referans tabloları",
+    "guides": "Rehberler",
+    "menu": "Menü",
+    "main": "Ana gezinme",
+    "footer": "Alt bilgi",
+    "home": "Ana sayfa",
+    "breadcrumb": "İçerik haritası"
+  },
+  "search": {
+    "label": "Sitede ara",
+    "placeholder": "Ara",
+    "results-label": "Arama sonuçları",
+    "no-results": "Sonuç yok.",
+    "types": {
+      "guide": "Rehber",
+      "reference": "Referans tablosu",
+      "tool": "Araç"
+    }
+  },
+  "Public": {
+    "tools": "Araçlar",
+    "guides": "Rehberler",
+    "contact": "İletişim",
+    "admin": "Yönetim",
+    "legal": "Yasal bildirim",
+    "meta": {
+      "siteTitle": "ML-Helper — Million Lords araçları ve rehberleri"
+    },
+    "descriptions": {
+      "admin": "ML Helper yönetim alanı.",
+      "guide-fallback": "ML Helper'da bir Million Lords rehberi.",
+      "guides": "Million Lords için rehberler ve referans tabloları: toplulukça doğrulanmış maliyetler, istatistikler ve oyun mekanikleri.",
+      "legal": "ML Helper web sitesinin yasal bildirimi."
+    }
+  },
+  "contact": {
+    "eyebrow": "İletişim",
+    "title": "ML-Helper ile iletişime geç",
+    "lead": "Bildirilecek bir veri hatası, bir iyileştirme fikri veya bir sorun mu var? Bize yaz, hepsini okuyoruz.",
+    "email": "E-posta",
+    "subject": "Konu",
+    "choose-subject": "— Seç —",
+    "subjects": {
+      "data-error": "Veri hatası bildir",
+      "improvement-suggestion": "İyileştirme önerisi",
+      "technical-bug": "Teknik sorun / hata",
+      "other": "Diğer"
+    },
+    "message": "Mesaj",
+    "submit": "Gönder",
+    "success": "Mesaj gönderildi, teşekkürler!",
+    "error-invalid": "Form alanlarını kontrol edip tekrar dene.",
+    "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene."
+  },
+  "Home": {
+    "h1": "Million Lords araçları ve rehberleri",
+    "intro": "ML Helper, Million Lords'ta her kararını planlamana yardımcı olmak için topluluğun araçlarını ve referanslarını bir araya getirir.",
+    "toolsEyebrow": "Simüle Et",
+    "toolsTitle": "Doğru rakamlarla karar ver",
+    "toolsDescription": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
+    "guidesEyebrow": "Öğren",
+    "guidesTitle": "Stratejini geliştir",
+    "guidesDescription": "Oyun mekaniklerini anlamak ve güvenle ilerlemek için topluluk rehberlerine göz at.",
+    "referentielsEyebrow": "Danış",
+    "referentielsTitle": "Doğru rakamlara ulaş",
+    "referentielsDescription": "Oyunun tam maliyetlerini, istatistiklerini ve eşiklerini öğrenmek için topluluğun referans tablolarına göz at."
+  },
+  "ToolsPage": {
+    "eyebrow": "Araçlar",
+    "title": "Alanını seç",
+    "cities": "Şehirler",
+    "combat": "Savaş",
+    "ranking": "Sıralama",
+    "skills": "Yetenekler",
+    "references": "Referans tabloları",
+    "count": "{count, plural, =0 {Kullanılabilir araç yok} other {# araç kullanılabilir}}",
+    "open": "Kategoriyi aç",
+    "comingSoon": "Yakında",
+    "unavailable": "Kategori şu anda kullanılamıyor"
+  },
+  "Tools": {
+    "cities": "Şehirler",
+    "ranking": "Sıralama",
+    "skills": "Yetenekler",
+    "references": "Referans tabloları"
+  },
+  "guides": {
+    "eyebrow": "Rehberler ve veriler",
+    "title": "Rehberler",
+    "sections": {
+      "guides": "Rehberler",
+      "references": "Referans tabloları"
+    },
+    "filters": {
+      "guides-label": "Rehberleri kategoriye göre filtrele",
+      "all": "Tümü"
+    },
+    "categories": {
+      "debuter": "Başlangıç ve ilerleme",
+      "combat": "Savaş ve fetih",
+      "defense": "Savunma ve toprak",
+      "competences": "Yetenekler ve build'ler",
+      "equipement": "Ekipman ve Tapınak Şövalyeleri",
+      "expeditions": "Keşifler",
+      "evenements": "Etkinlikler ve sıralama",
+      "clan": "Klan ve kolektif strateji"
+    },
+    "read-guide": "Rehberi oku",
+    "empty": "Henüz yayınlanmış rehber yok.",
+    "no-results": "Bu filtrelere uyan rehber yok.",
+    "detail": {
+      "eyebrow": "{category} kategorisinde rehber",
+      "not-translated": "Bu rehber henüz bu dile çevrilmedi."
+    }
+  },
+  "references": {
+    "eyebrow": "Referans tabloları",
+    "title": "Referans tabloları",
+    "filters": {
+      "label": "Referans tablosu filtreleri",
+      "family": "Aile",
+      "rarity": "Nadirlik",
+      "slot": "Yuva",
+      "skill": "Yetenek"
+    },
+    "catalog": {
+      "combat": "Savaş",
+      "expedition": "Keşif",
+      "combat-equipment": "Savaş Ekipmanı",
+      "expedition-equipment": "Keşif Ekipmanı",
+      "level-up": "Seviye Atlama",
+      "templars": "Tapınak Şövalyeleri",
+      "gems": "Mücevherler",
+      "shop": "Mağaza",
+      "events": "Etkinlikler"
+    },
+    "tabs-label": "Referans tabloları",
+    "disabled-tooltip": "Devre dışı — şu anda kullanılamıyor",
+    "unavailable": "Bu referans tabloları geçici olarak kullanılamıyor.",
+    "single-unavailable": "Bu referans tablosu geçici olarak kullanılamıyor.",
+    "consommables": {
+      "introTitle": "Giriş",
+      "columns": {
+        "cost": "Maliyet (Safir)",
+        "description": "Açıklama",
+        "name": "Ad"
+      },
+      "cost-with-unit": "{cost} safir",
+      "cost-unknown": "Belirlenmedi",
+      "categories": {
+        "advisors": "Danışmanlar",
+        "equipment": "Ekipman",
+        "expedition": "Keşif",
+        "inventory": "Envanter"
+      },
+      "filters": {
+        "category": "Kategori",
+        "label": "Kategoriye göre filtrele"
+      }
+    },
+    "events": {
+      "league": "Lig",
+      "select-league": "Etkinliklerini görmek için bir lig seç.",
+      "empty": "Bu lig için henüz etkinlik yok.",
+      "timeline-label": "Sezon zaman çizelgesi",
+      "day-zero": "G0",
+      "day-plus": "G+{day}",
+      "duration-badge": "G{start}-G{end} ({duration})",
+      "columns": {
+        "objective": "Hedef",
+        "reward": "Ödül"
+      },
+      "no-tiers": "Bu etkinlik için kademe yok.",
+      "final-objective": "Son hedef: {objective}"
+    },
+    "description": "Million Lords için toplulukça doğrulanmış tüm verileri bul: ekipman, mücevherler, tapınakçılar, ilerleme ve mağaza, net referans tablolarında.",
+    "descriptions": {
+      "combat-equipment": "Million Lords'taki tüm savaş ekipmanları: parça başına yetenekler, nadirlik, aileler, birleştirme ve sökme maliyetleri ve mücevher yuvaları.",
+      "expedition-equipment": "Million Lords'taki tüm keşif ekipmanları: nadirlik, aile, yuva, ikincil istatistik ve birleştirme ve sökme maliyetleri.",
+      "level-up": "Lige göre Million Lords ilerleme tablosu: gereken XP, birlikler ve seviye seviye ödüller, Bronz'dan Efsane'ye kadar.",
+      "templars": "Million Lords tapınakçı maliyetleri: başlangıç seviyesinden hedef seviyeye Gökyüzü Tozu, tapınakçı başına ve toplam bonus, tam bir tabloda.",
+      "gems": "Million Lords'taki tüm mücevherler: yetenek ve lig başına bonus, yuvalar ve safir cinsinden birleştirme maliyeti, çoklu yetenek optimizasyonuyla.",
+      "shop": "Million Lords mağaza referansı: sarf malzemeleri ve doğru anda harcama yapman için toplulukça doğrulanmış veriler.",
+      "events": "Million Lords etkinlik referansı: her etkinliğe hazırlanman için toplulukça doğrulanmış veriler ve ödüller."
+    }
+  },
+  "combat-equipment": {
+    "name": "Savaş Ekipmanı",
+    "empty": "Bu filtrelere uyan savaş ekipmanı yok.",
+    "columns": {
+      "rarity": "Nadirlik",
+      "skill": "Yetenek {number}",
+      "secondary-title": "Pouciel ve Mücevherler",
+      "row-merge": "Birleştirme",
+      "row-gems": "Mücevherler",
+      "row-destruction": "Söküm"
+    },
+    "complete-in-admin": "Yönetim panelinde tamamla"
+  },
+  "expedition-equipment": {
+    "name": "Keşif Ekipmanı",
+    "empty": "Bu filtrelere uyan keşif ekipmanı yok.",
+    "columns": {
+      "rarity": "Nadirlik",
+      "family": "Aile",
+      "slot": "Yuva",
+      "secondary-stat": "İkincil istatistik",
+      "secondary-title": "Terra Tozu",
+      "row-merge": "Birleştirme",
+      "row-destruction": "Söküm"
+    }
+  },
+  "crossReference": {
+    "toReference": "Referans tablosuna göz atarak derinleş",
+    "toTool": "Aracı kullanarak derinleş"
+  },
+  "level-up": {
+    "name": "Seviye Atlama",
+    "league": "Lig",
+    "select-league": "Referans tablosunu görüntülemek için bir lig seç.",
+    "unconfirmed": "⚠️ Birlik formülü bu lig için henüz doğrulanmadı — şu anda yalnızca Efsane, Elmas, Platin, Bronz ve Altın kullanılabilir.",
+    "columns": {
+      "level": "Seviye",
+      "xp": "Gerekli XP",
+      "troops": "Birlikler",
+      "reward": "Ödül"
+    },
+    "chests": {
+      "0": "Sandık",
+      "1": "Amfora",
+      "2": "Mücevher Kutusu",
+      "3": "Testi",
+      "4": "Kasa"
+    },
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "page": "Sayfa {current} / {total}",
+    "pagination-label": "Seviye sayfaları"
+  },
+  "login": {
+    "title": "Yönetici girişi",
+    "username": "Kullanıcı adı",
+    "password": "Şifre",
+    "totp": "Kimlik doğrulama kodu",
+    "totp-hint": "6 haneli kodu yalnızca iki faktörlü kimlik doğrulama etkinse gir.",
+    "submit": "Giriş yap",
+    "error": "Geçersiz kullanıcı adı veya şifre",
+    "error-disabled": "Hesap devre dışı, yöneticiyle iletişime geç."
+  },
+  "admin": {
+    "title": "Yönetim",
+    "view-site": "Siteyi görüntüle",
+    "navigation-label": "Yönetim gezinmesi",
+    "navigation": {
+      "dashboard": "Kontrol Paneli",
+      "tools": "Araçlar",
+      "referentiels": "Referanslar",
+      "guides": "Rehberler",
+      "content": "Kullanım koşulları",
+      "users": "Kullanıcılar",
+      "logs": "Geçmiş",
+      "config": "Yapılandırma"
+    },
+    "account": {
+      "change-password": "Şifremi değiştir",
+      "current-password": "Mevcut şifre",
+      "new-password": "Yeni şifre",
+      "save": "Kaydet",
+      "saved": "Şifre güncellendi.",
+      "invalid": "Mevcut şifre yanlış veya yeni şifre geçersiz.",
+      "logout": "Çıkış yap",
+      "totp": {
+        "title": "İki faktörlü kimlik doğrulama",
+        "active": "İki faktörlü kimlik doğrulama etkin.",
+        "activate": "İki faktörlü kimlik doğrulamayı etkinleştir",
+        "scan": "Bu QR kodunu kimlik doğrulama uygulamanla tara, ardından oluşturulan kodu gir.",
+        "qr-alt": "İki faktörlü kimlik doğrulama QR kodu",
+        "manual-key": "Manuel kurulum anahtarı",
+        "code": "6 haneli kod",
+        "confirm": "Etkinleştirmeyi onayla",
+        "disable": "İki faktörlü kimlik doğrulamayı devre dışı bırak",
+        "enabled": "İki faktörlü kimlik doğrulama etkinleştirildi.",
+        "disabled": "İki faktörlü kimlik doğrulama devre dışı bırakıldı.",
+        "invalid": "Kimlik doğrulama kodu geçersiz veya süresi dolmuş.",
+        "setup-error": "İki faktörlü kimlik doğrulama kurulumu başlatılamadı.",
+        "disable-error": "Şifre veya kimlik doğrulama kodu geçersiz."
+      }
+    },
+    "dashboard": {
+      "eyebrow": "Genel Bakış",
+      "title": "Kontrol Paneli",
+      "metrics-label": "İçerik durumu",
+      "tools": "Araçlar",
+      "tools-summary": "{active} etkin / toplam {total}",
+      "guides": "Rehberler",
+      "guides-summary": "{published} yayınlandı / toplam {total}",
+      "references": "Referans tabloları",
+      "references-summary": "{active} etkin / toplam {total}",
+      "users": "Kullanıcılar",
+      "users-summary": "{active} aktif / toplam {total}",
+      "recent-actions": "Son işlemler",
+      "user": "Kullanıcı",
+      "role": "Rol",
+      "message": "Mesaj",
+      "date": "Tarih",
+      "empty": "Kayıtlı işlem yok."
+    },
+    "setup": {
+      "eyebrow": "İlk kurulum",
+      "title": "İlk Süper Yöneticiyi oluştur",
+      "description": "Bu form yalnızca bir kez kullanılabilir. ML-Helper'ı yönetmek için kullanılacak kimlik bilgilerini seç.",
+      "username": "Kullanıcı adı",
+      "password": "Şifre",
+      "submit": "Süper Yönetici oluştur",
+      "creating": "Hesap oluşturuluyor…",
+      "already-completed": "İlk kurulum zaten tamamlandı.",
+      "invalid": "Hesap oluşturulamıyor. Kullanıcı adını kontrol et ve en az 12 karakterli bir şifre kullan.",
+      "unavailable": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene."
+    },
+    "guides": {
+      "eyebrow": "Editoryal içerik",
+      "title": "Rehberler",
+      "new": "Yeni",
+      "new-title": "Yeni rehber",
+      "edit-title": "Rehberi düzenle",
+      "empty": "Oluşturulmuş rehber yok.",
+      "columns": {
+        "title": "Başlık",
+        "author": "Yazar",
+        "created": "Oluşturuldu",
+        "updated": "Son düzenleme",
+        "languages": "Diller",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "language-written": "{locale} yazıldı",
+      "language-missing": "{locale} çevrilmedi",
+      "no-results": "Bu filtre için sonuç yok.",
+      "statuses": {
+        "draft": "Taslak",
+        "pending_review": "İncelenmeyi bekliyor",
+        "published": "Yayınlandı"
+      },
+      "disabled-tooltip": "Devre dışı ve genel siteden gizli",
+      "status-label": "{title} durumu",
+      "edit": "Düzenle",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "delete": "Sil",
+      "confirm-delete": "“{title}” rehberi kalıcı olarak silinsin mi?",
+      "status-forbidden": "Rolün bu durum değişikliğine izin vermiyor.",
+      "status-saved": "Durum kaydedildi.",
+      "visibility-error": "Görünürlük değiştirilemedi.",
+      "enabled": "Rehber etkinleştirildi.",
+      "disabled": "Rehber devre dışı bırakıldı.",
+      "delete-forbidden": "Rolün bu rehberi silmeye izin vermiyor.",
+      "deleted": "Rehber kalıcı olarak silindi."
+    },
+    "referentiels": {
+      "eyebrow": "Referans verileri",
+      "title": "Referanslar",
+      "columns": {
+        "title": "Başlık",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "statuses": {
+        "active": "Etkin",
+        "inactive": "Devre dışı"
+      },
+      "reference-combat": "Savaş Ekipmanını düzenle",
+      "reference-expedition": "Keşif Ekipmanını düzenle",
+      "reference-level-up": "Seviye Atlamayı düzenle",
+      "reference-consommables": "Mağazayı düzenle",
+      "references": {
+        "combat-equipment": "Savaş Ekipmanı",
+        "expedition-equipment": "Keşif Ekipmanı",
+        "level-up": "Seviye Atlama",
+        "templiers": "Tapınak Şövalyeleri",
+        "gemmes": "Mücevherler",
+        "consommables": "Mağaza",
+        "events": "Etkinlikler"
+      },
+      "disabled-tooltip": "Devre dışı ve genel siteden gizli",
+      "edit": "Düzenle",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "visibility-error": "Görünürlük değiştirilemedi.",
+      "enabled": "Referans tablosu etkinleştirildi.",
+      "disabled": "Referans tablosu devre dışı bırakıldı.",
+      "no-results": "Referans tablosu bulunamadı.",
+      "reference-events": "Etkinlikleri Düzenle"
+    },
+    "guide-editor": {
+      "language-label": "Rehber dili",
+      "title": "Başlık ({locale})",
+      "excerpt": "Özet ({locale})",
+      "content": "Markdown içeriği ({locale})",
+      "preview": "Canlı önizleme",
+      "categories-label": "Rehber kategorileri",
+      "categories-summary": "Rehber kategorileri ({count} seçildi)",
+      "categories": {
+        "debuter": "Başlangıç ve ilerleme",
+        "combat": "Savaş ve fetih",
+        "defense": "Savunma ve toprak",
+        "competences": "Yetenekler ve build'ler",
+        "equipement": "Ekipman ve Tapınak Şövalyeleri",
+        "expeditions": "Keşifler",
+        "evenements": "Etkinlikler ve sıralama",
+        "clan": "Klan ve kolektif strateji"
+      },
+      "cover-image": "Temsili görsel URL'si",
+      "cover-image-placeholder": "https://example.com/guide-cover.jpg",
+      "cover-image-preview": "Temsili görsel önizlemesi",
+      "save": "Kaydet",
+      "submit-review": "İncelemeye gönder",
+      "publish": "Yayınla",
+      "unpublish": "Taslak olarak geri çek",
+      "saving": "Kaydediliyor…",
+      "missing-title": "Kaydetmeden önce bir EN veya FR başlığı gir.",
+      "missing-category": "Kaydetmeden önce en az bir kategori seç.",
+      "duplicate-slug": "Bu başlığı/slug'ı zaten kullanan bir rehber var.",
+      "invalid": "Rehber geçersiz veya eksik alanlar içeriyor.",
+      "status-forbidden": "Rehber kaydedildi, ancak rolün bu durum değişikliğine izin vermiyor.",
+      "saved": "Rehber kaydedildi."
+    },
+    "tools": {
+      "eyebrow": "İşlevsel içerik",
+      "title": "Araçlar",
+      "edit-ranking": "Sıralama eşiklerini düzenle",
+      "columns": {
+        "tool": "Araç",
+        "category": "Kategori",
+        "status": "Durum",
+        "action": "İşlem"
+      },
+      "category-values": {
+        "villes": "Şehirler",
+        "combat": "Savaş",
+        "classement": "Sıralama",
+        "competences": "Yetenekler"
+      },
+      "active": "Etkin",
+      "inactive": "Devre dışı",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "disabled-tooltip": "Devre dışı — genel sitede kullanılamıyor",
+      "saving": "Kaydediliyor…",
+      "save-error": "Kaydetme başarısız oldu (HTTP {status}).",
+      "state-saved": "{tool} artık {state}.",
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene.",
+      "name": "Ad",
+      "edit": "Düzenle",
+      "city-parameters": "Ortak Şehir parametreleri",
+      "ranking-editor": "Sıralama eşikleri",
+      "templar-parameters": "Tapınak Şövalyesi maliyet parametreleri",
+      "xp-gain-rate-editor": "XP kazanım oranı seviyeleri",
+      "demo-attack-troops-editor": "Deneme saldırı yüzdeleri",
+      "gems-editor": "Mücevher parametreleri"
+    },
+    "ranking": {
+      "title": "Sıralama",
+      "description": "Her aralığı ayrı ayrı düzenle. Bronz ve Altın, verileri onaylanana kadar boş kalabilir.",
+      "add": "Aralık ekle",
+      "threshold": "Eşik (%)",
+      "target": "Hedef lig",
+      "movement": "Hareket",
+      "reward": "Ödül",
+      "action": "İşlem",
+      "remove": "Sil",
+      "row-label": "{league} satır {row} {field}",
+      "unconfirmed-option": "Onaylanmadı",
+      "movements": {
+        "promotion": "Yükselme",
+        "stay": "Kalma",
+        "relegation": "Düşme"
+      },
+      "reward-types": {
+        "sapphires": "Safirler",
+        "speedups": "Hızlandırmalar",
+        "gems": "Mücevherler"
+      },
+      "range-error": "0 ile 100 arasında bir değer gereklidir.",
+      "pairing-error": "Hareket ve hedef lig birlikte onaylanmalıdır.",
+      "integer-error": "Tam sayı gereklidir.",
+      "required": "Bu alan zorunludur.",
+      "empty": "Onaylanmış aralık yok.",
+      "save": "Sıralamayı kaydet",
+      "validation": "Kaydetmeden önce işaretli alanları düzelt.",
+      "saving": "Kaydediliyor…",
+      "save-error": "Kaydetme başarısız oldu (HTTP {status}).",
+      "saved": "Yapılandırma kaydedildi.",
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene."
+    },
+    "references": {
+      "eyebrow": "Oyun verileri",
+      "title": "Referans tabloları",
+      "combat-detail": "180 düzenlenebilir satır",
+      "expedition-detail": "120 düzenlenebilir satır",
+      "templars-detail": "20 kesin düzenlenebilir maliyet",
+      "page-title": "Referans tablosu — {name}",
+      "combat-description": "180 satırın tamamı ve her değer ayrı ayrı düzenlenebilir. Bilinmeyen bir değeri yalnızca oyunda onayladıktan sonra gir.",
+      "expedition-description": "Keşif ekipmanı detayı",
+      "expedition-increments-description": "Keşif Ekipmanı istatistikleri için yıldız başına artışlar",
+      "templars-description": "Her kesin seviye maliyeti ayrı ayrı düzenlenebilir.",
+      "columns": {
+        "set-name": "Set adı",
+        "family": "Aile",
+        "slot-type": "Yuva türü",
+        "slot-name": "Yuva adı",
+        "value": "Değer {number} (%)",
+        "type-value": "Tür değeri (%)",
+        "secondary-value": "İkincil değer (%)",
+        "level": "Ulaşılan seviye",
+        "level-cost": "Seviye maliyeti"
+      },
+      "row-label": "Satır {row} {field}",
+      "expedition-row-label": "Keşif satırı {row} {field}",
+      "templar-level-label": "Tapınak Şövalyesi seviyesi {level}",
+      "templar-cost-label": "{level} seviyesi Tapınak Şövalyesi maliyeti",
+      "save": "Tüm tabloyu kaydet",
+      "save-all": "Tüm sayfayı kaydet",
+      "required": "Bu alan zorunludur.",
+      "number": "Geçerli bir sayısal değer gir.",
+      "minimum": "Minimum değer {min}.",
+      "validation": "Kaydetmeden önce işaretli alanları düzelt.",
+      "saving": "Kaydediliyor…",
+      "save-error": "Kaydetme başarısız oldu (HTTP {status}).",
+      "save-all-error": "Bu sayfadaki bir veya daha fazla tablo kaydedilemedi.",
+      "saved": "Referans tablosu kaydedildi.",
+      "server-error": "Sunucuya ulaşılamıyor. Bağlantıyı kontrol edip tekrar dene.",
+      "all": "Tümü",
+      "filters": {
+        "skill": "Yetenek"
+      },
+      "add": "Öğe ekle",
+      "add-category": "Ekle ({category})",
+      "confirm-remove": "Bu öğe kalıcı olarak silinsin mi?",
+      "category-row-label": "{category} — satır {row} {field}",
+      "consumables-columns": {
+        "cost": "Maliyet (Safir)",
+        "description": "Açıklama",
+        "image": "Görsel yolu",
+        "name": "Ad"
+      },
+      "consumables-intro-language-label": "Metin dili",
+      "consumables-intro-title": "Intro",
+      "consumables-table-title": "Öğeler",
+      "empty": "Henüz öğe yok.",
+      "move-down": "Aşağı taşı",
+      "actions": "İşlemler",
+      "move-up": "Yukarı taşı",
+      "remove": "Kaldır",
+      "events-league-label": "Lig",
+      "events-language-label": "Metin dili",
+      "events-season-duration-label": "Sezon süresi (gün)",
+      "events-season-overrun": "Etkinliklerin toplam süresi ({total}) sezon süresini ({season}) aşıyor.",
+      "events-table-title": "Etkinlik listesi",
+      "add-event": "Etkinlik ekle",
+      "events-columns": {
+        "name": "İsim",
+        "description": "Açıklama",
+        "duration": "Süre",
+        "color": "Renk"
+      },
+      "event-colors": {
+        "violet": "Koyu mor",
+        "violet-bright": "Açık mor",
+        "emerald": "Koyu yeşil",
+        "emerald-bright": "Açık yeşil",
+        "amber": "Koyu sarı",
+        "amber-bright": "Açık sarı",
+        "ember": "Koyu kırmızı",
+        "ember-bright": "Açık kırmızı",
+        "sapphire": "Koyu mavi",
+        "sapphire-bright": "Açık mavi"
+      },
+      "tier-columns": {
+        "objective": "Hedef",
+        "reward": "Ödül"
+      },
+      "add-tier": "Kademe ekle",
+      "events-tiers-summary": "Kademeler ({count})",
+      "event-row-label": "{row}. etkinliğin {field}",
+      "events-position-aria": "Konum {row}",
+      "tier-row-label": "{event} etkinliğinin {row}. kademesinin {field}",
+      "templars-presentation-title": "Sunum",
+      "templars-presentation-language-label": "Metin dili",
+      "templars-columns": {
+        "image": "Görsel yolu",
+        "name": "Ad",
+        "description": "Açıklama",
+        "temple-base": "Tapınak temeli",
+        "bonus": "Bonus (%)"
+      },
+      "secondary-row": "Gösterge",
+      "secondary-label-language": "Gösterge dili",
+      "row-merge-cost": "Birleştirme",
+      "row-gem-slots": "Mücevherler",
+      "row-destruction": "Söküm",
+      "combat-secondary-description": "Pouciel (birleştirme, söküm) ve mücevher yuvaları, nadirliğe göre.",
+      "expedition-secondary-description": "Terra Tozu (birleştirme, söküm), nadirliğe göre.",
+      "combat-increments-description": "Savaş Ekipmanı yetenekleri için yıldız başına artışlar"
+    },
+    "common": {
+      "back": "Geri"
+    },
+    "parameters": {
+      "save": "Parametreleri kaydet",
+      "saving": "Kaydediliyor…",
+      "saved": "Parametreler kaydedildi.",
+      "error": "Kaydetme başarısız oldu (HTTP {status}).",
+      "server-error": "Sunucuya ulaşılamıyor.",
+      "league": "Lig",
+      "coefficient": "Katsayı",
+      "ratio": "Oran",
+      "xp-base": "XP tabanı",
+      "xp-ratio": "XP oranı",
+      "unconfirmed": "Birlik formülü onaylanmadı"
+    },
+    "city-parameters": {
+      "progression": "İlerleme parametreleri",
+      "multipliers": "Lig çarpanları",
+      "league": "Lig",
+      "army": "Ordu çarpanı",
+      "gold": "Altın çarpanı",
+      "vp": {
+        "base": "VP tabanı",
+        "ratio": "VP oranı"
+      },
+      "walls": {
+        "base": "Sur tabanı",
+        "ratio": "Sur oranı"
+      },
+      "cost": {
+        "base": "Maliyet tabanı",
+        "ratio": "Maliyet oranı"
+      }
+    },
+    "templar-parameters": {
+      "formula": "Maliyet(n) = yuvarla(taban × oran^(n-1))",
+      "base": "Taban",
+      "ratio": "Oran"
+    },
+    "xp-gain-rate": {
+      "formula": "XP kazanım oranı = f(hedef VP / saldıran VP oranı)",
+      "tier": "Kademe",
+      "upper-bound": "Üst sınır (%)",
+      "upper-bound-field": "{tier} kademesi üst sınırı",
+      "rate": "XP oranı (%)",
+      "rate-field": "{tier} kademesi XP oranı"
+    },
+    "demo-attack-troops": {
+      "formula": "MaksBirlik = (X% / 100) × Surlar(hedef şehir seviyesi)",
+      "percentage": "X (surların %'si)"
+    },
+    "gems": {
+      "formula": "Mücevher değeri = taban değer (yetenek ve lig başına)",
+      "value": "Yetenek ve lig başına taban değer",
+      "value-field": "{skill} · {league}",
+      "price": "Lig başına mücevher satın alma fiyatı (safir cinsinden)",
+      "price-field": "{league} fiyatı"
+    },
+    "users": {
+      "title": "Yönetici kullanıcılar",
+      "create": "Kullanıcı oluştur",
+      "username": "Kullanıcı adı",
+      "password": "Şifre",
+      "role": "Rol",
+      "delete": "Sil",
+      "save": "Kaydet",
+      "created": "Kullanıcı oluşturuldu",
+      "saved": "Kullanıcı kaydedildi",
+      "password-too-short": "Yeni şifre en az 12 karakter içermelidir.",
+      "error": "İşlem tamamlanamadı",
+      "server-error": "Sunucu kullanılamıyor",
+      "status": "Durum",
+      "active": "Etkin",
+      "inactive": "Devre dışı",
+      "activate": "Etkinleştir",
+      "deactivate": "Devre dışı bırak",
+      "activated": "Kullanıcı etkinleştirildi",
+      "deactivated": "Kullanıcı devre dışı bırakıldı"
+    },
+    "logs": {
+      "title": "Değişiklik geçmişi",
+      "actor": "İşlemi yapan",
+      "actor-role": "İşlem zamanındaki rol",
+      "message": "Mesaj",
+      "date": "Tarih",
+      "start": "Başlangıç tarihi",
+      "end": "Bitiş tarihi",
+      "purge": "Aralığı temizle",
+      "purged": "Geçmiş temizlendi",
+      "error": "Geçmiş temizlenemedi",
+      "filter-user": "Kullanıcı",
+      "filter-message": "Mesajda kelime",
+      "filter-apply": "Filtrele",
+      "filter-reset": "Sıfırla",
+      "no-results": "Filtrelere uyan giriş yok.",
+      "pagination": "Geçmiş sayfalama",
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "page-summary": "Sayfa {page} / {total}"
+    },
+    "content": {
+      "eyebrow": "Kurumsal sayfa",
+      "title": "Yasal bildirim",
+      "language-label": "İçerik dili",
+      "field": "Markdown",
+      "preview": "Canlı önizleme",
+      "save": "Kaydet",
+      "saving": "Kaydediliyor…",
+      "saved": "Yasal bildirim kaydedildi.",
+      "error": "Yasal bildirim kaydedilemedi."
+    },
+    "forbidden": {
+      "eyebrow": "Hata 403",
+      "title": "Erişim yasak",
+      "description": "Rolün bu bölüme veya işleme erişime izin vermiyor.",
+      "back": "Kontrol paneline dön"
+    },
+    "config": {
+      "eyebrow": "Yapılandırma",
+      "title": "Diller",
+      "intro": "Her dilin herkese açık sitedeki görünürlüğünü aç veya kapat. Çeviri dosyaları değişmeden kalır. İngilizce ve Fransızca her zaman etkindir.",
+      "columns": {
+        "language": "Dil",
+        "status": "Durum",
+        "action": "İşlem"
+      },
+      "active": "Etkin",
+      "inactive": "Devre dışı",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "locked-tooltip": "Temel dil — her zaman etkin",
+      "saving": "Kaydediliyor…",
+      "save-error": "Kaydetme başarısız (HTTP {status}).",
+      "state-saved": "{language} artık {state}.",
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
+    }
+  },
+  "roles": {
+    "super_admin": "Süper Yönetici",
+    "admin": "Yönetici",
+    "guides_manager": "Rehber Yöneticisi",
+    "references_manager": "Référentiels",
+    "tools_manager": "Araç Yöneticisi",
+    "read_only": "Salt Okunur"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Bu sayfa mevcut değil veya taşındı. Buradan devam edebilirsin:",
+    "home": "Ana sayfa"
+  }
+}

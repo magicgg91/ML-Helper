@@ -8,6 +8,7 @@ export const leagues = [
 ] as const;
 
 export type League = (typeof leagues)[number];
+export type LeagueSelection = League | "";
 
 export const skillKeys = [
   "striker",
@@ -46,11 +47,11 @@ type SkillPointMeta = {
   prerequisite: Prerequisite | null;
 };
 
-export const leaguePointsPerLevel: Record<League, number> = {
+const leaguePointsPerLevel: Record<League, number> = {
   bronze: 1,
   silver: 1,
   gold: 1,
-  platinum: 2,
+  platinum: 1,
   diamond: 2,
   legend: 2,
 };
@@ -130,7 +131,10 @@ export const emptyTemplars = (): NumberMap<TemplarKey> =>
     templarKeys.map((key) => [key, 0]),
   ) as NumberMap<TemplarKey>;
 
-export const clanTempleMinimums: NumberMap<TemplarKey> = {
+// Base de temple confirmée par statistique (cdc section 7.1). Ce bonus
+// s'applique automatiquement, en plus de la contribution des Templiers
+// du clan saisie par le joueur : Bonus_total = base + clan saisi.
+export const templeBase: NumberMap<TemplarKey> = {
   striker: 20,
   guardian: 30,
   prosperous: 30,
@@ -140,7 +144,7 @@ export const clanTempleMinimums: NumberMap<TemplarKey> = {
 
 export type PlayerSettings = {
   level: number;
-  league: League;
+  league: LeagueSelection;
   vp: number;
   vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000;
   equipmentSkills: NumberMap<SkillKey>;
@@ -151,17 +155,22 @@ export type PlayerSettings = {
 
 export const defaultPlayerSettings = (): PlayerSettings => ({
   level: 1,
-  league: "legend",
+  league: "",
   vp: 0,
   vpUnit: 1_000_000,
   equipmentSkills: emptySkills(),
   skillPoints: emptySkills(),
   templars: emptyTemplars(),
-  clanTemple: { ...clanTempleMinimums },
+  clanTemple: emptyTemplars(),
 });
 
-export function availableSkillPoints(level: number, league: League): number {
-  return Math.max(0, Math.floor(level) - 1) * leaguePointsPerLevel[league];
+export function availableSkillPoints(
+  level: number,
+  league: LeagueSelection,
+): number {
+  return league
+    ? Math.max(0, Math.floor(level) - 1) * leaguePointsPerLevel[league]
+    : 0;
 }
 
 export function allocatedSkillPoints(points: NumberMap<SkillKey>): number {
@@ -178,20 +187,12 @@ function prerequisiteSatisfied(
   return points[prerequisite.skill] >= prerequisite.min;
 }
 
-export function skillPrerequisiteSatisfied(
-  key: SkillKey,
-  points: NumberMap<SkillKey>,
-): boolean {
-  const prerequisite = skillPointMeta[key].prerequisite;
-  return prerequisite ? prerequisiteSatisfied(prerequisite, points) : true;
-}
-
 export function allocateSkillPoints(
   current: NumberMap<SkillKey>,
   key: SkillKey,
   requested: number,
   level: number,
-  league: League,
+  league: LeagueSelection,
 ): NumberMap<SkillKey> {
   const next = { ...current, [key]: Math.max(0, Math.floor(requested)) };
   const budget = availableSkillPoints(level, league);
@@ -228,7 +229,7 @@ export function allocateSkillPoints(
 export function fitSkillPointsToBudget(
   current: NumberMap<SkillKey>,
   level: number,
-  league: League,
+  league: LeagueSelection,
 ): NumberMap<SkillKey> {
   const next = { ...current };
   let overflow =
@@ -242,20 +243,81 @@ export function fitSkillPointsToBudget(
   return next;
 }
 
+// Plafond confirmé (cdc section 7.1) : 50% pour Récupération, 90% pour
+// Intrépide/Bravoure (75% en Légende), aucun plafond pour les 7 autres.
+// Source unique pour tout total affiché ou calculé à partir d'une
+// compétence — bloc "Points de compétence", résumé replié, champ
+// "Statistiques données par l'équipement", et tout calculateur qui
+// consommerait ces stats.
+export function skillCapForLeague(
+  key: SkillKey,
+  league: LeagueSelection,
+): number | undefined {
+  const cap = skillPointMeta[key].cap;
+  if (cap === null) return undefined;
+  if (typeof cap === "number") return cap;
+  return league === "legend" ? cap.legend : cap.default;
+}
+
 export function skillPercent(
   key: SkillKey,
   points: NumberMap<SkillKey>,
-  league: League,
+  league: LeagueSelection,
 ): number {
   const meta = skillPointMeta[key];
-  const base = meta.baseByLeague?.[league] ?? 0;
+  const base = league ? (meta.baseByLeague?.[league] ?? 0) : 0;
   const raw = base + points[key] * meta.bonus;
-  if (meta.cap === null) return raw;
-  const cap =
-    typeof meta.cap === "number"
-      ? meta.cap
-      : league === "legend"
-        ? meta.cap.legend
-        : meta.cap.default;
-  return Math.min(raw, cap);
+  const cap = skillCapForLeague(key, league);
+  return cap === undefined ? raw : Math.min(raw, cap);
+}
+
+export function combinedSkillPercent(
+  key: SkillKey,
+  settings: Pick<PlayerSettings, "equipmentSkills" | "skillPoints" | "league">,
+): number {
+  const total =
+    settings.equipmentSkills[key] +
+    skillPercent(key, settings.skillPoints, settings.league);
+  const cap = skillCapForLeague(key, settings.league);
+  return cap === undefined ? total : Math.min(total, cap);
+}
+
+// The clan-temple field only holds the clan's Templar contribution;
+// the confirmed per-skill temple base (cdc section 7.1) is added
+// automatically to get the actual temple bonus for that skill.
+export function templePercent(
+  key: TemplarKey,
+  clanTemple: NumberMap<TemplarKey>,
+): number {
+  return templeBase[key] + clanTemple[key];
+}
+
+export type TempleSkillBreakdown = {
+  equipment: number;
+  points: number;
+  temple: number;
+  total: number;
+};
+
+// The 5 temple-affected skills add a third component (temple base +
+// clan contribution) before the league cap is applied to the final
+// total — never to the individual components.
+export function templeSkillBreakdown(
+  key: TemplarKey,
+  settings: Pick<
+    PlayerSettings,
+    "equipmentSkills" | "skillPoints" | "clanTemple" | "league"
+  >,
+): TempleSkillBreakdown {
+  const equipment = settings.equipmentSkills[key];
+  const points = skillPercent(key, settings.skillPoints, settings.league);
+  const temple = templePercent(key, settings.clanTemple);
+  const rawTotal = equipment + points + temple;
+  const cap = skillCapForLeague(key, settings.league);
+  return {
+    equipment,
+    points,
+    temple,
+    total: cap === undefined ? rawTotal : Math.min(rawTotal, cap),
+  };
 }

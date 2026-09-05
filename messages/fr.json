@@ -1,45 +1,1197 @@
 {
-  "Login": {
+  "common": {
+    "choose": "— Choisir —",
+    "none": "Rien",
+    "decrease": "Diminuer {label}",
+    "increase": "Augmenter {label}",
+    "select-league": "Choisis une ligue pour calculer.",
+    "language": "Langue",
+    "theme-light": "Activer le mode clair",
+    "theme-dark": "Activer le mode sombre",
+    "star-count": "{level} étoiles",
+    "duration-hours": "{hours}h"
+  },
+  "game": {
+    "skills": {
+      "striker": "Attaque",
+      "brave": "Bravoure",
+      "scavenger": "Charognard",
+      "guardian": "Défense",
+      "fearless": "Intrépide",
+      "prosperous": "Prospérité",
+      "recruiter": "Recruteur",
+      "cautious": "Récupération",
+      "salvager": "Recycleur",
+      "rusher": "Vitesse"
+    },
+    "skills-short": {
+      "striker": "Atq",
+      "brave": "Bra",
+      "scavenger": "Cha",
+      "guardian": "Def",
+      "fearless": "Int",
+      "prosperous": "Pro",
+      "recruiter": "Rec",
+      "cautious": "Rup",
+      "salvager": "Rcy",
+      "rusher": "Vit"
+    },
+    "templars": {
+      "striker": "Attaque",
+      "guardian": "Défense",
+      "prosperous": "Or",
+      "recruiter": "Recruteur",
+      "rusher": "Vitesse"
+    },
+    "leagues": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "platinum": "Platine",
+      "diamond": "Diamant",
+      "legend": "Légende"
+    },
+    "leagues-short": {
+      "bronze": "Br",
+      "silver": "Ar",
+      "gold": "Or",
+      "platinum": "Pl",
+      "diamond": "Dia",
+      "legend": "Lég"
+    },
+    "families": {
+      "attack": "Attaque",
+      "defense": "Défense",
+      "gold": "Or",
+      "equipment": "Équipement",
+      "consumables": "Consommables",
+      "troops": "Troupes",
+      "speed": "Vitesse",
+      "troops-speed": "Troupes/Vitesse"
+    },
+    "rarities": {
+      "common": "Commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "mythic": "Mythique",
+      "legendary": "Légendaire"
+    },
+    "slots": {
+      "amulet": "Amulette",
+      "helmet": "Casque",
+      "bracelet": "Bracelet",
+      "ring": "Anneau",
+      "belt": "Ceinture",
+      "gauntlet": "Gantelet",
+      "weapon": "Arme",
+      "boots": "Bottes",
+      "shield": "Bouclier",
+      "cloak": "Cape",
+      "spyglass": "Longue-vue",
+      "pouch": "Bourse",
+      "compass": "Boussole",
+      "torch": "Torche",
+      "pickaxe": "Pioche"
+    },
+    "weapon-types": {
+      "hammer": "Marteau",
+      "bow": "Arc",
+      "spear": "Lance",
+      "axe": "Hache",
+      "saber": "Sabre",
+      "sword": "Épée",
+      "halberd": "Hallebarde"
+    },
+    "stats": {
+      "vitality": "Vitalité",
+      "perception": "Perception",
+      "recovery": "Récupération",
+      "speed": "Vitesse",
+      "dodge": "Esquive",
+      "luck": "Chance"
+    }
+  },
+  "tools": {
+    "title": "Décide avec les bons chiffres",
+    "subtitle": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
+    "cities": "Villes",
+    "combat": "Combat",
+    "combat-simulator": "Combat",
+    "enemy-troops": "Troupes ennemies",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
+    "comingSoon": "Bientôt disponible",
+    "unavailable": "Indisponible actuellement",
+    "navigation-label": "Catégories d’outils",
+    "city-tabs": "Outils Villes",
+    "combat-tabs": "Outils Combat",
+    "skills-tabs": "Outils Compétences",
+    "calculator-unavailable": "Désactivé — inaccessible actuellement",
+    "calculators-unavailable": "Ces outils sont temporairement indisponibles.",
+    "descriptions": {
+      "cities": "Calcule le coût, la production et les récompenses de tes villes dans Million Lords : coût et niveau maximum, production d'or et gain d'XP par niveau.",
+      "combat": "Outils de combat pour Million Lords : taux de gain d'XP, troupes en attaque démo côté attaquant et cible, et troupes ennemies pour préparer chaque assaut.",
+      "ranking": "Estime ta progression au classement de Million Lords : ton rang actuel et les points de victoire nécessaires pour atteindre le rang que tu vises.",
+      "skills": "Optimise ton équipement et tes compétences dans Million Lords : équipements de combat et d'expédition, gemmes et templiers, coûts de fusion inclus."
+    }
+  },
+  "player-settings": {
+    "title": "Paramètres du joueur",
+    "summary": "{league} · Niveau {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
+    "league": "Ligue",
+    "league-undefined": "Ligue non définie",
+    "player-level": "Niveau du joueur",
+    "player-vp": "VP du joueur",
+    "vp-unit": "Unité des VP",
+    "equipment-skills": {
+      "title": "Compétences avec équipement",
+      "field": "{skill} avec équipement"
+    },
+    "skill-points": {
+      "title": "Distribution des points",
+      "available": "Disponibles",
+      "allocated": "Alloués",
+      "remaining": "Restants",
+      "reset": "Réinitialiser",
+      "field": "Points {skill}"
+    },
+    "templars": {
+      "title": "Templiers",
+      "field": "Templiers {templar}"
+    },
+    "clan-temple": {
+      "title": "Bonus de temple (clan)",
+      "help": "Saisis uniquement la contribution des Templiers du clan (ex : 260 pour Vitesse). La base de temple confirmée par statistique s’ajoute automatiquement au total affiché.",
+      "field": "Temple {templar}"
+    }
+  },
+  "city-cost": {
+    "name": "Coût de Ville",
+    "fields": {
+      "league": "Ligue",
+      "city-count": "Nombre de villes",
+      "start-level": "Niveau de départ",
+      "target-level": "Niveau cible"
+    },
+    "start": "Départ",
+    "target": "Cible",
+    "wall": "Mur",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
+    "gold-unit": "or",
+    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "cost-total": "Coût total",
+    "vp-gained": "VP total gagné",
+    "gold-transition": "Or/h avant → après",
+    "army-transition": "Armée/h avant → après"
+  },
+  "city-max-level": {
+    "name": "Niveau Max Atteignable",
+    "fields": {
+      "league": "Ligue",
+      "city-count": "Nombre de villes",
+      "start-level": "Niveau de départ",
+      "available-gold": "Or disponible",
+      "gold-unit": "Unité de l’or disponible"
+    },
+    "wall": "Mur",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
+    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "reachable-level": "Niveau cible atteignable",
+    "remaining-gold": "Or restant",
+    "vp-gained": "VP total gagné",
+    "gold-transition": "Or/h avant → après",
+    "army-transition": "Armée/h avant → après"
+  },
+  "city-production": {
+    "name": "Production",
+    "fields": {
+      "league": "Ligue",
+      "city-count": "Nombre de villes",
+      "average-level": "Niveau moyen des villes"
+    },
+    "per-city-base": "Par ville — base",
+    "vp": "VP",
+    "wall": "Mur",
+    "gold-hour": "Or/h",
+    "army-hour": "Armée/h",
+    "gold-total": "💰 Or — Production totale",
+    "troops-total": "⚔️ Troupes — Production totale",
+    "base": "Base",
+    "equipment": "Stuff",
+    "temple": "Temple",
+    "vp-total": "VP total",
+    "full-production": {
+      "title": "Si reskill full-prod",
+      "note": "Simulation avec les {points} points disponibles investis intégralement, calculée sur la production de base.",
+      "gold": "Or si full Prospérité",
+      "troops": "Troupes si full Recruteur"
+    }
+  },
+  "city-rewards": {
+    "name": "Récompenses de Production",
+    "gold": {
+      "title": "Or",
+      "base": "Production d’or de base",
+      "base-unit": "Unité de production d’or",
+      "hours": "Heures Or reçues",
+      "bonus": "Bonus Or obtenu"
+    },
+    "troops": {
+      "title": "Troupes",
+      "base": "Production de troupes de base",
+      "base-unit": "Unité de production de troupes",
+      "hours": "Heures Troupes reçues",
+      "bonus": "Bonus Troupes obtenu"
+    }
+  },
+  "xp-gain-rate": {
+    "name": "Taux de gain d’XP",
+    "mode-label": "Mode de calcul d’XP",
+    "modes": {
+      "attacker": "Je suis l’attaquant",
+      "target": "Je suis la cible"
+    },
+    "fields": {
+      "my-vp": "Ma VP",
+      "unit": "Unité de VP"
+    },
+    "columns": {
+      "rate": "Taux de gain d’XP",
+      "opponent-vp": "Plage de VP adverse"
+    }
+  },
+  "demo-attack-troops": {
+    "name": "Troupes en attaque démo",
+    "select-league": "Choisis une ligue pour calculer.",
+    "fields": {
+      "city-level": "Niveau de ville visée",
+      "league": "Ligue de l’attaquant"
+    },
+    "wall": "Remparts de la cible",
+    "maximum": "Troupes maximum"
+  },
+  "ranking": {
+    "name": "Classement",
+    "fields": {
+      "league": "Ligue",
+      "percentage": "Ton pourcentage actuel",
+      "rank": "Ton rang actuel"
+    },
+    "undefined": "À définir dans l’administration",
+    "total-players": "Nombre estimé de joueurs",
+    "errors": {
+      "select-league": "Choisis une ligue pour calculer.",
+      "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
+      "missing-bands": "Seuils et récompenses à définir dans l’administration pour la ligue {league}."
+    },
+    "ranking-ranges": "Plages de classement",
+    "columns": {
+      "range": "Plage",
+      "rank": "Rang de plage",
+      "target-league": "Ligue cible",
+      "reward": "Récompense"
+    },
+    "movements": {
+      "promotion": "Montée {league}",
+      "stay": "Maintien {league}",
+      "relegation": "Descente {league}"
+    },
+    "reward-types": {
+      "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
+      "speedups": "{count} speedup",
+      "gems": "{count, plural, one {# gemme} other {# gemmes}}"
+    },
+    "scale-label": "Échelle de classement de 100% à 0%",
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+  },
+  "stuff-simulator": {
+    "name": "Équipement de Combat",
+    "global-summary": "Récapitulatif des compétences d’équipement",
+    "transfer": "Transférer vers les Paramètres du joueur",
+    "transferred": "Transféré dans les Paramètres du joueur !",
+    "empty-slot": "Vide",
+    "select-slot": "Clique sur un emplacement pour le configurer.",
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement {block} {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement {block} {slot}",
+    "no-gem-slot": "Aucun emplacement de gemme à cette rareté",
+    "family-filter-label": "Filtrer par famille",
+    "gem": {
+      "row": "Gemme {index}",
+      "skill": "Compétence gemme {index}",
+      "stars": "Étoiles gemme {index}",
+      "league": "Ligue gemme {index}"
+    }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Équipements d’Expédition",
+    "summary-title": "Récapitulatif des compétences d’expédition",
+    "empty-summary": "Aucun équipement configuré",
+    "empty-slot": "Vide",
+    "select-slot": "Clique sur un emplacement pour le configurer.",
+    "equipment-label": "Équipement ({slot})",
+    "equipment-aria": "Équipement d’expédition {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "Aucun",
+    "star-level": "Niveau d’étoile",
+    "equipment-stars-aria": "Étoiles équipement d’expédition {slot}",
+    "filters": {
+      "label": "Filtrer par type d’équipement",
+      "custom": "Personnalisé",
+      "gold": "Or",
+      "equipment": "Équipement combat",
+      "consumables": "Consommables",
+      "troops": "Troupes"
+    }
+  },
+  "gems": {
+    "name": "Gemmes",
+    "mode-label": "Mode Gemmes",
+    "modes": {
+      "optimize": "Optimisation",
+      "budget": "Budget disponible"
+    },
+    "optimization": {
+      "title": "Optimisation multi-compétences"
+    },
+    "family-label": "Famille de gemmes",
+    "fields": {
+      "available-slots": "Emplacements disponibles",
+      "skill": "Compétence",
+      "skill-row": "Compétence ligne {row}",
+      "league": "Ligue",
+      "league-row": "Ligue ligne {row}",
+      "allocated-slots": "Emplacements alloués",
+      "slots-row": "Emplacements ligne {row}",
+      "target-stat": "Stat cible (%)",
+      "target-row": "Stat cible ligne {row}",
+      "budget-slots": "Emplacements budget",
+      "available-budget": "Budget disponible en saphirs"
+    },
+    "remove-row": "Supprimer ligne {row}",
+    "add-stat": "+ Ajouter une stat",
+    "allocated-summary": "Emplacements alloués",
+    "result": "Résultat",
+    "errors": {
+      "add-positive-stat": "Ajoute une stat avec des emplacements supérieurs à zéro.",
+      "select-league": "Choisis une ligue pour calculer.",
+      "select-skill": "Choisis une compétence pour calculer."
+    },
+    "columns": {
+      "skill": "Compétence",
+      "league": "Ligue",
+      "slots": "Emplacements",
+      "distribution": "Répartition",
+      "stat": "Stat obtenue",
+      "cost": "Coût"
+    },
+    "total-cost": "Coût total",
+    "sapphires": "saphirs",
+    "optimal-distribution": "Répartition optimale",
+    "base-gems": "Gemmes de base à acheter",
+    "used-slots": "Emplacements utilisés",
+    "obtained-stat": "Stat obtenue",
+    "actual-cost": "Coût réel",
+    "remaining-budget": "Budget restant",
+    "gem-count": "{count, plural, one {# gemme} other {# gemmes}} {level}★",
+    "no-gems": "Aucune gemme",
+    "reference": {
+      "price-row": "Coût en saphirs"
+    }
+  },
+  "templars": {
+    "name": "Templiers",
+    "fields": {
+      "start-level": "Niveau de départ",
+      "target-level": "Niveau cible"
+    },
+    "total-cost": "Coût total",
+    "skydust": "Pouciel",
+    "bonus-per-templar": "Bonus par Templier",
+    "total-bonus": "Bonus total",
+    "gain": "Gain",
+    "rate-value": "{rate}%",
+    "cost-table": "Table de coût",
+    "columns": {
+      "skill": "Compétence",
+      "level": "Niveau atteint",
+      "level-cost": "Coût du niveau (Pouciel)",
+      "cumulative-cost": "Coût cumulé (Pouciel)"
+    },
+    "presentation": {
+      "tile-title": "Templier {name}",
+      "temple-base-label": "Base Temple",
+      "bonus-label": "Bonus par templier"
+    }
+  },
+  "Navigation": {
+    "tools": "Outils",
+    "referentiels": "Référentiels",
+    "guides": "Guides",
+    "menu": "Menu",
+    "main": "Navigation principale",
+    "footer": "Pied de page",
+    "home": "Accueil",
+    "breadcrumb": "Fil dʼAriane"
+  },
+  "search": {
+    "label": "Rechercher sur le site",
+    "placeholder": "Rechercher",
+    "results-label": "Résultats de recherche",
+    "no-results": "Aucun résultat.",
+    "types": {
+      "guide": "Guide",
+      "reference": "Référentiel",
+      "tool": "Outil"
+    }
+  },
+  "Public": {
+    "tools": "Outils",
+    "guides": "Guides",
+    "contact": "Contact",
+    "admin": "Administration",
+    "legal": "Mentions légales",
+    "descriptions": {
+      "guides": "Guides et référentiels de données pour Million Lords : coûts, statistiques et mécaniques de jeu vérifiés par la communauté.",
+      "legal": "Mentions légales du site ML Helper.",
+      "guide-fallback": "Un guide Million Lords sur ML Helper.",
+      "admin": "Espace d’administration de ML Helper."
+    },
+    "meta": {
+      "siteTitle": "ML-Helper — Outils et guides Million Lords"
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Contacter ML-Helper",
+    "lead": "Une erreur à signaler, une idée d’amélioration ou une question ? Écris-nous, on lit tout.",
+    "email": "Email",
+    "subject": "Objet",
+    "choose-subject": "— Choisir —",
+    "subjects": {
+      "data-error": "Signaler une erreur de donnée",
+      "improvement-suggestion": "Suggestion d’amélioration",
+      "technical-bug": "Problème technique / bug",
+      "other": "Autre"
+    },
+    "message": "Message",
+    "submit": "Envoyer",
+    "success": "Message envoyé, merci !",
+    "error-invalid": "Vérifie les champs du formulaire et réessaie.",
+    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard."
+  },
+  "Home": {
+    "h1": "Outils et guides Million Lords",
+    "intro": "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
+    "toolsEyebrow": "Simuler",
+    "toolsTitle": "Décide avec les bons chiffres",
+    "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
+    "guidesEyebrow": "Apprendre",
+    "guidesTitle": "Affûte ta stratégie",
+    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
+    "referentielsEyebrow": "Consulter",
+    "referentielsTitle": "Retrouve les données clés",
+    "referentielsDescription": "Retrouve les tableaux de référence pour connaître les coûts, statistiques et paliers exacts du jeu, aussi bien pour les équipements, les gemmes ou bien les templiers que pour les consommables de la boutique."
+  },
+  "ToolsPage": {
+    "eyebrow": "Outils",
+    "title": "Choisis ton domaine",
+    "cities": "Villes",
+    "combat": "Combat",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "references": "Référentiels",
+    "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
+    "open": "Ouvrir la catégorie",
+    "comingSoon": "Bientôt disponible",
+    "unavailable": "Catégorie indisponible actuellement"
+  },
+  "Tools": {
+    "cities": "Villes",
+    "ranking": "Classement",
+    "skills": "Compétences",
+    "references": "Référentiels"
+  },
+  "guides": {
+    "eyebrow": "Guides et données",
+    "title": "Guides",
+    "sections": {
+      "guides": "Guides",
+      "references": "Référentiels"
+    },
+    "filters": {
+      "guides-label": "Filtrer les guides par catégorie",
+      "all": "Tout"
+    },
+    "categories": {
+      "debuter": "Débuter & progresser",
+      "combat": "Combat & conquête",
+      "defense": "Défense & territoire",
+      "competences": "Compétences & builds",
+      "equipement": "Équipement & Templiers",
+      "expeditions": "Expéditions",
+      "evenements": "Événements & classement",
+      "clan": "Clan & stratégie collective"
+    },
+    "read-guide": "Lire le guide",
+    "empty": "Aucun guide publié pour le moment.",
+    "no-results": "Aucun guide ne correspond à ces filtres.",
+    "detail": {
+      "eyebrow": "Guide · {category}",
+      "not-translated": "Ce guide n’est pas encore traduit dans cette langue."
+    }
+  },
+  "references": {
+    "eyebrow": "Référentiels",
+    "title": "Référentiels",
+    "filters": {
+      "label": "Filtres du référentiel",
+      "family": "Famille",
+      "rarity": "Rareté",
+      "slot": "Emplacement",
+      "skill": "Compétence"
+    },
+    "catalog": {
+      "combat": "Combat",
+      "expedition": "Expédition",
+      "combat-equipment": "Équipements de Combat",
+      "expedition-equipment": "Équipements d’Expédition",
+      "level-up": "Progression",
+      "templars": "Templiers",
+      "gems": "Gemmes",
+      "shop": "Boutique",
+      "events": "Événements"
+    },
+    "tabs-label": "Référentiels",
+    "disabled-tooltip": "Désactivé — inaccessible actuellement",
+    "unavailable": "Ces référentiels sont temporairement indisponibles.",
+    "single-unavailable": "Ce référentiel est temporairement indisponible.",
+    "consommables": {
+      "introTitle": "Introduction",
+      "columns": {
+        "name": "Nom",
+        "description": "Description",
+        "cost": "Coût (Saphirs)"
+      },
+      "cost-with-unit": "{cost, plural, one {# saphir} other {# saphirs}}",
+      "cost-unknown": "Non défini",
+      "filters": {
+        "label": "Filtrer par catégorie",
+        "category": "Catégorie"
+      },
+      "categories": {
+        "expedition": "Expédition",
+        "advisors": "Conseillers",
+        "equipment": "Équipement",
+        "inventory": "Inventaire"
+      }
+    },
+    "events": {
+      "league": "Ligue",
+      "select-league": "Choisis une ligue pour voir ses événements.",
+      "empty": "Aucun événement pour cette ligue pour le moment.",
+      "timeline-label": "Chronologie de la saison",
+      "day-zero": "J0",
+      "day-plus": "J+{day}",
+      "duration-badge": "J{start}-J{end} ({duration})",
+      "columns": {
+        "objective": "Objectif",
+        "reward": "Récompense"
+      },
+      "no-tiers": "Aucun palier pour cet événement.",
+      "final-objective": "Objectif final : {objective}"
+    },
+    "description": "Retrouve toutes les données vérifiées de Million Lords : équipements, gemmes, templiers, progression et boutique, réunis en référentiels clairs.",
+    "descriptions": {
+      "combat-equipment": "Tous les équipements de combat de Million Lords : compétences par pièce, rareté, familles, coûts de fusion et de destruction et emplacements de gemmes.",
+      "expedition-equipment": "Tous les équipements d'expédition de Million Lords : rareté, famille, emplacement, stat secondaire et coûts de fusion et de démantèlement.",
+      "level-up": "Table de progression de Million Lords par ligue : XP requise, troupes et récompenses niveau par niveau, du Bronze à la Légende.",
+      "templars": "Coût des templiers de Million Lords : Pouciel du niveau de départ au niveau visé, bonus par templier et bonus total, dans un tableau complet.",
+      "gems": "Toutes les gemmes de Million Lords : bonus par compétence et par ligue, emplacements et coût de fusion en saphirs, avec optimisation multi-compétences.",
+      "shop": "Référentiel de la boutique de Million Lords : consommables et données vérifiées par la communauté pour dépenser au bon moment.",
+      "events": "Référentiel des événements de Million Lords : données et récompenses vérifiées par la communauté pour préparer chaque événement."
+    }
+  },
+  "combat-equipment": {
+    "name": "Équipements de Combat",
+    "empty": "Aucun équipement de combat ne correspond à ces filtres.",
+    "columns": {
+      "rarity": "Rareté",
+      "skill": "Compétence {number}",
+      "secondary-title": "Pouciel & Gemmes",
+      "row-merge": "Fusion",
+      "row-gems": "Gemmes",
+      "row-destruction": "Destruction"
+    },
+    "complete-in-admin": "À compléter en admin"
+  },
+  "expedition-equipment": {
+    "name": "Équipements d’Expédition",
+    "empty": "Aucun équipement d’expédition ne correspond à ces filtres.",
+    "columns": {
+      "rarity": "Rareté",
+      "family": "Famille",
+      "slot": "Emplacement",
+      "secondary-stat": "Stat secondaire",
+      "secondary-title": "Terradust",
+      "row-merge": "Fusion",
+      "row-destruction": "Destruction"
+    }
+  },
+  "crossReference": {
+    "toReference": "Aller plus loin en vérifiant le référentiel",
+    "toTool": "Aller plus loin en utilisant l'outil"
+  },
+  "level-up": {
+    "name": "Progression",
+    "league": "Ligue",
+    "select-league": "Choisis une ligue pour afficher le référentiel.",
+    "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
+    "columns": {
+      "level": "Niveau",
+      "xp": "XP requis",
+      "troops": "Troupes",
+      "reward": "Récompense"
+    },
+    "chests": {
+      "0": "Coffre",
+      "1": "Urne",
+      "2": "Coffret à bijoux",
+      "3": "Jarre",
+      "4": "Caisse"
+    },
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page {current} sur {total}",
+    "pagination-label": "Pages de niveaux"
+  },
+  "login": {
     "title": "Connexion administration",
     "username": "Identifiant",
     "password": "Mot de passe",
+    "totp": "Code d’authentification",
+    "totp-hint": "Saisis le code à 6 chiffres uniquement si l’authentification à deux facteurs est activée.",
     "submit": "Se connecter",
-    "error": "Identifiant ou mot de passe invalide"
+    "error": "Identifiant ou mot de passe invalide",
+    "error-disabled": "Compte désactivé, contacter l’administrateur."
   },
-  "Admin": {
+  "admin": {
     "title": "Administration",
-    "dashboard": "Tableau de bord",
-    "users": "Utilisateurs",
-    "logs": "Historique",
-    "empty": "Fondations de l’administration — Phase 1"
+    "view-site": "Voir le site",
+    "navigation-label": "Navigation administration",
+    "navigation": {
+      "dashboard": "Tableau de bord",
+      "tools": "Outils",
+      "referentiels": "Référentiels",
+      "guides": "Guides",
+      "content": "Conditions d’utilisation",
+      "users": "Utilisateurs",
+      "logs": "Historique",
+      "config": "Configuration"
+    },
+    "account": {
+      "change-password": "Changer mon mot de passe",
+      "current-password": "Mot de passe actuel",
+      "new-password": "Nouveau mot de passe",
+      "save": "Enregistrer",
+      "saved": "Mot de passe mis à jour.",
+      "invalid": "Le mot de passe actuel est incorrect ou le nouveau mot de passe est invalide.",
+      "logout": "Se déconnecter",
+      "totp": {
+        "title": "Authentification à deux facteurs",
+        "active": "L’authentification à deux facteurs est activée.",
+        "activate": "Activer l’authentification à deux facteurs",
+        "scan": "Scanne ce QR code avec ton application d’authentification, puis saisis le code généré.",
+        "qr-alt": "QR code d’authentification à deux facteurs",
+        "manual-key": "Clé de configuration manuelle",
+        "code": "Code à 6 chiffres",
+        "confirm": "Confirmer l’activation",
+        "disable": "Désactiver l’authentification à deux facteurs",
+        "enabled": "Authentification à deux facteurs activée.",
+        "disabled": "Authentification à deux facteurs désactivée.",
+        "invalid": "Le code d’authentification est invalide ou expiré.",
+        "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
+        "disable-error": "Le mot de passe ou le code d’authentification est invalide."
+      }
+    },
+    "dashboard": {
+      "eyebrow": "Vue d’ensemble",
+      "title": "Tableau de bord",
+      "metrics-label": "État des contenus",
+      "tools": "Outils",
+      "tools-summary": "{active} activés / {total} au total",
+      "guides": "Guides",
+      "guides-summary": "{published} publiés / {total} au total",
+      "references": "Référentiels",
+      "references-summary": "{active} activés / {total} au total",
+      "users": "Utilisateurs",
+      "users-summary": "{active} actifs / {total} au total",
+      "recent-actions": "Dernières actions",
+      "user": "Utilisateur",
+      "role": "Rôle",
+      "message": "Message",
+      "date": "Date",
+      "empty": "Aucune action enregistrée."
+    },
+    "setup": {
+      "eyebrow": "Configuration initiale",
+      "title": "Créer le premier Super Admin",
+      "description": "Ce formulaire n’est disponible qu’une seule fois. Choisis les identifiants qui permettront d’administrer ML-Helper.",
+      "username": "Nom d’utilisateur",
+      "password": "Mot de passe",
+      "submit": "Créer le Super Admin",
+      "creating": "Création du compte…",
+      "already-completed": "La configuration initiale a déjà été effectuée.",
+      "invalid": "Impossible de créer le compte. Vérifie le nom et utilise un mot de passe d’au moins 12 caractères.",
+      "unavailable": "Impossible de joindre le serveur. Réessaie plus tard."
+    },
+    "guides": {
+      "eyebrow": "Contenu éditorial",
+      "title": "Guides",
+      "new": "Nouveau",
+      "new-title": "Nouveau guide",
+      "edit-title": "Éditer le guide",
+      "empty": "Aucun guide créé.",
+      "columns": {
+        "title": "Titre",
+        "author": "Auteur",
+        "created": "Créé le",
+        "updated": "Dernière édition",
+        "languages": "Langues",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "language-written": "{locale} rédigé",
+      "language-missing": "{locale} non traduit",
+      "no-results": "Aucun résultat pour ce filtre.",
+      "statuses": {
+        "draft": "Brouillon",
+        "pending_review": "En review",
+        "published": "Publié"
+      },
+      "disabled-tooltip": "Désactivé et invisible côté public",
+      "status-label": "Statut de {title}",
+      "edit": "Éditer",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "delete": "Supprimer",
+      "confirm-delete": "Supprimer définitivement le guide « {title} » ?",
+      "status-forbidden": "Ton rôle ne permet pas ce changement de statut.",
+      "status-saved": "Statut enregistré.",
+      "visibility-error": "Impossible de modifier la visibilité.",
+      "enabled": "Guide activé.",
+      "disabled": "Guide désactivé.",
+      "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
+      "deleted": "Guide supprimé définitivement."
+    },
+    "referentiels": {
+      "eyebrow": "Données de référence",
+      "title": "Référentiels",
+      "columns": {
+        "title": "Titre",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
+      "reference-combat": "Éditer les Équipements de Combat",
+      "reference-expedition": "Éditer les Équipements d’Expédition",
+      "reference-level-up": "Éditer Progression",
+      "reference-consommables": "Éditer la Boutique",
+      "references": {
+        "combat-equipment": "Équipements de Combat",
+        "expedition-equipment": "Équipements d’Expédition",
+        "level-up": "Progression",
+        "templiers": "Templiers",
+        "gemmes": "Gemmes",
+        "consommables": "Boutique",
+        "events": "Événements"
+      },
+      "disabled-tooltip": "Désactivé et invisible côté public",
+      "edit": "Éditer",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "visibility-error": "Impossible de modifier la visibilité.",
+      "enabled": "Référentiel activé.",
+      "disabled": "Référentiel désactivé.",
+      "no-results": "Aucun référentiel.",
+      "reference-events": "Éditer les Événements"
+    },
+    "guide-editor": {
+      "language-label": "Langue du guide",
+      "title": "Titre ({locale})",
+      "excerpt": "Résumé ({locale})",
+      "content": "Contenu Markdown ({locale})",
+      "preview": "Aperçu en direct",
+      "categories-label": "Catégories du guide",
+      "categories-summary": "Catégories du guide ({count, plural, one {# sélectionnée} other {# sélectionnées}})",
+      "categories": {
+        "debuter": "Débuter & progresser",
+        "combat": "Combat & conquête",
+        "defense": "Défense & territoire",
+        "competences": "Compétences & builds",
+        "equipement": "Équipement & Templiers",
+        "expeditions": "Expéditions",
+        "evenements": "Événements & classement",
+        "clan": "Clan & stratégie collective"
+      },
+      "cover-image": "URL de l’image représentative",
+      "cover-image-placeholder": "https://exemple.fr/image-guide.jpg",
+      "cover-image-preview": "Aperçu de l’image représentative",
+      "save": "Enregistrer",
+      "submit-review": "Soumettre en review",
+      "publish": "Publier",
+      "unpublish": "Dépublier en brouillon",
+      "saving": "Enregistrement…",
+      "missing-title": "Saisis un titre FR ou EN avant d’enregistrer.",
+      "missing-category": "Sélectionne au moins une catégorie avant d’enregistrer.",
+      "duplicate-slug": "Un guide utilise déjà ce titre/slug.",
+      "invalid": "Le guide contient des champs invalides ou incomplets.",
+      "status-forbidden": "Guide enregistré, mais ton rôle ne permet pas ce changement de statut.",
+      "saved": "Guide enregistré."
+    },
+    "tools": {
+      "eyebrow": "Contenu fonctionnel",
+      "title": "Outils",
+      "edit-ranking": "Éditer les seuils du classement",
+      "columns": {
+        "tool": "Outil",
+        "category": "Catégorie",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "category-values": {
+        "villes": "Villes",
+        "combat": "Combat",
+        "classement": "Classement",
+        "competences": "Compétences"
+      },
+      "active": "Actif",
+      "inactive": "Inactif",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "disabled-tooltip": "Désactivé — inaccessible côté public",
+      "saving": "Enregistrement…",
+      "save-error": "Échec de l’enregistrement (HTTP {status}).",
+      "state-saved": "{tool} est maintenant {state}.",
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+      "name": "Nom",
+      "edit": "Modifier",
+      "city-parameters": "Paramètres Villes partagés",
+      "ranking-editor": "Seuils du classement",
+      "templar-parameters": "Paramètres de coût des Templiers",
+      "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
+      "demo-attack-troops-editor": "Pourcentages d’attaque démo",
+      "gems-editor": "Paramètres des Gemmes"
+    },
+    "ranking": {
+      "title": "Classement",
+      "description": "Édite chaque plage individuellement. Bronze et Or peuvent rester sans ligne tant que leurs données ne sont pas confirmées.",
+      "add": "Ajouter une plage",
+      "threshold": "Seuil (%)",
+      "target": "Ligue cible",
+      "movement": "Mouvement",
+      "reward": "Récompense",
+      "action": "Action",
+      "remove": "Supprimer",
+      "row-label": "{league} ligne {row} {field}",
+      "unconfirmed-option": "Non confirmé",
+      "movements": {
+        "promotion": "Montée",
+        "stay": "Maintien",
+        "relegation": "Descente"
+      },
+      "reward-types": {
+        "sapphires": "Saphirs",
+        "speedups": "Speedups",
+        "gems": "Gemmes"
+      },
+      "range-error": "Entre 0 et 100 requis.",
+      "pairing-error": "Mouvement et ligue cible doivent être confirmés ensemble.",
+      "integer-error": "Nombre entier requis.",
+      "required": "Ce champ est obligatoire.",
+      "empty": "Aucune plage confirmée.",
+      "save": "Enregistrer le classement",
+      "validation": "Corrige les champs signalés avant l’enregistrement.",
+      "saving": "Enregistrement…",
+      "save-error": "Échec de l’enregistrement (HTTP {status}).",
+      "saved": "Configuration enregistrée.",
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+    },
+    "references": {
+      "eyebrow": "Données du jeu",
+      "title": "Référentiels",
+      "combat-detail": "180 lignes éditables",
+      "expedition-detail": "120 lignes éditables",
+      "templars-detail": "20 coûts exacts éditables",
+      "page-title": "Référentiel — {name}",
+      "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
+      "expedition-description": "Détail des équipements d’expédition",
+      "expedition-increments-description": "Incréments par étoile des statistiques d’Équipements d’Expédition",
+      "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
+      "columns": {
+        "set-name": "Nom du set",
+        "family": "Famille",
+        "slot-type": "Type d’emplacement",
+        "slot-name": "Nom d’emplacement",
+        "value": "Valeur {number} (%)",
+        "type-value": "Valeur type (%)",
+        "secondary-value": "Valeur secondaire (%)",
+        "level": "Niveau atteint",
+        "level-cost": "Coût du niveau"
+      },
+      "row-label": "Ligne {row} {field}",
+      "expedition-row-label": "Expédition ligne {row} {field}",
+      "templar-level-label": "Niveau Templier {level}",
+      "templar-cost-label": "Coût Templier niveau {level}",
+      "save": "Enregistrer toute la table",
+      "save-all": "Enregistrer toute la page",
+      "required": "Ce champ est obligatoire.",
+      "number": "Saisis une valeur numérique valide.",
+      "minimum": "La valeur minimale est {min}.",
+      "validation": "Corrige les champs signalés avant l’enregistrement.",
+      "saving": "Enregistrement…",
+      "save-error": "Échec de l’enregistrement (HTTP {status}).",
+      "save-all-error": "Échec de l’enregistrement d’un ou plusieurs tableaux de cette page.",
+      "saved": "Référentiel enregistré.",
+      "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
+      "all": "Tous",
+      "filters": {
+        "skill": "Compétence"
+      },
+      "consumables-intro-title": "Intro",
+      "consumables-intro-language-label": "Langue du texte",
+      "consumables-table-title": "Objets",
+      "consumables-columns": {
+        "image": "Chemin de l’image",
+        "name": "Nom",
+        "description": "Description",
+        "cost": "Coût (Saphirs)"
+      },
+      "add-category": "Ajouter ({category})",
+      "confirm-remove": "Supprimer définitivement cet objet ?",
+      "category-row-label": "{category} — ligne {row} {field}",
+      "add": "Ajouter un objet",
+      "remove": "Supprimer",
+      "move-up": "Monter",
+      "move-down": "Descendre",
+      "actions": "Actions",
+      "empty": "Aucun objet pour l’instant.",
+      "events-league-label": "Ligue",
+      "events-language-label": "Langue du texte",
+      "events-season-duration-label": "Durée de la saison (jours)",
+      "events-season-overrun": "La durée cumulée des événements ({total}) dépasse la durée de la saison ({season}).",
+      "events-table-title": "Liste des événements",
+      "add-event": "Ajouter un événement",
+      "events-columns": {
+        "name": "Nom",
+        "description": "Description",
+        "duration": "Durée",
+        "color": "Couleur"
+      },
+      "event-colors": {
+        "violet": "Violet foncé",
+        "violet-bright": "Violet clair",
+        "emerald": "Vert foncé",
+        "emerald-bright": "Vert clair",
+        "amber": "Jaune foncé",
+        "amber-bright": "Jaune clair",
+        "ember": "Rouge foncé",
+        "ember-bright": "Rouge clair",
+        "sapphire": "Bleu foncé",
+        "sapphire-bright": "Bleu clair"
+      },
+      "tier-columns": {
+        "objective": "Objectif",
+        "reward": "Récompense"
+      },
+      "add-tier": "Ajouter un palier",
+      "events-tiers-summary": "Paliers ({count})",
+      "event-row-label": "{field} de l’événement {row}",
+      "events-position-aria": "Position {row}",
+      "tier-row-label": "{field} du palier {row} de {event}",
+      "templars-presentation-title": "Présentation",
+      "templars-presentation-language-label": "Langue du texte",
+      "templars-columns": {
+        "image": "Chemin de l’image",
+        "name": "Nom",
+        "description": "Description",
+        "temple-base": "Base Temple",
+        "bonus": "Bonus (%)"
+      },
+      "secondary-row": "Indicateur",
+      "secondary-label-language": "Langue de l’indicateur",
+      "row-merge-cost": "Fusion",
+      "row-gem-slots": "Gemmes",
+      "row-destruction": "Destruction",
+      "combat-secondary-description": "Pouciel (fusion, destruction) et emplacements de gemmes, par rareté.",
+      "expedition-secondary-description": "Terradust (fusion, destruction), par rareté.",
+      "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat"
+    },
+    "common": {
+      "back": "Retour"
+    },
+    "parameters": {
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement…",
+      "saved": "Paramètres enregistrés.",
+      "error": "Échec de l’enregistrement (HTTP {status}).",
+      "server-error": "Impossible de joindre le serveur.",
+      "league": "Ligue",
+      "coefficient": "Coefficient",
+      "ratio": "Ratio",
+      "xp-base": "Base XP",
+      "xp-ratio": "Ratio XP",
+      "unconfirmed": "Formule de troupes non confirmée"
+    },
+    "city-parameters": {
+      "progression": "Paramètres de progression",
+      "multipliers": "Multiplicateurs par ligue",
+      "league": "Ligue",
+      "army": "Multiplicateur Armée",
+      "gold": "Multiplicateur Or",
+      "vp": {
+        "base": "Base VP",
+        "ratio": "Ratio VP"
+      },
+      "walls": {
+        "base": "Base Remparts",
+        "ratio": "Ratio Remparts"
+      },
+      "cost": {
+        "base": "Base Coût",
+        "ratio": "Ratio Coût"
+      }
+    },
+    "templar-parameters": {
+      "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
+      "base": "Base",
+      "ratio": "Ratio"
+    },
+    "xp-gain-rate": {
+      "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",
+      "tier": "Palier",
+      "upper-bound": "Seuil haut (%)",
+      "upper-bound-field": "Seuil haut du palier {tier}",
+      "rate": "Taux XP (%)",
+      "rate-field": "Taux XP du palier {tier}"
+    },
+    "demo-attack-troops": {
+      "formula": "TroupesMax = (X % / 100) × Remparts(niveau de la ville visée)",
+      "percentage": "X (% des remparts)"
+    },
+    "gems": {
+      "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
+      "value": "Valeur de base par compétence et par ligue",
+      "value-field": "{skill} · {league}",
+      "price": "Prix d’achat des gemmes par ligue (en saphirs)",
+      "price-field": "Prix {league}"
+    },
+    "users": {
+      "title": "Utilisateurs administrateurs",
+      "create": "Créer l’utilisateur",
+      "username": "Identifiant",
+      "password": "Mot de passe",
+      "role": "Rôle",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "created": "Utilisateur créé",
+      "saved": "Utilisateur enregistré",
+      "password-too-short": "Le nouveau mot de passe doit contenir au moins 12 caractères.",
+      "error": "Impossible d’effectuer l’action",
+      "server-error": "Serveur indisponible",
+      "status": "Statut",
+      "active": "Actif",
+      "inactive": "Désactivé",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "activated": "Utilisateur activé",
+      "deactivated": "Utilisateur désactivé"
+    },
+    "logs": {
+      "title": "Historique des actions",
+      "actor": "Auteur",
+      "actor-role": "Rôle au moment de l’action",
+      "message": "Message",
+      "date": "Date",
+      "start": "Date de début",
+      "end": "Date de fin",
+      "purge": "Purger la plage",
+      "purged": "Historique purgé",
+      "error": "Impossible de purger l’historique",
+      "filter-user": "Utilisateur",
+      "filter-message": "Mot dans le message",
+      "filter-apply": "Filtrer",
+      "filter-reset": "Réinitialiser",
+      "no-results": "Aucune entrée ne correspond aux filtres.",
+      "pagination": "Pagination de l’historique",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page-summary": "Page {page} / {total}"
+    },
+    "content": {
+      "eyebrow": "Page institutionnelle",
+      "title": "Mentions légales",
+      "language-label": "Langue du contenu",
+      "field": "Markdown",
+      "preview": "Aperçu en direct",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saved": "Mentions légales enregistrées.",
+      "error": "Impossible d’enregistrer les mentions légales."
+    },
+    "forbidden": {
+      "eyebrow": "Erreur 403",
+      "title": "Accès interdit",
+      "description": "Ton rôle ne permet pas d’accéder à cette section ou d’effectuer cette action.",
+      "back": "Retour au tableau de bord"
+    },
+    "config": {
+      "eyebrow": "Configuration",
+      "title": "Langues",
+      "intro": "Active ou désactive la visibilité de chaque langue sur le site public. Les fichiers de traduction restent inchangés. L’anglais et le français sont toujours actifs.",
+      "columns": {
+        "language": "Langue",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "locked-tooltip": "Langue de base — toujours active",
+      "saving": "Enregistrement…",
+      "save-error": "Échec de l’enregistrement (HTTP {status}).",
+      "state-saved": "{language} est maintenant {state}.",
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
+    }
   },
-  "Users": {
-    "title": "Utilisateurs administrateurs",
-    "create": "Créer l’utilisateur",
-    "username": "Identifiant",
-    "password": "Mot de passe",
-    "role": "Rôle",
-    "delete": "Supprimer",
-    "save": "Enregistrer",
-    "created": "Utilisateur créé",
-    "error": "Impossible d’effectuer l’action"
-  },
-  "Logs": {
-    "title": "Historique des actions",
-    "actor": "Auteur",
-    "action": "Action",
-    "entity": "Élément",
-    "date": "Date",
-    "start": "Date de début",
-    "end": "Date de fin",
-    "purge": "Purger la plage",
-    "purged": "Historique purgé",
-    "error": "Impossible de purger l’historique"
-  },
-  "Roles": {
+  "roles": {
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Gestion Guides",
-    "calculators_manager": "Gestion Calculateurs"
+    "references_manager": "Référentiels",
+    "tools_manager": "Gestion Outils",
+    "read_only": "Lecture Seule"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "Cette page n’existe pas ou a été déplacée. Voici par où continuer :",
+    "home": "Accueil"
   }
 }

@@ -1,10 +1,19 @@
+import path from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // Bloc 91/E1: next-intl's client navigation (createNavigation) does a bare
+    // `import "next/navigation"`; inlining next-intl lets vitest resolve it
+    // through Next's package exports instead of failing from next-intl's own
+    // nested node_modules.
+    server: { deps: { inline: ["next-intl"] } },
   },
 });

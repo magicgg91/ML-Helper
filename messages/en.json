@@ -1,45 +1,1197 @@
 {
-  "Login": {
+  "common": {
+    "choose": "— Choose —",
+    "none": "None",
+    "decrease": "Decrease {label}",
+    "increase": "Increase {label}",
+    "select-league": "Choose a league to calculate.",
+    "language": "Language",
+    "theme-light": "Enable light mode",
+    "theme-dark": "Enable dark mode",
+    "star-count": "{level} stars",
+    "duration-hours": "{hours}h"
+  },
+  "game": {
+    "skills": {
+      "striker": "Striker",
+      "brave": "Brave",
+      "scavenger": "Scavenger",
+      "guardian": "Guardian",
+      "fearless": "Fearless",
+      "prosperous": "Prosperous",
+      "recruiter": "Recruiter",
+      "cautious": "Cautious",
+      "salvager": "Salvager",
+      "rusher": "Rusher"
+    },
+    "skills-short": {
+      "striker": "Atk",
+      "brave": "Brv",
+      "scavenger": "Scv",
+      "guardian": "Def",
+      "fearless": "Frl",
+      "prosperous": "Pro",
+      "recruiter": "Rcr",
+      "cautious": "Cau",
+      "salvager": "Slv",
+      "rusher": "Rsh"
+    },
+    "templars": {
+      "striker": "Attack",
+      "guardian": "Defense",
+      "prosperous": "Gold",
+      "recruiter": "Recruiter",
+      "rusher": "Speed"
+    },
+    "leagues": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "diamond": "Diamond",
+      "legend": "Legend"
+    },
+    "leagues-short": {
+      "bronze": "Br",
+      "silver": "Si",
+      "gold": "Go",
+      "platinum": "Pl",
+      "diamond": "Di",
+      "legend": "Le"
+    },
+    "families": {
+      "attack": "Attack",
+      "defense": "Defense",
+      "gold": "Gold",
+      "equipment": "Equipment",
+      "consumables": "Consumables",
+      "troops": "Troops",
+      "speed": "Speed",
+      "troops-speed": "Troops/Speed"
+    },
+    "rarities": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "mythic": "Mythic",
+      "legendary": "Legendary"
+    },
+    "slots": {
+      "amulet": "Amulet",
+      "helmet": "Helmet",
+      "bracelet": "Bracelet",
+      "ring": "Ring",
+      "belt": "Belt",
+      "gauntlet": "Gauntlet",
+      "weapon": "Weapon",
+      "boots": "Boots",
+      "shield": "Shield",
+      "cloak": "Cloak",
+      "spyglass": "Spyglass",
+      "pouch": "Pouch",
+      "compass": "Compass",
+      "torch": "Torch",
+      "pickaxe": "Pickaxe"
+    },
+    "weapon-types": {
+      "hammer": "Hammer",
+      "bow": "Bow",
+      "spear": "Spear",
+      "axe": "Axe",
+      "saber": "Saber",
+      "sword": "Sword",
+      "halberd": "Halberd"
+    },
+    "stats": {
+      "vitality": "Vitality",
+      "perception": "Perception",
+      "recovery": "Recovery",
+      "speed": "Speed",
+      "dodge": "Dodge",
+      "luck": "Luck"
+    }
+  },
+  "tools": {
+    "title": "Make decisions with the right numbers",
+    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
+    "cities": "Cities",
+    "combat": "Combat",
+    "combat-simulator": "Combat",
+    "enemy-troops": "Enemy troops",
+    "ranking": "Ranking",
+    "skills": "Skills",
+    "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
+    "comingSoon": "Coming soon",
+    "unavailable": "Currently unavailable",
+    "navigation-label": "Tool categories",
+    "city-tabs": "City tools",
+    "combat-tabs": "Combat tools",
+    "skills-tabs": "Skill tools",
+    "calculator-unavailable": "Disabled — currently unavailable",
+    "calculators-unavailable": "These tools are temporarily unavailable.",
+    "descriptions": {
+      "cities": "Work out the cost, production and rewards of your cities in Million Lords: cost and maximum level, gold production and XP gain for every level.",
+      "combat": "Combat tools for Million Lords: XP gain rate, demo attack troops for both attacker and target, and enemy troops to plan every assault.",
+      "ranking": "Estimate your ranking progress in Million Lords: your current rank and the victory points you need to reach the rank you are aiming for.",
+      "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
+    }
+  },
+  "player-settings": {
+    "title": "Player settings",
+    "summary": "{league} · Level {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
+    "league": "League",
+    "league-undefined": "League not set",
+    "player-level": "Player level",
+    "player-vp": "Player VP",
+    "vp-unit": "VP unit",
+    "equipment-skills": {
+      "title": "Skills with equipment",
+      "field": "{skill} with equipment"
+    },
+    "skill-points": {
+      "title": "Skill point distribution",
+      "available": "Available",
+      "allocated": "Allocated",
+      "remaining": "Remaining",
+      "reset": "Reset",
+      "field": "{skill} points"
+    },
+    "templars": {
+      "title": "Templars",
+      "field": "{templar} templars"
+    },
+    "clan-temple": {
+      "title": "Temple bonus (clan)",
+      "help": "Enter only the clan's Templar contribution (e.g. 260 for Speed). The confirmed per-stat temple base is added automatically to the displayed total.",
+      "field": "{templar} Temple"
+    }
+  },
+  "city-cost": {
+    "name": "City Cost",
+    "fields": {
+      "league": "League",
+      "city-count": "Number of cities",
+      "start-level": "Starting level",
+      "target-level": "Target level"
+    },
+    "start": "Start",
+    "target": "Target",
+    "wall": "Wall",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
+    "gold-unit": "gold",
+    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "cost-total": "Total cost",
+    "vp-gained": "Total VP gained",
+    "gold-transition": "Gold/h before → after",
+    "army-transition": "Army/h before → after"
+  },
+  "city-max-level": {
+    "name": "Maximum Reachable Level",
+    "fields": {
+      "league": "League",
+      "city-count": "Number of cities",
+      "start-level": "Starting level",
+      "available-gold": "Available gold",
+      "gold-unit": "Available gold unit"
+    },
+    "wall": "Wall",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
+    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "reachable-level": "Reachable target level",
+    "remaining-gold": "Remaining gold",
+    "vp-gained": "Total VP gained",
+    "gold-transition": "Gold/h before → after",
+    "army-transition": "Army/h before → after"
+  },
+  "city-production": {
+    "name": "Production",
+    "fields": {
+      "league": "League",
+      "city-count": "Number of cities",
+      "average-level": "Average city level"
+    },
+    "per-city-base": "Per city — base",
+    "vp": "VP",
+    "wall": "Wall",
+    "gold-hour": "Gold/h",
+    "army-hour": "Army/h",
+    "gold-total": "💰 Gold — Total production",
+    "troops-total": "⚔️ Troops — Total production",
+    "base": "Base",
+    "equipment": "Equipment",
+    "temple": "Temple",
+    "vp-total": "Total VP",
+    "full-production": {
+      "title": "Full-production reskill",
+      "note": "Simulation with all {points} available points invested, calculated from base production.",
+      "gold": "Gold with full Prosperity",
+      "troops": "Troops with full Recruiter"
+    }
+  },
+  "city-rewards": {
+    "name": "Production Rewards",
+    "gold": {
+      "title": "Gold",
+      "base": "Base gold production",
+      "base-unit": "Gold production unit",
+      "hours": "Gold hours received",
+      "bonus": "Gold bonus obtained"
+    },
+    "troops": {
+      "title": "Troops",
+      "base": "Base troops production",
+      "base-unit": "Troops production unit",
+      "hours": "Troop hours received",
+      "bonus": "Troop bonus obtained"
+    }
+  },
+  "xp-gain-rate": {
+    "name": "XP Gain Rate",
+    "mode-label": "XP calculation mode",
+    "modes": {
+      "attacker": "I am the attacker",
+      "target": "I am the target"
+    },
+    "fields": {
+      "my-vp": "My VP",
+      "unit": "VP unit"
+    },
+    "columns": {
+      "rate": "XP gain rate",
+      "opponent-vp": "Opponent VP range"
+    }
+  },
+  "demo-attack-troops": {
+    "name": "Demo Attack Troops",
+    "select-league": "Choose a league to calculate.",
+    "fields": {
+      "city-level": "Target city level",
+      "league": "Attacker league"
+    },
+    "wall": "Target walls",
+    "maximum": "Maximum troops"
+  },
+  "ranking": {
+    "name": "Ranking",
+    "fields": {
+      "league": "League",
+      "percentage": "Your current percentage",
+      "rank": "Your current rank"
+    },
+    "undefined": "To be defined in the administration",
+    "total-players": "Estimated number of players",
+    "errors": {
+      "select-league": "Choose a league to calculate.",
+      "positive-percentage": "Enter a percentage greater than 0 to calculate.",
+      "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
+    },
+    "ranking-ranges": "Ranking ranges",
+    "columns": {
+      "range": "Range",
+      "rank": "Range rank",
+      "target-league": "Target league",
+      "reward": "Reward"
+    },
+    "movements": {
+      "promotion": "Promotion to {league}",
+      "stay": "Stay in {league}",
+      "relegation": "Relegation to {league}"
+    },
+    "reward-types": {
+      "sapphires": "{count, plural, one {# sapphire} other {# sapphires}}",
+      "speedups": "{count} speedup",
+      "gems": "{count, plural, one {# gem} other {# gems}}"
+    },
+    "scale-label": "Ranking scale from 100% to 0%",
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+  },
+  "stuff-simulator": {
+    "name": "Combat Equipment",
+    "global-summary": "Equipment skills summary",
+    "transfer": "Transfer to Player Settings",
+    "transferred": "Transferred to Player Settings!",
+    "empty-slot": "Empty",
+    "select-slot": "Click a slot to configure it.",
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "{block} equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "{block} equipment stars {slot}",
+    "no-gem-slot": "No gem slot at this rarity",
+    "family-filter-label": "Filter by family",
+    "gem": {
+      "row": "Gem {index}",
+      "skill": "Gem skill {index}",
+      "stars": "Gem stars {index}",
+      "league": "Gem league {index}"
+    }
+  },
+  "expedition-equipment-simulator": {
+    "name": "Expedition Equipment",
+    "summary-title": "Expedition skills summary",
+    "empty-summary": "No equipment configured",
+    "empty-slot": "Empty",
+    "select-slot": "Click a slot to configure it.",
+    "equipment-label": "Equipment ({slot})",
+    "equipment-aria": "Expedition equipment {slot}",
+    "equipment-option": "{rarity} — {name} ({family})",
+    "none": "None",
+    "star-level": "Star level",
+    "equipment-stars-aria": "Expedition equipment stars {slot}",
+    "filters": {
+      "label": "Filter by equipment type",
+      "custom": "Custom",
+      "gold": "Gold",
+      "equipment": "Combat Equipment",
+      "consumables": "Consumables",
+      "troops": "Troops"
+    }
+  },
+  "gems": {
+    "name": "Gems",
+    "mode-label": "Gem mode",
+    "modes": {
+      "optimize": "Optimization",
+      "budget": "Available budget"
+    },
+    "optimization": {
+      "title": "Multi-skill optimization"
+    },
+    "family-label": "Gem family",
+    "fields": {
+      "available-slots": "Available slots",
+      "skill": "Skill",
+      "skill-row": "Skill row {row}",
+      "league": "League",
+      "league-row": "League row {row}",
+      "allocated-slots": "Allocated slots",
+      "slots-row": "Slots row {row}",
+      "target-stat": "Target stat (%)",
+      "target-row": "Target stat row {row}",
+      "budget-slots": "Budget slots",
+      "available-budget": "Available budget in sapphires"
+    },
+    "remove-row": "Remove row {row}",
+    "add-stat": "+ Add a stat",
+    "allocated-summary": "Allocated slots",
+    "result": "Result",
+    "errors": {
+      "add-positive-stat": "Add a stat with more than zero slots.",
+      "select-league": "Choose a league to calculate.",
+      "select-skill": "Choose a skill to calculate."
+    },
+    "columns": {
+      "skill": "Skill",
+      "league": "League",
+      "slots": "Slots",
+      "distribution": "Distribution",
+      "stat": "Obtained stat",
+      "cost": "Cost"
+    },
+    "total-cost": "Total cost",
+    "sapphires": "sapphires",
+    "optimal-distribution": "Optimal distribution",
+    "base-gems": "Base gems to buy",
+    "used-slots": "Used slots",
+    "obtained-stat": "Obtained stat",
+    "actual-cost": "Actual cost",
+    "remaining-budget": "Remaining budget",
+    "gem-count": "{count, plural, one {# gem} other {# gems}} {level}★",
+    "no-gems": "No gems",
+    "reference": {
+      "price-row": "Sapphire cost"
+    }
+  },
+  "templars": {
+    "name": "Templars",
+    "fields": {
+      "start-level": "Starting level",
+      "target-level": "Target level"
+    },
+    "total-cost": "Total cost",
+    "skydust": "Skydust",
+    "bonus-per-templar": "Bonus per templar",
+    "total-bonus": "Total bonus",
+    "gain": "Gain",
+    "rate-value": "{rate}%",
+    "cost-table": "Cost table",
+    "columns": {
+      "skill": "Skill",
+      "level": "Reached level",
+      "level-cost": "Level cost (Skydust)",
+      "cumulative-cost": "Cumulative cost (Skydust)"
+    },
+    "presentation": {
+      "tile-title": "Templar {name}",
+      "temple-base-label": "Temple base",
+      "bonus-label": "Bonus per templar"
+    }
+  },
+  "Navigation": {
+    "tools": "Tools",
+    "referentiels": "Reference tables",
+    "guides": "Guides",
+    "menu": "Menu",
+    "main": "Main navigation",
+    "footer": "Footer",
+    "home": "Home",
+    "breadcrumb": "Breadcrumb"
+  },
+  "search": {
+    "label": "Search the site",
+    "placeholder": "Search",
+    "results-label": "Search results",
+    "no-results": "No results.",
+    "types": {
+      "guide": "Guide",
+      "reference": "Reference table",
+      "tool": "Tool"
+    }
+  },
+  "Public": {
+    "tools": "Tools",
+    "guides": "Guides",
+    "contact": "Contact",
+    "admin": "Administration",
+    "legal": "Legal notice",
+    "descriptions": {
+      "guides": "Guides and reference tables for Million Lords: costs, stats and game mechanics verified by the community.",
+      "legal": "Legal notice for the ML Helper website.",
+      "guide-fallback": "A Million Lords guide on ML Helper.",
+      "admin": "ML Helper administration area."
+    },
+    "meta": {
+      "siteTitle": "ML-Helper — Million Lords tools and guides"
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Contact ML-Helper",
+    "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
+    "email": "Email",
+    "subject": "Subject",
+    "choose-subject": "— Choose —",
+    "subjects": {
+      "data-error": "Report a data error",
+      "improvement-suggestion": "Improvement suggestion",
+      "technical-bug": "Technical issue / bug",
+      "other": "Other"
+    },
+    "message": "Message",
+    "submit": "Send",
+    "success": "Message sent, thank you!",
+    "error-invalid": "Check the form fields and try again.",
+    "error-not-configured": "Email sending isn't configured right now, please try again later."
+  },
+  "Home": {
+    "h1": "Million Lords tools and guides",
+    "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
+    "toolsEyebrow": "Simulate",
+    "toolsTitle": "Make decisions with the right numbers",
+    "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
+    "guidesEyebrow": "Learn",
+    "guidesTitle": "Sharpen your strategy",
+    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
+    "referentielsEyebrow": "Consult",
+    "referentielsTitle": "Find the exact numbers",
+    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
+  },
+  "ToolsPage": {
+    "eyebrow": "Tools",
+    "title": "Choose your domain",
+    "cities": "Cities",
+    "combat": "Combat",
+    "ranking": "Ranking",
+    "skills": "Skills",
+    "references": "Reference tables",
+    "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
+    "open": "Open category",
+    "comingSoon": "Coming soon",
+    "unavailable": "Category currently unavailable"
+  },
+  "Tools": {
+    "cities": "Cities",
+    "ranking": "Ranking",
+    "skills": "Skills",
+    "references": "Reference tables"
+  },
+  "guides": {
+    "eyebrow": "Guides and data",
+    "title": "Guides",
+    "sections": {
+      "guides": "Guides",
+      "references": "Reference tables"
+    },
+    "filters": {
+      "guides-label": "Filter guides by category",
+      "all": "All"
+    },
+    "categories": {
+      "debuter": "Getting started & progressing",
+      "combat": "Combat & conquest",
+      "defense": "Defense & territory",
+      "competences": "Skills & builds",
+      "equipement": "Equipment & Templars",
+      "expeditions": "Expeditions",
+      "evenements": "Events & ranking",
+      "clan": "Clan & collective strategy"
+    },
+    "read-guide": "Read guide",
+    "empty": "No published guide yet.",
+    "no-results": "No guide matches these filters.",
+    "detail": {
+      "eyebrow": "Guide in {category}",
+      "not-translated": "This guide has not been translated into this language yet."
+    }
+  },
+  "references": {
+    "eyebrow": "Reference tables",
+    "title": "Reference tables",
+    "filters": {
+      "label": "Reference table filters",
+      "family": "Family",
+      "rarity": "Rarity",
+      "slot": "Slot",
+      "skill": "Skill"
+    },
+    "catalog": {
+      "combat": "Combat",
+      "expedition": "Expedition",
+      "combat-equipment": "Combat Equipment",
+      "expedition-equipment": "Expedition Equipment",
+      "level-up": "Level Up",
+      "templars": "Templars",
+      "gems": "Gems",
+      "shop": "Shop",
+      "events": "Events"
+    },
+    "tabs-label": "Reference tables",
+    "disabled-tooltip": "Disabled — currently unavailable",
+    "unavailable": "These reference tables are temporarily unavailable.",
+    "single-unavailable": "This reference table is temporarily unavailable.",
+    "consommables": {
+      "introTitle": "Introduction",
+      "columns": {
+        "name": "Name",
+        "description": "Description",
+        "cost": "Cost (Sapphires)"
+      },
+      "cost-with-unit": "{cost, plural, one {# sapphire} other {# sapphires}}",
+      "cost-unknown": "Not set",
+      "filters": {
+        "label": "Filter by category",
+        "category": "Category"
+      },
+      "categories": {
+        "expedition": "Expedition",
+        "advisors": "Advisors",
+        "equipment": "Equipment",
+        "inventory": "Inventory"
+      }
+    },
+    "events": {
+      "league": "League",
+      "select-league": "Choose a league to see its events.",
+      "empty": "No events for this league yet.",
+      "timeline-label": "Season timeline",
+      "day-zero": "D0",
+      "day-plus": "D+{day}",
+      "duration-badge": "D{start}-D{end} ({duration})",
+      "columns": {
+        "objective": "Objective",
+        "reward": "Reward"
+      },
+      "no-tiers": "No tiers for this event.",
+      "final-objective": "Final objective: {objective}"
+    },
+    "description": "Find every community-verified number for Million Lords: equipment, gems, templars, progression and shop, gathered into clear reference tables.",
+    "descriptions": {
+      "combat-equipment": "Every combat equipment in Million Lords: skills per piece, rarity, families, merge and dismantle costs, and gem slots.",
+      "expedition-equipment": "Every expedition equipment in Million Lords: rarity, family, slot, secondary stat, and merge and dismantle costs.",
+      "level-up": "Million Lords progression table by league: required XP, troops and rewards level by level, from Bronze to Legend.",
+      "templars": "Templar costs in Million Lords: Skydust from your starting level to your target level, bonus per templar and total bonus, in a full table.",
+      "gems": "Every gem in Million Lords: bonus per skill and per league, slots and the merge cost in sapphires, with multi-skill optimisation.",
+      "shop": "Million Lords shop reference: consumables and community-verified data to help you spend at the right moment.",
+      "events": "Million Lords events reference: community-verified data and rewards to help you prepare for every event."
+    }
+  },
+  "combat-equipment": {
+    "name": "Combat Equipment",
+    "empty": "No combat equipment matches these filters.",
+    "columns": {
+      "rarity": "Rarity",
+      "skill": "Skill {number}",
+      "secondary-title": "Pouciel & Gems",
+      "row-merge": "Merge",
+      "row-gems": "Gems",
+      "row-destruction": "Dismantle"
+    },
+    "complete-in-admin": "Complete in administration"
+  },
+  "expedition-equipment": {
+    "name": "Expedition Equipment",
+    "empty": "No expedition equipment matches these filters.",
+    "columns": {
+      "rarity": "Rarity",
+      "family": "Family",
+      "slot": "Slot",
+      "secondary-stat": "Secondary stat",
+      "secondary-title": "Terradust",
+      "row-merge": "Merge",
+      "row-destruction": "Dismantle"
+    }
+  },
+  "crossReference": {
+    "toReference": "Go further by checking the reference table",
+    "toTool": "Go further by using the tool"
+  },
+  "level-up": {
+    "name": "Level Up",
+    "league": "League",
+    "select-league": "Choose a league to display the reference table.",
+    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league — only Legend, Diamond, Platinum, Bronze and Gold are currently available.",
+    "columns": {
+      "level": "Level",
+      "xp": "Required XP",
+      "troops": "Troops",
+      "reward": "Reward"
+    },
+    "chests": {
+      "0": "Chest",
+      "1": "Urn",
+      "2": "Jewelry box",
+      "3": "Jar",
+      "4": "Crate"
+    },
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {current} of {total}",
+    "pagination-label": "Level pages"
+  },
+  "login": {
     "title": "Admin sign in",
     "username": "Username",
     "password": "Password",
+    "totp": "Authentication code",
+    "totp-hint": "Enter the 6-digit code only if two-factor authentication is enabled.",
     "submit": "Sign in",
-    "error": "Invalid username or password"
+    "error": "Invalid username or password",
+    "error-disabled": "Account disabled, contact the administrator."
   },
-  "Admin": {
+  "admin": {
     "title": "Administration",
-    "dashboard": "Dashboard",
-    "users": "Users",
-    "logs": "Logs",
-    "empty": "Phase 1 administration foundation"
+    "view-site": "View site",
+    "navigation-label": "Administration navigation",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "tools": "Tools",
+      "referentiels": "References",
+      "guides": "Guides",
+      "content": "Terms of use",
+      "users": "Users",
+      "logs": "History",
+      "config": "Configuration"
+    },
+    "account": {
+      "change-password": "Change my password",
+      "current-password": "Current password",
+      "new-password": "New password",
+      "save": "Save",
+      "saved": "Password updated.",
+      "invalid": "The current password is incorrect or the new password is invalid.",
+      "logout": "Sign out",
+      "totp": {
+        "title": "Two-factor authentication",
+        "active": "Two-factor authentication is enabled.",
+        "activate": "Enable two-factor authentication",
+        "scan": "Scan this QR code with your authenticator app, then enter the generated code.",
+        "qr-alt": "Two-factor authentication QR code",
+        "manual-key": "Manual setup key",
+        "code": "6-digit code",
+        "confirm": "Confirm activation",
+        "disable": "Disable two-factor authentication",
+        "enabled": "Two-factor authentication enabled.",
+        "disabled": "Two-factor authentication disabled.",
+        "invalid": "The authentication code is invalid or expired.",
+        "setup-error": "Unable to start two-factor authentication setup.",
+        "disable-error": "The password or authentication code is invalid."
+      }
+    },
+    "dashboard": {
+      "eyebrow": "Overview",
+      "title": "Dashboard",
+      "metrics-label": "Content status",
+      "tools": "Tools",
+      "tools-summary": "{active} enabled / {total} total",
+      "guides": "Guides",
+      "guides-summary": "{published} published / {total} total",
+      "references": "Reference tables",
+      "references-summary": "{active} enabled / {total} total",
+      "users": "Users",
+      "users-summary": "{active} active / {total} total",
+      "recent-actions": "Latest actions",
+      "user": "User",
+      "role": "Role",
+      "message": "Message",
+      "date": "Date",
+      "empty": "No action recorded."
+    },
+    "setup": {
+      "eyebrow": "Initial setup",
+      "title": "Create the first Super Admin",
+      "description": "This form is available only once. Choose the credentials that will be used to administer ML-Helper.",
+      "username": "Username",
+      "password": "Password",
+      "submit": "Create Super Admin",
+      "creating": "Creating account…",
+      "already-completed": "Initial setup has already been completed.",
+      "invalid": "Unable to create the account. Check the username and use a password of at least 12 characters.",
+      "unavailable": "Unable to reach the server. Try again later."
+    },
+    "guides": {
+      "eyebrow": "Editorial content",
+      "title": "Guides",
+      "new": "New",
+      "new-title": "New guide",
+      "edit-title": "Edit guide",
+      "empty": "No guide created.",
+      "columns": {
+        "title": "Title",
+        "author": "Author",
+        "created": "Created",
+        "updated": "Last edited",
+        "languages": "Languages",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "language-written": "{locale} written",
+      "language-missing": "{locale} not translated",
+      "no-results": "No result for this filter.",
+      "statuses": {
+        "draft": "Draft",
+        "pending_review": "Pending review",
+        "published": "Published"
+      },
+      "disabled-tooltip": "Disabled and hidden from the public site",
+      "status-label": "Status of {title}",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "confirm-delete": "Permanently delete the guide “{title}”?",
+      "status-forbidden": "Your role does not allow this status change.",
+      "status-saved": "Status saved.",
+      "visibility-error": "Unable to change visibility.",
+      "enabled": "Guide enabled.",
+      "disabled": "Guide disabled.",
+      "delete-forbidden": "Your role does not allow deleting this guide.",
+      "deleted": "Guide permanently deleted."
+    },
+    "referentiels": {
+      "eyebrow": "Reference data",
+      "title": "References",
+      "columns": {
+        "title": "Title",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "active": "Enabled",
+        "inactive": "Disabled"
+      },
+      "reference-combat": "Edit Combat Equipment",
+      "reference-expedition": "Edit Expedition Equipment",
+      "reference-level-up": "Edit Level Up",
+      "reference-consommables": "Edit the Shop",
+      "references": {
+        "combat-equipment": "Combat Equipment",
+        "expedition-equipment": "Expedition Equipment",
+        "level-up": "Level Up",
+        "templiers": "Templars",
+        "gemmes": "Gems",
+        "consommables": "Shop",
+        "events": "Events"
+      },
+      "disabled-tooltip": "Disabled and hidden from the public site",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "visibility-error": "Unable to change visibility.",
+      "enabled": "Reference table enabled.",
+      "disabled": "Reference table disabled.",
+      "no-results": "No reference table found.",
+      "reference-events": "Edit Events"
+    },
+    "guide-editor": {
+      "language-label": "Guide language",
+      "title": "Title ({locale})",
+      "excerpt": "Summary ({locale})",
+      "content": "Markdown content ({locale})",
+      "preview": "Live preview",
+      "categories-label": "Guide categories",
+      "categories-summary": "Guide categories ({count, plural, one {# selected} other {# selected}})",
+      "categories": {
+        "debuter": "Getting started & progressing",
+        "combat": "Combat & conquest",
+        "defense": "Defense & territory",
+        "competences": "Skills & builds",
+        "equipement": "Equipment & Templars",
+        "expeditions": "Expeditions",
+        "evenements": "Events & ranking",
+        "clan": "Clan & collective strategy"
+      },
+      "cover-image": "Representative image URL",
+      "cover-image-placeholder": "https://example.com/guide-cover.jpg",
+      "cover-image-preview": "Representative image preview",
+      "save": "Save",
+      "submit-review": "Submit for review",
+      "publish": "Publish",
+      "unpublish": "Unpublish as draft",
+      "saving": "Saving…",
+      "missing-title": "Enter an EN or FR title before saving.",
+      "missing-category": "Select at least one category before saving.",
+      "duplicate-slug": "A guide already uses this title/slug.",
+      "invalid": "The guide contains invalid or incomplete fields.",
+      "status-forbidden": "Guide saved, but your role does not allow this status change.",
+      "saved": "Guide saved."
+    },
+    "tools": {
+      "eyebrow": "Functional content",
+      "title": "Tools",
+      "edit-ranking": "Edit ranking thresholds",
+      "columns": {
+        "tool": "Tool",
+        "category": "Category",
+        "status": "Status",
+        "action": "Action"
+      },
+      "category-values": {
+        "villes": "Cities",
+        "combat": "Combat",
+        "classement": "Ranking",
+        "competences": "Skills"
+      },
+      "active": "Enabled",
+      "inactive": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "disabled-tooltip": "Disabled — unavailable on the public site",
+      "saving": "Saving…",
+      "save-error": "Save failed (HTTP {status}).",
+      "state-saved": "{tool} is now {state}.",
+      "server-error": "Unable to reach the server. Try again later.",
+      "name": "Name",
+      "edit": "Edit",
+      "city-parameters": "Shared City parameters",
+      "ranking-editor": "Ranking thresholds",
+      "templar-parameters": "Templar cost parameters",
+      "xp-gain-rate-editor": "XP gain rate tiers",
+      "demo-attack-troops-editor": "Demo attack percentages",
+      "gems-editor": "Gem parameters"
+    },
+    "ranking": {
+      "title": "Ranking",
+      "description": "Edit each range individually. Bronze and Gold may remain empty until their data is confirmed.",
+      "add": "Add range",
+      "threshold": "Threshold (%)",
+      "target": "Target league",
+      "movement": "Movement",
+      "reward": "Reward",
+      "action": "Action",
+      "remove": "Delete",
+      "row-label": "{league} row {row} {field}",
+      "unconfirmed-option": "Not confirmed",
+      "movements": {
+        "promotion": "Promotion",
+        "stay": "Stay",
+        "relegation": "Relegation"
+      },
+      "reward-types": {
+        "sapphires": "Sapphires",
+        "speedups": "Speedups",
+        "gems": "Gems"
+      },
+      "range-error": "A value between 0 and 100 is required.",
+      "pairing-error": "Movement and target league must be confirmed together.",
+      "integer-error": "A whole number is required.",
+      "required": "This field is required.",
+      "empty": "No confirmed range.",
+      "save": "Save ranking",
+      "validation": "Fix the highlighted fields before saving.",
+      "saving": "Saving…",
+      "save-error": "Save failed (HTTP {status}).",
+      "saved": "Configuration saved.",
+      "server-error": "Unable to reach the server. Try again later."
+    },
+    "references": {
+      "eyebrow": "Game data",
+      "title": "Reference tables",
+      "combat-detail": "180 editable rows",
+      "expedition-detail": "120 editable rows",
+      "templars-detail": "20 exact editable costs",
+      "page-title": "Reference table — {name}",
+      "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
+      "expedition-description": "Expedition equipment detail",
+      "expedition-increments-description": "Per-star increments for the Expedition Equipment stats",
+      "templars-description": "Every exact level cost can be edited individually.",
+      "columns": {
+        "set-name": "Set name",
+        "family": "Family",
+        "slot-type": "Slot type",
+        "slot-name": "Slot name",
+        "value": "Value {number} (%)",
+        "type-value": "Type value (%)",
+        "secondary-value": "Secondary value (%)",
+        "level": "Reached level",
+        "level-cost": "Level cost"
+      },
+      "row-label": "Row {row} {field}",
+      "expedition-row-label": "Expedition row {row} {field}",
+      "templar-level-label": "Templar level {level}",
+      "templar-cost-label": "Templar level {level} cost",
+      "save": "Save entire table",
+      "save-all": "Save the whole page",
+      "required": "This field is required.",
+      "number": "Enter a valid numeric value.",
+      "minimum": "The minimum value is {min}.",
+      "validation": "Fix the highlighted fields before saving.",
+      "saving": "Saving…",
+      "save-error": "Save failed (HTTP {status}).",
+      "save-all-error": "Failed to save one or more tables on this page.",
+      "saved": "Reference table saved.",
+      "server-error": "Unable to reach the server. Check the connection and try again.",
+      "all": "All",
+      "filters": {
+        "skill": "Skill"
+      },
+      "consumables-intro-title": "Intro",
+      "consumables-intro-language-label": "Text language",
+      "consumables-table-title": "Items",
+      "consumables-columns": {
+        "image": "Image path",
+        "name": "Name",
+        "description": "Description",
+        "cost": "Cost (Sapphires)"
+      },
+      "add-category": "Add ({category})",
+      "confirm-remove": "Permanently delete this item?",
+      "category-row-label": "{category} — row {row} {field}",
+      "add": "Add an item",
+      "remove": "Remove",
+      "move-up": "Move up",
+      "move-down": "Move down",
+      "actions": "Actions",
+      "empty": "No items yet.",
+      "events-league-label": "League",
+      "events-language-label": "Text language",
+      "events-season-duration-label": "Season duration (days)",
+      "events-season-overrun": "The events' combined duration ({total}) exceeds the season duration ({season}).",
+      "events-table-title": "Event list",
+      "add-event": "Add an event",
+      "events-columns": {
+        "name": "Name",
+        "description": "Description",
+        "duration": "Duration",
+        "color": "Color"
+      },
+      "event-colors": {
+        "violet": "Dark violet",
+        "violet-bright": "Light violet",
+        "emerald": "Dark green",
+        "emerald-bright": "Light green",
+        "amber": "Dark yellow",
+        "amber-bright": "Light yellow",
+        "ember": "Dark red",
+        "ember-bright": "Light red",
+        "sapphire": "Dark blue",
+        "sapphire-bright": "Light blue"
+      },
+      "tier-columns": {
+        "objective": "Objective",
+        "reward": "Reward"
+      },
+      "add-tier": "Add a tier",
+      "events-tiers-summary": "Tiers ({count})",
+      "event-row-label": "{field} of event {row}",
+      "events-position-aria": "Position {row}",
+      "tier-row-label": "{field} of tier {row} of {event}",
+      "templars-presentation-title": "Presentation",
+      "templars-presentation-language-label": "Text language",
+      "templars-columns": {
+        "image": "Image path",
+        "name": "Name",
+        "description": "Description",
+        "temple-base": "Temple base",
+        "bonus": "Bonus (%)"
+      },
+      "secondary-row": "Metric",
+      "secondary-label-language": "Metric language",
+      "row-merge-cost": "Merge",
+      "row-gem-slots": "Gems",
+      "row-destruction": "Dismantle",
+      "combat-secondary-description": "Pouciel (merge, dismantle) and gem slots, per rarity.",
+      "expedition-secondary-description": "Terradust (merge, dismantle), per rarity.",
+      "combat-increments-description": "Per-star increments for the Combat Equipment skills"
+    },
+    "common": {
+      "back": "Back"
+    },
+    "parameters": {
+      "save": "Save parameters",
+      "saving": "Saving…",
+      "saved": "Parameters saved.",
+      "error": "Save failed (HTTP {status}).",
+      "server-error": "Unable to reach the server.",
+      "league": "League",
+      "coefficient": "Coefficient",
+      "ratio": "Ratio",
+      "xp-base": "XP base",
+      "xp-ratio": "XP ratio",
+      "unconfirmed": "Troop formula not confirmed"
+    },
+    "city-parameters": {
+      "progression": "Progression parameters",
+      "multipliers": "League multipliers",
+      "league": "League",
+      "army": "Army multiplier",
+      "gold": "Gold multiplier",
+      "vp": {
+        "base": "VP base",
+        "ratio": "VP ratio"
+      },
+      "walls": {
+        "base": "Walls base",
+        "ratio": "Walls ratio"
+      },
+      "cost": {
+        "base": "Cost base",
+        "ratio": "Cost ratio"
+      }
+    },
+    "templar-parameters": {
+      "formula": "Cost(n) = round(base × ratio^(n-1))",
+      "base": "Base",
+      "ratio": "Ratio"
+    },
+    "xp-gain-rate": {
+      "formula": "XP gain rate = f(target VP / attacker VP ratio)",
+      "tier": "Tier",
+      "upper-bound": "Upper bound (%)",
+      "upper-bound-field": "Tier {tier} upper bound",
+      "rate": "XP rate (%)",
+      "rate-field": "Tier {tier} XP rate"
+    },
+    "demo-attack-troops": {
+      "formula": "MaxTroops = (X% / 100) × Walls(target city level)",
+      "percentage": "X (% of walls)"
+    },
+    "gems": {
+      "formula": "Gem value = base value (per skill and per league)",
+      "value": "Base value per skill and per league",
+      "value-field": "{skill} · {league}",
+      "price": "Gem purchase price per league (in sapphires)",
+      "price-field": "{league} price"
+    },
+    "users": {
+      "title": "Admin users",
+      "create": "Create user",
+      "username": "Username",
+      "password": "Password",
+      "role": "Role",
+      "delete": "Delete",
+      "save": "Save",
+      "created": "User created",
+      "saved": "User saved",
+      "password-too-short": "The new password must contain at least 12 characters.",
+      "error": "Unable to complete the action",
+      "server-error": "Server unavailable",
+      "status": "Status",
+      "active": "Enabled",
+      "inactive": "Disabled",
+      "activate": "Enable",
+      "deactivate": "Disable",
+      "activated": "User enabled",
+      "deactivated": "User disabled"
+    },
+    "logs": {
+      "title": "Change history",
+      "actor": "Actor",
+      "actor-role": "Role at the time of the action",
+      "message": "Message",
+      "date": "Date",
+      "start": "Start date",
+      "end": "End date",
+      "purge": "Purge range",
+      "purged": "History purged",
+      "error": "Unable to purge history",
+      "filter-user": "User",
+      "filter-message": "Word in message",
+      "filter-apply": "Filter",
+      "filter-reset": "Reset",
+      "no-results": "No entry matches the filters.",
+      "pagination": "History pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "page-summary": "Page {page} / {total}"
+    },
+    "content": {
+      "eyebrow": "Institutional page",
+      "title": "Legal notice",
+      "language-label": "Content language",
+      "field": "Markdown",
+      "preview": "Live preview",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Legal notice saved.",
+      "error": "Unable to save the legal notice."
+    },
+    "forbidden": {
+      "eyebrow": "Error 403",
+      "title": "Access forbidden",
+      "description": "Your role does not allow access to this section or action.",
+      "back": "Back to dashboard"
+    },
+    "config": {
+      "eyebrow": "Configuration",
+      "title": "Languages",
+      "intro": "Enable or disable each language's visibility on the public site. The translation files stay untouched. English and French are always active.",
+      "columns": {
+        "language": "Language",
+        "status": "Status",
+        "action": "Action"
+      },
+      "active": "Enabled",
+      "inactive": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable",
+      "locked-tooltip": "Base language — always active",
+      "saving": "Saving…",
+      "save-error": "Save failed (HTTP {status}).",
+      "state-saved": "{language} is now {state}.",
+      "server-error": "Unable to reach the server. Try again later.",
+      "languages": {
+        "en": "English",
+        "fr": "Français",
+        "de": "Deutsch",
+        "es": "Español",
+        "tr": "Türkçe"
+      }
+    }
   },
-  "Users": {
-    "title": "Admin users",
-    "create": "Create user",
-    "username": "Username",
-    "password": "Password",
-    "role": "Role",
-    "delete": "Delete",
-    "save": "Save",
-    "created": "User created",
-    "error": "Unable to complete the action"
-  },
-  "Logs": {
-    "title": "Audit logs",
-    "actor": "Actor",
-    "action": "Action",
-    "entity": "Entity",
-    "date": "Date",
-    "start": "Start date",
-    "end": "End date",
-    "purge": "Purge range",
-    "purged": "Logs purged",
-    "error": "Unable to purge logs"
-  },
-  "Roles": {
+  "roles": {
     "super_admin": "Super Admin",
     "admin": "Admin",
     "guides_manager": "Guides Manager",
-    "calculators_manager": "Calculators Manager"
+    "references_manager": "Référentiels",
+    "tools_manager": "Tools Manager",
+    "read_only": "Read Only"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn’t exist or has moved. Here is where to go next:",
+    "home": "Home"
   }
 }
