@@ -200,7 +200,9 @@ function CostCalculator({
         // Temple breakdown stays, since it's per-city information the
         // aggregate transition figures below don't otherwise carry.
         <section className="calculator-card">
-          <h3>{t("total-cities", { count: cityCount })}</h3>
+          <h2 className="calculator-heading">
+            {t("total-cities", { count: cityCount })}
+          </h2>
           <div className="calculator-results">
             <Stat
               label={t("cost-total")}
@@ -378,7 +380,9 @@ function MaxLevelCalculator({
         // level stays, since the aggregate transition figures below don't
         // carry that detail.
         <section className="calculator-card">
-          <h3>{t("total-cities", { count: cityCount })}</h3>
+          <h2 className="calculator-heading">
+            {t("total-cities", { count: cityCount })}
+          </h2>
           <div className="calculator-results">
             <Stat
               label={t("reachable-level")}
@@ -520,7 +524,7 @@ function ProductionCalculator({
       ) : (
         <>
           <section className="calculator-card">
-            <h3>{t("per-city-base")}</h3>
+            <h2 className="calculator-heading">{t("per-city-base")}</h2>
             <div className="calculator-results">
               <Stat label={t("vp")} value={number(result.perCity.vp)} />
               <Stat label={t("wall")} value={number(result.perCity.wall)} />
@@ -542,7 +546,7 @@ function ProductionCalculator({
             <Stat label={t("vp-total")} value={number(result.vpTotal)} />
           </section>
           <section className="calculator-card">
-            <h3>{t("full-production.title")}</h3>
+            <h2 className="calculator-heading">{t("full-production.title")}</h2>
             <p className="calculator-note">
               {t("full-production.note", {
                 points: result.fullProduction.points,
@@ -633,7 +637,7 @@ function ResourceRewardBlock({
 
   return (
     <section className="calculator-card">
-      <h3>{title}</h3>
+      <h2 className="calculator-heading">{title}</h2>
       <div className="calculator-fields">
         <AmountUnitField
           label={baseLabel}

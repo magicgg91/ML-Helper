@@ -63,7 +63,8 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
   it("Bloc65/D: titles each skill tile and colors it from the existing per-skill palette", () => {
     renderReference();
     const striker = screen.getByTestId("gems-tile-striker");
-    expect(striker.querySelector("h3")).toHaveTextContent("Attaque");
+    // Bloc 91/M5: tile titles are <h2> now (were <h3> skipping a level).
+    expect(striker.querySelector("h2")).toHaveTextContent("Attaque");
     expect(striker).toHaveStyle({ borderColor: skillColor("striker") });
     expect((striker as HTMLElement).style.background).toContain(
       skillColor("striker"),
@@ -87,7 +88,7 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
 
   it("orders the 10 skills alphabetically by their displayed (French) name, not the technical key", () => {
     const { container } = renderReference();
-    const titles = Array.from(container.querySelectorAll(".gems-tile h3"))
+    const titles = Array.from(container.querySelectorAll(".gems-tile h2"))
       .map((title) => title.textContent)
       .slice(1); // the Coût tile opens the grid
     expect(titles).toEqual([
@@ -107,7 +108,7 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
   it("Bloc38/E: shows the locked sapphire-cost formula's raw values, not compact-formatted, with Bronze marked not purchasable", () => {
     renderReference();
     const cost = screen.getByTestId("gems-tile-cost");
-    expect(cost.querySelector("h3")).toHaveTextContent("Coût en saphirs");
+    expect(cost.querySelector("h2")).toHaveTextContent("Coût en saphirs");
     const cells = cost.querySelectorAll("td");
     expect(cells[0]).toHaveTextContent("—"); // Bronze: not purchasable
     expect(cells[1]).toHaveTextContent("3000"); // Argent, not "3k"
@@ -124,7 +125,7 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
 
   it("Bloc38/F: uses the exact English skill names, not a literal translation", () => {
     const { container } = renderReference("en", enMessages);
-    const titles = Array.from(container.querySelectorAll(".gems-tile h3")).map(
+    const titles = Array.from(container.querySelectorAll(".gems-tile h2")).map(
       (title) => title.textContent,
     );
     for (const label of [

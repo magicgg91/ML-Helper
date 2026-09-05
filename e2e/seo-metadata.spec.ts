@@ -111,6 +111,49 @@ test("Bloc 91/M7: deep pages show a breadcrumb trail", async ({ page }) => {
   await expect(crumb.getByText("Villes")).toBeVisible();
 });
 
+test("Bloc 91/M5: reference pages keep a gapless heading hierarchy under one h1", async ({
+  page,
+}) => {
+  const levelsOf = async (path: string) => {
+    await page.goto(path);
+    return page
+      .locator("main :is(h1,h2,h3,h4,h5,h6)")
+      .evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
+  };
+  // gems renders its skill tiles immediately; templars stacks its presentation
+  // tiles (once <h3> that skipped a level) above the "Table des coûts" heading.
+  for (const path of ["/fr/referentiels/gems", "/fr/referentiels/templars"]) {
+    const levels = await levelsOf(path);
+    // exactly one top-level heading (the page <h1>)…
+    expect(levels.filter((l) => l === 1)).toHaveLength(1);
+    // …and no heading ever jumps more than one level deeper than the last.
+    let previous = 0;
+    for (const level of levels) {
+      expect(level).toBeLessThanOrEqual(previous + 1);
+      previous = level;
+    }
+  }
+});
+
+test("Bloc 91/M5: a guide has a single h1 with the body starting at h2", async ({
+  page,
+}) => {
+  await page.goto("/fr/guides/guide-visible");
+  const levels = await page
+    .locator("main :is(h1,h2,h3,h4,h5,h6)")
+    .evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
+  // The page title is the only <h1>; the Markdown body (seeded starting at
+  // `##`) sits under it at <h2>, never a second <h1>.
+  expect(levels.filter((l) => l === 1)).toHaveLength(1);
+  expect(levels[0]).toBe(1);
+  expect(levels[1]).toBe(2);
+  let previous = 0;
+  for (const level of levels) {
+    expect(level).toBeLessThanOrEqual(previous + 1);
+    previous = level;
+  }
+});
+
 test("Bloc 91/M7: the footer links to every main section", async ({ page }) => {
   await page.goto("/fr/tools");
   const footer = page.getByRole("contentinfo");

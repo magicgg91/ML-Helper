@@ -394,7 +394,7 @@ export function ExpeditionEquipmentSimulator({
       data-testid="expedition-equipment-simulator"
     >
       <section className="calculator-card">
-        <h3>{t("summary-title")}</h3>
+        <h2 className="calculator-heading">{t("summary-title")}</h2>
         <Summary totals={totals} selected={selected} />
       </section>
       {/* Bloc 32/E.1: repositioned under the global summary, matching

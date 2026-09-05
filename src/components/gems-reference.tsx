@@ -37,7 +37,7 @@ function GemSkillTile({
         } as CSSProperties
       }
     >
-      <h3 className="gems-tile-title">{skillName}</h3>
+      <h2 className="gems-tile-title">{skillName}</h2>
       <table className="gems-tile-table">
         <tbody>
           <tr>
@@ -109,7 +109,7 @@ export function GemsReferenceTable({
           className="gems-tile gems-cost-tile"
           data-testid="gems-tile-cost"
         >
-          <h3 className="gems-tile-title">{t("reference.price-row")}</h3>
+          <h2 className="gems-tile-title">{t("reference.price-row")}</h2>
           <table className="gems-tile-table">
             <tbody>
               <tr>

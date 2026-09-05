@@ -116,7 +116,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
         />
       </NextIntlClientProvider>,
     );
-    const titles = Array.from(container.querySelectorAll("h3")).map(
+    const titles = Array.from(container.querySelectorAll("h2")).map(
       (heading) => heading.textContent!,
     );
     expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, "fr")));
@@ -136,7 +136,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
         <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
-    const titles = Array.from(container.querySelectorAll("h3")).map(
+    const titles = Array.from(container.querySelectorAll("h2")).map(
       (heading) => heading.textContent!,
     );
     expect(titles).toContain("Templiers");
@@ -157,7 +157,7 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
         <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
       </NextIntlClientProvider>,
     );
-    const titles = Array.from(container.querySelectorAll("h3")).map(
+    const titles = Array.from(container.querySelectorAll("h2")).map(
       (heading) => heading.textContent!,
     );
     expect(titles).toContain("Progression");

@@ -103,7 +103,13 @@ export default async function GuidePage({
             Scoped to guide content only: static UI text and the legal
             notice keep localizedText()'s silent EN fallback untouched. */}
         {hasLocalizedText(guide.content, locale) ? (
-          <MarkdownRenderer markdown={localizedText(guide.content, locale)} />
+          // Bloc 91/M5: the page owns the <h1> (the guide title above), so the
+          // body's Markdown headings are normalized to sit under it — a
+          // leading `# …` becomes an <h2> instead of a second <h1>.
+          <MarkdownRenderer
+            markdown={localizedText(guide.content, locale)}
+            shiftHeadings
+          />
         ) : (
           <p className="empty-state">{t("detail.not-translated")}</p>
         )}

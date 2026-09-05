@@ -254,11 +254,13 @@ describe("CityCalculators", () => {
     fireEvent.click(
       screen.getByRole("tab", { name: "Récompenses de Production" }),
     );
+    // Bloc 91/M5: the reward card titles ("Or"/"Troupes") are <h2> now (were
+    // <h3> that skipped a level under the tool page's <h1>).
     const goldCard = screen
-      .getByText("Or", { selector: "h3" })
+      .getByText("Or", { selector: "h2" })
       .closest<HTMLElement>(".calculator-card")!;
     const troopsCard = screen
-      .getByText("Troupes", { selector: "h3" })
+      .getByText("Troupes", { selector: "h2" })
       .closest<HTMLElement>(".calculator-card")!;
     expect(goldCard).not.toBe(troopsCard);
     expect(

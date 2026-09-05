@@ -64,7 +64,7 @@ export function ReferenceCatalogGrid({
             />
           </div>
           <div className="tool-category-copy">
-            <h3>{t(`catalog.${reference.slug}`)}</h3>
+            <h2>{t(`catalog.${reference.slug}`)}</h2>
           </div>
         </Link>
       ))}

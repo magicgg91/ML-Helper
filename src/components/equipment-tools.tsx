@@ -522,7 +522,7 @@ export function StuffSimulator({
   return (
     <div className="calculator-stack" data-testid="stuff-simulator">
       <section className="calculator-card">
-        <h3>{t("global-summary")}</h3>
+        <h2 className="calculator-heading">{t("global-summary")}</h2>
         <Summary
           totals={global}
           selected={selected}

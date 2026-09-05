@@ -350,7 +350,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
   return (
     <>
       <section className="calculator-card">
-        <h3>{t("optimization.title")}</h3>
+        <h2 className="calculator-heading">{t("optimization.title")}</h2>
         <div
           className="family-buttons gem-optimize-family-buttons"
           aria-label={t("family-label")}
@@ -481,7 +481,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
         </p>
       </section>
       <section className="calculator-card">
-        <h3>{t("result")}</h3>
+        <h2 className="calculator-heading">{t("result")}</h2>
         {hasMissingSkill || hasMissingLeague ? (
           // Bloc 82/D review (Codex PR #99): a populated row (slots > 0)
           // missing its skill or league must block the whole result, not
@@ -729,9 +729,9 @@ function TemplarResultTile({
         fallback={null}
       />
       <div className="templars-tile-body">
-        <h3 className="templars-tile-title">
+        <h2 className="templars-tile-title">
           {t("presentation.tile-title", { name })}
-        </h3>
+        </h2>
         <p className="templars-tile-stat">
           {t("bonus-per-templar")} : {t("rate-value", { rate })}
         </p>
