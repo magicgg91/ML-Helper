@@ -6,9 +6,9 @@ import { gemImagePath, skillColor } from "../lib/game-images";
 import type { GemParameters } from "../lib/gem-parameters";
 import { leagues, skillKeys, type SkillKey } from "../lib/player-settings";
 import { GameImage } from "./game-image";
-import { formatPercent } from "./reference-tables";
+import { formatExactNumber, formatPercent } from "../lib/format";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 65/D: one tile per skill, replacing the 11 x 7 matrix table that
 // needed a horizontal scroll on a phone and was already cramped on
@@ -130,7 +130,9 @@ export function GemsReferenceTable({
                         // never compacted to k/M like formatGameNumber does
                         // elsewhere — values stay at most 4 digits, so
                         // compaction only hurts readability here.
-                        Math.round(parameters.gemPrice[league])}
+                        // Bloc 93/F4: exact as before, now with the locale's
+                        // thousands separators like every other exact figure.
+                        formatExactNumber(parameters.gemPrice[league], locale)}
                   </td>
                 ))}
               </tr>
@@ -142,7 +144,7 @@ export function GemsReferenceTable({
         ))}
       </div>
       <CrossReferenceLink
-        href="/tools/competences?open=gems"
+        href={toolHref("competences", "gems")}
         title={t("name")}
         image={gemsReference.image}
         fallbackImage={gemsReference.fallbackImage}

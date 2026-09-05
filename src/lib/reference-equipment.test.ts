@@ -33,47 +33,48 @@ describe("reference equipment", () => {
     expect(combatValueAtStar("Inconnu", "", 5)).toBeNull();
   });
 
-  it("confirms all 10 expedition stats via the default increments", () => {
-    expect(expeditionValueAtStar("Équipement", "0.6", 2)).toEqual({
-      value: 0.8,
-      confirmed: true,
-    });
-    expect(expeditionValueAtStar("Vitalité", "15", 2)).toEqual({
-      value: 17.5,
-      confirmed: true,
-    });
+  it("computes all 10 expedition stats via the default increments", () => {
+    expect(expeditionValueAtStar("Équipement", "0.6", 2)).toBe(0.8);
+    expect(expeditionValueAtStar("Vitalité", "15", 2)).toBe(17.5);
     // Cross-validated at Commun/Or/Torche (0.9% at 1★, +0.3%/★) as well as
     // at Légendaire — same increment either way.
-    expect(expeditionValueAtStar("Or", "0.9", 2)).toEqual({
-      value: 1.2,
-      confirmed: true,
-    });
+    expect(expeditionValueAtStar("Or", "0.9", 2)).toBe(1.2);
     for (const key of expeditionStatKeys)
       expect(defaultExpeditionStarIncrements[key]).toBeGreaterThan(0);
   });
 
-  it("treats a genuinely unknown stat name as unconfirmed", () => {
-    expect(expeditionValueAtStar("Inconnue", "1", 2)).toEqual({
-      value: null,
-      confirmed: false,
-    });
+  it("returns no value for a genuinely unknown stat name", () => {
+    expect(expeditionValueAtStar("Inconnue", "1", 2)).toBeNull();
+  });
+
+  // Bloc 93/M3: the removed `confirmed` flag was always equal to
+  // `value !== null`, which is what made the "unconfirmed" badge it gated
+  // unreachable. This sweeps the real reference data across every star to
+  // pin that there is no third state to distinguish — a value is either
+  // computable or absent. Reintroducing a confirmed/extrapolated distinction
+  // means making it actually reachable, not restoring the old flag.
+  it("yields a value for every stat the increments know, and null otherwise", () => {
+    for (const key of expeditionStatKeys)
+      for (const star of [1, 2, 3, 4, 5, 6, 7, 8])
+        expect(expeditionValueAtStar(key, "1", star)).not.toBeNull();
+    for (const star of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      // Unknown stat, empty base and non-numeric base are the only three ways
+      // to get nothing back.
+      expect(expeditionValueAtStar("Inconnue", "1", star)).toBeNull();
+      expect(expeditionValueAtStar("Or", "", star)).toBeNull();
+      expect(expeditionValueAtStar("Or", "abc", star)).toBeNull();
+    }
   });
 
   it("returns no value for an empty base (no secondary stat below Épique)", () => {
-    expect(expeditionValueAtStar("Vitalité", "", 3)).toEqual({
-      value: null,
-      confirmed: false,
-    });
+    expect(expeditionValueAtStar("Vitalité", "", 3)).toBeNull();
   });
 
   it("lets an admin override the expedition increments, falling back per-key", () => {
     const overridden = parseExpeditionStarIncrements({ Or: 0.5 });
     expect(overridden.Or).toBe(0.5);
     expect(overridden.Chance).toBe(defaultExpeditionStarIncrements.Chance);
-    expect(expeditionValueAtStar("Or", "1", 3, overridden)).toEqual({
-      value: 2,
-      confirmed: true,
-    });
+    expect(expeditionValueAtStar("Or", "1", 3, overridden)).toBe(2);
   });
 
   it("falls back to the defaults for garbage input", () => {

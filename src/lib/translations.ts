@@ -1,7 +1,8 @@
 // Bloc 44: DE/ES/TR activated (files delivered, structure verified against
-// en.json). "pl" stays in plannedLocales only — no file for it yet.
+// en.json). Polish is still planned but has no messages file, so it is not
+// listed here — Bloc 93/F2 dropped the separate `plannedLocales` constant
+// that recorded it, since nothing ever read it.
 export const launchLocales = ["fr", "en", "de", "es", "tr"] as const;
-export const plannedLocales = ["fr", "en", "es", "de", "pl", "tr"] as const;
 export type LaunchLocale = (typeof launchLocales)[number];
 // Bloc 91/E1: the site's default locale, kept here (Edge-safe, no node:fs)
 // so src/i18n/routing.ts — imported by the Edge middleware — can reach it
@@ -78,4 +79,21 @@ export function localizedText(value: unknown, locale: string) {
 // fallback via localizedText() — this helper is not for them.
 export function hasLocalizedText(value: unknown, locale: string): boolean {
   return Boolean(translationRecord(value)[locale]);
+}
+
+/**
+ * Bloc 93/M1: the fr/en fallback for admin-entered text, which the
+ * Consommables, Évènements and Templiers references each carried an identical
+ * private copy of.
+ *
+ * Admin content is stored as an fr/en pair, and the site ships 5 locales, so
+ * a non-French visitor reads the English text; either side falls back to the
+ * other when its own is empty, so a half-filled pair never renders blank.
+ *
+ * Distinct from reference-tables' `secondaryLabel`, which deliberately does
+ * NOT cross-fall-back: an absent override there means "use the built-in
+ * label", not "use the other language".
+ */
+export function pickFrEn(fr: string, en: string, locale: string): string {
+  return locale === "fr" ? fr || en : en || fr;
 }

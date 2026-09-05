@@ -1,5 +1,6 @@
 "use client";
 
+import { useSaveStatus } from "./use-save-status";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
@@ -180,7 +181,7 @@ export function EventsReferenceScreen({
         boolean
       >,
   );
-  const [status, setStatus] = useState("");
+  const save = useSaveStatus();
 
   const lang = fieldLocale(locale);
   const objectiveKey = lang === "fr" ? "objective_fr" : "objective_en";
@@ -314,25 +315,32 @@ export function EventsReferenceScreen({
 
   async function saveAll() {
     if (!validateAll()) {
-      setStatus(t("validation"));
+      save.error(t("validation"));
       return;
     }
-    setStatus(t("saving"));
+    save.pending(t("saving"));
     try {
       const response = await fetch("/api/admin/guides/references/events", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(catalog),
       });
-      setStatus(response.ok ? t("saved") : t("server-error"));
+      save.settle(response.ok, {
+        success: t("saved"),
+        error: t("server-error"),
+      });
     } catch {
-      setStatus(t("server-error"));
+      save.error(t("server-error"));
     }
   }
 
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/referentiels" message={status}>
+      <EditorActionBar
+        backHref="/admin/referentiels"
+        message={save.message}
+        tone={save.tone}
+      >
         <EditorialLocaleSelect
           label={t("events-language-label")}
           value={locale}

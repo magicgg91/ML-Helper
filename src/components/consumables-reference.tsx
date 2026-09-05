@@ -1,5 +1,6 @@
 "use client";
 
+import { pickFrEn } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { renderBoldText } from "./bold-text";
@@ -10,10 +11,6 @@ import {
   type ConsumableCategory,
   type ConsumableRow,
 } from "../lib/consumables";
-
-function pickLocaleText(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
 
 function CategoryFilters({
   selected,
@@ -90,8 +87,8 @@ function ReferenceTileGrid({
       <h2 className="editable-reference-title">{title}</h2>
       <div className="consumable-tile-grid">
         {rows.map((row, index) => {
-          const name = pickLocaleText(row.name_fr, row.name_en, locale);
-          const description = pickLocaleText(
+          const name = pickFrEn(row.name_fr, row.name_en, locale);
+          const description = pickFrEn(
             row.description_fr,
             row.description_en,
             locale,

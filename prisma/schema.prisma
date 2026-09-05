@@ -23,6 +23,12 @@ model Guide {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   publishedAt DateTime? @map("published_at")
 
+  // Bloc 93/F5: every public read filters on exactly this pair and orders by
+  // publishedAt — the guides list, the home page, the public layout (so: on
+  // every public request), and the sitemap. Slug lookups are already served
+  // by @unique above. Guides are written only from the admin, so the write
+  // cost of the index is negligible next to the read frequency.
+  @@index([status, active, publishedAt])
   @@map("guides")
 }
 

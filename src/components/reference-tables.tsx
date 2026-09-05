@@ -21,10 +21,9 @@ import {
   type EquipmentSlot,
 } from "../lib/equipment";
 import { expeditionSlotLayout } from "../lib/expedition-equipment";
-import { formatSkillPercentValue } from "../lib/skill-percent";
+import { formatGameNumber, formatPercent } from "../lib/format";
 import { rarityClassName } from "../lib/equipment-rarity";
 import { equipmentImagePath, filterButtonColor } from "../lib/game-images";
-import { formatGameNumber } from "../lib/city-calculators";
 import {
   combatValueAtStar,
   defaultCombatGemSlotsBase,
@@ -46,8 +45,8 @@ import {
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { handleTablistKeydown } from "./use-tablist-keyboard";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { TabList, TabPanel } from "./tabs";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
 // override (fr direct, every other locale the en field — same fr/en-only
@@ -82,12 +81,6 @@ const expeditionFamilies = [
   "Consommables",
   "Troupes",
 ] as const;
-
-export function formatPercent(value: number | null, locale: string) {
-  // Bloc 87/A: skill percentages (gem/equipment contributions) round to 1
-  // decimal with standard rounding — see formatSkillPercentValue.
-  return value === null ? "—" : `${formatSkillPercentValue(value, locale)}%`;
-}
 
 // Bloc 35/2.2: the destruction-currency value is constant per rarity, so a
 // 5-column rarity-indexed table replaces what used to be a redundant column
@@ -332,9 +325,7 @@ function CombatTile({
       aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot_type)}`}
     >
       <div className="reference-tile-head">
-        <span
-          className="reference-tile-slot"
-        >
+        <span className="reference-tile-slot">
           {slotLabel(row.slot_type)}
           {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
         </span>
@@ -403,8 +394,11 @@ export function CombatReferenceTable({
     };
   };
 }) {
-  const { mergeCost: mergeCostBase, gemSlots: gemSlotsBase, skydust: skydustBase } =
-    secondaryBase;
+  const {
+    mergeCost: mergeCostBase,
+    gemSlots: gemSlotsBase,
+    skydust: skydustBase,
+  } = secondaryBase;
   const locale = useLocale();
   const t = useTranslations("combat-equipment");
   const game = useTranslations("game");
@@ -522,7 +516,7 @@ export function CombatReferenceTable({
           for Combat/Expedition — the reverse (tool -> reference) already
           existed since Bloc 53/E. Points at the exact simulator tab. */}
       <CrossReferenceLink
-        href="/tools/competences?open=simulator"
+        href={toolHref("competences", "simulator")}
         title={simulator("name")}
         image={combatEquipmentReference.image}
         fallbackImage={combatEquipmentReference.fallbackImage}
@@ -540,7 +534,6 @@ function ExpeditionTile({
   statLabel,
   increments,
   locale,
-  t,
 }: {
   row: ExpeditionReferenceRow;
   rarityLabel: (value: string) => string;
@@ -549,7 +542,6 @@ function ExpeditionTile({
   statLabel: (value: string) => string;
   increments: ExpeditionStarIncrements;
   locale: string;
-  t: ReturnType<typeof useTranslations>;
 }) {
   const rarityVar = `var(--rarity-${rarityClassName(row.rarity)})`;
   const primary = expeditionValueAtStar(
@@ -565,15 +557,11 @@ function ExpeditionTile({
     TILE_STAR,
     increments,
   );
-  const value = (result: ReturnType<typeof expeditionValueAtStar>) => (
-    <>
-      <strong className="reference-value">
-        {formatPercent(result.value, locale)}
-      </strong>
-      {result.value !== null && !result.confirmed ? (
-        <small className="unconfirmed">{t("unconfirmed-label")}</small>
-      ) : null}
-    </>
+  // Bloc 93/M3: the "unconfirmed" badge that sat here required a non-null
+  // value flagged unconfirmed — a combination expeditionValueAtStar could
+  // never produce. Dead branch and its translation key removed with the flag.
+  const value = (result: number | null) => (
+    <strong className="reference-value">{formatPercent(result, locale)}</strong>
   );
   return (
     <div
@@ -590,11 +578,7 @@ function ExpeditionTile({
       aria-label={`${rarityLabel(row.rarity)} — ${familyLabel(row.family)} — ${row.set_name} — ${slotLabel(row.slot)}`}
     >
       <div className="reference-tile-head">
-        <span
-          className="reference-tile-slot"
-        >
-          {slotLabel(row.slot)}
-        </span>
+        <span className="reference-tile-slot">{slotLabel(row.slot)}</span>
       </div>
       <div className="reference-tile-body">
         <GameImage
@@ -706,7 +690,6 @@ export function ExpeditionReferenceTable({
                     statLabel={statLabel}
                     increments={increments}
                     locale={locale}
-                    t={t}
                   />
                 ))}
               </div>
@@ -742,7 +725,7 @@ export function ExpeditionReferenceTable({
           for Combat/Expedition — the reverse (tool -> reference) already
           existed since Bloc 53/E. Points at the exact simulator tab. */}
       <CrossReferenceLink
-        href="/tools/competences?open=expedition"
+        href={toolHref("competences", "expedition")}
         title={expeditionSimulator("name")}
         image={expeditionEquipmentReference.image}
         fallbackImage={expeditionEquipmentReference.fallbackImage}
@@ -773,60 +756,37 @@ export function ReferenceTables({
   );
   return (
     <div>
-      <nav
-        className="calculator-tabs tabs"
-        role="tablist"
-        aria-label={t("tabs-label")}
-        onKeyDown={handleTablistKeydown}
-      >
-        <button
-          type="button"
-          role="tab"
-          id="equipment-tab-combat"
-          aria-controls="equipment-panel-combat"
-          aria-selected={active === "combat"}
-          tabIndex={active === "combat" ? 0 : -1}
-          disabled={!availability.combat}
-          title={!availability.combat ? t("disabled-tooltip") : undefined}
-          onClick={() => setActive("combat")}
-        >
-          {t("catalog.combat-equipment")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="equipment-tab-expedition"
-          aria-controls="equipment-panel-expedition"
-          aria-selected={active === "expedition"}
-          tabIndex={active === "expedition" ? 0 : -1}
-          disabled={!availability.expedition}
-          title={!availability.expedition ? t("disabled-tooltip") : undefined}
-          onClick={() => setActive("expedition")}
-        >
-          {t("catalog.expedition-equipment")}
-        </button>
-      </nav>
+      <TabList
+        idPrefix="equipment"
+        label={t("tabs-label")}
+        active={active}
+        onSelect={setActive}
+        tabs={[
+          {
+            key: "combat" as const,
+            label: t("catalog.combat-equipment"),
+            available: availability.combat,
+            unavailableLabel: t("disabled-tooltip"),
+          },
+          {
+            key: "expedition" as const,
+            label: t("catalog.expedition-equipment"),
+            available: availability.expedition,
+            unavailableLabel: t("disabled-tooltip"),
+          },
+        ]}
+      />
       {active === "combat" ? (
-        <div
-          role="tabpanel"
-          id="equipment-panel-combat"
-          aria-labelledby="equipment-tab-combat"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="equipment" tabKey="combat">
           <CombatReferenceTable rows={combatRows} />
-        </div>
+        </TabPanel>
       ) : active === "expedition" ? (
-        <div
-          role="tabpanel"
-          id="equipment-panel-expedition"
-          aria-labelledby="equipment-tab-expedition"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="equipment" tabKey="expedition">
           <ExpeditionReferenceTable
             rows={expeditionRows}
             increments={expeditionIncrements}
           />
-        </div>
+        </TabPanel>
       ) : (
         <p className="empty-state">{t("unavailable")}</p>
       )}

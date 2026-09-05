@@ -1,5 +1,6 @@
 "use client";
 
+import { useSaveStatus } from "./use-save-status";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
@@ -17,21 +18,28 @@ export function LegalNoticeEditor({
   const t = useTranslations("admin.content");
   const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [content, setContent] = useState(initialContent);
-  const [message, setMessage] = useState("");
+  const status = useSaveStatus();
 
   async function save() {
-    setMessage(t("saving"));
+    status.pending(t("saving"));
     const response = await fetch("/api/admin/content/legal-notice", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ content }),
     }).catch(() => null);
-    setMessage(response?.ok ? t("saved") : t("error"));
+    status.settle(Boolean(response?.ok), {
+      success: t("saved"),
+      error: t("error"),
+    });
   }
 
   return (
     <div className="legal-notice-editor">
-      <EditorActionBar backHref="/admin" message={message}>
+      <EditorActionBar
+        backHref="/admin"
+        message={status.message}
+        tone={status.tone}
+      >
         <EditorialLocaleSelect
           label={t("language-label")}
           value={locale}

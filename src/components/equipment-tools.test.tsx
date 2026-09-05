@@ -14,6 +14,7 @@ import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
 import { combatEquipmentData } from "../lib/equipment-data";
+import { equipmentSlotLayout } from "../lib/equipment";
 import {
   defaultPlayerSettings,
   emptySkills,
@@ -82,9 +83,174 @@ function renderTool(tool: React.ReactNode) {
   );
 }
 
+// Bloc 93/E1: the real layout is 9 slots per family. Building the fixture from
+// equipmentSlotLayout rather than a hand-counted literal is what makes the gem
+// cases below actually reach the gem check — a wrong slot count is rejected by
+// the length guard first, and the test would pass without proving anything.
+function savedStateWithGems(gems: unknown) {
+  const family = (withGems: boolean) =>
+    equipmentSlotLayout.map((_, index) => ({
+      // Slot 0 carries a real equipment selection: the slot editor only
+      // renders its gem rows once one is chosen, so an empty slot would make
+      // the "no gem rows" assertion below true either way.
+      equipment:
+        withGems && index === 0
+          ? { rarity: "Légendaire", setName: "Spirit Fyra" }
+          : null,
+      star: 1,
+      gems: withGems && index === 0 ? gems : [],
+    }));
+  return JSON.stringify({
+    attack: family(true),
+    defense: family(false),
+    gold: family(false),
+    speed: family(false),
+  });
+}
+
 describe("equipment tools", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
+
+  // Bloc 93/F6: Combat's half of the same relationship — wired in Bloc 92/L6
+  // but never covered, which is how the Expédition gap went unnoticed.
+  it("exposes the slot button's control of the editor panel and its open state", () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = screen.getByRole("button", { name: /Amulette/ });
+    expect(amulet).toHaveAttribute("aria-expanded", "false");
+    expect(amulet).toHaveAttribute("aria-controls", "stuff-slot-editor");
+    const panel = document.getElementById("stuff-slot-editor");
+    expect(panel).not.toBeNull();
+
+    fireEvent.click(amulet);
+    expect(amulet).toHaveAttribute("aria-expanded", "true");
+    expect(panel).toHaveClass("stuff-editor-panel-active");
+
+    fireEvent.click(amulet);
+    expect(amulet).toHaveAttribute("aria-expanded", "false");
+  });
+
+  // Bloc 93/E1: mirrors the Expédition test above — a saved value of an
+  // earlier shape used to reach the renderer, which indexes
+  // state[family][index].equipment/.star/.gems directly, and crashed the
+  // simulator. Each case is a shape the key genuinely held or could hold
+  // across Blocs 32/73/85.
+  it.each([
+    ["a non-object", JSON.stringify("attack")],
+    ["an unkeyed object", JSON.stringify({ not: "a stuff state" })],
+    [
+      "a pre-family flat slot array (shape before Bloc 32)",
+      JSON.stringify([{ equipment: null, star: 1, gems: [] }]),
+    ],
+    [
+      "a family whose slot count no longer matches the layout",
+      JSON.stringify({
+        attack: [{ equipment: null, star: 1, gems: [] }],
+        defense: [],
+        gold: [],
+        speed: [],
+      }),
+    ],
+    ["a gems array holding a null entry", savedStateWithGems([null])],
+    [
+      "a slot missing its gems array (shape before gems were added)",
+      JSON.stringify({
+        attack: Array.from({ length: 6 }, () => ({
+          equipment: null,
+          star: 1,
+        })),
+        defense: Array.from({ length: 6 }, () => ({
+          equipment: null,
+          star: 1,
+        })),
+        gold: Array.from({ length: 6 }, () => ({ equipment: null, star: 1 })),
+        speed: Array.from({ length: 6 }, () => ({ equipment: null, star: 1 })),
+      }),
+    ],
+  ])(
+    "falls back to an empty stuff state instead of crashing on %s",
+    async (_label, saved) => {
+      localStorage.setItem("mlhelper_stuff_simulator", saved);
+      renderTool(<StuffSimulator combatRows={combatRows} />);
+      // The simulator renders its slot grid rather than throwing, and every
+      // slot is empty — the stale value was discarded, not partially trusted.
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: /Amulette/ }),
+        ).toBeInTheDocument(),
+      );
+      for (const slot of ["Amulette", "Casque", "Bracelet", "Anneau"])
+        expect(
+          within(
+            screen.getByRole("button", { name: new RegExp(slot) }),
+          ).getByRole("img", { name: "Vide" }),
+        ).toBeInTheDocument();
+    },
+  );
+
+  // Bloc 93/E1 (Codex PR #118): only `gems: [null]` actually crashes today —
+  // the renderer filters the other malformed shapes out harmlessly. They must
+  // still be rejected: an unknown skill reaches skillKeyByLabel[gem.skill] as
+  // undefined and flows into gemValue(). "No slot crashed" cannot tell
+  // accepted from rejected here, so this counts the gem rows the slot editor
+  // renders — a discarded state leaves the slot with none.
+  it.each([
+    ["a gem missing its fields", savedStateWithGems([{ star: 1 }])],
+    [
+      "a gem naming a skill that does not exist",
+      savedStateWithGems([
+        { skill: "Téléportation", star: 1, league: "bronze" },
+      ]),
+    ],
+    [
+      "a gem naming a league that does not exist",
+      savedStateWithGems([{ skill: "Attaque", star: 1, league: "obsidienne" }]),
+    ],
+    [
+      "a gem whose star is not a number",
+      savedStateWithGems([
+        { skill: "Attaque", star: "trois", league: "bronze" },
+      ]),
+    ],
+  ])("discards the whole saved state for %s", async (_label, saved) => {
+    localStorage.setItem("mlhelper_stuff_simulator", saved);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    const amulet = await screen.findByRole("button", { name: /Amulette/ });
+    fireEvent.click(amulet);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      ).toBeInTheDocument(),
+    );
+    expect(document.querySelectorAll(".stuff-gem-row")).toHaveLength(0);
+  });
+
+  it("keeps a saved value that still matches the current shape", async () => {
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    fireEvent.click(screen.getByRole("button", { name: /Amulette/ }));
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Équipement Attaque Amulette" }),
+      { target: { value: "Légendaire|Spirit Fyra" } },
+    );
+    await waitFor(() =>
+      expect(localStorage.getItem("mlhelper_stuff_simulator")).toContain(
+        "Spirit Fyra",
+      ),
+    );
+    const saved = localStorage.getItem("mlhelper_stuff_simulator")!;
+    cleanup();
+
+    localStorage.setItem("mlhelper_stuff_simulator", saved);
+    renderTool(<StuffSimulator combatRows={combatRows} />);
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("button", { name: /Amulette/ })).getByRole(
+          "img",
+          { name: /Spirit Fyra|Légendaire/ },
+        ),
+      ).toBeInTheDocument(),
+    );
+  });
 
   it("toggles a simulator slot and persists an exact set", async () => {
     renderTool(<StuffSimulator combatRows={combatRows} />);
@@ -409,9 +575,10 @@ describe("equipment tools", () => {
     // Switching back to Défense shows the earlier selection untouched.
     selectFamily("Défense");
     expect(
-      within(
-        screen.getByRole("button", { name: /Amulette/ }),
-      ).getByRole("img", { name: "1 étoiles" }),
+      within(screen.getByRole("button", { name: /Amulette/ })).getByRole(
+        "img",
+        { name: "1 étoiles" },
+      ),
     ).toBeInTheDocument();
   });
 

@@ -19,7 +19,7 @@ export const referenceToolSlugs = [
   // /admin/referentiels/reference-events below.
   "events",
 ] as const;
-export const cityToolSlugs = [
+const cityToolSlugs = [
   "city-cost",
   "city-max-level",
   "city-production",

@@ -45,6 +45,17 @@ export type EditableColumn<Row> = {
 export type FieldErrors = Record<string, string>;
 export const errorKey = (row: number, field: string) => `${row}:${field}`;
 
+// Bloc 93/E3: shared by both tables in this file. `wide` used to be honoured
+// by EditableDataTable only — EditableReferenceTableInner accepted the flag on
+// its column definitions and silently dropped it.
+function columnClass<Row extends Record<string, string>>(
+  column: EditableColumn<Row>,
+) {
+  if (column.narrow) return "reference-admin-narrow";
+  if (column.wide) return "reference-admin-wide";
+  return undefined;
+}
+
 export function EditableDataTable<Row extends Record<string, string>>({
   rows,
   columns,
@@ -180,6 +191,10 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       "aria-label": label,
                       "aria-invalid": Boolean(errorMessage),
                       "aria-describedby": errorMessage ? errorId : undefined,
+                      // Bloc 93/E3: the visual invalid state was on the other
+                      // table's <input> only; both tables now set it on both
+                      // control types, so ARIA and styling never disagree.
+                      className: errorMessage ? "field-invalid" : undefined,
                       // Bloc 92/A11y (L3): mandatory columns are conveyed to AT,
                       // not only enforced in validate().
                       "aria-required": column.required ? true : undefined,
@@ -378,6 +393,10 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
   ref: ForwardedRef<ReferenceTableHandle>,
 ) {
   const t = useTranslations("admin.references");
+  // Bloc 93/E3: per-instance prefix for error element ids — the same guard
+  // EditableDataTable got in Bloc 92, applied to this twin so both halves of
+  // the file follow one rule.
+  const instanceId = useId();
   const [rows, setRows] = useState(initialRows);
   const [status, setStatus] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -475,15 +494,30 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
     const label =
       column.inputLabel?.(rowIndex) ??
       t("row-label", { row: rowIndex + 1, field: column.label });
+    const errorMessage = errors[key];
+    // Bloc 93/E3: namespaced per instance, exactly as EditableDataTable has
+    // been since Bloc 92 (Codex PR #116). The unprefixed `${key}-error` this
+    // replaced only avoided colliding because the tables co-mounted today
+    // (main / increments / secondary) happen to use disjoint column keys —
+    // give two of them a column of the same name and a field's
+    // aria-describedby would resolve to the other table's error.
+    const errorId = `${instanceId}error-${key}`;
+    // Bloc 93/E3: `field-invalid` used to be set on the input branch only, so
+    // an invalid <select> got the ARIA state but none of the visual one.
+    const invalidClass = errorMessage ? "field-invalid" : undefined;
+    const shared = {
+      "aria-label": label,
+      "aria-invalid": Boolean(errorMessage),
+      "aria-describedby": errorMessage ? errorId : undefined,
+      "aria-required": column.required ? true : undefined,
+      className: invalidClass,
+      value: row[column.key],
+    };
     return (
       <>
         {column.type === "select" ? (
           <select
-            aria-label={label}
-            aria-invalid={Boolean(errors[key])}
-            aria-describedby={errors[key] ? `${key}-error` : undefined}
-            aria-required={column.required ? true : undefined}
-            value={row[column.key]}
+            {...shared}
             disabled={column.readOnly}
             onChange={(event) =>
               update(rowIndex, column.key, event.target.value)
@@ -497,13 +531,8 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
           </select>
         ) : (
           <input
-            aria-label={label}
-            aria-invalid={Boolean(errors[key])}
-            aria-describedby={errors[key] ? `${key}-error` : undefined}
-            aria-required={column.required ? true : undefined}
-            className={errors[key] ? "field-invalid" : undefined}
+            {...shared}
             type={column.type ?? "text"}
-            value={row[column.key]}
             min={column.min}
             step={column.step}
             readOnly={column.readOnly}
@@ -512,9 +541,9 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
             }
           />
         )}
-        {errors[key] && (
-          <small className="field-error" id={`${key}-error`}>
-            {errors[key]}
+        {errorMessage && (
+          <small className="field-error" id={errorId}>
+            {errorMessage}
           </small>
         )}
       </>
@@ -587,12 +616,7 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th
-                    key={column.key}
-                    className={
-                      column.narrow ? "reference-admin-narrow" : undefined
-                    }
-                  >
+                  <th key={column.key} className={columnClass(column)}>
                     {column.label}
                   </th>
                 ))}
@@ -602,12 +626,7 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
               {visibleRows.map(({ row, index: rowIndex }) => (
                 <tr key={rowIndex}>
                   {columns.map((column) => (
-                    <td
-                      key={column.key}
-                      className={
-                        column.narrow ? "reference-admin-narrow" : undefined
-                      }
-                    >
+                    <td key={column.key} className={columnClass(column)}>
                       {field(row, rowIndex, column)}
                     </td>
                   ))}

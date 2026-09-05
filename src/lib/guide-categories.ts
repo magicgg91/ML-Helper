@@ -11,7 +11,7 @@ export const guideCategories = [
 
 export type GuideCategory = (typeof guideCategories)[number];
 
-export function isGuideCategory(value: unknown): value is GuideCategory {
+function isGuideCategory(value: unknown): value is GuideCategory {
   return guideCategories.includes(value as GuideCategory);
 }
 

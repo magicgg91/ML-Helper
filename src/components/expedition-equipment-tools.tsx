@@ -1,9 +1,9 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { formatSkillPercentValue } from "../lib/skill-percent";
+import { formatSkillPercentValue } from "../lib/format";
 import { StarRating } from "./star-rating";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 import {
@@ -38,6 +38,7 @@ import {
   type ExpeditionStarIncrements,
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
+import { usePersistedState } from "./use-persisted-state";
 
 const storageKey = "mlhelper_expedition_equipment_simulator";
 
@@ -84,6 +85,14 @@ function isValidExpeditionConfigs(value: unknown): value is ExpeditionConfigs {
   return expeditionFilterOrder.every((filter) =>
     isValidExpeditionState(source[filter]),
   );
+}
+
+// Malformed or stale-shape data (an incompatible earlier version, manual
+// tampering) must not crash the simulator: returning undefined falls back to
+// the default empty configs instead of trusting an unvalidated value.
+function parseExpeditionConfigs(raw: string): ExpeditionConfigs | undefined {
+  const parsed: unknown = JSON.parse(raw);
+  return isValidExpeditionConfigs(parsed) ? parsed : undefined;
 }
 
 function statLabel(
@@ -149,9 +158,11 @@ function Summary({
   // Bloc 87/A: skill percentages round to 1 decimal (standard rounding).
   const pct = (value: number) => formatSkillPercentValue(value, locale);
   // Bloc 31/E.3: always show all 10 stats, including when every one of
-  // them is still at 0% (a fresh loadout, or an unused filter) — unlike
-  // Combat's summary, which hides zero-contribution skills entirely. Kept
-  // specific to Expedition; do not port this to Combat.
+  // them is still at 0% (a fresh loadout, or an unused filter).
+  // Bloc 93/M7: this comment used to add that Combat hid zero-contribution
+  // skills and that the behaviour must not be ported to it. Combat has done
+  // the same thing since Bloc 32/D.5 (equipment-tools.tsx), so the warning
+  // described a state that no longer exists and pointed at the wrong fix.
   return (
     <div className="expedition-summary-grid">
       {summaryStatOrder.map((stat) => {
@@ -195,6 +206,11 @@ function SlotCell({
     <button
       type="button"
       aria-pressed={active}
+      // Bloc 93/F6: the same three attributes Bloc 92/L6 gave Combat's slot
+      // button — the button reveals the shared editor panel elsewhere in the
+      // DOM, so expose that relationship and its open state here too.
+      aria-expanded={active}
+      aria-controls="expedition-slot-editor"
       className={active ? "selected" : ""}
       style={
         rarityVar
@@ -344,32 +360,18 @@ export function ExpeditionEquipmentSimulator({
     (item) => item.slug === "expedition-equipment",
   )!;
   const [filter, setFilter] = useState<ExpeditionFilter>("custom");
-  const [configs, setConfigs] = useState<ExpeditionConfigs>(
-    createEmptyExpeditionConfigs,
+  const [configs, setConfigs] = usePersistedState<ExpeditionConfigs>(
+    storageKey,
+    { initial: createEmptyExpeditionConfigs, parse: parseExpeditionConfigs },
   );
-  const [loaded, setLoaded] = useState(false);
   const [active, setActive] = useState<number>();
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          const parsed: unknown = JSON.parse(saved);
-          // Malformed or stale-shape data (an incompatible earlier version,
-          // manual tampering) must not crash the simulator: fall back to
-          // the default empty configs instead of trusting an unvalidated value.
-          if (isValidExpeditionConfigs(parsed)) setConfigs(parsed);
-        }
-      } catch {}
-      setLoaded(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    if (loaded) localStorage.setItem(storageKey, JSON.stringify(configs));
-  }, [loaded, configs]);
   const state = configs[filter];
-  const totals = computeExpeditionTotal(state, rows, increments);
+  // Bloc 93/M2: memoized like Combat's computeStuffGlobal (equipment-tools).
+  // Both twins recompute over the same shape; only Combat guarded it.
+  const totals = useMemo(
+    () => computeExpeditionTotal(state, rows, increments),
+    [state, rows, increments],
+  );
   const selected =
     active === undefined
       ? undefined
@@ -425,6 +427,7 @@ export function ExpeditionEquipmentSimulator({
             ))}
           </div>
           <div
+            id="expedition-slot-editor"
             className={
               active === undefined
                 ? "stuff-editor-panel"

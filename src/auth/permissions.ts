@@ -1,6 +1,6 @@
 import type { AdminRole } from "./roles";
 
-export const adminCapabilities = [
+const adminCapabilities = [
   "dashboard.view",
   "users.read",
   "users.manage",

@@ -1,5 +1,6 @@
 "use client";
 
+import { pickFrEn } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import {
@@ -8,17 +9,14 @@ import {
 } from "../lib/templar-parameters";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
+import { formatExactNumber } from "../lib/format";
 import { skillColor } from "../lib/game-images";
 import { templarKeys, type TemplarKey } from "../lib/player-settings";
 import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
 } from "../lib/templars-presentation";
-
-function pickLocaleText(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
 
 // Bloc 68/C: admin can clear Base Temple/Bonus (AGENTS.md — never invent a
 // game value), so the tile must show that gracefully rather than a broken
@@ -44,7 +42,7 @@ function TemplarPresentationTile({
 }) {
   const t = useTranslations("templars");
   const color = skillColor(templarKey);
-  const name = pickLocaleText(row.name_fr, row.name_en, locale);
+  const name = pickFrEn(row.name_fr, row.name_en, locale);
   return (
     <article
       className="templars-tile"
@@ -139,9 +137,13 @@ export function TemplarsReferenceTable({
                       <td>{index + 1}</td>
                       {/* Bloc 66/D: unlike other reference tables, this cost
                           must never be compacted to k/M — the task's own
-                          spec example shows the full digit sequence. */}
-                      <td>{Math.round(item)}</td>
-                      <td>{Math.round(cumulative[index])}</td>
+                          spec example shows the full digit sequence.
+                          Bloc 93/F4: still uncompacted, but through
+                          formatExactNumber so the thousands separators match
+                          the rest of the site (the ranking table already
+                          printed "12 345" where this printed "12345"). */}
+                      <td>{formatExactNumber(item, locale)}</td>
+                      <td>{formatExactNumber(cumulative[index], locale)}</td>
                     </tr>
                   );
                 })}
@@ -151,7 +153,7 @@ export function TemplarsReferenceTable({
         ))}
       </section>
       <CrossReferenceLink
-        href="/tools/competences?open=templars"
+        href={toolHref("competences", "templars")}
         title={t("name")}
         image={templarsReference.image}
         fallbackImage={templarsReference.fallbackImage}

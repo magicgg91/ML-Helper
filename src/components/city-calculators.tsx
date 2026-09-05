@@ -1,14 +1,15 @@
 "use client";
 
+import { ResultTile } from "./result-tile";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { formatGameNumber } from "../lib/format";
 import {
   bonusBreakdown,
   calculateProduction,
   calculateReward,
   cityStatsAt,
   cityUpgradeCost,
-  formatGameNumber,
   maximumReachableLevel,
 } from "../lib/city-calculators";
 import { templePercent, type PlayerSettings } from "../lib/player-settings";
@@ -18,8 +19,7 @@ import {
 } from "../lib/city-parameters";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
-import { TabLabel } from "./tab-label";
-import { handleTablistKeydown } from "./use-tablist-keyboard";
+import { TabList, TabPanel } from "./tabs";
 import { usePlayerSettings } from "./use-player-settings";
 import { useSyncedLeague } from "./use-synced-league";
 
@@ -75,27 +75,6 @@ function Field({
   );
 }
 
-function Stat({
-  label,
-  value,
-  testId,
-  tone,
-}: {
-  label: string;
-  value: string;
-  testId?: string;
-  tone?: "emerald";
-}) {
-  return (
-    <div className="calculator-stat total-box">
-      <span className="label">{label}</span>
-      <strong className={tone ? `value ${tone}` : "value"} data-testid={testId}>
-        {value}
-      </strong>
-    </div>
-  );
-}
-
 function ProductionTransition({
   label,
   start,
@@ -108,7 +87,7 @@ function ProductionTransition({
   testId?: string;
 }) {
   return (
-    <Stat
+    <ResultTile
       label={label}
       value={`${number(start)} → ${number(target)}`}
       testId={testId}
@@ -210,7 +189,7 @@ function CostCalculator({
               {t("total-cities", { count: cityCount })}
             </h2>
             <div className="calculator-results">
-              <Stat
+              <ResultTile
                 label={t("cost-total")}
                 value={`${number(cost * cityCount)} ${t("gold-unit")}`}
                 testId="city-cost-total"
@@ -221,7 +200,7 @@ function CostCalculator({
                 target={target.wall}
                 testId="city-cost-wall"
               />
-              <Stat
+              <ResultTile
                 label={t("vp-gained")}
                 value={number(Math.max(0, target.vp - start.vp) * cityCount)}
                 testId="city-cost-vp"
@@ -395,21 +374,21 @@ function MaxLevelCalculator({
               {t("total-cities", { count: cityCount })}
             </h2>
             <div className="calculator-results">
-              <Stat
+              <ResultTile
                 label={t("reachable-level")}
                 value={String(result.level)}
                 testId="max-level-result"
               />
-              <Stat
+              <ResultTile
                 label={t("remaining-gold")}
                 value={number(result.remaining)}
               />
-              <Stat
+              <ResultTile
                 label={t("wall")}
                 value={number(target.wall)}
                 testId="city-max-level-wall"
               />
-              <Stat
+              <ResultTile
                 label={t("vp-gained")}
                 value={number((target.vp - start.vp) * cityCount)}
               />
@@ -468,9 +447,12 @@ function Breakdown({
         <strong>{number(values.total)}/h</strong>
       </h3>
       <div className="production-breakdown">
-        <Stat label={t("base")} value={`${number(values.base)}/h`} />
-        <Stat label={t("equipment")} value={`${number(values.stuff)}/h`} />
-        <Stat label={t("temple")} value={`${number(values.temple)}/h`} />
+        <ResultTile label={t("base")} value={`${number(values.base)}/h`} />
+        <ResultTile
+          label={t("equipment")}
+          value={`${number(values.stuff)}/h`}
+        />
+        <ResultTile label={t("temple")} value={`${number(values.temple)}/h`} />
       </div>
     </div>
   );
@@ -542,14 +524,17 @@ function ProductionCalculator({
             <section className="calculator-card">
               <h2 className="calculator-heading">{t("per-city-base")}</h2>
               <div className="calculator-results">
-                <Stat label={t("vp")} value={number(result.perCity.vp)} />
-                <Stat label={t("wall")} value={number(result.perCity.wall)} />
-                <Stat
+                <ResultTile label={t("vp")} value={number(result.perCity.vp)} />
+                <ResultTile
+                  label={t("wall")}
+                  value={number(result.perCity.wall)}
+                />
+                <ResultTile
                   label={t("gold-hour")}
                   value={`${number(result.perCity.gold)}/h`}
                   testId="city-production-gold"
                 />
-                <Stat
+                <ResultTile
                   label={t("army-hour")}
                   value={`${number(result.perCity.army)}/h`}
                   testId="city-production-army"
@@ -559,7 +544,10 @@ function ProductionCalculator({
             <section className="calculator-card">
               <Breakdown title={t("gold-total")} values={result.gold} />
               <Breakdown title={t("troops-total")} values={result.troops} />
-              <Stat label={t("vp-total")} value={number(result.vpTotal)} />
+              <ResultTile
+                label={t("vp-total")}
+                value={number(result.vpTotal)}
+              />
             </section>
             <section className="calculator-card">
               <h2 className="calculator-heading">
@@ -571,13 +559,13 @@ function ProductionCalculator({
                 })}
               </p>
               <div className="calculator-results">
-                <Stat
+                <ResultTile
                   label={t("full-production.gold")}
                   value={`${number(result.fullProduction.gold)}/h`}
                   testId="full-production-gold"
                   tone="emerald"
                 />
-                <Stat
+                <ResultTile
                   label={t("full-production.troops")}
                   value={`${number(result.fullProduction.troops)}/h`}
                   tone="emerald"
@@ -678,7 +666,7 @@ function ResourceRewardBlock({
           a live region announces the updated value. */}
       <div aria-live="polite">
         <div className="calculator-results">
-          <Stat label={bonusLabel} value={number(bonus)} tone="emerald" />
+          <ResultTile label={bonusLabel} value={number(bonus)} tone="emerald" />
         </div>
       </div>
     </section>
@@ -731,142 +719,41 @@ export function CityCalculators({
   const settings = usePlayerSettings();
   return (
     <div className="city-calculators">
-      <nav
-        className="calculator-tabs tabs"
-        role="tablist"
-        aria-label={tools("city-tabs")}
-        onKeyDown={handleTablistKeydown}
-      >
-        <button
-          type="button"
-          role="tab"
-          id="city-tools-tab-cost"
-          aria-controls="city-tools-panel-cost"
-          aria-selected={active === "cost"}
-          tabIndex={active === "cost" ? 0 : -1}
-          disabled={!availability.cost}
-          title={
-            !availability.cost ? tools("calculator-unavailable") : undefined
-          }
-          onClick={() => setActive("cost")}
-        >
-          <TabLabel
-            label={cost("name")}
-            badge={
-              !availability.cost ? tools("calculator-unavailable") : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="city-tools-tab-max-level"
-          aria-controls="city-tools-panel-max-level"
-          aria-selected={active === "max-level"}
-          tabIndex={active === "max-level" ? 0 : -1}
-          disabled={!availability["max-level"]}
-          title={
-            !availability["max-level"]
-              ? tools("calculator-unavailable")
-              : undefined
-          }
-          onClick={() => setActive("max-level")}
-        >
-          <TabLabel
-            label={maxLevel("name")}
-            badge={
-              !availability["max-level"]
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="city-tools-tab-production"
-          aria-controls="city-tools-panel-production"
-          aria-selected={active === "production"}
-          tabIndex={active === "production" ? 0 : -1}
-          disabled={!availability.production}
-          title={
-            !availability.production
-              ? tools("calculator-unavailable")
-              : undefined
-          }
-          onClick={() => setActive("production")}
-        >
-          <TabLabel
-            label={production("name")}
-            badge={
-              !availability.production
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="city-tools-tab-rewards"
-          aria-controls="city-tools-panel-rewards"
-          aria-selected={active === "rewards"}
-          tabIndex={active === "rewards" ? 0 : -1}
-          disabled={!availability.rewards}
-          title={
-            !availability.rewards ? tools("calculator-unavailable") : undefined
-          }
-          onClick={() => setActive("rewards")}
-        >
-          <TabLabel
-            label={rewards("name")}
-            badge={
-              !availability.rewards
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-      </nav>
+      <TabList
+        idPrefix="city-tools"
+        label={tools("city-tabs")}
+        active={active}
+        onSelect={setActive}
+        tabs={[
+          { key: "cost" as const, label: cost("name") },
+          { key: "max-level" as const, label: maxLevel("name") },
+          { key: "production" as const, label: production("name") },
+          { key: "rewards" as const, label: rewards("name") },
+        ].map((tab) => ({
+          ...tab,
+          available: availability[tab.key],
+          unavailableLabel: tools("calculator-unavailable"),
+        }))}
+      />
       {active === "cost" && (
-        <div
-          role="tabpanel"
-          id="city-tools-panel-cost"
-          aria-labelledby="city-tools-tab-cost"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="city-tools" tabKey="cost">
           <CostCalculator settings={settings} parameters={parameters} />
-        </div>
+        </TabPanel>
       )}
       {active === "max-level" && (
-        <div
-          role="tabpanel"
-          id="city-tools-panel-max-level"
-          aria-labelledby="city-tools-tab-max-level"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="city-tools" tabKey="max-level">
           <MaxLevelCalculator settings={settings} parameters={parameters} />
-        </div>
+        </TabPanel>
       )}
       {active === "production" && (
-        <div
-          role="tabpanel"
-          id="city-tools-panel-production"
-          aria-labelledby="city-tools-tab-production"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="city-tools" tabKey="production">
           <ProductionCalculator settings={settings} parameters={parameters} />
-        </div>
+        </TabPanel>
       )}
       {active === "rewards" && (
-        <div
-          role="tabpanel"
-          id="city-tools-panel-rewards"
-          aria-labelledby="city-tools-tab-rewards"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="city-tools" tabKey="rewards">
           <RewardsCalculator />
-        </div>
+        </TabPanel>
       )}
       {!active && (
         <p className="empty-state">{tools("calculators-unavailable")}</p>

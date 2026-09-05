@@ -7,6 +7,38 @@ describe("LegalNoticeEditor", () => {
   afterEach(cleanup);
   beforeEach(() => vi.restoreAllMocks());
 
+  // Bloc 93/M1: this bar rendered every message in one neutral style, so a
+  // successful save and a server error were visually identical. The tone now
+  // travels with the message.
+  it("distinguishes a saved confirmation from a server error", async () => {
+    const fetch = vi.spyOn(globalThis, "fetch");
+    render(
+      <LegalNoticeEditor
+        initialContent={{ fr: "## Texte", en: "", de: "", es: "", tr: "" }}
+      />,
+    );
+    const saveButton = screen.getByRole("button", { name: "Enregistrer" });
+
+    fetch.mockResolvedValueOnce(new Response(null, { status: 200 }));
+    fireEvent.click(saveButton);
+    const saved = await screen.findByRole("status");
+    expect(saved).toHaveTextContent("Mentions légales enregistrées.");
+    expect(saved).toHaveClass("editor-action-message-success");
+    expect(saved).not.toHaveClass("editor-action-message-error");
+
+    fetch.mockResolvedValueOnce(new Response(null, { status: 500 }));
+    fireEvent.click(saveButton);
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveClass(
+        "editor-action-message-error",
+      ),
+    );
+    // The failure replaces the confirmation instead of sitting beside it.
+    expect(screen.getByRole("status")).not.toHaveTextContent(
+      "Mentions légales enregistrées.",
+    );
+  });
+
   it("edits and submits the French field by default", async () => {
     const fetch = vi
       .spyOn(globalThis, "fetch")

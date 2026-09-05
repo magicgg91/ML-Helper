@@ -111,8 +111,12 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
     expect(cost.querySelector("h2")).toHaveTextContent("Coût en saphirs");
     const cells = cost.querySelectorAll("td");
     expect(cells[0]).toHaveTextContent("—"); // Bronze: not purchasable
-    expect(cells[1]).toHaveTextContent("3000"); // Argent, not "3k"
-    expect(cells[5]).toHaveTextContent("7000"); // Légende, not "7k"
+    // Bloc 93/F4: still the exact price, never "3k" — now carrying the
+    // locale's thousands separator like every other exact figure on the site.
+    expect(cells[1].textContent).toBe("3\u202f000"); // Argent, not "3k"
+    expect(cells[5].textContent).toBe("7\u202f000"); // Légende, not "7k"
+    for (const cell of [cells[1], cells[5]])
+      expect(cell.textContent).not.toMatch(/[kKmMgG]/);
   });
 
   it("shows the real per-cell gem image (skill x league) with its confirmed percentage value", () => {

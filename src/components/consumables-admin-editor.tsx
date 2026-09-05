@@ -1,5 +1,6 @@
 "use client";
 
+import { useSaveStatus } from "./use-save-status";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
@@ -65,7 +66,7 @@ export function ConsumablesReferenceScreen({
   const [locale, setLocale] = useState<EditorialLocale>("fr");
   const [catalog, setCatalog] = useState<ConsumableCatalog>(initialCatalog);
   const [errors, setErrors] = useState<SectionErrors>(emptySectionErrors);
-  const [status, setStatus] = useState("");
+  const save = useSaveStatus();
 
   const lang = fieldLocale(locale);
   const nameKey = lang === "fr" ? "name_fr" : "name_en";
@@ -179,25 +180,32 @@ export function ConsumablesReferenceScreen({
   // included as just another section) — one write, one audit log line.
   async function saveAll() {
     if (!validateRows()) {
-      setStatus(t("validation"));
+      save.error(t("validation"));
       return;
     }
-    setStatus(t("saving"));
+    save.pending(t("saving"));
     try {
       const response = await fetch("/api/admin/guides/references/consumables", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(catalog),
       });
-      setStatus(response.ok ? t("saved") : t("server-error"));
+      save.settle(response.ok, {
+        success: t("saved"),
+        error: t("server-error"),
+      });
     } catch {
-      setStatus(t("server-error"));
+      save.error(t("server-error"));
     }
   }
 
   return (
     <div className="calculator-stack">
-      <EditorActionBar backHref="/admin/referentiels" message={status}>
+      <EditorActionBar
+        backHref="/admin/referentiels"
+        message={save.message}
+        tone={save.tone}
+      >
         <EditorialLocaleSelect
           label={t("consumables-intro-language-label")}
           value={locale}

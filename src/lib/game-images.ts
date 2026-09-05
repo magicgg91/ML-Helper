@@ -82,17 +82,6 @@ export function filterButtonColor(key: string): string | undefined {
   }
 }
 
-// Slug français de chaque ligue tel qu'utilisé dans les noms de fichiers du
-// manifeste (cdc section 11) — distinct des clés techniques anglaises.
-export const leagueFileSlug: Record<League, string> = {
-  bronze: "bronze",
-  silver: "argent",
-  gold: "or",
-  platinum: "platine",
-  diamond: "diamant",
-  legend: "legende",
-};
-
 // League slug as used by the 60 gem files actually delivered (Bloc 36) —
 // English, distinct from leagueFileSlug above (equipment images use the
 // French convention). Only "legend" differs from the technical League key.

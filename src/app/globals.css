@@ -3999,6 +3999,19 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   color: var(--text-dim);
   font-size: 0.8rem;
 }
+/* Bloc 93/M1: a saved confirmation and a server error used to render
+   identically here. The tone now reaches the bar, so success and failure read
+   apart at a glance — same emerald/ember pair as .form-success/.form-status,
+   which the reference-table editor already used. Colour is not the only
+   signal: the message text itself already states the outcome (WCAG 1.4.1). */
+.editor-action-message-success {
+  border-color: var(--emerald-bright);
+  color: var(--text);
+}
+.editor-action-message-error {
+  border-color: var(--ember);
+  color: var(--text);
+}
 .danger-action {
   color: var(--ember);
 }

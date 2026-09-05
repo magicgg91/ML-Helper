@@ -459,6 +459,12 @@
     "legal": "Aviso legal",
     "meta": {
       "siteTitle": "ML-Helper — Herramientas y guías de Million Lords"
+    },
+    "descriptions": {
+      "admin": "Área de administración de ML Helper.",
+      "guide-fallback": "Una guía de Million Lords en ML Helper.",
+      "guides": "Guías y tablas de referencia para Million Lords: costes, estadísticas y mecánicas de juego verificadas por la comunidad.",
+      "legal": "Aviso legal del sitio web ML Helper."
     }
   },
   "contact": {
@@ -537,7 +543,8 @@
     "empty": "Todavía no hay ninguna guía publicada.",
     "no-results": "Ninguna guía coincide con estos filtros.",
     "detail": {
-      "eyebrow": "Guía en {category}"
+      "eyebrow": "Guía en {category}",
+      "not-translated": "Esta guía aún no se ha traducido a este idioma."
     }
   },
   "references": {
@@ -573,7 +580,17 @@
         "name": "Nombre"
       },
       "cost-with-unit": "{cost, plural, one {# zafiro} other {# zafiros}}",
-      "cost-unknown": "No definido"
+      "cost-unknown": "No definido",
+      "categories": {
+        "advisors": "Consejeros",
+        "equipment": "Equipo",
+        "expedition": "Expedición",
+        "inventory": "Inventario"
+      },
+      "filters": {
+        "category": "Categoría",
+        "label": "Filtrar por categoría"
+      }
     },
     "events": {
       "league": "Liga",
@@ -616,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Equipo de Expedición",
-    "unconfirmed-label": "Suposición no confirmada",
     "empty": "Ningún equipo de expedición coincide con estos filtros.",
     "columns": {
       "rarity": "Rareza",

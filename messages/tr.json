@@ -459,6 +459,12 @@
     "legal": "Yasal bildirim",
     "meta": {
       "siteTitle": "ML-Helper — Million Lords araçları ve rehberleri"
+    },
+    "descriptions": {
+      "admin": "ML Helper yönetim alanı.",
+      "guide-fallback": "ML Helper'da bir Million Lords rehberi.",
+      "guides": "Million Lords için rehberler ve referans tabloları: toplulukça doğrulanmış maliyetler, istatistikler ve oyun mekanikleri.",
+      "legal": "ML Helper web sitesinin yasal bildirimi."
     }
   },
   "contact": {
@@ -537,7 +543,8 @@
     "empty": "Henüz yayınlanmış rehber yok.",
     "no-results": "Bu filtrelere uyan rehber yok.",
     "detail": {
-      "eyebrow": "{category} kategorisinde rehber"
+      "eyebrow": "{category} kategorisinde rehber",
+      "not-translated": "Bu rehber henüz bu dile çevrilmedi."
     }
   },
   "references": {
@@ -573,7 +580,17 @@
         "name": "Ad"
       },
       "cost-with-unit": "{cost} safir",
-      "cost-unknown": "Belirlenmedi"
+      "cost-unknown": "Belirlenmedi",
+      "categories": {
+        "advisors": "Danışmanlar",
+        "equipment": "Ekipman",
+        "expedition": "Keşif",
+        "inventory": "Envanter"
+      },
+      "filters": {
+        "category": "Kategori",
+        "label": "Kategoriye göre filtrele"
+      }
     },
     "events": {
       "league": "Lig",
@@ -616,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Keşif Ekipmanı",
-    "unconfirmed-label": "Doğrulanmamış varsayım",
     "empty": "Bu filtrelere uyan keşif ekipmanı yok.",
     "columns": {
       "rarity": "Nadirlik",

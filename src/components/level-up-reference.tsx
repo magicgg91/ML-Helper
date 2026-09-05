@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { formatGameNumber } from "../lib/city-calculators";
+import { formatGameNumber } from "../lib/format";
 import {
   levelUpChestAt,
   levelUpTroopsAt,
@@ -13,7 +13,7 @@ import type { League } from "../lib/player-settings";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { referenceCatalog } from "../lib/reference-catalog";
+import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 function LevelTable({
   levels,
@@ -150,7 +150,7 @@ export function LevelUpReference({
           closest match for this table's troop-XP data — instead of the
           generic /tools/combat category page. */}
       <CrossReferenceLink
-        href="/tools/combat?open=xp"
+        href={toolHref("combat", "xp")}
         title={xpGainRate("name")}
         image={levelUpReference.image}
         fallbackImage={levelUpReference.fallbackImage}

@@ -461,8 +461,7 @@
       "guides": "Guides and reference tables for Million Lords: costs, stats and game mechanics verified by the community.",
       "legal": "Legal notice for the ML Helper website.",
       "guide-fallback": "A Million Lords guide on ML Helper.",
-      "admin": "ML Helper administration area.",
-      "reference-detail": "{name} reference for Million Lords on ML Helper: data verified by the community."
+      "admin": "ML Helper administration area."
     },
     "meta": {
       "siteTitle": "ML-Helper — Million Lords tools and guides"
@@ -634,7 +633,6 @@
   },
   "expedition-equipment": {
     "name": "Expedition Equipment",
-    "unconfirmed-label": "Unconfirmed assumption",
     "empty": "No expedition equipment matches these filters.",
     "columns": {
       "rarity": "Rarity",
