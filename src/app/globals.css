@@ -1864,7 +1864,14 @@ select {
      where all 3 don't fit on one line, a numeric field wraps to a 2nd
      line rather than league silently shrinking. */
   flex-wrap: wrap;
-  gap: 1rem;
+  /* Bloc 91/M1: 0.5rem (was 1rem). With the now self-hosted IBM Plex Sans —
+     a hair wider than the system fallback CI used to render while Google
+     Fonts loaded — the league field (50%) + the two inline numeric fields
+     summed to within ~7px of this row's width, so the rank field wrapped to
+     a 2nd line on some browsers. A smaller minimum gap restores the margin;
+     justify-content: space-between still spreads the fields edge to edge, so
+     the change is invisible whenever they fit on one line. */
+  gap: 0.5rem;
   /* Bloc 65/E: the 3 fields spread across the whole block instead of
      bunching at its left edge and leaving the rest of the row empty —
      the league group keeps the left edge, the rank field reaches the
@@ -1923,7 +1930,10 @@ select {
   flex: 0 0 auto;
 }
 .ranking-number-field .number-stepper {
-  width: 9rem;
+  /* Bloc 91/M1: 8.5rem (was 9rem) — trims another ~16px so the single-row
+     desktop layout keeps comfortable margin with the self-hosted font (see
+     .ranking-fields' gap note); still ample for a "100.00" value + steppers. */
+  width: 8.5rem;
 }
 /* Bloc 69/G, mobile only: desktop's inline-label-before-control row (Bloc
    64/G) is replaced by a title-above-control stack — each of the 3
