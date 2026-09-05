@@ -409,7 +409,15 @@ test("calculator pages only repeat names in their navigation tabs", async ({
   for (const slug of ["villes", "classement", "competences"]) {
     await page.goto(`/tools/${slug}`);
     await expect(page.locator("main > .lead")).toHaveCount(0);
-    await expect(page.locator("main h2")).toHaveCount(0);
+    // Bloc 91/M5: the calculators now carry section-level <h2> titles (fixing
+    // the old h1→h3 skip under the sr-only page <h1>). Those are section names
+    // — never a repeat of the tool's own name, which stays in the nav tabs.
+    const tabNames = (await page.getByRole("tab").allInnerTexts()).map((name) =>
+      name.trim(),
+    );
+    for (const heading of await page.locator("main h2").allInnerTexts()) {
+      expect(tabNames).not.toContain(heading.trim());
+    }
   }
 });
 
