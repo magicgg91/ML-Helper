@@ -50,6 +50,8 @@ export function GuidesHub({ guides }: { guides: PublicGuideCard[] }) {
               className="public-card guide-list-card"
               href={`/guides/${guide.slug}`}
               key={guide.id}
+              // Bloc 91/F6: skip the per-card RSC prefetch on this grid.
+              prefetch={false}
             >
               <div className="guide-list-media">
                 {guide.coverImage ? (

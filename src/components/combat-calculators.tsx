@@ -16,6 +16,7 @@ import type { League } from "../lib/player-settings";
 import { LeagueButtons } from "./league-select";
 import { NumberStepper } from "./number-stepper";
 import { TabLabel } from "./tab-label";
+import { handleTablistKeydown } from "./use-tablist-keyboard";
 import { useSyncedLeague } from "./use-synced-league";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
@@ -58,6 +59,7 @@ function XpGainRate({
           className="mode-switch"
           role="tablist"
           aria-label={t("mode-label")}
+          onKeyDown={handleTablistKeydown}
         >
           {(["attacker", "target"] as const).map((item) => (
             <button
@@ -65,6 +67,7 @@ function XpGainRate({
               type="button"
               role="tab"
               aria-selected={mode === item}
+              tabIndex={mode === item ? 0 : -1}
               onClick={() => setMode(item)}
             >
               {t(`modes.${item}`)}
@@ -245,6 +248,7 @@ export function CombatCalculators({
         className="calculator-tabs tabs"
         role="tablist"
         aria-label={tools("combat-tabs")}
+        onKeyDown={handleTablistKeydown}
       >
         {/* Bloc 32/C: not-yet-implemented placeholders, ordered ahead of the
             2 working tools — permanently disabled, no Calculator DB row. */}
@@ -273,6 +277,7 @@ export function CombatCalculators({
           type="button"
           role="tab"
           aria-selected={active === "xp"}
+          tabIndex={active === "xp" ? 0 : -1}
           disabled={!availability.xp}
           title={!availability.xp ? tools("calculator-unavailable") : undefined}
           onClick={() => setActive("xp")}
@@ -288,6 +293,7 @@ export function CombatCalculators({
           type="button"
           role="tab"
           aria-selected={active === "demo"}
+          tabIndex={active === "demo" ? 0 : -1}
           disabled={!availability.demo}
           title={
             !availability.demo ? tools("calculator-unavailable") : undefined

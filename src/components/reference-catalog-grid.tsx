@@ -52,6 +52,10 @@ export function ReferenceCatalogGrid({
           className="tool-category-card reference-category-card"
           href={referenceHref(reference.slug)}
           key={reference.slug}
+          // Bloc 91/F6: these grids render many cards; the default RSC prefetch
+          // fires a request per card on view (~33 on the homepage). The target
+          // pages are cheap and one tap away, so skip the speculative fetch.
+          prefetch={false}
         >
           <div className="tool-category-image">
             <GameImage
