@@ -31,6 +31,16 @@ describe("handleTablistKeydown", () => {
     expect(tab("Three")).toHaveFocus();
   });
 
+  // Bloc 91/F5 (Codex review, PR #115): the tab stop follows focus, so tabbing
+  // out and back returns to the last-navigated tab, not the selected one.
+  it("moves the roving tab stop (tabIndex 0) to the focused tab", () => {
+    render(<Tablist />);
+    tab("One").focus();
+    fireEvent.keyDown(tab("One"), { key: "ArrowRight" });
+    expect(tab("Three")).toHaveAttribute("tabindex", "0");
+    expect(tab("One")).toHaveAttribute("tabindex", "-1");
+  });
+
   it("ArrowRight wraps from the last tab back to the first", () => {
     render(<Tablist />);
     tab("Three").focus();

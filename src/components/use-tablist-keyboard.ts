@@ -4,10 +4,13 @@ import type { KeyboardEvent } from "react";
 // tabs are role="tab" buttons in a role="tablist"; Tab and Enter/Space already
 // worked, but the pattern also expects ArrowLeft/ArrowRight to move focus
 // between tabs (wrapping around), and Home/End to jump to the first/last.
-// Disabled tabs are skipped. Pair this with roving tabindex on the tabs (the
-// selected tab is tabIndex 0, the rest -1) so Tab lands on the tablist once and
-// the arrows take over from there. Activation stays manual — Enter/Space fire
-// the button's onClick, matching the existing click behaviour.
+// Disabled tabs are skipped. Roving tabindex: only one tab is in the Tab order
+// at a time, and — the point Codex raised (PR #115) — the tab stop follows
+// FOCUS, not the current selection. The components seed tabIndex from
+// aria-selected (correct on first render and after an activation re-renders),
+// and this handler moves it to the newly focused tab as the user arrows, so
+// tabbing out and back returns to the last-navigated tab. Activation stays
+// manual — Enter/Space fire the button's onClick, matching click behaviour.
 export function handleTablistKeydown(event: KeyboardEvent<HTMLElement>): void {
   const moves = ["ArrowLeft", "ArrowRight", "Home", "End"];
   if (!moves.includes(event.key)) return;
@@ -32,6 +35,10 @@ export function handleTablistKeydown(event: KeyboardEvent<HTMLElement>): void {
     default:
       next = tabs.length - 1;
   }
+  const target = tabs[next];
+  if (!target) return;
   event.preventDefault();
-  tabs[next]?.focus();
+  // Move the single tab stop to the tab we're focusing (roving tabindex).
+  for (const tab of tabs) tab.tabIndex = tab === target ? 0 : -1;
+  target.focus();
 }
