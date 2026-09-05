@@ -105,7 +105,7 @@ function EventTimeline({
     }),
   );
   return (
-    <div className="events-timeline" aria-label={ariaLabel}>
+    <div className="events-timeline" role="img" aria-label={ariaLabel}>
       <div className="events-timeline-axis" />
       {segments.map(({ event, index, left, width }) => {
         const side = index % 2 === 0 ? "above" : "below";

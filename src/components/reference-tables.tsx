@@ -164,6 +164,7 @@ function Filters({
   return (
     <div
       className="reference-filters reference-filters-equipment"
+      role="group"
       aria-label={t("filters.label")}
     >
       <div>
@@ -303,7 +304,6 @@ function CombatTile({
   slotLabel,
   slotNameLabel,
   skillLabel,
-  familyColor,
   locale,
   t,
 }: {
@@ -313,7 +313,6 @@ function CombatTile({
   slotLabel: (value: string) => string;
   slotNameLabel: (value: string) => string;
   skillLabel: (value: string) => string;
-  familyColor: string | undefined;
   locale: string;
   t: ReturnType<typeof useTranslations>;
 }) {
@@ -321,6 +320,7 @@ function CombatTile({
   return (
     <div
       className="reference-tile"
+      role="group"
       style={
         {
           borderColor: rarityVar,
@@ -334,7 +334,6 @@ function CombatTile({
       <div className="reference-tile-head">
         <span
           className="reference-tile-slot"
-          style={familyColor ? { color: familyColor } : undefined}
         >
           {slotLabel(row.slot_type)}
           {row.slot_name ? ` (${slotNameLabel(row.slot_name)})` : ""}
@@ -472,7 +471,6 @@ export function CombatReferenceTable({
                     slotLabel={slotLabel}
                     slotNameLabel={slotNameLabel}
                     skillLabel={skillLabel}
-                    familyColor={filterButtonColor(row.family)}
                     locale={locale}
                     t={t}
                   />
@@ -540,7 +538,6 @@ function ExpeditionTile({
   slotLabel,
   familyLabel,
   statLabel,
-  familyColor,
   increments,
   locale,
   t,
@@ -550,7 +547,6 @@ function ExpeditionTile({
   slotLabel: (value: string) => string;
   familyLabel: (value: string) => string;
   statLabel: (value: string) => string;
-  familyColor: string | undefined;
   increments: ExpeditionStarIncrements;
   locale: string;
   t: ReturnType<typeof useTranslations>;
@@ -582,6 +578,7 @@ function ExpeditionTile({
   return (
     <div
       className="reference-tile"
+      role="group"
       style={
         {
           borderColor: rarityVar,
@@ -595,7 +592,6 @@ function ExpeditionTile({
       <div className="reference-tile-head">
         <span
           className="reference-tile-slot"
-          style={familyColor ? { color: familyColor } : undefined}
         >
           {slotLabel(row.slot)}
         </span>
@@ -708,7 +704,6 @@ export function ExpeditionReferenceTable({
                     slotLabel={slotLabel}
                     familyLabel={familyLabel}
                     statLabel={statLabel}
-                    familyColor={filterButtonColor(row.family)}
                     increments={increments}
                     locale={locale}
                     t={t}
@@ -787,6 +782,8 @@ export function ReferenceTables({
         <button
           type="button"
           role="tab"
+          id="equipment-tab-combat"
+          aria-controls="equipment-panel-combat"
           aria-selected={active === "combat"}
           tabIndex={active === "combat" ? 0 : -1}
           disabled={!availability.combat}
@@ -798,6 +795,8 @@ export function ReferenceTables({
         <button
           type="button"
           role="tab"
+          id="equipment-tab-expedition"
+          aria-controls="equipment-panel-expedition"
           aria-selected={active === "expedition"}
           tabIndex={active === "expedition" ? 0 : -1}
           disabled={!availability.expedition}
@@ -808,12 +807,26 @@ export function ReferenceTables({
         </button>
       </nav>
       {active === "combat" ? (
-        <CombatReferenceTable rows={combatRows} />
+        <div
+          role="tabpanel"
+          id="equipment-panel-combat"
+          aria-labelledby="equipment-tab-combat"
+          tabIndex={0}
+        >
+          <CombatReferenceTable rows={combatRows} />
+        </div>
       ) : active === "expedition" ? (
-        <ExpeditionReferenceTable
-          rows={expeditionRows}
-          increments={expeditionIncrements}
-        />
+        <div
+          role="tabpanel"
+          id="equipment-panel-expedition"
+          aria-labelledby="equipment-tab-expedition"
+          tabIndex={0}
+        >
+          <ExpeditionReferenceTable
+            rows={expeditionRows}
+            increments={expeditionIncrements}
+          />
+        </div>
       ) : (
         <p className="empty-state">{t("unavailable")}</p>
       )}
