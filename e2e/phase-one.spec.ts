@@ -645,6 +645,11 @@ test("Ranking converts position and percentage into league ranges", async ({
   // left of both fields (reading order), rather than a fragile exact-y
   // comparison (the unlabeled button group and the labeled fields have
   // different heights, so their tops don't align pixel-for-pixel).
+  await page
+    .waitForFunction(() => document.fonts.check('14px "IBM Plex Sans"'), null, {
+      timeout: 8000,
+    })
+    .catch(() => {});
   const groupBox = await rankingLeagueGroup.boundingBox();
   const percentageBox = await page
     .getByRole("spinbutton", { name: "Ton pourcentage actuel" })
@@ -652,6 +657,16 @@ test("Ranking converts position and percentage into league ranges", async ({
   const rankBox = await page
     .getByRole("spinbutton", { name: "Ton rang actuel" })
     .boundingBox();
+  // TEMP DIAG (Bloc 91/M1): capture the real CI layout to root-cause the wrap.
+  const diag = await page.evaluate(() => ({
+    vw: window.innerWidth,
+    ibm: document.fonts.check('14px "IBM Plex Sans"'),
+    bodyFont: getComputedStyle(document.body).fontFamily,
+  }));
+  console.log(
+    "RANKING-DIAG",
+    JSON.stringify({ diag, groupBox, percentageBox, rankBox }),
+  );
   expect(groupBox).not.toBeNull();
   expect(percentageBox).not.toBeNull();
   expect(rankBox).not.toBeNull();
