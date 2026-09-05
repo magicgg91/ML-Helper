@@ -25,6 +25,13 @@
   --amber-bright: #e8a94f;
   --emerald: #4a9179;
   --emerald-bright: #6ab596;
+  /* Bloc 92/A11y: emerald used as running TEXT (the calculators' highlighted
+     result values, .total-box .value.emerald) needs AA contrast on the page
+     background and panels it lands on. --emerald itself is tuned for tile
+     tints/borders/backgrounds and reads at only 4.37:1 as text on --bg here,
+     so — same split as --event-text-* — a dedicated text token clears 4.5:1
+     on --bg, --bg-panel and --bg-panel-raised. */
+  --emerald-text: #63a892;
   --ember: #c05a3e;
   --violet: #8b6bb8;
   --violet-bright: #c9a8ec;
@@ -114,6 +121,9 @@
      and hard to tell apart. These swap in vivid/saturated variants of the
      same hues instead of desaturated darks, at a similar or better contrast. */
   --emerald-bright: #065f36;
+  /* Bloc 92/A11y: light-theme counterpart — clears 4.5:1 on the light --bg
+     and panels (--emerald itself is only 4.49:1 as text on --bg here). */
+  --emerald-text: #2f6b57;
   --ember: #a7432e;
   --violet: #75549d;
   --violet-bright: #5b21b6;
@@ -2276,7 +2286,8 @@ select,
   font-weight: 600;
 }
 .total-box .value.emerald {
-  color: var(--emerald);
+  /* Bloc 92/A11y: AA-safe text token (was var(--emerald), 4.37:1 on --bg). */
+  color: var(--emerald-text);
 }
 .total-box small {
   display: block;

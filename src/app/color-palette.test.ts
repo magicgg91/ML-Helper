@@ -140,13 +140,9 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
   // them; this locks in genuine vividness (high saturation, mid-to-high
   // lightness — never the murky/desaturated end of the scale) for all 10.
   it("Bloc 81/B: the --event-* palette (event-color picker) is genuinely vivid — high saturation, never dark or muted", () => {
-    const names = [
-      "violet",
-      "emerald",
-      "amber",
-      "ember",
-      "sapphire",
-    ].flatMap((base) => [`event-${base}`, `event-${base}-bright`]);
+    const names = ["violet", "emerald", "amber", "ember", "sapphire"].flatMap(
+      (base) => [`event-${base}`, `event-${base}-bright`],
+    );
     expect(names).toHaveLength(10);
     for (const name of names) {
       // Emerald's own hue reads darker/less saturated than the other 4 at
@@ -239,6 +235,47 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
       expect(
         contrast(text, extractHex(darkBlock, background)),
       ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  // Bloc 92/A11y: .total-box .value.emerald (the calculators' highlighted
+  // result values) writes --emerald-text directly as running text, over the
+  // page background and the result panels. --emerald itself measured only
+  // 4.37:1 (dark) / 4.49:1 (light) as text on --bg — just under AA — so a
+  // dedicated text token (same split as --event-text-*) must clear 4.5:1 on
+  // every surface a .total-box lands on, in both themes.
+  it("Bloc 92/A11y: --emerald-text clears WCAG AA (4.5:1) on --bg and result panels in both themes", () => {
+    const luminance = (hex: string) => {
+      const value = Number.parseInt(hex.slice(1), 16);
+      const channels = [
+        (value >> 16) & 255,
+        (value >> 8) & 255,
+        value & 255,
+      ].map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return (
+        channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+      );
+    };
+    const contrast = (foreground: string, background: string) => {
+      const [lighter, darker] = [
+        luminance(foreground),
+        luminance(background),
+      ].sort((a, b) => b - a);
+      return (lighter! + 0.05) / (darker! + 0.05);
+    };
+    for (const block of [darkBlock, lightBlock]) {
+      const text = extractHex(block, "emerald-text");
+      for (const surface of ["bg", "bg-panel", "bg-panel-raised"]) {
+        expect(
+          contrast(text, extractHex(block, surface)),
+          `emerald-text vs --${surface}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
     }
   });
 });
