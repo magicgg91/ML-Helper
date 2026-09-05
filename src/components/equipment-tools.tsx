@@ -96,7 +96,10 @@ function Summary({
     ])
     .sort(([, labelA], [, labelB]) => labelA.localeCompare(labelB, locale));
   return (
-    <div className="stuff-summary-grid">
+    // Bloc 92/A11y (H1): the global totals recompute live as equipment/gems
+    // change; a polite live region announces the updated values to screen
+    // readers (it was silent). Not atomic — only the changed skills speak.
+    <div className="stuff-summary-grid" aria-live="polite">
       {entries.map(([skill, label, value]) => {
         // league !== undefined (not a truthiness check): "" is a valid,
         // meaningful LeagueSelection meaning "no league chosen yet", and
@@ -248,6 +251,10 @@ function SlotCell({
     <button
       type="button"
       aria-pressed={active}
+      // Bloc 92/A11y (L6): the slot button reveals the shared editor panel
+      // elsewhere in the DOM — expose that relationship and its open state.
+      aria-expanded={active}
+      aria-controls="stuff-slot-editor"
       className={active ? "selected" : ""}
       style={
         rarityVar
@@ -597,6 +604,7 @@ export function StuffSimulator({
             ))}
           </div>
           <div
+            id="stuff-slot-editor"
             className={
               activeIndex === undefined
                 ? "stuff-editor-panel"

@@ -114,7 +114,7 @@ describe("CombatCalculators", () => {
     const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
     for (const button of within(league).getAllByRole("button"))
       expect(button).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+    expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
     fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
     expect(screen.getByTestId("demo-wall")).toHaveTextContent("70");
     expect(screen.getByTestId("demo-wall")).not.toHaveClass("emerald");
@@ -202,5 +202,70 @@ describe("CombatCalculators", () => {
     // They keep the shared .total-box styling hook.
     expect(wallTile).toHaveClass("total-box");
     expect(troopsTile).toHaveClass("total-box");
+  });
+
+  // Bloc 92/M2: both the main tools tablist and the nested XP mode-switch
+  // tablist wire each tab to its tabpanel (aria-controls <-> id/aria-labelledby).
+  it("Bloc92/M2: wires the XP tools tab and the nested mode tabs to their tabpanels", () => {
+    view();
+    // Main tools tablist (XP is the default active tab).
+    const xpTab = screen.getByRole("tab", { name: "Taux de gain d’XP" });
+    expect(xpTab).toHaveAttribute("id", "combat-tools-tab-xp");
+    expect(xpTab).toHaveAttribute("aria-controls", "combat-tools-panel-xp");
+    const xpPanel = document.getElementById("combat-tools-panel-xp")!;
+    expect(xpPanel).toHaveAttribute("role", "tabpanel");
+    expect(xpPanel).toHaveAttribute("aria-labelledby", "combat-tools-tab-xp");
+
+    // Nested mode-switch tablist inside XpGainRate (attacker is the default).
+    const attackerTab = screen.getByRole("tab", {
+      name: "Je suis l’attaquant",
+    });
+    expect(attackerTab).toHaveAttribute("id", "combat-mode-tab-attacker");
+    expect(attackerTab).toHaveAttribute(
+      "aria-controls",
+      "combat-mode-panel-attacker",
+    );
+    const attackerPanel = document.getElementById(
+      "combat-mode-panel-attacker",
+    )!;
+    expect(attackerPanel).toHaveAttribute("role", "tabpanel");
+    expect(attackerPanel).toHaveAttribute(
+      "aria-labelledby",
+      "combat-mode-tab-attacker",
+    );
+    // Switching mode moves the panel id to the newly active tab.
+    fireEvent.click(screen.getByRole("tab", { name: "Je suis la cible" }));
+    const targetPanel = document.getElementById("combat-mode-panel-target")!;
+    expect(targetPanel).toHaveAttribute("role", "tabpanel");
+    expect(targetPanel).toHaveAttribute(
+      "aria-labelledby",
+      "combat-mode-tab-target",
+    );
+  });
+
+  // Bloc 92/H1: the XP opponent-VP table and the Demo Attack wall/troops
+  // result each sit inside a permanently-mounted aria-live region.
+  it("Bloc92/H1: keeps the XP ranges and the demo result inside aria-live regions", () => {
+    view();
+    expect(
+      screen.getAllByTestId(/xp-range-/)[0].closest('[aria-live="polite"]'),
+    ).not.toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    );
+    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
+    // avoid nesting inside the demo tile's live region; find it by class.
+    expect(
+      document.querySelector('[aria-live="polite"] .demo-attack-tile-empty'),
+    ).not.toBeNull();
+    fireEvent.click(
+      within(
+        screen.getByRole("group", { name: "Ligue de l’attaquant" }),
+      ).getByRole("button", { name: "Bronze" }),
+    );
+    expect(
+      screen.getByTestId("demo-wall").closest('[aria-live="polite"]'),
+    ).not.toBeNull();
   });
 });

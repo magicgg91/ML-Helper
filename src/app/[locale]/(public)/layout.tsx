@@ -41,7 +41,7 @@ export default async function PublicLayout({
         <SiteSearch guides={searchGuides} active={active} />
         <div className="public-header-actions">
           <PublicNav
-            navLabel="Navigation principale"
+            navLabel={navigation("main")}
             menuLabel={navigation("menu")}
             links={[
               { href: "/tools", label: navigation("tools") },

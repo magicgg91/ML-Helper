@@ -75,7 +75,11 @@
   --event-text-ember: #fca5a5;
   --event-text-sapphire: #93c5fd;
   --text: #e9e4d8;
-  --text-dim: #9299a6;
+  /* Bloc 92/A11y (H2): lightened from #9299a6 so secondary/dim text clears
+     WCAG AA (4.5:1) on the game-tinted tile surfaces it lands on (gems league
+     headers, templars stats, Boutique descriptions) — it was 4.04–4.49:1
+     there. Still greyer than --text on the plain backgrounds. */
+  --text-dim: #9ea4b0;
   /* Bloc 91/M8: raised from #5c6472 (WCAG ~2.5:1, failed AA). Codex review: the
      value must clear 4.5:1 on the DARKEST surface it lands on — the raised
      panel (#29303d) behind .login-card small — not just the page bg/panels, so
@@ -131,7 +135,10 @@
   /* Bloc 91/M8: darkened from #626976 (WCAG ~4.05:1) / #858b95 (~2.5:1) so
      both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim. */
   --text-dim: #5b6270;
-  --text-faint: #666d78;
+  /* Bloc 92/A11y (L2): darkened from #666d78 (4.21:1 on --bg, under AA) so
+     .total-box small and other faint text clear 4.5:1 on the light page bg;
+     stays lighter than --text-dim, per the tier ordering. */
+  --text-faint: #5e6572;
   --sapphire: #3d63b0;
   --sapphire-bright: #1e40af;
   /* Bloc 81/D review: darker, WCAG-AA-safe reads of the same 5 hues (each
@@ -204,6 +211,15 @@ button,
 input,
 select {
   font: inherit;
+}
+/* Bloc 92/A11y (L1): one consistent keyboard focus indicator for every
+   interactive element, in both themes. :where() keeps specificity at 0 so a
+   component's own :focus-visible (e.g. the search field) still wins, and the
+   default UA ring is replaced by a 2px accent outline with an offset that
+   stays visible on the tinted tiles/pills and dark surfaces. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
 }
 
 .public-shell {
@@ -945,6 +961,15 @@ select {
   border-radius: 0.5rem;
   background: color-mix(in srgb, var(--surface-muted), #fff 14%);
   text-align: center;
+}
+/* Bloc 92/A11y (M1 residual): the mini-tile lightens its background, where
+   even the AA-safe --emerald-text (tuned for the darker --bg/panels) stays at
+   ~2.9:1. In dark theme only, the "troupes max" value gets a lighter mint that
+   clears 4.5:1 on this specific lightened surface; light theme keeps
+   --emerald-text (already ≥4.5:1 on the light mini-tile). */
+:root:not([data-theme="light"]) .demo-attack-inner-tile .value.emerald,
+:root[data-theme="dark"] .demo-attack-inner-tile .value.emerald {
+  color: #98dcbd;
 }
 .demo-attack-inner-tile .label {
   margin-bottom: 0;
@@ -1847,7 +1872,10 @@ select {
      color already identifying that value elsewhere; falls back to the
      neutral accent when no such color is established (e.g. "Personnalisé"). */
   border-color: var(--pill-color, var(--accent-strong));
-  color: var(--pill-color, var(--accent-strong));
+  /* Bloc 92/A11y (H2): the game hue stays on the border, tint and inset ring
+     (the identity cues), but the LABEL is neutral --foreground — the hue as
+     text on its own tinted background measured only 2.0–4.4:1 (WCAG 1.4.3). */
+  color: var(--foreground);
   background: color-mix(
     in srgb,
     var(--pill-color, var(--accent-strong)) 16%,
@@ -2233,7 +2261,9 @@ select,
   width: 100%;
 }
 .num-stepper button {
-  flex: 0 0 30px;
+  /* Bloc 92/A11y (L4): 40px wide (was 30px) for a more comfortable touch
+     target on the +/- steppers, especially on mobile. */
+  flex: 0 0 40px;
   border: 1px solid var(--border);
   background: var(--bg-panel-raised);
   color: var(--text-dim);
@@ -2396,7 +2426,10 @@ select,
   padding: 0.15rem 0.45rem;
   border: 1px solid var(--accent-strong);
   border-radius: 0.4rem;
-  background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
+  /* Bloc 92/A11y (H2): lighter accent tint (16%→10%) so the accent-strong
+     label clears 4.5:1 on the badge (was 4.41:1); the accent color itself is
+     unchanged. */
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
   color: var(--accent-strong);
   font-size: 0.78rem;
   font-weight: 700;
@@ -2476,6 +2509,10 @@ select,
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  /* Bloc 92/A11y (H2): the slot name is neutral --text; the family hue that
+     used to color it (inline) read at 1.0–2.6:1 on the rarity-tinted tile.
+     The family/rarity identity stays on the tile border and image. */
+  color: var(--text);
 }
 .reference-tile-body {
   display: flex;
@@ -2819,8 +2856,10 @@ body > main h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  /* Bloc 92/A11y (L4): 40px square (was 32px) for a comfortable touch target
+     on the admin add/remove icon buttons. */
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 0.5rem;

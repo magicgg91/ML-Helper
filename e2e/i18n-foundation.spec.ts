@@ -14,8 +14,11 @@ test("switches the public navigation language and falls back to English", async 
   const listbox = page.getByRole("listbox", { name: /Language|Langue/ });
   // Bloc 91/M7: the footer now repeats the section links, so scope to the
   // header nav to keep the locale-switch assertion unambiguous.
+  // Bloc 92/L5: the header nav's accessible name is now localized
+  // (navigation("main")), so it reads "Navigation principale" in FR and
+  // "Main navigation" in EN — match either as the locale is switched below.
   const primaryNav = page.getByRole("navigation", {
-    name: "Navigation principale",
+    name: /Navigation principale|Main navigation/,
   });
   await trigger.click();
   await listbox.getByRole("option", { name: "EN" }).click();

@@ -27,20 +27,18 @@ describe("CityCalculators", () => {
       </NextIntlClientProvider>,
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     expect(screen.getByTestId("city-cost-total")).toHaveTextContent("10 or");
     fireEvent.click(
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     fireEvent.change(
       screen.getByRole("spinbutton", { name: "Nombre de villes" }),
@@ -122,12 +120,13 @@ describe("CityCalculators", () => {
       // Bloc 69/E: the league group is now wrapped in its own
       // .calculator-league-field (for the visible "Ligue" title) instead
       // of being a bare direct child — that wrapper is still first.
-      const wrapper = group.closest(".calculator-fields-inline")
-        ?.firstElementChild;
+      const wrapper = group.closest(
+        ".calculator-fields-inline",
+      )?.firstElementChild;
       expect(wrapper).toContainElement(group);
       expect(wrapper).toHaveTextContent("Ligue");
       expect(group).toHaveClass("league-buttons-grid");
-      expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+      expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
     }
   });
 
@@ -161,10 +160,9 @@ describe("CityCalculators", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     expect(screen.queryByText("Bonus Or obtenu")).toBeNull();
     expect(screen.queryByText("Bonus Troupes obtenu")).toBeNull();
@@ -349,10 +347,9 @@ describe("CityCalculators", () => {
       </NextIntlClientProvider>,
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     // La base de temple pour Prospérité (30%, cdc section 7.1) s'applique
     // automatiquement même sans contribution de clan saisie (voir templeBase).
@@ -406,10 +403,9 @@ describe("CityCalculators", () => {
       </NextIntlClientProvider>,
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     // Only one result heading now — the old separate "Pour 1 ville" title
     // is gone.
@@ -437,10 +433,9 @@ describe("CityCalculators", () => {
       </NextIntlClientProvider>,
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     const wallAtOne = screen.getByTestId("city-cost-wall").textContent;
     const totalAtOne = screen.getByTestId("city-cost-total").textContent;
@@ -466,10 +461,9 @@ describe("CityCalculators", () => {
       screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
     );
     fireEvent.click(
-      within(screen.getByRole("group", { name: "Ligue" })).getByRole(
-        "button",
-        { name: "Légende" },
-      ),
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
     );
     expect(
       screen.queryByText("Ville seule (niveau atteint)"),
@@ -485,5 +479,55 @@ describe("CityCalculators", () => {
       "city-max-level-single-army",
     ])
       expect(within(section).getByTestId(testId)).toBeInTheDocument();
+  });
+
+  // Bloc 92/M2: the active tools tab is wired to its rendered tabpanel via
+  // matching aria-controls / id / aria-labelledby.
+  it("Bloc92/M2: wires each City tools tab to its tabpanel", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const costTab = screen.getByRole("tab", { name: "Coût de Ville" });
+    expect(costTab).toHaveAttribute("id", "city-tools-tab-cost");
+    expect(costTab).toHaveAttribute("aria-controls", "city-tools-panel-cost");
+    const costPanel = document.getElementById("city-tools-panel-cost")!;
+    expect(costPanel).toHaveAttribute("role", "tabpanel");
+    expect(costPanel).toHaveAttribute("aria-labelledby", "city-tools-tab-cost");
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    const maxPanel = document.getElementById("city-tools-panel-max-level")!;
+    expect(maxPanel).toHaveAttribute("role", "tabpanel");
+    expect(maxPanel).toHaveAttribute(
+      "aria-labelledby",
+      "city-tools-tab-max-level",
+    );
+  });
+
+  // Bloc 92/H1: the cost result (placeholder + computed totals) lives in a
+  // permanently-mounted aria-live region.
+  it("Bloc92/H1: keeps the City cost result inside an aria-live region", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    // Bloc 92/A11y (Codex PR #116): the placeholder no longer carries its own
+    // role="status" (it would nest inside this live region); assert it sits in
+    // the live region by its class instead.
+    expect(
+      document.querySelector('[aria-live="polite"] .empty-state'),
+    ).not.toBeNull();
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    expect(
+      screen.getByTestId("city-cost-total").closest('[aria-live="polite"]'),
+    ).not.toBeNull();
   });
 });

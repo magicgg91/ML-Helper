@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useId,
   useImperativeHandle,
   useState,
   type ChangeEvent,
@@ -109,6 +110,12 @@ export function EditableDataTable<Row extends Record<string, string>>({
 }) {
   const testId = (name: string) =>
     testIdPrefix ? `${name}-${testIdPrefix}` : name;
+  // Bloc 92/A11y (M4, Codex PR #116): a per-instance prefix for the error
+  // element ids, so several EditableDataTable instances on one page (e.g.
+  // RankingAdminEditor's 6 league tables, rendered without testIdPrefix) don't
+  // produce colliding ids like `error-0-threshold` that would make a field's
+  // aria-describedby resolve to the first table's error.
+  const instanceId = useId();
   const mergeActions = combinedActions && onMove && onRemove;
   const columnClass = (column: EditableColumn<Row>) =>
     column.narrow
@@ -165,9 +172,17 @@ export function EditableDataTable<Row extends Record<string, string>>({
                       `${column.label} ${rowIndex + 1}`;
                     const errorMessage =
                       errors?.[errorKey(rowIndex, column.key)];
+                    // Bloc 92/A11y (M4): link the visible error text to its
+                    // field so a screen reader announces it; the id is
+                    // namespaced per instance (see instanceId above).
+                    const errorId = `${instanceId}error-${rowIndex}-${column.key}`;
                     const shared = {
                       "aria-label": label,
                       "aria-invalid": Boolean(errorMessage),
+                      "aria-describedby": errorMessage ? errorId : undefined,
+                      // Bloc 92/A11y (L3): mandatory columns are conveyed to AT,
+                      // not only enforced in validate().
+                      "aria-required": column.required ? true : undefined,
                       value: row[column.key],
                       disabled: column.readOnly,
                       onChange: (
@@ -203,7 +218,9 @@ export function EditableDataTable<Row extends Record<string, string>>({
                           />
                         )}
                         {errorMessage && (
-                          <small className="field-error">{errorMessage}</small>
+                          <small className="field-error" id={errorId}>
+                            {errorMessage}
+                          </small>
                         )}
                       </td>
                     );
@@ -463,6 +480,9 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
         {column.type === "select" ? (
           <select
             aria-label={label}
+            aria-invalid={Boolean(errors[key])}
+            aria-describedby={errors[key] ? `${key}-error` : undefined}
+            aria-required={column.required ? true : undefined}
             value={row[column.key]}
             disabled={column.readOnly}
             onChange={(event) =>
@@ -480,6 +500,7 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
             aria-label={label}
             aria-invalid={Boolean(errors[key])}
             aria-describedby={errors[key] ? `${key}-error` : undefined}
+            aria-required={column.required ? true : undefined}
             className={errors[key] ? "field-invalid" : undefined}
             type={column.type ?? "text"}
             value={row[column.key]}
@@ -555,7 +576,11 @@ function EditableReferenceTableInner<Row extends Record<string, string>>(
       ) : (
         <div className="ranking-table-wrap">
           <table
-            className={["ranking-table", "reference-admin-table", tableClassName]
+            className={[
+              "ranking-table",
+              "reference-admin-table",
+              tableClassName,
+            ]
               .filter(Boolean)
               .join(" ")}
           >

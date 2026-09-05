@@ -29,7 +29,7 @@ function CategoryFilters({
   filterLabel: string;
 }) {
   return (
-    <div className="reference-filters" aria-label={filtersLabel}>
+    <div className="reference-filters" role="group" aria-label={filtersLabel}>
       <div>
         <span className="filter-label">{filterLabel}</span>
         {/* Bloc 68/L: shared mobile 2-column grid (see globals.css) — exactly

@@ -194,7 +194,9 @@ describe("SkillsCalculators", () => {
     );
 
     // Blocked entirely — not a table showing only row 1's partial total.
-    expect(screen.getByText("Choisis une compétence pour calculer.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Choisis une compétence pour calculer."),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
@@ -344,7 +346,9 @@ describe("SkillsCalculators", () => {
     expect(stats.length).toBeGreaterThan(0);
     for (const stat of stats) {
       if (stat.textContent?.includes("Bonus par Templier")) {
-        expect(stat.textContent).toMatch(/Bonus par Templier : -?\d+(\.\d+)?%$/);
+        expect(stat.textContent).toMatch(
+          /Bonus par Templier : -?\d+(\.\d+)?%$/,
+        );
       }
     }
   });
@@ -636,5 +640,80 @@ describe("SkillsCalculators", () => {
     expect(
       screen.queryByRole("group", { name: /ligue/i }),
     ).not.toBeInTheDocument();
+  });
+
+  // Bloc 92/M2: every role="tab" is wired to its tabpanel — the tab's
+  // aria-controls points at the rendered panel's id, and the panel points back
+  // via aria-labelledby. Checked on the main tools tablist and the nested Gems
+  // mode-switch tablist.
+  it("Bloc92/M2: wires the tools tabs and the Gems mode tabs to their tabpanels", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    const gemsTab = screen.getByRole("tab", { name: "Gemmes" });
+    fireEvent.click(gemsTab);
+    expect(gemsTab).toHaveAttribute("id", "skills-tools-tab-gems");
+    expect(gemsTab).toHaveAttribute("aria-controls", "skills-tools-panel-gems");
+    const toolsPanel = document.getElementById("skills-tools-panel-gems")!;
+    expect(toolsPanel).toHaveAttribute("role", "tabpanel");
+    expect(toolsPanel).toHaveAttribute(
+      "aria-labelledby",
+      "skills-tools-tab-gems",
+    );
+
+    const budgetTab = screen.getByRole("tab", { name: "Budget disponible" });
+    fireEvent.click(budgetTab);
+    expect(budgetTab).toHaveAttribute("id", "gems-mode-tab-budget");
+    expect(budgetTab).toHaveAttribute(
+      "aria-controls",
+      "gems-mode-panel-budget",
+    );
+    const modePanel = document.getElementById("gems-mode-panel-budget")!;
+    expect(modePanel).toHaveAttribute("role", "tabpanel");
+    expect(modePanel).toHaveAttribute(
+      "aria-labelledby",
+      "gems-mode-tab-budget",
+    );
+  });
+
+  // Bloc 92/H1: the Gems budget result lives in a permanently-mounted
+  // aria-live region so both the placeholder->result transition and later
+  // recomputes are announced.
+  it("Bloc92/H1: keeps the Gems budget result inside an aria-live region", () => {
+    renderWithIntl(
+      <SkillsCalculators
+        combatRows={combatRows}
+        expeditionRows={expeditionRows}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
+    // avoid nesting inside this live region; find it by class instead.
+    expect(
+      document.querySelector('[aria-live="polite"] .empty-state'),
+    ).not.toBeNull();
+    fireEvent.change(screen.getByRole("combobox", { name: "Compétence" }), {
+      target: { value: "fearless" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Ligue" }), {
+      target: { value: "legend" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Emplacements budget" }),
+      { target: { value: "3" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Budget disponible en saphirs" }),
+      { target: { value: "112000" } },
+    );
+    expect(
+      screen
+        .getByTestId("gem-budget-distribution")
+        .closest('[aria-live="polite"]'),
+    ).not.toBeNull();
   });
 });

@@ -30,11 +30,10 @@ const number = (value: number) => formatGameNumber(value);
 
 function LeagueRequired() {
   const common = useTranslations("common");
-  return (
-    <p className="empty-state" role="status">
-      {common("select-league")}
-    </p>
-  );
+  // Bloc 92/A11y (Codex PR #116): no role="status" here — every use of this
+  // placeholder sits inside a permanently-mounted aria-live="polite" region
+  // that already announces it; a nested live region can double-announce.
+  return <p className="empty-state">{common("select-league")}</p>;
 }
 
 function Field({
@@ -58,7 +57,9 @@ function Field({
 }) {
   return (
     <label
-      className={className ? `calculator-field ${className}` : "calculator-field"}
+      className={
+        className ? `calculator-field ${className}` : "calculator-field"
+      }
     >
       {label}
       <NumberStepper
@@ -191,96 +192,101 @@ function CostCalculator({
           />
         </div>
       </section>
-      {!league ? (
-        <LeagueRequired />
-      ) : (
-        // Bloc 33/C: a single "Total" block replaces the previous "Pour 1
-        // ville" + aggregate pair — the aggregate one was missing Remparts
-        // entirely. Coût/VP/Production are multiplied by cityCount;
-        // Remparts (a level, not a quantity) never is; the Base/Équipement/
-        // Temple breakdown stays, since it's per-city information the
-        // aggregate transition figures below don't otherwise carry.
-        <section className="calculator-card">
-          <h2 className="calculator-heading">
-            {t("total-cities", { count: cityCount })}
-          </h2>
-          <div className="calculator-results">
-            <Stat
-              label={t("cost-total")}
-              value={`${number(cost * cityCount)} ${t("gold-unit")}`}
-              testId="city-cost-total"
-            />
-            <ProductionTransition
-              label={t("wall")}
-              start={start.wall}
-              target={target.wall}
-              testId="city-cost-wall"
-            />
-            <Stat
-              label={t("vp-gained")}
-              value={number(Math.max(0, target.vp - start.vp) * cityCount)}
-              testId="city-cost-vp"
-            />
-            <ProductionTransition
-              label={t("gold-transition")}
-              start={start.gold * goldBonus * cityCount}
-              target={target.gold * goldBonus * cityCount}
-              testId="city-cost-gold"
-            />
-            <ProductionTransition
-              label={t("army-transition")}
-              start={start.army * armyBonus * cityCount}
-              target={target.army * armyBonus * cityCount}
-              testId="city-cost-army"
-            />
-          </div>
-          <div className="city-comparison">
-            <div>
-              <b>{t("start")}</b>
-              <Breakdown
-                title={t("gold-hour")}
-                testId="city-cost-single-gold-start"
-                values={bonusBreakdown(
-                  start.gold,
-                  settings.equipmentSkills.prosperous,
-                  prosperousTemple,
-                )}
+      {/* Bloc 92/H1: permanently-mounted live region so the computed totals
+          are announced on the placeholder->result transition and on later
+          recomputes. */}
+      <div aria-live="polite">
+        {!league ? (
+          <LeagueRequired />
+        ) : (
+          // Bloc 33/C: a single "Total" block replaces the previous "Pour 1
+          // ville" + aggregate pair — the aggregate one was missing Remparts
+          // entirely. Coût/VP/Production are multiplied by cityCount;
+          // Remparts (a level, not a quantity) never is; the Base/Équipement/
+          // Temple breakdown stays, since it's per-city information the
+          // aggregate transition figures below don't otherwise carry.
+          <section className="calculator-card">
+            <h2 className="calculator-heading">
+              {t("total-cities", { count: cityCount })}
+            </h2>
+            <div className="calculator-results">
+              <Stat
+                label={t("cost-total")}
+                value={`${number(cost * cityCount)} ${t("gold-unit")}`}
+                testId="city-cost-total"
               />
-              <Breakdown
-                title={t("army-hour")}
-                testId="city-cost-single-army-start"
-                values={bonusBreakdown(
-                  start.army,
-                  settings.equipmentSkills.recruiter,
-                  recruiterTemple,
-                )}
+              <ProductionTransition
+                label={t("wall")}
+                start={start.wall}
+                target={target.wall}
+                testId="city-cost-wall"
+              />
+              <Stat
+                label={t("vp-gained")}
+                value={number(Math.max(0, target.vp - start.vp) * cityCount)}
+                testId="city-cost-vp"
+              />
+              <ProductionTransition
+                label={t("gold-transition")}
+                start={start.gold * goldBonus * cityCount}
+                target={target.gold * goldBonus * cityCount}
+                testId="city-cost-gold"
+              />
+              <ProductionTransition
+                label={t("army-transition")}
+                start={start.army * armyBonus * cityCount}
+                target={target.army * armyBonus * cityCount}
+                testId="city-cost-army"
               />
             </div>
-            <span aria-hidden="true">→</span>
-            <div>
-              <b>{t("target")}</b>
-              <Breakdown
-                title={t("gold-hour")}
-                testId="city-cost-single-gold-target"
-                values={bonusBreakdown(
-                  target.gold,
-                  settings.equipmentSkills.prosperous,
-                  prosperousTemple,
-                )}
-              />
-              <Breakdown
-                title={t("army-hour")}
-                testId="city-cost-single-army-target"
-                values={bonusBreakdown(
-                  target.army,
-                  settings.equipmentSkills.recruiter,
-                  recruiterTemple,
-                )}
-              />
+            <div className="city-comparison">
+              <div>
+                <b>{t("start")}</b>
+                <Breakdown
+                  title={t("gold-hour")}
+                  testId="city-cost-single-gold-start"
+                  values={bonusBreakdown(
+                    start.gold,
+                    settings.equipmentSkills.prosperous,
+                    prosperousTemple,
+                  )}
+                />
+                <Breakdown
+                  title={t("army-hour")}
+                  testId="city-cost-single-army-start"
+                  values={bonusBreakdown(
+                    start.army,
+                    settings.equipmentSkills.recruiter,
+                    recruiterTemple,
+                  )}
+                />
+              </div>
+              <span aria-hidden="true">→</span>
+              <div>
+                <b>{t("target")}</b>
+                <Breakdown
+                  title={t("gold-hour")}
+                  testId="city-cost-single-gold-target"
+                  values={bonusBreakdown(
+                    target.gold,
+                    settings.equipmentSkills.prosperous,
+                    prosperousTemple,
+                  )}
+                />
+                <Breakdown
+                  title={t("army-hour")}
+                  testId="city-cost-single-army-target"
+                  values={bonusBreakdown(
+                    target.army,
+                    settings.equipmentSkills.recruiter,
+                    recruiterTemple,
+                  )}
+                />
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   );
 }
@@ -372,70 +378,75 @@ function MaxLevelCalculator({
           </label>
         </div>
       </section>
-      {!league ? (
-        <LeagueRequired />
-      ) : (
-        // Bloc 33/L: same treatment as Coût de Ville (Bloc 33/C) — one
-        // "Total" block instead of 2. Remparts (the reached level's wall)
-        // isn't multiplied; the Base/Équipement/Temple breakdown at that
-        // level stays, since the aggregate transition figures below don't
-        // carry that detail.
-        <section className="calculator-card">
-          <h2 className="calculator-heading">
-            {t("total-cities", { count: cityCount })}
-          </h2>
-          <div className="calculator-results">
-            <Stat
-              label={t("reachable-level")}
-              value={String(result.level)}
-              testId="max-level-result"
+      {/* Bloc 92/H1: permanently-mounted live region so the reachable-level
+          result is announced on the placeholder->result transition and on
+          later recomputes. */}
+      <div aria-live="polite">
+        {!league ? (
+          <LeagueRequired />
+        ) : (
+          // Bloc 33/L: same treatment as Coût de Ville (Bloc 33/C) — one
+          // "Total" block instead of 2. Remparts (the reached level's wall)
+          // isn't multiplied; the Base/Équipement/Temple breakdown at that
+          // level stays, since the aggregate transition figures below don't
+          // carry that detail.
+          <section className="calculator-card">
+            <h2 className="calculator-heading">
+              {t("total-cities", { count: cityCount })}
+            </h2>
+            <div className="calculator-results">
+              <Stat
+                label={t("reachable-level")}
+                value={String(result.level)}
+                testId="max-level-result"
+              />
+              <Stat
+                label={t("remaining-gold")}
+                value={number(result.remaining)}
+              />
+              <Stat
+                label={t("wall")}
+                value={number(target.wall)}
+                testId="city-max-level-wall"
+              />
+              <Stat
+                label={t("vp-gained")}
+                value={number((target.vp - start.vp) * cityCount)}
+              />
+              <ProductionTransition
+                label={t("gold-transition")}
+                start={start.gold * cityCount * goldBonus}
+                target={target.gold * cityCount * goldBonus}
+                testId="city-max-level-gold"
+              />
+              <ProductionTransition
+                label={t("army-transition")}
+                start={start.army * cityCount * armyBonus}
+                target={target.army * cityCount * armyBonus}
+                testId="city-max-level-army"
+              />
+            </div>
+            <Breakdown
+              title={t("gold-hour")}
+              testId="city-max-level-single-gold"
+              values={bonusBreakdown(
+                target.gold,
+                settings.equipmentSkills.prosperous,
+                prosperousTemple,
+              )}
             />
-            <Stat
-              label={t("remaining-gold")}
-              value={number(result.remaining)}
+            <Breakdown
+              title={t("army-hour")}
+              testId="city-max-level-single-army"
+              values={bonusBreakdown(
+                target.army,
+                settings.equipmentSkills.recruiter,
+                recruiterTemple,
+              )}
             />
-            <Stat
-              label={t("wall")}
-              value={number(target.wall)}
-              testId="city-max-level-wall"
-            />
-            <Stat
-              label={t("vp-gained")}
-              value={number((target.vp - start.vp) * cityCount)}
-            />
-            <ProductionTransition
-              label={t("gold-transition")}
-              start={start.gold * cityCount * goldBonus}
-              target={target.gold * cityCount * goldBonus}
-              testId="city-max-level-gold"
-            />
-            <ProductionTransition
-              label={t("army-transition")}
-              start={start.army * cityCount * armyBonus}
-              target={target.army * cityCount * armyBonus}
-              testId="city-max-level-army"
-            />
-          </div>
-          <Breakdown
-            title={t("gold-hour")}
-            testId="city-max-level-single-gold"
-            values={bonusBreakdown(
-              target.gold,
-              settings.equipmentSkills.prosperous,
-              prosperousTemple,
-            )}
-          />
-          <Breakdown
-            title={t("army-hour")}
-            testId="city-max-level-single-army"
-            values={bonusBreakdown(
-              target.army,
-              settings.equipmentSkills.recruiter,
-              recruiterTemple,
-            )}
-          />
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   );
 }
@@ -520,55 +531,62 @@ function ProductionCalculator({
           />
         </div>
       </section>
-      {!league ? (
-        <LeagueRequired />
-      ) : (
-        <>
-          <section className="calculator-card">
-            <h2 className="calculator-heading">{t("per-city-base")}</h2>
-            <div className="calculator-results">
-              <Stat label={t("vp")} value={number(result.perCity.vp)} />
-              <Stat label={t("wall")} value={number(result.perCity.wall)} />
-              <Stat
-                label={t("gold-hour")}
-                value={`${number(result.perCity.gold)}/h`}
-                testId="city-production-gold"
-              />
-              <Stat
-                label={t("army-hour")}
-                value={`${number(result.perCity.army)}/h`}
-                testId="city-production-army"
-              />
-            </div>
-          </section>
-          <section className="calculator-card">
-            <Breakdown title={t("gold-total")} values={result.gold} />
-            <Breakdown title={t("troops-total")} values={result.troops} />
-            <Stat label={t("vp-total")} value={number(result.vpTotal)} />
-          </section>
-          <section className="calculator-card">
-            <h2 className="calculator-heading">{t("full-production.title")}</h2>
-            <p className="calculator-note">
-              {t("full-production.note", {
-                points: result.fullProduction.points,
-              })}
-            </p>
-            <div className="calculator-results">
-              <Stat
-                label={t("full-production.gold")}
-                value={`${number(result.fullProduction.gold)}/h`}
-                testId="full-production-gold"
-                tone="emerald"
-              />
-              <Stat
-                label={t("full-production.troops")}
-                value={`${number(result.fullProduction.troops)}/h`}
-                tone="emerald"
-              />
-            </div>
-          </section>
-        </>
-      )}
+      {/* Bloc 92/H1: live region wrapping the placeholder-vs-result
+          conditional. The results branch is 3 stacked cards, so the wrapper
+          reuses .calculator-stack to keep their 1rem grid gap. */}
+      <div aria-live="polite" className="calculator-stack">
+        {!league ? (
+          <LeagueRequired />
+        ) : (
+          <>
+            <section className="calculator-card">
+              <h2 className="calculator-heading">{t("per-city-base")}</h2>
+              <div className="calculator-results">
+                <Stat label={t("vp")} value={number(result.perCity.vp)} />
+                <Stat label={t("wall")} value={number(result.perCity.wall)} />
+                <Stat
+                  label={t("gold-hour")}
+                  value={`${number(result.perCity.gold)}/h`}
+                  testId="city-production-gold"
+                />
+                <Stat
+                  label={t("army-hour")}
+                  value={`${number(result.perCity.army)}/h`}
+                  testId="city-production-army"
+                />
+              </div>
+            </section>
+            <section className="calculator-card">
+              <Breakdown title={t("gold-total")} values={result.gold} />
+              <Breakdown title={t("troops-total")} values={result.troops} />
+              <Stat label={t("vp-total")} value={number(result.vpTotal)} />
+            </section>
+            <section className="calculator-card">
+              <h2 className="calculator-heading">
+                {t("full-production.title")}
+              </h2>
+              <p className="calculator-note">
+                {t("full-production.note", {
+                  points: result.fullProduction.points,
+                })}
+              </p>
+              <div className="calculator-results">
+                <Stat
+                  label={t("full-production.gold")}
+                  value={`${number(result.fullProduction.gold)}/h`}
+                  testId="full-production-gold"
+                  tone="emerald"
+                />
+                <Stat
+                  label={t("full-production.troops")}
+                  value={`${number(result.fullProduction.troops)}/h`}
+                  tone="emerald"
+                />
+              </div>
+            </section>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -656,8 +674,12 @@ function ResourceRewardBlock({
           onChange={setHours}
         />
       </div>
-      <div className="calculator-results">
-        <Stat label={bonusLabel} value={number(bonus)} tone="emerald" />
+      {/* Bloc 92/H1: the bonus recomputes silently as the base/hours change —
+          a live region announces the updated value. */}
+      <div aria-live="polite">
+        <div className="calculator-results">
+          <Stat label={bonusLabel} value={number(bonus)} tone="emerald" />
+        </div>
       </div>
     </section>
   );
@@ -718,6 +740,8 @@ export function CityCalculators({
         <button
           type="button"
           role="tab"
+          id="city-tools-tab-cost"
+          aria-controls="city-tools-panel-cost"
           aria-selected={active === "cost"}
           tabIndex={active === "cost" ? 0 : -1}
           disabled={!availability.cost}
@@ -736,6 +760,8 @@ export function CityCalculators({
         <button
           type="button"
           role="tab"
+          id="city-tools-tab-max-level"
+          aria-controls="city-tools-panel-max-level"
           aria-selected={active === "max-level"}
           tabIndex={active === "max-level" ? 0 : -1}
           disabled={!availability["max-level"]}
@@ -758,6 +784,8 @@ export function CityCalculators({
         <button
           type="button"
           role="tab"
+          id="city-tools-tab-production"
+          aria-controls="city-tools-panel-production"
           aria-selected={active === "production"}
           tabIndex={active === "production" ? 0 : -1}
           disabled={!availability.production}
@@ -780,6 +808,8 @@ export function CityCalculators({
         <button
           type="button"
           role="tab"
+          id="city-tools-tab-rewards"
+          aria-controls="city-tools-panel-rewards"
           aria-selected={active === "rewards"}
           tabIndex={active === "rewards" ? 0 : -1}
           disabled={!availability.rewards}
@@ -799,15 +829,45 @@ export function CityCalculators({
         </button>
       </nav>
       {active === "cost" && (
-        <CostCalculator settings={settings} parameters={parameters} />
+        <div
+          role="tabpanel"
+          id="city-tools-panel-cost"
+          aria-labelledby="city-tools-tab-cost"
+          tabIndex={0}
+        >
+          <CostCalculator settings={settings} parameters={parameters} />
+        </div>
       )}
       {active === "max-level" && (
-        <MaxLevelCalculator settings={settings} parameters={parameters} />
+        <div
+          role="tabpanel"
+          id="city-tools-panel-max-level"
+          aria-labelledby="city-tools-tab-max-level"
+          tabIndex={0}
+        >
+          <MaxLevelCalculator settings={settings} parameters={parameters} />
+        </div>
       )}
       {active === "production" && (
-        <ProductionCalculator settings={settings} parameters={parameters} />
+        <div
+          role="tabpanel"
+          id="city-tools-panel-production"
+          aria-labelledby="city-tools-tab-production"
+          tabIndex={0}
+        >
+          <ProductionCalculator settings={settings} parameters={parameters} />
+        </div>
       )}
-      {active === "rewards" && <RewardsCalculator />}
+      {active === "rewards" && (
+        <div
+          role="tabpanel"
+          id="city-tools-panel-rewards"
+          aria-labelledby="city-tools-tab-rewards"
+          tabIndex={0}
+        >
+          <RewardsCalculator />
+        </div>
+      )}
       {!active && (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}

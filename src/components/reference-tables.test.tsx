@@ -96,34 +96,35 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(tile.style.borderColor).toBe("var(--rarity-legendaire)");
   });
 
-  it("colors the slot label with the equipment's family color (Bloc 31/H palette), readable on every rarity tile", () => {
+  // Bloc 92/A11y (H2): the family hue (e.g. Attaque red rgb(192,57,43)) used to
+  // color the slot label inline, but measured only 1.0–2.6:1 as text on the
+  // rarity-tinted tile — below WCAG AA. The color now comes from the stylesheet
+  // (--text), so no inline color is set; the family/rarity identity stays on
+  // the tile border and the block heading.
+  it("Bloc 92/A11y: the slot label carries no low-contrast inline family color (neutral --text from CSS)", () => {
     renderTables();
     const block = combatBlock("Spirit Fyra");
     const slotLabels = block.querySelectorAll<HTMLElement>(
       ".reference-tile-slot",
     );
-    // Spirit Fyra is family "Attaque" — same red used for the Attaque filter
-    // pill (Bloc 31/H). jsdom normalizes the inline hex to rgb().
-    for (const label of slotLabels)
-      expect(label.style.color).toBe("rgb(192, 57, 43)");
+    for (const label of slotLabels) expect(label.style.color).toBe("");
   });
 
-  it("every tile sets an explicit slot-label color across all 5 rarities (never falls back to inherited text color)", () => {
+  it("Bloc 92/A11y: no tile sets an inline slot-label color across the 5 rarities (uses the AA-safe --text from CSS)", () => {
     renderTables();
     for (const label of document.querySelectorAll<HTMLElement>(
       ".reference-tile-slot",
     )) {
-      expect(label.style.color).not.toBe("");
+      expect(label.style.color).toBe("");
     }
   });
 
-  // Bloc 42/C: the "Or" family's slot-label color used to be var(--gold) —
-  // the same token --rarity-legendaire's tile border/background draw from,
-  // near-identical by design (both intentionally gold-branded, cdc 7.1),
-  // which made the pairing hard to tell apart. --gold's own definition
-  // comment reserves it for genuinely Legendary data, so the family now
-  // gets its own distinct --amber token instead of reusing it.
-  it("gives the Or family's slot-label color its own token, distinct from the Légendaire rarity's tile color", () => {
+  // Bloc 92/A11y (H2): the "Or" family's slot label used to be var(--amber),
+  // which — like every family hue — was illegible as text on the tinted tile.
+  // The slot label is now neutral (--text from CSS); the Or/Légendaire identity
+  // stays on the tile's rarity border, so family and rarity remain
+  // distinguishable without a low-contrast text color.
+  it("keeps the Or/Légendaire tile's rarity border while the slot label stays neutral (no inline color)", () => {
     render(
       <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatReferenceTable
@@ -136,7 +137,7 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     const tile = document.querySelector<HTMLElement>(".reference-tile")!;
     expect(tile.style.borderColor).toBe("var(--rarity-legendaire)");
     const label = tile.querySelector<HTMLElement>(".reference-tile-slot")!;
-    expect(label.style.color).toBe("var(--amber)");
+    expect(label.style.color).toBe("");
   });
 
   it("shows only the base 1★ value on a tile, with no way to change it", () => {

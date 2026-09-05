@@ -236,9 +236,9 @@ describe("ExpeditionEquipmentSimulator", () => {
     fireEvent.click(screen.getByRole("button", { name: "Or" }));
     // Bloc 85/B: "Vide" is now an icon (alt text), not plain text.
     expect(
-      within(
-        screen.getByRole("button", { name: /Cape/ }),
-      ).getByRole("img", { name: "Vide" }),
+      within(screen.getByRole("button", { name: /Cape/ })).getByRole("img", {
+        name: "Vide",
+      }),
     ).toBeInTheDocument();
     // Switch back to "Personnalisé" — the earlier selection is still there.
     fireEvent.click(screen.getByRole("button", { name: "Personnalisé" }));
@@ -277,9 +277,7 @@ describe("ExpeditionEquipmentSimulator", () => {
     // No gem component ever displayed — Expedition equipment has no gems.
     expect(document.querySelector(".stuff-slot-gem")).not.toBeInTheDocument();
     expect(document.querySelector(".gem-badge")).not.toBeInTheDocument();
-    expect(
-      document.querySelector(".gem-badge-image"),
-    ).not.toBeInTheDocument();
+    expect(document.querySelector(".gem-badge-image")).not.toBeInTheDocument();
   });
 
   // Bloc 79/A: the star was left-aligned instead of centered under the
@@ -296,7 +294,9 @@ describe("ExpeditionEquipmentSimulator", () => {
     const capeButton = screen.getByRole("button", { name: /Cape/ });
     const left = capeButton.querySelector(".stuff-slot-left")!;
     expect(left).toBeInTheDocument();
-    expect(left.querySelector("img")).toHaveClass("stuff-slot-image-expedition");
+    expect(left.querySelector("img")).toHaveClass(
+      "stuff-slot-image-expedition",
+    );
     expect(left.querySelector(".star-rating")).toBeInTheDocument();
   });
 
@@ -393,5 +393,14 @@ describe("ExpeditionEquipmentSimulator", () => {
       expect(icon).toHaveAttribute("src", expectedSrc);
       expect(button).not.toHaveTextContent("Vide");
     }
+  });
+
+  // Bloc 92/H1: the summary recomputes silently and has no placeholder, so its
+  // grid must sit inside a permanently-mounted aria-live region.
+  it("Bloc92/H1: keeps the summary grid inside an aria-live region", () => {
+    const { container } = renderTool();
+    const grid = container.querySelector(".expedition-summary-grid")!;
+    expect(grid).not.toBeNull();
+    expect(grid.closest('[aria-live="polite"]')).not.toBeNull();
   });
 });

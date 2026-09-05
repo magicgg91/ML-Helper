@@ -278,4 +278,50 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
       }
     }
   });
+
+  // Bloc 92/A11y (H2/L2): secondary text sits on the tinted tile/pill/badge
+  // surfaces, whose luminance tracks --surface-muted (the darkest neutral
+  // surface). --text-dim (dark) read 4.0–4.49:1 on those tiles and --text-faint
+  // (light) read 4.21:1 on the page --bg — just under AA. Lock both at ≥4.5:1
+  // so the gems/templars/Boutique secondary text and .total-box small stay
+  // legible after the Bloc 92 token bumps.
+  it("Bloc 92/A11y: --text-dim clears AA on --surface-muted (dark) and --text-faint clears AA on --bg (light)", () => {
+    const luminance = (hex: string) => {
+      const value = Number.parseInt(hex.slice(1), 16);
+      const channels = [
+        (value >> 16) & 255,
+        (value >> 8) & 255,
+        value & 255,
+      ].map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return (
+        channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+      );
+    };
+    const contrast = (foreground: string, background: string) => {
+      const [lighter, darker] = [
+        luminance(foreground),
+        luminance(background),
+      ].sort((a, b) => b - a);
+      return (lighter! + 0.05) / (darker! + 0.05);
+    };
+    expect(
+      contrast(
+        extractHex(darkBlock, "text-dim"),
+        extractHex(darkBlock, "surface-muted"),
+      ),
+      "text-dim vs --surface-muted (dark)",
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(
+        extractHex(lightBlock, "text-faint"),
+        extractHex(lightBlock, "bg"),
+      ),
+      "text-faint vs --bg (light)",
+    ).toBeGreaterThanOrEqual(4.5);
+  });
 });

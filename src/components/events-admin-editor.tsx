@@ -174,10 +174,11 @@ export function EventsReferenceScreen({
   const [catalog, setCatalog] = useState<EventsCatalog>(initialCatalog);
   const [errors, setErrors] = useState<CatalogErrors>(emptyCatalogErrors);
   const [seasonOverruns, setSeasonOverruns] = useState<Record<League, boolean>>(
-    () => Object.fromEntries(leagues.map((l) => [l, false])) as Record<
-      League,
-      boolean
-    >,
+    () =>
+      Object.fromEntries(leagues.map((l) => [l, false])) as Record<
+        League,
+        boolean
+      >,
   );
   const [status, setStatus] = useState("");
 
@@ -249,7 +250,9 @@ export function EventsReferenceScreen({
 
   function updateTiers(eventIndex: number, tiers: EventTierRow[]) {
     updateEvents(
-      events.map((event, i) => (i === eventIndex ? { ...event, tiers } : event)),
+      events.map((event, i) =>
+        i === eventIndex ? { ...event, tiers } : event,
+      ),
     );
   }
 
@@ -373,6 +376,12 @@ export function EventsReferenceScreen({
               max={maxSeasonDurationDays}
               step={1}
               aria-label={t("events-season-duration-label")}
+              aria-invalid={Boolean(seasonOverruns[league])}
+              aria-describedby={
+                seasonOverruns[league]
+                  ? `season-overrun-error-${league}`
+                  : undefined
+              }
               value={leagueData.seasonDurationDays}
               onChange={(e) =>
                 updateSeasonDuration(
@@ -384,7 +393,10 @@ export function EventsReferenceScreen({
               }
             />
             {seasonOverruns[league] && (
-              <small className="field-error">
+              <small
+                className="field-error"
+                id={`season-overrun-error-${league}`}
+              >
                 {t("events-season-overrun", {
                   total: common("duration-hours", {
                     hours: totalEventHours(events),
@@ -400,7 +412,9 @@ export function EventsReferenceScreen({
       </section>
       <section className="admin-panel editable-reference">
         <div className="editable-reference-title-row">
-          <h2 className="editable-reference-title">{t("events-table-title")}</h2>
+          <h2 className="editable-reference-title">
+            {t("events-table-title")}
+          </h2>
           <button
             type="button"
             className="icon-action"
@@ -443,13 +457,23 @@ export function EventsReferenceScreen({
                       field: t("events-columns.name"),
                     })}
                     aria-invalid={Boolean(eventErrors?.name)}
+                    aria-describedby={
+                      eventErrors?.name
+                        ? `event-name-error-${league}-${eventIndex}`
+                        : undefined
+                    }
                     value={event.name}
                     onChange={(e) =>
                       updateEventField(eventIndex, "name", e.target.value)
                     }
                   />
                   {eventErrors?.name && (
-                    <small className="field-error">{eventErrors.name}</small>
+                    <small
+                      className="field-error"
+                      id={`event-name-error-${league}-${eventIndex}`}
+                    >
+                      {eventErrors.name}
+                    </small>
                   )}
                 </label>
                 {/* Bloc 79/C: 3x wider than a plain field like Nom above —
@@ -464,7 +488,11 @@ export function EventsReferenceScreen({
                     })}
                     value={event[descriptionKey]}
                     onChange={(e) =>
-                      updateEventField(eventIndex, descriptionKey, e.target.value)
+                      updateEventField(
+                        eventIndex,
+                        descriptionKey,
+                        e.target.value,
+                      )
                     }
                   />
                 </label>
@@ -487,7 +515,9 @@ export function EventsReferenceScreen({
                         key={duration}
                         type="button"
                         aria-pressed={event.duration === duration}
-                        onClick={() => updateEventDuration(eventIndex, duration)}
+                        onClick={() =>
+                          updateEventDuration(eventIndex, duration)
+                        }
                       >
                         {common("duration-hours", { hours: duration })}
                       </button>

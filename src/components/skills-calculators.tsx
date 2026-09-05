@@ -126,6 +126,8 @@ export function SkillsCalculators({
         <button
           type="button"
           role="tab"
+          id="skills-tools-tab-simulator"
+          aria-controls="skills-tools-panel-simulator"
           aria-selected={active === "simulator"}
           tabIndex={active === "simulator" ? 0 : -1}
           disabled={!availability.simulator}
@@ -148,6 +150,8 @@ export function SkillsCalculators({
         <button
           type="button"
           role="tab"
+          id="skills-tools-tab-expedition"
+          aria-controls="skills-tools-panel-expedition"
           aria-selected={active === "expedition"}
           tabIndex={active === "expedition" ? 0 : -1}
           disabled={!availability.expedition}
@@ -170,6 +174,8 @@ export function SkillsCalculators({
         <button
           type="button"
           role="tab"
+          id="skills-tools-tab-gems"
+          aria-controls="skills-tools-panel-gems"
           aria-selected={active === "gems"}
           tabIndex={active === "gems" ? 0 : -1}
           disabled={!availability.gems}
@@ -188,6 +194,8 @@ export function SkillsCalculators({
         <button
           type="button"
           role="tab"
+          id="skills-tools-tab-templars"
+          aria-controls="skills-tools-panel-templars"
           aria-selected={active === "templars"}
           tabIndex={active === "templars" ? 0 : -1}
           disabled={!availability.templars}
@@ -207,20 +215,48 @@ export function SkillsCalculators({
         </button>
       </nav>
       {active === "simulator" ? (
-        <StuffSimulator
-          combatRows={combatRows}
-          gemParameters={gemParameters}
-          increments={combatIncrements}
-        />
+        <div
+          role="tabpanel"
+          id="skills-tools-panel-simulator"
+          aria-labelledby="skills-tools-tab-simulator"
+          tabIndex={0}
+        >
+          <StuffSimulator
+            combatRows={combatRows}
+            gemParameters={gemParameters}
+            increments={combatIncrements}
+          />
+        </div>
       ) : active === "expedition" ? (
-        <ExpeditionEquipmentSimulator
-          rows={expeditionRows}
-          increments={expeditionIncrements}
-        />
+        <div
+          role="tabpanel"
+          id="skills-tools-panel-expedition"
+          aria-labelledby="skills-tools-tab-expedition"
+          tabIndex={0}
+        >
+          <ExpeditionEquipmentSimulator
+            rows={expeditionRows}
+            increments={expeditionIncrements}
+          />
+        </div>
       ) : active === "gems" ? (
-        <GemsCalculator parameters={gemParameters} />
+        <div
+          role="tabpanel"
+          id="skills-tools-panel-gems"
+          aria-labelledby="skills-tools-tab-gems"
+          tabIndex={0}
+        >
+          <GemsCalculator parameters={gemParameters} />
+        </div>
       ) : active === "templars" ? (
-        <TemplarsCalculator parameters={templarParameters} />
+        <div
+          role="tabpanel"
+          id="skills-tools-panel-templars"
+          aria-labelledby="skills-tools-tab-templars"
+          tabIndex={0}
+        >
+          <TemplarsCalculator parameters={templarParameters} />
+        </div>
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
@@ -245,6 +281,8 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
           <button
             type="button"
             role="tab"
+            id="gems-mode-tab-optimize"
+            aria-controls="gems-mode-panel-optimize"
             aria-selected={mode === "optimize"}
             onClick={() => setMode("optimize")}
           >
@@ -253,6 +291,8 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
           <button
             type="button"
             role="tab"
+            id="gems-mode-tab-budget"
+            aria-controls="gems-mode-panel-budget"
             aria-selected={mode === "budget"}
             onClick={() => setMode("budget")}
           >
@@ -261,9 +301,29 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
         </div>
       </section>
       {mode === "optimize" ? (
-        <GemOptimization parameters={parameters} />
+        // Bloc 92/M2: the mode switch is a role="tablist"; both modes feed the
+        // same .calculator-stack layout, so the tabpanel wrapper reuses that
+        // class to keep the inner cards' 1rem grid gap (a plain div would
+        // collapse it).
+        <div
+          role="tabpanel"
+          id="gems-mode-panel-optimize"
+          aria-labelledby="gems-mode-tab-optimize"
+          tabIndex={0}
+          className="calculator-stack"
+        >
+          <GemOptimization parameters={parameters} />
+        </div>
       ) : (
-        <GemBudget parameters={parameters} />
+        <div
+          role="tabpanel"
+          id="gems-mode-panel-budget"
+          aria-labelledby="gems-mode-tab-budget"
+          tabIndex={0}
+          className="calculator-stack"
+        >
+          <GemBudget parameters={parameters} />
+        </div>
       )}
       {/* Bloc 55/A: after the tool's own content, not before it. */}
       <CrossReferenceLink
@@ -314,9 +374,7 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
     });
   const changeFamily = (value: GemFamily) => {
     setFamily(value);
-    setRows([
-      { id: nextId, skill: "", league: "", slots: 0, target: 0 },
-    ]);
+    setRows([{ id: nextId, skill: "", league: "", slots: 0, target: 0 }]);
     setNextId((id) => id + 1);
   };
   const changeTotal = (value: number) => {
@@ -488,58 +546,63 @@ function GemOptimization({ parameters }: { parameters: GemParameters }) {
       </section>
       <section className="calculator-card">
         <h2 className="calculator-heading">{t("result")}</h2>
-        {hasMissingSkill || hasMissingLeague ? (
-          // Bloc 82/D review (Codex PR #99): a populated row (slots > 0)
-          // missing its skill or league must block the whole result, not
-          // just get silently excluded from `results` while its own slots
-          // still count toward "Emplacements alloués" below — otherwise
-          // the total looks like it covers more than what's actually
-          // shown in the table.
-          <p className="ranking-placeholder">
-            {hasMissingSkill
-              ? t("errors.select-skill")
-              : t("errors.select-league")}
-          </p>
-        ) : results.length === 0 ? (
-          <p className="ranking-placeholder">
-            {t("errors.add-positive-stat")}
-          </p>
-        ) : (
-          <div className="ranking-table-wrap">
-            <table className="ranking-table">
-              <thead>
-                <tr>
-                  <th>{t("columns.skill")}</th>
-                  <th>{t("columns.league")}</th>
-                  <th>{t("columns.slots")}</th>
-                  <th>{t("columns.distribution")}</th>
-                  <th>{t("columns.stat")}</th>
-                  <th>{t("columns.cost")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((row) => (
-                  <tr key={row.id}>
-                    <td>{game(`skills.${row.skill}`)}</td>
-                    <td>{game(`leagues.${row.league}`)}</td>
-                    <td>{row.slots}</td>
-                    <td>
-                      {gemDistributionLabel(
-                        row.result.stars,
-                        (count, level) => t("gem-count", { count, level }),
-                        t("no-gems"),
-                      )}
-                    </td>
-                    <td>
-                      {formatSkillPercentValue(row.result.actualStat, locale)}%
-                    </td>
-                    <td>{formatGameNumber(row.cost)}</td>
+        {/* Bloc 92/H1: a permanently-mounted live region so both the
+            placeholder->table transition and later recomputes are announced. */}
+        <div aria-live="polite">
+          {hasMissingSkill || hasMissingLeague ? (
+            // Bloc 82/D review (Codex PR #99): a populated row (slots > 0)
+            // missing its skill or league must block the whole result, not
+            // just get silently excluded from `results` while its own slots
+            // still count toward "Emplacements alloués" below — otherwise
+            // the total looks like it covers more than what's actually
+            // shown in the table.
+            <p className="ranking-placeholder">
+              {hasMissingSkill
+                ? t("errors.select-skill")
+                : t("errors.select-league")}
+            </p>
+          ) : results.length === 0 ? (
+            <p className="ranking-placeholder">
+              {t("errors.add-positive-stat")}
+            </p>
+          ) : (
+            <div className="ranking-table-wrap">
+              <table className="ranking-table">
+                <thead>
+                  <tr>
+                    <th>{t("columns.skill")}</th>
+                    <th>{t("columns.league")}</th>
+                    <th>{t("columns.slots")}</th>
+                    <th>{t("columns.distribution")}</th>
+                    <th>{t("columns.stat")}</th>
+                    <th>{t("columns.cost")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {results.map((row) => (
+                    <tr key={row.id}>
+                      <td>{game(`skills.${row.skill}`)}</td>
+                      <td>{game(`leagues.${row.league}`)}</td>
+                      <td>{row.slots}</td>
+                      <td>
+                        {gemDistributionLabel(
+                          row.result.stars,
+                          (count, level) => t("gem-count", { count, level }),
+                          t("no-gems"),
+                        )}
+                      </td>
+                      <td>
+                        {formatSkillPercentValue(row.result.actualStat, locale)}
+                        %
+                      </td>
+                      <td>{formatGameNumber(row.cost)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
         <div className="result-highlight">
           <span>{t("total-cost")}</span>
           <strong>
@@ -628,44 +691,50 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
           </label>
         </div>
       </section>
-      {!result ? (
-        <p className="empty-state" role="status">
-          {!skill ? t("errors.select-skill") : t("errors.select-league")}
-        </p>
-      ) : (
-        <section className="calculator-card">
-          <div className="budget-result-main">
-            <span>{t("optimal-distribution")}</span>
-            <strong data-testid="gem-budget-distribution">
-              {gemDistributionLabel(
-                result.stars,
-                (count, level) => t("gem-count", { count, level }),
-                t("no-gems"),
-              )}
-            </strong>
-          </div>
-          <div className="calculator-results">
-            <Result label={t("base-gems")} value={String(result.baseGems)} />
-            <Result
-              label={t("used-slots")}
-              value={`${result.slotsUsed} / ${slots}`}
-            />
-            <Result
-              label={t("obtained-stat")}
-              value={`${formatSkillPercentValue(result.actualStat, locale)}%`}
-              tone="emerald"
-            />
-            <Result
-              label={t("actual-cost")}
-              value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
-            />
-            <Result
-              label={t("remaining-budget")}
-              value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
-            />
-          </div>
-        </section>
-      )}
+      {/* Bloc 92/H1: permanently-mounted live region wrapping the whole
+          placeholder-vs-result conditional so recomputes are announced. */}
+      <div aria-live="polite">
+        {!result ? (
+          // Bloc 92/A11y (Codex PR #116): no role="status" — the wrapping
+          // aria-live region above announces this placeholder (avoid nesting).
+          <p className="empty-state">
+            {!skill ? t("errors.select-skill") : t("errors.select-league")}
+          </p>
+        ) : (
+          <section className="calculator-card">
+            <div className="budget-result-main">
+              <span>{t("optimal-distribution")}</span>
+              <strong data-testid="gem-budget-distribution">
+                {gemDistributionLabel(
+                  result.stars,
+                  (count, level) => t("gem-count", { count, level }),
+                  t("no-gems"),
+                )}
+              </strong>
+            </div>
+            <div className="calculator-results">
+              <Result label={t("base-gems")} value={String(result.baseGems)} />
+              <Result
+                label={t("used-slots")}
+                value={`${result.slotsUsed} / ${slots}`}
+              />
+              <Result
+                label={t("obtained-stat")}
+                value={`${formatSkillPercentValue(result.actualStat, locale)}%`}
+                tone="emerald"
+              />
+              <Result
+                label={t("actual-cost")}
+                value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
+              />
+              <Result
+                label={t("remaining-budget")}
+                value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
+              />
+            </div>
+          </section>
+        )}
+      </div>
     </>
   );
 }
@@ -818,15 +887,19 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
       {/* Bloc 68/C: results as tiles (same visual pattern as the
           referentiel's presentation tiles), replacing the old table. */}
       <section className="calculator-card">
-        <div className="templars-tile-grid">
-          {templarKeys.map((key) => (
-            <TemplarResultTile
-              key={key}
-              templarKey={key}
-              start={start}
-              target={target}
-            />
-          ))}
+        {/* Bloc 92/H1: the tiles recompute silently on every level change —
+            a live region announces the updated result to screen readers. */}
+        <div aria-live="polite">
+          <div className="templars-tile-grid">
+            {templarKeys.map((key) => (
+              <TemplarResultTile
+                key={key}
+                templarKey={key}
+                start={start}
+                target={target}
+              />
+            ))}
+          </div>
         </div>
       </section>
       {/* Bloc 55/A: after the tool's own content, not before it. */}
