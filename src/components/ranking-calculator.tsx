@@ -67,7 +67,9 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             />
           </div>
           <label className="calculator-field ranking-inline-field ranking-number-field">
-            <span className="ranking-field-label">{t("fields.percentage")}</span>
+            <span className="ranking-field-label">
+              {t("fields.percentage")}
+            </span>
             <NumberStepper
               label={t("fields.percentage")}
               value={percentage}
@@ -94,75 +96,80 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             the visual-scale zone, standing in for the removed "Échelle
             visuelle" title, instead of occupying separate space of its
             own. */}
-        <div className="ranking-scale-total">
-          <span className="label">{t("total-players")}</span>
-          <strong className="value" data-testid="ranking-total">
-            {result.total === null
-              ? "—"
-              : Math.ceil(result.total).toLocaleString(locale)}
-          </strong>
-        </div>
-        {!league ? (
-          <p role="status" className="ranking-placeholder">
-            {t("errors.select-league")}
-          </p>
-        ) : percentage <= 0 ? (
-          <p role="status" className="ranking-placeholder">
-            {t("errors.positive-percentage")}
-          </p>
-        ) : bands.length === 0 ? (
-          <p role="status" className="ranking-placeholder">
-            {t("errors.missing-bands", {
-              league: game(`leagues.${league}`),
-            })}
-          </p>
-        ) : (
-          <>
-            <RankingScale bands={bands} percentage={percentage} />
-            <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
-            <div className="ranking-table-wrap">
-              <table className="ranking-table">
-                <thead>
-                  <tr>
-                    <th>{t("columns.range")}</th>
-                    <th>{t("columns.rank")}</th>
-                    <th>{t("columns.target-league")}</th>
-                    <th>{t("columns.reward")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.ranges.map((range) => (
-                    <tr key={range.threshold}>
-                      <td>
-                        {range.threshold}–{range.rangeStart}%
-                      </td>
-                      <td>
-                        {range.rankEnd.toLocaleString(locale)} –{" "}
-                        {range.rankStart.toLocaleString(locale)}
-                      </td>
-                      <td
-                        className={
-                          !range.movement || !range.league
-                            ? "ranking-unknown"
-                            : ""
-                        }
-                      >
-                        {targetLabel(range, t, game)}
-                      </td>
-                      <td
-                        className={
-                          !range.rewards.length ? "ranking-unknown" : ""
-                        }
-                      >
-                        {rewardLabel(range, t)}
-                      </td>
+        {/* Bloc 92/H1: a permanently-mounted live region around the whole
+            result area — the total and the ranges table — so the recomputed
+            values are announced. The placeholders keep their role="status". */}
+        <div aria-live="polite">
+          <div className="ranking-scale-total">
+            <span className="label">{t("total-players")}</span>
+            <strong className="value" data-testid="ranking-total">
+              {result.total === null
+                ? "—"
+                : Math.ceil(result.total).toLocaleString(locale)}
+            </strong>
+          </div>
+          {!league ? (
+            <p role="status" className="ranking-placeholder">
+              {t("errors.select-league")}
+            </p>
+          ) : percentage <= 0 ? (
+            <p role="status" className="ranking-placeholder">
+              {t("errors.positive-percentage")}
+            </p>
+          ) : bands.length === 0 ? (
+            <p role="status" className="ranking-placeholder">
+              {t("errors.missing-bands", {
+                league: game(`leagues.${league}`),
+              })}
+            </p>
+          ) : (
+            <>
+              <RankingScale bands={bands} percentage={percentage} />
+              <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
+              <div className="ranking-table-wrap">
+                <table className="ranking-table">
+                  <thead>
+                    <tr>
+                      <th>{t("columns.range")}</th>
+                      <th>{t("columns.rank")}</th>
+                      <th>{t("columns.target-league")}</th>
+                      <th>{t("columns.reward")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+                  </thead>
+                  <tbody>
+                    {result.ranges.map((range) => (
+                      <tr key={range.threshold}>
+                        <td>
+                          {range.threshold}–{range.rangeStart}%
+                        </td>
+                        <td>
+                          {range.rankEnd.toLocaleString(locale)} –{" "}
+                          {range.rankStart.toLocaleString(locale)}
+                        </td>
+                        <td
+                          className={
+                            !range.movement || !range.league
+                              ? "ranking-unknown"
+                              : ""
+                          }
+                        >
+                          {targetLabel(range, t, game)}
+                        </td>
+                        <td
+                          className={
+                            !range.rewards.length ? "ranking-unknown" : ""
+                          }
+                        >
+                          {rewardLabel(range, t)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
       </section>
     </div>
   );
@@ -193,10 +200,7 @@ function RankingScale({
         const left = 100 - value;
         return (
           <div key={value}>
-            <span
-              className="ranking-scale-tick"
-              style={{ left: `${left}%` }}
-            />
+            <span className="ranking-scale-tick" style={{ left: `${left}%` }} />
             <span
               className="ranking-scale-tick-label"
               style={{ left: `${left}%` }}
@@ -218,7 +222,11 @@ function RankingScale({
           <div key={band.threshold}>
             <div
               className="ranking-scale-segment"
-              style={{ left: `${left}%`, width: `${width}%`, background: `${color}CC` }}
+              style={{
+                left: `${left}%`,
+                width: `${width}%`,
+                background: `${color}CC`,
+              }}
               title={t("segment-tooltip", {
                 threshold: band.threshold,
                 start,
@@ -230,7 +238,9 @@ function RankingScale({
               className="ranking-scale-marker"
               style={{ left: `${left + width / 2}%` }}
             >
-              <div className={`ranking-scale-label ranking-scale-label-${side}`}>
+              <div
+                className={`ranking-scale-label ranking-scale-label-${side}`}
+              >
                 <div className="ranking-scale-range">
                   {band.threshold}–{start}%
                 </div>

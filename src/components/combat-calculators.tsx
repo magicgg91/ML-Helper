@@ -66,6 +66,8 @@ function XpGainRate({
               key={item}
               type="button"
               role="tab"
+              id={`combat-mode-tab-${item}`}
+              aria-controls={`combat-mode-panel-${item}`}
               aria-selected={mode === item}
               tabIndex={mode === item ? 0 : -1}
               onClick={() => setMode(item)}
@@ -97,28 +99,41 @@ function XpGainRate({
           </div>
         </label>
       </section>
-      <section className="calculator-card">
-        <div className="table-scroll">
-          <table className="ranking-table">
-            <thead>
-              <tr>
-                <th>{t("columns.rate")}</th>
-                <th>{t("columns.opponent-vp")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ranges.map((range) => (
-                <tr key={range.rate}>
-                  <td className="value">{range.rate}%</td>
-                  <td data-testid={`xp-range-${range.rate}`}>
-                    {rangeLabel(range.minimum, range.maximum)}
-                  </td>
+      {/* Bloc 92/M2 + H1: the mode switch above is a role="tablist"; both
+          modes feed this one table, so the tabpanel's id/labelledby follow the
+          active mode (only the active panel is rendered, mirroring
+          reference-tables.tsx). It doubles as the H1 live region so the
+          recomputed opponent-VP ranges are announced. */}
+      <div
+        role="tabpanel"
+        id={`combat-mode-panel-${mode}`}
+        aria-labelledby={`combat-mode-tab-${mode}`}
+        tabIndex={0}
+        aria-live="polite"
+      >
+        <section className="calculator-card">
+          <div className="table-scroll">
+            <table className="ranking-table">
+              <thead>
+                <tr>
+                  <th>{t("columns.rate")}</th>
+                  <th>{t("columns.opponent-vp")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {ranges.map((range) => (
+                  <tr key={range.rate}>
+                    <td className="value">{range.rate}%</td>
+                    <td data-testid={`xp-range-${range.rate}`}>
+                      {rangeLabel(range.minimum, range.maximum)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
       {/* Bloc 67: the missing tool->reference direction, added the same
           way Combat/Expedition Equipment/Gemmes/Templiers already have it —
           the reference already links here (?open=xp), but nothing linked
@@ -177,7 +192,13 @@ function DemoAttackTroops({
           on desktop (A) with its three parts in equal thirds (D), and each
           result value moves into its own nested, slightly-lighter mini-tile
           with centered content (B-C). */}
-      <div className="demo-attack-tile">
+      {/* Bloc 92/H1: aria-live sits on the tile itself, not a new wrapper — on
+          desktop the tile is a 3-column grid whose result mini-tiles are lifted
+          in via display:contents, so wrapping the wall/troops conditional in a
+          div would break the equal-thirds layout. The tile is permanently
+          mounted, so the placeholder->result transition and recomputes are both
+          announced. */}
+      <div className="demo-attack-tile" aria-live="polite">
         <label className="calculator-field demo-attack-tile-level">
           {t("fields.city-level")}
           <NumberStepper
@@ -276,6 +297,8 @@ export function CombatCalculators({
         <button
           type="button"
           role="tab"
+          id="combat-tools-tab-xp"
+          aria-controls="combat-tools-panel-xp"
           aria-selected={active === "xp"}
           tabIndex={active === "xp" ? 0 : -1}
           disabled={!availability.xp}
@@ -292,6 +315,8 @@ export function CombatCalculators({
         <button
           type="button"
           role="tab"
+          id="combat-tools-tab-demo"
+          aria-controls="combat-tools-panel-demo"
           aria-selected={active === "demo"}
           tabIndex={active === "demo" ? 0 : -1}
           disabled={!availability.demo}
@@ -309,15 +334,29 @@ export function CombatCalculators({
         </button>
       </nav>
       {active === "xp" ? (
-        <XpGainRate
-          tiers={xpTiers}
-          levelUpReferenceActive={levelUpReferenceActive}
-        />
+        <div
+          role="tabpanel"
+          id="combat-tools-panel-xp"
+          aria-labelledby="combat-tools-tab-xp"
+          tabIndex={0}
+        >
+          <XpGainRate
+            tiers={xpTiers}
+            levelUpReferenceActive={levelUpReferenceActive}
+          />
+        </div>
       ) : active === "demo" ? (
-        <DemoAttackTroops
-          cityParameters={cityParameters}
-          percentages={demoPercentages}
-        />
+        <div
+          role="tabpanel"
+          id="combat-tools-panel-demo"
+          aria-labelledby="combat-tools-tab-demo"
+          tabIndex={0}
+        >
+          <DemoAttackTroops
+            cityParameters={cityParameters}
+            percentages={demoPercentages}
+          />
+        </div>
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
@@ -47,9 +53,7 @@ describe("RankingCalculator", () => {
     expect(
       screen.getAllByText("Promotion to Legend", { selector: "td" }),
     ).toHaveLength(2);
-    expect(
-      screen.getByText("6 gems", { selector: "td" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("6 gems", { selector: "td" })).toBeInTheDocument();
   });
   it("shows the editable placeholder for an unknown league", () => {
     renderCalculator();
@@ -166,9 +170,9 @@ describe("RankingCalculator", () => {
       container.querySelectorAll(".ranking-inline-field"),
     );
     expect(fields).toHaveLength(2);
-    expect(
-      fields.map((field) => field.firstElementChild?.textContent),
-    ).toEqual(["Ton pourcentage actuel", "Ton rang actuel"]);
+    expect(fields.map((field) => field.firstElementChild?.textContent)).toEqual(
+      ["Ton pourcentage actuel", "Ton rang actuel"],
+    );
     for (const field of fields) {
       // The label is a sibling of the control, not a line above it.
       expect(field.firstElementChild).toHaveClass("ranking-field-label");
@@ -230,5 +234,22 @@ describe("RankingCalculator", () => {
     const rows = screen.getAllByRole("row").slice(1); // drop the header row
     const lastRow = rows[rows.length - 1];
     expect(within(lastRow).getByText(/158/)).toBeInTheDocument();
+  });
+
+  // Bloc 92/H1: the whole result area — the always-mounted total, the
+  // not-ready placeholders and the ranges table — sits inside a
+  // permanently-mounted aria-live region so recomputes are announced.
+  it("Bloc92/H1: keeps the total, placeholder and ranges table inside an aria-live region", () => {
+    const { container } = renderCalculator();
+    expect(
+      screen.getByTestId("ranking-total").closest('[aria-live="polite"]'),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole("status").closest('[aria-live="polite"]'),
+    ).not.toBeNull();
+    selectLeague("Diamant");
+    const table = container.querySelector(".ranking-table")!;
+    expect(table).not.toBeNull();
+    expect(table.closest('[aria-live="polite"]')).not.toBeNull();
   });
 });

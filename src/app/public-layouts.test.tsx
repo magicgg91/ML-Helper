@@ -81,8 +81,12 @@ describe("public layouts", () => {
       </NextIntlClientProvider>,
     );
 
+    // Bloc 92/A11y (L5): the main-nav label is now sourced from
+    // navigation("main") instead of a hardcoded French literal; under this
+    // file's key-returning getTranslations mock it surfaces as the key,
+    // exactly like the tools/referentiels/guides/contact link labels below.
     const nav = screen.getByRole("navigation", {
-      name: "Navigation principale",
+      name: "main",
     });
     expect(within(nav).getByRole("link", { name: "tools" })).toHaveAttribute(
       "href",

@@ -114,6 +114,7 @@ function FilterButtons({
   return (
     <div
       className="family-buttons expedition-sim-family-buttons"
+      role="group"
       aria-label={t("filters.label")}
     >
       {expeditionFilterOrder.map((key) => {
@@ -395,7 +396,12 @@ export function ExpeditionEquipmentSimulator({
     >
       <section className="calculator-card">
         <h2 className="calculator-heading">{t("summary-title")}</h2>
-        <Summary totals={totals} selected={selected} />
+        {/* Bloc 92/H1: the summary recomputes silently on every slot/star
+            change and has no placeholder — a permanently-mounted live region
+            announces the updated totals to screen readers. */}
+        <div aria-live="polite">
+          <Summary totals={totals} selected={selected} />
+        </div>
       </section>
       {/* Bloc 32/E.1: repositioned under the global summary, matching
           Combat's family-button row (Bloc 32/D.6). */}
