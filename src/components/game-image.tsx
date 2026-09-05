@@ -23,12 +23,14 @@ export function GameImage({
   fallback: ReactNode;
   // Bloc 91/M2: the image's intrinsic pixel dimensions, so the browser can
   // reserve the right box (and aspect ratio) before the file loads instead of
-  // reflowing when it arrives. The display size stays controlled by CSS — these
-  // are belt-and-braces alongside the classes' own fixed sizing. Pass the
-  // source dimensions (game icons are square, e.g. 256×256), not the rendered
-  // px, so max-height-constrained slots keep their intrinsic-capped size.
-  width: number;
-  height: number;
+  // reflowing when it arrives — belt-and-braces alongside the CSS sizing.
+  // Pass them ONLY when the true aspect ratio is known and correct (gems and
+  // tile art are square; templars are 1000×1353). Codex review (PR #114):
+  // omit them for equipment/consumables assets, whose dimensions vary and are
+  // often non-square (e.g. 214×156) — .stuff-slot-image only caps max-height,
+  // so a wrong width/height there would letterbox/shrink the real image.
+  width?: number;
+  height?: number;
   // Bloc 36/B: the first tool category tile is the page's LCP element on
   // both the homepage and /tools — same "villes" special-case the old
   // next/image usage had, ported here so switching to GameImage doesn't

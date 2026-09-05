@@ -38,6 +38,23 @@ describe("GameImage", () => {
     expect(img).toHaveAttribute("height", "256");
   });
 
+  // Bloc 91/M2 (Codex review, PR #114): equipment/consumables assets vary in
+  // size and are often non-square, and their CSS only caps max-height — so
+  // GameImage must emit no width/height when none is given, letting the browser
+  // use the file's real aspect ratio rather than a forced (wrong) one.
+  it("Bloc91/M2: omits width/height when they aren't provided", () => {
+    render(
+      <GameImage
+        src="/equipment/combat/defense-legendary-belt.webp"
+        alt="Ceinture"
+        fallback={<span>repli</span>}
+      />,
+    );
+    const img = screen.getByRole("img");
+    expect(img).not.toHaveAttribute("width");
+    expect(img).not.toHaveAttribute("height");
+  });
+
   it("shows the visual fallback instead of a broken image icon once loading fails", () => {
     render(
       <GameImage
