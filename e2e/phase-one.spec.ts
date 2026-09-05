@@ -665,9 +665,11 @@ test("Ranking converts position and percentage into league ranges", async ({
   expect(percentageBox!.x + percentageBox!.width).toBeLessThan(rankBox!.x);
 
   await rankingLeagueGroup.getByRole("button", { name: "Bronze" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "à définir dans l’administration",
-  );
+  // Bloc 92/A11y: the ranking placeholder no longer carries its own
+  // role="status" (it sits inside a permanent aria-live region); match its text.
+  await expect(
+    page.getByText(/à définir dans l’administration/),
+  ).toBeVisible();
 });
 
 test("Skills exposes gem distributions and exact templar costs", async ({
