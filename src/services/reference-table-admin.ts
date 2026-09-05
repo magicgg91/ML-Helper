@@ -1,12 +1,7 @@
 import type { Prisma } from "@prisma/client";
-import type { Session } from "next-auth";
-import { can } from "../auth/permissions";
 import { prisma } from "../lib/prisma";
 import { auditMessage } from "../lib/audit-message";
 
-export function canManageReferences(session: Session | null) {
-  return Boolean(session?.user && can(session.user.role, "references.write"));
-}
 export async function saveReferenceTable(args: {
   key: string;
   target: string;

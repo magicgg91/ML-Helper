@@ -2,7 +2,7 @@
 // it (cdc section 7.1: Combat equipment, Expedition equipment) — a neutral
 // helper with no dependency on any specific skill or stat, so neither side
 // re-derives or duplicates the same formula (AGENTS.md factoring rule).
-export const maxEquipmentStar = 8;
+const maxEquipmentStar = 8;
 
 export function valueAtStar(
   base: number,

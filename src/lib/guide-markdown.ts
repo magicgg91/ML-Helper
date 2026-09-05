@@ -13,7 +13,7 @@ export type GuideBlock = {
 };
 
 let nextId = 0;
-export function newGuideBlock(
+function newGuideBlock(
   type: GuideBlock["type"] = "paragraph",
 ): GuideBlock {
   nextId += 1;

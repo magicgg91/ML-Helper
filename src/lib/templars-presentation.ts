@@ -28,16 +28,6 @@ export type TemplarPresentationCatalog = Record<
   TemplarPresentationRow
 >;
 
-export const emptyTemplarPresentationRow: TemplarPresentationRow = {
-  image: "",
-  name_fr: "",
-  name_en: "",
-  description_fr: "",
-  description_en: "",
-  temple_base: "",
-  bonus: "",
-};
-
 // The 5 competence names are already fully confirmed and translated
 // (game.templars.<key>, all 5 locales) — reused here as the Nom seed
 // rather than left blank, since it's already-known content, not invented.

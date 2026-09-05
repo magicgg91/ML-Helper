@@ -5,7 +5,7 @@ import {
 } from "./player-settings";
 import { defaultCityParameters, type CityParameters } from "./city-parameters";
 
-export const CITY_LEVEL_MAX = 200;
+const CITY_LEVEL_MAX = 200;
 
 export type CityStats = {
   vp: number;
@@ -14,7 +14,7 @@ export type CityStats = {
   army: number;
 };
 
-export function vpAt(
+function vpAt(
   level: number,
   parameters: CityParameters = defaultCityParameters,
 ): number {

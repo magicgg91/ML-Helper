@@ -9,7 +9,7 @@ import { useEffect, useRef, useTransition } from "react";
 // src/proxy.ts, or picked manually) is mirrored here so a returning visit
 // stays consistent even if the NEXT_LOCALE cookie (the actual SSR source
 // of truth, read in src/i18n/request.ts) gets cleared separately.
-export const localeStorageKey = "mlhelper_locale";
+const localeStorageKey = "mlhelper_locale";
 
 // Shared by LocaleToggle (public, 5 locales) and AdminLocaleToggle (admin
 // chrome, EN/FR only) — same fetch-then-refresh mechanism, only the

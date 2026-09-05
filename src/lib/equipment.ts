@@ -24,7 +24,7 @@ export const equipmentSlotLayout = [
   "Bouclier",
 ] as const;
 
-export const equipmentBlockDefinitions: Record<
+const equipmentBlockDefinitions: Record<
   EquipmentBlock,
   {
     label: string;
@@ -159,7 +159,7 @@ export function allowedSkills(block: EquipmentBlock): EquipmentSkill[] {
   );
 }
 
-export function isEquipmentSkillAllowed(
+function isEquipmentSkillAllowed(
   block: EquipmentBlock,
   family: EquipmentFamily,
   skill: string,
@@ -193,10 +193,6 @@ export function equipmentOptions(
         rarityOrder.indexOf(a.rarity as EquipmentRarity) -
         rarityOrder.indexOf(b.rarity as EquipmentRarity),
     );
-}
-
-export function equipmentLabel(item: CombatReferenceRow): string {
-  return `${item.rarity} — ${item.set_name} (${item.family})`;
 }
 
 export function findEquipment(
@@ -264,7 +260,7 @@ export function computeEquipmentSlot(
   return total;
 }
 
-export function computeStuffBlock(
+function computeStuffBlock(
   block: EquipmentBlock,
   slots: EquipmentSlotState[],
   rows: readonly CombatReferenceRow[] = combatEquipmentData,

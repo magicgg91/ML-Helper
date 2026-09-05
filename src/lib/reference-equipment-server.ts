@@ -206,9 +206,6 @@ export async function getCombatSecondaryBase(): Promise<CombatSecondaryBase> {
   return { mergeCost, gemSlots, skydust };
 }
 
-export async function getCombatMergeCostBase(): Promise<CombatMergeCostBase> {
-  return (await getCombatSecondaryBase()).mergeCost;
-}
 export async function getCombatGemSlotsBase(): Promise<CombatGemSlotsBase> {
   return (await getCombatSecondaryBase()).gemSlots;
 }
@@ -266,11 +263,4 @@ export async function getExpeditionSecondaryBase(): Promise<ExpeditionSecondaryB
     getLegacyExpeditionDismantleBase(),
   ]);
   return { mergeCost, dismantle };
-}
-
-export async function getExpeditionMergeCostBase(): Promise<ExpeditionMergeCostBase> {
-  return (await getExpeditionSecondaryBase()).mergeCost;
-}
-export async function getExpeditionDismantleBase(): Promise<ExpeditionDismantleBase> {
-  return (await getExpeditionSecondaryBase()).dismantle;
 }

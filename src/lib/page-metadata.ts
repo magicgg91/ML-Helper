@@ -8,7 +8,7 @@ import { launchLocales } from "./translations";
 // constant, reused by the root layout's title.template and by brandedTitle()
 // below. "Million Lords" is the one term players actually search for, so it
 // rides on every page title.
-export const brandSuffix = " | ML-Helper · Million Lords";
+const brandSuffix = " | ML-Helper · Million Lords";
 
 // The Next `title.template` form of the same suffix (set once on the root
 // layout, applied to every child page's string title).

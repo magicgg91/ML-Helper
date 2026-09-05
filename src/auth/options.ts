@@ -23,7 +23,7 @@ function requestIp(req?: { headers?: Record<string, string | undefined> }) {
   );
 }
 
-export async function authorizeAdminCredentials(
+async function authorizeAdminCredentials(
   credentials:
     | { username?: string; password?: string; totp?: string }
     | undefined,

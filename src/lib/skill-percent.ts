@@ -7,7 +7,7 @@
 // This is ONLY for skill percentages (equipment / gem contributions). It
 // must never be used for whole game quantities (gold, troops, points),
 // which stay integers via formatGameNumber.
-export const skillPercentMaxFractionDigits = 1;
+const skillPercentMaxFractionDigits = 1;
 
 export function formatSkillPercentValue(value: number, locale: string): string {
   return value.toLocaleString(locale, {

@@ -47,7 +47,7 @@ type SkillPointMeta = {
   prerequisite: Prerequisite | null;
 };
 
-export const leaguePointsPerLevel: Record<League, number> = {
+const leaguePointsPerLevel: Record<League, number> = {
   bronze: 1,
   silver: 1,
   gold: 1,
@@ -185,14 +185,6 @@ function prerequisiteSatisfied(
     return prerequisite.orSkills.some(({ skill, min }) => points[skill] >= min);
   }
   return points[prerequisite.skill] >= prerequisite.min;
-}
-
-export function skillPrerequisiteSatisfied(
-  key: SkillKey,
-  points: NumberMap<SkillKey>,
-): boolean {
-  const prerequisite = skillPointMeta[key].prerequisite;
-  return prerequisite ? prerequisiteSatisfied(prerequisite, points) : true;
 }
 
 export function allocateSkillPoints(

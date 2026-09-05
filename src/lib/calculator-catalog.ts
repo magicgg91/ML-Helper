@@ -67,19 +67,3 @@ export type CalculatorAvailability = Record<CalculatorSlug, boolean>;
 export const defaultCalculatorAvailability = Object.fromEntries(
   calculatorCatalog.map(({ slug }) => [slug, true]),
 ) as CalculatorAvailability;
-
-// The catalog's own order is the single source of truth for display order
-// (Bloc 31/C) — used to sort the admin Outils table instead of the
-// alphabetical-by-slug DB order, which doesn't match the intended sequence.
-const catalogOrder = new Map(
-  calculatorCatalog.map(({ slug }, index) => [slug, index]),
-);
-export function byCalculatorCatalogOrder(
-  a: { slug: string },
-  b: { slug: string },
-) {
-  return (
-    (catalogOrder.get(a.slug as CalculatorSlug) ?? Infinity) -
-    (catalogOrder.get(b.slug as CalculatorSlug) ?? Infinity)
-  );
-}
