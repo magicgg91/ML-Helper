@@ -1,6 +1,15 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Bloc 91/M1: next/font/google is a build-time loader Next's compiler
+// transforms; imported directly under vitest it throws. Stub every family to a
+// plain object so any component that loads a font (e.g. the root layout) can be
+// unit-tested. The real self-hosting is exercised by the production build.
+vi.mock("next/font/google", () => {
+  const loader = () => ({ className: "", variable: "", style: {} });
+  return new Proxy({}, { get: () => loader });
+});
+
 // Bloc 91/E1: unit tests render components in isolation, without the Next.js
 // router context next-intl's locale-aware navigation needs. Stub it globally
 // so a public `<Link href="/tools">` just renders an <a href="/tools"> the way
