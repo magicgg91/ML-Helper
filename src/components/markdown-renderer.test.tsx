@@ -138,4 +138,27 @@ describe("MarkdownRenderer", () => {
       screen.getByRole("heading", { level: 3, name: "Plus profond" }),
     ).toBeInTheDocument();
   });
+
+  // Bloc 91/M5 (Codex review, PR #112): an internal skip the author wrote
+  // (`## Section` then `#### Détail`) is closed to a gapless h2→h3, not left as
+  // an h2→h4 gap — the whole point of the normalization.
+  it("closes an internal heading skip when shiftHeadings is set", () => {
+    render(
+      <MarkdownRenderer
+        markdown={"## Section\n\n#### Détail\n\n## Autre"}
+        shiftHeadings
+      />,
+    );
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Section" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Détail" }),
+    ).toBeInTheDocument();
+    // A sibling section returns to h2, not the h4 the author skipped to.
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Autre" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
+  });
 });

@@ -33,30 +33,34 @@ const forEachNode = (node: HastNode, fn: (node: HastNode) => void): void => {
   node.children?.forEach((child) => forEachNode(child, fn));
 };
 
-// Bloc 91/M5: normalize a Markdown body's heading levels so its shallowest
-// heading sits at <h2> — one level below the page <h1> the guide shell already
-// renders — while preserving the relative depth the author wrote. This fixes
-// the two problems the audit found without introducing new skips:
-//   - a body opening with `# …` (a second <h1>) shifts down to <h2>;
-//   - a body already opening at `##` is left untouched (no over-shift to h3);
-//   - a body starting too deep (e.g. `###`) is promoted up to <h2>.
-// Levels are clamped to 2–6 so the body can never re-introduce an <h1>.
+// Bloc 91/M5: renumber a Markdown body's headings into a gapless outline that
+// starts at <h2> — one level below the page <h1> the guide shell already
+// renders. Walking the headings in document order and mapping each authored
+// level onto (nearest shallower ancestor's output + 1), floored at 2, means:
+//   - a body opening with `# …` (a second <h1>) becomes <h2>;
+//   - a body already opening at `##` stays <h2> (its `###` child stays <h3>);
+//   - a body starting too deep (e.g. `###`) is promoted to <h2>;
+//   - an internal skip the author wrote (`## …` then `#### …`) is closed to
+//     <h2> then <h3>, not left as an h2→h4 gap (Codex review, PR #112).
+// Output levels only ever rise by one and are floored at 2, so the body can
+// never re-introduce an <h1>; they are capped at 6 for pathological nesting.
 // NOT applied to the legal page, whose Markdown provides its own (single) <h1>.
 export function rehypeShiftHeadings() {
   return (tree: HastNode): void => {
-    let min: number | null = null;
+    // Each entry maps an open authored level to the output level it received;
+    // deeper-or-equal entries are popped when a new heading closes them.
+    const stack: { input: number; output: number }[] = [];
     forEachNode(tree, (node) => {
       const level = headingLevel(node);
-      if (level !== null && (min === null || level < min)) min = level;
-    });
-    if (min === null) return;
-    const delta = 2 - min;
-    if (delta === 0) return;
-    forEachNode(tree, (node) => {
-      const level = headingLevel(node);
-      if (level !== null) {
-        node.tagName = `h${Math.min(6, Math.max(2, level + delta))}`;
-      }
+      if (level === null) return;
+      while (stack.length && stack[stack.length - 1].input >= level)
+        stack.pop();
+      const output = Math.min(
+        6,
+        stack.length ? stack[stack.length - 1].output + 1 : 2,
+      );
+      stack.push({ input: level, output });
+      node.tagName = `h${output}`;
     });
   };
 }
