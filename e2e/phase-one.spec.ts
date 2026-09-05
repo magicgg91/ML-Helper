@@ -645,11 +645,6 @@ test("Ranking converts position and percentage into league ranges", async ({
   // left of both fields (reading order), rather than a fragile exact-y
   // comparison (the unlabeled button group and the labeled fields have
   // different heights, so their tops don't align pixel-for-pixel).
-  // Bloc 91/M1: measure only once the self-hosted fonts have loaded. Their
-  // size-adjusted fallback is a hair wider, so measuring mid-swap can tip this
-  // tight single-row layout into a wrap (a flake surfaced in CI's next dev,
-  // where the font compiles on first request).
-  await page.evaluate(() => document.fonts.ready.then(() => true));
   const groupBox = await rankingLeagueGroup.boundingBox();
   const percentageBox = await page
     .getByRole("spinbutton", { name: "Ton pourcentage actuel" })
