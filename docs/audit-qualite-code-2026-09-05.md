@@ -67,26 +67,13 @@ La dette se concentre sur **trois axes** : (1) des **divergences entre jumeaux**
 - **Impact :** un visiteur allemand, espagnol ou turc voit les filtres du référentiel Boutique en anglais au milieu d'une page traduite, et les pages Guides/Mentions légales servent une meta description anglaise aux moteurs dans ces 3 langues — ce qui annule en partie le travail du Bloc 91/E2 pour 3 des 5 langues. Les descriptions SEO ont visiblement été ajoutées en fr/en sans rétro-portage.
 - **Action : corriger + verrouiller.** Traduire les 11 clés utilisées, supprimer `Public.descriptions.reference-detail` (orpheline), et **ajouter un test de parité de clés** entre les 5 locales — aucun n'existe aujourd'hui, ce qui explique que rien ne l'ait signalé.
 
-### E3 — La collision d'`id` d'erreur corrigée dans `EditableDataTable` subsiste dans son jumeau du même fichier
-
-- **Localisation :** `src/components/editable-reference-table.tsx` — `EditableDataTable` (corrigé, `:118` + `:178`) contre `EditableReferenceTableInner.field()` (non corrigé, `:484`, `:502`, `:516`).
-- **Constat :** en Bloc 92, une revue Codex a signalé que plusieurs `EditableDataTable` sur une même page produisaient des `id` d'erreur identiques (`error-0-<champ>`), si bien que l'`aria-describedby` d'un champ pointait vers l'erreur de la **première** table. Le correctif a introduit un préfixe par instance (`useId()`). **Le composant jumeau, dans le même fichier, construit toujours ses id ainsi :**
-
-  ```js
-  aria-describedby={errors[key] ? `${key}-error` : undefined}   // key = `${row}:${field}`
-  ```
-
-  Or son propre commentaire (Bloc 37/E, `:14-17`) précise qu'une page **héberge plusieurs de ces tables** (Combat, Expédition, pilotées par un bouton d'enregistrement partagé). La collision est donc structurellement identique, simplement non corrigée.
-- **Impact :** même défaut d'accessibilité que celui corrigé en Bloc 92 — sur les pages d'administration Combat/Expédition, un lecteur d'écran annonce le message d'erreur de la mauvaise table.
-- **Action : corriger** en appliquant le même `useId()` à `EditableReferenceTableInner`. Deux incohérences mineures adjacentes : la classe `field-invalid` n'est posée que sur la branche `<input>` (`:504`) et jamais sur `<select>` ni dans `EditableDataTable` ; et le drapeau de colonne `wide` est supporté par `EditableDataTable` (`:120-125`) mais **silencieusement ignoré** par `Inner` (`:592`, `:607`).
-
 ---
 
 ## 2. Priorité MOYENNE
 
 ### M1 — Duplication structurelle : chaque correctif transverse doit être écrit 6 à 8 fois
 
-C'est la cause racine de E3 et du coût des blocs 91/92. Cinq grappes vérifiées :
+C'est la cause racine de M9 et du coût des blocs 91/92. Cinq grappes vérifiées :
 
 | Duplication | Occurrences | Preuve |
 |---|---|---|
@@ -107,12 +94,20 @@ C'est la cause racine de E3 et du coût des blocs 91/92. Cinq grappes vérifiée
 - **Impact :** modéré en pratique — les jeux de données des simulateurs sont petits (6 à 12 emplacements), donc pas de ralentissement perceptible. C'est surtout une **incohérence entre jumeaux** : la même charge est traitée différemment des deux côtés, sans raison documentée.
 - **Action :** aligner Expédition sur Combat (`useMemo` sur `computeExpeditionTotal`/`computeExpeditionSlot`). **Ne pas** ajouter de mémoïsation ailleurs sans mesure : l'absence actuelle est sans conséquence mesurable et sur-optimiser nuirait à la lisibilité.
 
-### M3 — Divergence sémantique : Expédition signale les valeurs non confirmées, Combat non
+### M3 — Le drapeau `confirmed` d'Expédition est redondant, et son badge « non confirmé » est du code injoignable
 
-- **Localisation :** `reference-equipment.ts:109-121` (`expeditionValueAtStar` → `{ value, confirmed }`) contre `:41-50` (`combatValueAtStar` → `number | null`) ; rendu : `reference-tables.tsx:573-575` (`unconfirmed-label`) contre le `CombatTile` qui n'a pas cette notion.
-- **Constat :** Expédition distingue une valeur *extrapolée* d'une valeur *confirmée en jeu* et l'affiche ; Combat renvoie un simple nombre, donc présente une valeur extrapolée exactement comme une valeur vérifiée.
-- **Impact :** `AGENTS.md` et le cdc posent la règle « les données non confirmées restent signalées ». Le référentiel Combat ne la respecte pas, alors que son jumeau si.
-- **Action : trancher explicitement.** Soit aligner Combat sur le contrat `{value, confirmed}`, soit documenter en commentaire pourquoi Combat n'en a pas besoin (toutes ses valeurs seraient confirmées). L'état actuel ressemble à un oubli, pas à un choix.
+- **Localisation :** `src/lib/reference-equipment.ts:109-121` ; rendu `src/components/reference-tables.tsx:573-575`.
+- **Constat :** `expeditionValueAtStar()` ne renvoie `confirmed: false` **que** conjointement à `value: null` (données manquantes ou stat inconnue) ; dès qu'une valeur est calculée, `confirmed` vaut toujours `true`. Autrement dit `confirmed === (value !== null)` : le champ n'apporte **aucune information** que `value` ne porte déjà.
+  Conséquence directe sur le rendu, dont la condition est :
+
+  ```jsx
+  {result.value !== null && !result.confirmed ? <small className="unconfirmed">…</small> : null}
+  ```
+
+  `value !== null` implique `confirmed === true`, donc `!result.confirmed` est toujours faux : **le badge `unconfirmed-label` ne peut jamais s'afficher**. C'est du code mort, et la clé de traduction associée est de fait inutilisée.
+- **Impact :** une API trompeuse (un contrat `{value, confirmed}` qui suggère une distinction confirmé/extrapolé inexistante) plus une branche de rendu injoignable. Aucun impact utilisateur visible, puisque le badge ne s'affichait de toute façon jamais.
+- **Action : simplifier.** Soit faire porter au drapeau une vraie sémantique (distinguer réellement une valeur extrapolée d'une valeur vérifiée en jeu, si le besoin existe), soit supprimer `confirmed` et la branche de rendu, et ramener `expeditionValueAtStar` à `number | null` — donc au même contrat que `combatValueAtStar`.
+- *Correction après revue (Codex, PR #117) : une version antérieure de ce rapport présentait ce point comme une divergence où Expédition signalerait les valeurs extrapolées et Combat non, en invoquant la règle « les données non confirmées restent signalées ». C'était faux sur les deux plans — Expédition ne signale rien en pratique, et la règle d'`AGENTS.md:59` porte sur le fait de garder ces données **éditables en admin**, pas sur un badge public.*
 
 ### M4 — Liens référentiel → outil codés en dur, alors que le sens inverse a un helper
 
@@ -161,12 +156,25 @@ Plus : `src/app/page.module.css` — **fichier de scaffold `create-next-app` jam
 - **Impact :** dette de lisibilité surtout ; c'est aussi ce qui rend les duplications de M1 difficiles à repérer.
 - **Action :** découpage **opportuniste**, pas de refonte dédiée. Le découpage naturel suit les composants déjà nommés (`GemsCalculator`, `TemplarsCalculator`, `Result` → fichiers propres). À faire quand un bloc touche déjà le fichier. *(`lib/equipment-data.ts`, 4144 lignes, est un jeu de données, pas du code — à laisser.)*
 
+### M9 — Ids d'erreur non namespacés dans `EditableReferenceTableInner` (fragilité latente, pas de bug actuel)
+
+- **Localisation :** `src/components/editable-reference-table.tsx` — `EditableDataTable` (namespacé depuis le Bloc 92, `:118` + `:178`) contre `EditableReferenceTableInner.field()` (`:484`, `:502`, `:516`).
+- **Constat :** le Bloc 92 a corrigé, dans `EditableDataTable`, une collision d'`id` d'erreur entre plusieurs tables d'une même page, en préfixant par `useId()`. Le composant jumeau du même fichier construit toujours ses id en `${row}:${field}-error`, sans préfixe d'instance. **Vérification faite, aucune collision ne se produit aujourd'hui** : les écrans qui montent plusieurs de ces tables (`CombatReferenceScreen`, `ExpeditionReferenceScreen`, `reference-admin-editors.tsx:606` et `:676`) utilisent des jeux de clés de colonnes **disjoints** — table principale (`rarity`, `family`, `slot_type`, `skill_1`…), table d'incréments (noms de compétences, `equipmentSkillLabels`), table secondaire (noms de raretés via `useRarityBaseColumns`). Comme `errorKey()` combine l'indice de ligne et la clé de colonne, deux tables co-montées ne peuvent pas produire le même id.
+- **Impact :** aucun défaut observable actuellement. Le risque est latent : il suffirait qu'un futur bloc donne à deux tables co-montées une colonne de même clé (par exemple une colonne `rarity` ajoutée à la table secondaire) pour reproduire exactement le bug corrigé en Bloc 92.
+- **Action : alignement défensif, faible priorité.** Appliquer le même `useId()` à `EditableReferenceTableInner`, pour que les deux moitiés du fichier suivent la même règle. Deux incohérences mineures adjacentes, elles bien réelles : la classe `field-invalid` n'est posée que sur la branche `<input>` (`:504`), jamais sur `<select>` ni dans `EditableDataTable` ; et le drapeau de colonne `wide` est supporté par `EditableDataTable` (`:120-125`) mais **silencieusement ignoré** par `Inner` (`:592`, `:607`).
+- *Correction après revue (Codex, PR #117) : ce point était initialement classé en priorité élevée comme un bug de lecteur d'écran existant. La vérification des clés de colonnes réellement co-montées montre qu'il n'est pas reproductible en l'état ; il est donc reclassé en fragilité latente.*
+
 ---
 
 ## 3. Priorité FAIBLE
 
-### F1 — Dérive cosmétique schéma ↔ migrations (ordre des colonnes)
-`prisma migrate diff --from-migrations --to-schema-datamodel` **n'est pas vide** : il veut redéfinir `audit_logs`. Cause exacte vérifiée : `actor_role` et `message` ont été ajoutés par `ALTER TABLE ADD COLUMN` (migrations `20260817`/`20260818`), qui les **appose en fin de table** en SQLite, alors que `schema.prisma` les déclare au milieu. **Aucune colonne ni aucun index ne manque** (`audit_logs_created_at_idx` est bien créé par la migration initiale, ligne 81). Conséquence : un futur `prisma migrate dev` générerait une migration de réordonnancement parasite, et `migrate diff` ne peut pas servir de garde-fou CI. *Action : laisser en l'état (aucun impact fonctionnel), ou normaliser l'ordre des champs dans `schema.prisma` pour retrouver un diff vide.*
+### F1 — Dérive réelle schéma ↔ migrations (`actor_role` : `DEFAULT` divergent, plus l'ordre des colonnes)
+`prisma migrate diff --from-migrations --to-schema-datamodel` **n'est pas vide** : il veut redéfinir `audit_logs`. Deux causes distinctes :
+1. **Un écart de valeur par défaut, réel :** la migration `20260817000000_audit_actor_role` ajoute `actor_role TEXT NOT NULL **DEFAULT 'unknown'**`, alors que `schema.prisma:94` déclare `actorRole String @map("actor_role")` **sans `@default`**. La base déployée porte donc un défaut que le schéma ne connaît pas.
+2. **Un écart d'ordre de colonnes, cosmétique :** `actor_role` et `message` ayant été ajoutés par `ALTER TABLE ADD COLUMN`, SQLite les place en fin de table, alors que `schema.prisma` les déclare au milieu.
+
+Aucune colonne ni aucun index ne manque (`audit_logs_created_at_idx` est bien créé par la migration initiale, ligne 81), et l'écart de défaut est sans conséquence à l'exécution puisque Prisma fournit toujours `actorRole` à l'insertion. Mais un futur `prisma migrate dev` générerait une migration parasite, et `migrate diff` ne peut pas servir de garde-fou CI tant que la dérive persiste. *Action : trancher explicitement — soit aligner `schema.prisma` (`@default("unknown")` sur `actorRole` + ordre des champs), soit acter la dérive par écrit. Ne pas se contenter de réordonner les champs : cela ne suffirait pas à vider le diff.*
+- *Correction après revue (Codex, PR #117) : une version antérieure qualifiait cette dérive de « purement cosmétique », en manquant l'écart de `DEFAULT` sur `actor_role`.*
 
 ### F2 — 17 symboles exportés sans consommateur externe
 Utilisés uniquement à l'intérieur de leur propre fichier : `authorizeAdminCredentials`, `adminCapabilities`, `localeStorageKey`, `cityToolSlugs`, `CITY_LEVEL_MAX`, `vpAt`, `equipmentBlockDefinitions`, `isEquipmentSkillAllowed`, `computeStuffBlock`, `leagueFileSlug`, `isGuideCategory`, `newGuideBlock`, `brandSuffix`, `leaguePointsPerLevel`, `skillPercentMaxFractionDigits`, `maxEquipmentStar`, `plannedLocales` (+ 8 types exportés inutilisés). *Action : retirer le mot-clé `export` — surface d'API réduite, et `knip` redevient exploitable comme garde-fou.*
@@ -197,8 +205,10 @@ Pour un projet construit en 92 blocs successifs avec de nombreuses reversions, l
 
 **Les 3 actions à plus fort impact :**
 
-1. **Corriger les 3 divergences de jumeaux à conséquence réelle (E1, E3, M7)** — la validation manquante du `localStorage` Combat (risque d'écran blanc), la collision d'`id` d'erreur non corrigée dans `EditableReferenceTableInner`, et le commentaire qui interdit un portage déjà fait. La comparaison systématique des jumeaux reste la méthode la plus rentable sur ce projet : elle a produit ici 6 constats vérifiés, dont un bug utilisateur.
-2. **Traduire les 12 clés manquantes en DE/ES/TR et ajouter un test de parité des locales (E2)** — 11 sont réellement affichées, le repli anglais les masque, et rien ne détecte la lacune. C'est le seul constat qui dégrade aujourd'hui l'expérience d'utilisateurs réels.
-3. **Factoriser les onglets et l'état d'enregistrement admin (M1)** — les deux grappes les plus coûteuses : les onglets ont forcé le Bloc 92 à câbler 8 fois le même ARIA, et les 6 variantes d'état d'enregistrement produisent des retours visuels incohérents. C'est l'investissement qui réduit le plus le coût des blocs futurs.
+1. **Traduire les 12 clés manquantes en DE/ES/TR et ajouter un test de parité des locales (E2)** — 11 d'entre elles sont réellement affichées (4 descriptions SEO, les libellés de filtres Boutique, un texte visible), le repli anglais les masque silencieusement, et rien ne détecte la lacune. C'est **le seul constat qui dégrade aujourd'hui l'expérience d'utilisateurs réels**.
+2. **Fiabiliser le simulateur Combat (E1)** — porter sur Combat la garde de forme que son jumeau Expédition applique déjà à son `localStorage`. C'est le seul risque de plantage identifié, et le correctif est déjà écrit de l'autre côté. À traiter idéalement via un hook `usePersistedState` partagé, qui résorbe aussi F3.
+3. **Factoriser les onglets et l'état d'enregistrement admin (M1)** — les deux grappes de duplication les plus coûteuses : les onglets ont forcé le Bloc 92 à câbler 8 fois le même ARIA, et les 6 variantes d'état d'enregistrement produisent des retours visuels incohérents (certains éditeurs ne confirment jamais en vert). C'est l'investissement qui réduit le plus le coût des blocs futurs.
 
-Le nettoyage du code mort (M5, F2) est peu risqué et peut accompagner n'importe quel bloc ultérieur.
+Le nettoyage du code mort (M5, F2, plus la branche injoignable de M3) est peu risqué et peut accompagner n'importe quel bloc ultérieur.
+
+**Sur la méthode.** La comparaison systématique des implémentations jumelles reste la plus rentable sur ce projet : elle a produit E1 (bug réel), M2, M7 et F6. Elle demande toutefois d'aller jusqu'à l'exécution réelle du code : la revue Codex de cette PR a montré que **trois constats initiaux étaient faux** — une collision d'`id` impossible en pratique (clés de colonnes disjointes), un drapeau `confirmed` sans sémantique réelle, et une dérive Prisma qui n'était pas que cosmétique. Ils ont été corrigés ci-dessus, avec la mention de la correction. Une divergence de forme entre jumeaux n'est pas une divergence de comportement tant qu'on n'a pas vérifié les appelants.
