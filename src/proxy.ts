@@ -77,15 +77,14 @@ function contentSecurityPolicy(nonce: string): string {
     // Admin cover images accept external https URLs (F1 restricts them to
     // http/https); data: covers the TOTP QR code and inlined icons.
     "img-src 'self' data: https:",
-    // The display fonts (Cinzel / IBM Plex Sans / JetBrains Mono) are pulled
-    // from Google Fonts by globals.css's @import — allow the stylesheet host
-    // (style-src) and the font-file host (font-src). data: keeps inlined
-    // icon fonts working.
-    "font-src 'self' data: https://fonts.gstatic.com",
+    // Bloc 91/M1: the display fonts (Cinzel / IBM Plex Sans / JetBrains Mono)
+    // are self-hosted via next/font (see src/app/layout.tsx), so they load from
+    // this origin ('self') — no fonts.gstatic.com / fonts.googleapis.com entries
+    // any more. data: keeps inlined icon fonts working.
+    "font-src 'self' data:",
     // React/Tailwind inject inline styles; styles are a far lower XSS risk
-    // than scripts, which stay nonce-gated above. fonts.googleapis.com serves
-    // the @import font stylesheet.
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // than scripts, which stay nonce-gated above.
+    "style-src 'self' 'unsafe-inline'",
     `script-src ${scriptSrc}`,
     `connect-src ${connectSrc}`,
   ].join("; ");

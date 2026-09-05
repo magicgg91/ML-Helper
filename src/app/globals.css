@@ -1,5 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap");
-
+/* Bloc 91/M1: the display fonts are now self-hosted via next/font (see
+   src/app/layout.tsx), exposed as --font-sans/--font-serif/--font-mono on
+   <html>. The render-blocking Google Fonts @import that used to sit here is
+   gone, along with its fonts.googleapis.com / fonts.gstatic.com CSP entries. */
 :root,
 :root[data-theme="dark"] {
   /* Bloc 34/F: 2nd testing pass asked for a slightly brighter dark theme —
@@ -161,7 +163,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   background-image:
     radial-gradient(
       ellipse at top left,
@@ -537,7 +539,7 @@ main.public-main.contact-page {
   padding-left: 1.1rem;
   color: var(--muted);
   font-weight: 500;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 0.78rem;
   line-height: 1.6;
   white-space: normal;
@@ -1075,7 +1077,7 @@ select {
   top: 4.1rem;
   transform: translateX(-50%);
   color: var(--text-faint);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 0.56rem;
   opacity: 0.6;
 }
@@ -1095,7 +1097,7 @@ select {
   align-items: center;
   white-space: nowrap;
   text-align: center;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
 }
 .ranking-scale-label {
   position: absolute;
@@ -1131,7 +1133,7 @@ select {
   left: 50%;
   transform: translateX(-50%);
   color: var(--ember);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 0.62rem;
   font-weight: 700;
   white-space: nowrap;
@@ -1267,7 +1269,7 @@ select {
   padding: 0.05rem 0.3rem;
   border-radius: 0.3rem;
   color: #fff;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 0.6rem;
   line-height: 1.3;
   text-shadow: 0 1px 1px rgb(0 0 0 / 40%);
@@ -1862,7 +1864,14 @@ select {
      where all 3 don't fit on one line, a numeric field wraps to a 2nd
      line rather than league silently shrinking. */
   flex-wrap: wrap;
-  gap: 1rem;
+  /* Bloc 91/M1: 0.5rem (was 1rem). With the now self-hosted IBM Plex Sans —
+     a hair wider than the system fallback CI used to render while Google
+     Fonts loaded — the league field (50%) + the two inline numeric fields
+     summed to within ~7px of this row's width, so the rank field wrapped to
+     a 2nd line on some browsers. A smaller minimum gap restores the margin;
+     justify-content: space-between still spreads the fields edge to edge, so
+     the change is invisible whenever they fit on one line. */
+  gap: 0.5rem;
   /* Bloc 65/E: the 3 fields spread across the whole block instead of
      bunching at its left edge and leaving the rest of the row empty —
      the league group keeps the left edge, the rank field reaches the
@@ -1921,7 +1930,10 @@ select {
   flex: 0 0 auto;
 }
 .ranking-number-field .number-stepper {
-  width: 9rem;
+  /* Bloc 91/M1: 8.5rem (was 9rem) — trims another ~16px so the single-row
+     desktop layout keeps comfortable margin with the self-hosted font (see
+     .ranking-fields' gap note); still ample for a "100.00" value + steppers. */
+  width: 8.5rem;
 }
 /* Bloc 69/G, mobile only: desktop's inline-label-before-control row (Bloc
    64/G) is replaced by a title-above-control stack — each of the 3
@@ -2133,7 +2145,7 @@ h1,
 h2,
 h3,
 .brand {
-  font-family: "Cinzel", serif;
+  font-family: var(--font-serif, serif);
   letter-spacing: 0.025em;
 }
 h1 {
@@ -2148,7 +2160,7 @@ select,
 .result-highlight strong,
 .budget-result-main strong,
 .ranking-table td {
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono, monospace);
 }
 .public-main,
 .player-settings {
@@ -2216,7 +2228,7 @@ select,
   background: var(--bg-panel-raised);
   color: var(--text-dim);
   cursor: pointer;
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 15px;
   line-height: 1;
   user-select: none;
@@ -2290,7 +2302,7 @@ select,
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   font-size: 12px;
   font-weight: 500;
 }
@@ -2546,7 +2558,7 @@ button:disabled,
   background: var(--bg-panel);
   color: var(--text-faint);
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -2618,7 +2630,7 @@ button:disabled,
   background: var(--bg-panel);
   color: var(--text-faint);
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -2649,7 +2661,7 @@ nav.tabs button {
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   font-size: 12px;
   font-weight: 500;
 }
@@ -3469,7 +3481,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   max-width: 12rem;
   margin-top: 0.3rem;
   color: var(--ember);
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
   font-size: 0.7rem;
 }
 .form-status,
@@ -3740,7 +3752,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .guide-markdown-input {
   min-height: 28rem;
   resize: vertical;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
   line-height: 1.55;
 }
 .guide-category-selector {
@@ -3796,7 +3808,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   box-shadow: none;
 }
 .guide-markdown-workspace .w-md-editor-preview .wmde-markdown {
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: var(--font-sans, sans-serif);
 }
 .guide-list-card {
   display: flex;
@@ -3991,7 +4003,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   background: var(--bg-panel);
 }
 .markdown-content code {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-mono, monospace);
 }
 .markdown-content .contains-task-list {
   padding-left: 0;
@@ -4196,7 +4208,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 }
 .tool-count {
   color: var(--accent-strong);
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 0.78rem;
 }
 /* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same

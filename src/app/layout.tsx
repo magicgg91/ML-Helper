@@ -1,10 +1,37 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { Cinzel, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { siteUrl } from "@/lib/site-url";
 import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
+
+// Bloc 91/M1: self-host the display fonts through next/font instead of the
+// render-blocking Google Fonts @import globals.css used to carry. next/font
+// downloads the files at build time, serves them same-origin (one fewer CSP
+// domain, no third-party request — simpler on the RGPD front), preloads them
+// and applies an automatic size-adjust fallback. Only the weights the CSS
+// actually uses are requested. Each family is exposed as a CSS custom property
+// (--font-sans/-serif/-mono) that globals.css references.
+const fontSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-sans",
+  display: "swap",
+});
+const fontSerif = Cinzel({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-serif",
+  display: "swap",
+});
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 // Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
 // applied to every page in the app, public site included, since almost no
@@ -52,7 +79,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // by the middleware.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable}`}
+    >
       <head>
         {/* Bloc 33/B: sets data-theme before first paint, so a first-time
             visitor sees their OS preference immediately instead of a flash
