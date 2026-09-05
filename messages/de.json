@@ -434,7 +434,10 @@
     "tools": "Werkzeuge",
     "referentiels": "Referenztabellen",
     "guides": "Anleitungen",
-    "menu": "Menü"
+    "menu": "Menü",
+    "footer": "Fußzeile",
+    "home": "Startseite",
+    "breadcrumb": "Brotkrümelnavigation"
   },
   "search": {
     "label": "Website durchsuchen",

@@ -434,7 +434,10 @@
     "tools": "Herramientas",
     "referentiels": "Tablas de referencia",
     "guides": "Guías",
-    "menu": "Menú"
+    "menu": "Menú",
+    "footer": "Pie de página",
+    "home": "Inicio",
+    "breadcrumb": "Ruta de navegación"
   },
   "search": {
     "label": "Buscar en el sitio",

@@ -29,6 +29,7 @@ import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { pageMetadata } from "@/lib/page-metadata";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export async function generateMetadata({
   params,
@@ -65,13 +66,28 @@ export default async function ReferencePage({
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
-  const active = await getCalculatorAvailability();
-  const t = await getTranslations("references");
+  const [active, t, nav, locale] = await Promise.all([
+    getCalculatorAvailability(),
+    getTranslations("references"),
+    getTranslations("Navigation"),
+    getLocale(),
+  ]);
+  const name = t(`catalog.${reference.slug}`);
 
   return (
     <main className="public-main">
+      {/* Bloc 91/M7: breadcrumb Accueil › Référentiels › <name>. */}
+      <Breadcrumb
+        locale={locale}
+        label={nav("breadcrumb")}
+        items={[
+          { path: "/", label: nav("home") },
+          { path: "/referentiels", label: nav("referentiels") },
+          { path: `/referentiels/${slug}`, label: name },
+        ]}
+      />
       <p className="eyebrow">{t("eyebrow")}</p>
-      <h1 className="reference-page-title">{t(`catalog.${reference.slug}`)}</h1>
+      <h1 className="reference-page-title">{name}</h1>
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
           <CombatReferenceTable

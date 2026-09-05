@@ -10,6 +10,7 @@ import { pageTitle } from "@/lib/page-title";
 import { pageMetadata } from "@/lib/page-metadata";
 import { JsonLd } from "@/components/json-ld";
 import { articleJsonLd } from "@/lib/structured-data";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export async function generateMetadata({
   params,
@@ -51,12 +52,17 @@ export default async function GuidePage({
   const { slug } = await params;
   await connection();
   const locale = await getLocale();
-  const t = await getTranslations("guides");
+  const [t, nav] = await Promise.all([
+    getTranslations("guides"),
+    getTranslations("Navigation"),
+  ]);
   const guide = await prisma.guide.findFirst({
     where: { slug, status: "published", active: true },
   });
   if (!guide) notFound();
   const categories = parseGuideCategories(guide.category);
+  const guideTitle =
+    localizedText(guide.title, locale) || slug.replaceAll("-", " ");
   return (
     <main className="public-main">
       {/* Bloc 91/M4: Article structured data (dates, language, cover). */}
@@ -71,6 +77,16 @@ export default async function GuidePage({
           image: guide.coverImage,
         })}
       />
+      {/* Bloc 91/M7: breadcrumb Accueil › Guides › <title>. */}
+      <Breadcrumb
+        locale={locale}
+        label={nav("breadcrumb")}
+        items={[
+          { path: "/", label: nav("home") },
+          { path: "/guides", label: nav("guides") },
+          { path: `/guides/${slug}`, label: guideTitle },
+        ]}
+      />
       <article className="guide-shell">
         <p className="eyebrow">
           {t("detail.eyebrow", {
@@ -79,9 +95,7 @@ export default async function GuidePage({
               .join(" · "),
           })}
         </p>
-        <h1>
-          {localizedText(guide.title, locale) || slug.replaceAll("-", " ")}
-        </h1>
+        <h1>{guideTitle}</h1>
         {/* Bloc 42/F: guides are only really written by hand in FR/EN — a
             missing translation for the active locale (any locale,
             including FR/EN between themselves) shows a visible notice

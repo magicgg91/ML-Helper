@@ -312,6 +312,16 @@ select {
 .public-footer a {
   text-decoration: none;
 }
+/* Bloc 91/M7: the footer's site-section links. */
+.public-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: flex-end;
+}
+.public-footer-nav a:hover {
+  color: var(--accent-strong);
+}
 .brand {
   color: var(--accent-strong);
   font-size: 1.2rem;
@@ -4339,4 +4349,39 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .not-found-links a:hover {
   border-color: var(--accent-strong);
   background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
+}
+
+/* Bloc 91/M7: the visible breadcrumb on deep pages (src/components/breadcrumb.tsx). */
+.breadcrumb {
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  font-size: 0.9rem;
+}
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-dim);
+}
+.breadcrumb li:not(:first-child)::before {
+  content: "›";
+  color: var(--text-faint);
+}
+.breadcrumb a {
+  color: var(--text-dim);
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  color: var(--accent-strong);
+}
+.breadcrumb [aria-current="page"] {
+  color: var(--text);
 }

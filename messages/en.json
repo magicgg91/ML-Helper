@@ -434,7 +434,10 @@
     "tools": "Tools",
     "referentiels": "Reference tables",
     "guides": "Guides",
-    "menu": "Menu"
+    "menu": "Menu",
+    "footer": "Footer",
+    "home": "Home",
+    "breadcrumb": "Breadcrumb"
   },
   "search": {
     "label": "Search the site",

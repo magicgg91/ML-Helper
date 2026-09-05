@@ -11,7 +11,8 @@ test("published guides render Markdown and GFM content", async ({ page }) => {
   await expect(
     page.locator("ul").filter({ hasText: "Élément à puces" }),
   ).toBeVisible();
-  await expect(page.locator("ol")).toContainText("Première étape");
+  // Bloc 91/M7: the breadcrumb is also an <ol>, so scope to the guide body.
+  await expect(page.locator(".guide-shell ol")).toContainText("Première étape");
 
   const tasks = page.getByRole("checkbox");
   await expect(tasks).toHaveCount(2);
