@@ -45,7 +45,7 @@ import {
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { CrossReferenceLink } from "./cross-reference-link";
-import { handleTablistKeydown } from "./use-tablist-keyboard";
+import { TabList, TabPanel } from "./tabs";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
@@ -756,60 +756,37 @@ export function ReferenceTables({
   );
   return (
     <div>
-      <nav
-        className="calculator-tabs tabs"
-        role="tablist"
-        aria-label={t("tabs-label")}
-        onKeyDown={handleTablistKeydown}
-      >
-        <button
-          type="button"
-          role="tab"
-          id="equipment-tab-combat"
-          aria-controls="equipment-panel-combat"
-          aria-selected={active === "combat"}
-          tabIndex={active === "combat" ? 0 : -1}
-          disabled={!availability.combat}
-          title={!availability.combat ? t("disabled-tooltip") : undefined}
-          onClick={() => setActive("combat")}
-        >
-          {t("catalog.combat-equipment")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="equipment-tab-expedition"
-          aria-controls="equipment-panel-expedition"
-          aria-selected={active === "expedition"}
-          tabIndex={active === "expedition" ? 0 : -1}
-          disabled={!availability.expedition}
-          title={!availability.expedition ? t("disabled-tooltip") : undefined}
-          onClick={() => setActive("expedition")}
-        >
-          {t("catalog.expedition-equipment")}
-        </button>
-      </nav>
+      <TabList
+        idPrefix="equipment"
+        label={t("tabs-label")}
+        active={active}
+        onSelect={setActive}
+        tabs={[
+          {
+            key: "combat" as const,
+            label: t("catalog.combat-equipment"),
+            available: availability.combat,
+            unavailableLabel: t("disabled-tooltip"),
+          },
+          {
+            key: "expedition" as const,
+            label: t("catalog.expedition-equipment"),
+            available: availability.expedition,
+            unavailableLabel: t("disabled-tooltip"),
+          },
+        ]}
+      />
       {active === "combat" ? (
-        <div
-          role="tabpanel"
-          id="equipment-panel-combat"
-          aria-labelledby="equipment-tab-combat"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="equipment" tabKey="combat">
           <CombatReferenceTable rows={combatRows} />
-        </div>
+        </TabPanel>
       ) : active === "expedition" ? (
-        <div
-          role="tabpanel"
-          id="equipment-panel-expedition"
-          aria-labelledby="equipment-tab-expedition"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="equipment" tabKey="expedition">
           <ExpeditionReferenceTable
             rows={expeditionRows}
             increments={expeditionIncrements}
           />
-        </div>
+        </TabPanel>
       ) : (
         <p className="empty-state">{t("unavailable")}</p>
       )}

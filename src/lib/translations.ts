@@ -80,3 +80,20 @@ export function localizedText(value: unknown, locale: string) {
 export function hasLocalizedText(value: unknown, locale: string): boolean {
   return Boolean(translationRecord(value)[locale]);
 }
+
+/**
+ * Bloc 93/M1: the fr/en fallback for admin-entered text, which the
+ * Consommables, Évènements and Templiers references each carried an identical
+ * private copy of.
+ *
+ * Admin content is stored as an fr/en pair, and the site ships 5 locales, so
+ * a non-French visitor reads the English text; either side falls back to the
+ * other when its own is empty, so a half-filled pair never renders blank.
+ *
+ * Distinct from reference-tables' `secondaryLabel`, which deliberately does
+ * NOT cross-fall-back: an absent override there means "use the built-in
+ * label", not "use the other language".
+ */
+export function pickFrEn(fr: string, en: string, locale: string): string {
+  return locale === "fr" ? fr || en : en || fr;
+}

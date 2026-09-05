@@ -15,8 +15,7 @@ import {
 import type { League } from "../lib/player-settings";
 import { LeagueButtons } from "./league-select";
 import { NumberStepper } from "./number-stepper";
-import { TabLabel } from "./tab-label";
-import { handleTablistKeydown } from "./use-tablist-keyboard";
+import { TabList, TabPanel } from "./tabs";
 import { useSyncedLeague } from "./use-synced-league";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
@@ -55,27 +54,18 @@ function XpGainRate({
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div
+        <TabList
+          as="div"
           className="mode-switch"
-          role="tablist"
-          aria-label={t("mode-label")}
-          onKeyDown={handleTablistKeydown}
-        >
-          {(["attacker", "target"] as const).map((item) => (
-            <button
-              key={item}
-              type="button"
-              role="tab"
-              id={`combat-mode-tab-${item}`}
-              aria-controls={`combat-mode-panel-${item}`}
-              aria-selected={mode === item}
-              tabIndex={mode === item ? 0 : -1}
-              onClick={() => setMode(item)}
-            >
-              {t(`modes.${item}`)}
-            </button>
-          ))}
-        </div>
+          idPrefix="combat-mode"
+          label={t("mode-label")}
+          active={mode}
+          onSelect={setMode}
+          tabs={(["attacker", "target"] as const).map((item) => ({
+            key: item,
+            label: t(`modes.${item}`),
+          }))}
+        />
         <label className="calculator-field">
           {t("fields.my-vp")}
           <div className="unit-input">
@@ -104,13 +94,7 @@ function XpGainRate({
           active mode (only the active panel is rendered, mirroring
           reference-tables.tsx). It doubles as the H1 live region so the
           recomputed opponent-VP ranges are announced. */}
-      <div
-        role="tabpanel"
-        id={`combat-mode-panel-${mode}`}
-        aria-labelledby={`combat-mode-tab-${mode}`}
-        tabIndex={0}
-        aria-live="polite"
-      >
+      <TabPanel idPrefix="combat-mode" tabKey={mode} aria-live="polite">
         <section className="calculator-card">
           <div className="table-scroll">
             <table className="ranking-table">
@@ -133,7 +117,7 @@ function XpGainRate({
             </table>
           </div>
         </section>
-      </div>
+      </TabPanel>
       {/* Bloc 67: the missing tool->reference direction, added the same
           way Combat/Expedition Equipment/Gemmes/Templiers already have it —
           the reference already links here (?open=xp), but nothing linked
@@ -265,98 +249,57 @@ export function CombatCalculators({
   );
   return (
     <div className="city-calculators">
-      <nav
-        className="calculator-tabs tabs"
-        role="tablist"
-        aria-label={tools("combat-tabs")}
-        onKeyDown={handleTablistKeydown}
-      >
-        {/* Bloc 32/C: not-yet-implemented placeholders, ordered ahead of the
-            2 working tools — permanently disabled, no Calculator DB row. */}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={false}
-          disabled
-          title={tools("comingSoon")}
-        >
-          <TabLabel
-            label={tools("combat-simulator")}
-            badge={tools("comingSoon")}
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={false}
-          disabled
-          title={tools("comingSoon")}
-        >
-          <TabLabel label={tools("enemy-troops")} badge={tools("comingSoon")} />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="combat-tools-tab-xp"
-          aria-controls="combat-tools-panel-xp"
-          aria-selected={active === "xp"}
-          tabIndex={active === "xp" ? 0 : -1}
-          disabled={!availability.xp}
-          title={!availability.xp ? tools("calculator-unavailable") : undefined}
-          onClick={() => setActive("xp")}
-        >
-          <TabLabel
-            label={xp("name")}
-            badge={
-              !availability.xp ? tools("calculator-unavailable") : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="combat-tools-tab-demo"
-          aria-controls="combat-tools-panel-demo"
-          aria-selected={active === "demo"}
-          tabIndex={active === "demo" ? 0 : -1}
-          disabled={!availability.demo}
-          title={
-            !availability.demo ? tools("calculator-unavailable") : undefined
-          }
-          onClick={() => setActive("demo")}
-        >
-          <TabLabel
-            label={demo("name")}
-            badge={
-              !availability.demo ? tools("calculator-unavailable") : undefined
-            }
-          />
-        </button>
-      </nav>
+      <TabList<"xp" | "demo">
+        idPrefix="combat-tools"
+        label={tools("combat-tabs")}
+        active={active}
+        onSelect={setActive}
+        tabs={[
+          // Bloc 32/C: not-yet-implemented placeholders, ordered ahead of the
+          // 2 working tools — permanently disabled, no Calculator DB row and
+          // so no panel to point at.
+          {
+            key: "combat-simulator" as const,
+            label: tools("combat-simulator"),
+            available: false,
+            unavailableLabel: tools("comingSoon"),
+            hasPanel: false,
+          },
+          {
+            key: "enemy-troops" as const,
+            label: tools("enemy-troops"),
+            available: false,
+            unavailableLabel: tools("comingSoon"),
+            hasPanel: false,
+          },
+          {
+            key: "xp" as const,
+            label: xp("name"),
+            available: availability.xp,
+            unavailableLabel: tools("calculator-unavailable"),
+          },
+          {
+            key: "demo" as const,
+            label: demo("name"),
+            available: availability.demo,
+            unavailableLabel: tools("calculator-unavailable"),
+          },
+        ]}
+      />
       {active === "xp" ? (
-        <div
-          role="tabpanel"
-          id="combat-tools-panel-xp"
-          aria-labelledby="combat-tools-tab-xp"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="combat-tools" tabKey="xp">
           <XpGainRate
             tiers={xpTiers}
             levelUpReferenceActive={levelUpReferenceActive}
           />
-        </div>
+        </TabPanel>
       ) : active === "demo" ? (
-        <div
-          role="tabpanel"
-          id="combat-tools-panel-demo"
-          aria-labelledby="combat-tools-tab-demo"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="combat-tools" tabKey="demo">
           <DemoAttackTroops
             cityParameters={cityParameters}
             percentages={demoPercentages}
           />
-        </div>
+        </TabPanel>
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}

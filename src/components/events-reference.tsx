@@ -1,5 +1,6 @@
 "use client";
 
+import { pickFrEn } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
@@ -15,10 +16,6 @@ import {
 // pickLocaleText (Bloc44-review/C) — fr visitors get the French text (or
 // English if it's the only one filled in), every other locale gets English
 // (or French as a last resort), never a raw missing string.
-function pickLocaleText(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
-
 // Bloc 77/D: the season timeline — same visual principle as Classement's
 // "échelle visuelle" (RankingScale, Bloc 62/F): a horizontal bar with one
 // proportionally-sized, alternating-label segment per item. Segments here
@@ -48,7 +45,12 @@ function EventTimeline({
   const totalHours = seasonDurationDays * 24;
   const segments = events.reduce<{
     cumulativeHours: number;
-    items: Array<{ event: EventRow; index: number; left: number; width: number }>;
+    items: Array<{
+      event: EventRow;
+      index: number;
+      left: number;
+      width: number;
+    }>;
   }>(
     (acc, event, index) => ({
       cumulativeHours: acc.cumulativeHours + event.duration,
@@ -96,14 +98,11 @@ function EventTimeline({
   // just the transition days — a thin unlabeled tick for a plain day, kept
   // for continuity ("effet règle graduée"), and the labeled Jx tick only
   // at an actual transition (transitionDays above).
-  const dayTicks = Array.from(
-    { length: seasonDurationDays + 1 },
-    (_, day) => ({
-      day,
-      left: (day / seasonDurationDays) * 100,
-      isTransition: transitionDays.has(day),
-    }),
-  );
+  const dayTicks = Array.from({ length: seasonDurationDays + 1 }, (_, day) => ({
+    day,
+    left: (day / seasonDurationDays) * 100,
+    isTransition: transitionDays.has(day),
+  }));
   return (
     <div className="events-timeline" role="img" aria-label={ariaLabel}>
       <div className="events-timeline-axis" />
@@ -203,14 +202,14 @@ function EventTile({
   locale: string;
 }) {
   const common = useTranslations("common");
-  const description = pickLocaleText(
+  const description = pickFrEn(
     event.description_fr,
     event.description_en,
     locale,
   );
   const lastTier = event.tiers[event.tiers.length - 1];
   const finalObjective = lastTier
-    ? pickLocaleText(lastTier.objective_fr, lastTier.objective_en, locale)
+    ? pickFrEn(lastTier.objective_fr, lastTier.objective_en, locale)
     : null;
   return (
     <details className="events-tile">
@@ -264,15 +263,9 @@ function EventTile({
               {event.tiers.map((tier, index) => (
                 <tr key={index}>
                   <td>
-                    {pickLocaleText(
-                      tier.objective_fr,
-                      tier.objective_en,
-                      locale,
-                    )}
+                    {pickFrEn(tier.objective_fr, tier.objective_en, locale)}
                   </td>
-                  <td>
-                    {pickLocaleText(tier.reward_fr, tier.reward_en, locale)}
-                  </td>
+                  <td>{pickFrEn(tier.reward_fr, tier.reward_en, locale)}</td>
                 </tr>
               ))}
             </tbody>
@@ -312,7 +305,10 @@ export function EventsReferenceTable({ catalog }: { catalog: EventsCatalog }) {
       const cumulativeHours = acc.cumulativeHours + event.duration;
       return {
         cumulativeHours,
-        items: [...acc.items, { event, startDay, endDay: cumulativeHours / 24 }],
+        items: [
+          ...acc.items,
+          { event, startDay, endDay: cumulativeHours / 24 },
+        ],
       };
     },
     { cumulativeHours: 0, items: [] },

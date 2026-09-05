@@ -1,5 +1,6 @@
 "use client";
 
+import { pickFrEn } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import {
@@ -16,10 +17,6 @@ import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
 } from "../lib/templars-presentation";
-
-function pickLocaleText(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
 
 // Bloc 68/C: admin can clear Base Temple/Bonus (AGENTS.md — never invent a
 // game value), so the tile must show that gracefully rather than a broken
@@ -45,7 +42,7 @@ function TemplarPresentationTile({
 }) {
   const t = useTranslations("templars");
   const color = skillColor(templarKey);
-  const name = pickLocaleText(row.name_fr, row.name_en, locale);
+  const name = pickFrEn(row.name_fr, row.name_en, locale);
   return (
     <article
       className="templars-tile"

@@ -1,11 +1,9 @@
 "use client";
 
+import { ResultTile } from "./result-tile";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
-import {
-  formatGameNumber,
-  formatSkillPercentValue,
-} from "../lib/format";
+import { formatGameNumber, formatSkillPercentValue } from "../lib/format";
 import { filterButtonColor, skillColor } from "../lib/game-images";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { GameImage } from "./game-image";
@@ -49,8 +47,7 @@ import {
 import { NumberStepper } from "./number-stepper";
 import { StuffSimulator } from "./equipment-tools";
 import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
-import { TabLabel } from "./tab-label";
-import { handleTablistKeydown } from "./use-tablist-keyboard";
+import { TabList, TabPanel } from "./tabs";
 
 type GemRow = {
   id: number;
@@ -119,146 +116,47 @@ export function SkillsCalculators({
   >(initialTool && availability[initialTool] ? initialTool : firstAvailable);
   return (
     <div className="city-calculators">
-      <nav
-        className="calculator-tabs tabs"
-        role="tablist"
-        aria-label={tools("skills-tabs")}
-        onKeyDown={handleTablistKeydown}
-      >
-        <button
-          type="button"
-          role="tab"
-          id="skills-tools-tab-simulator"
-          aria-controls="skills-tools-panel-simulator"
-          aria-selected={active === "simulator"}
-          tabIndex={active === "simulator" ? 0 : -1}
-          disabled={!availability.simulator}
-          title={
-            !availability.simulator
-              ? tools("calculator-unavailable")
-              : undefined
-          }
-          onClick={() => setActive("simulator")}
-        >
-          <TabLabel
-            label={simulator("name")}
-            badge={
-              !availability.simulator
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="skills-tools-tab-expedition"
-          aria-controls="skills-tools-panel-expedition"
-          aria-selected={active === "expedition"}
-          tabIndex={active === "expedition" ? 0 : -1}
-          disabled={!availability.expedition}
-          title={
-            !availability.expedition
-              ? tools("calculator-unavailable")
-              : undefined
-          }
-          onClick={() => setActive("expedition")}
-        >
-          <TabLabel
-            label={expedition("name")}
-            badge={
-              !availability.expedition
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="skills-tools-tab-gems"
-          aria-controls="skills-tools-panel-gems"
-          aria-selected={active === "gems"}
-          tabIndex={active === "gems" ? 0 : -1}
-          disabled={!availability.gems}
-          title={
-            !availability.gems ? tools("calculator-unavailable") : undefined
-          }
-          onClick={() => setActive("gems")}
-        >
-          <TabLabel
-            label={gems("name")}
-            badge={
-              !availability.gems ? tools("calculator-unavailable") : undefined
-            }
-          />
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="skills-tools-tab-templars"
-          aria-controls="skills-tools-panel-templars"
-          aria-selected={active === "templars"}
-          tabIndex={active === "templars" ? 0 : -1}
-          disabled={!availability.templars}
-          title={
-            !availability.templars ? tools("calculator-unavailable") : undefined
-          }
-          onClick={() => setActive("templars")}
-        >
-          <TabLabel
-            label={templars("name")}
-            badge={
-              !availability.templars
-                ? tools("calculator-unavailable")
-                : undefined
-            }
-          />
-        </button>
-      </nav>
+      <TabList
+        idPrefix="skills-tools"
+        label={tools("skills-tabs")}
+        active={active}
+        onSelect={setActive}
+        tabs={[
+          // Order (Bloc 31/C): Combat Equipment, Expedition Equipment, Gems,
+          // Templars.
+          { key: "simulator" as const, label: simulator("name") },
+          { key: "expedition" as const, label: expedition("name") },
+          { key: "gems" as const, label: gems("name") },
+          { key: "templars" as const, label: templars("name") },
+        ].map((tab) => ({
+          ...tab,
+          available: availability[tab.key],
+          unavailableLabel: tools("calculator-unavailable"),
+        }))}
+      />
       {active === "simulator" ? (
-        <div
-          role="tabpanel"
-          id="skills-tools-panel-simulator"
-          aria-labelledby="skills-tools-tab-simulator"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="skills-tools" tabKey="simulator">
           <StuffSimulator
             combatRows={combatRows}
             gemParameters={gemParameters}
             increments={combatIncrements}
           />
-        </div>
+        </TabPanel>
       ) : active === "expedition" ? (
-        <div
-          role="tabpanel"
-          id="skills-tools-panel-expedition"
-          aria-labelledby="skills-tools-tab-expedition"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="skills-tools" tabKey="expedition">
           <ExpeditionEquipmentSimulator
             rows={expeditionRows}
             increments={expeditionIncrements}
           />
-        </div>
+        </TabPanel>
       ) : active === "gems" ? (
-        <div
-          role="tabpanel"
-          id="skills-tools-panel-gems"
-          aria-labelledby="skills-tools-tab-gems"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="skills-tools" tabKey="gems">
           <GemsCalculator parameters={gemParameters} />
-        </div>
+        </TabPanel>
       ) : active === "templars" ? (
-        <div
-          role="tabpanel"
-          id="skills-tools-panel-templars"
-          aria-labelledby="skills-tools-tab-templars"
-          tabIndex={0}
-        >
+        <TabPanel idPrefix="skills-tools" tabKey="templars">
           <TemplarsCalculator parameters={templarParameters} />
-        </div>
+        </TabPanel>
       ) : (
         <p className="empty-state">{tools("calculators-unavailable")}</p>
       )}
@@ -275,58 +173,32 @@ function GemsCalculator({ parameters }: { parameters: GemParameters }) {
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <div
+        {/* Bloc 93/M1: hand-written, this switch had neither the roving
+            tabIndex nor the arrow-key handler its Combat counterpart carried —
+            two omissions the shared TabList makes impossible. */}
+        <TabList
+          as="div"
           className="calculator-tabs compact mode-switch"
-          role="tablist"
-          aria-label={t("mode-label")}
-        >
-          <button
-            type="button"
-            role="tab"
-            id="gems-mode-tab-optimize"
-            aria-controls="gems-mode-panel-optimize"
-            aria-selected={mode === "optimize"}
-            onClick={() => setMode("optimize")}
-          >
-            {t("modes.optimize")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="gems-mode-tab-budget"
-            aria-controls="gems-mode-panel-budget"
-            aria-selected={mode === "budget"}
-            onClick={() => setMode("budget")}
-          >
-            {t("modes.budget")}
-          </button>
-        </div>
+          idPrefix="gems-mode"
+          label={t("mode-label")}
+          active={mode}
+          onSelect={setMode}
+          tabs={(["optimize", "budget"] as const).map((item) => ({
+            key: item,
+            label: t(`modes.${item}`),
+          }))}
+        />
       </section>
-      {mode === "optimize" ? (
-        // Bloc 92/M2: the mode switch is a role="tablist"; both modes feed the
-        // same .calculator-stack layout, so the tabpanel wrapper reuses that
-        // class to keep the inner cards' 1rem grid gap (a plain div would
-        // collapse it).
-        <div
-          role="tabpanel"
-          id="gems-mode-panel-optimize"
-          aria-labelledby="gems-mode-tab-optimize"
-          tabIndex={0}
-          className="calculator-stack"
-        >
+      {/* Bloc 92/M2: both modes feed the same .calculator-stack layout, so the
+          tabpanel wrapper reuses that class to keep the inner cards' 1rem grid
+          gap (a plain div would collapse it). */}
+      <TabPanel idPrefix="gems-mode" tabKey={mode} className="calculator-stack">
+        {mode === "optimize" ? (
           <GemOptimization parameters={parameters} />
-        </div>
-      ) : (
-        <div
-          role="tabpanel"
-          id="gems-mode-panel-budget"
-          aria-labelledby="gems-mode-tab-budget"
-          tabIndex={0}
-          className="calculator-stack"
-        >
+        ) : (
           <GemBudget parameters={parameters} />
-        </div>
-      )}
+        )}
+      </TabPanel>
       {/* Bloc 55/A: after the tool's own content, not before it. */}
       <CrossReferenceLink
         href={referenceHref("gems")}
@@ -715,21 +587,24 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
               </strong>
             </div>
             <div className="calculator-results">
-              <Result label={t("base-gems")} value={String(result.baseGems)} />
-              <Result
+              <ResultTile
+                label={t("base-gems")}
+                value={String(result.baseGems)}
+              />
+              <ResultTile
                 label={t("used-slots")}
                 value={`${result.slotsUsed} / ${slots}`}
               />
-              <Result
+              <ResultTile
                 label={t("obtained-stat")}
                 value={`${formatSkillPercentValue(result.actualStat, locale)}%`}
                 tone="emerald"
               />
-              <Result
+              <ResultTile
                 label={t("actual-cost")}
                 value={`${formatGameNumber(result.cost)} ${t("sapphires")}`}
               />
-              <Result
+              <ResultTile
                 label={t("remaining-budget")}
                 value={`${formatGameNumber(result.remaining)} ${t("sapphires")}`}
               />
@@ -738,27 +613,6 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
         )}
       </div>
     </>
-  );
-}
-
-function Result({
-  label,
-  value,
-  tone,
-  testId,
-}: {
-  label: string;
-  value: string;
-  tone?: "emerald";
-  testId?: string;
-}) {
-  return (
-    <div className="calculator-stat total-box">
-      <span className="label">{label}</span>
-      <strong className={tone ? `value ${tone}` : "value"} data-testid={testId}>
-        {value}
-      </strong>
-    </div>
   );
 }
 
@@ -879,7 +733,7 @@ function TemplarsCalculator({ parameters }: { parameters: TemplarParameters }) {
               }}
             />
           </label>
-          <Result
+          <ResultTile
             label={t("total-cost")}
             value={`${formatGameNumber(cost)} ${t("skydust")}`}
             testId="templar-cost"

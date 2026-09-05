@@ -4,7 +4,7 @@ import {
   type EquipmentSkill,
   type EquipmentStarIncrements,
 } from "./equipment";
-import { valueAtStar } from "./star-progression";
+import { mergeCostAtStar, valueAtStar } from "./star-progression";
 
 export type CombatReferenceRow = {
   rarity: string;
@@ -202,9 +202,7 @@ export function combatMergeCost(
   star: number,
   base: CombatMergeCostBase = defaultCombatMergeCostBase,
 ): number | null {
-  const rarityBase = base[rarity as MergeCostRarityKey];
-  if (rarityBase === undefined) return null;
-  return rarityBase * 2 ** (Math.max(1, star) - 1);
+  return mergeCostAtStar(base, rarity, star);
 }
 
 // Bloc 35/6.1: Combat's Pouciel-per-rarity, promoted from the hardcoded
@@ -260,9 +258,7 @@ export function expeditionMergeCost(
   star: number,
   base: ExpeditionMergeCostBase = defaultExpeditionMergeCostBase,
 ): number | null {
-  const rarityBase = base[rarity as MergeCostRarityKey];
-  if (rarityBase === undefined) return null;
-  return rarityBase * 2 ** (Math.max(1, star) - 1);
+  return mergeCostAtStar(base, rarity, star);
 }
 
 export function missingCombatRows(

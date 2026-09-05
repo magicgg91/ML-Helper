@@ -178,4 +178,3 @@ export function calculateProduction(
 export function calculateReward(base: number, hours: number): number {
   return base * hours;
 }
-

@@ -130,7 +130,6 @@ export function PlayerSettingsPanel() {
     };
   }, [setSettings]);
 
-
   const available = availableSkillPoints(settings.level, settings.league);
   const allocated = allocatedSkillPoints(settings.skillPoints);
   const templarTotal = templarKeys.reduce(
