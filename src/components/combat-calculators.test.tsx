@@ -114,7 +114,7 @@ describe("CombatCalculators", () => {
     const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
     for (const button of within(league).getAllByRole("button"))
       expect(button).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+    expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
     fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
     expect(screen.getByTestId("demo-wall")).toHaveTextContent("70");
     expect(screen.getByTestId("demo-wall")).not.toHaveClass("emerald");
@@ -254,8 +254,10 @@ describe("CombatCalculators", () => {
     fireEvent.click(
       screen.getByRole("tab", { name: "Troupes en attaque démo" }),
     );
+    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
+    // avoid nesting inside the demo tile's live region; find it by class.
     expect(
-      screen.getByRole("status").closest('[aria-live="polite"]'),
+      document.querySelector('[aria-live="polite"] .demo-attack-tile-empty'),
     ).not.toBeNull();
     fireEvent.click(
       within(

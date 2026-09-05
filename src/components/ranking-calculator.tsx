@@ -98,7 +98,9 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             own. */}
         {/* Bloc 92/H1: a permanently-mounted live region around the whole
             result area — the total and the ranges table — so the recomputed
-            values are announced. The placeholders keep their role="status". */}
+            values are announced. The placeholders drop their own role="status"
+            (Codex PR #116): nesting it inside this live region can
+            double-announce; this wrapper already covers them. */}
         <div aria-live="polite">
           <div className="ranking-scale-total">
             <span className="label">{t("total-players")}</span>
@@ -109,15 +111,13 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             </strong>
           </div>
           {!league ? (
-            <p role="status" className="ranking-placeholder">
-              {t("errors.select-league")}
-            </p>
+            <p className="ranking-placeholder">{t("errors.select-league")}</p>
           ) : percentage <= 0 ? (
-            <p role="status" className="ranking-placeholder">
+            <p className="ranking-placeholder">
               {t("errors.positive-percentage")}
             </p>
           ) : bands.length === 0 ? (
-            <p role="status" className="ranking-placeholder">
+            <p className="ranking-placeholder">
               {t("errors.missing-bands", {
                 league: game(`leagues.${league}`),
               })}

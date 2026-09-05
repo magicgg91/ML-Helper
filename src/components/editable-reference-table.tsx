@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useId,
   useImperativeHandle,
   useState,
   type ChangeEvent,
@@ -109,6 +110,12 @@ export function EditableDataTable<Row extends Record<string, string>>({
 }) {
   const testId = (name: string) =>
     testIdPrefix ? `${name}-${testIdPrefix}` : name;
+  // Bloc 92/A11y (M4, Codex PR #116): a per-instance prefix for the error
+  // element ids, so several EditableDataTable instances on one page (e.g.
+  // RankingAdminEditor's 6 league tables, rendered without testIdPrefix) don't
+  // produce colliding ids like `error-0-threshold` that would make a field's
+  // aria-describedby resolve to the first table's error.
+  const instanceId = useId();
   const mergeActions = combinedActions && onMove && onRemove;
   const columnClass = (column: EditableColumn<Row>) =>
     column.narrow
@@ -166,9 +173,9 @@ export function EditableDataTable<Row extends Record<string, string>>({
                     const errorMessage =
                       errors?.[errorKey(rowIndex, column.key)];
                     // Bloc 92/A11y (M4): link the visible error text to its
-                    // field so a screen reader announces it (mirrors
-                    // EditableReferenceTableInner, which already did this).
-                    const errorId = testId(`error-${rowIndex}-${column.key}`);
+                    // field so a screen reader announces it; the id is
+                    // namespaced per instance (see instanceId above).
+                    const errorId = `${instanceId}error-${rowIndex}-${column.key}`;
                     const shared = {
                       "aria-label": label,
                       "aria-invalid": Boolean(errorMessage),

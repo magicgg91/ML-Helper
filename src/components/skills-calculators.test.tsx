@@ -691,8 +691,10 @@ describe("SkillsCalculators", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: "Gemmes" }));
     fireEvent.click(screen.getByRole("tab", { name: "Budget disponible" }));
+    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
+    // avoid nesting inside this live region; find it by class instead.
     expect(
-      screen.getByRole("status").closest('[aria-live="polite"]'),
+      document.querySelector('[aria-live="polite"] .empty-state'),
     ).not.toBeNull();
     fireEvent.change(screen.getByRole("combobox", { name: "Compétence" }), {
       target: { value: "fearless" },

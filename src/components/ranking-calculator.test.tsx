@@ -58,9 +58,9 @@ describe("RankingCalculator", () => {
   it("shows the editable placeholder for an unknown league", () => {
     renderCalculator();
     selectLeague("Bronze");
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "à définir dans l’administration",
-    );
+    expect(
+      screen.getByText(/à définir dans l’administration/),
+    ).toBeInTheDocument();
   });
   it("handles a zero percentage without dividing by zero", () => {
     renderCalculator();
@@ -76,7 +76,7 @@ describe("RankingCalculator", () => {
     renderCalculator();
     for (const button of within(leagueGroup()).getAllByRole("button"))
       expect(button).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+    expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
   });
 
   // Bloc 61/B: single-select league buttons — clicking one presses only
@@ -244,8 +244,10 @@ describe("RankingCalculator", () => {
     expect(
       screen.getByTestId("ranking-total").closest('[aria-live="polite"]'),
     ).not.toBeNull();
+    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
+    // avoid nesting inside this live region; find it by class instead.
     expect(
-      screen.getByRole("status").closest('[aria-live="polite"]'),
+      document.querySelector('[aria-live="polite"] .ranking-placeholder'),
     ).not.toBeNull();
     selectLeague("Diamant");
     const table = container.querySelector(".ranking-table")!;

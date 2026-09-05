@@ -126,7 +126,7 @@ describe("CityCalculators", () => {
       expect(wrapper).toContainElement(group);
       expect(wrapper).toHaveTextContent("Ligue");
       expect(group).toHaveClass("league-buttons-grid");
-      expect(screen.getByRole("status")).toHaveTextContent("Choisis une ligue");
+      expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
     }
   });
 
@@ -515,8 +515,11 @@ describe("CityCalculators", () => {
         <CityCalculators />
       </NextIntlClientProvider>,
     );
+    // Bloc 92/A11y (Codex PR #116): the placeholder no longer carries its own
+    // role="status" (it would nest inside this live region); assert it sits in
+    // the live region by its class instead.
     expect(
-      screen.getByRole("status").closest('[aria-live="polite"]'),
+      document.querySelector('[aria-live="polite"] .empty-state'),
     ).not.toBeNull();
     fireEvent.click(
       within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {

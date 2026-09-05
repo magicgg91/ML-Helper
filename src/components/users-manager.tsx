@@ -73,7 +73,11 @@ export function UsersManager({
     setPwErrorUserId(null);
     if (password && password.length < 12) {
       // Bloc 92/A11y (M4): surface the error on the field itself (role="alert"
-      // + aria-describedby below), not only in the shared page-level status.
+      // + aria-describedby below). Clear any stale success/status first (Codex
+      // PR #116) so an earlier green message doesn't sit beside the new field
+      // error and mislead about whether this save succeeded.
+      setMessage("");
+      setSuccess(false);
       setPwErrorUserId(user.id);
       return;
     }

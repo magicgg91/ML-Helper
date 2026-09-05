@@ -695,7 +695,9 @@ function GemBudget({ parameters }: { parameters: GemParameters }) {
           placeholder-vs-result conditional so recomputes are announced. */}
       <div aria-live="polite">
         {!result ? (
-          <p className="empty-state" role="status">
+          // Bloc 92/A11y (Codex PR #116): no role="status" — the wrapping
+          // aria-live region above announces this placeholder (avoid nesting).
+          <p className="empty-state">
             {!skill ? t("errors.select-skill") : t("errors.select-league")}
           </p>
         ) : (

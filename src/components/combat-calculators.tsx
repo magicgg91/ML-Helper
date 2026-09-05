@@ -225,7 +225,7 @@ function DemoAttackTroops({
             </div>
           </div>
         ) : (
-          <p className="empty-state demo-attack-tile-empty" role="status">
+          <p className="empty-state demo-attack-tile-empty">
             {t("select-league")}
           </p>
         )}

@@ -30,11 +30,10 @@ const number = (value: number) => formatGameNumber(value);
 
 function LeagueRequired() {
   const common = useTranslations("common");
-  return (
-    <p className="empty-state" role="status">
-      {common("select-league")}
-    </p>
-  );
+  // Bloc 92/A11y (Codex PR #116): no role="status" here — every use of this
+  // placeholder sits inside a permanently-mounted aria-live="polite" region
+  // that already announces it; a nested live region can double-announce.
+  return <p className="empty-state">{common("select-league")}</p>;
 }
 
 function Field({
