@@ -60,6 +60,8 @@ function TemplarPresentationTile({
         src={row.image}
         alt={name}
         className="templars-tile-image"
+        width={1000}
+        height={1353}
         fallback={null}
       />
       <div className="templars-tile-body">

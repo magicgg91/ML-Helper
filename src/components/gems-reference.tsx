@@ -64,6 +64,8 @@ function GemSkillTile({
                   src={gemImagePath(skill, league)}
                   alt={`${skillName} ${game(`leagues.${league}`)}`}
                   className="gems-tile-image"
+                  width={256}
+                  height={256}
                   fallback={null}
                 />
               </td>

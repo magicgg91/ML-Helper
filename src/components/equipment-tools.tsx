@@ -287,6 +287,8 @@ function SlotCell({
                       src={gemImagePath(skillKeyByLabel[gem.skill], gem.league)}
                       alt={title}
                       className="gem-badge-image"
+                      width={256}
+                      height={256}
                       fallback={
                         <span
                           className="gem-badge"
