@@ -1,0 +1,240 @@
+import { describe, expect, it } from "vitest";
+import frMessages from "../../messages/fr.json";
+import { buildSiteSearchResults, type SiteSearchGuide } from "./site-search";
+
+function translateFr(key: string): string {
+  const value = key
+    .split(".")
+    .reduce<unknown>(
+      (node, part) =>
+        node && typeof node === "object"
+          ? (node as Record<string, unknown>)[part]
+          : undefined,
+      frMessages,
+    );
+  return typeof value === "string" ? value : key;
+}
+
+const guides: SiteSearchGuide[] = [
+  {
+    id: "guide-1",
+    slug: "guide-combat",
+    title: "Guide Combat",
+    excerpt: "Attaquer efficacement",
+  },
+];
+
+describe("buildSiteSearchResults", () => {
+  it("returns nothing for an empty query", () => {
+    expect(
+      buildSiteSearchResults({
+        query: "  ",
+        locale: "fr",
+        guides,
+        translate: translateFr,
+      }),
+    ).toEqual([]);
+  });
+
+  it("matches a guide by title and routes to its page", () => {
+    const results = buildSiteSearchResults({
+      query: "combat",
+      locale: "fr",
+      guides,
+      translate: translateFr,
+    });
+    expect(results).toContainEqual({
+      type: "guide",
+      id: "guide-guide-1",
+      label: "Guide Combat",
+      href: "/guides/guide-combat",
+    });
+  });
+
+  it("matches a guide by excerpt", () => {
+    const results = buildSiteSearchResults({
+      query: "efficacement",
+      locale: "fr",
+      guides,
+      translate: translateFr,
+    });
+    expect(results).toContainEqual(
+      expect.objectContaining({ type: "guide", label: "Guide Combat" }),
+    );
+  });
+
+  it("matches a reference table by its translated name and routes to the referentiel page", () => {
+    const results = buildSiteSearchResults({
+      query: "équipements de combat",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toEqual([
+      {
+        type: "reference",
+        id: "reference-combat-equipment",
+        label: "Équipements de Combat",
+        href: "/referentiels/combat-equipment",
+      },
+    ]);
+  });
+
+  it("matches a tool by its translated name and routes to its category page", () => {
+    const results = buildSiteSearchResults({
+      query: "gemmes",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toContainEqual({
+      type: "tool",
+      id: "tool-gems",
+      label: "Gemmes",
+      href: "/tools/competences",
+    });
+  });
+
+  it("Bloc36/A: keeps the Gems tool and its reference independently searchable, even though they share the exact same label", () => {
+    const results = buildSiteSearchResults({
+      query: "gemmes",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toContainEqual({
+      type: "tool",
+      id: "tool-gems",
+      label: "Gemmes",
+      href: "/tools/competences",
+    });
+    expect(results).toContainEqual({
+      type: "reference",
+      id: "reference-gems",
+      label: "Gemmes",
+      href: "/referentiels/gems",
+    });
+  });
+
+  // Bloc 67: renamed from "Level Up" to "Progression" — the query and
+  // expected label follow, the slug/href stay unchanged (no URL redirect
+  // needed, same principle as Boutique/Templiers).
+  it("never lists a reference table's calculator entry as a tool", () => {
+    const results = buildSiteSearchResults({
+      query: "progression",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toEqual([
+      {
+        type: "reference",
+        id: "reference-level-up",
+        label: "Progression",
+        href: "/referentiels/level-up",
+      },
+    ]);
+  });
+
+  // Bloc 66/A: the reference dropped its "Coût des" prefix, so its label
+  // now matches the tool's own exactly — both stay independently
+  // searchable results (distinct type/id/href) rather than the reference
+  // needing its own longer query to surface.
+  it("keeps the Templars tool and its cost reference independently searchable", () => {
+    const results = buildSiteSearchResults({
+      query: "templiers",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toContainEqual({
+      type: "tool",
+      id: "tool-templars",
+      label: "Templiers",
+      href: "/tools/competences",
+    });
+    expect(results).toContainEqual({
+      type: "reference",
+      id: "reference-templars",
+      label: "Templiers",
+      href: "/referentiels/templars",
+    });
+  });
+
+  it("groups results as guides, then references, then tools", () => {
+    const results = buildSiteSearchResults({
+      query: "e",
+      locale: "fr",
+      guides,
+      translate: translateFr,
+    });
+    const types = results.map((result) => result.type);
+    const lastGuide = types.lastIndexOf("guide");
+    const firstReference = types.indexOf("reference");
+    const lastReference = types.lastIndexOf("reference");
+    const firstTool = types.indexOf("tool");
+    expect(lastGuide).toBeLessThan(firstReference);
+    expect(lastReference).toBeLessThan(firstTool);
+  });
+
+  // Bloc 48/F: the Shop reference is the first one where the public slug
+  // ("shop") diverges from calculatorSlug ("consommables" unchanged) — a
+  // filter keyed on the wrong one would let it leak through as a spurious
+  // duplicate "tool" result alongside its real "reference" result.
+  it("Bloc48/F: lists the Shop reference exactly once, never duplicated as a tool", () => {
+    const results = buildSiteSearchResults({
+      query: "boutique",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    expect(results).toEqual([
+      {
+        type: "reference",
+        id: "reference-shop",
+        label: "Boutique",
+        href: "/referentiels/shop",
+      },
+    ]);
+  });
+
+  // Bloc 60 review (Codex PR #81): a reference shipped inactive (Events,
+  // hidden until an admin activates it) must not surface as a search
+  // result either — same "masqué du public" requirement as the catalog
+  // grid, this was the other unfiltered consumer Codex flagged.
+  it("Bloc60 review: hides a reference from results while its calculator is inactive", () => {
+    const results = buildSiteSearchResults({
+      query: "événements",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+      active: { events: false },
+    });
+    expect(results).toEqual([]);
+  });
+
+  it("Bloc60 review: still lists an active reference when an availability map is given", () => {
+    const results = buildSiteSearchResults({
+      query: "événements",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+      active: { events: true },
+    });
+    expect(results).toContainEqual(
+      expect.objectContaining({ type: "reference", id: "reference-events" }),
+    );
+  });
+
+  it("is case-insensitive", () => {
+    const results = buildSiteSearchResults({
+      query: "GEMMES",
+      locale: "fr",
+      guides: [],
+      translate: translateFr,
+    });
+    // Bloc36/A: the Gems tool and its reference share the exact same
+    // "Gemmes" label, so both match here — same as the "gemmes" query above.
+    expect(results).toHaveLength(2);
+  });
+});

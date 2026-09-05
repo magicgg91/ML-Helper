@@ -1,18 +1,19 @@
-import { getTranslations } from "next-intl/server";
-import { requireSuperAdminSession } from "@/auth/require-session";
+import { requireCapability } from "@/auth/require-session";
+import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { UsersManager } from "@/components/users-manager";
 export default async function UsersPage() {
-  await requireSuperAdminSession();
-  const t = await getTranslations("Users");
+  const session = await requireCapability("users.read");
   const users = await prisma.user.findMany({
-    select: { id: true, username: true, role: true },
+    select: { id: true, username: true, role: true, active: true },
     orderBy: { username: "asc" },
   });
   return (
     <main>
-      <h1>{t("title")}</h1>
-      <UsersManager users={users} />
+      <UsersManager
+        users={users}
+        canManage={can(session.user.role, "users.manage")}
+      />
     </main>
   );
 }

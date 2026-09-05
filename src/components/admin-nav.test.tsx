@@ -1,0 +1,96 @@
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { AdminNav } from "./admin-nav";
+
+let pathname = "/admin";
+vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) =>
+    ({
+      "navigation-label": "Navigation administration",
+      "navigation.dashboard": "Tableau de bord",
+      "navigation.tools": "Outils",
+      "navigation.referentiels": "Référentiels",
+      "navigation.guides": "Guides",
+      "navigation.content": "Contenu statique",
+      "navigation.users": "Utilisateurs",
+      "navigation.logs": "Historique",
+    })[key],
+}));
+afterEach(cleanup);
+
+describe("AdminNav", () => {
+  it("marks the current section and exposes Super Admin links", () => {
+    pathname = "/admin/guides/guide-1";
+    render(<AdminNav role="super_admin" />);
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Utilisateurs" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Historique" })).toBeVisible();
+  });
+
+  it("limits a guide manager to Dashboard and Guides, with no Référentiels link (Bloc 50 split)", () => {
+    pathname = "/admin/guides";
+    render(<AdminNav role="guides_manager" />);
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(links.map((link) => link.textContent)).toEqual([
+      "Tableau de bord",
+      "Guides",
+    ]);
+    expect(screen.queryByRole("link", { name: "Référentiels" })).toBeNull();
+  });
+
+  it("limits a references manager to Dashboard and Référentiels, with no Guides link (Bloc 50 split)", () => {
+    pathname = "/admin/referentiels";
+    render(<AdminNav role="references_manager" />);
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Référentiels" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(links.map((link) => link.textContent)).toEqual([
+      "Tableau de bord",
+      "Référentiels",
+    ]);
+    expect(screen.queryByRole("link", { name: "Guides" })).toBeNull();
+  });
+
+  it("hides user management and legal content from a regular admin", () => {
+    pathname = "/admin";
+    render(<AdminNav role="admin" />);
+    expect(screen.getByRole("link", { name: "Utilisateurs" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
+    for (const name of ["Outils", "Référentiels", "Guides", "Historique"])
+      expect(screen.getByRole("link", { name })).toBeVisible();
+  });
+
+  it("limits a tools manager to simulator administration", () => {
+    pathname = "/admin/tools";
+    render(<AdminNav role="tools_manager" />);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Outils" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Référentiels" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Guides" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Historique" })).toBeNull();
+  });
+
+  // Bloc 59/B: read_only lost Utilisateurs and Historique — strictly
+  // Tableau de bord/Outils/Référentiels/Guides remain.
+  it("gives read-only users consultation links without legal content, Historique or Utilisateurs", () => {
+    pathname = "/admin";
+    render(<AdminNav role="read_only" />);
+    for (const name of ["Tableau de bord", "Outils", "Référentiels", "Guides"])
+      expect(screen.getByRole("link", { name })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Contenu statique" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Utilisateurs" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Historique" })).toBeNull();
+  });
+});

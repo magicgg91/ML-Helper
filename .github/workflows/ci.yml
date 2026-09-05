@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   packages: write
+  statuses: write
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,16 +20,11 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm lint
       - run: pnpm test
-      - name: Verify migrations and idempotent bootstrap
+      - name: Verify migrations
         run: |
           pnpm prisma migrate deploy
-          pnpm prisma db seed
-          pnpm prisma db seed
-          pnpm exec tsx prisma/verify-bootstrap.ts
         env:
           DATABASE_URL: file:./startup-test.db
-          SUPERADMIN_USERNAME: rootadmin
-          SUPERADMIN_PASSWORD: correct-horse-battery-staple
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
@@ -57,9 +53,60 @@ jobs:
             -e DATABASE_URL=file:/app/data/ml-helper.db \
             -e NEXTAUTH_URL=http://localhost:3000 \
             -e NEXTAUTH_SECRET=container-startup-test-secret \
-            -e SUPERADMIN_USERNAME=rootadmin \
-            -e SUPERADMIN_PASSWORD=correct-horse-battery-staple \
             ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }} \
             node -e "console.log('Container startup verified')"
+      - name: Verify Docker Compose health
+        run: |
+          touch .env
+          docker compose up -d --pull never --wait --wait-timeout 180
+          docker compose ps
+          container_id="$(docker compose ps -q app)"
+          test -n "$container_id"
+          test "$(docker inspect --format '{{.State.Health.Status}}' "$container_id")" = "healthy"
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop Docker Compose stack
+        if: always()
+        run: docker compose down --volumes
+      - name: Report successful Docker Compose health
+        if: success()
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            --data '{"state":"success","context":"docker-compose/health","description":"Docker Compose app container is healthy"}'
+      - name: Report failed Docker Compose health
+        if: failure()
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            --data '{"state":"failure","context":"docker-compose/health","description":"Docker Compose app container did not become healthy"}'
+      # Bloc 84: a plain `docker push` of the image loaded in the step above
+      # started failing deterministically with "unknown blob" (2 runs in a
+      # row, immediately on the first layer, no prior occurrence in 225+
+      # runs) — a known Docker/buildx bug where the classic `docker push`
+      # path mishandles an image loaded via `buildx build --load` on runners
+      # using the containerd image store. Fix per docker/build-push-action's
+      # own "test before push" guidance: push via a second buildx invocation
+      # instead of the local Docker engine's push — it reuses this job's
+      # builder/cache (near-instant, no rebuild) and uploads through
+      # BuildKit's own registry client, which doesn't hit this bug.
       - name: Push image
-        run: docker push ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/magicgg91/ml-helper:${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+

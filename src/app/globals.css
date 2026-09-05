@@ -1,30 +1,177 @@
-:root {
-  --background: #f3f0e8;
-  --foreground: #17231f;
-  --surface: #fffdf7;
-  --surface-raised: #ffffff;
-  --surface-muted: #e9e5d9;
-  --accent: #a25f20;
-  --accent-strong: #794014;
-  --border: #d8d0bd;
-  --muted: #6d746f;
-  --success: #18765b;
+/* Bloc 91/M1: the display fonts are now self-hosted via next/font (see
+   src/app/layout.tsx), exposed as --font-sans/--font-serif/--font-mono on
+   <html>. The render-blocking Google Fonts @import that used to sit here is
+   gone, along with its fonts.googleapis.com / fonts.gstatic.com CSP entries. */
+:root,
+:root[data-theme="dark"] {
+  /* Bloc 34/F: 2nd testing pass asked for a slightly brighter dark theme —
+     same navy/anthracite hue (220°) and saturation, lightness nudged up
+     ~4.5 points on bg/bg-panel/bg-panel-raised/border/surface-muted below.
+     Contrast against --text stays well above WCAG AA (12.9:1/11.7:1). */
+  --bg: #1b2029;
+  --bg-panel: #222833;
+  --bg-panel-raised: #29303d;
+  --border: #343c4a;
+  /* Reserved for genuinely Legendary game data (rarity badges, item
+     highlights) — never a generic interface accent. Use --accent /
+     --accent-strong (violet) for buttons, links, focus states, hover. */
+  --gold: #c9a04a;
+  --gold-bright: #e0bb63;
+  /* Bloc 42/C: the "Or" family filter's own color — distinct from --gold
+     above, which its own comment reserves for genuinely Legendary game
+     data. A warmer, more orange amber keeps the currency-adjacent feel
+     without reusing the Legendary token. */
+  --amber: #cc8a2e;
+  --amber-bright: #e8a94f;
+  --emerald: #4a9179;
+  --emerald-bright: #6ab596;
+  /* Bloc 92/A11y: emerald used as running TEXT (the calculators' highlighted
+     result values, .total-box .value.emerald) needs AA contrast on the page
+     background and panels it lands on. --emerald itself is tuned for tile
+     tints/borders/backgrounds and reads at only 4.37:1 as text on --bg here,
+     so — same split as --event-text-* — a dedicated text token clears 4.5:1
+     on --bg, --bg-panel and --bg-panel-raised. */
+  --emerald-text: #63a892;
+  --ember: #c05a3e;
+  --violet: #8b6bb8;
+  --violet-bright: #c9a8ec;
+  /* Bloc 80/F, Bloc 81/B review: the event color picker's own fixed
+     palette (5 base hues x 2 shades = 10 options) — deliberately NOT the
+     --violet/--emerald/etc. tokens above: those are tuned for their own
+     jobs elsewhere (accent, success, badges) and read as too dark/muted
+     once used as 10 standalone swatches a tester actually has to tell
+     apart at a glance. A dedicated namespace, defined once here (no
+     light-theme override below) so the palette stays exactly as vivid in
+     both themes — these are the admin's own arbitrary tag colors, not a
+     theme-adaptive UI accent that needs to dim for contrast.
+     2nd review: relabeled to plain color names (violet/vert/jaune/rouge/
+     bleu, event-colors.* below) — amber and ember are recolored to an
+     actual yellow and red (they previously leaned orange and pink/rose)
+     and emerald to a cleaner leaf green (it previously leaned teal), so
+     each swatch pair genuinely reads as its own labeled color. */
+  --event-violet: #8b5cf6;
+  --event-violet-bright: #a78bfa;
+  --event-emerald: #16a34a;
+  --event-emerald-bright: #4ade80;
+  --event-amber: #eab308;
+  --event-amber-bright: #facc15;
+  --event-ember: #ef4444;
+  --event-ember-bright: #f87171;
+  --event-sapphire: #3b82f6;
+  --event-sapphire-bright: #60a5fa;
+  /* Bloc 81/D review (Codex PR #98): the timeline name and tile title use
+     this as literal TEXT color, not a swatch fill — the --event-* values
+     above are deliberately theme-invariant (fine as a swatch in either
+     theme) but that's exactly what makes them low-contrast as text once
+     the light theme's own light backgrounds sit behind them. One
+     theme-aware token per hue (not per shade — the swatch itself already
+     carries the base/bright distinction, the text only needs to name its
+     hue) keeps this block's default equal to the vivid dark-theme reading;
+     the light-theme block below overrides with WCAG-AA-safe darker
+     reads instead. */
+  --event-text-violet: #c4b5fd;
+  --event-text-emerald: #4ade80;
+  --event-text-amber: #facc15;
+  --event-text-ember: #fca5a5;
+  --event-text-sapphire: #93c5fd;
+  --text: #e9e4d8;
+  /* Bloc 92/A11y (H2): lightened from #9299a6 so secondary/dim text clears
+     WCAG AA (4.5:1) on the game-tinted tile surfaces it lands on (gems league
+     headers, templars stats, Boutique descriptions) — it was 4.04–4.49:1
+     there. Still greyer than --text on the plain backgrounds. */
+  --text-dim: #9ea4b0;
+  /* Bloc 91/M8: raised from #5c6472 (WCAG ~2.5:1, failed AA). Codex review: the
+     value must clear 4.5:1 on the DARKEST surface it lands on — the raised
+     panel (#29303d) behind .login-card small — not just the page bg/panels, so
+     #9298a4 (4.58:1 there) rather than #8a919d (4.18:1). In dark mode that puts
+     faint at essentially --text-dim's level: the AA floor for muted text on the
+     raised panel, so the two tiers necessarily converge here. */
+  --text-faint: #9298a4;
+  --rarity-commun: #8a8f98;
+  --rarity-rare: #4a9179;
+  --rarity-epique: #5b8bc9;
+  --rarity-mythique: #a678d4;
+  --rarity-legendaire: #d4a13a;
+  --sapphire: #4a72c9;
+  --sapphire-bright: #7fa3e6;
+  --summary-total: #f08a65;
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface: var(--bg-panel);
+  --surface-raised: var(--bg-panel-raised);
+  --surface-muted: #2f3541;
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
+  --muted: var(--text-dim);
+  --success: var(--emerald-bright);
+  /* Bloc 78/C: see .star-rating's own comment below — dark theme's
+     --foreground was already fine here, so this just points at it. */
+  --star-white: var(--foreground);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #e4e7eb;
+  --bg-panel: #f0f2f5;
+  --bg-panel-raised: #f6f7f9;
+  --border: #c5cad2;
+  --gold: #9b6f1e;
+  --gold-bright: #704b0e;
+  --amber: #8f5c14;
+  --amber-bright: #6e4410;
+  --emerald: #35735f;
+  /* Bloc 25/3rd pass: earlier attempts (Blocs 22/24) only tuned lightness —
+     the summary colors already measured 8:1 WCAG AA but still read as dull
+     and hard to tell apart. These swap in vivid/saturated variants of the
+     same hues instead of desaturated darks, at a similar or better contrast. */
+  --emerald-bright: #065f36;
+  /* Bloc 92/A11y: light-theme counterpart — clears 4.5:1 on the light --bg
+     and panels (--emerald itself is only 4.49:1 as text on --bg here). */
+  --emerald-text: #2f6b57;
+  --ember: #a7432e;
+  --violet: #75549d;
+  --violet-bright: #5b21b6;
+  --text: #20242b;
+  /* Bloc 91/M8: darkened from #626976 (WCAG ~4.05:1) / #858b95 (~2.5:1) so
+     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim. */
+  --text-dim: #5b6270;
+  /* Bloc 92/A11y (L2): darkened from #666d78 (4.21:1 on --bg, under AA) so
+     .total-box small and other faint text clear 4.5:1 on the light page bg;
+     stays lighter than --text-dim, per the tier ordering. */
+  --text-faint: #5e6572;
+  --sapphire: #3d63b0;
+  --sapphire-bright: #1e40af;
+  /* Bloc 81/D review: darker, WCAG-AA-safe reads of the same 5 hues (each
+     clears 4.5:1 against every light-theme surface, --surface-muted —
+     the tile background — included) — the swatch/segment tokens
+     themselves stay untouched (no override here, above in the shared
+     block), so the picker and the timeline bar stay just as vivid as in
+     dark theme. */
+  --event-text-violet: #5b21b6;
+  --event-text-emerald: #166534;
+  --event-text-amber: #92400e;
+  --event-text-ember: #991b1b;
+  --event-text-sapphire: #1e40af;
+  --summary-total: #8f3210;
+  --background: var(--bg);
+  --foreground: var(--text);
+  --surface: var(--bg-panel);
+  --surface-raised: var(--bg-panel-raised);
+  --surface-muted: #d9dde3;
+  --accent: var(--violet);
+  --accent-strong: var(--violet-bright);
+  --muted: var(--text-dim);
+  --success: var(--emerald-bright);
+  /* Bloc 78/C: --foreground (--text, #20242b) reads as near-black for the
+     small filled star icons specifically, even though every other label
+     uses it fine as running text — reuse --text-dim (the existing
+     "muted but legible" grey, ~4.9:1 against --surface) instead of
+     inventing a new literal or touching --foreground itself. */
+  --star-white: var(--text-dim);
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #101713;
-    --foreground: #edf2ed;
-    --surface: #18221d;
-    --surface-raised: #1e2b25;
-    --surface-muted: #26332d;
-    --accent: #e0a35d;
-    --accent-strong: #f0bd7c;
-    --border: #35463e;
-    --muted: #a4aea8;
-    --success: #65c6a4;
-    color-scheme: dark;
-  }
+:root[data-theme="light"] body {
+  background-image: none;
 }
 * {
   box-sizing: border-box;
@@ -33,7 +180,19 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, sans-serif);
+  background-image:
+    radial-gradient(
+      ellipse at top left,
+      rgb(139 107 184 / 6%),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgb(74 145 121 / 6%),
+      transparent 50%
+    );
+  min-height: 100vh;
 }
 main {
   width: min(42rem, calc(100% - 2rem));
@@ -43,7 +202,7 @@ main {
   border-radius: 1rem;
 }
 h1 {
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 a {
   color: inherit;
@@ -52,6 +211,15 @@ button,
 input,
 select {
   font: inherit;
+}
+/* Bloc 92/A11y (L1): one consistent keyboard focus indicator for every
+   interactive element, in both themes. :where() keeps specificity at 0 so a
+   component's own :focus-visible (e.g. the search field) still wins, and the
+   default UA ring is replaced by a 2px accent outline with an offset that
+   stays visible on the tinted tiles/pills and dark surfaces. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
 }
 
 .public-shell {
@@ -67,17 +235,120 @@ select {
   gap: 1.5rem;
 }
 .public-header {
+  position: relative;
+  z-index: 30;
   min-height: 4.5rem;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
 }
-.public-header nav {
+.site-search {
+  position: relative;
+  flex: 1 1 14rem;
+  max-width: 22rem;
+}
+.site-search-label input {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text);
+}
+.site-search-label input::placeholder {
+  color: var(--text-dim);
+}
+.site-search-label input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.site-search-results,
+.site-search-empty {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-panel);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 25%);
+}
+.site-search-results {
+  padding: 0.4rem;
+  list-style: none;
+}
+.site-search-results li + li {
+  margin-top: 0.2rem;
+}
+.site-search-results a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  color: var(--text);
+}
+.site-search-results a:hover {
+  background: var(--bg-panel-raised);
+  color: var(--accent-strong);
+}
+.site-search-result-type {
+  flex: none;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.site-search-empty {
+  padding: 0.6rem 0.75rem;
+  color: var(--text-dim);
+}
+.public-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.public-nav {
+  display: flex;
+  align-items: center;
+}
+.public-nav-toggle {
+  display: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+}
+.public-nav-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.public-header-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.1rem;
+  align-items: center;
+  gap: 0.6rem;
 }
 .public-header a,
 .public-footer a {
   text-decoration: none;
+}
+/* Bloc 91/M7: the footer's site-section links. */
+.public-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: flex-end;
+}
+.public-footer-nav a:hover {
+  color: var(--accent-strong);
 }
 .brand {
   color: var(--accent-strong);
@@ -97,8 +368,17 @@ select {
   max-width: 50rem;
   padding: clamp(2rem, 6vw, 5rem) 0;
 }
+/* Bloc 38/L: this generic hero-title rule was silently overriding
+   .tools-page-title's and .reference-page-title's own (deliberately much
+   smaller) font-size clamp — `.public-main > h1` (a class + a type
+   selector) outranks a lone class selector, so only their `white-space:
+   nowrap` was actually landing, on text sized for this rule's huge
+   clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
+   Bloc 33/35's narrower clamps needed all along to actually apply.
+   Bloc 53/D: same exclusion for /guides and /referentiels' own smaller
+   titles, added below. */
 .hero h1,
-.public-main > h1,
+.public-main > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title),
 .guide-shell h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
@@ -115,7 +395,7 @@ select {
 }
 .eyebrow {
   margin: 0;
-  color: var(--accent-strong);
+  color: var(--text-dim);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -130,7 +410,7 @@ select {
 .hero-actions a,
 .public-card a,
 .empty-state a {
-  color: var(--accent-strong);
+  color: var(--text);
   font-weight: 700;
 }
 .hero-actions .primary-link {
@@ -142,25 +422,88 @@ select {
 }
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
 }
 .public-card,
 .empty-state,
 .guide-shell {
-  padding: 1.4rem;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--surface);
 }
 .public-card h2 {
-  margin-top: 0;
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+.public-card p {
+  margin: 0.25rem 0 0.55rem;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+.public-card-disabled {
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 .public-footer {
   padding: 2rem 0;
   border-top: 1px solid var(--border);
   color: var(--muted);
+}
+
+main.public-main.contact-page {
+  max-width: 34rem;
+  text-align: center;
+}
+.contact-page h1 {
+  max-width: none;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+}
+.contact-page .eyebrow,
+.contact-page .lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+.contact-page .contact-form {
+  text-align: left;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 0.8rem 2.5rem rgb(37 44 39 / 7%);
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+  margin: 1.5rem auto 0;
+}
+.contact-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.contact-form textarea {
+  min-height: 8rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  resize: vertical;
+}
+.contact-form input,
+.contact-form select {
+  padding: 0 0.7rem;
+}
+.contact-form button {
+  justify-self: start;
 }
 
 .player-settings {
@@ -183,24 +526,87 @@ select {
   display: none;
 }
 .player-settings > details > summary {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
   padding: 1rem 1.2rem;
 }
-.player-settings > details > summary::before,
 .settings-section > summary::before {
   content: "▸";
   margin-right: 0.55rem;
   color: var(--accent);
 }
-.player-settings > details[open] > summary::before,
 .settings-section[open] > summary::before {
   content: "▾";
 }
 .player-settings summary small {
   color: var(--muted);
   font-weight: 500;
+}
+#player-settings-title + small {
+  margin-left: 0.6rem;
+}
+.player-summary-row1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+/* The disclosure arrow lives on the title itself, not as a 3rd flex item
+   of .player-summary-row1 — otherwise space-between spreads it away from
+   the title instead of keeping the two flush together. */
+#player-settings-title::before {
+  content: "▸";
+  margin-right: 0.55rem;
+  color: var(--accent);
+}
+.player-settings > details[open] > summary #player-settings-title::before {
+  content: "▾";
+}
+.player-summary-line2 {
+  display: block;
+  margin-top: 0.4rem;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-weight: 500;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  white-space: normal;
+  overflow-x: visible;
+}
+/* Always 2 rows of 5 skills, regardless of viewport width — not just below
+   the mobile/tablet breakpoint. */
+.player-summary-skill-group {
+  display: block;
+  white-space: normal;
+}
+.player-summary-line2 .sk-name {
+  color: var(--text-dim);
+}
+.player-summary-line2 .sk-value {
+  color: var(--summary-total);
+}
+.sk-breakdown {
+  color: var(--text-faint);
+}
+
+/* Component color coding shared between the input sections (Équipement /
+   Points / Temple clan) and the collapsed summary breakdown — same
+   component, same color, in both places. */
+.component-equipment {
+  color: var(--emerald-bright);
+}
+.component-points {
+  color: var(--accent-strong);
+}
+.component-temple {
+  color: var(--sapphire-bright);
+}
+.settings-section-equipment > summary {
+  color: var(--emerald-bright);
+}
+.settings-section-points > summary {
+  color: var(--accent-strong);
+}
+.settings-section-temple > summary {
+  color: var(--sapphire-bright);
 }
 .player-settings-body {
   padding: 0 1.2rem 1.2rem;
@@ -214,9 +620,74 @@ select {
   padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
+/* Bloc 71/D, desktop: League/Level/VP now share a single row — a 5:2:3
+   column grid (50%/20%/30% of the row) replacing Bloc 69/D's "League
+   spans alone, Level/VP split 25% each below it". VP's own unit-input
+   (below) further splits that 30% 2:1 internally, so the NumberStepper
+   itself lands at 20% of the full row and the unit select at 10%. */
+.settings-grid-primary {
+  grid-template-columns: 5fr 2fr 3fr;
+}
+.settings-grid-primary .unit-input {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+/* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
+   skills, skill points, templars, clan temple) goes from 1 to 2 columns
+   (I). Within .settings-grid-primary specifically, its first child — the
+   league LeagueButtons group since Bloc 68/F — spans both columns on its
+   own full-width row, leaving Level and VP as the 2nd/3rd children to
+   share the row below (H). Depends on the JSX keeping League first,
+   Level second, VP third. */
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .settings-grid-primary > :first-child {
+    grid-column: 1 / -1;
+  }
+  /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
+     its unit select, and shrink that select, so the two NumberSteppers
+     (Level's, which has no unit select, and VP's) end up close to the
+     same width instead of VP's looking squeezed. Bloc 69/D: Level's own
+     share is reduced a further 10% (5fr -> 4.5fr) and handed to VP
+     (7fr -> 7.5fr), keeping the 12fr total. */
+  .settings-grid-primary {
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
+  }
+  .settings-grid-primary .unit-input {
+    grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .settings-grid-primary .unit-input select {
+    padding: 0 0.3rem;
+  }
+}
 .settings-grid label {
   display: grid;
+  align-content: start;
   gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+/* Bloc 69/D: same label look as the Level/VP fields (.settings-grid
+   label above), for the league field's own title — a plain <div>/<span>
+   since LeagueButtons renders a role="group" div, not a <label>. */
+.settings-grid-league-field {
+  display: grid;
+  gap: 0.4rem;
+}
+/* Bloc 73/A review fix: the 50% column (Bloc 71/D) was mathematically
+   correct but the buttons themselves never grew to fill it — flex:0 0
+   auto left up to ~180px of dead space after the last button, reading
+   as "not actually 50%" to the eye. Same no-truncation equal-width
+   technique as Bloc 69/E (min-width: max-content, not 0, so a button
+   never shrinks below its own label while flex-grow: 1 spreads the
+   column's full width across all 6). */
+.settings-grid-league-field .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+.settings-grid-league-label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -228,6 +699,10 @@ select {
 .settings-grid output,
 .points-summary strong {
   color: var(--success);
+}
+.points-summary strong.stat-highlight,
+.settings-grid output.stat-highlight {
+  color: var(--accent-strong);
 }
 select,
 input {
@@ -302,16 +777,3683 @@ select {
   padding: 0.45rem 0.7rem;
   border-radius: 0.45rem;
 }
+.city-calculators {
+  margin-top: 2rem;
+}
+.calculator-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.calculator-tabs button {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 750;
+}
+.calculator-tabs button[aria-selected="true"] {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--surface);
+}
+/* Bloc 33/N: always visible, not only on hover — a disabled tab otherwise
+   gives no clue why clicking it does nothing, especially on touch devices
+   where a title tooltip never shows at all.
+   Bloc 62/J: colored instead of muted grey, plus a colored asterisk (::before)
+   — shared treatment with .tool-unavailable below and the référentiels
+   switcher's inactive teaser (.reference-switcher .tool-unavailable). */
+.tab-coming-soon {
+  color: var(--amber-bright);
+  font-weight: 600;
+}
+.tab-coming-soon::before {
+  content: "* ";
+}
+.calculator-stack {
+  display: grid;
+  gap: 1rem;
+}
+.calculator-card {
+  padding: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.calculator-card h2,
+.calculator-card h3,
+.calculator-card p {
+  margin-top: 0;
+}
+/* Bloc 91/M5: a calculator/summary card title is a real section heading under
+   the tool page's <h1>, so it is now an <h2> (was an <h3> that skipped a
+   level). This shared class keeps its rendered size exactly at the previous
+   UA <h3> default (1.17rem on the 16px root, bold) so the retag is a
+   semantics-only change with no visual regression. Sub-blocks inside a card
+   (e.g. .production-block h3) stay <h3>, one level below their card title. */
+.calculator-heading {
+  margin: 0 0 1rem;
+  font-size: 1.17rem;
+}
+.calculator-card > p,
+.calculator-note {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.calculator-fields,
+.calculator-results,
+.production-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.8rem;
+}
+/* Bloc 69/E, superseding Bloc 68/J+K's fix: a bare LeagueButtons group
+   (.family-buttons) dropped straight into .calculator-fields (City's 3
+   tools, Demo Attack Troops) got boxed into one ~12rem auto-fit cell,
+   and since .family-buttons never wraps above 900px, its later leagues
+   fell behind a horizontal scrollbar. Bloc 68 fixed that by spanning the
+   full row, isolating the league field on its own line; Bloc 69/E asks
+   for it to share the row with the tool's other fields instead — same
+   single-row, equal-width-buttons layout as Ranking's own dedicated
+   .ranking-fields (Bloc 61/B), not the generic auto-fit grid, which
+   would either box the buttons into a too-narrow column (horizontal
+   scroll) or, wrapped, stretch the whole row taller than its sibling
+   fields need. A dedicated class instead of .calculator-fields itself,
+   since that one is still the plain grid for Gems/results/admin. */
+.calculator-fields-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+/* The numeric fields shrink to a compact floor (large enough for a few
+   digits + the +/- buttons) and share whatever's left of the row equally,
+   regardless of how many of them there are. */
+.calculator-fields-inline .calculator-field:not(.calculator-league-field) {
+  flex: 1 1 0;
+  min-width: 6rem;
+}
+/* Bloc 70/A: fixed at exactly half the row's width (basis 50%, no
+   grow/shrink) instead of a flex-grow ratio that shifted with the number
+   of sibling numeric fields (40% for City Cost's 3 fields, 66% for Demo
+   Attack's 1) — a flat 50% for every one of the 4 tools sharing this row. */
+.calculator-fields-inline .calculator-league-field {
+  flex: 0 0 50%;
+}
+.calculator-fields-inline .family-buttons {
+  margin: 0;
+}
+/* min-width: max-content (not 0) is the point — flex-basis: 0 alone lets
+   a button shrink past its own label, truncating it; pinning the floor
+   to the label's own natural width keeps every button's text whole while
+   still letting flex-grow: 1 distribute any leftover space equally. */
+.calculator-fields-inline .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+@media (max-width: 900px) {
+  .calculator-fields-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+/* Bloc 71/A: Niveau Max Atteignable only — Nombre de villes and Niveau de
+   départ narrowed 30% (flex-grow 0.7 instead of the row's default 1), and
+   Or disponible's own flex-grow raised to 1.6 to absorb exactly that freed
+   space (0.3 + 0.3), keeping the flex-grow sum at 3 so the row's overall
+   width split with the league field (Bloc 70/A) is unaffected. */
+.city-maxlevel-fields .calculator-field.city-maxlevel-narrow-field {
+  flex: 0.7 1 0;
+}
+.city-maxlevel-fields .calculator-field.city-maxlevel-gold-field {
+  flex: 1.6 1 0;
+}
+/* The gold unit select's own fixed column also narrows 30% (4.5rem ->
+   3.15rem); minmax(0, 1fr) on the NumberStepper column means it alone
+   absorbs that freed space, not the field's own label/gap. */
+.city-maxlevel-gold-field .unit-input {
+  grid-template-columns: minmax(0, 1fr) 3.15rem;
+}
+/* Bloc 88 → Bloc 89: Demo Attack Troops result tile — a grey Boutique-style
+   tile (same --surface-muted background as .consumable-tile) sitting below the
+   full-width league block. Bloc 89 retouches: the tile spans only 50% of the
+   width on desktop (Bloc 89/A); its three parts — the still-editable
+   target-city-level field and the two result values — share it in equal thirds
+   (Bloc 89/D); each result value now sits in its own nested mini-tile, a
+   slightly lighter grey than the main tile with its content centered
+   (Bloc 89/B-C). Mobile keeps the Bloc 88/F stack: the city-level field on its
+   own line, the two mini-tiles together on the next line. */
+.demo-attack-tile {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.demo-attack-tile-level {
+  min-width: 0;
+}
+.demo-attack-tile-results {
+  display: flex;
+  gap: 1rem;
+}
+.demo-attack-tile-results > .total-box {
+  flex: 1 1 0;
+}
+/* Bloc 89/B-C: each result value in its own nested mini-tile — a slightly
+   lighter grey than the main tile (white mixed into --surface-muted so it
+   lightens in both light and dark themes), with its label and value centered.
+   The base .total-box border/background are overridden here. */
+.demo-attack-inner-tile.total-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--surface-muted), #fff 14%);
+  text-align: center;
+}
+/* Bloc 92/A11y (M1 residual): the mini-tile lightens its background, where
+   even the AA-safe --emerald-text (tuned for the darker --bg/panels) stays at
+   ~2.9:1. In dark theme only, the "troupes max" value gets a lighter mint that
+   clears 4.5:1 on this specific lightened surface; light theme keeps
+   --emerald-text (already ≥4.5:1 on the light mini-tile). */
+:root:not([data-theme="light"]) .demo-attack-inner-tile .value.emerald,
+:root[data-theme="dark"] .demo-attack-inner-tile .value.emerald {
+  color: #98dcbd;
+}
+.demo-attack-inner-tile .label {
+  margin-bottom: 0;
+}
+.demo-attack-tile-empty {
+  flex: 1 1 auto;
+  margin: 0;
+}
+/* Bloc 89/A + /D: on desktop the tile is half-width, and its three parts —
+   the city-level field and the two mini-tiles (lifted out of their flex
+   wrapper with display:contents so they become direct grid items of the tile)
+   — each take an equal third. A 3-column grid with minmax(0, 1fr) tracks gives
+   truly equal thirds regardless of each part's own content width, which plain
+   flex (grow from a 0 basis) does not: the number stepper and the value labels
+   have different min-content sizes, so flex biased the widths. */
+@media (min-width: 901px) {
+  .demo-attack-tile {
+    width: 50%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+  .demo-attack-tile-results {
+    display: contents;
+  }
+  /* Codex review (PR #106): in the first-visit empty state (no league yet)
+     the grid holds only the city-level field and the prompt, so the prompt
+     would auto-place into column 2 and leave column 3 empty (flex:1 is inert
+     under grid). Span it across both result columns instead, while the three
+     equal columns still apply once the two result mini-tiles exist. */
+  .demo-attack-tile-empty {
+    grid-column: 2 / -1;
+  }
+}
+/* Bloc 88/F: mobile keeps the league buttons' 2x3 grid (league-buttons-grid,
+   unchanged) and stacks the tile — the city-level field on its own line,
+   then the two result mini-tiles together on the next line. */
+@media (max-width: 900px) {
+  .demo-attack-tile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+.calculator-field {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.calculator-stat {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-radius: 0.7rem;
+  background: var(--surface-muted);
+}
+.calculator-stat span {
+  color: var(--muted);
+}
+.calculator-stat strong {
+  color: var(--accent-strong);
+  text-align: right;
+}
+.city-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.city-comparison > div {
+  display: grid;
+  gap: 0.45rem;
+}
+.production-block + .production-block {
+  margin-top: 1rem;
+}
+.production-block h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.production-block h3 strong {
+  color: var(--accent-strong);
+}
+.ranking-placeholder {
+  margin: 1rem 0 0;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.7rem;
+  color: var(--muted);
+}
+/* Bloc 62/E, F: sits directly above .ranking-scale, standing in for the
+   removed "Échelle visuelle" title — a compact inline label+value instead
+   of a full .total-box card, so the total reads as part of that zone's
+   own header rather than a separate results block. */
+.ranking-scale-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0.5rem 0.5rem 0;
+}
+.ranking-scale-total .label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ranking-scale-total .value {
+  color: var(--accent-strong);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.ranking-scale {
+  position: relative;
+  height: 9.5rem;
+  margin: 1rem 0.5rem 2.5rem;
+  padding: 0 0.5rem;
+}
+.ranking-scale-axis {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 3.5rem;
+  height: 2px;
+  background: var(--border);
+}
+.ranking-scale-tick {
+  position: absolute;
+  top: 3.15rem;
+  width: 1px;
+  height: 0.85rem;
+  background: var(--text-faint);
+  opacity: 0.35;
+}
+.ranking-scale-tick-label {
+  position: absolute;
+  top: 4.1rem;
+  transform: translateX(-50%);
+  color: var(--text-faint);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.56rem;
+  opacity: 0.6;
+}
+.ranking-scale-segment {
+  position: absolute;
+  top: 3rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  border-inline: 1px solid var(--bg-panel);
+}
+.ranking-scale-marker {
+  position: absolute;
+  top: 3.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  text-align: center;
+  font-family: var(--font-mono, monospace);
+}
+.ranking-scale-label {
+  position: absolute;
+}
+.ranking-scale-label-above {
+  bottom: 2.1rem;
+}
+.ranking-scale-label-below {
+  top: 2.1rem;
+}
+.ranking-scale-range {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+.ranking-scale-target {
+  font-size: 0.6rem;
+  color: var(--emerald-bright);
+}
+.ranking-scale-player-line {
+  position: absolute;
+  top: 2.4rem;
+  bottom: 2.4rem;
+  width: 2px;
+  background: var(--ember);
+  transform: translateX(-50%);
+  z-index: 3;
+}
+.ranking-scale-player-line::after {
+  content: attr(data-pct);
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ember);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ranking-table-wrap {
+  overflow-x: auto;
+}
+
+/* Bloc 32/D.4: grid + config panel only, no third per-family summary
+   column — the sole remaining summary is the global card above. */
+.stuff-block-columns {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.stuff-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+/* Expedition Equipment Simulator: grid + config panel only, no third
+   per-block summary column (its summary is a single card above instead). */
+.expedition-slot-columns {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.stuff-slot-grid button {
+  min-height: 76px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.stuff-slot-grid button.selected {
+  /* outline (not border) stays visible even when a rarity color is set via
+     inline style on the button, which otherwise wins over any CSS
+     border-color for the same element. */
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 30%, transparent);
+  position: relative;
+  z-index: 1;
+}
+
+.stuff-editor-panel {
+  border-radius: 0.6rem;
+}
+
+.stuff-editor-panel-active {
+  border: 2px solid var(--accent);
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.stuff-slot-grid small,
+.stuff-empty {
+  color: var(--muted);
+}
+
+.stuff-slot-image {
+  max-width: 100%;
+  max-height: 1.8rem;
+  object-fit: contain;
+}
+/* Bloc 73/E review fix: scoped to Combat only (a 2nd class alongside the
+   shared .stuff-slot-image) — the shared rule above is also used by the
+   Expedition slot renderer, which doesn't get Bloc 73/D's 2-column split
+   and has no extra room for a bigger image.
+   Bloc 78/A: 2.8rem -> 3.2rem. */
+.stuff-slot-image-combat {
+  max-height: 3.2rem;
+}
+/* Bloc 78/B: Expedition gets its own modifier class at the same 3.2rem
+   value as Combat's, rather than reusing .stuff-slot-image-combat on
+   Expedition's markup — a class literally named "-combat" has no business
+   appearing in Expedition's DOM even though the two values currently
+   match, and every prior width/size regression here (Blocs 38/Q, 40/B,
+   41/E, 53/B, C, 76/A) came from exactly that kind of cross-feature class
+   reuse. */
+.stuff-slot-image-expedition {
+  max-height: 3.2rem;
+}
+/* Bloc 85: faded, so the icon reads as an empty-slot placeholder rather
+   than a real selected item. */
+.stuff-slot-image-empty {
+  opacity: 0.35;
+}
+/* Bloc 73/D: replaces the old single-column stack (image, star text, then
+   a row of gem badges below) with image+star on the left and the (up to
+   3) gems stacked in a column on the right — kept isolated in its own
+   commit so the previous layout stays a simple git revert away. */
+.stuff-slot-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.stuff-slot-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+.stuff-slot-gems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.stuff-slot-gem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.gem-badge-image {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+}
+.gem-badge {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.3rem;
+  color: #fff;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  line-height: 1.3;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 40%);
+}
+/* Bloc 73/D: shared star-rating rendering — real repeated star icons,
+   never "N★"/"N*" text. 1-4 white stars; at 5 they convert completely to
+   1 yellow star (never a white+yellow mix), 6-8 add more yellow stars.
+   Used for both the equipment's own star level and each gem's, on both
+   Combat (since Bloc 73) and Expedition (since Bloc 78/B).
+   Bloc 74/A: the Bloc 73 review fix (a literal #fff fill) still read as
+   near-invisible in the light theme, even with a dark outline — a fixed
+   light color can never work in both themes at once. Using the site's
+   own --foreground token instead resolved per-theme like the rest of
+   the page's text does: the same off-white it already was in dark
+   theme, and the same dark grey/near-black every other label already
+   uses in light theme — verified visually in both, not just by
+   computed contrast ratio (the lesson from Blocs 22/24: a same-hue
+   lightness tweak isn't reliable, a real per-theme value is).
+   Bloc 78/C review: --foreground's light-theme value (--text, #20242b)
+   turned out to read as near-black for these icons specifically, even
+   though it's the same value every body label already uses — a star
+   icon's small filled shape reads darker at a glance than the same
+   color does as running text. A dedicated --star-white token (not
+   --foreground itself, which every other light-theme label still
+   depends on) lets this one case use a genuinely lighter, still-
+   per-theme value: dark theme keeps the untouched --foreground, light
+   theme reuses the existing --text-dim token (already the site's
+   "muted but legible" grey, ~4.9:1 against --surface) instead of
+   inventing a new literal. */
+.star-rating {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--star-white);
+}
+.star-rating svg {
+  fill: currentColor;
+  stroke: rgb(0 0 0 / 55%);
+  stroke-width: 1.5px;
+}
+/* Bloc 74/B: was var(--amber-bright), a token that (correctly, for its
+   other uses) resolves to a darker, more saturated amber in the light
+   theme — so these stars silently shifted color across themes instead
+   of staying the fixed "5-8 star tier" yellow they're meant to signal.
+   A literal, non-variable value never gets recalculated by theme.
+   Review fix: reusing dark theme's old --amber-bright (#e8a94f) verbatim
+   left only ~1.83:1 contrast against the light theme's --surface
+   (#f0f2f5), well under the WCAG 1.4.11 non-text 3:1 floor. A single
+   fixed hue can't be maximally readable on both a near-black and a
+   near-white background at once, so #a8710a was chosen as the
+   mid-luminance value that clears 3:1 on both (~3.54:1 dark, ~3.72:1
+   light) while staying recognizably gold. */
+.star-rating-yellow {
+  color: #a8710a;
+}
+/* Bloc 73/D review fix: at the 390px mobile floor, a fully configured
+   slot (2.8rem image, a 3-gem column each with up to a 4-icon rating)
+   could overflow its ~95px cell — shrink the image back down, tighten
+   every gap, and shrink the icons themselves so the worst case (every
+   gem at its max 8-star tier) still fits. Desktop (Bloc 73/E) keeps the
+   full 2.8rem image untouched. */
+@media (max-width: 900px) {
+  .stuff-slot-image-combat {
+    max-height: 1.6rem;
+  }
+  /* Bloc 78/B: same mobile floor as Combat's own image — Expedition's
+     slot cell has no gem column to fit around, but the larger 3.2rem
+     desktop image still needs the same shrink to avoid overflowing its
+     own cell at the 390px floor. */
+  .stuff-slot-image-expedition {
+    max-height: 1.6rem;
+  }
+  .stuff-slot-layout {
+    gap: 0.3rem;
+  }
+  .stuff-slot-gems {
+    gap: 0.1rem;
+  }
+  .stuff-slot-gem {
+    gap: 0.15rem;
+  }
+  .gem-badge-image {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  .star-rating {
+    gap: 0;
+  }
+  .star-rating svg {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+.stuff-editor,
+.stuff-gems,
+.compare-side {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stuff-editor label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.stuff-editor select,
+.stuff-gem-row select {
+  width: 100%;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.stuff-gem-row {
+  display: grid;
+  grid-template-columns: auto 1.4fr 0.7fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.stuff-gem-row-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* Bloc 72/A, mobile only: the "Gemme X" label moves above the 3 selects
+   instead of sharing the row with them, freeing the full row width for
+   Compétence/Étoiles/Ligue (too cramped otherwise). Desktop is untouched.
+   The label is the row's first DOM child, so spanning it across all 3
+   columns pushes it onto its own row; the 3 selects then auto-flow into
+   an implicit 2nd row without needing explicit row placement. */
+@media (max-width: 900px) {
+  .stuff-gem-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .stuff-gem-row-label {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Bloc 31/E.4 + Bloc 33/I: both simulators' global summary always shows
+   all 10 skills, laid out as a fixed 5-column x 2-row grid on desktop so
+   they fill the available width instead of an arbitrary auto-fit count. */
+.stuff-summary-grid,
+.expedition-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (max-width: 900px) {
+  .stuff-summary-grid,
+  .expedition-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stuff-total {
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.stuff-total strong {
+  color: var(--success);
+}
+.stuff-total small {
+  color: var(--violet-bright);
+}
+/* Bloc 32/D.5+E.2: the selected slot's own contribution must sit to the
+   right of the total, on the same line — .total-box small below (line
+   ~1405) defaults to display:block for other calculators, so this needs
+   the extra specificity of both classes together to win. */
+.stuff-total.total-box small {
+  display: inline;
+  margin-top: 0;
+  margin-left: 0.35em;
+}
+
+.compare-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.diff-positive {
+  color: var(--success);
+  font-weight: 700;
+}
+.diff-negative {
+  color: #b83a3a;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .stuff-block-columns,
+  .compare-equipment-grid,
+  .expedition-slot-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bloc 39: family and rarity, evenly split — the star-level column is gone
+   (tiles only ever show the base 1★ value, no selector), so both filters
+   get equal room instead of Combat/Expedition needing different splits to
+   dodge a 3rd column. */
+.reference-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+}
+.reference-filters label,
+.reference-filters > div {
+  display: grid;
+  gap: 0.45rem;
+}
+.filter-label,
+.reference-filters label {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.reference-filters input,
+.reference-filters select {
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+/* Bloc 65/D: Gemmes is a tile grid now — the 11 x 7 matrix table it
+   replaces (Bloc 38/A) needed a horizontal scroll on a phone. One tile per
+   skill, each holding its own 6-league mini-table, plus the full-width
+   Coût tile that opens the grid. Deliberately the same layout on mobile
+   and desktop: a tile is already only 6 short columns wide, and the
+   skill x league comparison these tiles exist for must not be split up.
+   The tile's own color comes from the per-skill palette (inline, from
+   skillColor) exactly as the Combat/Expedition tiles take theirs from the
+   rarity palette. */
+.gems-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.gems-tile {
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border: 2px solid var(--border);
+  border-radius: 0.6rem;
+}
+/* The price tile belongs to no skill: neutral grey, and it spans the whole
+   grid so its 6 values read as the row they are. */
+.gems-cost-tile {
+  grid-column: 1 / -1;
+  background: var(--surface-muted);
+}
+.gems-tile-title {
+  margin: 0 0 0.45rem;
+  /* Bloc 66/C: harmonized with Boutique's/Templiers' own tile titles. */
+  font-size: 1.1rem;
+  color: var(--foreground);
+}
+/* 6 columns of strictly equal width (table-layout: fixed splits them
+   evenly with no column carrying an explicit width), everything centered. */
+.gems-tile-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.gems-tile-table th,
+.gems-tile-table td {
+  padding: 0.2rem 0.15rem;
+  text-align: center;
+  font-size: 0.75rem;
+}
+.gems-tile-table th {
+  color: var(--muted);
+  font-weight: 700;
+}
+.gems-tile-image {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0 auto;
+  object-fit: contain;
+}
+@media (max-width: 900px) {
+  .gems-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bloc 66/B: the Templiers presentation tiles, before the 2x10 cost table
+   (Bloc 64/E, unchanged) — same image-left layout and 6rem size as
+   Boutique (Bloc 65/C), colored per associated competence (skillColor),
+   same principle as Gemmes' tiles above.
+   Bloc 68/A: 3 per row on desktop (5 Templiers = 3+2 layout). Also reused
+   verbatim by the Templiers calculator's result tiles (Bloc 68/C). */
+.templars-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.templars-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0.6rem;
+}
+.templars-tile-image {
+  flex: 0 0 auto;
+  width: 6rem;
+  height: 6rem;
+  object-fit: contain;
+}
+.templars-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.templars-tile-title {
+  margin: 0;
+  color: var(--foreground);
+  /* Bloc 66/C: harmonized with Boutique's/Gemmes' own tile titles. */
+  font-size: 1.1rem;
+  overflow-wrap: break-word;
+}
+.templars-tile-stat {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+@media (max-width: 900px) {
+  .templars-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 68/C: the Templiers calculator's own fields+cost card — Niveau
+   départ / Niveau cible / Coût total merged into 3 equal columns on
+   desktop, stacked to 1 column on mobile. Dedicated class rather than
+   reusing .calculator-fields above (shared by Gems/City/DemoAttackTroops,
+   whose own auto-fit layout must not change). */
+.templars-cost-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+@media (max-width: 900px) {
+  .templars-cost-fields {
+    grid-template-columns: 1fr;
+  }
+}
+.reference-value {
+  color: var(--success);
+}
+/* Bloc 37/H: skill/stat name and its % value side by side, not stacked. */
+.skill-value-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.unconfirmed {
+  display: block;
+  color: var(--violet-bright);
+  font-size: 0.72rem;
+}
+.unconfirmed-notice {
+  padding: 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+@media (max-width: 900px) {
+  .reference-filters {
+    grid-template-columns: 1fr;
+  }
+}
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ranking-table th,
+.ranking-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.ranking-table th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+/* Bloc 38/M: Level Up now reuses Templiers'/Gemmes' exact table look
+   (border + background already came from wrapping it in
+   .calculator-card.ranking-table-wrap, same as those 2) — this adds the
+   3rd piece, alternating row color, shared by all 3 rather than every
+   .ranking-table (Ranking's own calculator/admin tables keep their
+   current look, unaffected). */
+.reference-simple-table tbody tr:nth-child(even) {
+  background: var(--bg-panel-raised);
+}
+.ranking-unknown {
+  color: var(--muted);
+  font-style: italic;
+}
+.ranking-admin-editor {
+  display: grid;
+  gap: 1rem;
+}
+.ranking-admin-editor textarea {
+  min-height: 34rem;
+  padding: 1rem;
+  font-family: monospace;
+}
+.ranking-admin-editor button {
+  justify-self: start;
+  padding: 0.7rem 1rem;
+}
+.calculator-tabs.compact {
+  margin: 1rem 0 0;
+}
+.family-buttons {
+  /* Bloc 31/H: one line on desktop, never wraps there. Bloc 34/B: mobile
+     wraps to a 2nd row instead — the horizontal scroll this used to fall
+     back to was easy to miss and awkward to trigger by touch. */
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.35rem;
+  margin: 1rem 0;
+  padding-bottom: 0.2rem;
+}
+@media (max-width: 900px) {
+  .family-buttons {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+/* Bloc 68/L+M: opt-in modifier for a .family-buttons group that should form
+   a full-width, evenly-sized 2-column grid on mobile instead of the default
+   wrap (which can leave a ragged last row) — Boutique's category filter
+   (Bloc 68/L) and Combat/Expedition's family filter (Bloc 68/M), both
+   exactly 4 buttons. Desktop is untouched (still the plain nowrap row
+   above). */
+@media (max-width: 900px) {
+  .reference-filter-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Bloc 68/M: Combat/Expedition's 5-item rarity filter, split 2+3 across 2
+   rows on mobile — deliberately NOT a plain 2-column grid (which would
+   leave an awkward lone 5th button) and deliberately keeping rarityOrder's
+   existing rarest-to-commonest DOM order (Légendaire, Mythique, Épique,
+   Rare, Commun): row 1 is the first 2 buttons, row 2 the last 3, via a
+   6-column track so each row's buttons stay equal width without needing to
+   restructure the flat button list into 2 separate containers. */
+@media (max-width: 900px) {
+  .reference-filter-grid-rarity {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .reference-filter-grid-rarity button:nth-child(1),
+  .reference-filter-grid-rarity button:nth-child(2) {
+    grid-column: span 3;
+  }
+  .reference-filter-grid-rarity button:nth-child(3),
+  .reference-filter-grid-rarity button:nth-child(4),
+  .reference-filter-grid-rarity button:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+/* Bloc 68/N: the Événements/Progression league picker (6 leagues) forms a
+   full-width 3-column grid on mobile (2 rows of 3) instead of the default
+   wrap, which could split unevenly. Opt-in via LeagueButtons' className
+   prop — Classement's own league buttons and the other new button
+   conversions (Bloc 68/F/J/K) are untouched, keeping their plain wrap. */
+@media (max-width: 900px) {
+  .league-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+}
+/* Bloc 87/B: on desktop, the Événements/Progression league picker occupies
+   50% of the available width — the same rule already applied to the
+   Villes/Troupes/Classement tools (Bloc 70/71) — its 6 buttons sharing that
+   half equally (flex-fill, each at least its label's width). Scoped to the
+   .league-buttons-half opt-in so the many *other* .league-buttons-grid users
+   (Villes, Classement, Player settings…) stay untouched. Mobile keeps the
+   3-column grid above. */
+@media (min-width: 901px) {
+  .family-buttons.league-buttons-half {
+    width: 50%;
+  }
+  .family-buttons.league-buttons-half button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
+/* Bloc 87/C: on desktop, the Combat/Expedition reference family and rarity
+   filters each fill their own half of the .reference-filters row (already a
+   1fr 1fr grid, so the two groups are side by side at 50/50) — the buttons
+   flex-fill their group instead of clustering at content width. Mobile keeps
+   its dedicated 2-col / 2+3 grids above. Scoped to .reference-filters-equipment
+   (the Combat/Expedition Filters only) so Boutique's shared .reference-filter-
+   grid-2 category filter stays untouched (Codex review on PR #104). */
+@media (min-width: 901px) {
+  .reference-filters-equipment .reference-filter-grid-2 button,
+  .reference-filters-equipment .reference-filter-grid-rarity button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
+.secondary-action {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  cursor: pointer;
+}
+/* Bloc 64/D: Level Up's pagination controls share this exact rule rather
+   than a lookalike copy of it — they're navigation buttons like the league
+   ones right above them on the same page, so they must not drift apart. */
+.family-buttons button,
+.family-buttons a,
+.pagination button {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+}
+/* Bloc 71/C: league buttons were inheriting bold (font: inherit on
+   <button>) from whichever labeled ancestor wraps them — .calculator-field
+   and .ranking-field-label both set font-weight: 700 on an element the
+   buttons sit inside. Player Settings never had this problem (its own
+   label is a sibling <span>, not a shared ancestor), so this pins every
+   .family-buttons button/link back to that same normal weight, regardless
+   of ancestor — .pagination shares the rule above but keeps its own
+   (unrelated) weight, so it's deliberately not included here. */
+.family-buttons button,
+.family-buttons a {
+  font-weight: 400;
+}
+.family-buttons button[aria-pressed="true"] {
+  /* --pill-color (set inline per family/rarity/skill) reuses the same
+     color already identifying that value elsewhere; falls back to the
+     neutral accent when no such color is established (e.g. "Personnalisé"). */
+  border-color: var(--pill-color, var(--accent-strong));
+  /* Bloc 92/A11y (H2): the game hue stays on the border, tint and inset ring
+     (the identity cues), but the LABEL is neutral --foreground — the hue as
+     text on its own tinted background measured only 2.0–4.4:1 (WCAG 1.4.3). */
+  color: var(--foreground);
+  background: color-mix(
+    in srgb,
+    var(--pill-color, var(--accent-strong)) 16%,
+    var(--surface-muted)
+  );
+  box-shadow: inset 0 0 0 1px var(--pill-color, var(--accent-strong));
+}
+/* Bloc 61/B: league buttons + the % and rank fields stay on one row on
+   desktop — the family-buttons group doesn't grow like a grid item, so it
+   sits in a plain nowrap flex row instead of the generic .calculator-fields
+   auto-fit grid, which could otherwise push it onto its own line. */
+.ranking-fields {
+  display: flex;
+  /* Bloc 64/G: every label is inline before its own control now, so the 3
+     fields are single-line rows — centered against each other rather than
+     bottom-aligned as they were while labels sat above. */
+  align-items: center;
+  /* Bloc 73/C review fix: was nowrap, which forced the league field to
+     shrink well below its intended 50% (down to ~38% at 1000px) to make
+     room for the 2 fixed-9rem numeric fields — the field's own flex-basis
+     was correct, but flex-shrink absorbed 100% of any deficit since it
+     was the row's only shrinkable item. Letting the ROW wrap instead
+     keeps league fixed at exactly 50% always; on the rare desktop width
+     where all 3 don't fit on one line, a numeric field wraps to a 2nd
+     line rather than league silently shrinking. */
+  flex-wrap: wrap;
+  /* Bloc 91/M1: 0.5rem (was 1rem). With the now self-hosted IBM Plex Sans —
+     a hair wider than the system fallback CI used to render while Google
+     Fonts loaded — the league field (50%) + the two inline numeric fields
+     summed to within ~7px of this row's width, so the rank field wrapped to
+     a 2nd line on some browsers. A smaller minimum gap restores the margin;
+     justify-content: space-between still spreads the fields edge to edge, so
+     the change is invisible whenever they fit on one line. */
+  gap: 0.5rem;
+  /* Bloc 65/E: the 3 fields spread across the whole block instead of
+     bunching at its left edge and leaving the rest of the row empty —
+     the league group keeps the left edge, the rank field reaches the
+     right one. */
+  justify-content: space-between;
+}
+.ranking-fields .family-buttons {
+  margin: 0;
+}
+/* Bloc 71/B: the league field rejoins the Villes/Demo Attack desktop
+   pattern (Blocs 69/70) — .calculator-field's own title-above-control
+   grid (unchanged) plus a 50% share of the row; the 2 numeric fields
+   (below) keep their own Bloc 64/G inline-label style.
+   Bloc 73/C review fix: back to non-shrinking (flex: 0 0 50%, PR #90's
+   flex: 0 1 50%; min-width: 0 reverted) — .ranking-fields itself now
+   wraps (above) to absorb any overflow instead of squeezing this field
+   below its intended 50%. */
+.ranking-league-field {
+  flex: 0 0 50%;
+}
+/* 2nd review fix (PR #90): the field shrinking alone isn't enough — its
+   .family-buttons would then fall back to its own generic overflow-x:
+   auto (Bloc 34/B) and scroll internally, which the permanent Bloc 69/F
+   e2e regression test forbids outright (no league group may ever
+   scroll, at any tested width — this exact case failed CI at 1000px).
+   Wrapping to a 2nd row instead keeps every button's full text on
+   screen with no scroll in either axis; unlike wrap; overflow-x:auto,
+   flex-wrap: wrap only visibly wraps once there truly isn't room for
+   one line, so ample desktop widths still render a single row. */
+.ranking-league-field .family-buttons {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
+/* Bloc 73/C review fix: same dead-space bug as Bloc 73/A above — the
+   buttons kept their natural flex:0 0 auto size, leaving ~190px unused
+   inside the 50% field instead of visually filling it. */
+.ranking-league-field .family-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+/* Bloc 64/G: label immediately before the control, on both numeric
+   fields — overrides .calculator-field's stacked grid for these 2 only. */
+.ranking-inline-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ranking-field-label {
+  white-space: nowrap;
+}
+/* Bloc 64/G: the inline label now shares the field's width with the
+   stepper, so the field can't carry a fixed basis any more — the stepper
+   would give up whatever the label took and collapse its input to nothing.
+   The stepper gets its own width instead; the field sizes to its content. */
+.ranking-number-field {
+  flex: 0 0 auto;
+}
+.ranking-number-field .number-stepper {
+  /* Bloc 91/M1: 8.5rem (was 9rem) — trims another ~16px so the single-row
+     desktop layout keeps comfortable margin with the self-hosted font (see
+     .ranking-fields' gap note); still ample for a "100.00" value + steppers. */
+  width: 8.5rem;
+}
+/* Bloc 69/G, mobile only: desktop's inline-label-before-control row (Bloc
+   64/G) is replaced by a title-above-control stack — each of the 3
+   sections (League/percentage/rank) becomes its own full-width block,
+   the league buttons form a 2-row/3-column grid (.league-buttons-grid,
+   same as Events/Progression's), and the 2 numeric fields stretch full
+   width instead of a fixed 9rem. Desktop is completely unaffected. */
+@media (max-width: 900px) {
+  .ranking-fields {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ranking-inline-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+  .ranking-number-field {
+    flex: 1 1 auto;
+  }
+  .ranking-number-field .number-stepper {
+    width: 100%;
+  }
+}
+/* Bloc 33/H: the transfer button shares the family buttons' size but sits
+   apart from them — pushed to the far right of the row, in a permanent
+   violet accent rather than the neutral family-button style, with a brief
+   highlight on click on top of the "Transféré !" text confirmation. */
+.transfer-action {
+  margin-left: auto;
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+  background: color-mix(
+    in srgb,
+    var(--accent-strong) 14%,
+    var(--surface-muted)
+  );
+}
+.transfer-action-active {
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--accent-strong) 45%, transparent);
+}
+/* Bloc 72/C, mobile only: the 4 family buttons stay on one full-width
+   line (min-width: max-content so their own text never truncates, same
+   technique as Bloc 69/E) and the transfer button — normally pushed
+   right by margin-left: auto, no longer meaningful once everything is
+   full width — gets its own 2nd line via flex-basis: 100%, which forces
+   a wrap onto a line of its own inside this already-wrapping row. */
+@media (max-width: 900px) {
+  .stuff-family-buttons button:not(.transfer-action) {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+  .stuff-family-buttons .transfer-action {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+}
+/* Bloc 72/B, mobile only: Gems' Optimisation mode's 4 family buttons
+   (Attaque/Défense/Or/Vitesse) stay on one full-width line instead of
+   the generic .family-buttons mobile wrap — same equal-width, no-
+   truncation technique as Bloc 72/C above. */
+@media (max-width: 900px) {
+  .gem-optimize-family-buttons button {
+    flex: 1 1 0;
+    min-width: max-content;
+  }
+}
+/* Bloc 72/D, mobile only: the Expedition Equipment Simulator's 5-item
+   filter (Personnalisé/Or/Équipement/Consommables/Troupes), split 3+2
+   across 2 rows full width — same 6-column-track technique as the
+   Combat/Expedition referentiel's 5-item rarity filter (Bloc 68/M),
+   mirrored (3 then 2, not 2 then 3) since expeditionFilterOrder's DOM
+   order groups differently than rarityOrder's did. */
+@media (max-width: 900px) {
+  .expedition-sim-family-buttons {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .expedition-sim-family-buttons button {
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+  .expedition-sim-family-buttons button:nth-child(1),
+  .expedition-sim-family-buttons button:nth-child(2),
+  .expedition-sim-family-buttons button:nth-child(3) {
+    grid-column: span 2;
+  }
+  .expedition-sim-family-buttons button:nth-child(4),
+  .expedition-sim-family-buttons button:nth-child(5) {
+    grid-column: span 3;
+  }
+}
+.gem-total-slots {
+  max-width: 18rem;
+}
+.gem-rows {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.gem-row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1fr 1fr auto;
+  gap: 0.6rem;
+  align-items: end;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+.gem-row label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.gem-row > button {
+  min-height: 2.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--surface-muted);
+  color: var(--accent-strong);
+}
+.result-highlight,
+.budget-result-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background: var(--surface-muted);
+}
+.result-highlight strong {
+  color: var(--accent-strong);
+  font-size: 1.35rem;
+}
+.budget-result-main {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.budget-result-main strong {
+  color: var(--accent-strong);
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+}
+@media (max-width: 58rem) {
+  .gem-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 42rem) {
-  .public-header,
-  .player-settings > details > summary {
+  .player-summary-row1 {
     align-items: flex-start;
     flex-direction: column;
   }
-  .public-header {
-    padding: 1rem 0;
+  .public-nav-toggle {
+    display: inline-grid;
+  }
+  .site-search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .public-header-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+  .public-header-nav[data-open="true"] {
+    display: flex;
+  }
+  .public-header-nav a {
+    text-align: center;
   }
   .player-settings summary small {
     padding-left: 1.1rem;
   }
+  nav.calculator-tabs:not(.compact) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+  }
+  .city-comparison {
+    grid-template-columns: 1fr;
+  }
+  .city-comparison > span {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+  .gem-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Prototype visual language ------------------------------------------------ */
+h1,
+h2,
+h3,
+.brand {
+  font-family: var(--font-serif, serif);
+  letter-spacing: 0.025em;
+}
+h1 {
+  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+input,
+select,
+.total-box .value,
+.result-highlight strong,
+.budget-result-main strong,
+.ranking-table td {
+  font-family: var(--font-mono, monospace);
+}
+.public-main,
+.player-settings {
+  width: min(74rem, calc(100% - 2rem));
+}
+.public-header-nav a {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+}
+.public-header-nav a:hover {
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  color: var(--accent-strong);
+}
+.public-header-nav a[aria-current="page"] {
+  border-color: var(--accent-strong);
+  background: var(--bg-panel);
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+.theme-toggle {
+  display: inline-grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.calculator-card,
+.player-settings > details,
+.reference-card,
+.stuff-block,
+.ranking-table-wrap {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  border-radius: 12px;
+}
+
+.num-stepper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.num-stepper button {
+  /* Bloc 92/A11y (L4): 40px wide (was 30px) for a more comfortable touch
+     target on the +/- steppers, especially on mobile. */
+  flex: 0 0 40px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  line-height: 1;
+  user-select: none;
+}
+.num-stepper button:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.num-stepper button:first-child {
+  border-right: 0;
+  border-radius: 7px 0 0 7px;
+}
+.num-stepper button:last-child {
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+}
+.num-stepper input[type="number"] {
+  min-width: 0;
+  flex: 1;
+  border-radius: 0;
+  text-align: center;
+}
+
+.totals-grid,
+.calculator-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.total-box {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.total-box .label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+.total-box .value {
+  color: var(--accent-strong);
+  font-size: 19px;
+  font-weight: 600;
+}
+.total-box .value.emerald {
+  /* Bloc 92/A11y: AA-safe text token (was var(--emerald), 4.37:1 on --bg). */
+  color: var(--emerald-text);
+}
+.total-box small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.mode-switch button {
+  flex: 1;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+}
+.mode-switch button[aria-selected="true"],
+.mode-switch button.active {
+  background: var(--bg-panel-raised);
+  color: var(--violet-bright);
+  box-shadow: inset 0 0 0 1px rgb(139 107 184 / 40%);
+}
+
+/* Bloc 38/B, G: bumped from 2.2rem to 3rem — Combat and Expedition's
+   equipment images now match Gemmes' own image size for visual consistency
+   across all 3 equipment/gem référentiels. */
+.reference-equipment-image {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.3rem;
+  object-fit: contain;
+}
+
+/* Bloc 46/A: Boutique's own image size, distinct from the 3rem shared by
+   Combat/Expedition/Gemmes (Bloc 38) — scoped to this référentiel only,
+   doesn't touch the shared rule above.
+   Bloc 65/A, C: every Boutique listing is a tile now (Intro included), so
+   this one selector covers them all, at 6rem — up from the 5rem the
+   tables and then the tiles carried. */
+.consumable-tile-image {
+  width: 6rem;
+  height: 6rem;
+}
+
+/* Bloc 64/C: Boutique's 4 category listings — 2 tiles per row on desktop,
+   1 on mobile (see the max-width block below). Each tile is a grey card
+   pairing the item image with its name and description; the sapphire cost
+   rides top-right in the site's violet accent, on the name's own line. */
+.consumable-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.consumable-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.consumable-tile-image {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  object-fit: contain;
+}
+.consumable-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.consumable-tile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.consumable-tile-name {
+  min-width: 0;
+  color: var(--foreground);
+  /* Bloc 66/C: harmonized with Gemmes'/Templiers' own tile titles. */
+  font-size: 1.1rem;
+  overflow-wrap: break-word;
+}
+.consumable-tile-cost {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--accent-strong);
+  border-radius: 0.4rem;
+  /* Bloc 92/A11y (H2): lighter accent tint (16%→10%) so the accent-strong
+     label clears 4.5:1 on the badge (was 4.41:1); the accent color itself is
+     unchanged. */
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.consumable-tile-description {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  overflow-wrap: break-word;
+}
+@media (max-width: 900px) {
+  .consumable-tile-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Bloc 68/B: mobile stacks the cost badge under the name instead of
+     keeping it as a top-right badge — name is already the heading's first
+     child and cost the second, so this is a pure layout change (JSX and
+     the badge's own styling are untouched). Desktop keeps the row/
+     space-between rule above. */
+  .consumable-tile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+}
+
+/* Bloc 39: Combat/Expedition tile grid — replaces the old per-row table for
+   these 2 references only (Gemmes/Templiers/Level Up keep their table).
+   Two set-blocks side by side make up the required "6 tiles wide" — each
+   block is its own self-contained 3-column grid, so a row of tiles never
+   mixes two different sets (a flat 6-col grid across the whole catalog
+   would, since 9 doesn't divide evenly by 6).
+   Bloc 41/B: a fixed 2-column grid, not flex — flex's flex-grow let a
+   block left alone on the last row stretch to fill the full row (its
+   tiles doubling in size), since flex-basis is only a starting point for
+   growth. A grid's tracks don't grow to fill an empty sibling cell, so a
+   lone last block still occupies exactly one column (50%). */
+.reference-tile-blocks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem 1.25rem;
+  margin-top: 1.25rem;
+}
+.reference-tile-block {
+  min-width: 0;
+}
+.reference-tile-block-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+.reference-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+.reference-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem;
+  border: 2px solid;
+  border-radius: 0.6rem;
+}
+.reference-tile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem;
+}
+/* Slot name in the equipment's family color, not a rarity/family icon —
+   avoids visual ambiguity between similarly-shaped slots (bracelet/belt…). */
+.reference-tile-slot {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  /* Bloc 92/A11y (H2): the slot name is neutral --text; the family hue that
+     used to color it (inline) read at 1.0–2.6:1 on the rarity-tinted tile.
+     The family/rarity identity stays on the tile border and image. */
+  color: var(--text);
+}
+.reference-tile-body {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.reference-tile-body .reference-equipment-image {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+.reference-tile-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  /* Bloc 40/H: "Consommables" (Expedition's longest stat name) + its %
+     wrapped to 2 lines at 0.74rem — em, per the precise instruction. */
+  font-size: 0.69em;
+  min-width: 0;
+}
+/* Bloc 40/G: each skill/stat line centers within the skills column, instead
+   of hugging its left edge — scoped to the tile so the shared
+   .skill-value-row class (Gemmes, admin) keeps its own left alignment. */
+.reference-tile-skills .skill-value-row {
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .reference-tile-blocks {
+    grid-template-columns: 1fr;
+  }
+  /* Bloc 39: tried both 1 and 2 columns on mobile per the task's "à tester
+     empiriquement" instruction (see the PR report) — 2 columns stays
+     legible (4 skill lines still fit a ~185px tile without wrapping badly)
+     and roughly halves the scroll length of a 180-tile catalog, so it won. */
+  .reference-tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+body > main {
+  width: min(74rem, calc(100% - 2rem));
+  margin: 2rem auto;
+  border: 1px solid var(--border);
+}
+
+/* Text hierarchy and simulator navigation --------------------------------- */
+body {
+  color: var(--text);
+}
+p,
+li,
+td,
+.calculator-card {
+  color: var(--text);
+}
+.lead,
+.calculator-card > p,
+.calculator-field,
+.settings-grid label,
+.public-footer,
+.stuff-empty {
+  color: var(--text-dim);
+}
+button:disabled,
+[aria-disabled="true"] {
+  color: var(--text-faint);
+}
+
+.category-nav {
+  display: flex;
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* Bloc 41/C: the référentiels switcher (same category-nav/category-btn
+   structure as the /tools banner, Bloc 40/A) sat right against the tables/
+   tiles below it with no breathing room — scoped to .reference-switcher
+   only, not .category-nav generally, so the /tools banner is untouched. */
+.reference-switcher {
+  margin-bottom: 1.5rem;
+}
+.category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 100px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--text-faint);
+  cursor: pointer;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+}
+.category-btn:hover {
+  color: var(--text);
+}
+.category-btn[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--bg-panel-raised);
+  color: var(--accent-strong);
+}
+.category-btn:disabled,
+.category-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+/* Bloc 62/I: caps the référentiels switcher at 4 per row on desktop — 7
+   references (Events made it the first to exceed 4) wrapped unevenly
+   under the shared .category-nav flex-wrap; scoped to .reference-switcher
+   only, so the /tools banner (Bloc 40/A, still exactly 4 categories) keeps
+   its flex-wrap unchanged. Comes textually before the mobile override
+   below, which still wins there at equal specificity — untouched, already
+   correct. */
+.reference-switcher {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+/* Bloc 62/I: an inactive reference still gets a slot in the switcher (an
+   internal teaser for visitors already on the site — unlike Bloc 60's
+   search/sitemap discovery hiding, unrelated and unchanged) but isn't a
+   real link: .category-btn-unavailable overrides the plain opacity-dimmed
+   [aria-disabled] look above with the same colored asterisk + colored
+   label treatment as .tool-unavailable/.tab-coming-soon. */
+.category-btn-unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  opacity: 1;
+}
+.category-btn-unavailable .category-btn-label {
+  color: var(--text-faint);
+}
+@media (max-width: 42rem) {
+  /* A real 2-per-row grid instead of flex-wrap, which packed the 3 short
+     labels (Villes/Combat/Classement) onto row 1 and left the longer
+     "Compétences" stretched alone on row 2. */
+  .category-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .category-btn {
+    min-width: 0;
+  }
+}
+
+.guide-filter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  gap: 0.5rem;
+}
+.guide-filter-chip {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-faint);
+  cursor: pointer;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.guide-filter-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.guide-filter-chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--bg-panel-raised);
+  color: var(--accent-strong);
+}
+
+nav.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
+nav.tabs button {
+  flex: 1;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+}
+nav.tabs button:hover {
+  color: var(--text);
+}
+nav.tabs button[aria-selected="true"] {
+  border: 0;
+  background: var(--bg-panel-raised);
+  color: var(--accent-strong);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Administration ---------------------------------------------------------- */
+.admin-main,
+body > main {
+  width: min(90rem, calc(100% - 2rem));
+  margin: 1rem auto 3rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-panel);
+}
+.admin-main h1,
+body > main h1 {
+  margin-top: 0.25rem;
+}
+.admin-metrics,
+.admin-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 10px;
+}
+.admin-panel {
+  margin-top: 1.25rem;
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  /* Bloc 42/G: without this, a wide sibling panel (Consumables' item table,
+     whose own .ranking-table-wrap already scrolls horizontally on its own)
+     forces every panel sharing its parent .calculator-stack grid track to
+     grow to that same width — a CSS Grid item's default min-width is its
+     content's intrinsic min-width, not 0, so the grid track (and every
+     item in it, including an unrelated markdown editor above the table)
+     stretches to fit the widest one instead of letting that one table
+     scroll internally. min-width: 0 lets this panel shrink to the
+     container's actual width so overflow-x: auto below can do its job. */
+  min-width: 0;
+}
+.admin-panel h2,
+.admin-section-heading h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+}
+.admin-section-heading,
+.admin-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.admin-shortcuts {
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+.admin-section-heading a {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+.admin-link-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+}
+.admin-link-card:hover {
+  border-color: var(--accent);
+}
+.admin-link-card span,
+.admin-empty {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+.reference-admin-table {
+  min-width: max-content;
+}
+/* Bloc 43: Consumables' 1-position move buttons — side by side, not
+   stacked, in their own narrow cell (distinct from the Remove cell). */
+.reference-admin-move-cell {
+  display: flex;
+  gap: 0.35rem;
+}
+/* Bloc 37/B, D: the admin editors' own filter row — decoupled from
+   .reference-filters (the public page's family/rarity/star-level row,
+   sized to a completely different layout) so its selects size to their
+   content instead of stretching to fill a wide grid column. */
+.reference-admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.reference-admin-filters label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.reference-admin-filters select {
+  width: auto;
+  max-width: 14rem;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+/* Bloc 35/5.5: dedicated per-table title on pages that stack several
+   editable tables (Expedition), instead of one page-level description. */
+.editable-reference-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+/* Bloc 49/A: puts a category table's own scoped "+" add button on the same
+   line as its title, instead of a verbose "Ajouter (Catégorie)" button
+   sitting above the table. */
+.editable-reference-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+/* Bloc 49/A+B: a small square button for an icon-only action (add "+",
+   remove ✕) — distinct from .secondary-action's text-button padding. */
+.icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Bloc 92/A11y (L4): 40px square (was 32px) for a comfortable touch target
+     on the admin add/remove icon buttons. */
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  color: inherit;
+  cursor: pointer;
+}
+.icon-action:hover {
+  background: var(--bg-panel-raised);
+}
+/* Bloc 60: Événements admin — each event is a card (the outer events list
+   can't reuse EditableDataTable's <table> rows since it needs a nested
+   collapsible tier table, unlike every other reference's flat CRUD). */
+.events-admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  margin: 0.75rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+/* Bloc 81/C: was flex-growing to fill half of .calculator-fields-inline's
+   row (~40rem measured) — a plain 1-366 number never needed that much
+   room. 10rem is a flat quarter of that. */
+.events-season-duration-field input {
+  width: 10rem;
+}
+@media (max-width: 900px) {
+  .events-season-duration-field input {
+    width: 100%;
+  }
+}
+/* Bloc 80/C: a real grid instead of a wrapping flex row — every card's
+   header has the exact same 6 columns (position, name, description,
+   duration, color, actions), each sized by its own fixed-width content
+   (Name/Description inputs both get an explicit width below, the
+   duration/color/actions controls are intrinsically the same size on
+   every row), so the columns land at the same horizontal position across
+   every event, not wherever flex-wrap happened to leave leftover space. */
+.events-admin-card-header {
+  display: grid;
+  grid-template-columns: repeat(6, auto);
+  /* Bloc 81/C review: was align-items: end — Durée/Couleur's own controls
+     (the button group, the color swatch) are shorter than Nom/Description's
+     input, so bottom-aligning every column pushed their titles down by
+     that same height difference, out of line with Nom/Description's own
+     title row. Top-aligning instead pins every column's title (each
+     field's own first child) to the same row, so they line up regardless
+     of how tall the control underneath happens to be. */
+  align-items: start;
+  gap: 0.75rem;
+}
+/* Bloc 80/C review (Codex PR #97): the 6 fixed-width columns (14rem name +
+   40.5rem description alone is 54.5rem, before the position/duration/
+   color/actions controls and 5 gaps) need roughly 1350px of actual
+   content width to lay out on one row without overflowing — measured
+   directly (a viewport under ~1345px genuinely doesn't fit it, wherever
+   the shared admin-panel/card padding lands). The generic 900px
+   breakpoint every other admin field here uses is far too narrow for
+   this specific row, so it gets its own, much wider one instead — a
+   typical 1024–1280px laptop viewport stacks it single-column rather
+   than silently overflowing or pushing the action buttons off-screen. */
+@media (max-width: 1400px) {
+  .events-admin-card-header {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 79/H: purely informative position number (1, 2, 3…), never
+   editable and never shown on the public side — the move-up/down arrows
+   already reorder the array, this only surfaces where an event currently
+   sits in it. */
+.events-admin-position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  /* Bloc 81/C: has no title row above it the way every other column does
+     (Nom, Description, ...), so with the grid's own align-items: start
+     (above) it would land level with THEIR titles, not their input
+     fields — pushed down to align with the values instead, per the bug
+     report ("aligné avec les champs de saisie, pas avec le titre"). Only
+     makes sense in the 6-column desktop layout — reset for the stacked
+     layout below (Bloc 81/C review, Codex PR #98). */
+  align-self: start;
+  margin-top: 2.1rem;
+}
+@media (max-width: 1400px) {
+  .events-admin-position {
+    margin-top: 0;
+  }
+}
+/* Bloc 80/C: a fixed width for Nom too — previously unset (stretched to
+   whatever the old flex-wrap row left over), which is exactly the kind of
+   per-row variability the new grid (.events-admin-card-header above)
+   needs to NOT have, since a column's rendered width has to be identical
+   on every card for the grid to actually line up. */
+.events-admin-name-field input {
+  width: 14rem;
+}
+/* Bloc 79/C: 3x a plain field's own effective width elsewhere in this
+   admin (.reference-admin-table input's 9rem) — Description is free text
+   and was cramped at the same default width as Nom.
+   Bloc 80/D review: +50% on top of that x3 (cumulative, not a
+   replacement) — 27rem x 1.5 = 40.5rem. */
+.events-admin-description-field input {
+  width: 40.5rem;
+}
+/* Bloc 80/C review: matches the grid's own 1400px stacking breakpoint
+   above — the fixed 14rem/40.5rem widths only make sense once the row
+   has stopped being a single column, so this has to fall back at the
+   same width the grid does, not the generic 900px every other field
+   here uses. */
+@media (max-width: 1400px) {
+  .events-admin-name-field input,
+  .events-admin-description-field input {
+    width: 100%;
+  }
+}
+.events-admin-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.events-admin-tiers summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+/* Bloc 80/E: Récompense (the tier-level field, not the event-level one
+   above) 3x the base field width — same "wide" flag + scoped-table-class
+   mechanism as Description's own 3x (Bloc 79/C), applied here only to
+   the reward column (Objectif keeps the plain default). */
+.events-tiers-table .reference-admin-wide input {
+  width: 27rem;
+}
+@media (max-width: 900px) {
+  .events-tiers-table .reference-admin-wide input {
+    width: 100%;
+  }
+}
+/* Bloc 80/F: the manual color picker — a small swatch toggle button that
+   opens a floating grid of the fixed ~10-color palette, same
+   button-trigger-plus-popup shape as LocaleToggle's own custom listbox
+   (locale-toggle.tsx, .locale-select) but a swatch grid instead of a
+   linear list. */
+.events-color-picker {
+  position: relative;
+}
+.events-color-picker-toggle {
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.events-color-picker-options {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(5, 1.6rem);
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 0.5rem 1.2rem rgb(0 0 0 / 20%);
+}
+.events-color-picker-option {
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.events-color-picker-option[aria-pressed="true"] {
+  border-color: var(--foreground);
+}
+/* Bloc 79/I: Événements public — revises Bloc 60's plain collapsible-block
+   list into a 2-per-row (1 mobile) grey tile grid, matching Boutique's own
+   tile treatment (.consumable-tile-grid/.consumable-tile) minus the image
+   (events carry none) — deliberately its own classes, not a literal reuse
+   (see EventTile's own comment in events-reference.tsx for why). Each tile
+   IS the collapsible unit: its <summary> holds title + the 2 badges +
+   description (all visible closed, Bloc 79/F), the tier table is the
+   revealed content. */
+.events-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Bloc 79 review (Codex PR #96): grid's default align-items: stretch
+     makes every cell in a row match the tallest one — expanding a tile
+     with several tiers then stretched its still-closed row neighbor down
+     to the same height, leaving a large empty bordered panel under its
+     own (much shorter) content. Aligning to the start lets each tile keep
+     its own height regardless of a neighbor's open/closed state. */
+  align-items: start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.events-tile {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface-muted);
+}
+.events-tile-summary {
+  cursor: pointer;
+  list-style: none;
+}
+.events-tile-summary::-webkit-details-marker {
+  display: none;
+}
+.events-tile-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.events-tile-name {
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 1.1rem;
+  overflow-wrap: break-word;
+}
+/* Bloc 79/I: the 2 badges (final-tier objective, duration) always sit side
+   by side with each other — what moves is whether this whole group sits
+   beside the title (desktop) or drops below it (mobile), same mechanism
+   as Boutique's single cost badge (.consumable-tile-heading). */
+.events-tile-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+.events-tile-badge {
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  overflow-wrap: break-word;
+}
+.events-tile-badge-duration {
+  border: 1px solid var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.events-tile-badge-objective {
+  /* --gold is reserved for legendary-rarity data only (see
+     color-palette.test.ts) — --emerald-bright reads as a distinct
+     "goal/reward" green instead, next to the duration badge's violet. */
+  border: 1px solid var(--emerald-bright);
+  background: color-mix(in srgb, var(--emerald-bright) 16%, transparent);
+  color: var(--emerald-bright);
+}
+/* Bloc 77/A, 79/F: the event's own free-text description — visible right
+   under the title even with the tile closed (Bloc 79/F), distinct from
+   the timeline above, which stays strictly name + duration (cdc). */
+.events-tile-description {
+  margin: 0.4rem 0 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  overflow-wrap: break-word;
+}
+.events-tile table {
+  margin-top: 0.75rem;
+}
+@media (max-width: 900px) {
+  .events-tile-grid {
+    grid-template-columns: 1fr;
+  }
+  .events-tile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+  .events-tile-badges {
+    justify-content: flex-start;
+  }
+}
+/* Bloc 77/D: the season timeline — same visual principle as .ranking-scale
+   (Bloc 62/F) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
+   76/A all fought width/style regressions from reusing another feature's
+   classes here): no percentile ticks or player-position line, since this
+   isn't a 0–100% rank scale — segments are sized by cumulative event
+   duration over the league's season length instead. */
+.events-timeline {
+  position: relative;
+  /* Bloc 79/D: +2.25rem over the pre-Bloc-79 4.75rem, for the day-scale
+     row (.events-timeline-scale) added below the segments/labels. */
+  height: 7rem;
+  margin: 1rem 0.5rem 1.5rem;
+  padding: 0 0.5rem;
+}
+.events-timeline-axis {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 1.75rem;
+  height: 2px;
+  background: var(--border);
+}
+.events-timeline-segment {
+  position: absolute;
+  top: 1.3rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  border-inline: 1px solid var(--bg-panel);
+}
+.events-timeline-marker {
+  position: absolute;
+  top: 1.75rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.events-timeline-label {
+  position: absolute;
+  /* Bloc 79/E review: this used to cap the box at a flat 5.5rem with the
+     name forced onto a single ellipsized line — a segment narrower than
+     its own name (cdc example: "Enrôleur de troupes" on a 72h event) got
+     visibly cut. Bloc 80/G: the flat 9rem cap that replaced it is gone
+     too — the box's own width limit is now set inline per segment
+     (events-reference.tsx, timelineLabelMaxWidthRem), proportional to
+     that event's own share of the season, so a wide segment gets a
+     roomier box than a narrow one instead of every label sharing one
+     fixed size regardless of width.
+     Bloc 80/G review: without an explicit width, this absolutely
+     positioned box (nested inside the also-absolutely-positioned, flex
+     .events-timeline-marker) was shrinking to its own min-content — the
+     width of its single longest WORD — instead of trying to fit on 1
+     line first, so "Enrôleur de troupes" wrapped onto 3 narrow lines
+     (clipping the 3rd once line-clamp: 2 was added below) even though
+     the inline max-width above had plenty of room. width: max-content
+     makes it prefer the unwrapped width up to that cap, only wrapping
+     once the name genuinely doesn't fit — the actual "widen the zone
+     before wrapping" priority the task asks for. */
+  width: max-content;
+}
+.events-timeline-label-above {
+  bottom: 1.1rem;
+}
+.events-timeline-label-below {
+  top: 1.1rem;
+}
+.events-timeline-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  /* Bloc 81/D: overridden inline to the event's own chosen color (same one
+     filling the segment) — this stays only as a fallback. */
+  color: var(--accent-strong);
+  overflow-wrap: break-word;
+  white-space: normal;
+  /* Bloc 80/G: a hard 2-line cap — the last resort once the adaptive
+     max-width above (a wider box, tried first) still isn't enough for a
+     genuinely narrow segment (a short event's 24h slice). Never more than
+     2 lines, whatever the name's length. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+/* Bloc 79/D, Bloc 82/A+B: a fine 24h-tick day scale under the segments/
+   labels — every day gets a tick (Bloc 82/B, "règle graduée"), only the
+   event-transition days (Bloc 81/E, Bloc 82/A — including the season's
+   own end now) get the Jx text label — see EventTimeline's own comment
+   (events-reference.tsx) for the exact day set. */
+.events-timeline-scale {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0;
+  height: 1.3rem;
+}
+.events-timeline-tick-group {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.events-timeline-tick {
+  width: 1px;
+  height: 0.35rem;
+  background: var(--border);
+}
+.events-timeline-tick-label {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+.reference-admin-table input {
+  min-width: 9rem;
+  padding: 0.45rem 0.55rem;
+}
+/* Bloc 38/Q doubled this to 18rem for readability. Bloc 40/B then moved
+   Expedition's star-increments/merge-cost/Terradust-at-destruction tables
+   onto the "grid" layout (.reference-admin-grid-field above), so this
+   table-layout rule is now exclusively Combat's Pouciel and gem-slots
+   tables — 5 short 1-3 digit values in one <tr>. At 18rem × 5 that row
+   (≈1550px) overflowed its own horizontally-scrolling wrapper on any
+   normal desktop width (Bloc 41/E), forcing a scroll to see the last
+   column(s). Back to the table's plain default width: still comfortably
+   readable for values this short, and 5 columns fit without scrolling. */
+.reference-admin-wide-inputs .reference-admin-table input {
+  min-width: 9rem;
+}
+/* Codex review (PR #62): a bare 12rem floor forced the row wider than its
+   container at intermediate/phone widths (5 x 12rem doesn't fit until
+   ~63rem, well above the 700px breakpoint that drops to 2 columns; 2 x
+   12rem doesn't fit every phone either) — min() caps the floor at the
+   grid cell's own available width instead, so the row never overflows,
+   at any viewport, without needing exact breakpoint math. */
+.reference-admin-wide-inputs .reference-admin-grid-field input {
+  width: 100%;
+  min-width: min(12rem, 100%);
+}
+.reference-admin-table input[readonly] {
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+/* Bloc 35/10.4: every select and numeric-value field across admin editors
+   (Templiers, Combat, Expedition, Gems, Ranking, …) gets its content
+   centered — free-text fields (set names, …) are untouched. */
+main.admin-main select,
+main.admin-main input[type="number"] {
+  text-align: center;
+  text-align-last: center;
+}
+/* Bloc 38/P: no browser increment/decrement arrows on any admin numeric
+   field (tools and references alike) — keyboard entry only. */
+main.admin-main input[type="number"] {
+  appearance: textfield;
+}
+main.admin-main input[type="number"]::-webkit-inner-spin-button,
+main.admin-main input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+/* Bloc 35/5.1: field-grid alternative to the wide table, for a single-row
+   table with many columns (per-star increments) — wraps instead of
+   scrolling horizontally.
+   Bloc 37/C: `auto-fill` computed a column count that made fields overlap —
+   replaced with a fixed 5-column grid, which lays the 10 increment fields
+   out as exactly 2 rows, deterministically, at any container width. */
+.reference-admin-grid-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (max-width: 700px) {
+  .reference-admin-grid-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.reference-admin-grid-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.reference-admin-grid-field input,
+.reference-admin-grid-field select {
+  padding: 0.45rem 0.55rem;
+}
+/* Bloc 42/H: the single canonical "compact admin numeric field" style —
+   fixed reasonable width, no spinner arrows (already global, see
+   main.admin-main input[type="number"] below), centered (also already
+   global). Apply .reference-admin-narrow to any admin numeric/select cell
+   whose values are short and bounded (a percentage, a small cost, a
+   skill×league value…): Combat's Valeur 1-4, Expedition's Valeur
+   type/secondaire, Gems' skill×league grid, Ranking's numeric columns,
+   Consumables' cost column all share this one class — do not add a new
+   per-screen width variant when this need comes up again.
+   History: Bloc 35/5.3, 6.3, 8.1, 9.1 first narrowed these columns (the
+   wide default min-width above forces horizontal scroll unnecessarily);
+   Bloc 37/A sized down further to a 2-4 character percentage; Bloc 37/F
+   split Gems into its own .gems-admin-narrow class (its cells needed
+   ~50% more room); Bloc 40/C widened again for Combat/Expedition's value
+   columns. Bloc 42/H folds that split back into one class at the wider
+   (Gems-proven) width instead of re-forking it a third time. */
+.reference-admin-narrow input,
+.reference-admin-narrow select {
+  min-width: 0;
+  width: 6.75rem;
+}
+/* Bloc 53/B, C: Boutique-only scoping, deliberately separate from the
+   .reference-admin-table/.reference-admin-narrow rules above that Combat,
+   Expedition and Ranking's own already-tuned admin tables still depend on
+   (Blocs 38/Q, 40/B, 41/E all fought width regressions on those shared
+   classes — this class exists so Boutique's own width tuning can never
+   leak onto them, and vice versa).
+   table-layout: fixed + width: 100% makes the table fill its container
+   instead of .reference-admin-table's default min-width: max-content,
+   which is what forced a horizontal scroll here before. Every column's
+   width is a percentage (not a fixed rem, which first shipped here and
+   turned out to eat most of the row on a phone-width screen, crushing
+   Chemin de l'image/Nom to 0px) so the whole row scales down together at
+   any width instead of a couple of fixed columns starving the rest:
+   .reference-admin-wide (Description) gets the biggest cut, the merged
+   Actions column and .reference-admin-narrow (Coût) keep a smaller share,
+   and the unmarked columns (Image, Nom) split what's left. */
+.consumables-admin-table {
+  table-layout: fixed;
+  /* 100% minus a buffer: table-layout: fixed rounds each percentage
+     column's computed width independently, and those roundings can sum to
+     a few px past the container — caught live-testing the Codex review
+     fix below (.ranking-table-wrap still had a few px of overflow at
+     narrow widths with every column exactly summing to 100%). 28px is
+     empirically tuned against a live sweep down to a 320px viewport,
+     the narrowest realistic phone width; imperceptible at any wider one. */
+  width: calc(100% - 28px);
+  min-width: 0;
+}
+/* Bloc 65/B: rebalanced so Description actually takes the room the table
+   has rather than being merely wider than its neighbours — the share came
+   from the columns that were holding width they never used (Actions,
+   which only ever holds 3 icon buttons, and Coût, a 3-4 digit number).
+   The percentages still sum to 100%, so no horizontal scroll appears:
+   verified live from 1400px down to 320px. */
+.consumables-admin-table .reference-admin-wide {
+  width: 48%;
+}
+.consumables-admin-table .reference-admin-narrow {
+  width: 10%;
+}
+.consumables-admin-table th:last-child,
+.consumables-admin-table td:last-child {
+  width: 14%;
+}
+/* The 3 action icons wrap onto a 2nd line rather than overflow their cell
+   on a narrow screen, now that the cell's own width can shrink below what
+   they need side by side. Below 480px even 2 side by side (wrap's best
+   case) still don't fit the Actions column's own share of a phone-width
+   table, so they stack one per line there instead — caught live testing
+   the Codex review fix above: 2-up wrap alone still left ~4px of overflow
+   on .ranking-table-wrap at 400px. */
+.consumables-admin-table .reference-admin-move-cell {
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .consumables-admin-table .reference-admin-move-cell {
+    flex-direction: column;
+  }
+  /* Bloc 65/B: the wider Description above takes its share from Actions,
+     which is fine while the table is wide enough that 14% still clears an
+     icon button — below 480px it doesn't (the buttons stack one per line
+     here, each still 2rem), and the cell overflowed its own wrapper by a
+     few px. Phone widths keep the pre-Bloc-65 split, where Description
+     has no room to spare anyway. */
+  .consumables-admin-table .reference-admin-wide {
+    width: 42%;
+  }
+  .consumables-admin-table .reference-admin-narrow {
+    width: 12%;
+  }
+  .consumables-admin-table th:last-child,
+  .consumables-admin-table td:last-child {
+    width: 20%;
+  }
+}
+/* The move buttons keep .secondary-action's roomy text-button padding
+   (0.6rem 0.85rem — ~45px wide for a single icon) even though Bloc 46/B
+   already made them icon-only — down at a 320px viewport that's wider
+   than the whole Actions column, still overflowing after the stack-on-
+   narrow fix above. Icon-sized to match the neighbouring remove button's
+   own .icon-action square. */
+.consumables-admin-table .reference-admin-move-cell button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+/* Point B: every input fills its column instead of leaving the empty gap
+   .reference-admin-table's 9rem min-width (or, for Coût,
+   .reference-admin-narrow's fixed 6.75rem) left around a much narrower
+   percentage column. Codex review (PR #75): excluding narrow cells here
+   originally left Coût's input at a fixed 6.75rem/108px while its own td
+   is only 12% of the table — on any table narrower than ~900px that's
+   wider than the cell itself, overflowing into
+   .ranking-table-wrap's own overflow-x: auto and silently reintroducing
+   the exact horizontal-scroll bug points A-C exist to remove. Coût's td
+   stays visually narrow via the 12% column width above; the input itself
+   must still fill whatever that resolves to at the current table width. */
+.consumables-admin-table input,
+.consumables-admin-table select {
+  width: 100%;
+  min-width: 0;
+}
+/* Bloc 76/A: Combat's Pouciel+Gemmes and Expedition's Terradust merged
+   tables (Bloc 75) — same bug class, same fix as .consumables-admin-table
+   above (table-layout: fixed + percentage columns instead of
+   .reference-admin-table's default min-width: max-content, which forced a
+   horizontal scroll on this table's extra label column + 5 rarity columns).
+   Deliberately its own scoped class, not wideInputs or .consumables-admin-
+   table — Blocs 38/Q, 40/B, 41/E, 53/B, C all fought width regressions
+   from cross-table leakage on shared classes here.
+   Label column (Fusion/Gemmes/Destruction, Bloc 76/B: now free text) gets a
+   smaller, fixed share; the 5 rarity columns split the rest evenly. */
+.reference-secondary-table {
+  table-layout: fixed;
+  width: calc(100% - 4px);
+  min-width: 0;
+}
+.reference-secondary-table th:first-child,
+.reference-secondary-table td:first-child {
+  width: 20%;
+}
+/* Every input fills its own column instead of leaving a gap around a fixed
+   rem floor (same reasoning as .consumables-admin-table's own input rule
+   above) — this is what makes the fields genuinely reach full width. */
+.reference-secondary-table input {
+  width: 100%;
+  min-width: 0;
+}
+/* Bloc 35/10.1, 10.3: .primary-button had no base style at all — relying on
+   unstyled browser defaults — so it was invisible on every screen using it
+   (EditableReferenceTable's own save button, LevelUpParametersEditor, the
+   superadmin setup form). Styled to match .editor-action-primary exactly,
+   the Templiers editor's reference style, so every save action looks the
+   same everywhere. */
+.primary-button {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-panel-raised));
+  color: var(--accent-strong);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+.primary-button:hover {
+  border-color: currentColor;
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.editable-reference > .primary-button {
+  justify-self: start;
+}
+.field-invalid {
+  border-color: var(--ember) !important;
+  box-shadow: 0 0 0 1px var(--ember);
+}
+.field-error {
+  display: block;
+  max-width: 12rem;
+  margin-top: 0.3rem;
+  color: var(--ember);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.7rem;
+}
+.form-status,
+.form-success {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid var(--ember);
+  background: color-mix(in srgb, var(--ember) 10%, var(--bg));
+  color: var(--text);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.locale-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.locale-toggle button {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  background: var(--bg-panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.locale-toggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.locale-toggle button + button {
+  border-left: 1px solid var(--border);
+}
+.locale-toggle button:hover {
+  color: var(--accent-strong);
+}
+.locale-toggle button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+}
+/* Bloc 47/A: the public locale switcher — a real <select> styled to match
+   the same pill shape/palette as .locale-toggle above (admin-only now),
+   compact enough for 5 languages instead of 2. */
+.locale-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel-raised);
+}
+/* Bloc 48/C: the native <select> was replaced by a custom ARIA listbox
+   (see src/components/locale-toggle.tsx) so its open direction is always
+   controlled here, never left to browser/OS heuristics. */
+.locale-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0.35rem 0.9rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.locale-select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.locale-select-trigger:hover,
+.locale-select-trigger:focus-visible {
+  color: var(--accent-strong);
+}
+.locale-select-chevron {
+  color: inherit;
+  pointer-events: none;
+}
+.locale-listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
+}
+.locale-listbox-option {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.locale-listbox-option-active {
+  background: var(--bg-panel);
+}
+.locale-listbox-option-active,
+.locale-listbox-option[aria-selected="true"] {
+  color: var(--accent-strong);
+}
+.admin-account {
+  position: relative;
+}
+.admin-account summary {
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.admin-account-menu {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
+}
+.admin-account-menu form {
+  display: grid;
+  gap: 0.65rem;
+}
+.admin-account-menu label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-dim);
+}
+.admin-account-menu .secondary-action {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+.totp-settings {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.totp-qr {
+  width: 12rem;
+  height: 12rem;
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+.totp-secret {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.login-shell {
+  display: grid;
+  min-height: calc(100vh - 9rem);
+  place-items: center;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background: transparent;
+}
+.login-card {
+  width: min(27rem, 100%);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg-panel-raised);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 18%);
+}
+.login-card h1 {
+  margin: 0.35rem 0 1.5rem;
+}
+.login-card form {
+  display: grid;
+  gap: 0.85rem;
+}
+.login-card label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-dim);
+}
+.login-card small {
+  color: var(--text-faint);
+}
+.translation-editor-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.translation-editor {
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+}
+.translation-editor summary {
+  color: var(--text);
+  cursor: pointer;
+}
+.translation-editor fieldset {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  border-color: var(--border);
+}
+.translation-editor label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-dim);
+}
+.translation-editor textarea {
+  min-height: 4rem;
+}
+.editorial-locale-select {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+  color: var(--text-dim);
+}
+.editorial-locale-select select {
+  min-width: 5rem;
+}
+.translation-editor .editorial-locale-select {
+  display: flex;
+  margin-top: 0.8rem;
+}
+.form-success {
+  border-color: var(--emerald-bright);
+  background: color-mix(in srgb, var(--emerald) 10%, var(--bg));
+}
+.guide-simple-fields {
+  display: grid;
+  gap: 0.8rem;
+}
+.guide-editor > .editorial-locale-select {
+  margin-bottom: 0.8rem;
+}
+.guide-simple-fields label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-dim);
+}
+.table-actions,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.guide-markdown-input {
+  min-height: 28rem;
+  resize: vertical;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.55;
+}
+.guide-category-selector {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.guide-category-selector summary,
+.guide-field-label {
+  color: var(--text-dim);
+}
+.guide-category-selector summary {
+  cursor: pointer;
+}
+.guide-category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+.guide-category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.guide-category-chip:hover {
+  color: var(--text);
+}
+.guide-category-chip[data-selected="true"] {
+  border-color: var(--accent);
+  background: var(--bg-panel-raised);
+  color: var(--accent-strong);
+}
+.guide-cover-preview {
+  width: min(24rem, 100%);
+  max-height: 12rem;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.guide-markdown-workspace {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.guide-markdown-workspace > .w-md-editor {
+  width: 100%;
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+.guide-markdown-workspace .w-md-editor-preview .wmde-markdown {
+  font-family: var(--font-sans, sans-serif);
+}
+.guide-list-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+.guide-list-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 1.2rem 2.5rem rgb(37 44 39 / 14%);
+}
+.guide-list-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-panel-raised), var(--bg-panel));
+}
+.guide-list-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+.guide-list-card:hover .guide-list-cover {
+  transform: scale(1.05);
+}
+.guide-list-badge {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  backdrop-filter: blur(4px);
+  color: var(--accent-strong);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.guide-list-copy {
+  min-width: 0;
+  padding: 1rem 1.1rem 1.2rem;
+}
+.guide-list-cta {
+  display: inline-block;
+  margin-top: 0.25rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .editor-action-bar {
+    align-items: stretch;
+  }
+  .editor-action-buttons {
+    width: 100%;
+  }
+}
+.admin-actions {
+  margin-top: 1rem;
+}
+.editor-action-bar {
+  position: sticky;
+  z-index: 12;
+  top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-panel-raised) 94%, transparent);
+  box-shadow: 0 0.6rem 1.4rem rgb(0 0 0 / 12%);
+  backdrop-filter: blur(8px);
+}
+.editor-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.editor-back-action,
+.editor-action {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+.editor-back-action,
+.editor-action-secondary {
+  background: var(--bg-panel);
+  color: var(--text-dim);
+}
+.editor-action-primary {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-panel-raised));
+  color: var(--accent-strong);
+}
+.editor-action-review {
+  border-color: var(--violet);
+  background: color-mix(in srgb, var(--violet) 15%, var(--bg-panel-raised));
+  color: var(--violet-bright);
+}
+.editor-action-publish {
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 15%, var(--bg-panel-raised));
+  color: var(--emerald-bright);
+}
+.editor-back-action:hover,
+.editor-action:hover {
+  border-color: currentColor;
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.editor-action-message {
+  flex: 1 1 16rem;
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+.danger-action {
+  color: var(--ember);
+}
+.guide-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.guide-content blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--violet-bright);
+  color: var(--text-dim);
+}
+.markdown-content {
+  line-height: 1.7;
+}
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.markdown-content table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.markdown-content th,
+.markdown-content td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown-content th {
+  color: var(--text);
+  background: var(--bg-panel-raised);
+}
+.markdown-content blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--violet-bright);
+  color: var(--text-dim);
+}
+.markdown-content pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+}
+.markdown-content code {
+  font-family: var(--font-mono, monospace);
+}
+.markdown-content .contains-task-list {
+  padding-left: 0;
+  list-style: none;
+}
+.markdown-content .task-list-item input {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* Public landing pages */
+/* Bloc 36/B: GameImage renders a plain <img> (no next/image `fill`), so the
+   fill/cover positioning it used to get for free from next/image is now
+   explicit here — applies equally to the real photo and its SVG fallback. */
+.tool-category-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Bloc 34/D: a short intro sentence replaces the carousel/hero — the tool
+   category grid below is the actual point of the homepage and should stay
+   visible without scrolling. */
+.home-intro {
+  max-width: 46rem;
+}
+/* Bloc 91/E5: the page's real <h1>. Kept at the intro sentence's own type
+   scale (a lead line, not a banner) so promoting the homepage to a proper
+   heading hierarchy doesn't change the visual weight of this block — only a
+   touch more emphasis and a small gap above the descriptive sentence. */
+.home-intro h1 {
+  margin: 0 0 0.4rem;
+  color: var(--text);
+  font-size: clamp(1.35rem, 1.6vw + 1rem, 1.75rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.home-intro p {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.15rem, 1.4vw + 1rem, 1.5rem);
+  line-height: 1.6;
+}
+
+/* Bloc 33/A: the homepage's tool categories intro, directly above the
+   reused .tool-category-grid (1-click access, no /tools detour). Bloc
+   34/E: the guides/référentiels section below reuses the exact same
+   header treatment. */
+/* Bloc 38/I: .home-tools sits right below the intro sentence, which
+   already carries its own spacing — halved from .home-guides' unchanged
+   clamp so the gap above the tool grid isn't excessive. */
+.home-tools {
+  margin-top: clamp(1.5rem, 4vw, 3.5rem);
+}
+/* Bloc 50 Group3: .home-references sits between Outils and Guides now that
+   the combined section is split in three — same larger gap .home-guides
+   already used above the (formerly combined) block. */
+.home-references,
+.home-guides {
+  margin-top: clamp(3rem, 8vw, 7rem);
+}
+/* Bloc 68/D: matches the violet gradient h1 these same title+phrase pairs
+   already render as on /tools, /referentiels and /guides (the "Prototype
+   visual language" h1 rule above, ~line 1471: a gradient clipped to the
+   text) — the homepage reuses the exact same title text but as an h2,
+   which never inherited that rule and hardcoded var(--text) instead. */
+.home-tools h2,
+.home-references h2,
+.home-guides h2 {
+  margin: 0.4rem 0 1rem;
+  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.08;
+}
+.home-tools > p:not(.eyebrow),
+.home-references > p:not(.eyebrow),
+.home-guides > p:not(.eyebrow) {
+  max-width: 46rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.home-guides .card-grid {
+  margin: 2rem 0;
+}
+/* Bloc 50 Group3: the homepage guides teaser now shows up to 6 cards (was
+   3) — same auto-fit-with-computed-floor technique as .tool-category-grid
+   below, sized for 3 columns instead of 4 (2 gaps at .card-grid's own
+   0.65rem gap, not 1rem), so it caps at 3 cols/2 rows instead of growing
+   past 3 columns on a wide viewport. */
+.home-guides-grid {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(max(18rem, calc((100% - 2 * 0.65rem) / 3)), 1fr)
+  );
+}
+@media (max-width: 42rem) {
+  .home-guides-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one
+   line at any viewport width instead of breaking onto 2 at narrow ones. */
+.tools-page-title {
+  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
+  white-space: nowrap;
+}
+
+/* Bloc 35/1.3: same one-line treatment for the reference page titles, which
+   run a bit longer ("Équipements d'Expédition") than the tools subtitle. */
+.reference-page-title {
+  font-size: clamp(1rem, 1vw + 4.5vw, 2rem);
+  white-space: nowrap;
+}
+
+/* Bloc 53/D: /guides and /referentiels get the same smaller-title + intro
+   sentence treatment /tools got in Bloc 38/K, reusing the homepage's own
+   Guides/Référentiels section copy (Home.guidesTitle/guidesDescription and
+   Home.referentielsTitle/referentielsDescription) instead of the short
+   index-page title these pages showed before. */
+.guides-page-title,
+.referentiels-page-title {
+  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
+  white-space: nowrap;
+}
+
+/* Bloc 84: on real mobile widths, the clamp()'s font-size floor still left
+   .tools-page-title/.referentiels-page-title's own titles ("Décide avec
+   les bons chiffres", "Retrouve les données clés") too wide for the
+   viewport — nowrap then visually truncated the text instead of wrapping
+   it. Must come after both rules above in source order: same specificity,
+   so an earlier media-query override loses the cascade to a later
+   unconditional rule even while its own condition is active. */
+@media (max-width: 900px) {
+  .tools-page-title,
+  .referentiels-page-title {
+    white-space: normal;
+  }
+}
+
+/* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
+   count based on how many tiles there are — each column's floor is either
+   13.5rem or a quarter of the row (minus its 3 gaps), whichever is larger,
+   so auto-fit can still drop to 3/2/1 on a narrower row but never exceeds
+   4 on a wide one. */
+.tool-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(13.5rem, calc((100% - 3 * 1rem) / 4)), 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+@media (max-width: 42rem) {
+  /* Bloc 25 found and fixed this exact cascade-order bug for
+     .category-nav: the responsive override must come textually AFTER the
+     unconditional base rule above, or the base rule wins the cascade at
+     equal specificity regardless of whether the media query matches. The
+     old override lived earlier in the file (before the base rule) and was
+     a silent no-op — confirmed via computed styles in a real browser. */
+  .tool-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.tool-category-card {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-panel);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+.tool-category-card:not([data-disabled]):hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+/* Bloc 38/H: a strict square, regardless of the source file's native
+   ratio — consistent across every category/reference tile whatever image
+   is dropped in. */
+.tool-category-image {
+  position: relative;
+  aspect-ratio: 1;
+  border-bottom: 1px solid var(--border);
+}
+.tool-category-copy {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+.tool-category-copy h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.12rem;
+}
+.tool-count {
+  color: var(--accent-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+}
+/* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same
+   treatment as .tab-coming-soon above and the référentiels switcher's
+   inactive teaser below (.reference-switcher .category-btn-unavailable). */
+.tool-unavailable {
+  color: var(--amber-bright);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.tool-unavailable::before {
+  content: "* ";
+}
+.tool-category-card[data-disabled] {
+  opacity: 0.48;
+  filter: grayscale(0.8);
+  cursor: not-allowed;
+}
+.guides-reference-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.reference-category-card {
+  color: inherit;
+  text-decoration: none;
+}
+/* Bloc 53/E: replaces the plain-text .reference-cross-link/.reference-link
+   with a centered banner + clickable mini-card, on both tool<->reference
+   directions — same bordered-card spirit as .calculator-card (Bloc 52/C,
+   D's framing for the Boutique reference).
+   Bloc 54/B: bigger card, the label folded inside the button instead of a
+   separate line above it, and a 5rem thumbnail — matching Boutique's own
+   reference-table image size (Bloc 46/A). */
+.cross-reference-banner {
+  display: flex;
+  justify-content: center;
+  margin: 0.25rem 0;
+}
+.cross-reference-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg-panel-raised);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+.cross-reference-card:hover {
+  border-color: var(--accent);
+}
+.cross-reference-thumb {
+  display: block;
+  width: 5rem;
+  height: 5rem;
+  flex-shrink: 0;
+}
+.cross-reference-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cross-reference-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+.cross-reference-label {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+.cross-reference-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.cross-reference-chevron {
+  color: var(--accent-strong);
+  flex-shrink: 0;
+  margin-left: 0.35rem;
+}
+
+/* Bloc 64/E: Templiers splits its 20 rows into the same 2 side-by-side
+   tables Level Up already uses (10 rows each, no pagination needed at that
+   size) — one shared rule so the two references stay visually aligned,
+   as agreed at Bloc 38. */
+.level-up-tables,
+.split-reference-tables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.level-up-chest {
+  color: var(--accent-strong);
+}
+.level-up-chest-empty {
+  color: var(--text-faint);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+/* Bloc 64/D: the button skin itself comes from the shared
+   .family-buttons/.pagination rule above (same navigation buttons as the
+   league selector) — only the state and the page counter are specific
+   here. */
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .level-up-tables,
+  .split-reference-tables {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bloc 91/M6: the translated custom 404 page (src/app/not-found.tsx). */
+.not-found {
+  max-width: 40rem;
+  margin: clamp(2rem, 8vw, 5rem) auto;
+  padding: 0 1.25rem;
+  text-align: center;
+}
+.not-found h1 {
+  font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+  margin: 0 0 0.75rem;
+}
+.not-found p {
+  color: var(--text-dim);
+  margin: 0 0 1.75rem;
+}
+.not-found-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.not-found-links a {
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+.not-found-links a:hover {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
+}
+
+/* Bloc 91/M7: the visible breadcrumb on deep pages (src/components/breadcrumb.tsx). */
+.breadcrumb {
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  font-size: 0.9rem;
+}
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-dim);
+}
+.breadcrumb li:not(:first-child)::before {
+  content: "›";
+  color: var(--text-faint);
+}
+.breadcrumb a {
+  color: var(--text-dim);
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  color: var(--accent-strong);
+}
+.breadcrumb [aria-current="page"] {
+  color: var(--text);
 }

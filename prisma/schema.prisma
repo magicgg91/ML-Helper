@@ -11,8 +11,9 @@ datasource db {
 model Guide {
   id          String    @id @default(uuid())
   slug        String    @unique
-  category    String
+  category    Json
   status      String    @default("draft")
+  active      Boolean   @default(true)
   title       Json
   content     Json
   excerpt     Json
@@ -29,7 +30,6 @@ model Calculator {
   id              String           @id @default(uuid())
   slug            String           @unique
   category        String
-  name            Json
   description     Json
   active          Boolean          @default(false)
   inputs          Json
@@ -45,7 +45,6 @@ model Formula {
   id            String     @id @default(uuid())
   calculatorId  String     @map("calculator_id")
   key           String
-  label         Json
   formulaParams Json       @map("formula_params")
   calculator    Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
 
@@ -56,7 +55,6 @@ model Formula {
 model ReferenceTable {
   id           String      @id @default(uuid())
   key          String      @unique
-  label        Json
   columns      Json
   rows         Json
   calculatorId String?     @map("calculator_id")
@@ -70,17 +68,31 @@ model User {
   username             String          @unique
   passwordHash         String          @map("password_hash")
   role                 String
+  active               Boolean         @default(true)
   createdAt            DateTime        @default(now()) @map("created_at")
   lastLoginAt          DateTime?       @map("last_login_at")
+  totpSecretEncrypted  String?         @map("totp_secret_encrypted")
+  totpEnabled          Boolean         @default(false) @map("totp_enabled")
   logs                 AuditLog[]
   staticContentUpdates StaticContent[]
 
   @@map("users")
 }
 
+model LoginThrottle {
+  identifierHash String    @id @map("identifier_hash")
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("login_throttles")
+}
+
 model AuditLog {
   id         String   @id @default(uuid())
   userId     String   @map("user_id")
+  actorRole  String   @map("actor_role")
+  message    String   @default("")
   action     String
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")
@@ -101,4 +113,17 @@ model StaticContent {
   updater   User     @relation(fields: [updatedBy], references: [id], onDelete: Restrict)
 
   @@map("static_content")
+}
+
+// Bloc 90: per-locale public visibility. One row per locale that has been
+// toggled; a locale with no row defaults to active. The 5 translation JSON
+// files stay static in the repo — this only governs whether a language shows
+// in the public selector (never the admin editorial locales, which keep all
+// 5). EN/FR are always active and are enforced in code, never stored inactive.
+model LocaleSetting {
+  locale    String   @id
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("locale_settings")
 }

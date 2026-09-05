@@ -1,15 +1,10 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { authOptions } from "@/auth/options";
+import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
-async function actor() {
-  const session = await getServerSession(authOptions);
-  return session?.user.role === "super_admin" ? session : null;
-}
+import { auditMessage } from "@/lib/audit-message";
 export async function GET() {
-  if (!(await actor()))
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await authorizedSession("logs.view"))) return forbiddenResponse();
   return NextResponse.json(
     await prisma.auditLog.findMany({
       include: { user: { select: { username: true } } },
@@ -19,9 +14,8 @@ export async function GET() {
   );
 }
 export async function DELETE(request: Request) {
-  const session = await actor();
-  if (!session)
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const session = await authorizedSession("logs.purge");
+  if (!session) return forbiddenResponse();
   try {
     const { start, end } = z
       .object({ start: z.coerce.date(), end: z.coerce.date() })
@@ -29,6 +23,27 @@ export async function DELETE(request: Request) {
     if (start > end) throw new Error("invalid_range");
     const result = await prisma.auditLog.deleteMany({
       where: { createdAt: { gte: start, lte: end } },
+    });
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        actorRole: session.user.role,
+        action: "purge",
+        entityType: "audit_log",
+        entityId: "date_range",
+        message: auditMessage(
+          session.user.name ?? session.user.id,
+          "purge",
+          `${result.count} entrées du journal`,
+        ),
+        diff: {
+          after: {
+            start: start.toISOString(),
+            end: end.toISOString(),
+            deleted: result.count,
+          },
+        },
+      },
     });
     return NextResponse.json({ deleted: result.count });
   } catch {
