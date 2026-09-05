@@ -119,6 +119,8 @@ export function ToolCategoryGrid({
               className="tool-category-card"
               href={`/tools/${category.slug}`}
               key={category.slug}
+              // Bloc 91/F6: skip the per-card RSC prefetch on this grid.
+              prefetch={false}
             >
               {content}
             </Link>

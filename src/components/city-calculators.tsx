@@ -19,6 +19,7 @@ import {
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
 import { TabLabel } from "./tab-label";
+import { handleTablistKeydown } from "./use-tablist-keyboard";
 import { usePlayerSettings } from "./use-player-settings";
 import { useSyncedLeague } from "./use-synced-league";
 
@@ -712,11 +713,13 @@ export function CityCalculators({
         className="calculator-tabs tabs"
         role="tablist"
         aria-label={tools("city-tabs")}
+        onKeyDown={handleTablistKeydown}
       >
         <button
           type="button"
           role="tab"
           aria-selected={active === "cost"}
+          tabIndex={active === "cost" ? 0 : -1}
           disabled={!availability.cost}
           title={
             !availability.cost ? tools("calculator-unavailable") : undefined
@@ -734,6 +737,7 @@ export function CityCalculators({
           type="button"
           role="tab"
           aria-selected={active === "max-level"}
+          tabIndex={active === "max-level" ? 0 : -1}
           disabled={!availability["max-level"]}
           title={
             !availability["max-level"]
@@ -755,6 +759,7 @@ export function CityCalculators({
           type="button"
           role="tab"
           aria-selected={active === "production"}
+          tabIndex={active === "production" ? 0 : -1}
           disabled={!availability.production}
           title={
             !availability.production
@@ -776,6 +781,7 @@ export function CityCalculators({
           type="button"
           role="tab"
           aria-selected={active === "rewards"}
+          tabIndex={active === "rewards" ? 0 : -1}
           disabled={!availability.rewards}
           title={
             !availability.rewards ? tools("calculator-unavailable") : undefined

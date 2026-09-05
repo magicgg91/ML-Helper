@@ -46,6 +46,7 @@ import {
 } from "../lib/reference-equipment";
 import { GameImage } from "./game-image";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { handleTablistKeydown } from "./use-tablist-keyboard";
 import { referenceCatalog } from "../lib/reference-catalog";
 
 // Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
@@ -781,11 +782,13 @@ export function ReferenceTables({
         className="calculator-tabs tabs"
         role="tablist"
         aria-label={t("tabs-label")}
+        onKeyDown={handleTablistKeydown}
       >
         <button
           type="button"
           role="tab"
           aria-selected={active === "combat"}
+          tabIndex={active === "combat" ? 0 : -1}
           disabled={!availability.combat}
           title={!availability.combat ? t("disabled-tooltip") : undefined}
           onClick={() => setActive("combat")}
@@ -796,6 +799,7 @@ export function ReferenceTables({
           type="button"
           role="tab"
           aria-selected={active === "expedition"}
+          tabIndex={active === "expedition" ? 0 : -1}
           disabled={!availability.expedition}
           title={!availability.expedition ? t("disabled-tooltip") : undefined}
           onClick={() => setActive("expedition")}

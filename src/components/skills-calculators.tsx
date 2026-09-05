@@ -48,6 +48,7 @@ import { NumberStepper } from "./number-stepper";
 import { StuffSimulator } from "./equipment-tools";
 import { ExpeditionEquipmentSimulator } from "./expedition-equipment-tools";
 import { TabLabel } from "./tab-label";
+import { handleTablistKeydown } from "./use-tablist-keyboard";
 
 type GemRow = {
   id: number;
@@ -120,11 +121,13 @@ export function SkillsCalculators({
         className="calculator-tabs tabs"
         role="tablist"
         aria-label={tools("skills-tabs")}
+        onKeyDown={handleTablistKeydown}
       >
         <button
           type="button"
           role="tab"
           aria-selected={active === "simulator"}
+          tabIndex={active === "simulator" ? 0 : -1}
           disabled={!availability.simulator}
           title={
             !availability.simulator
@@ -146,6 +149,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "expedition"}
+          tabIndex={active === "expedition" ? 0 : -1}
           disabled={!availability.expedition}
           title={
             !availability.expedition
@@ -167,6 +171,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "gems"}
+          tabIndex={active === "gems" ? 0 : -1}
           disabled={!availability.gems}
           title={
             !availability.gems ? tools("calculator-unavailable") : undefined
@@ -184,6 +189,7 @@ export function SkillsCalculators({
           type="button"
           role="tab"
           aria-selected={active === "templars"}
+          tabIndex={active === "templars" ? 0 : -1}
           disabled={!availability.templars}
           title={
             !availability.templars ? tools("calculator-unavailable") : undefined

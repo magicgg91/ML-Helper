@@ -167,3 +167,16 @@ test("Bloc 91/M7: the footer links to every main section", async ({ page }) => {
     await expect(footer.getByRole("link", { name })).toBeVisible();
   }
 });
+
+test("Bloc 91/F2: an inactive reference still renders but is noindex", async ({
+  page,
+}) => {
+  // Events ships inactive (seeded active:false): it must stay reachable with
+  // its "unavailable" state, but not be indexable via a guessed/linked URL.
+  const res = await page.goto("/fr/referentiels/events");
+  expect(res?.status()).toBe(200);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
+});
