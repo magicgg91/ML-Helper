@@ -76,6 +76,53 @@ describe("ToolCategoryNav", () => {
     expect(screen.queryByText("Référentiels")).toBeNull();
   });
 
+  // Bloc 94 (Codex PR #119): a category whose calculators are all disabled
+  // still has a routable page. Its <h1> is sr-only and the breadcrumb is gone,
+  // so this tab is the page's only visible "you are here" marker — and the
+  // disabled branch used to drop aria-current entirely.
+  it("still marks the current category when it is disabled", () => {
+    pathname = "/tools/classement";
+    render(
+      <ToolCategoryNav
+        availability={{
+          villes: true,
+          classement: false,
+          competences: true,
+        }}
+      />,
+    );
+    const current = screen.getByRole("button", { name: /^Classement/ });
+    expect(current).toBeDisabled();
+    expect(current).toHaveAttribute("aria-current", "page");
+    // The other categories stay unmarked, disabled or not.
+    expect(screen.getByRole("link", { name: "Villes" })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
+  it("marks no disabled category when the current page is a different one", () => {
+    pathname = "/tools/villes";
+    render(
+      <ToolCategoryNav
+        availability={{
+          villes: true,
+          classement: false,
+          competences: false,
+        }}
+      />,
+    );
+    // Only the page actually open is marked — a disabled tab is not current
+    // just because it is disabled.
+    for (const name of [/^Classement/, /^Compétences/])
+      expect(screen.getByRole("button", { name })).not.toHaveAttribute(
+        "aria-current",
+      );
+    expect(screen.getByRole("link", { name: "Villes" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
   it("keeps unavailable categories visible but disabled", () => {
     render(
       <ToolCategoryNav

@@ -111,10 +111,13 @@ test("Bloc 91/M4: emits JSON-LD structured data on public pages", async ({
 test("Bloc 94: no visible breadcrumb, but the BreadcrumbList stays", async ({
   page,
 }) => {
-  for (const [path, current] of [
-    ["/fr/tools/villes", "Villes"],
-    ["/fr/referentiels/gems", "Gemmes"],
-    ["/fr/guides/guide-visible", "Guide visible"],
+  // `marker` locates the page's OWN visible "you are here" indicator, which
+  // differs by page type: a tool page's <h1> is sr-only, so its indicator is
+  // the current category tab; référentiels and guides carry a visible <h1>.
+  for (const [path, current, marker] of [
+    ["/fr/tools/villes", "Villes", '.category-nav [aria-current="page"]'],
+    ["/fr/referentiels/gems", "Gemmes", "main h1"],
+    ["/fr/guides/guide-visible", "Guide visible", "main h1"],
   ]) {
     await page.goto(path);
 
@@ -131,7 +134,12 @@ test("Bloc 94: no visible breadcrumb, but the BreadcrumbList stays", async ({
     // locator above is what actually covers them — the rule is deleted too.
 
     // The page still says where you are — that is why the trail was redundant.
-    await expect(page.getByText(current).first()).toBeVisible();
+    // Asserted through that specific marker, not a bare getByText: Codex (PR
+    // #119) pointed out that getByText matches a nav label whether or not it
+    // is marked as current, so the text-only version would pass even on a
+    // page whose indicator had vanished.
+    await expect(page.locator(marker)).toBeVisible();
+    await expect(page.locator(marker)).toContainText(current);
 
     // …and the structured data is intact, listing the same trail.
     const ld = await page

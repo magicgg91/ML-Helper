@@ -2625,6 +2625,16 @@ button:disabled,
   cursor: not-allowed;
   opacity: 0.5;
 }
+/* Bloc 94 (Codex PR #119): a category with every calculator disabled still has
+   a routable page. It must stay recognisable as the current one — at 0.5 the
+   accent border above is too faint to serve as the page's only visible marker,
+   now that the tool <h1> is sr-only and the breadcrumb is gone. Still dimmer
+   than an enabled tab, so it continues to read as unavailable. */
+.category-btn:disabled[aria-current="page"] {
+  opacity: 0.85;
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
 /* Bloc 62/I: caps the référentiels switcher at 4 per row on desktop — 7
    references (Events made it the first to exceed 4) wrapped unevenly
    under the shared .category-nav flex-wrap; scoped to .reference-switcher
