@@ -437,8 +437,7 @@
     "menu": "Menu",
     "main": "Main navigation",
     "footer": "Footer",
-    "home": "Home",
-    "breadcrumb": "Breadcrumb"
+    "home": "Home"
   },
   "search": {
     "label": "Search the site",

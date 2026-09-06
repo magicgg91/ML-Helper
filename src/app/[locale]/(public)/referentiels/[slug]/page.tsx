@@ -29,7 +29,7 @@ import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { pageMetadata } from "@/lib/page-metadata";
-import { Breadcrumb } from "@/components/breadcrumb";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-json-ld";
 
 export async function generateMetadata({
   params,
@@ -84,10 +84,11 @@ export default async function ReferencePage({
 
   return (
     <main className="public-main">
-      {/* Bloc 91/M7: breadcrumb Accueil › Référentiels › <name>. */}
-      <Breadcrumb
+      {/* Bloc 91/M4: BreadcrumbList structured data (Accueil › Référentiels ›
+          <name>). Bloc 94 removed the visible trail that used to sit here —
+          the <h1> below already names the page. */}
+      <BreadcrumbJsonLd
         locale={locale}
-        label={nav("breadcrumb")}
         items={[
           { path: "/", label: nav("home") },
           { path: "/referentiels", label: nav("referentiels") },

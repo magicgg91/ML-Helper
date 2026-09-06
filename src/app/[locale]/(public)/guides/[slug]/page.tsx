@@ -10,7 +10,7 @@ import { pageTitle } from "@/lib/page-title";
 import { pageMetadata } from "@/lib/page-metadata";
 import { JsonLd } from "@/components/json-ld";
 import { articleJsonLd } from "@/lib/structured-data";
-import { Breadcrumb } from "@/components/breadcrumb";
+import { BreadcrumbJsonLd } from "@/components/breadcrumb-json-ld";
 
 export async function generateMetadata({
   params,
@@ -77,10 +77,11 @@ export default async function GuidePage({
           image: guide.coverImage,
         })}
       />
-      {/* Bloc 91/M7: breadcrumb Accueil › Guides › <title>. */}
-      <Breadcrumb
+      {/* Bloc 91/M4: BreadcrumbList structured data (Accueil › Guides ›
+          <title>). Bloc 94 removed the visible trail that used to sit here —
+          the <h1> below already names the guide. */}
+      <BreadcrumbJsonLd
         locale={locale}
-        label={nav("breadcrumb")}
         items={[
           { path: "/", label: nav("home") },
           { path: "/guides", label: nav("guides") },

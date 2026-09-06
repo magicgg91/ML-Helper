@@ -437,8 +437,7 @@
     "menu": "Menu",
     "main": "Navigation principale",
     "footer": "Pied de page",
-    "home": "Accueil",
-    "breadcrumb": "Fil dʼAriane"
+    "home": "Accueil"
   },
   "search": {
     "label": "Rechercher sur le site",
