@@ -437,8 +437,7 @@
     "menu": "Menü",
     "main": "Ana gezinme",
     "footer": "Alt bilgi",
-    "home": "Ana sayfa",
-    "breadcrumb": "İçerik haritası"
+    "home": "Ana sayfa"
   },
   "search": {
     "label": "Sitede ara",

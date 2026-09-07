@@ -5,7 +5,7 @@ import { ToolCategoryNav } from "../../../../../components/tool-category-nav";
 import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
 import { JsonLd } from "../../../../../components/json-ld";
 import { webApplicationJsonLd } from "../../../../../lib/structured-data";
-import { Breadcrumb } from "../../../../../components/breadcrumb";
+import { BreadcrumbJsonLd } from "../../../../../components/breadcrumb-json-ld";
 
 // Bloc 91/M4: same slug→title-key map as the page's generateMetadata — kept
 // here so the WebApplication JSON-LD is emitted once for all 4 categories
@@ -56,11 +56,12 @@ export default async function ToolDetailLayout({
               name: tools(titleKey),
             })}
           />
-          {/* Bloc 91/M7: breadcrumb — the tool h1 is sr-only, so this is the
-              visible marker of which tool page you're on. */}
-          <Breadcrumb
+          {/* Bloc 91/M4: BreadcrumbList structured data. Bloc 94 removed the
+              visible trail: this page's <h1> is sr-only, but ToolCategoryNav
+              below already marks the current category with the accent style,
+              carrying the same label the last crumb did. */}
+          <BreadcrumbJsonLd
             locale={locale}
-            label={nav("breadcrumb")}
             items={[
               { path: "/", label: nav("home") },
               { path: "/tools", label: nav("tools") },

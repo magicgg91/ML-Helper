@@ -437,8 +437,7 @@
     "menu": "Menü",
     "main": "Hauptnavigation",
     "footer": "Fußzeile",
-    "home": "Startseite",
-    "breadcrumb": "Brotkrümelnavigation"
+    "home": "Startseite"
   },
   "search": {
     "label": "Website durchsuchen",

@@ -96,19 +96,64 @@ test("Bloc 91/M4: emits JSON-LD structured data on public pages", async ({
   const ld = await page
     .locator('script[type="application/ld+json"]')
     .allTextContents();
-  // A tool page carries both its WebApplication and (Bloc 91/M7) its
-  // BreadcrumbList.
+  // A tool page carries both its WebApplication and (Bloc 91/M4) its
+  // BreadcrumbList. Bloc 94 removed the visible trail; this structured data
+  // is deliberately kept.
   expect(ld.some((t) => t.includes("WebApplication"))).toBe(true);
   expect(ld.some((t) => t.includes("BreadcrumbList"))).toBe(true);
 });
 
-test("Bloc 91/M7: deep pages show a breadcrumb trail", async ({ page }) => {
-  await page.goto("/fr/tools/villes");
-  const crumb = page.getByRole("navigation", { name: /Ariane|Breadcrumb/ });
-  await expect(crumb.getByRole("link", { name: "Accueil" })).toBeVisible();
-  await expect(crumb.getByRole("link", { name: "Outils" })).toBeVisible();
-  // The current page is the last crumb (not a link).
-  await expect(crumb.getByText("Villes")).toBeVisible();
+// Bloc 94: the visible breadcrumb is gone from every page that carried it —
+// it restated what the page already showed. Its BreadcrumbList structured
+// data stays: invisible to the reader, and used by search engines to render
+// the trail in results. Both halves are asserted together on the same three
+// page types, so removing one can never silently take the other with it.
+test("Bloc 94: no visible breadcrumb, but the BreadcrumbList stays", async ({
+  page,
+}) => {
+  // `marker` locates the page's OWN visible "you are here" indicator, which
+  // differs by page type: a tool page's <h1> is sr-only, so its indicator is
+  // the current category tab; référentiels and guides carry a visible <h1>.
+  for (const [path, current, marker] of [
+    ["/fr/tools/villes", "Villes", '.category-nav [aria-current="page"]'],
+    ["/fr/referentiels/gems", "Gemmes", "main h1"],
+    ["/fr/guides/guide-visible", "Guide visible", "main h1"],
+  ]) {
+    await page.goto(path);
+
+    // No breadcrumb landmark, no breadcrumb container, and no "Accueil" crumb
+    // link anywhere on the page.
+    await expect(
+      page.getByRole("navigation", { name: /Ariane|Breadcrumb/ }),
+    ).toHaveCount(0);
+    await expect(page.locator(".breadcrumb")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Accueil" })).toHaveCount(0);
+    // Not asserted: the "›" separators. They were drawn by a CSS ::before on
+    // .breadcrumb li, never present in the DOM, so a "no separators in the
+    // text" check passes whether or not the trail is rendered. The .breadcrumb
+    // locator above is what actually covers them — the rule is deleted too.
+
+    // The page still says where you are — that is why the trail was redundant.
+    // Asserted through that specific marker, not a bare getByText: Codex (PR
+    // #119) pointed out that getByText matches a nav label whether or not it
+    // is marked as current, so the text-only version would pass even on a
+    // page whose indicator had vanished.
+    await expect(page.locator(marker)).toBeVisible();
+    await expect(page.locator(marker)).toContainText(current);
+
+    // …and the structured data is intact, listing the same trail.
+    const ld = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const breadcrumb = ld.find((text) => text.includes("BreadcrumbList"));
+    expect(breadcrumb, `no BreadcrumbList on ${path}`).toBeTruthy();
+    const parsed = JSON.parse(breadcrumb!);
+    expect(parsed["@type"]).toBe("BreadcrumbList");
+    expect(parsed.itemListElement.length).toBeGreaterThanOrEqual(2);
+    // Root crumb first, current page last — the order search engines render.
+    expect(parsed.itemListElement[0].name).toBe("Accueil");
+    expect(parsed.itemListElement.at(-1).name).toBe(current);
+  }
 });
 
 test("Bloc 91/M5: reference pages keep a gapless heading hierarchy under one h1", async ({

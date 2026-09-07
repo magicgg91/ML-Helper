@@ -437,8 +437,7 @@
     "menu": "Menú",
     "main": "Navegación principal",
     "footer": "Pie de página",
-    "home": "Inicio",
-    "breadcrumb": "Ruta de navegación"
+    "home": "Inicio"
   },
   "search": {
     "label": "Buscar en el sitio",

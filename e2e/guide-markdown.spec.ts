@@ -11,7 +11,9 @@ test("published guides render Markdown and GFM content", async ({ page }) => {
   await expect(
     page.locator("ul").filter({ hasText: "Élément à puces" }),
   ).toBeVisible();
-  // Bloc 91/M7: the breadcrumb is also an <ol>, so scope to the guide body.
+  // Scoped to the guide body on purpose. Bloc 91/M7 added this because the
+  // visible breadcrumb was also an <ol>; Bloc 94 removed that trail, but the
+  // scoping stays — the assertion is about the guide's own ordered list.
   await expect(page.locator(".guide-shell ol")).toContainText("Première étape");
 
   const tasks = page.getByRole("checkbox");
