@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -11,6 +12,19 @@ import { HtmlLangSync } from "@/components/html-lang-sync";
 // Bloc 91/E1: pre-renders the 5 locale segments.
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+// Bloc 95, Codex review (PR #120): point this language's pages at this
+// language's manifest, so the name Chrome shows in the install prompt is the
+// one the visitor is reading. Without this every locale would inherit the root
+// file convention's single /manifest.webmanifest, which can only carry one
+// language. Only `manifest` is set here — every other metadata field still
+// comes from the root layout and each page's own generateMetadata.
+export async function generateMetadata({
+  params,
+}: LayoutProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  return { manifest: `/${locale}/manifest.webmanifest` };
 }
 
 export default async function LocaleLayout({

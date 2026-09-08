@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import de from "../messages/de.json";
+import en from "../messages/en.json";
+import fr from "../messages/fr.json";
 
 // Bloc 91/E2–E5: the SEO metadata signals — branded titles, per-page
 // descriptions, Open Graph / Twitter cards, the generated OG image and
@@ -224,4 +227,101 @@ test("Bloc 91/F2: an inactive reference still renders but is noindex", async ({
     "content",
     /noindex/,
   );
+});
+
+// Bloc 95 (audit SEO Bloc 91/F1): the PWA manifest and its icons, so a player
+// can install ML-Helper on a phone's home screen.
+//
+// Served at …/manifest.webmanifest, NOT …/manifest.json: that is the media
+// type's own extension and the route the <link rel="manifest"> below points
+// at. Browsers follow that link — they never guess a filename — so the
+// asserted URL is taken from the tag rather than hardcoded, which is also what
+// makes this test notice if the route moves.
+test("Bloc 95: the manifest is linked, served, and describes an installable app", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/fr/tools/villes");
+  const href = await page.locator('link[rel="manifest"]').getAttribute("href");
+  expect(href, "no <link rel=manifest> in the document head").toBeTruthy();
+  expect(href).toContain("/manifest.webmanifest");
+
+  const res = await request.get(href!);
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("manifest+json");
+
+  const manifest = JSON.parse(await res.text());
+  expect(manifest.name).toBe(fr.Public.meta.siteTitle);
+  expect(manifest.short_name).toBe("ML-Helper");
+  // standalone is what drops the browser address bar once installed.
+  expect(manifest.display).toBe("standalone");
+  expect(manifest.start_url).toBe("/");
+  expect(manifest.theme_color).toBe("#8b6bb8");
+  expect(manifest.background_color).toBe("#1b2029");
+  expect(manifest.icons).toHaveLength(2);
+});
+
+// Codex review (PR #120): the name in that manifest is what the install prompt
+// shows, so it follows the language the visitor is reading — each locale links
+// its own manifest instead of all five sharing one French document.
+test("Bloc 95: each locale links a manifest naming the app in its own language", async ({
+  page,
+  request,
+}) => {
+  const names: string[] = [];
+  for (const [locale, messages] of [
+    ["en", en],
+    ["de", de],
+  ] as const) {
+    await page.goto(`/${locale}/tools/villes`);
+    const href = await page
+      .locator('link[rel="manifest"]')
+      .getAttribute("href");
+    expect(href, `no <link rel=manifest> on the ${locale} page`).toBe(
+      `/${locale}/manifest.webmanifest`,
+    );
+
+    const res = await request.get(href!);
+    expect(res.status()).toBe(200);
+    const manifest = JSON.parse(await res.text());
+    expect(manifest.name).toBe(messages.Public.meta.siteTitle);
+    names.push(manifest.name);
+  }
+  // The whole point: three locales, three different names in the prompt.
+  expect(new Set([...names, fr.Public.meta.siteTitle]).size).toBe(3);
+});
+
+test("Bloc 95: both manifest icons are served at the dimensions they declare", async ({
+  request,
+}) => {
+  const res = await request.get("/manifest.webmanifest");
+  const { icons } = JSON.parse(await res.text());
+
+  for (const icon of icons) {
+    const file = await request.get(icon.src);
+    expect(file.status(), `${icon.src} is not served`).toBe(200);
+    expect(file.headers()["content-type"]).toContain("image/png");
+
+    // Width and height straight from the PNG IHDR chunk, so this compares the
+    // bytes actually served against what the manifest promises rather than
+    // trusting the declaration on both sides.
+    const bytes = await file.body();
+    expect(bytes.subarray(1, 4).toString("ascii")).toBe("PNG");
+    const width = bytes.readUInt32BE(16);
+    const height = bytes.readUInt32BE(20);
+    expect(`${width}x${height}`, `${icon.src} has the wrong size`).toBe(
+      icon.sizes,
+    );
+  }
+});
+
+test("Bloc 95: the Apple touch icon is exposed for iOS home screens", async ({
+  page,
+}) => {
+  await page.goto("/fr/tools/villes");
+  // iOS ignores the manifest icons for the home screen and uses this tag,
+  // which the src/app/apple-icon.png file convention emits.
+  const appleIcon = page.locator('link[rel="apple-touch-icon"]');
+  await expect(appleIcon).toHaveCount(1);
+  expect(await appleIcon.getAttribute("href")).toContain("/apple-icon.png");
 });
