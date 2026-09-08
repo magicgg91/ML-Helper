@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import de from "../messages/de.json";
+import en from "../messages/en.json";
+import fr from "../messages/fr.json";
 
 // Bloc 91/E2–E5: the SEO metadata signals — branded titles, per-page
 // descriptions, Open Graph / Twitter cards, the generated OG image and
@@ -229,11 +232,11 @@ test("Bloc 91/F2: an inactive reference still renders but is noindex", async ({
 // Bloc 95 (audit SEO Bloc 91/F1): the PWA manifest and its icons, so a player
 // can install ML-Helper on a phone's home screen.
 //
-// Served at /manifest.webmanifest, NOT /manifest.json: that is the route the
-// Next.js `app/manifest.ts` file convention emits, and the route the <link
-// rel="manifest"> below points at. Browsers follow that link — they never
-// guess a filename — so the asserted URL is taken from the tag rather than
-// hardcoded, which is also what makes this test notice if the route moves.
+// Served at …/manifest.webmanifest, NOT …/manifest.json: that is the media
+// type's own extension and the route the <link rel="manifest"> below points
+// at. Browsers follow that link — they never guess a filename — so the
+// asserted URL is taken from the tag rather than hardcoded, which is also what
+// makes this test notice if the route moves.
 test("Bloc 95: the manifest is linked, served, and describes an installable app", async ({
   page,
   request,
@@ -248,7 +251,7 @@ test("Bloc 95: the manifest is linked, served, and describes an installable app"
   expect(res.headers()["content-type"]).toContain("manifest+json");
 
   const manifest = JSON.parse(await res.text());
-  expect(manifest.name).toBe("ML-Helper — Outils Million Lords");
+  expect(manifest.name).toBe(fr.Public.meta.siteTitle);
   expect(manifest.short_name).toBe("ML-Helper");
   // standalone is what drops the browser address bar once installed.
   expect(manifest.display).toBe("standalone");
@@ -256,6 +259,36 @@ test("Bloc 95: the manifest is linked, served, and describes an installable app"
   expect(manifest.theme_color).toBe("#8b6bb8");
   expect(manifest.background_color).toBe("#1b2029");
   expect(manifest.icons).toHaveLength(2);
+});
+
+// Codex review (PR #120): the name in that manifest is what the install prompt
+// shows, so it follows the language the visitor is reading — each locale links
+// its own manifest instead of all five sharing one French document.
+test("Bloc 95: each locale links a manifest naming the app in its own language", async ({
+  page,
+  request,
+}) => {
+  const names: string[] = [];
+  for (const [locale, messages] of [
+    ["en", en],
+    ["de", de],
+  ] as const) {
+    await page.goto(`/${locale}/tools/villes`);
+    const href = await page
+      .locator('link[rel="manifest"]')
+      .getAttribute("href");
+    expect(href, `no <link rel=manifest> on the ${locale} page`).toBe(
+      `/${locale}/manifest.webmanifest`,
+    );
+
+    const res = await request.get(href!);
+    expect(res.status()).toBe(200);
+    const manifest = JSON.parse(await res.text());
+    expect(manifest.name).toBe(messages.Public.meta.siteTitle);
+    names.push(manifest.name);
+  }
+  // The whole point: three locales, three different names in the prompt.
+  expect(new Set([...names, fr.Public.meta.siteTitle]).size).toBe(3);
 });
 
 test("Bloc 95: both manifest icons are served at the dimensions they declare", async ({

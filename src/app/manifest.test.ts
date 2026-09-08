@@ -1,9 +1,57 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
-import manifest from "./manifest";
+import { describe, expect, it, vi } from "vitest";
+
+// The translator the manifest routes use, backed by the real messages/*.json
+// files (through the same English-fallback merge the app uses at runtime), so
+// these tests compare the served name against the actual translations rather
+// than against a stub — a manifest that stopped following next-intl would show
+// up here.
+vi.mock("next-intl/server", () => ({
+  getTranslations: async ({
+    locale,
+    namespace,
+  }: {
+    locale: string;
+    namespace: string;
+  }) => {
+    const { getMessagesForLocale } = await import("@/i18n/config");
+    const messages = await getMessagesForLocale(locale);
+    return (key: string) =>
+      [...namespace.split("."), key].reduce<unknown>(
+        (node, part) => (node as Record<string, unknown>)?.[part],
+        messages,
+      ) as string;
+  },
+}));
+
+const { default: manifest } = await import("./manifest");
+const { GET, generateStaticParams } =
+  await import("./[locale]/manifest.webmanifest/route");
 
 const globalsCss = readFileSync(path.join(__dirname, "globals.css"), "utf8");
+
+/** The site name as it is really written in one locale's message file. */
+function siteTitle(locale: string): string {
+  const messages = JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), "messages", `${locale}.json`),
+      "utf8",
+    ),
+  );
+  return messages.Public.meta.siteTitle;
+}
+
+/** Fetches one locale's manifest through its route handler. */
+async function localeManifest(locale: string) {
+  const response = await GET(
+    new Request(`http://x/${locale}/manifest.webmanifest`),
+    {
+      params: Promise.resolve({ locale }),
+    },
+  );
+  return { response, data: await response.json() };
+}
 
 // The dark theme's token block — the default the site renders in, and so the
 // palette an installed app's splash screen and browser chrome should match.
@@ -33,11 +81,14 @@ function pngSize(file: string): { width: number; height: number } {
 
 // Bloc 95 (audit SEO Bloc 91/F1): the manifest that makes ML-Helper
 // installable on a phone's home screen.
-describe("web app manifest", () => {
-  const data = manifest();
+const data = await manifest();
 
-  it("names the app both in full and in the short form shown under the icon", () => {
-    expect(data.name).toBe("ML-Helper — Outils Million Lords");
+describe("web app manifest", () => {
+  it("names the app both in full and in the short form shown under the icon", async () => {
+    // Codex review (PR #120): the full name is user-visible text, so it comes
+    // from next-intl like everything else — this root document is the one the
+    // non-prefixed routes (/admin, /login) get, in the fallback language.
+    expect(data.name).toBe(siteTitle("en"));
     expect(data.short_name).toBe("ML-Helper");
     // The short name is what a home screen actually has room for.
     expect(data.short_name!.length).toBeLessThanOrEqual(12);
@@ -85,6 +136,49 @@ describe("web app manifest", () => {
     // maskable icon is cropped to. Declaring it would cut the shield's edges.
     for (const icon of data.icons ?? [])
       expect(icon.purpose ?? "any").toBe("any");
+  });
+});
+
+// Codex review (PR #120): a single manifest can only name the app in one
+// language, and the name is what the install prompt shows. Each locale serves
+// its own.
+describe("per-locale manifest route", () => {
+  const locales = ["fr", "en", "de", "es", "tr"];
+
+  it("prerenders one manifest per launched locale", () => {
+    expect(generateStaticParams().map((entry) => entry.locale)).toEqual(
+      expect.arrayContaining(locales),
+    );
+  });
+
+  it.each(locales)(
+    "names the app in %s, with the manifest media type",
+    async (locale) => {
+      const { response, data } = await localeManifest(locale);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("manifest+json");
+      expect(data.name).toBe(siteTitle(locale));
+    },
+  );
+
+  it("really does serve five different names", async () => {
+    const names = await Promise.all(
+      locales.map(async (locale) => (await localeManifest(locale)).data.name),
+    );
+    // The point of the route: one hardcoded name for all 5 would pass every
+    // assertion above that only checks shape.
+    expect(new Set(names).size).toBe(locales.length);
+  });
+
+  it("changes nothing but the name", async () => {
+    const { data: fr } = await localeManifest("fr");
+    const root = await manifest();
+    expect({ ...fr, name: null }).toEqual({ ...root, name: null });
+  });
+
+  it("404s on a locale the site does not have", async () => {
+    // notFound() throws Next's NEXT_HTTP_ERROR_FALLBACK;404 signal.
+    await expect(localeManifest("it")).rejects.toThrow();
   });
 });
 
