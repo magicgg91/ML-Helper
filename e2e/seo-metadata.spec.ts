@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import de from "../messages/de.json";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
+import { parsePngHeader, truecolorPng } from "../src/test/png-header";
 
 // Bloc 91/E2–E5: the SEO metadata signals — branded titles, per-page
 // descriptions, Open Graph / Twitter cards, the generated OG image and
@@ -258,7 +259,8 @@ test("Bloc 95: the manifest is linked, served, and describes an installable app"
   expect(manifest.start_url).toBe("/");
   expect(manifest.theme_color).toBe("#8b6bb8");
   expect(manifest.background_color).toBe("#1b2029");
-  expect(manifest.icons).toHaveLength(2);
+  // Bloc 96: three sizes — 180 (iPhone), 192 and 512 (PWA).
+  expect(manifest.icons).toHaveLength(3);
 });
 
 // Codex review (PR #120): the name in that manifest is what the install prompt
@@ -291,37 +293,92 @@ test("Bloc 95: each locale links a manifest naming the app in its own language",
   expect(new Set([...names, fr.Public.meta.siteTitle]).size).toBe(3);
 });
 
-test("Bloc 95: both manifest icons are served at the dimensions they declare", async ({
+test("Bloc 95: every manifest icon is served at the dimensions it declares", async ({
   request,
 }) => {
   const res = await request.get("/manifest.webmanifest");
   const { icons } = JSON.parse(await res.text());
+  expect(icons.length).toBeGreaterThan(0);
 
   for (const icon of icons) {
     const file = await request.get(icon.src);
     expect(file.status(), `${icon.src} is not served`).toBe(200);
     expect(file.headers()["content-type"]).toContain("image/png");
 
-    // Width and height straight from the PNG IHDR chunk, so this compares the
-    // bytes actually served against what the manifest promises rather than
-    // trusting the declaration on both sides.
-    const bytes = await file.body();
-    expect(bytes.subarray(1, 4).toString("ascii")).toBe("PNG");
-    const width = bytes.readUInt32BE(16);
-    const height = bytes.readUInt32BE(20);
-    expect(`${width}x${height}`, `${icon.src} has the wrong size`).toBe(
+    // Read the header out of the bytes actually served, so this compares the
+    // real image against what the manifest promises rather than trusting the
+    // declaration on both sides.
+    const png = parsePngHeader(await file.body());
+    expect(`${png.width}x${png.height}`, `${icon.src} has the wrong size`).toBe(
       icon.sizes,
     );
+    // Bloc 96: and that it is the plain opaque true-colour PNG an OS icon
+    // pipeline expects — the property the blank iOS tile turned on.
+    expect(png.colorType, `${icon.src} is not a true-colour PNG`).toBe(
+      truecolorPng,
+    );
+    expect(png.transparent).toBe(false);
   }
 });
 
-test("Bloc 95: the Apple touch icon is exposed for iOS home screens", async ({
+// Bloc 96: iOS drew an empty tile for the installed shortcut. The markup was
+// already right, so what this checks is the whole chain end to end — the tags
+// a public page really serves, and the bytes each of their URLs really returns.
+test("Bloc 96: every apple-touch-icon tag serves the image it declares", async ({
   page,
+  request,
 }) => {
   await page.goto("/fr/tools/villes");
-  // iOS ignores the manifest icons for the home screen and uses this tag,
-  // which the src/app/apple-icon.png file convention emits.
-  const appleIcon = page.locator('link[rel="apple-touch-icon"]');
-  await expect(appleIcon).toHaveCount(1);
-  expect(await appleIcon.getAttribute("href")).toContain("/apple-icon.png");
+  // iOS ignores the manifest on older versions and uses these tags, which the
+  // src/app/apple-icon*.png file convention emits.
+  const tags = page.locator('link[rel="apple-touch-icon"]');
+  const count = await tags.count();
+  expect(
+    count,
+    "no <link rel=apple-touch-icon> in the document head",
+  ).toBeGreaterThan(0);
+
+  const sizes: string[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const tag = tags.nth(index);
+    const href = await tag.getAttribute("href");
+    const declared = await tag.getAttribute("sizes");
+    expect(href, "an apple-touch-icon tag has no href").toBeTruthy();
+
+    const res = await request.get(href!);
+    expect(res.status(), `${href} is not served`).toBe(200);
+    expect(res.headers()["content-type"]).toContain("image/png");
+
+    const png = parsePngHeader(await res.body());
+    expect(`${png.width}x${png.height}`, `${href} is not ${declared}`).toBe(
+      declared,
+    );
+    expect(png.colorType, `${href} is not a true-colour PNG`).toBe(
+      truecolorPng,
+    );
+    expect(png.transparent).toBe(false);
+    sizes.push(declared!);
+  }
+
+  // The regression itself: only a 512×512 was on offer, a size no Apple device
+  // asks for. 180 is the iPhone's.
+  expect(sizes).toContain("180x180");
+});
+
+test("Bloc 96: the icon iOS fetches by convention is there too", async ({
+  request,
+}) => {
+  // When the markup yields nothing it can use, iOS requests this well-known
+  // path on its own. It is a plain file in public/, so its URL carries no
+  // hashed query string.
+  const res = await request.get("/apple-touch-icon.png");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("image/png");
+
+  const png = parsePngHeader(await res.body());
+  expect({ width: png.width, height: png.height }).toEqual({
+    width: 180,
+    height: 180,
+  });
+  expect(png.colorType).toBe(truecolorPng);
 });
