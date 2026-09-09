@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import { readPngHeader } from "@/test/png-header";
 
 // The translator the manifest routes use, backed by the real messages/*.json
 // files (through the same English-fallback merge the app uses at runtime), so
@@ -69,14 +71,18 @@ function token(name: string): string {
   return alias ? token(alias[1]) : value;
 }
 
-/** Width and height straight from the PNG IHDR chunk (bytes 16-24). */
-function pngSize(file: string): { width: number; height: number } {
-  const buffer = readFileSync(path.join(__dirname, file));
-  expect(buffer.subarray(1, 4).toString("ascii")).toBe("PNG");
-  return {
-    width: buffer.readUInt32BE(16),
-    height: buffer.readUInt32BE(20),
-  };
+/**
+ * The file a manifest icon's URL is really served from. Both roots are real
+ * serving roots — public/ verbatim, src/app/ through Next's file conventions —
+ * so a `src` pointing at neither is a manifest promising an icon nobody hosts.
+ */
+function iconFile(src: string): string {
+  const name = src.replace(/^\//, "");
+  for (const root of ["public", "src/app"]) {
+    const candidate = path.join(root, name);
+    if (existsSync(path.join(process.cwd(), candidate))) return candidate;
+  }
+  throw new Error(`the manifest lists ${src}, which no root serves`);
 }
 
 // Bloc 95 (audit SEO Bloc 91/F1): the manifest that makes ML-Helper
@@ -110,25 +116,26 @@ describe("web app manifest", () => {
     expect(data.theme_color).toBe(token("accent"));
   });
 
-  it("lists both icons with the size and MIME type each file really has", () => {
+  it("lists every icon with the size and MIME type its file really has", () => {
     const icons = data.icons ?? [];
-    expect(icons).toHaveLength(2);
+    // Bloc 96: three sizes, not two — 180 is the one an iPhone asks for.
+    expect(icons.map((icon) => icon.sizes)).toEqual([
+      "180x180",
+      "192x192",
+      "512x512",
+    ]);
 
     for (const icon of icons) {
       expect(icon.type).toBe("image/png");
-      // The declared size must match the file on disk: a manifest that lies
-      // about its icons gets them rejected or rendered blurry.
-      const file = icon.src!.replace(/^\//, "");
-      const { width, height } = pngSize(file);
-      expect(`${width}x${height}`).toBe(icon.sizes);
-      expect(width).toBe(height);
+      // The declared size must match the file actually served at that URL: a
+      // manifest that lies about its icons gets them rejected or rendered
+      // blurry. iconFile() also fails outright on a src nothing serves.
+      const png = readPngHeader(iconFile(icon.src!));
+      expect(
+        `${png.width}x${png.height}`,
+        `${icon.src} is not ${icon.sizes}`,
+      ).toBe(icon.sizes);
     }
-
-    expect(icons.map((icon) => icon.src)).toEqual([
-      "/icon.png",
-      "/apple-icon.png",
-    ]);
-    expect(icons.map((icon) => icon.sizes)).toEqual(["192x192", "512x512"]);
   });
 
   it("does not claim maskable, which would clip the shield", () => {
@@ -179,12 +186,5 @@ describe("per-locale manifest route", () => {
   it("404s on a locale the site does not have", async () => {
     // notFound() throws Next's NEXT_HTTP_ERROR_FALLBACK;404 signal.
     await expect(localeManifest("it")).rejects.toThrow();
-  });
-});
-
-describe("installable icon files", () => {
-  it("ships the two Next.js file-convention icons at their intended sizes", () => {
-    expect(pngSize("icon.png")).toEqual({ width: 192, height: 192 });
-    expect(pngSize("apple-icon.png")).toEqual({ width: 512, height: 512 });
   });
 });

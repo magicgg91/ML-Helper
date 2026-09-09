@@ -31,16 +31,23 @@ export function buildWebManifest(name: string): MetadataRoute.Manifest {
     theme_color: themeColor,
     background_color: backgroundColor,
     icons: [
-      // Both files are Next.js file-convention icons (src/app/icon.png and
-      // src/app/apple-icon.png), which is what also emits the <link rel="icon">
-      // and <link rel="apple-touch-icon"> tags. Listing them here is what makes
-      // them available to the install prompt itself.
+      // Bloc 96: three sizes, so whatever picks an icon here finds one it
+      // recognises. 192 and 512 are what the PWA spec (and Chrome's install
+      // criteria) ask for; 180 is Apple's own home-screen size, listed because
+      // Safari has read the manifest since iOS 16.4 and an installed app that
+      // finds no size it wants shows an empty tile rather than falling back.
+      //
+      // Every file is a plain opaque true-colour PNG (see icons.test.ts): the
+      // palette encoding these used to carry saved bytes but is an unusual
+      // shape to hand an OS icon pipeline, and was one of the two suspects for
+      // the blank iOS icon this bloc fixes.
       //
       // purpose is left at the default ("any") deliberately: the shield spans
       // ~83% of the square, wider than a maskable icon's 80% safe zone, so
       // declaring "maskable" would have Android clip its edges.
+      { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
       { src: "/icon.png", sizes: "192x192", type: "image/png" },
-      { src: "/apple-icon.png", sizes: "512x512", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
   };
 }
