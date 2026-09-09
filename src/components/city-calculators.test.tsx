@@ -1,0 +1,533 @@
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../messages/fr.json";
+import { defaultPlayerSettings } from "../lib/player-settings";
+import { CityCalculators } from "./city-calculators";
+import {
+  playerSettingsChangedEvent,
+  playerStorageKey,
+} from "./player-settings-panel";
+
+describe("CityCalculators", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  it("calculates city cost and maximum level", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    expect(screen.getByTestId("city-cost-total")).toHaveTextContent("10 or");
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Nombre de villes" }),
+      {
+        target: { value: "2" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Or disponible" }),
+      { target: { value: "0.044" } },
+    );
+    fireEvent.change(screen.getByLabelText("Unité de l’or disponible"), {
+      target: { value: "1000" },
+    });
+    expect(screen.getByTestId("max-level-result")).toHaveTextContent("3");
+  });
+
+  it("Bloc 34/C: lets the target level be typed digit by digit without a premature reset", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const target = screen.getByRole("spinbutton", { name: "Niveau cible" });
+    // Regression test: target starts at 2 with an effective min of 2 — the
+    // pre-Bloc-34 bug clamped on every keystroke, so typing "100" got reset
+    // to "2" right after the leading "1" and could never progress further.
+    fireEvent.change(target, { target: { value: "1" } });
+    expect(target).toHaveValue(1);
+    fireEvent.change(target, { target: { value: "10" } });
+    expect(target).toHaveValue(10);
+    fireEvent.change(target, { target: { value: "100" } });
+    expect(target).toHaveValue(100);
+    fireEvent.blur(target);
+    expect(target).toHaveValue(100);
+  });
+
+  it("keeps the target level strictly above the starting level, enforced on blur — not on every keystroke", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const start = screen.getByRole("spinbutton", {
+      name: "Niveau de départ",
+    });
+    const target = screen.getByRole("spinbutton", { name: "Niveau cible" });
+
+    fireEvent.change(start, { target: { value: "12" } });
+    expect(start).toHaveValue(12);
+    // Bloc 34/C: the push-up only happens once start is committed (blur) —
+    // not while the user is still typing into it.
+    expect(target).toHaveValue(2);
+    fireEvent.blur(start);
+    expect(target).toHaveValue(13);
+
+    fireEvent.change(target, { target: { value: "8" } });
+    expect(target).toHaveValue(8);
+    fireEvent.blur(target);
+    expect(start).toHaveValue(12);
+    expect(target).toHaveValue(13);
+  });
+
+  it("starts each City tool without a league and places its selector first", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    for (const tab of [
+      "Coût de Ville",
+      "Niveau Max Atteignable",
+      "Production",
+    ]) {
+      fireEvent.click(screen.getByRole("tab", { name: tab }));
+      const group = screen.getByRole("group", { name: "Ligue" });
+      for (const button of within(group).getAllByRole("button"))
+        expect(button).toHaveAttribute("aria-pressed", "false");
+      // Bloc 69/E: the league group is now wrapped in its own
+      // .calculator-league-field (for the visible "Ligue" title) instead
+      // of being a bare direct child — that wrapper is still first.
+      const wrapper = group.closest(
+        ".calculator-fields-inline",
+      )?.firstElementChild;
+      expect(wrapper).toContainElement(group);
+      expect(wrapper).toHaveTextContent("Ligue");
+      expect(group).toHaveClass("league-buttons-grid");
+      expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
+    }
+  });
+
+  it("reads production bonuses from persisted player settings", () => {
+    const settings = defaultPlayerSettings();
+    settings.level = 11;
+    settings.league = "legend";
+    settings.equipmentSkills.prosperous = 10;
+    window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    expect(screen.getByText("280/h")).toBeInTheDocument();
+    expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
+      "320/h",
+    );
+    expect(screen.getByTestId("full-production-gold")).toHaveClass(
+      "value",
+      "emerald",
+    );
+  });
+
+  it("no longer shows Récompenses in the Production tab (extracted to its own tab)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    expect(screen.queryByText("Bonus Or obtenu")).toBeNull();
+    expect(screen.queryByText("Bonus Troupes obtenu")).toBeNull();
+    expect(screen.queryByText("Heures Or reçues")).toBeNull();
+    expect(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    ).toBeInTheDocument();
+  });
+
+  it("computes the Or block bonus from a base production and hours received, applying the unit selector", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Production d’or de base" }),
+      { target: { value: "2" } },
+    );
+    fireEvent.change(screen.getByLabelText("Unité de production d’or"), {
+      target: { value: "1000" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Heures Or reçues" }),
+      { target: { value: "5" } },
+    );
+    const goldBonus = screen
+      .getByText("Bonus Or obtenu")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    expect(goldBonus).toHaveTextContent("10k");
+    expect(goldBonus).toHaveClass("value", "emerald");
+  });
+
+  it("computes the Troupes block bonus independently from the Or block", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Production d’or de base" }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Heures Or reçues" }),
+      { target: { value: "10" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "Production de troupes de base",
+      }),
+      { target: { value: "4" } },
+    );
+    fireEvent.change(screen.getByLabelText("Unité de production de troupes"), {
+      target: { value: "1000000" },
+    });
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Heures Troupes reçues" }),
+      { target: { value: "2" } },
+    );
+
+    const goldBonus = screen
+      .getByText("Bonus Or obtenu")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    const troopsBonus = screen
+      .getByText("Bonus Troupes obtenu")
+      .closest(".calculator-stat")!
+      .querySelector("strong")!;
+    expect(goldBonus).toHaveTextContent("1k");
+    expect(troopsBonus).toHaveTextContent("8M");
+  });
+
+  it("renders the Or and Troupes blocks as two separate cards, not a mixed form", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Récompenses de Production" }),
+    );
+    // Bloc 91/M5: the reward card titles ("Or"/"Troupes") are <h2> now (were
+    // <h3> that skipped a level under the tool page's <h1>).
+    const goldCard = screen
+      .getByText("Or", { selector: "h2" })
+      .closest<HTMLElement>(".calculator-card")!;
+    const troopsCard = screen
+      .getByText("Troupes", { selector: "h2" })
+      .closest<HTMLElement>(".calculator-card")!;
+    expect(goldCard).not.toBe(troopsCard);
+    expect(
+      within(goldCard).getByRole("spinbutton", {
+        name: "Production d’or de base",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(troopsCard).getByRole("spinbutton", {
+        name: "Production de troupes de base",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("reacts immediately when player settings change", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    const settings = defaultPlayerSettings();
+    settings.level = 6;
+    settings.league = "legend";
+    window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
+      );
+    });
+    expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
+      "260/h",
+    );
+  });
+
+  it.each([
+    ["bronze", "130", "52", "100/h", "40/h"],
+    ["silver", "163", "59", "125/h", "45/h"],
+    ["gold", "228", "72", "175/h", "55/h"],
+    ["platinum", "228", "72", "175/h", "55/h"],
+    ["diamond", "260", "78", "200/h", "60/h"],
+    ["legend", "260", "78", "200/h", "60/h"],
+  ] as const)(
+    "shows the %s multipliers in all three City tools",
+    (league, boostedGold, boostedArmy, baseGold, baseArmy) => {
+      const settings = defaultPlayerSettings();
+      settings.league = league;
+      window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <CityCalculators />
+        </NextIntlClientProvider>,
+      );
+
+      expect(screen.getByTestId("city-cost-gold")).toHaveTextContent(
+        new RegExp(`^${boostedGold} →`),
+      );
+      expect(screen.getByTestId("city-cost-army")).toHaveTextContent(
+        new RegExp(`^${boostedArmy} →`),
+      );
+
+      fireEvent.click(
+        screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+      );
+      expect(screen.getByTestId("city-max-level-gold")).toHaveTextContent(
+        `${boostedGold} → ${boostedGold}`,
+      );
+      expect(screen.getByTestId("city-max-level-army")).toHaveTextContent(
+        `${boostedArmy} → ${boostedArmy}`,
+      );
+
+      fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+      expect(screen.getByTestId("city-production-gold")).toHaveTextContent(
+        baseGold,
+      );
+      expect(screen.getByTestId("city-production-army")).toHaveTextContent(
+        baseArmy,
+      );
+    },
+  );
+
+  it("shows the base city-only value first with a separate Stuff/Temple breakdown and the total in evidence", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    // La base de temple pour Prospérité (30%, cdc section 7.1) s'applique
+    // automatiquement même sans contribution de clan saisie (voir templeBase).
+    const breakdown = screen.getByTestId("city-cost-single-gold-start");
+    expect(breakdown).toHaveTextContent("Base200/h");
+    expect(breakdown).toHaveTextContent("Stuff0/h");
+    expect(breakdown).toHaveTextContent("Temple60/h");
+    expect(breakdown).toHaveTextContent("Or/h260/h");
+  });
+
+  it("splits gold/army bonuses between equipment and clan temple in the results", () => {
+    const settings = defaultPlayerSettings();
+    settings.league = "legend";
+    settings.equipmentSkills.prosperous = 10;
+    // Contribution des Templiers du clan uniquement (20%) ; la base de
+    // temple pour Prospérité (30%, cdc section 7.1) s'ajoute automatiquement
+    // pour un bonus de temple total de 50%.
+    settings.clanTemple.prosperous = 20;
+    // v: 2 marks this as already-current-format data (clan contribution
+    // only), so safePlayerSettings doesn't treat it as a pre-migration
+    // full-total save and subtract the base back out.
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({ ...settings, v: 2 }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const start = screen.getByTestId("city-cost-single-gold-start");
+    expect(start).toHaveTextContent("Base200/h");
+    expect(start).toHaveTextContent("Stuff20/h");
+    expect(start).toHaveTextContent("Temple100/h");
+    expect(start).toHaveTextContent("Or/h320/h");
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    const single = screen.getByTestId("city-max-level-single-gold");
+    expect(single).toHaveTextContent("Base200/h");
+    expect(single).toHaveTextContent("Stuff20/h");
+    expect(single).toHaveTextContent("Temple100/h");
+    expect(single).toHaveTextContent("Or/h320/h");
+  });
+
+  it("merges Coût de Ville's 2 result blocks into a single Total block (Bloc 33/C)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    // Only one result heading now — the old separate "Pour 1 ville" title
+    // is gone.
+    expect(screen.queryByText("Pour 1 ville")).not.toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const section = heading.closest("section")!;
+    for (const testId of [
+      "city-cost-total",
+      "city-cost-wall",
+      "city-cost-vp",
+      "city-cost-gold",
+      "city-cost-army",
+      "city-cost-single-gold-start",
+      "city-cost-single-army-start",
+      "city-cost-single-gold-target",
+      "city-cost-single-army-target",
+    ])
+      expect(within(section).getByTestId(testId)).toBeInTheDocument();
+  });
+
+  it("keeps Remparts as plain start/target levels, never multiplied by the city count (Bloc 33/C)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    const wallAtOne = screen.getByTestId("city-cost-wall").textContent;
+    const totalAtOne = screen.getByTestId("city-cost-total").textContent;
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Nombre de villes" }),
+      { target: { value: "5" } },
+    );
+    // Coût scales with the city count...
+    expect(screen.getByTestId("city-cost-total").textContent).not.toBe(
+      totalAtOne,
+    );
+    // ...Remparts (a level, identical for every upgraded city) does not.
+    expect(screen.getByTestId("city-cost-wall").textContent).toBe(wallAtOne);
+  });
+
+  it("merges Niveau Max Atteignable's 2 result blocks into a single Total block, verified against the real component (Bloc 33/L)", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    expect(
+      screen.queryByText("Ville seule (niveau atteint)"),
+    ).not.toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const section = heading.closest("section")!;
+    for (const testId of [
+      "max-level-result",
+      "city-max-level-wall",
+      "city-max-level-gold",
+      "city-max-level-army",
+      "city-max-level-single-gold",
+      "city-max-level-single-army",
+    ])
+      expect(within(section).getByTestId(testId)).toBeInTheDocument();
+  });
+
+  // Bloc 92/M2: the active tools tab is wired to its rendered tabpanel via
+  // matching aria-controls / id / aria-labelledby.
+  it("Bloc92/M2: wires each City tools tab to its tabpanel", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    const costTab = screen.getByRole("tab", { name: "Coût de Ville" });
+    expect(costTab).toHaveAttribute("id", "city-tools-tab-cost");
+    expect(costTab).toHaveAttribute("aria-controls", "city-tools-panel-cost");
+    const costPanel = document.getElementById("city-tools-panel-cost")!;
+    expect(costPanel).toHaveAttribute("role", "tabpanel");
+    expect(costPanel).toHaveAttribute("aria-labelledby", "city-tools-tab-cost");
+
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    const maxPanel = document.getElementById("city-tools-panel-max-level")!;
+    expect(maxPanel).toHaveAttribute("role", "tabpanel");
+    expect(maxPanel).toHaveAttribute(
+      "aria-labelledby",
+      "city-tools-tab-max-level",
+    );
+  });
+
+  // Bloc 92/H1: the cost result (placeholder + computed totals) lives in a
+  // permanently-mounted aria-live region.
+  it("Bloc92/H1: keeps the City cost result inside an aria-live region", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    // Bloc 92/A11y (Codex PR #116): the placeholder no longer carries its own
+    // role="status" (it would nest inside this live region); assert it sits in
+    // the live region by its class instead.
+    expect(
+      document.querySelector('[aria-live="polite"] .empty-state'),
+    ).not.toBeNull();
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name: "Légende",
+      }),
+    );
+    expect(
+      screen.getByTestId("city-cost-total").closest('[aria-live="polite"]'),
+    ).not.toBeNull();
+  });
+});

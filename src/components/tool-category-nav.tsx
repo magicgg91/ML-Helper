@@ -1,0 +1,57 @@
+"use client";
+
+import { Link, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { TabLabel } from "./tab-label";
+
+const categories = [
+  { label: "cities", slug: "villes" },
+  { label: "combat", slug: "combat" },
+  { label: "ranking", slug: "classement" },
+  { label: "skills", slug: "competences" },
+] as const;
+
+export function ToolCategoryNav({
+  availability,
+}: {
+  availability: Record<string, boolean>;
+}) {
+  const pathname = usePathname();
+  const t = useTranslations("tools");
+  return (
+    <nav className="category-nav" aria-label={t("navigation-label")}>
+      {categories.map((category) =>
+        availability[category.slug] ? (
+          <Link
+            className="category-btn"
+            aria-current={
+              pathname === `/tools/${category.slug}` ? "page" : undefined
+            }
+            href={`/tools/${category.slug}`}
+            key={category.slug}
+          >
+            {t(category.label)}
+          </Link>
+        ) : (
+          <button
+            className="category-btn"
+            // Bloc 94 (Codex PR #119): a category whose calculators are all
+            // disabled still has a routable page, and this branch used to drop
+            // the current-page marker entirely. With the tool <h1> sr-only and
+            // the breadcrumb gone, that left the page with nothing visible
+            // saying which category is open. aria-current also exposes the
+            // state to assistive tech, which this branch never did.
+            aria-current={
+              pathname === `/tools/${category.slug}` ? "page" : undefined
+            }
+            disabled
+            key={category.slug}
+            title={t("unavailable")}
+          >
+            <TabLabel label={t(category.label)} badge={t("unavailable")} />
+          </button>
+        ),
+      )}
+    </nav>
+  );
+}

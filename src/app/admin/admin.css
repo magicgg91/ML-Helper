@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 theme for the admin shell (shadcn/ui components), scoped to
+ * /admin by only being imported from src/app/admin/layout.tsx. No new
+ * colors: every token below aliases the app-wide custom properties already
+ * defined in src/app/globals.css, so shadcn components automatically follow
+ * the existing dark/light toggle (data-theme on <html>) instead of carrying
+ * a second, disconnected palette.
+ */
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--bg-panel);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--bg-panel-raised);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent-strong);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--bg-panel-raised);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--bg-panel);
+  --color-muted-foreground: var(--text-dim);
+  --color-accent: var(--bg-panel-raised);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--ember);
+  --color-destructive-foreground: var(--bg);
+  --color-success: var(--emerald-bright);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+  --radius-lg: 0.6rem;
+  --radius-md: calc(0.6rem - 2px);
+  --radius-sm: calc(0.6rem - 4px);
+}

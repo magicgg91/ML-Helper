@@ -1,61 +1,59 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo } from "react";
 import { NumberStepper } from "./number-stepper";
+import { LeagueButtons } from "./league-select";
+import { usePersistedState } from "./use-persisted-state";
+import { formatSkillPercentValue } from "../lib/format";
+import { templarRates } from "../lib/gems-templars";
 import {
   allocateSkillPoints,
   allocatedSkillPoints,
   availableSkillPoints,
-  clanTempleMinimums,
+  combinedSkillPercent,
   defaultPlayerSettings,
   fitSkillPointsToBudget,
-  leagues,
+  skillCapForLeague,
   skillKeys,
   skillPercent,
   templarKeys,
-  type League,
+  templeBase,
+  templePercent,
+  templeSkillBreakdown,
+  type LeagueSelection,
+  type NumberMap,
   type PlayerSettings,
   type SkillKey,
   type TemplarKey,
 } from "../lib/player-settings";
 
 export const playerStorageKey = "mlhelper_player_params";
+export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
 
-const skillLabels: Record<SkillKey, string> = {
-  striker: "Attaque",
-  brave: "Bravoure",
-  scavenger: "Charognard",
-  guardian: "Défense",
-  fearless: "Intrépide",
-  prosperous: "Prospérité",
-  recruiter: "Recruteur",
-  cautious: "Récupération",
-  salvager: "Recycleur",
-  rusher: "Vitesse",
-};
+// v1 stored the clan-temple field as the full temple total (base + clan
+// contribution); v2 stores only the clan contribution and adds the
+// confirmed base automatically. Bump this and extend the migration below
+// whenever the persisted shape changes again.
+const currentSettingsVersion = 2;
 
-const templarLabels: Record<TemplarKey, string> = {
-  striker: "Attaque",
-  guardian: "Défense",
-  prosperous: "Or",
-  recruiter: "Recruteur",
-  rusher: "Vitesse",
-};
+function isTemplarKey(key: SkillKey): key is TemplarKey {
+  return (templarKeys as readonly string[]).includes(key);
+}
 
-const leagueLabels: Record<League, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-  diamond: "Diamant",
-  legend: "Légende",
-};
-
-function safeSettings(raw: string): PlayerSettings {
+export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
   try {
-    const parsed = JSON.parse(raw) as Partial<PlayerSettings>;
+    const parsed = JSON.parse(raw) as Partial<PlayerSettings> & {
+      v?: number;
+    };
     if (!("equipmentSkills" in parsed)) return fallback;
+    const clanTemple = { ...fallback.clanTemple, ...parsed.clanTemple };
+    if ((parsed.v ?? 1) < currentSettingsVersion && parsed.clanTemple) {
+      for (const key of templarKeys) {
+        clanTemple[key] = Math.max(0, clanTemple[key] - templeBase[key]);
+      }
+    }
     return {
       ...fallback,
       ...parsed,
@@ -65,29 +63,77 @@ function safeSettings(raw: string): PlayerSettings {
       },
       skillPoints: { ...fallback.skillPoints, ...parsed.skillPoints },
       templars: { ...fallback.templars, ...parsed.templars },
-      clanTemple: { ...fallback.clanTemple, ...parsed.clanTemple },
+      clanTemple,
     };
   } catch {
     return fallback;
   }
 }
 
+// Overwrites only the "Statistiques données par l'équipement" block —
+// never skillPoints (Points de compétence) or clanTemple (Bonus de
+// temple), which stay independent per cdc section 7.1. Used by the Stuff
+// simulator's transfer button so the two features never need to know
+// about each other's shape beyond this one map.
+export function replaceEquipmentSkills(equipmentSkills: NumberMap<SkillKey>) {
+  const saved = window.localStorage.getItem(playerStorageKey);
+  const current = saved ? safePlayerSettings(saved) : defaultPlayerSettings();
+  const next: PlayerSettings = { ...current, equipmentSkills };
+  window.localStorage.setItem(
+    playerStorageKey,
+    JSON.stringify({ ...next, v: currentSettingsVersion }),
+  );
+  window.dispatchEvent(
+    new CustomEvent(playerSettingsChangedEvent, { detail: next }),
+  );
+}
+
 export function PlayerSettingsPanel() {
-  const [settings, setSettings] = useState(defaultPlayerSettings);
-  const [loaded, setLoaded] = useState(false);
+  const locale = useLocale();
+  const t = useTranslations("player-settings");
+  const game = useTranslations("game");
+  // Bloc 93/F3: shares the load/loaded/save triplet with both simulators.
+  // `safePlayerSettings` migrates rather than rejects (it always returns a
+  // value), so this `parse` never yields undefined — the version stamp lives
+  // in `serialize`, and the cross-source broadcast in `onPersist`.
+  const [settings, setSettings] = usePersistedState(playerStorageKey, {
+    initial: defaultPlayerSettings,
+    parse: safePlayerSettings,
+    serialize: (value) =>
+      JSON.stringify({ ...value, v: currentSettingsVersion }),
+    onPersist: (value) =>
+      window.dispatchEvent(
+        new CustomEvent(playerSettingsChangedEvent, { detail: value }),
+      ),
+    // This panel has always read storage on a microtask, unlike the two
+    // simulators. It matters here: a macrotask lets the Stuff simulator's
+    // transfer (and the user's own edits) land first, and the deferred read
+    // then overwrites them.
+    schedule: queueMicrotask,
+  });
 
+  // Picks up a write from another source (e.g. the Stuff simulator's
+  // transfer button) while this panel is already mounted. Guarded by a
+  // content comparison, not just re-parsing on every event: this panel's
+  // own persistence effect below also dispatches this same event on every
+  // local edit, and replacing state with a new-but-identical object on
+  // every keystroke would re-trigger that effect indefinitely.
   useEffect(() => {
-    queueMicrotask(() => {
+    function syncFromStorage() {
       const saved = window.localStorage.getItem(playerStorageKey);
-      if (saved) setSettings(safeSettings(saved));
-      setLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (loaded)
-      window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
-  }, [loaded, settings]);
+      if (!saved) return;
+      const next = safePlayerSettings(saved);
+      setSettings((current) =>
+        JSON.stringify(current) === JSON.stringify(next) ? current : next,
+      );
+    }
+    window.addEventListener(playerSettingsChangedEvent, syncFromStorage);
+    window.addEventListener("storage", syncFromStorage);
+    return () => {
+      window.removeEventListener(playerSettingsChangedEvent, syncFromStorage);
+      window.removeEventListener("storage", syncFromStorage);
+    };
+  }, [setSettings]);
 
   const available = availableSkillPoints(settings.level, settings.league);
   const allocated = allocatedSkillPoints(settings.skillPoints);
@@ -98,8 +144,18 @@ export function PlayerSettingsPanel() {
   const vp = settings.vp * settings.vpUnit;
   const summary = useMemo(
     () =>
-      `${leagueLabels[settings.league]} · Niveau ${settings.level} · ${Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 2 }).format(vp)} VP · ${templarTotal} templier${templarTotal > 1 ? "s" : ""}`,
-    [settings.league, settings.level, templarTotal, vp],
+      t("summary", {
+        league: settings.league
+          ? game(`leagues.${settings.league}`)
+          : t("league-undefined"),
+        level: settings.level,
+        vp: Intl.NumberFormat(locale, {
+          notation: "compact",
+          maximumFractionDigits: 2,
+        }).format(vp),
+        templarTotal,
+      }),
+    [game, locale, settings.league, settings.level, t, templarTotal, vp],
   );
 
   const setLevel = (level: number) =>
@@ -113,7 +169,7 @@ export function PlayerSettingsPanel() {
       ),
     }));
 
-  const setLeague = (league: League) =>
+  const setLeague = (league: LeagueSelection) =>
     setSettings((current) => ({
       ...current,
       league,
@@ -140,38 +196,98 @@ export function PlayerSettingsPanel() {
     <aside className="player-settings" aria-labelledby="player-settings-title">
       <details>
         <summary>
-          <span id="player-settings-title">Paramètres du joueur</span>
-          <small>{summary}</small>
+          {/* Bloc 68/G: wraps the title + one-line summary so the mobile
+              breakpoint can stack them (globals.css's own
+              .player-summary-row1 rule, previously unused by any
+              component) — the skills-breakdown line below is unaffected,
+              it already sits on its own line either way. */}
+          <div className="player-summary-row1">
+            <span id="player-settings-title">{t("title")}</span>
+            <small>{summary}</small>
+          </div>
+          <small
+            className="player-summary-line2"
+            data-testid="player-summary-line2"
+          >
+            {[skillKeys.slice(0, 5), skillKeys.slice(5)].map(
+              (skillGroup, groupIndex) => (
+                <span className="player-summary-skill-group" key={groupIndex}>
+                  {skillGroup.map((key, index) => {
+                    // Bloc 87/A: the transferred player summary shows skill
+                    // percentages too — round them to 1 decimal like every
+                    // other skill-% display, so Transfer can't reintroduce a
+                    // 2-decimal value (Codex review on PR #104).
+                    const format = (value: number) =>
+                      formatSkillPercentValue(value, locale);
+                    const breakdown = isTemplarKey(key)
+                      ? templeSkillBreakdown(key, settings)
+                      : null;
+                    const total = breakdown
+                      ? breakdown.total
+                      : combinedSkillPercent(key, settings);
+                    return (
+                      <span key={key}>
+                        {index > 0 ? " · " : ""}
+                        <span className="sk-name">
+                          {game(`skills-short.${key}`)}
+                        </span>{" "}
+                        <span className="sk-value component-total">
+                          {format(total)}%
+                          {breakdown && (
+                            <span className="sk-breakdown">
+                              {" ("}
+                              <span className="component-equipment">
+                                {format(breakdown.equipment)}%
+                              </span>
+                              {" + "}
+                              <span className="component-points">
+                                {format(breakdown.points)}%
+                              </span>
+                              {" + "}
+                              <span className="component-temple">
+                                {format(breakdown.temple)}%
+                              </span>
+                              {")"}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                    );
+                  })}
+                </span>
+              ),
+            )}
+          </small>
         </summary>
         <div className="player-settings-body">
           <div className="settings-grid settings-grid-primary">
-            <label>
-              Ligue
-              <select
+            {/* Bloc 69/D: a visible "Ligue" title above the buttons — the
+                league picker was the only field in this grid without one
+                (Level/VP both already show their label above their own
+                control). */}
+            <div className="settings-grid-league-field">
+              <span className="settings-grid-league-label">{t("league")}</span>
+              <LeagueButtons
+                label={t("league")}
                 value={settings.league}
-                onChange={(event) => setLeague(event.target.value as League)}
-              >
-                {leagues.map((league) => (
-                  <option key={league} value={league}>
-                    {leagueLabels[league]}
-                  </option>
-                ))}
-              </select>
-            </label>
+                onChange={setLeague}
+                className="league-buttons-grid"
+              />
+            </div>
             <label>
-              Niveau du joueur
+              {t("player-level")}
               <NumberStepper
-                label="Niveau du joueur"
+                label={t("player-level")}
                 value={settings.level}
                 min={1}
                 onChange={setLevel}
               />
             </label>
             <label>
-              VP du joueur
+              {t("player-vp")}
               <div className="unit-input">
                 <NumberStepper
-                  label="VP du joueur"
+                  label={t("player-vp")}
                   value={settings.vp}
                   min={0}
                   step={0.1}
@@ -180,7 +296,7 @@ export function PlayerSettingsPanel() {
                   }
                 />
                 <select
-                  aria-label="Unité des VP"
+                  aria-label={t("vp-unit")}
                   value={settings.vpUnit}
                   onChange={(event) =>
                     setSettings((current) => ({
@@ -200,20 +316,21 @@ export function PlayerSettingsPanel() {
             </label>
           </div>
 
-          <SettingsSection title="Compétences avec équipement">
-            <p className="settings-help">
-              Valeurs réellement utilisées par les futurs simulateurs. Elles
-              restent indépendantes de la distribution des points.
-            </p>
+          <SettingsSection
+            title={t("equipment-skills.title")}
+            className="settings-section-equipment"
+          >
             <div className="settings-grid">
               {skillKeys.map((key) => (
                 <label key={key}>
-                  {skillLabels[key]} %
+                  {game(`skills.${key}`)} %
                   <NumberStepper
-                    label={`${skillLabels[key]} avec équipement`}
+                    label={t("equipment-skills.field", {
+                      skill: game(`skills.${key}`),
+                    })}
                     value={settings.equipmentSkills[key]}
                     min={0}
-                    max={key === "brave" || key === "fearless" ? 90 : undefined}
+                    max={skillCapForLeague(key, settings.league)}
                     step={0.5}
                     onChange={(value) =>
                       setSettings((current) => ({
@@ -230,20 +347,21 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Distribution des points">
-            <p className="settings-help">
-              Outil de planification uniquement : il ne modifie jamais les
-              compétences avec équipement.
-            </p>
+          <SettingsSection
+            title={t("skill-points.title")}
+            className="settings-section-points"
+          >
             <div className="points-summary">
               <span>
-                Disponibles : <strong>{available}</strong>
+                {t("skill-points.available")}:{" "}
+                <strong className="stat-highlight">{available}</strong>
               </span>
               <span>
-                Alloués : <strong>{allocated}</strong>
+                {t("skill-points.allocated")}: <strong>{allocated}</strong>
               </span>
               <span>
-                Restants : <strong>{available - allocated}</strong>
+                {t("skill-points.remaining")}:{" "}
+                <strong>{available - allocated}</strong>
               </span>
               <button
                 type="button"
@@ -254,21 +372,23 @@ export function PlayerSettingsPanel() {
                   }))
                 }
               >
-                Réinitialiser
+                {t("skill-points.reset")}
               </button>
             </div>
             <div className="settings-grid">
               {skillKeys.map((key) => (
                 <label key={key}>
                   <span>
-                    {skillLabels[key]}{" "}
-                    <output>
+                    {game(`skills.${key}`)}{" "}
+                    <output className="stat-highlight">
                       {skillPercent(key, settings.skillPoints, settings.league)}
                       %
                     </output>
                   </span>
                   <NumberStepper
-                    label={`Points ${skillLabels[key]}`}
+                    label={t("skill-points.field", {
+                      skill: game(`skills.${key}`),
+                    })}
                     value={settings.skillPoints[key]}
                     min={0}
                     onChange={(value) => setSkillPoints(key, value)}
@@ -278,13 +398,17 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Templiers personnels">
+          <SettingsSection title={t("templars.title")}>
             <div className="settings-grid">
               {templarKeys.map((key) => (
                 <label key={key}>
-                  Templiers {templarLabels[key]}
+                  {t("templars.field", {
+                    templar: game(`templars.${key}`),
+                  })}
                   <NumberStepper
-                    label={`Templiers ${templarLabels[key]}`}
+                    label={t("templars.field", {
+                      templar: game(`templars.${key}`),
+                    })}
                     value={settings.templars[key]}
                     min={0}
                     max={20}
@@ -303,29 +427,47 @@ export function PlayerSettingsPanel() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Bonus de Temple du Clan">
-            <p className="settings-help">
-              Bonus total actif du clan, saisi directement. Le stepper utilise
-              un pas uniforme et ne dérive pas du taux des Templiers personnels.
-            </p>
+          <SettingsSection
+            title={t("clan-temple.title")}
+            className="settings-section-temple"
+          >
+            <p className="settings-help">{t("clan-temple.help")}</p>
             <div className="settings-grid">
-              {templarKeys.map((key) => (
-                <label key={key}>
-                  Temple {templarLabels[key]} %
-                  <NumberStepper
-                    label={`Temple ${templarLabels[key]}`}
-                    value={settings.clanTemple[key]}
-                    min={clanTempleMinimums[key]}
-                    step={1}
-                    onChange={(value) =>
-                      setSettings((current) => ({
-                        ...current,
-                        clanTemple: { ...current.clanTemple, [key]: value },
-                      }))
-                    }
-                  />
-                </label>
-              ))}
+              {templarKeys.map((key) => {
+                return (
+                  <label key={key}>
+                    <span>
+                      {t("clan-temple.field", {
+                        templar: game(`templars.${key}`),
+                      })}{" "}
+                      <output
+                        className="component-temple"
+                        data-testid={`clan-temple-total-${key}`}
+                      >
+                        {templePercent(key, settings.clanTemple).toLocaleString(
+                          locale,
+                          { maximumFractionDigits: 2 },
+                        )}
+                        %
+                      </output>
+                    </span>
+                    <NumberStepper
+                      label={t("clan-temple.field", {
+                        templar: game(`templars.${key}`),
+                      })}
+                      value={settings.clanTemple[key]}
+                      min={0}
+                      step={templarRates[key]}
+                      onChange={(value) =>
+                        setSettings((current) => ({
+                          ...current,
+                          clanTemple: { ...current.clanTemple, [key]: value },
+                        }))
+                      }
+                    />
+                  </label>
+                );
+              })}
             </div>
           </SettingsSection>
         </div>
@@ -336,10 +478,19 @@ export function PlayerSettingsPanel() {
 
 function SettingsSection({
   title,
+  className,
   children,
-}: Readonly<{ title: string; children: React.ReactNode }>) {
+}: Readonly<{
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}>) {
   return (
-    <details className="settings-section">
+    <details
+      className={
+        className ? `settings-section ${className}` : "settings-section"
+      }
+    >
       <summary>{title}</summary>
       <div className="settings-section-body">{children}</div>
     </details>

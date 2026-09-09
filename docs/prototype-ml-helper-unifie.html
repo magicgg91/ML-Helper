@@ -8,10 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #12151b;
-    --bg-panel: #191d25;
-    --bg-panel-raised: #20252f;
-    --border: #2b313d;
+    --bg: #0a0f1e;
+    --bg-panel: #0f1729;
+    --bg-panel-raised: #161f36;
+    --border: #26324d;
     --gold: #c9a04a;
     --gold-bright: #e0bb63;
     --emerald: #4a9179;
@@ -27,14 +27,39 @@
     --rarity-epique: #5b8bc9;
     --rarity-mythique: #a678d4;
     --rarity-legendaire: #d4a13a;
+    --glow-a: rgba(139,107,184,0.08);
+    --glow-b: rgba(74,145,121,0.07);
+  }
+  [data-theme="light"] {
+    --bg: #dfe2e9;
+    --bg-panel: #d3d7e0;
+    --bg-panel-raised: #c5cad6;
+    --border: #aab0c2;
+    --gold: #9c7328;
+    --gold-bright: #7d5c1f;
+    --emerald: #2f7a5f;
+    --emerald-bright: #21603f;
+    --ember: #a3432a;
+    --violet: #6a4f96;
+    --violet-bright: #543c7d;
+    --text: #1b2030;
+    --text-dim: #454d63;
+    --text-faint: #6b7288;
+    --rarity-commun: #5f6570;
+    --rarity-rare: #2f7a5f;
+    --rarity-epique: #2f5f96;
+    --rarity-mythique: #7a4fa8;
+    --rarity-legendaire: #9c7328;
+    --glow-a: rgba(106,79,150,0.05);
+    --glow-b: rgba(47,122,95,0.05);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--bg);
     background-image:
-      radial-gradient(ellipse at top left, rgba(201,160,74,0.06), transparent 50%),
-      radial-gradient(ellipse at bottom right, rgba(74,145,121,0.06), transparent 50%);
+      radial-gradient(ellipse at top left, var(--glow-a), transparent 50%),
+      radial-gradient(ellipse at bottom right, var(--glow-b), transparent 50%);
     color: var(--text);
     font-family: 'IBM Plex Sans', sans-serif;
     min-height: 100vh;
@@ -42,7 +67,14 @@
   }
   .wrap { max-width: 1100px; margin: 0 auto; }
 
-  header { text-align: center; margin-bottom: 24px; }
+  header { text-align: center; margin-bottom: 24px; position: relative; }
+  #theme-toggle {
+    position: absolute; top: 0; right: 0;
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px;
+    width: 38px; height: 38px; font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #theme-toggle:hover { border-color: var(--gold); }
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -413,6 +445,20 @@
     font-size: 12.5px; padding: 10px 14px; border-radius: 8px; margin-top: 14px; display: none;
   }
   .warning-box.show { display: block; }
+  .pagination-row {
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    padding: 14px 0 4px; flex-wrap: wrap;
+  }
+  .pagination-row button {
+    background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 6px 11px;
+    border-radius: 6px; cursor: pointer; min-width: 34px;
+  }
+  .pagination-row button:hover { border-color: var(--gold); color: var(--gold-bright); }
+  .pagination-row button.active { background: var(--bg-panel-raised); border-color: var(--gold); color: var(--gold-bright); }
+  .pagination-row button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .levelup-tables-row { display: flex; gap: 18px; flex-wrap: wrap; }
+  .levelup-tables-row table { flex: 1; min-width: 220px; }
   .info-box {
     background: rgba(139,107,184,0.08); border: 1px solid rgba(139,107,184,0.25);
     color: #c9b8dd; font-size: 12px; padding: 10px 14px; border-radius: 8px; margin-top: 14px;
@@ -544,24 +590,22 @@
   }
 
   /* ===== Styles Échelle Classement ===== */
-  .rank-scale-wrap { position: relative; height: 110px; margin: 10px 0 24px; padding: 0 8px; }
+  .rank-scale-wrap { position: relative; height: 150px; margin: 10px 0 24px; padding: 0 8px; }
   .rank-scale-axis { position: absolute; left: 8px; right: 8px; top: 55px; height: 2px; background: var(--border); }
   .rank-scale-segment { position: absolute; top: 48px; height: 14px; border-radius: 3px; border-left: 1px solid var(--bg-panel); border-right: 1px solid var(--bg-panel); }
-  .rank-scale-segment.c0 { background: rgba(201,160,74,0.4); }
-  .rank-scale-segment.c1 { background: rgba(74,145,121,0.4); }
-  .rank-scale-segment.c2 { background: rgba(139,107,184,0.4); }
-  .rank-scale-segment.c3 { background: rgba(91,139,201,0.4); }
-  .rank-scale-segment.c4 { background: rgba(192,90,62,0.4); }
-  .rank-scale-segment.c5 { background: rgba(212,161,58,0.4); }
   .rank-scale-tick { position: absolute; top: 49px; width: 1px; height: 12px; background: var(--text-faint); opacity: 0.35; }
   .rank-scale-tick-label { position: absolute; top: 64px; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-faint); opacity: 0.6; }
   .rank-scale-marker { position: absolute; top: 55px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
   .rank-scale-marker .lbl { position: absolute; white-space: nowrap; text-align: center; font-family: 'JetBrains Mono', monospace; }
-  .rank-scale-marker .lbl.above { bottom: 14px; }
-  .rank-scale-marker .lbl.below { top: 14px; }
+  .rank-scale-marker .lbl.above { bottom: 34px; }
+  .rank-scale-marker .lbl.below { top: 34px; }
   .rank-scale-marker .lbl .pct { font-size: 12px; font-weight: 600; color: var(--gold-bright); }
   .rank-scale-marker .lbl .target { font-size: 9.5px; color: var(--emerald-bright); }
-  .rank-scale-marker .lbl .reward { font-size: 9.5px; color: var(--text-dim); }
+  .rank-scale-player-line { position: absolute; top: 38px; bottom: 38px; width: 2px; background: #e0483f; transform: translateX(-50%); z-index: 3; }
+  .rank-scale-player-line::after {
+    content: attr(data-pct); position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: #e0483f; white-space: nowrap;
+  }
 
   /* ===== Styles Simulateur de Stuff ===== */
   .stuff-blocks-row { display: flex; flex-direction: column; gap: 14px; }
@@ -582,6 +626,11 @@
   .stuff-cell .rarity-dot { width: 12px; height: 12px; border-radius: 50%; margin: 3px 0; }
   .stuff-cell .star-count { font-size: 9px; color: var(--gold-bright); font-family: 'JetBrains Mono', monospace; }
   .stuff-cell .gem-count { font-size: 8px; color: var(--violet-bright); font-family: 'JetBrains Mono', monospace; }
+  .gem-badges { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin-top: 2px; }
+  .gem-badge {
+    font-size: 7px; font-family: 'JetBrains Mono', monospace; color: #fff;
+    padding: 1px 3px; border-radius: 4px; line-height: 1.3; text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+  }
   .stuff-config-panel { flex: 1 1 220px; min-width: 220px; }
   .stuff-config-panel .field { margin-bottom: 10px; }
   .stuff-config-panel .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 5px; }
@@ -599,6 +648,7 @@
 <body>
 <div class="wrap">
   <header>
+    <button id="theme-toggle" aria-label="Changer de thème">🌙</button>
     <h1>ML Helper - Simulateurs Million Lords</h1>
   </header>
 
@@ -611,12 +661,13 @@
         <div class="field">
           <label>Ligue</label>
           <select id="player-league">
-            <option value="bronze" disabled>Bronze</option>
-            <option value="silver" disabled>Argent</option>
-            <option value="gold" disabled>Or</option>
-            <option value="platinum" disabled>Platine</option>
-            <option value="diamond" disabled>Diamant</option>
-            <option value="legend" selected>Légende</option>
+            <option value="" selected disabled>— Choisir une ligue —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
           </select>
         </div>
         <div class="field">
@@ -638,7 +689,7 @@
         </div>
       </div>
 
-      <div class="subsection-toggle" id="skills-toggle">▸ Compétences avec équipement</div>
+      <div class="subsection-toggle" id="skills-toggle">▸ Statistiques données par l'équipement</div>
       <div class="subsection-body" id="skills-body">
         <div class="field"><label>Attaque %</label><input type="number" id="skill-striker" value="0" min="0" step="0.5"></div>
         <div class="field"><label>Bravoure %</label><input type="number" id="skill-brave" value="0" min="0" max="90" step="0.5"></div>
@@ -652,7 +703,7 @@
         <div class="field"><label>Vitesse %</label><input type="number" id="skill-rusher" value="0" min="0" step="0.5"></div>
       </div>
 
-      <div class="subsection-toggle" id="points-toggle">▸ Distribution des points</div>
+      <div class="subsection-toggle" id="points-toggle">▸ Points de compétence</div>
       <div class="subsection-body" id="points-body">
         <div style="grid-column:1/-1; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); margin-bottom:8px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
           <span>Points disponibles : <strong id="points-available" style="color:var(--gold-bright);">0</strong></span>
@@ -710,7 +761,7 @@
         <div class="field"><label>Templiers Recruteur</label><input type="number" id="templar-recruiter" value="0" min="0" max="20"></div>
         <div class="field"><label>Templiers Vitesse</label><input type="number" id="templar-rusher" value="0" min="0" max="20"></div>
       </div>
-      <div class="subsection-toggle" id="clan-temple-toggle">▸ Bonus de Temple du Clan</div>
+      <div class="subsection-toggle" id="clan-temple-toggle">▸ Bonus de temple</div>
       <div class="subsection-body" id="clan-temple-body">
         <div style="grid-column: 1/-1; font-size: 11px; color: var(--text-faint); margin-bottom: 4px;">Bonus total actif pour ton clan (base du temple + templiers de tous les membres) — à saisir directement, pas calculable depuis tes seuls templiers. Minimum = base du temple sans aucun templier investi.</div>
         <div class="field"><label>Temple Attaque %</label><input type="number" id="clan-temple-striker" value="20" min="20" step="0.25"></div>
@@ -725,7 +776,7 @@
   <!-- ================= CATEGORY BAR ================= -->
   <div class="category-row">
     <button class="category-btn enabled selected" data-category="cite">Villes</button>
-    <button class="category-btn">Combat</button>
+    <button class="category-btn enabled" data-category="combat">Combat</button>
     <button class="category-btn enabled" data-category="classement">Classement</button>
     <button class="category-btn enabled" data-category="competences">Compétences</button>
     <button class="category-btn enabled" data-category="referentiels">Référentiels</button>
@@ -740,6 +791,10 @@
   <nav class="tabs" id="tabs-classement" style="display:none;">
     <button class="active" data-calc="ranking">Classement</button>
   </nav>
+  <nav class="tabs" id="tabs-combat" style="display:none;">
+    <button class="active" data-calc="xp-rate">Taux de gain XP</button>
+    <button data-calc="demo-troops">Troupes attaque démo</button>
+  </nav>
   <nav class="tabs" id="tabs-competences" style="display:none;">
     <button class="active" data-calc="stuff-simulator">Simulateur de Stuff</button>
     <button data-calc="equip-compare">Comparaison de stuff</button>
@@ -749,14 +804,25 @@
   <nav class="tabs" id="tabs-referentiels" style="display:none;">
     <button class="active" data-calc="equip-combat">Équipements de Combat</button>
     <button data-calc="equip-expedition">Équipement d'Expédition</button>
+    <button data-calc="level-up">Level Up</button>
   </nav>
 
   <!-- ================= CALC: CITY COST ================= -->
   <div class="calc-panel active" id="calc-city-cost">
     <div class="card">
-      <h2>Coût d'upgrade</h2>
-      <div class="desc">Estime le coût pour upgrader une ou plusieurs villes d'un niveau A à un niveau B.</div>
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="cost-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="cost-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau de départ</label><input type="number" id="cost-a" value="1" min="1" max="200"></div>
         <div class="field"><label>Niveau cible</label><input type="number" id="cost-b" value="2" min="1" max="200"></div>
@@ -767,21 +833,21 @@
       <div class="compare-grid">
         <div class="compare-col">
           <div class="compare-tag">Départ</div>
-          <div class="stat-row"><span class="k">Mur</span><span class="v" id="c1-wall-a">—</span></div>
+          <div class="stat-row"><span class="k">Remparts</span><span class="v" id="c1-wall-a">—</span></div>
           <div class="stat-row"><span class="k">VP</span><span class="v gold-c" id="c1-vp-a">—</span></div>
-          <div class="stat-row"><span class="k">Gold/h</span><span class="v" id="c1-gold-a">—</span></div>
+          <div class="stat-row"><span class="k">Production d'or</span><span class="v" id="c1-gold-a">—</span></div>
           <div class="stat-row-sub" id="c1-gold-a-sub">—</div>
-          <div class="stat-row"><span class="k">Army/h</span><span class="v" id="c1-army-a">—</span></div>
+          <div class="stat-row"><span class="k">Production d'armée</span><span class="v" id="c1-army-a">—</span></div>
           <div class="stat-row-sub" id="c1-army-a-sub">—</div>
         </div>
         <div class="compare-arrow">→</div>
         <div class="compare-col">
           <div class="compare-tag">Cible</div>
-          <div class="stat-row"><span class="k">Mur</span><span class="v" id="c1-wall-b">—</span></div>
+          <div class="stat-row"><span class="k">Remparts</span><span class="v" id="c1-wall-b">—</span></div>
           <div class="stat-row"><span class="k">VP</span><span class="v gold-c" id="c1-vp-b">—</span></div>
-          <div class="stat-row"><span class="k">Gold/h</span><span class="v" id="c1-gold-b">—</span></div>
+          <div class="stat-row"><span class="k">Production d'or</span><span class="v" id="c1-gold-b">—</span></div>
           <div class="stat-row-sub" id="c1-gold-b-sub">—</div>
-          <div class="stat-row"><span class="k">Army/h</span><span class="v" id="c1-army-b">—</span></div>
+          <div class="stat-row"><span class="k">Production d'armée</span><span class="v" id="c1-army-b">—</span></div>
           <div class="stat-row-sub" id="c1-army-b-sub">—</div>
         </div>
       </div>
@@ -800,17 +866,17 @@
       <div class="compare-grid">
         <div class="compare-col">
           <div class="compare-tag">Départ</div>
-          <div class="stat-row"><span class="k">Gold/h</span><span class="v" id="ct-gold-a">—</span></div>
+          <div class="stat-row"><span class="k">Production d'or</span><span class="v" id="ct-gold-a">—</span></div>
           <div class="stat-row-sub" id="ct-gold-a-sub">—</div>
-          <div class="stat-row"><span class="k">Army/h</span><span class="v" id="ct-army-a">—</span></div>
+          <div class="stat-row"><span class="k">Production d'armée</span><span class="v" id="ct-army-a">—</span></div>
           <div class="stat-row-sub" id="ct-army-a-sub">—</div>
         </div>
         <div class="compare-arrow">→</div>
         <div class="compare-col">
           <div class="compare-tag">Cible</div>
-          <div class="stat-row"><span class="k">Gold/h</span><span class="v" id="ct-gold-b">—</span></div>
+          <div class="stat-row"><span class="k">Production d'or</span><span class="v" id="ct-gold-b">—</span></div>
           <div class="stat-row-sub" id="ct-gold-b-sub">—</div>
-          <div class="stat-row"><span class="k">Army/h</span><span class="v" id="ct-army-b">—</span></div>
+          <div class="stat-row"><span class="k">Production d'armée</span><span class="v" id="ct-army-b">—</span></div>
           <div class="stat-row-sub" id="ct-army-b-sub">—</div>
         </div>
       </div>
@@ -820,9 +886,19 @@
   <!-- ================= CALC: CITY MAX LEVEL ================= -->
   <div class="calc-panel" id="calc-city-maxlevel">
     <div class="card">
-      <h2>Niveau max atteignable</h2>
-      <div class="desc">À partir d'un budget d'or, détermine le niveau maximum atteignable pour un groupe de villes.</div>
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="ml-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="ml-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau de départ</label><input type="number" id="ml-a" value="1" min="1" max="200"></div>
         <div class="field">
@@ -848,8 +924,8 @@
       </div>
       <div class="section-label">Production (ensemble des villes)</div>
       <div class="totals-grid">
-        <div class="total-box"><div class="label">Gold/h avant → après (perso+temple)</div><div class="value" id="ml-gold-prod">—</div></div>
-        <div class="total-box"><div class="label">Army/h avant → après (perso+temple)</div><div class="value" id="ml-army-prod">—</div></div>
+        <div class="total-box"><div class="label">Production d'or avant → après (perso+temple)</div><div class="value" id="ml-gold-prod">—</div></div>
+        <div class="total-box"><div class="label">Production d'armée avant → après (perso+temple)</div><div class="value" id="ml-army-prod">—</div></div>
       </div>
     </div>
   </div>
@@ -859,9 +935,19 @@
   <!-- ================= CALC: PRODUCTION (fusion Ville + Totale + Récompenses) ================= -->
   <div class="calc-panel" id="calc-production">
     <div class="card">
-      <h2>Production</h2>
-      <div class="desc">Production par ville, production totale détaillée (base / stuff / temple), et bonus des récompenses reçues en heures de production.</div>
       <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="prod-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
         <div class="field"><label>Nombre de villes</label><input type="number" id="prod-nb" value="1" min="1"></div>
         <div class="field"><label>Niveau moyen des villes</label><input type="number" id="prod-level" value="1" min="1" max="200"></div>
       </div>
@@ -871,9 +957,9 @@
       <div class="section-label">Par ville</div>
       <div class="totals-grid">
         <div class="total-box"><div class="label">VP</div><div class="value" id="p1-vp">—</div></div>
-        <div class="total-box"><div class="label">Mur</div><div class="value" id="p1-wall">—</div></div>
-        <div class="total-box"><div class="label">Gold/h</div><div class="value" id="p1-gold">—</div></div>
-        <div class="total-box"><div class="label">Army/h</div><div class="value" id="p1-army">—</div></div>
+        <div class="total-box"><div class="label">Remparts</div><div class="value" id="p1-wall">—</div></div>
+        <div class="total-box"><div class="label">Production d'or</div><div class="value" id="p1-gold">—</div></div>
+        <div class="total-box"><div class="label">Production d'armée</div><div class="value" id="p1-army">—</div></div>
       </div>
     </div>
 
@@ -921,17 +1007,16 @@
   <!-- ================= CALC: RANKING ================= -->
   <div class="calc-panel" id="calc-ranking">
     <div class="card">
-      <h2>Classement — Position ↔ Pourcentage</h2>
-      <div class="desc">Déduit le nombre total de joueurs à partir de ta position et ton pourcentage actuels, puis calcule le rang de chaque seuil repère (les seuils dépendent de ta ligue).</div>
       <div class="inputs-grid">
         <div class="field">
           <label>Ligue</label>
           <select id="rank-league">
-            <option value="bronze" disabled>Bronze</option>
+            <option value="" selected disabled>— Choisir une ligue —</option>
+            <option value="bronze">Bronze</option>
             <option value="silver">Argent</option>
-            <option value="gold" disabled>Or</option>
+            <option value="gold">Or</option>
             <option value="platinum">Platine</option>
-            <option value="diamond" selected>Diamant</option>
+            <option value="diamond">Diamant</option>
             <option value="legend">Légende</option>
           </select>
         </div>
@@ -943,9 +1028,9 @@
       <div class="totals-grid">
         <div class="total-box"><div class="label">Nombre total de joueurs (déduit)</div><div class="value" id="rank-total">—</div></div>
       </div>
-      <div class="section-label">Échelle visuelle (expérimental)</div>
+      <div class="section-label">Échelle visuelle</div>
       <div class="rank-scale-wrap" id="rank-scale-container"></div>
-      <div class="section-label">Rang correspondant à chaque seuil repère</div>
+      <div class="section-label">Tableau de classement</div>
       <div style="overflow-x:auto;">
       <table style="width:100%; border-collapse:collapse; font-size:13px; font-family:'JetBrains Mono',monospace;">
         <thead>
@@ -962,11 +1047,73 @@
     </div>
   </div>
 
+  <!-- ================= CALC: XP RATE ================= -->
+  <div class="calc-panel" id="calc-xp-rate">
+    <div class="card">
+      <div class="mode-switch">
+        <button class="active" data-xpmode="attacker">Je suis l'attaquant</button>
+        <button data-xpmode="target">Je suis la cible</button>
+      </div>
+      <div class="inputs-grid" style="margin-top:12px;">
+        <div class="field">
+          <label>Ma VP</label>
+          <div class="unit-field-group">
+            <input type="number" id="xp-vp-mine" value="0" min="0" step="1">
+            <select id="xp-vp-mine-unit">
+              <option value="1">×1</option>
+              <option value="1000">k</option>
+              <option value="1000000" selected>M</option>
+              <option value="1000000000">G</option>
+              <option value="1000000000000">T</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <table style="width:100%; border-collapse:collapse; font-size:13px; font-family:'JetBrains Mono',monospace;">
+        <thead><tr style="color:var(--text-faint); text-align:left;">
+          <th style="padding:6px 8px; border-bottom:1px solid var(--border);">Taux de gain d'XP</th>
+          <th style="padding:6px 8px; border-bottom:1px solid var(--border);">VP de l'adversaire</th>
+        </tr></thead>
+        <tbody id="xp-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= CALC: TROUPES ATTAQUE DÉMO ================= -->
+  <div class="calc-panel" id="calc-demo-troops">
+    <div class="card">
+      <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue de l'attaquant</label>
+          <select id="demo-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Niveau de la ville visée</label>
+          <input type="number" id="demo-city-level" value="1" min="1" max="200">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="totals-grid">
+        <div class="total-box"><div class="label">Remparts de la ville visée</div><div class="value" id="demo-wall">—</div></div>
+        <div class="total-box"><div class="label">Troupes maximum envoyables</div><div class="value emerald" id="demo-max-troops">—</div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= CALC: GEMMES ================= -->
   <div class="calc-panel" id="calc-gems">
     <div class="card">
-      <h2>Gemmes</h2>
-      <div class="desc">Jusqu'à 9 équipements × 3 emplacements de gemmes = 27 gemmes max par famille. Une famille peut mixer plusieurs compétences sur ses emplacements.</div>
       <div class="mode-switch">
         <button class="active" data-mode="optimize">Optimisation</button>
         <button data-mode="budget">Budget disponible</button>
@@ -1000,11 +1147,12 @@
         <div class="field">
           <label>Ligue</label>
           <select id="gem-league">
+            <option value="" selected disabled>— Choisir —</option>
             <option value="silver">Argent</option>
             <option value="gold">Or</option>
             <option value="platinum">Platine</option>
             <option value="diamond">Diamant</option>
-            <option value="legend" selected>Légende</option>
+            <option value="legend">Légende</option>
           </select>
         </div>
         <div class="field">
@@ -1049,8 +1197,6 @@
   <!-- ================= CALC: TEMPLAR ================= -->
   <div class="calc-panel" id="calc-templar">
     <div class="card">
-      <h2>Coût d'upgrade du Templier</h2>
-      <div class="desc">Coût en Pouciel pour augmenter un nombre de Templiers, et bonus que ça donnerait sur chacune des 5 compétences.</div>
       <div class="inputs-grid">
         <div class="field"><label>Nombre de départ</label><input type="number" id="templar-a" value="0" min="0" max="20"></div>
         <div class="field"><label>Nombre cible</label><input type="number" id="templar-b" value="1" min="0" max="20"></div>
@@ -1169,6 +1315,43 @@
     </div>
   </div>
 
+<div class="calc-panel" id="calc-level-up">
+    <div class="card">
+      <div class="inputs-grid">
+        <div class="field">
+          <label>Ligue</label>
+          <select id="levelup-league">
+            <option value="" selected disabled>— Choisir —</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Argent</option>
+            <option value="gold">Or</option>
+            <option value="platinum">Platine</option>
+            <option value="diamond">Diamant</option>
+            <option value="legend">Légende</option>
+          </select>
+        </div>
+      </div>
+      <div class="warning-box" id="levelup-warning" style="margin-top:12px;">⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.</div>
+    </div>
+    <div class="card table-wrap" id="levelup-table-card">
+      <div class="levelup-tables-row">
+        <table>
+          <thead>
+            <tr><th>Niveau</th><th>XP requis</th><th>Troupes</th><th>Récompense</th></tr>
+          </thead>
+          <tbody id="levelup-tbody-a"></tbody>
+        </table>
+        <table>
+          <thead>
+            <tr><th>Niveau</th><th>XP requis</th><th>Troupes</th><th>Récompense</th></tr>
+          </thead>
+          <tbody id="levelup-tbody-b"></tbody>
+        </table>
+      </div>
+      <div class="pagination-row" id="levelup-pagination"></div>
+    </div>
+  </div>
+
 <div class="calc-panel" id="calc-equip-compare">
     <div class="card">
       <div class="filters-row" style="flex-direction:column; gap:14px;">
@@ -1239,8 +1422,6 @@
   <!-- ================= CALC: SIMULATEUR DE STUFF ================= -->
   <div class="calc-panel" id="calc-stuff-simulator">
     <div class="card">
-      <h2>Simulateur de Stuff</h2>
-      <div class="desc">Configure ton équipement complet par bloc, et vois tes stats totales se calculer en direct. Sauvegardé automatiquement dans ton navigateur.</div>
     </div>
     <div class="card">
       <div class="section-label">Récapitulatif — toutes familles confondues</div>
@@ -1252,6 +1433,21 @@
 </div>
 
 <script>
+/* ===================== THÈME CLAIR/SOMBRE ===================== */
+const THEME_STORAGE_KEY = 'mlhelper_theme';
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-toggle').textContent = theme === 'light' ? '☀️' : '🌙';
+}
+const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+applyTheme(savedTheme);
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem(THEME_STORAGE_KEY, next);
+});
+
 /* ===================== FORMULES PARTAGÉES ===================== */
 /* Progression par étoile des équipements — additive et confirmée pour 4 compétences (vérifiée sur 5 exemples, 3 raretés différentes) */
 const EQUIP_STAR_INCREMENT = { 'Attaque': 2, 'Charognard': 2, 'Intrépide': 2, 'Bravoure': 2, 'Recruteur': 3, 'Prospérité': 3, 'Défense': 3, 'Vitesse': 5, 'Recycleur': 1, 'Récupération': 1 };
@@ -1260,8 +1456,21 @@ function equipValueAtStar(skill, baseValue, star) {
 }
 function vpAt(level) { return 20 * Math.pow(1.115, level - 1); }
 function wallAt(level) { return 70 * Math.pow(1.2, level - 1); }
-function armyAt(level) { return 3 * vpAt(level); }
-function goldAt(level) { return 10 * vpAt(level); }
+/* Multiplicateurs Production (Army/Gold) par ligue — les 6 ligues confirmées (cdc section 7.1, tableau récapitulatif) */
+const CITY_LEAGUE_MULT = {
+  bronze:   { army: 2,    gold: 5    },
+  silver:   { army: 2.25, gold: 6.25 },
+  gold:     { army: 2.75, gold: 8.75 },
+  platinum: { army: 2.75, gold: 8.75 },
+  diamond:  { army: 3,    gold: 10   },
+  legend:   { army: 3,    gold: 10   },
+};
+function cityLeagueMult(league) {
+  // Repli propre tant qu'aucune ligue n'est choisie : valeurs Légende (comportement historique du prototype avant sectorisation par ligue)
+  return CITY_LEAGUE_MULT[league] || CITY_LEAGUE_MULT.legend;
+}
+function armyAt(level, league) { return cityLeagueMult(league).army * vpAt(level); }
+function goldAt(level, league) { return cityLeagueMult(league).gold * vpAt(level); }
 function upgradeCostAt(level) {
   if (level <= 1) return 0;
   if (level === 2) return 10;
@@ -1475,12 +1684,12 @@ document.getElementById('player-toggle').addEventListener('click', () => {
 document.getElementById('skills-toggle').addEventListener('click', () => {
   const body = document.getElementById('skills-body');
   const open = body.classList.toggle('open');
-  document.getElementById('skills-toggle').textContent = (open ? '▾' : '▸') + ' Compétences avec équipement';
+  document.getElementById('skills-toggle').textContent = (open ? '▾' : '▸') + ' Statistiques données par l\'équipement';
 });
 document.getElementById('points-toggle').addEventListener('click', () => {
   const body = document.getElementById('points-body');
   const open = body.classList.toggle('open');
-  document.getElementById('points-toggle').textContent = (open ? '▾' : '▸') + ' Distribution des points';
+  document.getElementById('points-toggle').textContent = (open ? '▾' : '▸') + ' Points de compétence';
 });
 document.getElementById('temple-toggle').addEventListener('click', () => {
   const body = document.getElementById('temple-body');
@@ -1490,7 +1699,7 @@ document.getElementById('temple-toggle').addEventListener('click', () => {
 document.getElementById('clan-temple-toggle').addEventListener('click', () => {
   const body = document.getElementById('clan-temple-body');
   const open = body.classList.toggle('open');
-  document.getElementById('clan-temple-toggle').textContent = (open ? '▾' : '▸') + ' Bonus de Temple du Clan';
+  document.getElementById('clan-temple-toggle').textContent = (open ? '▾' : '▸') + ' Bonus de temple';
 });
 function updatePlayerSummary() {
   const level = document.getElementById('player-level').value || '—';
@@ -1566,7 +1775,7 @@ document.querySelectorAll('.category-btn.enabled').forEach(btn => {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     const cat = btn.dataset.category;
-    ['cite','classement','competences','referentiels'].forEach(c => {
+    ['cite','combat','classement','competences','referentiels'].forEach(c => {
       document.getElementById('tabs-' + c).style.display = (c === cat) ? 'flex' : 'none';
     });
     // Active le premier calc de la catégorie
@@ -1591,6 +1800,7 @@ function updateCityCost() {
   const nb = parseInt(document.getElementById('cost-nb').value) || 1;
   const a = parseInt(document.getElementById('cost-a').value) || 1;
   const b = parseInt(document.getElementById('cost-b').value) || 1;
+  const league = document.getElementById('cost-league').value;
   const recruiterPerso = getPersonalSkill('recruiter');
   const prosperousPerso = getPersonalSkill('prosperous');
   const recruiterTemple = getClanTempleBonus('recruiter');
@@ -1601,10 +1811,10 @@ function updateCityCost() {
     const total = base * (1 + (persoPct + templePct) / 100);
     return { base, perso, total };
   }
-  const goldA = withStat(goldAt(a), prosperousPerso, prosperousTemple);
-  const goldB = withStat(goldAt(b), prosperousPerso, prosperousTemple);
-  const armyA = withStat(armyAt(a), recruiterPerso, recruiterTemple);
-  const armyB = withStat(armyAt(b), recruiterPerso, recruiterTemple);
+  const goldA = withStat(goldAt(a, league), prosperousPerso, prosperousTemple);
+  const goldB = withStat(goldAt(b, league), prosperousPerso, prosperousTemple);
+  const armyA = withStat(armyAt(a, league), recruiterPerso, recruiterTemple);
+  const armyB = withStat(armyAt(b, league), recruiterPerso, recruiterTemple);
 
   document.getElementById('c1-wall-a').textContent = fmt(wallAt(a));
   document.getElementById('c1-wall-b').textContent = fmt(wallAt(b));
@@ -1634,13 +1844,33 @@ function updateCityCost() {
   document.getElementById('ct-army-b').textContent = fmt(armyB.total * nb);
   document.getElementById('ct-army-b-sub').textContent = `base ${fmt(armyB.base*nb)} · perso ${fmt(armyB.perso*nb)} · +temple ${fmt(armyB.total*nb)}`;
 }
-['cost-nb','cost-a','cost-b'].forEach(id => document.getElementById(id).addEventListener('input', updateCityCost));
+document.getElementById('cost-nb').addEventListener('input', updateCityCost);
+
+/* Le niveau cible doit toujours être strictement supérieur au niveau de départ (min +1) */
+document.getElementById('cost-a').addEventListener('input', () => {
+  const aEl = document.getElementById('cost-a');
+  const bEl = document.getElementById('cost-b');
+  const a = parseInt(aEl.value) || 1;
+  const b = parseInt(bEl.value) || 1;
+  if (b <= a) bEl.value = a + 1;
+  updateCityCost();
+});
+document.getElementById('cost-b').addEventListener('input', () => {
+  const aEl = document.getElementById('cost-a');
+  const bEl = document.getElementById('cost-b');
+  const a = parseInt(aEl.value) || 1;
+  const b = parseInt(bEl.value) || 1;
+  if (b <= a) bEl.value = a + 1;
+  updateCityCost();
+});
+document.getElementById('cost-league').addEventListener('change', updateCityCost);
 
 /* ===================== CITY MAX LEVEL ===================== */
 function updateMaxLevel() {
   const nb = parseInt(document.getElementById('ml-nb').value) || 1;
   const a = parseInt(document.getElementById('ml-a').value) || 1;
   const budget = getUnitValue('ml-gold', 'ml-gold-unit');
+  const league = document.getElementById('ml-league').value;
 
   let b = a;
   while (true) {
@@ -1656,10 +1886,11 @@ function updateMaxLevel() {
   document.getElementById('ml-vp').textContent = '+' + fmt((vpAt(b) - vpAt(a)) * nb);
   const goldMult = 1 + (getPersonalSkill('prosperous') + getClanTempleBonus('prosperous')) / 100;
   const armyMult = 1 + (getPersonalSkill('recruiter') + getClanTempleBonus('recruiter')) / 100;
-  document.getElementById('ml-gold-prod').textContent = fmt(goldAt(a)*nb*goldMult) + ' → ' + fmt(goldAt(b)*nb*goldMult);
-  document.getElementById('ml-army-prod').textContent = fmt(armyAt(a)*nb*armyMult) + ' → ' + fmt(armyAt(b)*nb*armyMult);
+  document.getElementById('ml-gold-prod').textContent = fmt(goldAt(a, league)*nb*goldMult) + ' → ' + fmt(goldAt(b, league)*nb*goldMult);
+  document.getElementById('ml-army-prod').textContent = fmt(armyAt(a, league)*nb*armyMult) + ' → ' + fmt(armyAt(b, league)*nb*armyMult);
 }
 ['ml-nb','ml-a','ml-gold','ml-gold-unit'].forEach(id => document.getElementById(id).addEventListener('input', updateMaxLevel));
+document.getElementById('ml-league').addEventListener('change', updateMaxLevel);
 document.getElementById('ml-gold-unit').addEventListener('change', updateMaxLevel);
 
 /* ===================== CITY PRODUCTION ===================== */
@@ -1668,12 +1899,13 @@ document.getElementById('ml-gold-unit').addEventListener('change', updateMaxLeve
 function updateProduction() {
   const nb = parseInt(document.getElementById('prod-nb').value) || 1;
   const level = parseInt(document.getElementById('prod-level').value) || 1;
+  const league = document.getElementById('prod-league').value;
 
   // Par ville (base, sans bonus)
   document.getElementById('p1-vp').textContent = fmt(vpAt(level));
   document.getElementById('p1-wall').textContent = fmt(wallAt(level));
-  document.getElementById('p1-gold').textContent = fmt(goldAt(level)) + '/h';
-  document.getElementById('p1-army').textContent = fmt(armyAt(level)) + '/h';
+  document.getElementById('p1-gold').textContent = fmt(goldAt(level, league)) + '/h';
+  document.getElementById('p1-army').textContent = fmt(armyAt(level, league)) + '/h';
 
   // Total : base, dont stuff perso, dont temple clan (deltas, pas valeurs absolues)
   const prosperousPerso = getPersonalSkill('prosperous');
@@ -1682,11 +1914,11 @@ function updateProduction() {
   const recruiterTemple = getClanTempleBonus('recruiter');
 
   const vpTotal = nb * vpAt(level);
-  const goldBase = nb * goldAt(level);
+  const goldBase = nb * goldAt(level, league);
   const goldPersoDelta = goldBase * (prosperousPerso / 100);
   const goldTempleDelta = goldBase * (prosperousTemple / 100);
   const goldTotal = goldBase + goldPersoDelta + goldTempleDelta;
-  const troopsBase = nb * armyAt(level);
+  const troopsBase = nb * armyAt(level, league);
   const troopsPersoDelta = troopsBase * (recruiterPerso / 100);
   const troopsTempleDelta = troopsBase * (recruiterTemple / 100);
   const troopsTotal = troopsBase + troopsPersoDelta + troopsTempleDelta;
@@ -1709,7 +1941,6 @@ function updateProduction() {
 
   // Reskill full-prod : base + stuff + points (full, hypothétique) + temple
   const playerLevel = parseInt(document.getElementById('player-level').value) || 1;
-  const league = document.getElementById('player-league').value;
   const totalPoints = (playerLevel - 1) * (LEAGUE_POINTS_PER_LEVEL[league] || 1);
   const fullProsperousPoints = totalPoints * SKILL_POINT_META.prosperous.bonus;
   const fullRecruiterPoints = totalPoints * SKILL_POINT_META.recruiter.bonus;
@@ -1721,6 +1952,7 @@ function updateProduction() {
 ['prod-nb','prod-level','reward-gold-hours','reward-troops-hours'].forEach(id =>
   document.getElementById(id).addEventListener('input', updateProduction)
 );
+document.getElementById('prod-league').addEventListener('change', updateProduction);
 
 /* ===================== GEMMES ===================== */
 const GEM_VALUES = {
@@ -1740,6 +1972,12 @@ const MAX_SLOTS = 27;
 let currentGemMode = 'optimize';
 
 const SKILL_LABELS_FR = { striker:'Attaque', brave:'Bravoure', scavenger:'Charognard', guardian:'Défense', fearless:'Intrépide', prosperous:'Prospérité', recruiter:'Recruteur', cautious:'Récupération', salvager:'Recycleur', rusher:'Vitesse' };
+/* Palette de couleurs par compétence — décidée, cohérente sur gemmes ET compétences (nom FR en clé, cohérent avec le reste du prototype) */
+const SKILL_COLORS_FR = {
+  'Intrépide': '#c2185b', 'Bravoure': '#4a2c73', 'Recycleur': '#2e7d32',
+  'Prospérité': '#c9a04a', 'Récupération': '#c9a04a', 'Charognard': '#b5651d',
+  'Recruteur': '#7b4fa6', 'Vitesse': '#9b59b6', 'Attaque': '#c0392b', 'Défense': '#3a6ea8',
+};
 const SKILL_KEY_FROM_FR = Object.fromEntries(Object.entries(SKILL_LABELS_FR).map(([k, v]) => [v, k]));
 
 /* Mêmes regroupements que les catalogues du Simulateur de Stuff (Défense inclut Or, Or inclut Troupes/Vitesse) */
@@ -1771,7 +2009,7 @@ document.querySelectorAll('#gem-family-buttons button').forEach(btn => {
     btn.classList.add('active');
     currentGemFamily = btn.dataset.family;
     const groupSkills = getGroupSkills();
-    gemRows = groupSkills.length ? [{ skill: groupSkills[0], league: 'legend', slots: 0, target: 0 }] : [];
+    gemRows = groupSkills.length ? [{ skill: groupSkills[0], league: '', slots: 0, target: 0 }] : [];
     renderGemRows();
     updateGems();
   });
@@ -1812,6 +2050,7 @@ function renderGemRows() {
       <div class="field">
         <label>Ligue</label>
         <select data-row="${idx}" class="gem-row-league">
+          <option value="" ${row.league===''?'selected':''} disabled>— Choisir —</option>
           ${leagueOptions.map(l => `<option value="${l.value}" ${row.league===l.value?'selected':''}>${l.label}</option>`).join('')}
         </select>
       </div>
@@ -1853,7 +2092,7 @@ document.getElementById('gem-add-row-btn').addEventListener('click', () => {
   const used = gemRows.map(r => r.skill);
   const next = groupSkills.find(s => !used.includes(s)) || groupSkills[0];
   if (!next) return;
-  gemRows.push({ skill: next, league: 'legend', slots: 0, target: 0 });
+  gemRows.push({ skill: next, league: '', slots: 0, target: 0 });
   renderGemRows();
   updateGems();
 });
@@ -1895,6 +2134,9 @@ function renderOptimizeResults() {
   let grandTotal = 0;
   const activeRows = gemRows.filter(r => r.slots > 0);
   const rowsHtml = activeRows.map(r => {
+    if (!r.league) {
+      return `<tr><td style="padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${r.skill}</td><td colspan="5" style="padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-faint);">Choisis une ligue pour cette compétence</td></tr>`;
+    }
     const key = SKILL_KEY_FROM_FR[r.skill];
     const y = GEM_VALUES[key][r.league];
     const res = optimizeStars(r.target, y, r.slots);
@@ -1933,9 +2175,20 @@ function updateGemsBudget() {
   const league = document.getElementById('gem-league').value;
   const budget = parseFloat(document.getElementById('gem-budget').value) || 0;
   const maxSlots = Math.min(Math.max(parseInt(document.getElementById('gem-slots').value) || 1, 1), MAX_SLOTS);
+  const explainer = document.getElementById('mode-explainer');
+
+  if (!league) {
+    explainer.style.display = 'block';
+    explainer.textContent = 'Choisis une ligue pour calculer.';
+    ['r-slots','r-stars','r-actual','r-cost'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('r-slots-sub').textContent = '';
+    document.getElementById('r-actual-sub').textContent = '';
+    document.getElementById('r-cost-sub').textContent = '';
+    return;
+  }
+
   const y = GEM_VALUES[skill][league];
   const price = GEM_PRICE[league];
-  const explainer = document.getElementById('mode-explainer');
   explainer.style.display = 'block';
 
   const G = Math.floor(budget / price);
@@ -1994,7 +2247,7 @@ document.getElementById('gem-league').addEventListener('change', updateGems);
 
 function initGemRows() {
   const groupSkills = getGroupSkills();
-  gemRows = groupSkills.length ? [{ skill: groupSkills[0], league: 'legend', slots: 0, target: 0 }] : [];
+  gemRows = groupSkills.length ? [{ skill: groupSkills[0], league: '', slots: 0, target: 0 }] : [];
   renderGemRows();
 }
 
@@ -2123,6 +2376,7 @@ function renderBlockSummary(blockDef) {
 }
 
 /* ---- Rendu d'une case de la grille ---- */
+const LEAGUE_ABBR_FR = { bronze:'Br', silver:'Ar', gold:'Or', platinum:'Pl', diamond:'Dia', legend:'Lég' };
 function renderStuffCell(blockDef, slotIndex) {
   const slotType = STUFF_SLOT_LAYOUT[slotIndex];
   const slot = stuffState[blockDef.key][slotIndex];
@@ -2131,12 +2385,21 @@ function renderStuffCell(blockDef, slotIndex) {
   let inner = `<div class="slot-name">${slotType}</div>`;
   if (slot.equip) {
     const cls = { 'Commun':'commun','Rare':'rare','Épique':'epique','Mythique':'mythique','Légendaire':'legendaire' }[slot.equip.rarity];
-    inner += `<div class="rarity-dot" style="background:var(--rarity-${cls})"></div>`;
+    const rarityVar = `var(--rarity-${cls})`;
+    cell.style.borderColor = rarityVar;
+    cell.style.borderWidth = '2px';
+    cell.style.background = `color-mix(in srgb, ${rarityVar} 14%, var(--bg))`;
     inner += `<div class="star-count">${slot.star}★</div>`;
-    if (slot.gems.length) {
-      inner += `<div class="gem-count">${slot.gems.filter(g=>g.skill && g.skill!=='none').map(g=>g.star+'★').join(' ')}</div>`;
+    const activeGems = slot.gems.filter(g => g.skill && g.skill !== 'none');
+    if (activeGems.length) {
+      inner += `<div class="gem-badges">${activeGems.map(g => {
+        const color = SKILL_COLORS_FR[g.skill] || 'var(--violet-bright)';
+        const league = LEAGUE_ABBR_FR[g.league] || '';
+        return `<span class="gem-badge" style="background:${color};" title="${g.skill} ${league} ${g.star}★">${g.star}★${league}</span>`;
+      }).join('')}</div>`;
     }
   } else {
+    cell.style.background = 'var(--bg)';
     inner += `<div class="rarity-dot" style="background:var(--border)"></div>`;
   }
   cell.innerHTML = inner;
@@ -2191,7 +2454,7 @@ function renderStuffConfigPanel(blockDef) {
     panel.appendChild(starField);
 
     const nbGems = GEM_SLOTS_BY_RARITY[slot.equip.rarity] || 0;
-    while (slot.gems.length < nbGems) slot.gems.push({ skill: 'none', star: 1, league: 'legend' });
+    while (slot.gems.length < nbGems) slot.gems.push({ skill: 'none', star: 1, league: '' });
     slot.gems = slot.gems.slice(0, nbGems);
 
     if (nbGems > 0) {
@@ -2209,7 +2472,7 @@ function renderStuffConfigPanel(blockDef) {
         starSel.innerHTML = [1,2,3,4,5].map(n => `<option value="${n}" ${g.star===n?'selected':''}>${n}★</option>`).join('');
         starSel.addEventListener('change', () => { g.star = parseInt(starSel.value); saveStuffState(); renderStuffBlock(blockDef); });
         const leagueSel = document.createElement('select');
-        leagueSel.innerHTML = ['silver','gold','platinum','diamond','legend'].map(l => {
+        leagueSel.innerHTML = '<option value="" disabled ' + (g.league===''?'selected':'') + '>— Choisir —</option>' + ['silver','gold','platinum','diamond','legend'].map(l => {
           const labels = { silver:'Argent', gold:'Or', platinum:'Platine', diamond:'Diamant', legend:'Légende' };
           return `<option value="${l}" ${g.league===l?'selected':''}>${labels[l]}</option>`;
         }).join('');
@@ -2310,12 +2573,38 @@ function buildStuffBlocks() {
 
 /* ===================== RANKING ===================== */
 const RANK_THRESHOLDS_BY_LEAGUE = {
+  bronze:   [1, 6, 25, 50, 75, 100],
   silver:   [1, 6, 15, 50, 75, 100],
-  platinum: [1, 6, 15, 50, 100],
+  gold:     [1, 6, 25, 50, 75, 100],
+  platinum: [1, 6, 15, 50, 75, 100],
   diamond:  [1, 6, 25, 60, 100],
   legend:   [1, 6, 25, 50, 60, 100],
 };
 const RANK_REWARDS_BY_LEAGUE = {
+  bronze: {
+    1:   { target: 'Montée Argent', reward: '50 saphirs, 6 accélérations de troupes, 6 gemmes' },
+    6:   { target: 'Montée Argent', reward: '25 saphirs, 5 accélérations de troupes, 4 gemmes' },
+    25:  { target: 'Montée Argent', reward: '20 saphirs, 4 accélérations de troupes, 2 gemmes' },
+    50:  { target: 'Montée Argent', reward: '15 saphirs, 3 accélérations de troupes, 2 gemmes' },
+    75:  { target: 'Montée Argent', reward: '10 saphirs, 2 accélérations de troupes, 1 gemme' },
+    100: { target: 'Montée Argent', reward: '5 saphirs, 1 accélération de troupes, 1 gemme' },
+  },
+  gold: {
+    1:   { target: 'Montée Platine',   reward: '6 gemmes' },
+    6:   { target: 'Montée Platine',   reward: '4 gemmes' },
+    25:  { target: 'Montée Platine',   reward: '2 gemmes' },
+    50:  { target: 'Maintien Or',      reward: '2 gemmes' },
+    75:  { target: 'Maintien Or',      reward: '1 gemme' },
+    100: { target: 'Descente Argent',  reward: '1 gemme' },
+  },
+  platinum: {
+    1:   { target: 'Montée Diamant',   reward: '6 gemmes' },
+    6:   { target: 'Montée Diamant',   reward: '4 gemmes' },
+    15:  { target: 'Montée Diamant',   reward: '2 gemmes' },
+    50:  { target: 'Maintien Platine', reward: '2 gemmes' },
+    75:  { target: 'Maintien Platine', reward: '1 gemme' },
+    100: { target: 'Descente Or',      reward: '1 gemme' },
+  },
   silver: {
     1:   { target: 'Montée Or',       reward: '100 saphirs, 7 speedup, 6 gemmes' },
     6:   { target: 'Montée Or',       reward: '50 saphirs, 6 speedup, 4 gemmes' },
@@ -2350,7 +2639,20 @@ function computeRankRanges(thresholds) {
   }));
 }
 
-function renderRankScale(thresholds, rewards) {
+/* Palettes par catégorie de résultat, clair -> foncé au fil des paliers de cette catégorie */
+const RANK_CATEGORY_SHADES = {
+  montee:   ['#a8dcb8', '#7ec99a', '#4fae78', '#2f8c5a', '#1c6b41'],
+  maintien: ['#a8c9e8', '#7eabd9', '#4f8bc4', '#2f6ba6', '#1c4d80'],
+  descente: ['#f0b088', '#e8895c', '#d9633a', '#b8452a', '#8f2f1c'],
+};
+function getRankCategory(target) {
+  if (!target) return 'maintien';
+  if (target.startsWith('Montée')) return 'montee';
+  if (target.startsWith('Descente')) return 'descente';
+  return 'maintien';
+}
+
+function renderRankScale(thresholds, rewards, playerPct) {
   const container = document.getElementById('rank-scale-container');
   let html = '<div class="rank-scale-axis"></div>';
   // Graduations tous les 10%, espacement égal — 100% à gauche, 0% à droite
@@ -2360,31 +2662,253 @@ function renderRankScale(thresholds, rewards) {
     html += `<div class="rank-scale-tick-label" style="left:${leftPct}%;">${v}%</div>`;
   }
   const ranges = computeRankRanges(thresholds);
-  const colorClasses = ['c0','c1','c2','c3','c4','c5'];
+  const categoryCounters = { montee: 0, maintien: 0, descente: 0 };
   ranges.forEach((r, i) => {
     const leftPct = 100 - r.rangeEnd;   // borne haute -> position gauche du segment
     const widthPct = r.rangeEnd - r.rangeStart;
     const info = rewards[r.threshold];
     const target = info ? info.target : 'À définir';
-    const reward = info ? info.reward : 'À définir';
     const side = i % 2 === 0 ? 'above' : 'below';
     const rangeLabel = `${r.rangeEnd}–${r.rangeStart}%`; // gauche (grand) -> droite (petit), cohérent avec l'axe
-    const colorClass = colorClasses[i % colorClasses.length];
-    html += `<div class="rank-scale-segment ${colorClass}" style="left:${leftPct}%; width:${widthPct}%;"></div>`;
+    const category = getRankCategory(target);
+    const shades = RANK_CATEGORY_SHADES[category];
+    const color = shades[categoryCounters[category] % shades.length];
+    categoryCounters[category]++;
+    html += `<div class="rank-scale-segment" style="left:${leftPct}%; width:${widthPct}%; background:${color}CC;"></div>`;
     html += `<div class="rank-scale-marker" style="left:${leftPct + widthPct/2}%;">
-      <div class="lbl ${side}"><div class="pct">${rangeLabel}</div><div class="target">${target}</div><div class="reward">${reward}</div></div>
+      <div class="lbl ${side}"><div class="pct">${rangeLabel}</div><div class="target">${target}</div></div>
     </div>`;
   });
+  // Indicateur rouge : position exacte du joueur, à partir de son pourcentage actuel saisi
+  if (playerPct > 0 && playerPct <= 100) {
+    const playerLeftPct = 100 - playerPct;
+    html += `<div class="rank-scale-player-line" style="left:${playerLeftPct}%;" data-pct="${fmtPct(playerPct)}%"></div>`;
+  }
   container.innerHTML = html;
 }
+
+/* ===================== TAUX DE GAIN D'XP ===================== */
+/* Paliers officiels (ratio VP_cible / VP_attaquant, en %) — bornes inclusives basses, exclusives hautes */
+const XP_RATE_TIERS = [
+  { lo: 0,   hi: 40,  rate: 0   },
+  { lo: 40,  hi: 50,  rate: 50  },
+  { lo: 50,  hi: 150, rate: 100 },
+  { lo: 150, hi: 200, rate: 150 },
+  { lo: 200, hi: null, rate: 200 },
+];
+
+let xpMode = 'attacker';
+document.querySelectorAll('[data-xpmode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-xpmode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    xpMode = btn.dataset.xpmode;
+    updateXpRate();
+  });
+});
+
+function updateXpRate() {
+  const myVp = getUnitValue('xp-vp-mine', 'xp-vp-mine-unit');
+  const tbody = document.getElementById('xp-table-body');
+  if (myVp <= 0) {
+    tbody.innerHTML = '<tr><td colspan="2" style="padding:8px; color:var(--text-faint);">Saisis ta VP pour voir le tableau.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = XP_RATE_TIERS.map(t => {
+    let rangeLabel;
+    if (xpMode === 'attacker') {
+      // VP_cible = ratio × VP_moi (moi = attaquant)
+      const lo = t.lo / 100 * myVp;
+      const hi = t.hi !== null ? t.hi / 100 * myVp : null;
+      rangeLabel = hi !== null ? `< ${fmt(hi)}` : `≥ ${fmt(lo)}`;
+      if (t.lo > 0 && hi !== null) rangeLabel = `${fmt(lo)} – ${fmt(hi)}`;
+      else if (t.lo === 0) rangeLabel = `< ${fmt(hi)}`;
+    } else {
+      // moi = cible : VP_attaquant = VP_moi / ratio (relation inversée, bornes échangées)
+      const hiAtt = t.lo > 0 ? myVp / (t.lo / 100) : null;
+      const loAtt = t.hi !== null ? myVp / (t.hi / 100) : 0;
+      rangeLabel = hiAtt !== null ? `${fmt(loAtt)} – ${fmt(hiAtt)}` : `< ${fmt(loAtt)}`;
+      if (t.lo === 0) rangeLabel = `≥ ${fmt(loAtt)}`;
+    }
+    return `<tr>
+      <td style="padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--emerald-bright);">${t.rate}%</td>
+      <td style="padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${rangeLabel}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('xp-vp-mine').addEventListener('input', updateXpRate);
+document.getElementById('xp-vp-mine-unit').addEventListener('change', updateXpRate);
+
+/* ===================== TROUPES ATTAQUE DÉMO ===================== */
+const DEMO_TROOPS_PCT_BY_LEAGUE = {
+  bronze: 100, silver: 50, gold: 40, platinum: 40, diamond: 30, legend: 30,
+};
+function updateDemoTroops() {
+  const league = document.getElementById('demo-league').value;
+  const cityLevel = parseInt(document.getElementById('demo-city-level').value) || 1;
+  if (!league) {
+    document.getElementById('demo-wall').textContent = '—';
+    document.getElementById('demo-max-troops').textContent = '—';
+    return;
+  }
+  const wall = wallAt(cityLevel);
+  const pct = DEMO_TROOPS_PCT_BY_LEAGUE[league];
+  const maxTroops = wall * (pct / 100);
+  document.getElementById('demo-wall').textContent = fmt(wall);
+  document.getElementById('demo-max-troops').textContent = fmt(maxTroops);
+}
+document.getElementById('demo-league').addEventListener('change', updateDemoTroops);
+document.getElementById('demo-city-level').addEventListener('input', updateDemoTroops);
+
+/* ===================== LEVEL UP (référentiel) ===================== */
+/* Formules de troupes par ligue — cdc section 7.1 "Level Up" :
+   - Légende, Diamant ET Bronze : formule identique, verrouillée (régression niveaux 1-160 Légende, revérifiée niveaux 101-106 Diamant, revérifiée niveaux 2-150 Bronze)
+   - Platine : formule propre, distincte (régression niveaux 98-103)
+   - Or : formule propre, distincte des deux précédentes (régression niveaux 2-6, 50-55, 103-108) — confirme 3 groupes de formules distincts, pas juste "haute ligue vs basse ligue"
+   - Argent : aucune donnée reçue pour l'instant — volontairement absente de cette table, ne jamais extrapoler */
+const LEVELUP_TROOP_FORMULA = {
+  bronze:   { k: 32.2028, ratio: 1.245 }, // ✅ confirmé identique à Légende/Diamant
+  legend:   { k: 32.2028, ratio: 1.245 },
+  diamond:  { k: 32.2028, ratio: 1.245 }, // ✅ confirmé identique à Légende
+  platinum: { k: 35.88,   ratio: 1.237 }, // ✅ confirmé distinct de Légende/Diamant/Bronze
+  gold:     { k: 32.49,   ratio: 1.240 }, // ✅ confirmé distinct de Légende/Diamant/Bronze ET de Platine
+};
+const LEVELUP_CONFIRMED_LEAGUES = Object.keys(LEVELUP_TROOP_FORMULA);
+const LEVELUP_CHESTS = ['Coffre', 'Urne', 'Coffret à bijoux', 'Jarre', 'Caisse'];
+const LEVELUP_MAX = 150;
+const LEVELUP_COL_SIZE = 30;      // niveaux par colonne
+const LEVELUP_PAGE_SIZE = LEVELUP_COL_SIZE * 2; // 2 colonnes par page
+let levelupPage = 1;
+
+function levelupTroopsAt(n, league) {
+  if (n === 1) return 200; // valeur de départ universelle, confirmée pour toutes les ligues
+  const formula = LEVELUP_TROOP_FORMULA[league] || LEVELUP_TROOP_FORMULA.legend;
+  return formula.k * Math.pow(formula.ratio, n);
+}
+/* ✅ XP requis pour passer du niveau n à n+1 — formule universelle (identique sur les 6 ligues), verrouillée sur 110 points de données consécutifs (niveaux 1 à 110), correspondance exacte 110/110 après arrondi entier. cdc section 7.1 */
+function xpAt(n) {
+  return Math.round(50 * Math.pow(1.3, n - 1));
+}
+function levelupChestAt(n) {
+  if (n < 10 || n % 10 !== 0) return '—';
+  const palier = n / 10;
+  return LEVELUP_CHESTS[(palier - 1) % 5];
+}
+
+function renderLevelUpTable() {
+  const league = document.getElementById('levelup-league').value;
+  const warningEl = document.getElementById('levelup-warning');
+  const tableCard = document.getElementById('levelup-table-card');
+
+  if (!league) {
+    warningEl.classList.remove('show');
+    tableCard.style.display = 'none';
+    return;
+  }
+  if (!LEVELUP_CONFIRMED_LEAGUES.includes(league)) {
+    warningEl.classList.add('show');
+    warningEl.textContent = '⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.';
+    tableCard.style.display = 'none';
+    return;
+  }
+  warningEl.classList.remove('show');
+  tableCard.style.display = 'block';
+
+  const pageStart = (levelupPage - 1) * LEVELUP_PAGE_SIZE + 1;
+  const colAStart = pageStart;
+  const colAEnd = Math.min(colAStart + LEVELUP_COL_SIZE - 1, LEVELUP_MAX);
+  const colBStart = colAStart + LEVELUP_COL_SIZE;
+  const colBEnd = Math.min(colBStart + LEVELUP_COL_SIZE - 1, LEVELUP_MAX);
+
+  function buildRows(from, to) {
+    let rows = '';
+    for (let n = from; n <= to; n++) {
+      const chest = levelupChestAt(n);
+      rows += `<tr>
+        <td>${n}</td>
+        <td>${fmt(xpAt(n))}</td>
+        <td>${fmt(levelupTroopsAt(n, league))}</td>
+        <td>${chest === '—' ? '<span style="color:var(--text-faint);">—</span>' : `<span style="color:var(--gold-bright);">${chest}</span>`}</td>
+      </tr>`;
+    }
+    return rows;
+  }
+  document.getElementById('levelup-tbody-a').innerHTML = buildRows(colAStart, colAEnd);
+  document.getElementById('levelup-tbody-b').innerHTML = colBStart <= LEVELUP_MAX ? buildRows(colBStart, colBEnd) : '';
+
+  const totalPages = Math.ceil(LEVELUP_MAX / LEVELUP_PAGE_SIZE);
+  let pagHtml = `<button ${levelupPage===1?'disabled':''} id="levelup-prev">‹ Précédent</button>`;
+  for (let p = 1; p <= totalPages; p++) {
+    pagHtml += `<button class="${p===levelupPage?'active':''}" data-page="${p}">${p}</button>`;
+  }
+  pagHtml += `<button ${levelupPage===totalPages?'disabled':''} id="levelup-next">Suivant ›</button>`;
+  document.getElementById('levelup-pagination').innerHTML = pagHtml;
+
+  document.querySelectorAll('#levelup-pagination button[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => { levelupPage = parseInt(btn.dataset.page); renderLevelUpTable(); });
+  });
+  const prevBtn = document.getElementById('levelup-prev');
+  const nextBtn = document.getElementById('levelup-next');
+  if (prevBtn) prevBtn.addEventListener('click', () => { levelupPage--; renderLevelUpTable(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { levelupPage++; renderLevelUpTable(); });
+}
+document.getElementById('levelup-league').addEventListener('change', () => { levelupPage = 1; renderLevelUpTable(); });
+
+/* Synchronisation des sélecteurs de ligue dépendants avec la ligue du joueur (Paramètres du joueur) — au changement ET au chargement initial si déjà en cache */
+function syncLeagueDependentSelectors() {
+  const playerLeague = document.getElementById('player-league').value;
+  if (!playerLeague) return;
+
+  const levelupSel = document.getElementById('levelup-league');
+  if (levelupSel && !levelupSel.value) {
+    levelupSel.value = playerLeague;
+    levelupPage = 1;
+    renderLevelUpTable();
+  }
+  const demoSel = document.getElementById('demo-league');
+  if (demoSel && !demoSel.value) {
+    demoSel.value = playerLeague;
+    updateDemoTroops();
+  }
+  const rankSel = document.getElementById('rank-league');
+  if (rankSel && !rankSel.value) {
+    rankSel.value = playerLeague;
+    updateRanking();
+  }
+  const costSel = document.getElementById('cost-league');
+  if (costSel && !costSel.value) {
+    costSel.value = playerLeague;
+    updateCityCost();
+  }
+  const mlSel = document.getElementById('ml-league');
+  if (mlSel && !mlSel.value) {
+    mlSel.value = playerLeague;
+    updateMaxLevel();
+  }
+  const prodSel = document.getElementById('prod-league');
+  if (prodSel && !prodSel.value) {
+    prodSel.value = playerLeague;
+    updateProduction();
+  }
+}
+document.getElementById('player-league').addEventListener('change', syncLeagueDependentSelectors);
 
 function updateRanking() {
   const league = document.getElementById('rank-league').value;
   const pct = parseFloat(document.getElementById('rank-pct').value) || 0;
   const rank = parseFloat(document.getElementById('rank-position').value) || 1;
+
+  if (!league) {
+    document.getElementById('rank-scale-container').innerHTML = '';
+    document.getElementById('rank-total').textContent = '—';
+    document.getElementById('rank-thresholds-body').innerHTML =
+      '<tr><td colspan="4" style="padding:8px; color:var(--text-faint);">Choisis une ligue pour calculer.</td></tr>';
+    return;
+  }
+
   const thresholds = RANK_THRESHOLDS_BY_LEAGUE[league] || [];
   const rewards = RANK_REWARDS_BY_LEAGUE[league] || {};
-  renderRankScale(thresholds, rewards);
+  renderRankScale(thresholds, rewards, pct);
 
   if (pct <= 0) {
     document.getElementById('rank-total').textContent = '—';
@@ -2416,6 +2940,15 @@ function updateRanking() {
 
 ['rank-pct', 'rank-position'].forEach(id => document.getElementById(id).addEventListener('input', updateRanking));
 document.getElementById('rank-league').addEventListener('change', updateRanking);
+
+/* Si le joueur a défini sa ligue dans les Paramètres du joueur, on aligne celle du Classement dessus */
+document.getElementById('player-league').addEventListener('change', () => {
+  const playerLeague = document.getElementById('player-league').value;
+  if (playerLeague) {
+    document.getElementById('rank-league').value = playerLeague;
+    updateRanking();
+  }
+});
 
 /* ===================== TEMPLAR ===================== */
 const TEMPLAR_COSTS = [150,195,254,330,428,557,724,941,1224,1591,2068,2688,3495,4543,5907,7678,9981,12976,16868,21929,28507];
@@ -2453,12 +2986,12 @@ function updateTemplar() {
     <tr><td style="padding:5px 8px; color:var(--text-faint);">Gain (départ→cible)</td>${rowGain}</tr>
   `;
 
-  // Table de référence
+  // Table de référence (niveaux 1 à 20 — pas de ligne "0", avoir 0 templier n'a pas de coût associé)
   const tbody = document.getElementById('templar-table-body');
   if (!tbody.dataset.filled) {
     let rows = '';
-    for (let lvl = 0; lvl <= 20; lvl++) {
-      rows += `<tr><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${lvl}</td><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${fmt(TEMPLAR_COSTS[lvl])}</td><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${fmt(TEMPLAR_CUMUL[lvl])}</td></tr>`;
+    for (let lvl = 1; lvl <= 20; lvl++) {
+      rows += `<tr><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${lvl}</td><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${fmt(TEMPLAR_COSTS[lvl-1])}</td><td style="padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.04);">${fmt(TEMPLAR_CUMUL[lvl-1])}</td></tr>`;
     }
     tbody.innerHTML = rows;
     tbody.dataset.filled = '1';
@@ -2676,11 +3209,12 @@ function renderGemSockets(containerId, rarity, familySkills) {
         <option value="1">1★</option><option value="2">2★</option><option value="3">3★</option><option value="4">4★</option><option value="5">5★</option><option value="6">6★</option><option value="7">7★</option><option value="8">8★</option>
       </select>
       <select class="gem-league-select" data-idx="${i}">
+        <option value="" selected disabled>— Choisir —</option>
         <option value="silver">Argent</option>
         <option value="gold">Or</option>
         <option value="platinum">Platine</option>
         <option value="diamond">Diamant</option>
-        <option value="legend" selected>Légende</option>
+        <option value="legend">Légende</option>
       </select>
     </div>`;
   }
@@ -2782,7 +3316,7 @@ function getSideSkillTotals(prefix, familySkills) {
     if (skill === 'none') return;
     const star = parseInt(starSelects[i].value) || 1;
     const league = leagueSelects[i].value;
-    const y = GEM_VALUES_FR[skill] ? GEM_VALUES_FR[skill][league] : 0;
+    const y = (GEM_VALUES_FR[skill] && GEM_VALUES_FR[skill][league]) || 0;
     totals[skill] = (totals[skill] || 0) + (star * y);
   });
 
@@ -2816,6 +3350,7 @@ setupSharedFilters();
 
 /* ===================== INIT ===================== */
 loadPlayerParams();
+syncLeagueDependentSelectors();
 updatePlayerSummary();
 /* ===================== STEPPER -/+ POUR TOUS LES CHAMPS NOMBRE ===================== */
 function wrapNumberInput(input) {
@@ -2865,7 +3400,7 @@ loadStuffState();
 buildStuffBlocks();
 initGemRows();
 updateSkillPointsAllocation();
-updateCityCost(); updateMaxLevel(); updateProduction(); updateGems(); updateTemplar(); updateRanking();
+updateCityCost(); updateMaxLevel(); updateProduction(); updateGems(); updateTemplar(); updateRanking(); updateXpRate(); updateDemoTroops(); renderLevelUpTable();
 </script>
 </body>
 </html>
