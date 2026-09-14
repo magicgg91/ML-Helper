@@ -1191,7 +1191,11 @@
         "cleared": "Seguimiento desactivado: ya no se carga ningún script.",
         "invalid-url": "No es una URL http(s) válida.",
         "save-error": "Error al guardar (HTTP {status}).",
-        "server-error": "No se pudo contactar con el servidor. Inténtalo más tarde."
+        "server-error": "No se pudo contactar con el servidor. Inténtalo más tarde.",
+        "website-id-label": "Identificador del sitio",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Se añade a la etiqueta como `data-website-id`. Déjalo vacío si tu herramienta no lo pide.",
+        "invalid-website-id": "Ese identificador contiene caracteres que no corresponden."
       }
     }
   },

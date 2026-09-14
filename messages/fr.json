@@ -1191,7 +1191,11 @@
         "cleared": "Suivi désactivé : plus aucun script n'est chargé.",
         "invalid-url": "Ce n'est pas une URL http(s) valide.",
         "save-error": "Échec de l'enregistrement (HTTP {status}).",
-        "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+        "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+        "website-id-label": "Identifiant du site",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Ajouté sur la balise en `data-website-id`. Laisse vide si ton outil n'en demande pas.",
+        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place."
       }
     }
   },

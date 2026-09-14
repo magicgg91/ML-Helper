@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseTrackingScriptUrl, trackingConnectOrigin } from "./tracking";
+import {
+  parseTrackingScriptUrl,
+  parseTrackingWebsiteId,
+  trackingConnectOrigin,
+} from "./tracking";
 
 // Bloc 100/A: the value an admin types ends up as a <script src> on every page
 // of the site, public and admin — so what it accepts is a security boundary,
@@ -32,6 +36,47 @@ describe("tracking script URL", () => {
   ])("refuses %s", (_, value) =>
     expect(parseTrackingScriptUrl(value)).toBeNull(),
   );
+});
+
+// Bloc 101: the identifier the script tag carries next to its src. React
+// escapes attribute values, so nothing here can inject markup — what this
+// refuses is a value that is not an identifier at all, which means the admin
+// pasted something else and would otherwise only find out from the tracker.
+describe("tracking site identifier", () => {
+  it.each([
+    [
+      "a UUID, which is what Umami gives",
+      "25931871-50b0-4123-a327-09f9c60cff18",
+    ],
+    ["a short opaque key", "abc_123.XY"],
+  ])("accepts %s", (_, value) =>
+    expect(parseTrackingWebsiteId(value)).toBe(value),
+  );
+
+  it("trims what the admin pasted", () =>
+    expect(parseTrackingWebsiteId("  abc-123  ")).toBe("abc-123"));
+
+  it.each([
+    ["an empty field — plenty of trackers need no identifier", ""],
+    ["a field of spaces", "   "],
+    ["nothing stored at all", null],
+  ])("reads %s as no identifier", (_, value) =>
+    expect(parseTrackingWebsiteId(value)).toBeNull(),
+  );
+
+  it.each([
+    ["a double quote", 'abc" data-evil="1'],
+    ["a single quote", "abc' onload='x"],
+    ["an angle bracket", "abc<script>"],
+    ["a backtick", "abc`x`"],
+    ["an inner space, so a whole pasted tag is caught", "abc def"],
+    ["a newline", "abc\nx"],
+  ])("refuses %s", (_, value) =>
+    expect(parseTrackingWebsiteId(value)).toBeNull(),
+  );
+
+  it("refuses an absurdly long value", () =>
+    expect(parseTrackingWebsiteId("a".repeat(201))).toBeNull());
 });
 
 // Bloc 100/B: the nonce lets the script LOAD; connect-src decides where it may

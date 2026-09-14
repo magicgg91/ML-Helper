@@ -2282,6 +2282,7 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   test.setTimeout(60_000);
   const endpoint = "/api/admin/config/tracking";
   const trackingUrl = "https://stats.example.test/script.js";
+  const websiteId = "25931871-50b0-4123-a327-09f9c60cff18";
 
   // Collect the CSP violations the browser itself reports, on every page.
   await page.addInitScript(() => {
@@ -2311,7 +2312,11 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
     ).status(),
   ).toBe(400);
   expect(
-    (await page.request.put(endpoint, { data: { url: trackingUrl } })).status(),
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId },
+      })
+    ).status(),
   ).toBe(200);
 
   // A public page and an admin page: the root layout covers both.
@@ -2326,6 +2331,13 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
       (element) => (element as HTMLScriptElement).nonce,
     );
     expect(nonce, `${path}: no nonce on the tracking script`).toBeTruthy();
+
+    // Bloc 101: the identifier the tracker expects next to its src. Without
+    // it, Umami loads and measures nothing.
+    await expect(script, `${path}: data-website-id missing`).toHaveAttribute(
+      "data-website-id",
+      websiteId,
+    );
     expect(csp, `${path}: the CSP does not authorise that nonce`).toContain(
       `'nonce-${nonce}'`,
     );
@@ -2341,7 +2353,31 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
     ).toEqual([]);
   }
 
-  // The admin field shows what was stored, and clearing it stops the loading.
+  // Bloc 101: the identifier is optional — clearing it alone leaves the script
+  // loading, with `src` and nothing else.
+  expect(
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId: "" },
+      })
+    ).status(),
+  ).toBe(200);
+  await page.goto("/fr/tools");
+  const bare = page.locator(`script[src="${trackingUrl}"]`);
+  await expect(bare).toHaveCount(1);
+  await expect(bare).not.toHaveAttribute("data-website-id", /.*/);
+  // And a value that is not an identifier is refused rather than stored.
+  expect(
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId: '"><script>' },
+      })
+    ).status(),
+  ).toBe(400);
+
+  // The admin fields show what was stored, and clearing the URL stops the
+  // loading.
+  await page.goto("/admin/config");
   await expect(page.getByLabel("URL du script de suivi")).toHaveValue(
     trackingUrl,
   );

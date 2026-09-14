@@ -1191,7 +1191,11 @@
         "cleared": "Messung deaktiviert: Es wird kein Skript mehr geladen.",
         "invalid-url": "Das ist keine gültige http(s)-URL.",
         "save-error": "Speichern fehlgeschlagen (HTTP {status}).",
-        "server-error": "Server nicht erreichbar. Versuche es später erneut."
+        "server-error": "Server nicht erreichbar. Versuche es später erneut.",
+        "website-id-label": "Website-Kennung",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Wird dem Tag als `data-website-id` hinzugefügt. Leer lassen, wenn dein Werkzeug keine braucht.",
+        "invalid-website-id": "Diese Kennung enthält Zeichen, die dort nicht hingehören."
       }
     }
   },

@@ -1191,7 +1191,11 @@
         "cleared": "Tracking turned off: no script is loaded any more.",
         "invalid-url": "That is not a valid http(s) URL.",
         "save-error": "Saving failed (HTTP {status}).",
-        "server-error": "Could not reach the server. Try again later."
+        "server-error": "Could not reach the server. Try again later.",
+        "website-id-label": "Site identifier",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Added to the tag as `data-website-id`. Leave empty if your tool does not ask for one.",
+        "invalid-website-id": "That identifier contains characters that do not belong in one."
       }
     }
   },

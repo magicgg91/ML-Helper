@@ -1,6 +1,7 @@
-// Bloc 100: the visit-tracking script's URL, and the CSP origin that goes
-// with it. Deliberately generic — nothing here knows which analytics tool is
-// behind the URL, it is only a script to load.
+// Bloc 100: the visit-tracking script's URL, the site identifier that goes
+// with it (Bloc 101), and the CSP origin they need. Deliberately generic —
+// nothing here knows which analytics tool is behind the URL, it is only a
+// script to load and an attribute to put on it.
 //
 // Prisma must stay out of this file: src/proxy.ts imports the origin helper
 // below, and middleware runs on the Edge runtime where Prisma cannot follow.
@@ -29,6 +30,29 @@ export function parseTrackingScriptUrl(raw: string | null): string | null {
   // Credentials in a script URL would be sent to the tracker on every page
   // load and shown in the admin field; nothing legitimate needs them.
   if (url.username || url.password) return null;
+  return value;
+}
+
+/**
+ * The tracking site identifier to put on the script tag, or null when none is
+ * configured.
+ *
+ * Bloc 101: the real Umami snippet carries `data-website-id` next to `src`,
+ * and other tools have their own equivalent — hence a free-text field rather
+ * than a UUID check. Empty is legitimate: some trackers need no identifier at
+ * all.
+ *
+ * React escapes attribute values, so this cannot inject markup even unchecked.
+ * The refusal below is about what an identifier IS: quotes, angle brackets,
+ * backticks and whitespace have no place in one, and their presence means the
+ * admin pasted something else — a whole tag, most likely — which would then
+ * fail silently at the tracker rather than loudly here.
+ */
+export function parseTrackingWebsiteId(raw: string | null): string | null {
+  const value = raw?.trim();
+  if (!value) return null;
+  if (value.length > 200) return null;
+  if (/["'`<>\s\u0000-\u001f]/.test(value)) return null;
   return value;
 }
 

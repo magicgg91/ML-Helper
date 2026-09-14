@@ -1191,7 +1191,11 @@
         "cleared": "Takip kapatıldı: artık hiçbir betik yüklenmiyor.",
         "invalid-url": "Bu geçerli bir http(s) URL'si değil.",
         "save-error": "Kaydetme başarısız (HTTP {status}).",
-        "server-error": "Sunucuya ulaşılamadı. Daha sonra tekrar dene."
+        "server-error": "Sunucuya ulaşılamadı. Daha sonra tekrar dene.",
+        "website-id-label": "Site kimliği",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Etikete `data-website-id` olarak eklenir. Aracın istemiyorsa boş bırak.",
+        "invalid-website-id": "Bu kimlik, orada yeri olmayan karakterler içeriyor."
       }
     }
   },

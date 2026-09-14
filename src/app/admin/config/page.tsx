@@ -11,7 +11,7 @@ import {
   getLocaleActiveState,
   isAlwaysActiveLocale,
 } from "@/lib/locale-settings";
-import { getTrackingScriptUrl } from "@/lib/site-settings";
+import { getTrackingSettings } from "@/lib/site-settings";
 import { launchLocales } from "@/lib/translations";
 
 // Bloc 90/A: the Configuration tab is restricted to admin and super_admin —
@@ -24,10 +24,10 @@ export default async function ConfigAdminPage() {
   // `admin` keeps the rest of the tab; showing them a field whose save is
   // refused would only be a trap.
   const canConfigureScripts = can(session.user.role, "configuration.scripts");
-  const [t, state, trackingUrl] = await Promise.all([
+  const [t, state, tracking] = await Promise.all([
     getTranslations("admin.config"),
     getLocaleActiveState(),
-    getTrackingScriptUrl(),
+    getTrackingSettings(),
   ]);
   // Bloc 90/B+D: the 5 launched languages, EN/FR first, each with its public
   // visibility and whether it is locked (always-active EN/FR).
@@ -57,7 +57,10 @@ export default async function ConfigAdminPage() {
           title={t("tracking.section")}
           description={t("tracking.intro")}
         >
-          <TrackingSettingsPanel url={trackingUrl ?? ""} />
+          <TrackingSettingsPanel
+            url={tracking.url ?? ""}
+            websiteId={tracking.websiteId ?? ""}
+          />
         </AdminConfigSection>
       )}
     </main>
