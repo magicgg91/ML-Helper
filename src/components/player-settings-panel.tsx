@@ -44,25 +44,34 @@ function isTemplarKey(key: SkillKey): key is TemplarKey {
 export function safePlayerSettings(raw: string): PlayerSettings {
   const fallback = defaultPlayerSettings();
   try {
-    const parsed = JSON.parse(raw) as Partial<PlayerSettings> & {
-      v?: number;
-    };
-    if (!("equipmentSkills" in parsed)) return fallback;
-    const clanTemple = { ...fallback.clanTemple, ...parsed.clanTemple };
-    if ((parsed.v ?? 1) < currentSettingsVersion && parsed.clanTemple) {
+    // Bloc 99: `v` is separated from the settings here rather than spread
+    // along with them. It is storage bookkeeping — PlayerSettings has no such
+    // field — and letting it ride into the returned object made every
+    // stored-vs-current comparison unequal by construction, whatever the
+    // settings held. The panel's syncFromStorage is one such comparison: it
+    // answered the panel's own save with a fresh object, and the extra
+    // write/broadcast cycle that followed carried a pre-transfer snapshot,
+    // which overwrote an external write (the Stuff simulator's transfer)
+    // that had landed in between.
+    const { v: storedVersion, ...saved } = JSON.parse(
+      raw,
+    ) as Partial<PlayerSettings> & { v?: number };
+    if (!("equipmentSkills" in saved)) return fallback;
+    const clanTemple = { ...fallback.clanTemple, ...saved.clanTemple };
+    if ((storedVersion ?? 1) < currentSettingsVersion && saved.clanTemple) {
       for (const key of templarKeys) {
         clanTemple[key] = Math.max(0, clanTemple[key] - templeBase[key]);
       }
     }
     return {
       ...fallback,
-      ...parsed,
+      ...saved,
       equipmentSkills: {
         ...fallback.equipmentSkills,
-        ...parsed.equipmentSkills,
+        ...saved.equipmentSkills,
       },
-      skillPoints: { ...fallback.skillPoints, ...parsed.skillPoints },
-      templars: { ...fallback.templars, ...parsed.templars },
+      skillPoints: { ...fallback.skillPoints, ...saved.skillPoints },
+      templars: { ...fallback.templars, ...saved.templars },
       clanTemple,
     };
   } catch {

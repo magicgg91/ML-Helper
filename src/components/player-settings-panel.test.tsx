@@ -11,10 +11,12 @@ import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import {
   PlayerSettingsPanel,
+  playerSettingsChangedEvent,
   playerStorageKey,
   replaceEquipmentSkills,
   safePlayerSettings,
 } from "./player-settings-panel";
+import { defaultPlayerSettings } from "../lib/player-settings";
 import { templarRates } from "../lib/gems-templars";
 
 // Bloc 68/F: the league field is a LeagueButtons group now, not a <select>
@@ -31,6 +33,50 @@ function clickLeague(name: string) {
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
   afterEach(cleanup);
+
+  // Bloc 99: the panel used to answer its own save by replacing its state
+  // again. safePlayerSettings spread the stored object wholesale, so the
+  // version stamp `v` — storage bookkeeping, not a setting — came back out
+  // inside the settings, and syncFromStorage's equality guard therefore
+  // compared a value carrying `v` against one that never does: never equal,
+  // whatever the settings held. Each mount then ran a second write/broadcast
+  // cycle whose effect closure held the pre-transfer value, and an external
+  // write landing in that window (the Stuff simulator's transfer button) was
+  // overwritten by it — the transferred skills silently went back to 0.
+  it("Bloc99: hands back the settings alone, without storage bookkeeping", () => {
+    const settings = defaultPlayerSettings();
+    const stored = JSON.stringify({ ...settings, v: 2 });
+
+    expect(Object.keys(safePlayerSettings(stored))).toEqual(
+      Object.keys(settings),
+    );
+    // The comparison syncFromStorage makes, on settings that did not change:
+    // it has to hold, or the panel answers its own write with a new object.
+    expect(JSON.stringify(safePlayerSettings(stored))).toBe(
+      JSON.stringify(settings),
+    );
+  });
+
+  it("Bloc99: settles in a single save, instead of answering its own", async () => {
+    const broadcasts: unknown[] = [];
+    const listener = (event: Event) => broadcasts.push(event);
+    window.addEventListener(playerSettingsChangedEvent, listener);
+    try {
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <PlayerSettingsPanel />
+        </NextIntlClientProvider>,
+      );
+      await waitFor(() =>
+        expect(window.localStorage.getItem(playerStorageKey)).not.toBeNull(),
+      );
+      // One save, one broadcast. A second one is the redundant cycle whose
+      // stale snapshot is what reverted an external transfer.
+      expect(broadcasts).toHaveLength(1);
+    } finally {
+      window.removeEventListener(playerSettingsChangedEvent, listener);
+    }
+  });
 
   it("starts with no league selected", () => {
     render(
@@ -252,9 +298,7 @@ describe("PlayerSettingsPanel", () => {
         <PlayerSettingsPanel />
       </NextIntlClientProvider>,
     );
-    expect(
-      screen.queryByRole("group", { name: "Ligue" }),
-    ).not.toBeVisible();
+    expect(screen.queryByRole("group", { name: "Ligue" })).not.toBeVisible();
     const line2 = screen.getByTestId("player-summary-line2");
     expect(line2).toBeVisible();
     // Attaque and Vitesse are temple skills: even with no input yet, their
