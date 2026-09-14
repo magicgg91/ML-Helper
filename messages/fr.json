@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Configuration",
-      "title": "Langues",
+      "title": "Configuration du site",
       "intro": "Active ou désactive la visibilité de chaque langue sur le site public. Les fichiers de traduction restent inchangés. L’anglais et le français sont toujours actifs.",
       "columns": {
         "language": "Langue",
@@ -1177,6 +1177,25 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Langues",
+      "tracking": {
+        "section": "Suivi des visites",
+        "intro": "Charge un script de mesure d'audience sur toutes les pages, publiques comme admin. Laisse le champ vide pour ne rien charger du tout.",
+        "label": "URL du script de suivi",
+        "placeholder": "https://exemple.com/script.js",
+        "hint": "L'URL du script fourni par ton outil de suivi. Le script est chargé en différé, avec le nonce de la page.",
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "saved": "URL de suivi enregistrée.",
+        "cleared": "Suivi désactivé : plus aucun script n'est chargé.",
+        "invalid-url": "Ce n'est pas une URL http(s) valide.",
+        "save-error": "Échec de l'enregistrement (HTTP {status}).",
+        "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+        "website-id-label": "Identifiant du site",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Ajouté sur la balise en `data-website-id`. Laisse vide si ton outil n'en demande pas.",
+        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place."
       }
     }
   },

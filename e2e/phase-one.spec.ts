@@ -2271,6 +2271,156 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   await toolsContext.close();
 });
 
+// Bloc 100/A+B: the tracking script URL is set from the admin and loads on
+// every page. The interesting half is the CSP: the policy is nonce-based with
+// 'strict-dynamic' (src/proxy.ts), under which host allowlists are ignored —
+// so a cross-origin script is authorised by carrying the request's nonce, and
+// by nothing else. That is what makes an admin-editable URL possible at all.
+test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the page's own nonce", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const endpoint = "/api/admin/config/tracking";
+  const trackingUrl = "https://stats.example.test/script.js";
+  const websiteId = "25931871-50b0-4123-a327-09f9c60cff18";
+
+  // Collect the CSP violations the browser itself reports, on every page.
+  await page.addInitScript(() => {
+    const violations: string[] = [];
+    (window as unknown as { cspViolations: string[] }).cspViolations =
+      violations;
+    document.addEventListener("securitypolicyviolation", (event) =>
+      violations.push(`${event.violatedDirective} ${event.blockedURI}`),
+    );
+  });
+
+  await b90EnsureRoot(page);
+  await b90Login(page, B90_ROOT.username, B90_ROOT.password);
+
+  // Nothing is loaded while the field is empty — no tracking by default.
+  // Start from "not configured" explicitly rather than assuming it: this suite
+  // shares one database, and that state is what the assertion is about.
+  expect(
+    (await page.request.put(endpoint, { data: { url: "" } })).status(),
+  ).toBe(200);
+  await page.goto("/fr/tools");
+  await expect(page.locator(`script[src="${trackingUrl}"]`)).toHaveCount(0);
+
+  expect(
+    (
+      await page.request.put(endpoint, { data: { url: "pas-une-url" } })
+    ).status(),
+  ).toBe(400);
+  expect(
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId },
+      })
+    ).status(),
+  ).toBe(200);
+
+  // A public page and an admin page: the root layout covers both.
+  for (const path of ["/fr/tools", "/admin/config"]) {
+    const response = await page.goto(path);
+    const csp = response?.headers()["content-security-policy"];
+    const script = page.locator(`script[src="${trackingUrl}"]`);
+    await expect(script, `${path}: tracking script missing`).toHaveCount(1);
+
+    // Browsers hide the nonce content attribute; the IDL property keeps it.
+    const nonce = await script.evaluate(
+      (element) => (element as HTMLScriptElement).nonce,
+    );
+    expect(nonce, `${path}: no nonce on the tracking script`).toBeTruthy();
+
+    // Bloc 101: the identifier the tracker expects next to its src. Without
+    // it, Umami loads and measures nothing.
+    await expect(script, `${path}: data-website-id missing`).toHaveAttribute(
+      "data-website-id",
+      websiteId,
+    );
+    expect(csp, `${path}: the CSP does not authorise that nonce`).toContain(
+      `'nonce-${nonce}'`,
+    );
+
+    // And the browser agrees: it reported no policy violation. The host is
+    // unreachable on purpose, so the fetch fails at the network — a refusal
+    // by the CSP would have shown up here instead.
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { cspViolations: string[] }).cspViolations,
+      ),
+      `${path}: CSP violation with the tracking script in place`,
+    ).toEqual([]);
+  }
+
+  // Bloc 101: the identifier is optional — clearing it alone leaves the script
+  // loading, with `src` and nothing else.
+  expect(
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId: "" },
+      })
+    ).status(),
+  ).toBe(200);
+  await page.goto("/fr/tools");
+  const bare = page.locator(`script[src="${trackingUrl}"]`);
+  await expect(bare).toHaveCount(1);
+  await expect(bare).not.toHaveAttribute("data-website-id", /.*/);
+  // And a value that is not an identifier is refused rather than stored.
+  expect(
+    (
+      await page.request.put(endpoint, {
+        data: { url: trackingUrl, websiteId: '"><script>' },
+      })
+    ).status(),
+  ).toBe(400);
+
+  // The admin fields show what was stored, and clearing the URL stops the
+  // loading.
+  await page.goto("/admin/config");
+  await expect(page.getByLabel("URL du script de suivi")).toHaveValue(
+    trackingUrl,
+  );
+
+  // Revue Codex (PR #127): an `admin` has configuration.write, but setting an
+  // executable script URL is super_admin only — otherwise that admin runs code
+  // of their choosing on the next page a Super Admin loads, with their
+  // session, which is the users.manage the role matrix denies them.
+  const created = await page.request.post("/api/admin/users", {
+    data: {
+      username: "b100-admin",
+      role: "admin",
+      password: "role-test-password",
+    },
+  });
+  // 201 the first time; this API answers 400 for an existing username, which
+  // is what a re-run against the same database gets. Either way the account
+  // exists with that password, which is all the check below needs.
+  expect([201, 400]).toContain(created.status());
+  const adminContext = await page.context().browser()!.newContext();
+  const adminPage = await adminContext.newPage();
+  await b90Login(adminPage, "b100-admin", "role-test-password");
+  expect(
+    (
+      await adminPage.request.put(endpoint, {
+        data: { url: "https://evil.example.test/x.js" },
+      })
+    ).status(),
+    "an admin must not be able to set the tracking script",
+  ).toBe(403);
+  // And the field is not even shown to them on the Configuration tab.
+  await adminPage.goto("/admin/config");
+  await expect(adminPage.getByLabel("URL du script de suivi")).toHaveCount(0);
+  await expect(adminPage.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  await adminContext.close();
+
+  expect(
+    (await page.request.put(endpoint, { data: { url: "" } })).status(),
+  ).toBe(200);
+  await page.goto("/fr/tools");
+  await expect(page.locator(`script[src="${trackingUrl}"]`)).toHaveCount(0);
+});
+
 // Bloc 90/D: EN and FR can never be deactivated — their toggles are locked in
 // the UI, and a forged API request to disable them is rejected.
 test("Bloc 90/D: English and French cannot be deactivated", async ({

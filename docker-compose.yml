@@ -22,6 +22,14 @@ services:
       SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
       # Adresse qui reçoit les messages envoyés depuis /contact.
       CONTACT_EMAIL: "${CONTACT_EMAIL:-}"
+      # Origine du script de suivi des visites, uniquement s'il est servi
+      # depuis un autre domaine que le site. L'URL du script se règle dans
+      # l'admin ; cette variable autorise ses envois de mesures dans le
+      # connect-src de la CSP. Ce n'est pas un secret — elle apparaît de toute
+      # façon dans l'en-tête CSP de chaque réponse — donc elle se pose ici
+      # directement, sans passer par .env. Vider la valeur revient à n'ouvrir
+      # aucun autre domaine.
+      TRACKING_ORIGIN: "${TRACKING_ORIGIN:-https://stats.domopi.eu}"
     ports:
       - "3000:3000"
     volumes:

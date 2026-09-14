@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Configuración",
-      "title": "Idiomas",
+      "title": "Configuración del sitio",
       "intro": "Activa o desactiva la visibilidad de cada idioma en el sitio público. Los archivos de traducción no se modifican. El inglés y el francés siempre están activos.",
       "columns": {
         "language": "Idioma",
@@ -1177,6 +1177,25 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Idiomas",
+      "tracking": {
+        "section": "Seguimiento de visitas",
+        "intro": "Carga un script de analítica en todas las páginas, públicas y de administración. Deja el campo vacío para no cargar nada.",
+        "label": "URL del script de seguimiento",
+        "placeholder": "https://ejemplo.com/script.js",
+        "hint": "La URL del script que te da tu herramienta de seguimiento. Se carga de forma diferida, con el nonce de la página.",
+        "save": "Guardar",
+        "saving": "Guardando…",
+        "saved": "URL de seguimiento guardada.",
+        "cleared": "Seguimiento desactivado: ya no se carga ningún script.",
+        "invalid-url": "No es una URL http(s) válida.",
+        "save-error": "Error al guardar (HTTP {status}).",
+        "server-error": "No se pudo contactar con el servidor. Inténtalo más tarde.",
+        "website-id-label": "Identificador del sitio",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Se añade a la etiqueta como `data-website-id`. Déjalo vacío si tu herramienta no lo pide.",
+        "invalid-website-id": "Ese identificador contiene caracteres que no corresponden."
       }
     }
   },

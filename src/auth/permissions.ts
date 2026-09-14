@@ -22,6 +22,13 @@ const adminCapabilities = [
   // roles have explicit capability sets that never include it.
   "configuration.read",
   "configuration.write",
+  // Bloc 100, revue Codex (PR #127): configuring a remote script URL is not
+  // the same power as the rest of Configuration. The script runs in this
+  // origin, with a valid nonce, on every page — including the ones a Super
+  // Admin loads — so whoever sets it can act as any administrator who then
+  // browses the site. That would hand `admin` the users.manage and
+  // content.write it is deliberately denied below, so it is super_admin only.
+  "configuration.scripts",
 ] as const;
 
 export type AdminCapability = (typeof adminCapabilities)[number];
@@ -35,7 +42,8 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
         item !== "users.manage" &&
         item !== "logs.purge" &&
         item !== "content.read" &&
-        item !== "content.write",
+        item !== "content.write" &&
+        item !== "configuration.scripts",
     ),
   ),
   guides_manager: new Set(["dashboard.view", "guides.read", "guides.write"]),
