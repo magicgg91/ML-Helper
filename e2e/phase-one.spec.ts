@@ -2345,6 +2345,39 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   await expect(page.getByLabel("URL du script de suivi")).toHaveValue(
     trackingUrl,
   );
+
+  // Revue Codex (PR #127): an `admin` has configuration.write, but setting an
+  // executable script URL is super_admin only — otherwise that admin runs code
+  // of their choosing on the next page a Super Admin loads, with their
+  // session, which is the users.manage the role matrix denies them.
+  const created = await page.request.post("/api/admin/users", {
+    data: {
+      username: "b100-admin",
+      role: "admin",
+      password: "role-test-password",
+    },
+  });
+  // 201 the first time; this API answers 400 for an existing username, which
+  // is what a re-run against the same database gets. Either way the account
+  // exists with that password, which is all the check below needs.
+  expect([201, 400]).toContain(created.status());
+  const adminContext = await page.context().browser()!.newContext();
+  const adminPage = await adminContext.newPage();
+  await b90Login(adminPage, "b100-admin", "role-test-password");
+  expect(
+    (
+      await adminPage.request.put(endpoint, {
+        data: { url: "https://evil.example.test/x.js" },
+      })
+    ).status(),
+    "an admin must not be able to set the tracking script",
+  ).toBe(403);
+  // And the field is not even shown to them on the Configuration tab.
+  await adminPage.goto("/admin/config");
+  await expect(adminPage.getByLabel("URL du script de suivi")).toHaveCount(0);
+  await expect(adminPage.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  await adminContext.close();
+
   expect(
     (await page.request.put(endpoint, { data: { url: "" } })).status(),
   ).toBe(200);

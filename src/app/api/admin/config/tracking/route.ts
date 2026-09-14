@@ -3,17 +3,23 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { auditMessage } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
-import { getSiteSetting, trackingScriptUrlKey } from "@/lib/site-settings";
+import { trackingScriptUrlKey } from "@/lib/site-settings";
 import { parseTrackingScriptUrl } from "@/lib/tracking";
 
 const payloadSchema = z.object({ url: z.string() });
 
-// Bloc 100/A: set or clear the visit-tracking script URL. Gated on
-// configuration.write like the locales route next door, so the 4 other roles
-// are rejected here with 403 even if they forge the request — this value ends
-// up as a <script src> on every page of the site, public and admin.
+// Bloc 100/A: set or clear the visit-tracking script URL.
+//
+// Gated on configuration.scripts, which only super_admin holds — not on
+// configuration.write like the locales route next door (revue Codex, PR #127).
+// The difference is what the value does: it becomes a <script src> executed in
+// this origin, with a valid nonce, on every page of the site. An `admin` who
+// could set it would have arbitrary code running on the next page a Super
+// Admin loads, and that code can call the admin API with their session — which
+// is exactly the users.manage / content.write that the role matrix denies
+// `admin`. A forged request from any other role is rejected here with 403.
 export async function PUT(request: Request) {
-  const session = await authorizedSession("configuration.write");
+  const session = await authorizedSession("configuration.scripts");
   if (!session) return forbiddenResponse();
 
   const parsed = payloadSchema.safeParse(
@@ -29,9 +35,18 @@ export async function PUT(request: Request) {
   if (submitted && !url)
     return NextResponse.json({ error: "invalid_url" }, { status: 400 });
 
-  const before = (await getSiteSetting(trackingScriptUrlKey)) ?? "";
-
   await prisma.$transaction(async (tx) => {
+    // Revue Codex (PR #127): read the previous value inside the transaction.
+    // Read outside it, two concurrent saves would both see the same old value
+    // and the later one would record an audit diff from a value it never
+    // actually replaced.
+    const before =
+      (
+        await tx.siteSetting.findUnique({
+          where: { key: trackingScriptUrlKey },
+          select: { value: true },
+        })
+      )?.value ?? "";
     // Every write here goes through `tx`, never the global client: SQLite
     // serialises writers, so a query issued on the global client inside an
     // interactive transaction waits for a lock the transaction itself holds,

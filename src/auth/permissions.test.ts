@@ -99,6 +99,24 @@ describe("admin role permissions", () => {
     expect(can("read_only", "dashboard.view")).toBe(true);
   });
 
+  // Bloc 100, revue Codex (PR #127): configuring an executable script URL is
+  // a strictly narrower power than the rest of Configuration — `admin` has
+  // configuration.write but must not be able to run code on a Super Admin's
+  // pages, which would hand it back the users.manage it is denied.
+  it("Bloc100: reserves script configuration to super_admin alone", () => {
+    expect(can("super_admin", "configuration.scripts")).toBe(true);
+    for (const role of [
+      "admin",
+      "guides_manager",
+      "references_manager",
+      "tools_manager",
+      "read_only",
+    ] as const)
+      expect(can(role, "configuration.scripts")).toBe(false);
+    // The rest of the tab is unchanged for admin.
+    expect(can("admin", "configuration.write")).toBe(true);
+  });
+
   // Bloc 90/A: the Configuration tab (language visibility) is reserved to
   // admin and super_admin — every manager/read role is denied, read and write.
   it("Bloc90/A: reserves configuration to admin and super_admin", () => {

@@ -1,3 +1,4 @@
+import { can } from "@/auth/permissions";
 import { requireCapability } from "@/auth/require-session";
 import { getTranslations } from "next-intl/server";
 import { AdminConfigSection } from "@/components/admin-config-section";
@@ -17,7 +18,12 @@ import { launchLocales } from "@/lib/translations";
 // requireCapability("configuration.read") renders "Accès interdit" (403) for
 // every other role, matching the nav link which is hidden for them too.
 export default async function ConfigAdminPage() {
-  await requireCapability("configuration.read");
+  const session = await requireCapability("configuration.read");
+  // Revue Codex (PR #127): the tracking section is super_admin only — setting
+  // a script URL means running code in this origin on everyone's pages. An
+  // `admin` keeps the rest of the tab; showing them a field whose save is
+  // refused would only be a trap.
+  const canConfigureScripts = can(session.user.role, "configuration.scripts");
   const [t, state, trackingUrl] = await Promise.all([
     getTranslations("admin.config"),
     getLocaleActiveState(),
@@ -46,12 +52,14 @@ export default async function ConfigAdminPage() {
       >
         <LanguageSettingsPanel rows={rows} />
       </AdminConfigSection>
-      <AdminConfigSection
-        title={t("tracking.section")}
-        description={t("tracking.intro")}
-      >
-        <TrackingSettingsPanel url={trackingUrl ?? ""} />
-      </AdminConfigSection>
+      {canConfigureScripts && (
+        <AdminConfigSection
+          title={t("tracking.section")}
+          description={t("tracking.intro")}
+        >
+          <TrackingSettingsPanel url={trackingUrl ?? ""} />
+        </AdminConfigSection>
+      )}
     </main>
   );
 }
