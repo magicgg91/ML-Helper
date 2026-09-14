@@ -651,7 +651,7 @@
     "name": "Subida de Nivel",
     "league": "Liga",
     "select-league": "Elige una liga para mostrar la tabla de referencia.",
-    "unconfirmed": "⚠️ La fórmula de tropas aún no está confirmada para esta liga — actualmente solo están disponibles Leyenda, Diamante, Platino, Bronce y Oro.",
+    "unconfirmed": "⚠️ La fórmula de tropas aún no está confirmada para esta liga. {count, plural, =0 {Por ahora no hay ninguna liga disponible.} other {Ligas disponibles: {leagues}.}}",
     "columns": {
       "level": "Nivel",
       "xp": "XP requerida",

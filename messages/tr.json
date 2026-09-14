@@ -651,7 +651,7 @@
     "name": "Seviye Atlama",
     "league": "Lig",
     "select-league": "Referans tablosunu görüntülemek için bir lig seç.",
-    "unconfirmed": "⚠️ Birlik formülü bu lig için henüz doğrulanmadı — şu anda yalnızca Efsane, Elmas, Platin, Bronz ve Altın kullanılabilir.",
+    "unconfirmed": "⚠️ Birlik formülü bu lig için henüz doğrulanmadı. {count, plural, =0 {Şu anda hiçbir lig mevcut değil.} other {Mevcut ligler: {leagues}.}}",
     "columns": {
       "level": "Seviye",
       "xp": "Gerekli XP",
