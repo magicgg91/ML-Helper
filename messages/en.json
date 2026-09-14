@@ -651,7 +651,7 @@
     "name": "Level Up",
     "league": "League",
     "select-league": "Choose a league to display the reference table.",
-    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league — only Legend, Diamond, Platinum, Bronze and Gold are currently available.",
+    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league. {count, plural, =0 {No league is available at the moment.} other {Available leagues: {leagues}.}}",
     "columns": {
       "level": "Level",
       "xp": "Required XP",

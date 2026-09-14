@@ -1,20 +1,11 @@
 import { leagues, type League } from "./player-settings";
 
-export const confirmedLevelUpLeagues = [
-  "bronze",
-  "gold",
-  "platinum",
-  "diamond",
-  "legend",
-] as const;
-export type ConfirmedLevelUpLeague = (typeof confirmedLevelUpLeagues)[number];
 export type LevelUpParameters = {
   xp: { base: number; ratio: number };
-  // Bloc 42/B: widened to every league, not just the 5 confirmed ones —
-  // Silver's formula is still unconfirmed (levelUpTroopsAt keeps returning
-  // null for it below) but AGENTS.md requires unconfirmed data to stay
-  // admin-editable with a default value, which needs a slot in the type to
-  // edit. Silver defaults to {0, 0} rather than a confirmed league's value.
+  // Bloc 42/B: every league has a slot, so any of them can be filled in from
+  // the admin — AGENTS.md requires unconfirmed data to stay editable with a
+  // default value. Bloc 98/A: {0, 0} is that default, and it is what marks a
+  // league as not yet confirmed (see hasLevelUpTroopsFormula below).
   troops: Record<League, { coefficient: number; ratio: number }>;
   maxLevel: number;
   columnSize: number;
@@ -37,6 +28,62 @@ export const defaultLevelUpParameters: LevelUpParameters = {
   pageSize: 60,
   chestInterval: 10,
 };
+
+// Bloc 98/A: which leagues have a troop formula is read from the parameters,
+// never from a list of league names. The list that used to sit here — and the
+// `league === "silver"` test that used to open levelUpTroopsAt — meant an admin
+// could fill in Silver's coefficient and ratio, save them, and still be told by
+// the public reference that Silver was unavailable: the values were in the
+// database and nothing ever looked at them. Any league an admin fills in now
+// simply works, and one that is emptied goes back to unconfirmed on its own.
+export function hasLevelUpTroopsFormula(
+  league: League,
+  parameters: LevelUpParameters = defaultLevelUpParameters,
+): boolean {
+  const formula = parameters.troops[league];
+  // Zero is what an unfilled league carries (see defaultLevelUpParameters) and
+  // is also the one value that could never be a real formula: a coefficient of
+  // 0 yields 0 troops at every level, a ratio of 0 yields 0 from level 2 on.
+  return (
+    Number.isFinite(formula?.coefficient) &&
+    Number.isFinite(formula?.ratio) &&
+    formula.coefficient > 0 &&
+    formula.ratio > 0
+  );
+}
+
+/** The leagues a player can actually consult, in game progression order. */
+export function availableLevelUpLeagues(
+  parameters: LevelUpParameters = defaultLevelUpParameters,
+): League[] {
+  return leagues.filter((league) =>
+    hasLevelUpTroopsFormula(league, parameters),
+  );
+}
+
+/**
+ * Whether these parameters can be stored as they are.
+ *
+ * Bloc 98/A: a league's troop pair is either filled in (both > 0) or not known
+ * yet (both 0 — the default, and what marks the league unconfirmed for the
+ * public reference). The admin route used to demand that EVERY number be > 0,
+ * which made the whole Progression reference unsavable for as long as any one
+ * league was still blank — on a fresh install, that is Silver, so the very
+ * first save an admin attempted came back 400. A half-filled pair is refused
+ * too: it is neither a formula nor a blank slot.
+ */
+export function isSavableLevelUpParameters(
+  parameters: LevelUpParameters,
+): boolean {
+  const positive = (value: number) => Number.isFinite(value) && value > 0;
+  if (!positive(parameters.xp.base) || !positive(parameters.xp.ratio))
+    return false;
+  return Object.values(parameters.troops).every(({ coefficient, ratio }) => {
+    if (!Number.isFinite(coefficient) || !Number.isFinite(ratio)) return false;
+    if (coefficient < 0 || ratio < 0) return false;
+    return (coefficient === 0) === (ratio === 0);
+  });
+}
 
 export function parseLevelUpParameters(value: unknown): LevelUpParameters {
   if (!value || typeof value !== "object")
@@ -74,7 +121,7 @@ export function levelUpTroopsAt(
   league: League,
   parameters = defaultLevelUpParameters,
 ): number | null {
-  if (league === "silver") return null;
+  if (!hasLevelUpTroopsFormula(league, parameters)) return null;
   if (level === 1) return 200;
   const formula = parameters.troops[league];
   return formula.coefficient * formula.ratio ** level;

@@ -651,7 +651,7 @@
     "name": "Stufenaufstieg",
     "league": "Liga",
     "select-league": "Wähle eine Liga, um die Referenztabelle anzuzeigen.",
-    "unconfirmed": "⚠️ Die Truppenformel ist für diese Liga noch nicht bestätigt — derzeit sind nur Legende, Diamant, Platin, Bronze und Gold verfügbar.",
+    "unconfirmed": "⚠️ Die Truppenformel ist für diese Liga noch nicht bestätigt. {count, plural, =0 {Derzeit ist keine Liga verfügbar.} other {Verfügbare Ligen: {leagues}.}}",
     "columns": {
       "level": "Stufe",
       "xp": "Benötigte XP",

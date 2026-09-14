@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import { defaultCityParameters } from "../lib/city-parameters";
@@ -212,6 +218,72 @@ describe("named formula parameter editors", () => {
     await waitFor(() => expect(request).toHaveBeenCalled());
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
     expect(body.troops.silver).toEqual({ coefficient: 12.5, ratio: 1.1 });
+  });
+
+  // Bloc 98/C: one row per league, in the game's own progression order —
+  // Silver used to be a hand-written row appended after the five "confirmed"
+  // ones, so it sat last, after Légende.
+  it("Bloc98/C: lists every league in game progression order", () => {
+    render(<LevelUpParametersEditor initial={defaultLevelUpParameters} />);
+    const rows = screen.getAllByRole("row").slice(1); // drop the header row
+    expect(
+      rows.map((row) =>
+        within(row).getAllByRole("cell")[0].textContent?.trim(),
+      ),
+    ).toEqual([
+      "Bronze",
+      expect.stringContaining("Argent"),
+      "Or",
+      "Platine",
+      "Diamant",
+      "Légende",
+    ]);
+  });
+
+  // Bloc 98/B: the note stayed next to Argent for good, even once values had
+  // been entered and saved. It now follows what is actually stored.
+  it("Bloc98/B: drops the 'not confirmed' note once a league has values", () => {
+    // The Bloc42/B test above renders the shipped defaults and finds the note
+    // on Argent; the same editor, given values for Argent, must not show it —
+    // it used to stay for good, whatever had been entered and saved.
+    render(
+      <LevelUpParametersEditor
+        initial={{
+          ...defaultLevelUpParameters,
+          troops: {
+            ...defaultLevelUpParameters.troops,
+            silver: { coefficient: 30, ratio: 1.24 },
+          },
+        }}
+      />,
+    );
+    expect(
+      screen.getByRole("spinbutton", { name: "Argent Coefficient" }),
+    ).toHaveValue(30);
+    expect(screen.queryByText(/Formule de troupes non confirmée/)).toBeNull();
+  });
+
+  it("Bloc98/B: puts that note on any league left empty, not only on Argent", () => {
+    render(
+      <LevelUpParametersEditor
+        initial={{
+          ...defaultLevelUpParameters,
+          troops: {
+            ...defaultLevelUpParameters.troops,
+            legend: { coefficient: 0, ratio: 0 },
+          },
+        }}
+      />,
+    );
+    const noted = screen
+      .getAllByText(/Formule de troupes non confirmée/)
+      .map((note) =>
+        note
+          .closest("td")
+          ?.textContent?.replace(/\(.*\)/, "")
+          .trim(),
+      );
+    expect(noted).toEqual(["Argent", "Légende"]);
   });
 
   it("Bloc35 8.1: narrows the per-skill/per-league value columns (never exceed 100%)", () => {

@@ -651,7 +651,7 @@
     "name": "Progression",
     "league": "Ligue",
     "select-league": "Choisis une ligue pour afficher le référentiel.",
-    "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue — seules Légende, Diamant, Platine, Bronze et Or sont disponibles pour le moment.",
+    "unconfirmed": "⚠️ Formule de troupes non encore confirmée pour cette ligue. {count, plural, =0 {Aucune ligue n'est disponible pour le moment.} other {Ligues disponibles : {leagues}.}}",
     "columns": {
       "level": "Niveau",
       "xp": "XP requis",

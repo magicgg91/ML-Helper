@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { defaultLevelUpParameters } from "../src/lib/level-up";
 import * as OTPAuth from "otpauth";
 
 test.describe.configure({ mode: "serial" });
@@ -403,6 +404,58 @@ test("Progression is a Référentiels reference and keeps Silver unconfirmed", a
   ).toBeVisible();
 });
 
+// Bloc 98/A: the bug this bloc fixes, end to end and in the order it was
+// reported — an admin fills a league in, saves, and the public reference is
+// still telling players the league is unavailable. Availability now comes from
+// the stored values, so saving is all it takes.
+test("Bloc 98/A: a league becomes available publicly as soon as an admin fills it in", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const leagueGroup = page.getByRole("group", { name: "Ligue" });
+  const endpoint = "/api/admin/guides/references/level-up";
+
+  await page.goto("/referentiels/level-up");
+  await leagueGroup.getByRole("button", { name: "Argent" }).click();
+  await expect(page.getByRole("status")).toContainText("non encore confirmée");
+  await expect(page.getByRole("table")).toHaveCount(0);
+
+  await b90EnsureRoot(page);
+  await b90Login(page, B90_ROOT.username, B90_ROOT.password);
+  const filled = await page.request.put(endpoint, {
+    data: {
+      ...defaultLevelUpParameters,
+      troops: {
+        ...defaultLevelUpParameters.troops,
+        silver: { coefficient: 30, ratio: 1.24 },
+      },
+    },
+  });
+  expect(filled.status()).toBe(200);
+
+  await page.goto("/referentiels/level-up");
+  await leagueGroup.getByRole("button", { name: "Argent" }).click();
+  await expect(page.getByRole("table").first()).toBeVisible();
+  // The saved values are what the table is built from: level 2 is
+  // coefficient × ratio² = 30 × 1.24² = 46.
+  await expect(
+    page.getByRole("row").nth(2).getByRole("cell").nth(2),
+  ).toHaveText("46");
+
+  // Putting the league back to blank must be savable too — the admin route
+  // used to reject any zero, so the reference could not be saved at all while
+  // a league was still unconfirmed (Bloc 98/A). This also restores the seeded
+  // state for the rest of the suite.
+  const blanked = await page.request.put(endpoint, {
+    data: defaultLevelUpParameters,
+  });
+  expect(blanked.status()).toBe(200);
+  await page.goto("/referentiels/level-up");
+  await leagueGroup.getByRole("button", { name: "Argent" }).click();
+  await expect(page.getByRole("status")).toContainText("Ligues disponibles :");
+  await expect(page.getByRole("table")).toHaveCount(0);
+});
+
 test("calculator pages only repeat names in their navigation tabs", async ({
   page,
 }) => {
@@ -667,9 +720,7 @@ test("Ranking converts position and percentage into league ranges", async ({
   await rankingLeagueGroup.getByRole("button", { name: "Bronze" }).click();
   // Bloc 92/A11y: the ranking placeholder no longer carries its own
   // role="status" (it sits inside a permanent aria-live region); match its text.
-  await expect(
-    page.getByText(/à définir dans l’administration/),
-  ).toBeVisible();
+  await expect(page.getByText(/à définir dans l’administration/)).toBeVisible();
 });
 
 test("Skills exposes gem distributions and exact templar costs", async ({
