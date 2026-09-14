@@ -133,3 +133,17 @@ model LocaleSetting {
 
   @@map("locale_settings")
 }
+
+// Bloc 100: the Configuration tab's free-form settings, one row per named
+// key. LocaleSetting above stays as it is — it is keyed by locale and holds a
+// boolean per language, a different shape. This table is what a new
+// Configuration section writes to without needing a migration of its own; the
+// keys are named constants in src/lib/site-settings.ts, never string literals
+// at the call sites.
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}

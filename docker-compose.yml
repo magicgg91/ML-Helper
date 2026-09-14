@@ -22,6 +22,11 @@ services:
       SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
       # Adresse qui reçoit les messages envoyés depuis /contact.
       CONTACT_EMAIL: "${CONTACT_EMAIL:-}"
+      # Origine du script de suivi des visites (ex. https://stats.example.com),
+      # uniquement s'il est servi depuis un autre domaine que le site. L'URL du
+      # script se règle dans l'admin ; cette variable autorise ses envois de
+      # mesures dans le connect-src de la CSP. Vide = aucun autre domaine.
+      TRACKING_ORIGIN: "${TRACKING_ORIGIN:-}"
     ports:
       - "3000:3000"
     volumes:

@@ -4,6 +4,7 @@ import { Cinzel, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { siteUrl } from "@/lib/site-url";
+import { getTrackingScriptUrl } from "@/lib/site-settings";
 import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
 
@@ -78,6 +79,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // refuses to run it. The nonce is published on the x-nonce request header
   // by the middleware.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // Bloc 100: the visit-tracking script an admin configured in the
+  // Configuration tab, or null when the field is empty — nothing is loaded by
+  // default. This is the root layout, so it covers the public site and the
+  // admin alike. A database failure here propagates rather than being
+  // swallowed (AGENTS.md), which costs nothing in practice: every page under
+  // this layout already needs the database to render at all.
+  const trackingScriptUrl = await getTrackingScriptUrl();
   return (
     <html
       lang={locale}
@@ -85,6 +93,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable}`}
     >
       <head>
+        {/* Bloc 100: the configured tracking script. It carries the request's
+            nonce, exactly like the inline theme script below: the CSP is
+            nonce-based with 'strict-dynamic' (src/proxy.ts), under which host
+            allowlists are ignored and a nonce is what authorises a script —
+            which is also why a URL an admin can change at any time needs no
+            CSP exception of its own. `defer` keeps it off the critical path.
+            Where the script may SEND its measurements is connect-src, not
+            script-src: see TRACKING_ORIGIN in src/proxy.ts. */}
+        {trackingScriptUrl && (
+          <script defer src={trackingScriptUrl} nonce={nonce} />
+        )}
         {/* Bloc 33/B: sets data-theme before first paint, so a first-time
             visitor sees their OS preference immediately instead of a flash
             of dark followed by a correction. Kept in sync with ThemeToggle's

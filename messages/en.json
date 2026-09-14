@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Configuration",
-      "title": "Languages",
+      "title": "Site configuration",
       "intro": "Enable or disable each language's visibility on the public site. The translation files stay untouched. English and French are always active.",
       "columns": {
         "language": "Language",
@@ -1177,6 +1177,21 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Languages",
+      "tracking": {
+        "section": "Visit tracking",
+        "intro": "Loads an analytics script on every page, public and admin alike. Leave the field empty to load nothing at all.",
+        "label": "Tracking script URL",
+        "placeholder": "https://example.com/script.js",
+        "hint": "The script URL your tracking tool gives you. It is loaded deferred, with the page's nonce.",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Tracking URL saved.",
+        "cleared": "Tracking turned off: no script is loaded any more.",
+        "invalid-url": "That is not a valid http(s) URL.",
+        "save-error": "Saving failed (HTTP {status}).",
+        "server-error": "Could not reach the server. Try again later."
       }
     }
   },
