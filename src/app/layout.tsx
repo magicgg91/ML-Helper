@@ -4,6 +4,7 @@ import { Cinzel, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { siteUrl } from "@/lib/site-url";
+import { themeBackground } from "@/lib/theme-color";
 import { getTrackingSettings } from "@/lib/site-settings";
 import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
@@ -116,15 +117,39 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Bloc 33/B: sets data-theme before first paint, so a first-time
             visitor sees their OS preference immediately instead of a flash
             of dark followed by a correction. Kept in sync with ThemeToggle's
-            own localStorage-then-matchMedia fallback. localStorage access is
-            isolated in its own try/catch (it can throw in private-browsing
-            or storage-restricted contexts) so a denial there still falls
-            through to the matchMedia read instead of silently keeping the
-            CSS dark default. */}
+            own localStorage-then-matchMedia fallback.
+            localStorage access is isolated in its own try/catch (it can
+            throw in private-browsing or storage-restricted contexts) so a
+            denial there still falls through to the matchMedia read instead
+            of silently keeping the CSS dark default.
+            Bloc 103: it also CREATES and fills <meta name="theme-color">,
+            which is the colour the browser paints AROUND the page — on iOS,
+            the status-bar strip an installed app sits under. Without one,
+            iOS 26+ samples the page's top edge instead, gets no solid colour
+            (body's top edge carries a radial gradient) and falls back to a
+            frosted-glass band that blurs the header beneath it: the
+            ML-HELPER wordmark and the nav buttons.
+
+            The tag is created here rather than server-rendered through
+            metadata, and that is deliberate. A tag React owns is one React
+            re-inserts at hydration: since this script rewrites the colour
+            for a saved light theme, React answered with a SECOND
+            theme-color tag holding the stale dark value, and a duplicate
+            leaves the browser reading whichever comes first.
+            suppressHydrationWarning does not help — React 19 hoists <meta>
+            as a resource rather than hydrating it in place. One owner, then,
+            and it has to be this script: it runs before the first paint, so
+            the strip is right from the first frame instead of being
+            corrected afterwards.
+
+            This is the inline twin of applyThemeColor
+            (src/lib/theme-color.ts), which ThemeToggle uses for later
+            changes; both colours are interpolated from that one module, so
+            the twins cannot drift apart. */}
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
-            __html: `(function(){var saved=null;try{saved=localStorage.getItem("mlhelper_theme");}catch(e){}var theme=saved==="light"||saved==="dark"?saved:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=theme;})();`,
+            __html: `(function(){var saved=null;try{saved=localStorage.getItem("mlhelper_theme");}catch(e){}var theme=saved==="light"||saved==="dark"?saved:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=theme;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.setAttribute("name","theme-color");document.head.appendChild(m);}m.setAttribute("content",theme==="light"?${JSON.stringify(themeBackground.light)}:${JSON.stringify(themeBackground.dark)});})();`,
           }}
         />
       </head>
