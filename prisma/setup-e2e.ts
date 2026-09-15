@@ -10,6 +10,7 @@ async function main() {
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "login_throttles"');
   await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "locale_settings"');
+  await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "site_settings"');
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
   );
@@ -22,6 +23,11 @@ async function main() {
   // Bloc 90: per-locale public visibility (admin Configuration tab).
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "locale_settings" ("locale" TEXT NOT NULL PRIMARY KEY, "active" BOOLEAN NOT NULL DEFAULT true, "updated_at" DATETIME NOT NULL)',
+  );
+  // Bloc 100: the Configuration tab's named settings (tracking script URL).
+  // Starts empty, which is what "no tracking configured" means.
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE "site_settings" ("key" TEXT NOT NULL PRIMARY KEY, "value" TEXT NOT NULL, "updated_at" DATETIME NOT NULL)',
   );
   await prisma.$executeRawUnsafe(
     'CREATE TABLE "audit_logs" ("id" TEXT NOT NULL PRIMARY KEY, "user_id" TEXT NOT NULL, "actor_role" TEXT NOT NULL, "message" TEXT NOT NULL DEFAULT \'\', "action" TEXT NOT NULL, "entity_type" TEXT NOT NULL, "entity_id" TEXT NOT NULL, "diff" JSONB, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE)',
@@ -200,9 +206,30 @@ async function main() {
       key: "gem_parameters",
       formulaParams: {
         skillLeagueValue: {
-          striker: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
-          brave: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
-          scavenger: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          striker: {
+            bronze: 1,
+            silver: 2,
+            gold: 3,
+            platinum: 4,
+            diamond: 5,
+            legend: 6,
+          },
+          brave: {
+            bronze: 1,
+            silver: 2,
+            gold: 3,
+            platinum: 4,
+            diamond: 5,
+            legend: 6,
+          },
+          scavenger: {
+            bronze: 1,
+            silver: 2,
+            gold: 3,
+            platinum: 4,
+            diamond: 5,
+            legend: 6,
+          },
           guardian: {
             bronze: 1.5,
             silver: 3,
@@ -211,7 +238,14 @@ async function main() {
             diamond: 7.5,
             legend: 9,
           },
-          fearless: { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, legend: 6 },
+          fearless: {
+            bronze: 1,
+            silver: 2,
+            gold: 3,
+            platinum: 4,
+            diamond: 5,
+            legend: 6,
+          },
           prosperous: {
             bronze: 1.5,
             silver: 3,

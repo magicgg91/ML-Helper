@@ -651,7 +651,7 @@
     "name": "Stufenaufstieg",
     "league": "Liga",
     "select-league": "Wähle eine Liga, um die Referenztabelle anzuzeigen.",
-    "unconfirmed": "⚠️ Die Truppenformel ist für diese Liga noch nicht bestätigt — derzeit sind nur Legende, Diamant, Platin, Bronze und Gold verfügbar.",
+    "unconfirmed": "⚠️ Die Truppenformel ist für diese Liga noch nicht bestätigt. {count, plural, =0 {Derzeit ist keine Liga verfügbar.} other {Verfügbare Ligen: {leagues}.}}",
     "columns": {
       "level": "Stufe",
       "xp": "Benötigte XP",
@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Konfiguration",
-      "title": "Sprachen",
+      "title": "Website-Konfiguration",
       "intro": "Aktiviere oder deaktiviere die Sichtbarkeit jeder Sprache auf der öffentlichen Website. Die Übersetzungsdateien bleiben unverändert. Englisch und Französisch sind immer aktiv.",
       "columns": {
         "language": "Sprache",
@@ -1177,6 +1177,25 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Sprachen",
+      "tracking": {
+        "section": "Besuchsmessung",
+        "intro": "Lädt ein Analyseskript auf allen Seiten, öffentlich wie im Admin. Lass das Feld leer, damit gar nichts geladen wird.",
+        "label": "URL des Tracking-Skripts",
+        "placeholder": "https://beispiel.de/script.js",
+        "hint": "Die Skript-URL deines Analysewerkzeugs. Das Skript wird verzögert geladen, mit der Nonce der Seite.",
+        "save": "Speichern",
+        "saving": "Wird gespeichert…",
+        "saved": "Tracking-URL gespeichert.",
+        "cleared": "Messung deaktiviert: Es wird kein Skript mehr geladen.",
+        "invalid-url": "Das ist keine gültige http(s)-URL.",
+        "save-error": "Speichern fehlgeschlagen (HTTP {status}).",
+        "server-error": "Server nicht erreichbar. Versuche es später erneut.",
+        "website-id-label": "Website-Kennung",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Wird dem Tag als `data-website-id` hinzugefügt. Leer lassen, wenn dein Werkzeug keine braucht.",
+        "invalid-website-id": "Diese Kennung enthält Zeichen, die dort nicht hingehören."
       }
     }
   },

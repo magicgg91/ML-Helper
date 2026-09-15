@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { cityLeagues, type CityParameters } from "../lib/city-parameters";
 import type { TemplarParameters } from "../lib/templar-parameters";
 import {
-  confirmedLevelUpLeagues,
+  hasLevelUpTroopsFormula,
   type LevelUpParameters,
 } from "../lib/level-up";
 import type { XpTier } from "../lib/combat-calculators";
@@ -279,9 +279,24 @@ export function LevelUpParametersEditor({
               </tr>
             </thead>
             <tbody>
-              {confirmedLevelUpLeagues.map((league) => (
+              {/* Bloc 42/B: every league gets a real coefficient/ratio field —
+                  AGENTS.md requires unconfirmed data to stay admin-editable
+                  with a default value. Bloc 98/A+C: one row per league, taken
+                  from the shared league list in game progression order, so
+                  Silver is no longer a hand-written row appended after the
+                  five "confirmed" ones. The note next to a league's name is
+                  now driven by what is actually stored, so it disappears as
+                  soon as that league's two values are filled in (Bloc 98/B). */}
+              {allLeagues.map((league) => (
                 <tr key={league}>
-                  <td>{leagues(league)}</td>
+                  <td>
+                    {leagues(league)}{" "}
+                    {!hasLevelUpTroopsFormula(league, value) && (
+                      <small className="unconfirmed">
+                        ({t("unconfirmed")})
+                      </small>
+                    )}
+                  </td>
                   <td>
                     <input
                       aria-label={`${leagues(league)} ${t("coefficient")}`}
@@ -316,50 +331,6 @@ export function LevelUpParametersEditor({
                   </td>
                 </tr>
               ))}
-              {/* Bloc 42/B: Silver's troop formula is still unconfirmed
-                  (levelUpTroopsAt keeps returning null for it), but
-                  AGENTS.md requires unconfirmed data to stay admin-editable
-                  with a default value — a real input replaces the previous
-                  static "not confirmed" text, so an admin can start filling
-                  it in once the values are known. */}
-              <tr>
-                <td>
-                  {leagues("silver")}{" "}
-                  <small className="unconfirmed">({t("unconfirmed")})</small>
-                </td>
-                <td>
-                  <input
-                    aria-label={`${leagues("silver")} ${t("coefficient")}`}
-                    type="number"
-                    step="0.0001"
-                    value={value.troops.silver.coefficient}
-                    onChange={(event) =>
-                      updateTroops(
-                        "silver",
-                        "coefficient",
-                        Number(event.target.value),
-                      )
-                    }
-                    onFocus={selectOnFocus}
-                  />
-                </td>
-                <td>
-                  <input
-                    aria-label={`${leagues("silver")} ${t("ratio")}`}
-                    type="number"
-                    step="0.001"
-                    value={value.troops.silver.ratio}
-                    onChange={(event) =>
-                      updateTroops(
-                        "silver",
-                        "ratio",
-                        Number(event.target.value),
-                      )
-                    }
-                    onFocus={selectOnFocus}
-                  />
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>

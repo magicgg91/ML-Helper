@@ -651,7 +651,7 @@
     "name": "Level Up",
     "league": "League",
     "select-league": "Choose a league to display the reference table.",
-    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league — only Legend, Diamond, Platinum, Bronze and Gold are currently available.",
+    "unconfirmed": "⚠️ The troop formula is not yet confirmed for this league. {count, plural, =0 {No league is available at the moment.} other {Available leagues: {leagues}.}}",
     "columns": {
       "level": "Level",
       "xp": "Required XP",
@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Configuration",
-      "title": "Languages",
+      "title": "Site configuration",
       "intro": "Enable or disable each language's visibility on the public site. The translation files stay untouched. English and French are always active.",
       "columns": {
         "language": "Language",
@@ -1177,6 +1177,25 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Languages",
+      "tracking": {
+        "section": "Visit tracking",
+        "intro": "Loads an analytics script on every page, public and admin alike. Leave the field empty to load nothing at all.",
+        "label": "Tracking script URL",
+        "placeholder": "https://example.com/script.js",
+        "hint": "The script URL your tracking tool gives you. It is loaded deferred, with the page's nonce.",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Tracking URL saved.",
+        "cleared": "Tracking turned off: no script is loaded any more.",
+        "invalid-url": "That is not a valid http(s) URL.",
+        "save-error": "Saving failed (HTTP {status}).",
+        "server-error": "Could not reach the server. Try again later.",
+        "website-id-label": "Site identifier",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Added to the tag as `data-website-id`. Leave empty if your tool does not ask for one.",
+        "invalid-website-id": "That identifier contains characters that do not belong in one."
       }
     }
   },

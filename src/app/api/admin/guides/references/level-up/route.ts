@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { parseLevelUpParameters } from "@/lib/level-up";
+import {
+  isSavableLevelUpParameters,
+  parseLevelUpParameters,
+} from "@/lib/level-up";
 import { saveFormulaParameters } from "@/services/formula-parameters-admin";
 
 export async function PUT(request: Request) {
@@ -9,15 +12,7 @@ export async function PUT(request: Request) {
   const parameters = parseLevelUpParameters(
     await request.json().catch(() => null),
   );
-  const numbers = [
-    parameters.xp.base,
-    parameters.xp.ratio,
-    ...Object.values(parameters.troops).flatMap(({ coefficient, ratio }) => [
-      coefficient,
-      ratio,
-    ]),
-  ];
-  if (numbers.some((value) => !Number.isFinite(value) || value <= 0))
+  if (!isSavableLevelUpParameters(parameters))
     return NextResponse.json({ error: "invalid_parameters" }, { status: 400 });
   await saveFormulaParameters({
     calculatorSlug: "level-up",

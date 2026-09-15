@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { detectLocale, matchAcceptLanguage, proxy } from "./proxy";
 
 function makeRequest(opts: {
@@ -116,6 +116,44 @@ describe("M2/F2: middleware security", () => {
     expect(csp).toMatch(/script-src [^;]*'nonce-[^']+'/);
     // the nonce is also forwarded on the request for the root layout's script
     expect(res.headers.get("x-middleware-request-x-nonce")).toBeTruthy();
+  });
+
+  // Bloc 100/B: the tracking script loads because it carries the nonce; where
+  // it may SEND what it measures is connect-src, which allows this site alone
+  // until an operator names the tracker's origin.
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("Bloc100/B: adds the configured tracking origin to connect-src", () => {
+    vi.stubEnv("TRACKING_ORIGIN", "https://stats.example.com/script.js");
+    const csp = proxy(makeRequest({ path: "/fr/guides" })).headers.get(
+      "content-security-policy",
+    );
+    // The origin only — the script path in the variable is dropped.
+    expect(csp).toContain("connect-src 'self' https://stats.example.com");
+    expect(csp).not.toContain("script.js");
+  });
+
+  it("Bloc100/B: leaves connect-src to 'self' when no tracking origin is set", () => {
+    vi.stubEnv("TRACKING_ORIGIN", "");
+    const csp = proxy(makeRequest({ path: "/fr/guides" })).headers.get(
+      "content-security-policy",
+    );
+    // Read the directive itself rather than the whole header: it is the last
+    // one, so it carries no trailing semicolon to anchor a regex on.
+    const connectSrc = csp!
+      .split("; ")
+      .find((directive) => directive.startsWith("connect-src"));
+    expect(connectSrc).toContain("'self'");
+    expect(connectSrc).not.toMatch(/https?:\/\//);
+  });
+
+  it("Bloc100/B: refuses a malformed tracking origin rather than pasting it into the policy", () => {
+    vi.stubEnv("TRACKING_ORIGIN", "not a url; script-src *");
+    const csp = proxy(makeRequest({ path: "/fr/guides" })).headers.get(
+      "content-security-policy",
+    );
+    expect(csp).not.toContain("script-src *");
+    expect(csp).toMatch(/script-src [^;]*'nonce-[^']+'/);
   });
 
   it("blocks a cross-site mutating API request (F2)", () => {

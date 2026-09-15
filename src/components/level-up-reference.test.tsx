@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
@@ -144,5 +150,69 @@ describe("LevelUpReference", () => {
     expect(
       screen.getByRole("link", { name: /Taux de gain d’XP$/ }),
     ).toHaveAttribute("href", "/tools/combat?open=xp");
+  });
+
+  // Bloc 98/A: the reported bug, end to end on the public side — Argent's
+  // coefficient and ratio were saved in the admin, and the reference still
+  // told the player the league was unavailable.
+  it("Bloc98/A: shows the table for a league an admin has just filled in", () => {
+    const parameters = {
+      ...defaultLevelUpParameters,
+      troops: {
+        ...defaultLevelUpParameters.troops,
+        silver: { coefficient: 30, ratio: 1.24 },
+      },
+    };
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={parameters} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Argent" }));
+    expect(screen.getAllByRole("row")).toHaveLength(62);
+    expect(screen.queryByRole("status")).toBeNull();
+    // And the stored values are what the table is built from: level 2 is
+    // coefficient × ratio² = 30 × 1.24² = 46. A league merely let through the
+    // display check, with its formula still refused, would show 0 here.
+    const levelTwo = within(screen.getAllByRole("row")[2]).getAllByRole("cell");
+    expect(levelTwo[0]).toHaveTextContent("2");
+    expect(levelTwo[2]).toHaveTextContent("46");
+  });
+
+  it("Bloc98/A: names the leagues that really are available, not a fixed list", () => {
+    // With the shipped defaults Argent is the only one missing, so the notice
+    // must name the other five — and never Argent itself.
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={defaultLevelUpParameters} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Argent" }));
+    const notice = screen.getByRole("status");
+    expect(notice).toHaveTextContent(
+      "Ligues disponibles : Bronze, Or, Platine, Diamant et Légende.",
+    );
+    expect(notice).not.toHaveTextContent("Argent");
+  });
+
+  it("Bloc98/A: drops a league from that list as soon as its values are cleared", () => {
+    // The same sentence, recomputed: clearing Légende must remove it from the
+    // notice, which a hard-coded list of names could never do.
+    const parameters = {
+      ...defaultLevelUpParameters,
+      troops: {
+        ...defaultLevelUpParameters.troops,
+        legend: { coefficient: 0, ratio: 0 },
+      },
+    };
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <LevelUpReference parameters={parameters} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Légende" }));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Ligues disponibles : Bronze, Or, Platine et Diamant.",
+    );
   });
 });

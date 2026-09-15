@@ -651,7 +651,7 @@
     "name": "Seviye Atlama",
     "league": "Lig",
     "select-league": "Referans tablosunu görüntülemek için bir lig seç.",
-    "unconfirmed": "⚠️ Birlik formülü bu lig için henüz doğrulanmadı — şu anda yalnızca Efsane, Elmas, Platin, Bronz ve Altın kullanılabilir.",
+    "unconfirmed": "⚠️ Birlik formülü bu lig için henüz doğrulanmadı. {count, plural, =0 {Şu anda hiçbir lig mevcut değil.} other {Mevcut ligler: {leagues}.}}",
     "columns": {
       "level": "Seviye",
       "xp": "Gerekli XP",
@@ -1155,7 +1155,7 @@
     },
     "config": {
       "eyebrow": "Yapılandırma",
-      "title": "Diller",
+      "title": "Site yapılandırması",
       "intro": "Her dilin herkese açık sitedeki görünürlüğünü aç veya kapat. Çeviri dosyaları değişmeden kalır. İngilizce ve Fransızca her zaman etkindir.",
       "columns": {
         "language": "Dil",
@@ -1177,6 +1177,25 @@
         "de": "Deutsch",
         "es": "Español",
         "tr": "Türkçe"
+      },
+      "languages-section": "Diller",
+      "tracking": {
+        "section": "Ziyaret takibi",
+        "intro": "Herkese açık ve yönetim sayfaları dahil tüm sayfalara bir analiz betiği yükler. Hiçbir şey yüklenmemesi için alanı boş bırak.",
+        "label": "Takip betiği URL'si",
+        "placeholder": "https://ornek.com/script.js",
+        "hint": "Takip aracının verdiği betik URL'si. Betik, sayfanın nonce değeriyle ve ertelenmiş olarak yüklenir.",
+        "save": "Kaydet",
+        "saving": "Kaydediliyor…",
+        "saved": "Takip URL'si kaydedildi.",
+        "cleared": "Takip kapatıldı: artık hiçbir betik yüklenmiyor.",
+        "invalid-url": "Bu geçerli bir http(s) URL'si değil.",
+        "save-error": "Kaydetme başarısız (HTTP {status}).",
+        "server-error": "Sunucuya ulaşılamadı. Daha sonra tekrar dene.",
+        "website-id-label": "Site kimliği",
+        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
+        "website-id-hint": "Etikete `data-website-id` olarak eklenir. Aracın istemiyorsa boş bırak.",
+        "invalid-website-id": "Bu kimlik, orada yeri olmayan karakterler içeriyor."
       }
     }
   },

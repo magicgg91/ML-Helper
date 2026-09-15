@@ -1,9 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { formatGameNumber } from "../lib/format";
 import {
+  availableLevelUpLeagues,
+  hasLevelUpTroopsFormula,
   levelUpChestAt,
   levelUpTroopsAt,
   xpAt,
@@ -75,12 +77,19 @@ export function LevelUpReference({
   parameters: LevelUpParameters;
 }) {
   const t = useTranslations("level-up");
+  const game = useTranslations("game");
   const xpGainRate = useTranslations("xp-gain-rate");
   const crossReference = useTranslations("crossReference");
   const levelUpReference = referenceCatalog.find(
     (item) => item.slug === "level-up",
   )!;
   const [league, setLeague] = useSyncedLeague();
+  const available = availableLevelUpLeagues(parameters);
+  // Intl handles the "A, B et C" joining per language, so the sentence below
+  // needs no hand-written separator in any of the 5 locales.
+  const listFormatter = new Intl.ListFormat(useLocale(), {
+    type: "conjunction",
+  });
   const [page, setPage] = useState(0);
   const start = page * parameters.pageSize + 1;
   const levels = Array.from(
@@ -109,9 +118,18 @@ export function LevelUpReference({
         <p className="empty-state" role="status">
           {t("select-league")}
         </p>
-      ) : league === "silver" ? (
+      ) : !hasLevelUpTroopsFormula(league, parameters) ? (
+        // Bloc 98/A: a league is unavailable because its formula is missing
+        // from the parameters, not because of its name — and the leagues it
+        // names are the ones that really do have one, so this sentence can no
+        // longer contradict what an admin has just saved.
         <p className="empty-state" role="status">
-          {t("unconfirmed")}
+          {t("unconfirmed", {
+            count: available.length,
+            leagues: listFormatter.format(
+              available.map((item) => game(`leagues.${item}`)),
+            ),
+          })}
         </p>
       ) : (
         <>

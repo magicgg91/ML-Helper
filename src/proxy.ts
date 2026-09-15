@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { launchLocales } from "./lib/translations";
 import { routing } from "./i18n/routing";
+import { trackingConnectOrigin } from "./lib/tracking";
 
 const cookieName = "NEXT_LOCALE";
 // next-intl reads the render locale from this request header (see
@@ -67,7 +68,17 @@ function contentSecurityPolicy(nonce: string): string {
   ]
     .filter(Boolean)
     .join(" ");
-  const connectSrc = ["'self'", dev ? "ws:" : ""].filter(Boolean).join(" ");
+  // Bloc 100: the tracking script (src/app/layout.tsx) carries this same
+  // nonce, which is what lets it load under 'strict-dynamic'. Where it may
+  // then SEND its measurements is a separate question, answered here: a
+  // tracker on another domain needs its origin in connect-src, and this
+  // middleware runs on the Edge with no database, so the origin comes from
+  // TRACKING_ORIGIN rather than from the admin setting. Unset means the
+  // tracker is same-origin (or absent), which 'self' already covers.
+  const trackingOrigin = trackingConnectOrigin(process.env.TRACKING_ORIGIN);
+  const connectSrc = ["'self'", trackingOrigin ?? "", dev ? "ws:" : ""]
+    .filter(Boolean)
+    .join(" ");
   return [
     "default-src 'self'",
     "base-uri 'self'",
