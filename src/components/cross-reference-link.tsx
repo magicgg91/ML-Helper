@@ -20,13 +20,11 @@ export function CrossReferenceLink({
   href,
   title,
   image,
-  fallbackImage,
   label,
 }: {
   href: string;
   title: string;
   image: string;
-  fallbackImage: string;
   label: string;
 }) {
   return (
@@ -38,10 +36,8 @@ export function CrossReferenceLink({
             alt=""
             width={500}
             height={500}
-            fallback={
-              // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-              <img src={fallbackImage} alt="" width={500} height={500} />
-            }
+            // Bloc 104: see tool-category-grid.tsx — no placeholder image.
+            fallback={null}
           />
         </span>
         <span className="cross-reference-text">

@@ -147,7 +147,6 @@ export function GemsReferenceTable({
         href={toolHref("competences", "gems")}
         title={t("name")}
         image={gemsReference.image}
-        fallbackImage={gemsReference.fallbackImage}
         label={crossReference("toTool")}
       />
     </div>

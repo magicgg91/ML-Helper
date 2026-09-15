@@ -519,7 +519,6 @@ export function CombatReferenceTable({
         href={toolHref("competences", "simulator")}
         title={simulator("name")}
         image={combatEquipmentReference.image}
-        fallbackImage={combatEquipmentReference.fallbackImage}
         label={crossReference("toTool")}
       />
     </div>
@@ -728,7 +727,6 @@ export function ExpeditionReferenceTable({
         href={toolHref("competences", "expedition")}
         title={expeditionSimulator("name")}
         image={expeditionEquipmentReference.image}
-        fallbackImage={expeditionEquipmentReference.fallbackImage}
         label={crossReference("toTool")}
       />
     </div>

@@ -171,7 +171,6 @@ export function LevelUpReference({
         href={toolHref("combat", "xp")}
         title={xpGainRate("name")}
         image={levelUpReference.image}
-        fallbackImage={levelUpReference.fallbackImage}
         label={crossReference("toTool")}
       />
     </div>

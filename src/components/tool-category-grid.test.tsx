@@ -28,7 +28,12 @@ describe("ToolCategoryGrid (Bloc 36/B)", () => {
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
   });
 
-  it("falls back to the placeholder icon instead of a broken image once a category file fails to load", () => {
+  // Bloc 104: this used to swap in a placeholder icon. That icon's file had
+  // been deleted once every category had its real illustration, so the swap
+  // traded one broken image for another — and, because the grid hands the
+  // fallback to a client component as a prop, React preloaded it out of the
+  // RSC payload on every visit, rendered or not. Four 404s on /fr/tools.
+  it("Bloc104: a failed category file leaves an empty box, not a second image", () => {
     render(
       <ToolCategoryGrid
         locale="fr"
@@ -39,13 +44,17 @@ describe("ToolCategoryGrid (Bloc 36/B)", () => {
     const citiesImage = document.querySelector(
       "img[src='/tools/cities.webp']",
     )!;
+    const box = citiesImage.closest(".tool-category-image")!;
+
     fireEvent.error(citiesImage);
+
     expect(
       document.querySelector("img[src='/tools/cities.webp']"),
     ).not.toBeInTheDocument();
-    expect(
-      document.querySelector("img[src='/category-cities.svg']"),
-    ).toBeInTheDocument();
+    // Nothing replaces it — no second file to ask the network for.
+    expect(box.querySelector("img")).toBeNull();
+    // The square box survives, so the grid keeps its shape around the gap.
+    expect(box).toBeInTheDocument();
   });
 
   // Bloc 64/A review: eager-loading follows the rendered position, not a

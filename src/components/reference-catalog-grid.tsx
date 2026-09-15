@@ -5,9 +5,9 @@ import { sortByLabel } from "../lib/sort-by-label";
 import { GameImage } from "./game-image";
 
 // Bloc 38/O: shared between the homepage and /guides (previously duplicated
-// markup in each) — same GameImage + fallback-icon treatment as
-// ToolCategoryGrid's tool categories, including the aspect-ratio: 1 image
-// box (Bloc 38/H) via the shared .tool-category-image class.
+// markup in each) — same GameImage treatment as ToolCategoryGrid's tool
+// categories, including the aspect-ratio: 1 image box (Bloc 38/H) via the
+// shared .tool-category-image class.
 // `t` is typed loosely (rather than next-intl/server's exact getTranslations
 // return type) since this component is used from both a server page
 // (getTranslations) and a client component (useTranslations) — the two
@@ -63,15 +63,8 @@ export function ReferenceCatalogGrid({
               alt=""
               width={500}
               height={500}
-              fallback={
-                // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-                <img
-                  src={reference.fallbackImage}
-                  alt=""
-                  width={500}
-                  height={500}
-                />
-              }
+              // Bloc 104: see tool-category-grid.tsx — no placeholder image.
+              fallback={null}
             />
           </div>
           <div className="tool-category-copy">

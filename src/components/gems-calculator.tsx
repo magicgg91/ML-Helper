@@ -91,7 +91,6 @@ export function GemsCalculator({ parameters }: { parameters: GemParameters }) {
         href={referenceHref("gems")}
         title={references(`catalog.${reference.slug}`)}
         image={reference.image}
-        fallbackImage={reference.fallbackImage}
         label={crossReference("toReference")}
       />
     </div>

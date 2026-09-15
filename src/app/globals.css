@@ -192,6 +192,26 @@ body {
       rgb(74 145 121 / 6%),
       transparent 50%
     );
+  /* Bloc 105: the violet glow is pushed 10rem down the page, so the very top
+     edge is nothing but --bg. Not decoration: an installed iOS app's status
+     bar sits over that edge, and since Safari 26 WebKit fills the strip with
+     a frosted-glass band whenever it cannot read ONE solid colour there. A
+     radial gradient reaching y=0 is exactly that — it measured #212431 at the
+     left edge fading to #1b2029 past mid-width, dithered pixel by pixel. Bloc
+     103 gave the strip an explicit theme-color first; on a real device the
+     blur survived it, which left this.
+
+     The layer is translated, not resized, so the glow keeps its shape and
+     only starts lower. It still tiles (the initial `repeat`), and that is
+     harmless only because this gradient reaches `transparent` well before its
+     own bottom edge, so the tile wrapping into the cleared band paints
+     nothing — checked by removing the offset and watching
+     globals-top-edge.spec.ts go red, then by measuring the band with the
+     offset in place. Change the colour stops and that reasoning stops
+     holding; the spec measures painted pixels, so it will say so. */
+  background-position:
+    0 10rem,
+    0 0;
   min-height: 100vh;
 }
 main {
