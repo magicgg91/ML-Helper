@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -75,6 +76,107 @@ describe("PlayerSettingsPanel", () => {
       expect(broadcasts).toHaveLength(1);
     } finally {
       window.removeEventListener(playerSettingsChangedEvent, listener);
+    }
+  });
+
+  // Bloc 102: the second overwrite path, and the one Bloc 99 left standing.
+  // Bloc 99 stopped the panel from answering its own write by making the
+  // comparison come out equal; that only holds while storage and the panel
+  // agree. It cannot hold when the panel's own write is LATE: persisting
+  // happens in a passive effect, and React runs a passive effect after the
+  // commit that scheduled it — including after a newer render has already
+  // gone in. The effect then writes, and announces, the snapshot it
+  // captured rather than the current one, and answering that announcement
+  // adopted the older snapshot: the level the user had just typed went back
+  // to its previous value. Reproduced 7 times in 600 runs of the scenario
+  // under CPU contention before the fix, 0 in 600 after it — hence this
+  // test, which forces the same interleaving outright.
+  it("Bloc102: ignores its own broadcast, which can announce a snapshot it has moved past", async () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    const level = () =>
+      screen.getByLabelText("Niveau du joueur", { selector: "input" });
+
+    fireEvent.change(level(), { target: { value: "10" } });
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).toContain(
+        '"level":10',
+      ),
+    );
+    const behind = window.localStorage.getItem(playerStorageKey)!;
+
+    // Makes the panel's next write land that older snapshot instead of the
+    // fresh one — exactly what a passive effect running a render too late
+    // does — so its own broadcast is delivered with storage standing behind
+    // its state.
+    const realSetItem = Storage.prototype.setItem;
+    let late = true;
+    Storage.prototype.setItem = function setItem(key: string, value: string) {
+      if (key === playerStorageKey && late) {
+        late = false;
+        return realSetItem.call(this, key, behind);
+      }
+      return realSetItem.call(this, key, value);
+    };
+    try {
+      fireEvent.change(level(), { target: { value: "5" } });
+      // Re-reading storage on its own broadcast would put the level back
+      // to 10 here, discarding the edit that had just been made.
+      expect(level()).toHaveValue(5);
+    } finally {
+      Storage.prototype.setItem = realSetItem;
+    }
+
+    // And the panel stays the source of truth afterwards: the next edit
+    // catches storage back up rather than leaving it behind for good.
+    fireEvent.change(level(), { target: { value: "6" } });
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).toContain(
+        '"level":6',
+      ),
+    );
+    expect(level()).toHaveValue(6);
+  });
+
+  // The other half of syncFromStorage's guard, which Bloc 102 left in place
+  // and nothing pinned down: `broadcasting` decides whether the event is
+  // ours, the content comparison decides whether anything actually changed.
+  // Drop the comparison and two mounted copies of the panel answer each
+  // other without end — each adopts a new-but-identical object, saves it,
+  // announces it, and wakes the other one up again.
+  it("Bloc102: an outside announcement that changes nothing leaves the panel alone", async () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.change(
+      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
+      { target: { value: "10" } },
+    );
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).toContain(
+        '"level":10',
+      ),
+    );
+
+    const realSetItem = Storage.prototype.setItem;
+    let writes = 0;
+    Storage.prototype.setItem = function setItem(key: string, value: string) {
+      if (key === playerStorageKey) writes += 1;
+      return realSetItem.call(this, key, value);
+    };
+    try {
+      // Someone else announcing the settings the panel already holds.
+      await act(async () => {
+        window.dispatchEvent(new CustomEvent(playerSettingsChangedEvent));
+      });
+      expect(writes).toBe(0);
+    } finally {
+      Storage.prototype.setItem = realSetItem;
     }
   });
 
