@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
 import { usePersistedState } from "./use-persisted-state";
@@ -101,6 +101,10 @@ export function PlayerSettingsPanel() {
   const locale = useLocale();
   const t = useTranslations("player-settings");
   const game = useTranslations("game");
+  // Bloc 102: true only while this panel's own persistence broadcast is
+  // being delivered. `dispatchEvent` is synchronous, so every listener —
+  // syncFromStorage below included — runs inside that window.
+  const broadcasting = useRef(false);
   // Bloc 93/F3: shares the load/loaded/save triplet with both simulators.
   // `safePlayerSettings` migrates rather than rejects (it always returns a
   // value), so this `parse` never yields undefined — the version stamp lives
@@ -110,10 +114,16 @@ export function PlayerSettingsPanel() {
     parse: safePlayerSettings,
     serialize: (value) =>
       JSON.stringify({ ...value, v: currentSettingsVersion }),
-    onPersist: (value) =>
-      window.dispatchEvent(
-        new CustomEvent(playerSettingsChangedEvent, { detail: value }),
-      ),
+    onPersist: (value) => {
+      broadcasting.current = true;
+      try {
+        window.dispatchEvent(
+          new CustomEvent(playerSettingsChangedEvent, { detail: value }),
+        );
+      } finally {
+        broadcasting.current = false;
+      }
+    },
     // This panel has always read storage on a microtask, unlike the two
     // simulators. It matters here: a macrotask lets the Stuff simulator's
     // transfer (and the user's own edits) land first, and the deferred read
@@ -122,13 +132,24 @@ export function PlayerSettingsPanel() {
   });
 
   // Picks up a write from another source (e.g. the Stuff simulator's
-  // transfer button) while this panel is already mounted. Guarded by a
-  // content comparison, not just re-parsing on every event: this panel's
-  // own persistence effect below also dispatches this same event on every
-  // local edit, and replacing state with a new-but-identical object on
-  // every keystroke would re-trigger that effect indefinitely.
+  // transfer button) while this panel is already mounted. Two guards, and
+  // they answer different questions: `broadcasting` says whether the event
+  // is this panel's own (below), and the content comparison says whether
+  // the stored settings actually differ — replacing state with a
+  // new-but-identical object would re-trigger the persistence effect
+  // indefinitely.
   useEffect(() => {
     function syncFromStorage() {
+      // Bloc 102: never answer our own write. Persisting happens in a
+      // passive effect, which React runs after the commit that scheduled
+      // it — and, when a newer update arrives first, after that newer
+      // render too. The effect then writes and announces the snapshot it
+      // captured, which the panel has already moved past. Re-reading
+      // storage on that announcement adopts the older snapshot and
+      // silently undoes the newer edit (the level the user just typed went
+      // back to its previous value). Only writes from another source are
+      // ours to adopt.
+      if (broadcasting.current) return;
       const saved = window.localStorage.getItem(playerStorageKey);
       if (!saved) return;
       const next = safePlayerSettings(saved);
