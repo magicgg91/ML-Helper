@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-
-type Theme = "dark" | "light";
+import { applyThemeColor, type Theme } from "@/lib/theme-color";
 
 export function ThemeToggle() {
   const t = useTranslations("common");
@@ -21,6 +20,10 @@ export function ThemeToggle() {
             ? "light"
             : "dark";
       document.documentElement.dataset.theme = initial;
+      // Bloc 103: the status-bar colour follows the theme everywhere the
+      // theme is set — here and in toggle() below, mirroring the root
+      // layout's pre-paint script.
+      applyThemeColor(initial);
       setTheme(initial);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -29,6 +32,7 @@ export function ThemeToggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.dataset.theme = next;
+    applyThemeColor(next);
     localStorage.setItem("mlhelper_theme", next);
   }
   return (

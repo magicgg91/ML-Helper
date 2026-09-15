@@ -382,3 +382,68 @@ test("Bloc 96: the icon iOS fetches by convention is there too", async ({
   });
   expect(png.colorType).toBe(truecolorPng);
 });
+
+// Bloc 103: iOS 26 gave installed web apps a Liquid Glass status-bar strip and
+// iOS/iPadOS 27 made it high-contrast enough to notice. WebKit fills that strip
+// from <meta name="theme-color">; with no colour declared it samples the page's
+// top edge instead, and ML-Helper's top edge is a radial gradient (globals.css
+// body), which resolves to no solid colour — so iOS blurred the page's own
+// header there, over the ML-HELPER wordmark and the nav buttons.
+//
+// The colour therefore has to be present, has to match what the page actually
+// renders, and has to follow a theme change. It is also why the site must never
+// adopt apple-mobile-web-app-status-bar-style="black-translucent": that is the
+// setting that puts page content UNDER the transparent strip in the first
+// place, which is the configuration every published report of this bug shares.
+test("Bloc 103: declares the status-bar colour, follows the theme, and never goes translucent", async ({
+  page,
+  request,
+}) => {
+  const served = await (await request.get("/fr/tools/villes")).text();
+  // black-translucent is the setting that puts page content UNDER the
+  // transparent strip, which is the configuration every published report of
+  // this bug shares. The site must never adopt it.
+  expect(
+    served,
+    "black-translucent is what makes iOS paint the page under the status bar",
+  ).not.toContain("black-translucent");
+  // Both colours reach the document inside the pre-paint script, which is
+  // what owns the tag (see the root layout for why it is not server-rendered
+  // metadata). Deleting that script would leave iOS with no colour to paint
+  // the strip with, and nothing else here would notice.
+  expect(
+    served,
+    "the pre-paint script no longer carries the two theme colours",
+  ).toMatch(/theme-color[\s\S]{0,400}#e4e7eb[\s\S]{0,40}#1b2029/);
+
+  // A saved light theme, so the toggle below moves light -> dark and the
+  // deferred mount read cannot be what makes the assertion pass. Saved once
+  // and then reloaded, rather than re-seeded on every document, so the
+  // reload at the end reads back what the toggle actually persisted.
+  await page.goto("/fr/tools/villes");
+  await page.evaluate(() =>
+    window.localStorage.setItem("mlhelper_theme", "light"),
+  );
+  await page.reload();
+  // aria-pressed flips only once ThemeToggle's deferred read has landed, so
+  // waiting on it pins the click below to the toggle's own work.
+  const toggle = page.getByRole("button", { name: "Activer le mode sombre" });
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+
+  const themeColor = page.locator('meta[name="theme-color"]');
+  // Exactly one: a second tag would leave the browser reading whichever comes
+  // first, which is how a light page kept showing a dark strip.
+  await expect(themeColor).toHaveCount(1);
+  await expect(themeColor).toHaveAttribute("content", "#e4e7eb");
+
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  // The strip would otherwise stay the light theme's colour against a dark page.
+  await expect(themeColor).toHaveAttribute("content", "#1b2029");
+  await expect(themeColor).toHaveCount(1);
+
+  // And the choice survives a reload, set before first paint rather than
+  // corrected afterwards.
+  await page.reload();
+  await expect(themeColor).toHaveAttribute("content", "#1b2029");
+});
