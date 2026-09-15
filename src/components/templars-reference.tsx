@@ -156,7 +156,6 @@ export function TemplarsReferenceTable({
         href={toolHref("competences", "templars")}
         title={t("name")}
         image={templarsReference.image}
-        fallbackImage={templarsReference.fallbackImage}
         label={crossReference("toTool")}
       />
     </div>

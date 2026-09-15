@@ -683,7 +683,6 @@ export function StuffSimulator({
         href={referenceHref("combat-equipment")}
         title={references("catalog.combat-equipment")}
         image={combatEquipmentReference.image}
-        fallbackImage={combatEquipmentReference.fallbackImage}
         label={crossReference("toReference")}
       />
     </div>

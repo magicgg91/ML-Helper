@@ -453,7 +453,6 @@ export function ExpeditionEquipmentSimulator({
         href={referenceHref("expedition-equipment")}
         title={references("catalog.expedition-equipment")}
         image={expeditionEquipmentReference.image}
-        fallbackImage={expeditionEquipmentReference.fallbackImage}
         label={crossReference("toReference")}
       />
     </div>

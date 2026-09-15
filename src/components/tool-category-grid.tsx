@@ -11,15 +11,15 @@ import { GameImage } from "./game-image";
 // direct 1-click entry point instead of a marketing teaser linking to
 // /tools) — same categories/layout, reused rather than duplicated.
 // Bloc 36/B: `image` is the real AI-generated illustration delivered for
-// each category (single source of truth for both pages); `fallbackImage`
-// is the previous placeholder icon, shown instead if the file is ever
-// missing (GameImage) instead of a broken-image icon.
+// each category (single source of truth for both pages).
+// Bloc 104: the placeholder icon that used to sit beside it is gone — see
+// reference-catalog.ts for why (deleted files, and a preload hint for an
+// element that never rendered).
 export const toolCategories: Array<{
   label: "cities" | "combat" | "ranking" | "skills";
   slug: string;
   calculators: CalculatorSlug[];
   image: string;
-  fallbackImage: string;
 }> = [
   {
     label: "cities",
@@ -31,21 +31,18 @@ export const toolCategories: Array<{
       "city-rewards",
     ],
     image: "/tools/cities.webp",
-    fallbackImage: "/category-cities.svg",
   },
   {
     label: "combat",
     slug: "combat",
     calculators: ["xp-gain-rate", "demo-attack-troops"],
     image: "/tools/fight.webp",
-    fallbackImage: "/category-combat.svg",
   },
   {
     label: "ranking",
     slug: "classement",
     calculators: ["ranking"],
     image: "/tools/ranking.webp",
-    fallbackImage: "/category-ranking.svg",
   },
   {
     label: "skills",
@@ -57,7 +54,6 @@ export const toolCategories: Array<{
       "templars",
     ],
     image: "/tools/skills.webp",
-    fallbackImage: "/category-skills.svg",
   },
 ];
 
@@ -94,15 +90,13 @@ export function ToolCategoryGrid({
                   // position — it used to name Villes, which is only first
                   // while the order is the catalog's own.
                   eager={index === 0}
-                  fallback={
-                    // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-                    <img
-                      src={category.fallbackImage}
-                      alt=""
-                      width={500}
-                      height={500}
-                    />
-                  }
+                  // Bloc 104: nothing, rather than a placeholder image. The
+                  // illustration ships with the repo, so it cannot go
+                  // missing on its own; and an <img> here is serialised into
+                  // the RSC payload and preloaded whether or not it renders.
+                  // The .tool-category-image box keeps its square footprint
+                  // either way, so a failed load leaves a gap, not a reflow.
+                  fallback={null}
                 />
               </div>
               <div className="tool-category-copy">

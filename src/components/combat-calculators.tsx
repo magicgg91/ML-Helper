@@ -131,7 +131,6 @@ function XpGainRate({
           href={referenceHref("level-up")}
           title={references("catalog.level-up")}
           image={levelUpReference.image}
-          fallbackImage={levelUpReference.fallbackImage}
           label={crossReference("toReference")}
         />
       )}
