@@ -123,12 +123,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             denial there still falls through to the matchMedia read instead
             of silently keeping the CSS dark default.
             Bloc 103: it also CREATES and fills <meta name="theme-color">,
-            which is the colour the browser paints AROUND the page — on iOS,
-            the status-bar strip an installed app sits under. Without one,
-            iOS 26+ samples the page's top edge instead, gets no solid colour
-            (body's top edge carries a radial gradient) and falls back to a
-            frosted-glass band that blurs the header beneath it: the
-            ML-HELPER wordmark and the nav buttons.
+            the colour the browser paints AROUND the page — the address-bar
+            area on Android Chrome, the window chrome on desktop, an
+            installed app's status-bar strip. It is set here, before the
+            first paint, so a visitor who saved the light theme never gets a
+            dark strip over a light page while React hydrates.
+            Bloc 106: this was originally introduced to fix an iOS 27 blur
+            over that strip, and it did not — that blur is an Apple system
+            bug affecting every PWA on the device. src/lib/theme-color.ts
+            carries the full record; the tag stays because declaring it is
+            right on its own terms.
 
             The tag is created here rather than server-rendered through
             metadata, and that is deliberate. A tag React owns is one React

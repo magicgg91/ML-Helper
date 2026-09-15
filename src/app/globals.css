@@ -193,13 +193,23 @@ body {
       transparent 50%
     );
   /* Bloc 105: the violet glow is pushed 10rem down the page, so the very top
-     edge is nothing but --bg. Not decoration: an installed iOS app's status
-     bar sits over that edge, and since Safari 26 WebKit fills the strip with
-     a frosted-glass band whenever it cannot read ONE solid colour there. A
-     radial gradient reaching y=0 is exactly that — it measured #212431 at the
-     left edge fading to #1b2029 past mid-width, dithered pixel by pixel. Bloc
-     103 gave the strip an explicit theme-color first; on a real device the
-     blur survived it, which left this.
+     edge is nothing but --bg — one flat colour, equal to what theme-color
+     declares to the browser (src/lib/theme-color.ts). It used to be a
+     gradient there, measuring #212431 at the left edge and fading to #1b2029
+     past mid-width, dithered pixel by pixel.
+
+     Bloc 106 — CORRECTION. This was done to stop iOS 27 frosting the
+     status-bar strip over the page, on the theory that WebKit frosts it when
+     it cannot sample one solid colour at the top edge. It did not work: the
+     blur is an Apple system bug hitting every PWA on the device, ours
+     included, and no markup of ours reaches it. See src/lib/theme-color.ts
+     for the full record and for what would justify reopening it.
+
+     The offset stays because a top edge that matches the declared theme-color
+     is a coherent thing to hold on any platform, and the change costs nothing
+     visible — the glow is 6% alpha and simply starts under the header. It is
+     no longer a fix for a known defect, so if it ever gets in the way of a
+     design change, it can go: revert this and the spec that guards it.
 
      The layer is translated, not resized, so the glow keeps its shape and
      only starts lower. It still tiles (the initial `repeat`), and that is

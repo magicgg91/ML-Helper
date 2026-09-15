@@ -2,24 +2,23 @@ import { expect, test } from "@playwright/test";
 import { themeBackground, type Theme } from "../src/lib/theme-color";
 import { bandColours, decodePngPixels } from "../src/test/png-pixels";
 
-// Bloc 105: the top edge of the page has to resolve to ONE flat colour.
+// Bloc 105: the top edge of the page resolves to ONE flat colour, and that
+// colour is the one theme-color declares to the browser. A browser tinting its
+// UI from theme-color while the page paints something else at its edge shows a
+// visible seam, so the two are asserted together, against the one module that
+// holds those values (src/lib/theme-color.ts).
 //
-// An installed iOS app's status bar sits over that edge, and since Safari 26
-// WebKit fills the strip with a frosted-glass band whenever it cannot read a
-// solid colour there — blurring the ML-HELPER wordmark and the nav buttons
-// underneath. body carried a radial gradient reaching y=0, which measured
-// #212431 at the left edge fading to #1b2029 past mid-width, dithered pixel
-// by pixel. Bloc 103 gave the strip an explicit theme-color first; on a real
-// device the blur survived it, so the gradient was pushed 10rem down the page.
-//
-// And the flat colour has to be the one Bloc 103 declares in theme-color: a
-// strip painted a different shade from the page under it is the same defect
-// wearing a different face. Both halves are asserted here against the one
-// module that holds those values.
+// Bloc 106 — CORRECTION. This spec was written to guard a fix for an iOS 27
+// blur over the status-bar strip. That fix did not work: the blur is an Apple
+// system bug hitting every PWA on the device, and nothing in our markup
+// reaches it. See src/lib/theme-color.ts for the full record. The spec stays
+// because the invariant above holds on its own — but it is no longer guarding
+// a known defect, so treat a failure here as a design question, not a bug
+// report.
 //
 // 96px covers the tallest iOS top safe area (59pt on Dynamic Island phones)
 // with room to spare, while staying well inside the 10rem (160px) the CSS
-// actually clears.
+// clears.
 const bandHeight = 96;
 
 // Two widths because the gradient varied horizontally: a band measured at one
@@ -55,7 +54,8 @@ for (const theme of ["dark", "light"] as Theme[]) {
 
       expect(
         colours,
-        "the status-bar band is not a single flat colour, so iOS will frost it",
+        "the top band is not a single flat colour, so it no longer matches " +
+          "the theme-color declared to the browser",
       ).toEqual([themeBackground[theme]]);
     });
   }
