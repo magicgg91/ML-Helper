@@ -23,18 +23,12 @@ function withTroops(
   };
 }
 
-// Bloc 107/A: the troop table Silver was reported wrong on, level by level,
-// as confirmed in game by a player. Level 1 is a flat 200 outside the curve;
-// from level 2 the game's formula is 40.14 × 1.243^(n-1).
-//
-// The point of the table is the CONVENTION, which nothing in the code used to
-// state. levelUpTroopsAt computes `coefficient × ratio^level`, so the
-// coefficient it stores is the game's divided by the ratio: 40.14 / 1.243 =
-// 32.2928. An admin who types the game's own 40.14 gets every row shifted one
-// level up — 284 troops on level 9, where the game puts them on level 10 —
-// which is precisely the bug this bloc came from, and it lived in the stored
-// value, not in the arithmetic.
-const silverFromTheGame = { coefficient: 40.14 / 1.243, ratio: 1.243 };
+// Bloc 107/A: the troop table Silver was reported wrong on, level by level, as
+// confirmed in game by a player. Level 1 is a flat 200 outside the curve; from
+// level 2 the game publishes 40.14 × 1.243^(n-1), which levelUpTroopsAt holds
+// in its own `coefficient × ratio^level` form as 40.14 / 1.243 = 32.291367 —
+// the pair an admin has stored for Silver.
+const silverStored = { coefficient: 32.291367, ratio: 1.243 };
 const silverTroopsInGame: Array<[number, number]> = [
   [1, 200],
   [2, 50],
@@ -48,42 +42,74 @@ const silverTroopsInGame: Array<[number, number]> = [
   [10, 284],
   [12, 440],
   [13, 547],
+  [20, 2500],
+  [30, 22000],
+  [60, 15000000],
 ];
 
 describe("Bloc 107/A: Silver troops, against the values confirmed in game", () => {
-  const parameters = withTroops("silver", silverFromTheGame);
+  const parameters = withTroops("silver", silverStored);
 
   it.each(silverTroopsInGame)(
     "level %i carries %i troops",
     (level, expected) => {
       const troops = levelUpTroopsAt(level, "silver", parameters)!;
-      // Within one troop: the published 40.14/1.243 is a fit to the game's own
-      // numbers, not the game's arithmetic, and it drifts by ~1 by level 12.
-      // Tightening this would be pinning the fit's error, not the curve.
-      expect(Math.round(troops)).toBeGreaterThanOrEqual(expected - 1);
-      expect(Math.round(troops)).toBeLessThanOrEqual(expected + 1);
+      // Within 0.5%: the published 40.14/1.243 is a fit to the game's own
+      // numbers, not the game's arithmetic, and the readings above level 13
+      // are rounded to two significant figures. Tightening this would be
+      // pinning the fit's error, not the curve. It is loose enough to accept
+      // the right ratio and nowhere near loose enough to accept a neighbour's
+      // — the test below measures that gap.
+      expect(Math.abs(troops / expected - 1)).toBeLessThan(0.005);
     },
   );
 
-  // The shift itself, named: typing the game's coefficient straight in moves
-  // level 10's value onto level 9.
-  it("shifts the whole table one level up if the game's coefficient is stored raw", () => {
-    const raw = withTroops("silver", { coefficient: 40.14, ratio: 1.243 });
-    expect(Math.round(levelUpTroopsAt(9, "silver", raw)!)).toBe(284);
-    expect(Math.round(levelUpTroopsAt(10, "silver", parameters)!)).toBe(284);
+  // The reported symptom, named. What the player read off the page is what
+  // Silver's coefficient gives under BRONZE's ratio, and the two ratios are
+  // 0.002 apart: the substitution is worth under 2% at level 10 and only
+  // becomes unmistakable sixty rows down. That asymmetry is the whole reason
+  // it survived a check — and the reason this file now asserts on level 60.
+  it("a neighbouring league's ratio costs under 2% at level 10 and over 10% at level 60", () => {
+    const wrong = withTroops("silver", {
+      ...silverStored,
+      ratio: defaultLevelUpParameters.troops.bronze.ratio,
+    });
+    const drift = (level: number) =>
+      levelUpTroopsAt(level, "silver", wrong)! /
+        levelUpTroopsAt(level, "silver", parameters)! -
+      1;
+    expect(drift(10)).toBeLessThan(0.02);
+    expect(drift(60)).toBeGreaterThan(0.1);
   });
 
-  // And the five leagues that ship with a formula are NOT shifted: Bronze's
-  // curve is near-identical to Silver's (40.09/1.245 against 40.14/1.243), so
-  // its level 2 has to land on Silver's confirmed 50, not on 40.
-  it.each(["bronze", "gold", "platinum", "diamond", "legend"] as const)(
-    "%s is stored in that same convention, so its curve is not shifted",
+  // And the defect that was suspected, which is not there: each league is
+  // computed from its OWN stored pair. Every league gets a sentinel of its own
+  // here, far enough apart that a borrowed row could not pass for the right
+  // one — the check the report asked for on the five leagues besides Silver.
+  it.each(leagues)(
+    "computes %s from its own stored pair, never a neighbour's",
     (league) => {
-      const { coefficient, ratio } = defaultLevelUpParameters.troops[league];
-      expect(levelUpTroopsAt(2, league)).toBeCloseTo(coefficient * ratio ** 2);
-      // The level-2 value of a league whose coefficient is ~40 once divided
-      // out: shifted, it would read ~40 instead.
-      expect(levelUpTroopsAt(2, league)!).toBeGreaterThan(44);
+      const sentinels = {
+        ...defaultLevelUpParameters,
+        troops: Object.fromEntries(
+          leagues.map((other, index) => [
+            other,
+            { coefficient: index + 1, ratio: 1.1 + index / 100 },
+          ]),
+        ) as (typeof defaultLevelUpParameters)["troops"],
+      };
+      const own = sentinels.troops[league];
+      expect(levelUpTroopsAt(5, league, sentinels)).toBeCloseTo(
+        own.coefficient * own.ratio ** 5,
+        10,
+      );
+      for (const other of leagues)
+        if (other !== league)
+          expect(levelUpTroopsAt(5, league, sentinels)).not.toBeCloseTo(
+            sentinels.troops[other].coefficient *
+              sentinels.troops[other].ratio ** 5,
+            3,
+          );
     },
   );
 });

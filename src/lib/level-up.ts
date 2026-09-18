@@ -149,6 +149,11 @@ export function xpAt(level: number, parameters = defaultLevelUpParameters) {
  *
  * XP is universal (no league enters into it), and the table renders this one
  * column for every league, so this shift covers the whole reference at once.
+ *
+ * The prototype is authoritative (AGENTS.md), and it still puts xpAt(n) on row
+ * n, so this is a deliberate departure from it: recorded as an approved
+ * evolution in docs/cahier-des-charges-ml-helper.md §7.1 and flagged at the
+ * prototype's own xpAt.
  */
 export function levelUpXpToReach(
   level: number,

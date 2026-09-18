@@ -1262,6 +1262,8 @@ XP(n→n+1) = 50 × 1,3^(n-1)   (XP nécessaire pour passer du niveau n au nivea
 
 Contrairement aux formules de troupes, cette formule **ne varie pas selon la ligue du joueur** — confirmé explicitement par le joueur. C'est la formule la plus propre confirmée sur ce projet à ce jour (aucune approximation, contrairement aux formules de troupes Or/Platine qui gardent un écart résiduel <0,3-0,4%).
 
+**📐 Convention d'affichage — évolution validée (Bloc 107). La colonne « XP » du référentiel Progression porte le coût pour ATTEINDRE le niveau de la ligne, pas celui pour le quitter.** La formule ci-dessus ne change pas ; seule change la ligne qui porte chaque valeur. La ligne du niveau n affiche donc `XP(n-1→n) = 50 × 1,3^(n-2)`, et le niveau 1, que personne ne paie pour atteindre, n'affiche rien. Motif : un joueur lit une table de progression comme le prix de la ligne où il veut arriver — « niveau 101 : 12,4T » se lisait comme le coût pour atteindre 101, alors que c'était celui pour en partir (atteindre 101 coûte 9,54T). Le prototype (`docs/prototype-ml-helper-unifie.html`, `renderLevelUpTable`) pose encore `xpAt(n)` sur la ligne n : c'est la divergence assumée, signalée sur place.
+
 **✅ Cycle des récompenses tous les 10 niveaux — confirmé universel, identique sur les 6 ligues.** Cycle de 5 se répétant tous les 50 niveaux :
 ```
 Coffre → Urne → Coffret à bijoux → Jarre → Caisse → (répète)
