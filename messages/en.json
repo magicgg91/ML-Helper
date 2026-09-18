@@ -1046,6 +1046,7 @@
       "server-error": "Unable to reach the server.",
       "league": "League",
       "coefficient": "Coefficient",
+      "coefficient-hint": "Coefficient of “coefficient × ratio^level”. The game's own formulas are written “× ratio^(level−1)”: divide their coefficient by the ratio before entering it.",
       "ratio": "Ratio",
       "xp-base": "XP base",
       "xp-ratio": "XP ratio",

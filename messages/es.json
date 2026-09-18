@@ -1046,6 +1046,7 @@
       "server-error": "No se puede contactar con el servidor.",
       "league": "Liga",
       "coefficient": "Coeficiente",
+      "coefficient-hint": "Coeficiente de «coeficiente × ratio^nivel». Las fórmulas del juego se escriben «× ratio^(nivel−1)»: divide su coeficiente entre el ratio antes de introducirlo.",
       "ratio": "Ratio",
       "xp-base": "Base de XP",
       "xp-ratio": "Ratio de XP",

@@ -271,6 +271,16 @@ export function LevelUpParametersEditor({
       <section className="admin-panel">
         <div className="table-scroll">
           <table className="ranking-table">
+            {/* Bloc 107/A: the coefficient this column stores is the one in
+                `coefficient × ratio^level`, while every formula published for
+                the game is written `× ratio^(level-1)`. Typing the game's
+                number straight in shifts that league's whole table one level
+                up, which is exactly what happened to Silver: 284 troops
+                landed on level 9 instead of level 10. Nothing in the field
+                said so, so the caption does. */}
+            <caption className="admin-table-caption">
+              {t("coefficient-hint")}
+            </caption>
             <thead>
               <tr>
                 <th>{t("league")}</th>

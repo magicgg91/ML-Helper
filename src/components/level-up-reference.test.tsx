@@ -101,9 +101,14 @@ describe("LevelUpReference", () => {
     expect(screen.getByText("Coffret à bijoux").closest("td")).toHaveClass(
       "level-up-chest",
     );
-    expect(screen.getAllByText("—")[0].closest("td")).toHaveClass(
-      "level-up-chest-empty",
+    // Bloc 107/B: the XP column carries an em dash at level 1 now, so the
+    // first dash on the page is no longer a chest cell — this names the
+    // reward column itself rather than counting dashes.
+    const emptyReward = document.querySelector(
+      "tbody tr td:nth-child(4).level-up-chest-empty",
     );
+    expect(emptyReward).not.toBeNull();
+    expect(emptyReward).toHaveTextContent("—");
   });
   it("warns for Silver without inventing troop values", () => {
     render(
@@ -151,6 +156,39 @@ describe("LevelUpReference", () => {
       screen.getByRole("link", { name: /Taux de gain d’XP$/ }),
     ).toHaveAttribute("href", "/tools/combat?open=xp");
   });
+
+  // Bloc 107/B: the XP column is labelled by the level it BUYS. A player
+  // reading "niveau 101 : 12,4T" pays 9,54T to get there — the values were
+  // right all along, the row they sat on was not. Checked on two leagues
+  // because the fix has to be league-independent: XP takes no league, and the
+  // table renders this one column whichever league is on screen.
+  it.each(["Bronze", "Diamant"])(
+    "Bloc107/B: %s shows the XP that buys each level, and none at level 1",
+    (league) => {
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <LevelUpReference parameters={defaultLevelUpParameters} />
+        </NextIntlClientProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: league }));
+      const rows = screen.getAllByRole("row");
+      const xpOf = (row: HTMLElement) =>
+        within(row).getAllByRole("cell")[1].textContent;
+      const levelOf = (row: HTMLElement) =>
+        within(row).getAllByRole("cell")[0].textContent;
+
+      // Nobody pays to arrive at level 1.
+      expect(levelOf(rows[1])).toBe("1");
+      expect(xpOf(rows[1])).toBe("—");
+
+      // Level 2 costs the first step, 50 — the value the old labelling put on
+      // row 1, and level 6 costs the fifth step, 143, previously on row 5.
+      expect(levelOf(rows[2])).toBe("2");
+      expect(xpOf(rows[2])).toBe("50");
+      expect(levelOf(rows[6])).toBe("6");
+      expect(xpOf(rows[6])).toBe("143");
+    },
+  );
 
   // Bloc 98/A: the reported bug, end to end on the public side — Argent's
   // coefficient and ratio were saved in the admin, and the reference still

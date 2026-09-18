@@ -8,7 +8,7 @@ import {
   hasLevelUpTroopsFormula,
   levelUpChestAt,
   levelUpTroopsAt,
-  xpAt,
+  levelUpXpToReach,
   type LevelUpParameters,
 } from "../lib/level-up";
 import type { League } from "../lib/player-settings";
@@ -44,11 +44,15 @@ function LevelTable({
         <tbody>
           {levels.map((level) => {
             const chest = levelUpChestAt(level, parameters);
+            // Bloc 107/B: the XP to REACH this level, not to leave it — see
+            // levelUpXpToReach. Level 1 has no such cost and shows the same
+            // em dash the reward column uses for a level with no chest.
+            const xp = levelUpXpToReach(level, parameters);
             return (
               <tr key={level}>
                 <td>{level}</td>
                 <td className="value">
-                  {formatGameNumber(xpAt(level, parameters))}
+                  {xp === null ? "—" : formatGameNumber(xp)}
                 </td>
                 <td className="value">
                   {formatGameNumber(

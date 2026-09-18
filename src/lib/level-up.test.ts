@@ -7,6 +7,7 @@ import {
   isSavableLevelUpParameters,
   levelUpChestAt,
   levelUpTroopsAt,
+  levelUpXpToReach,
   xpAt,
 } from "./level-up";
 import { leagues } from "./player-settings";
@@ -21,6 +22,95 @@ function withTroops(
     troops: { ...defaultLevelUpParameters.troops, [league]: troops },
   };
 }
+
+// Bloc 107/A: the troop table Silver was reported wrong on, level by level,
+// as confirmed in game by a player. Level 1 is a flat 200 outside the curve;
+// from level 2 the game's formula is 40.14 × 1.243^(n-1).
+//
+// The point of the table is the CONVENTION, which nothing in the code used to
+// state. levelUpTroopsAt computes `coefficient × ratio^level`, so the
+// coefficient it stores is the game's divided by the ratio: 40.14 / 1.243 =
+// 32.2928. An admin who types the game's own 40.14 gets every row shifted one
+// level up — 284 troops on level 9, where the game puts them on level 10 —
+// which is precisely the bug this bloc came from, and it lived in the stored
+// value, not in the arithmetic.
+const silverFromTheGame = { coefficient: 40.14 / 1.243, ratio: 1.243 };
+const silverTroopsInGame: Array<[number, number]> = [
+  [1, 200],
+  [2, 50],
+  [3, 62],
+  [4, 77],
+  [5, 96],
+  [6, 119],
+  [7, 148],
+  [8, 184],
+  [9, 229],
+  [10, 284],
+  [12, 440],
+  [13, 547],
+];
+
+describe("Bloc 107/A: Silver troops, against the values confirmed in game", () => {
+  const parameters = withTroops("silver", silverFromTheGame);
+
+  it.each(silverTroopsInGame)(
+    "level %i carries %i troops",
+    (level, expected) => {
+      const troops = levelUpTroopsAt(level, "silver", parameters)!;
+      // Within one troop: the published 40.14/1.243 is a fit to the game's own
+      // numbers, not the game's arithmetic, and it drifts by ~1 by level 12.
+      // Tightening this would be pinning the fit's error, not the curve.
+      expect(Math.round(troops)).toBeGreaterThanOrEqual(expected - 1);
+      expect(Math.round(troops)).toBeLessThanOrEqual(expected + 1);
+    },
+  );
+
+  // The shift itself, named: typing the game's coefficient straight in moves
+  // level 10's value onto level 9.
+  it("shifts the whole table one level up if the game's coefficient is stored raw", () => {
+    const raw = withTroops("silver", { coefficient: 40.14, ratio: 1.243 });
+    expect(Math.round(levelUpTroopsAt(9, "silver", raw)!)).toBe(284);
+    expect(Math.round(levelUpTroopsAt(10, "silver", parameters)!)).toBe(284);
+  });
+
+  // And the five leagues that ship with a formula are NOT shifted: Bronze's
+  // curve is near-identical to Silver's (40.09/1.245 against 40.14/1.243), so
+  // its level 2 has to land on Silver's confirmed 50, not on 40.
+  it.each(["bronze", "gold", "platinum", "diamond", "legend"] as const)(
+    "%s is stored in that same convention, so its curve is not shifted",
+    (league) => {
+      const { coefficient, ratio } = defaultLevelUpParameters.troops[league];
+      expect(levelUpTroopsAt(2, league)).toBeCloseTo(coefficient * ratio ** 2);
+      // The level-2 value of a league whose coefficient is ~40 once divided
+      // out: shifted, it would read ~40 instead.
+      expect(levelUpTroopsAt(2, league)!).toBeGreaterThan(44);
+    },
+  );
+});
+
+// Bloc 107/B: the XP column names the cost of REACHING a level, not of leaving
+// it. The numbers never moved — only which row carries them.
+describe("Bloc 107/B: XP is labelled by the level it buys", () => {
+  it("has nothing to show at level 1, which nobody pays to reach", () =>
+    expect(levelUpXpToReach(1)).toBeNull());
+
+  it.each([
+    [2, 50],
+    [6, 143],
+    [101, 9_535_904_272_946],
+  ])("level %i costs the step that ends on it", (level, expected) => {
+    expect(levelUpXpToReach(level)).toBe(expected);
+    // The same value the old labelling put one row higher.
+    expect(levelUpXpToReach(level)).toBe(xpAt(level - 1));
+  });
+
+  // XP takes no league, so one shift covers the whole reference: the table
+  // renders this column identically whichever league is on screen.
+  it("is universal, so every league reads the same column", () => {
+    const perLeague = leagues.map(() => levelUpXpToReach(101));
+    expect(new Set(perLeague).size).toBe(1);
+  });
+});
 
 describe("Level Up reference", () => {
   it.each([

@@ -1046,6 +1046,7 @@
       "server-error": "Sunucuya ulaşılamıyor.",
       "league": "Lig",
       "coefficient": "Katsayı",
+      "coefficient-hint": "“katsayı × oran^seviye” ifadesinin katsayısı. Oyunun kendi formülleri “× oran^(seviye−1)” biçimindedir: girmeden önce katsayılarını orana bölün.",
       "ratio": "Oran",
       "xp-base": "XP tabanı",
       "xp-ratio": "XP oranı",

@@ -127,8 +127,35 @@ export function levelUpTroopsAt(
   return formula.coefficient * formula.ratio ** level;
 }
 
+/**
+ * The XP needed to LEAVE `level` — the cost of the level -> level+1 step.
+ * This is the game's own formula, and the primitive the table is built from;
+ * what the table shows per row is levelUpXpToReach below.
+ */
 export function xpAt(level: number, parameters = defaultLevelUpParameters) {
   return Math.round(parameters.xp.base * parameters.xp.ratio ** (level - 1));
+}
+
+/**
+ * The XP needed to REACH `level` — the cost of the level-1 -> level step, and
+ * `null` at level 1, which nobody pays to arrive at.
+ *
+ * Bloc 107/B: the Progression table used to put xpAt(N) on row N, i.e. the
+ * cost of leaving that level. The values were right and the labelling was
+ * inverted: a player reading "niveau 101 : 12,4T" pays 9,54T to get there, and
+ * 12,4T only to leave for 102. Reading a row as the price of reaching it is
+ * how these tables are read in game, so the column is shifted one row down
+ * rather than recomputed — the arithmetic never moved.
+ *
+ * XP is universal (no league enters into it), and the table renders this one
+ * column for every league, so this shift covers the whole reference at once.
+ */
+export function levelUpXpToReach(
+  level: number,
+  parameters = defaultLevelUpParameters,
+): number | null {
+  if (level <= 1) return null;
+  return xpAt(level - 1, parameters);
 }
 
 export function levelUpChestAt(
