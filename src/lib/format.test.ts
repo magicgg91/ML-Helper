@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   formatExactNumber,
@@ -50,26 +51,40 @@ describe("formatGameNumber", () => {
     expect(formatGameNumber(-1500)).toBe("-1.5k");
   });
 
-  // Bloc 63/B, Codex review (PR #134): P is the top of the scale, and that is
-  // a product rule — AGENTS.md lists it under "Règles produit non
-  // négociables" and the cahier des charges §3.3 tables it as "X.XXT, puis
-  // X.XXP au palier suivant". Extending to E/Z/Y would change the notation
-  // for city, combat, gem and templar values too, site-wide, so it is not
-  // this bloc's to decide. This test makes the next extension a deliberate
-  // one: it fails the moment a suffix is added.
-  it("stops the compact scale at P, as the product rules require", () => {
-    for (const value of [1.5e18, 1.5e21, 1.5e24])
-      expect(formatGameNumber(value)).toMatch(/P$/);
+  // Bloc 63/B, Codex review (PR #134): the set of suffixes is a product rule,
+  // not an implementation detail — the review flagged E/Z/Y precisely because
+  // the code had grown a scale the specification did not have. The owner then
+  // revised the specification (18/09/2026), so rather than pin a list twice,
+  // this reads the rule and checks the code against it. Drift either way
+  // fails here.
+  it("uses exactly the suffixes the product rules declare, in order", () => {
+    const declared = /compact par palier ([kMGTPEZY/]+)/
+      .exec(readFileSync("AGENTS.md", "utf8"))![1]
+      .split("/");
+    expect(declared[0]).toBe("k");
+    // Each suffix rules its own decade: k at 1e3, M at 1e6, and so on up.
+    declared.forEach((suffix, index) => {
+      expect(formatGameNumber(1.5 * 10 ** (3 * (index + 1)))).toBe(
+        `1.5${suffix}`,
+      );
+    });
+    // And nothing exists past the last one — the decade above it stays on it.
+    const top = declared.at(-1)!;
+    expect(formatGameNumber(1.5 * 10 ** (3 * declared.length + 3))).toMatch(
+      new RegExp(`${top}$`),
+    );
   });
 
-  // The consequence, stated rather than hidden: past 1e18 the compact format
-  // stops compacting. These are the two figures the Progression reference
-  // prints at level 200 under the current rule.
-  it("therefore prints level 200's figures at full length on the P scale", () => {
-    expect(formatGameNumber(32.2028 * 1.245 ** 200)).toBe("348148.01P");
-    expect(formatGameNumber(Math.round(50 * 1.3 ** 198))).toBe(
-      "1818669406.06P",
-    );
+  // The two figures that made the owner extend the scale, now readable.
+  it("keeps level 200's figures compact, which is why E/Z/Y were added", () => {
+    expect(formatGameNumber(32.2028 * 1.245 ** 200)).toBe("348.15E");
+    expect(formatGameNumber(Math.round(50 * 1.3 ** 198))).toBe("1.82Y");
+    // The cahier des charges' own promise, across every decade the site can
+    // reach: a small number and a suffix, never a ten-digit "1818669406.06P".
+    for (let exponent = 0; exponent <= 26; exponent += 1)
+      expect(formatGameNumber(1.5 * 10 ** exponent), `1.5e${exponent}`).toMatch(
+        /^\d{1,3}(\.\d{1,2})?[kMGTPEZY]?$/,
+      );
   });
 });
 

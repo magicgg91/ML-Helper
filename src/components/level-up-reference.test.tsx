@@ -109,7 +109,7 @@ describe("Bloc 63/B: Progression reaches level 200", () => {
   afterEach(() => viewport.restore());
 
   it.each(["Bronze", "Or", "Platine", "Diamant", "Légende"])(
-    "%s shows level 200 on its last page, with a real figure on the documented scale",
+    "%s shows level 200 on its last page, with a compact troop count",
     (league) => {
       viewport = mockViewport(false);
       show(league);
@@ -120,12 +120,13 @@ describe("Bloc 63/B: Progression reaches level 200", () => {
       const last = screen.getAllByRole("row").at(-1)!;
       const cells = within(last).getAllByRole("cell");
       expect(cells[0]).toHaveTextContent("200");
-      // 1.245^200 is ~1e19 and 1.3^198 is ~3.7e22 — well inside what a double
-      // holds, but far enough out that a mistake shows up as Infinity, NaN or
-      // 0 rather than as a wrong digit. Both cells must be a real figure on
-      // the documented k/M/G/T/P scale, P being its top (format.test.ts).
+      // Two things at once. 1.245^200 is ~1e19 and 1.3^198 is ~3.7e22: well
+      // inside what a double holds, but far enough out that a mistake shows up
+      // as Infinity, NaN or 0 rather than as a wrong digit. And these are the
+      // rows that made the compact scale grow E/Z/Y (cdc §3.3, revised
+      // 18/09/2026) — capped at P they read "348148.01P" and "1818669406.06P".
       for (const cell of [cells[1], cells[2]])
-        expect(cell.textContent).toMatch(/^\d[\d\s]*(\.\d{1,2})?[kMGTP]$/);
+        expect(cell.textContent).toMatch(/^\d{1,3}(\.\d{1,2})?[kMGTPEZY]$/);
     },
   );
 
