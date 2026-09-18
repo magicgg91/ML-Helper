@@ -50,24 +50,26 @@ describe("formatGameNumber", () => {
     expect(formatGameNumber(-1500)).toBe("-1.5k");
   });
 
-  // Bloc 63/B: the Progression reference now runs to level 200, where Légende
-  // fields ~3.5e20 troops and reaching the level costs ~1.8e24 XP. The unit
-  // table stopped at P (1e15), so those printed as "348148.01P" and
-  // "1818669406.06P" — still technically correct, and no longer compact.
-  it("keeps compacting past peta, where the level-200 rows live", () => {
-    expect(formatGameNumber(3.5e20)).toBe("350E");
-    expect(formatGameNumber(1.8e24)).toBe("1.8Y");
-    expect(formatGameNumber(2.5e21)).toBe("2.5Z");
+  // Bloc 63/B, Codex review (PR #134): P is the top of the scale, and that is
+  // a product rule — AGENTS.md lists it under "Règles produit non
+  // négociables" and the cahier des charges §3.3 tables it as "X.XXT, puis
+  // X.XXP au palier suivant". Extending to E/Z/Y would change the notation
+  // for city, combat, gem and templar values too, site-wide, so it is not
+  // this bloc's to decide. This test makes the next extension a deliberate
+  // one: it fails the moment a suffix is added.
+  it("stops the compact scale at P, as the product rules require", () => {
+    for (const value of [1.5e18, 1.5e21, 1.5e24])
+      expect(formatGameNumber(value)).toMatch(/P$/);
   });
 
-  it("never prints more than 3 digits before a suffix, at any magnitude", () => {
-    // What the missing units really cost: the format's own promise. Walked
-    // across every decade the reference can reach, from a single troop at
-    // level 1 to the XP of the last level.
-    for (let exponent = 0; exponent <= 26; exponent += 1)
-      expect(formatGameNumber(1.5 * 10 ** exponent), `1.5e${exponent}`).toMatch(
-        /^\d{1,3}(\.\d{1,2})?[kMGTPEZY]?$/,
-      );
+  // The consequence, stated rather than hidden: past 1e18 the compact format
+  // stops compacting. These are the two figures the Progression reference
+  // prints at level 200 under the current rule.
+  it("therefore prints level 200's figures at full length on the P scale", () => {
+    expect(formatGameNumber(32.2028 * 1.245 ** 200)).toBe("348148.01P");
+    expect(formatGameNumber(Math.round(50 * 1.3 ** 198))).toBe(
+      "1818669406.06P",
+    );
   });
 });
 

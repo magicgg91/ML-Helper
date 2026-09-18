@@ -34,15 +34,15 @@ export function formatPercent(value: number | null, locale: string) {
 export function formatGameNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100;
   const absolute = Math.abs(rounded);
+  // The scale stops at P. That is a product rule, not an implementation
+  // detail: AGENTS.md lists it under "Règles produit non négociables" and the
+  // cahier des charges §3.3 tables it as "X.XXT, puis X.XXP au palier
+  // suivant". Above 1e18 the output therefore stops being compact — at level
+  // 200 the Progression reference prints "348148.01P" troops and
+  // "1818669406.06P" XP. Extending the ladder to E/Z/Y would change the
+  // notation for every caller site-wide, so it is the project owner's call,
+  // not this formatter's. A test below pins P as the top.
   const units = [
-    // Bloc 63/B: the reference now runs to level 200, where Légende fields
-    // 3.5e20 troops and reaching the level costs 1.8e24 XP. Stopping at P
-    // (1e15) printed those as "348148.01P" and "1818669406.06P" — a compact
-    // format that had stopped compacting. E/Z/Y continue the same SI ladder
-    // the shorter suffixes already use.
-    { threshold: 1e24, suffix: "Y" },
-    { threshold: 1e21, suffix: "Z" },
-    { threshold: 1e18, suffix: "E" },
     { threshold: 1e15, suffix: "P" },
     { threshold: 1e12, suffix: "T" },
     { threshold: 1e9, suffix: "G" },
