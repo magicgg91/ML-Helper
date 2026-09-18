@@ -1046,6 +1046,7 @@
       "server-error": "Impossible de joindre le serveur.",
       "league": "Ligue",
       "coefficient": "Coefficient",
+      "troops-hint": "Formule appliquée : troupes(niveau) = coefficient × ratio^niveau, à partir du niveau 2. Les ratios des ligues ne se distinguent que de quelques millièmes : une valeur erronée reste invisible aux premiers niveaux et dépasse 10 % d’écart au niveau 60.",
       "ratio": "Ratio",
       "xp-base": "Base XP",
       "xp-ratio": "Ratio XP",

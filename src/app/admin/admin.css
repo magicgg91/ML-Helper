@@ -33,3 +33,14 @@
   --radius-md: calc(0.6rem - 2px);
   --radius-sm: calc(0.6rem - 4px);
 }
+
+/* Bloc 107/A: the note above the level-up troop table, explaining which form
+   of the coefficient the field stores. Left-aligned and dimmed so it reads as
+   guidance attached to the table rather than as a heading above it. */
+.admin-table-caption {
+  caption-side: top;
+  padding: 0 0 0.6rem;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  text-align: left;
+}

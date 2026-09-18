@@ -1046,6 +1046,7 @@
       "server-error": "Sunucuya ulaşılamıyor.",
       "league": "Lig",
       "coefficient": "Katsayı",
+      "troops-hint": "Uygulanan formül: birlikler(seviye) = katsayı × oran^seviye, 2. seviyeden itibaren. Liglerin oranları yalnızca birkaç binde bir farklıdır: hatalı bir değer ilk seviyelerde görünmez ve 60. seviyede %10'u aşan bir sapmaya yol açar.",
       "ratio": "Oran",
       "xp-base": "XP tabanı",
       "xp-ratio": "XP oranı",

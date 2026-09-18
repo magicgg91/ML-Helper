@@ -1046,6 +1046,7 @@
       "server-error": "Server nicht erreichbar.",
       "league": "Liga",
       "coefficient": "Koeffizient",
+      "troops-hint": "Angewandte Formel: Truppen(Stufe) = Koeffizient × Verhältnis^Stufe, ab Stufe 2. Die Verhältnisse der Ligen unterscheiden sich nur um wenige Tausendstel: Ein falscher Wert bleibt auf den ersten Stufen unsichtbar und weicht auf Stufe 60 um über 10 % ab.",
       "ratio": "Verhältnis",
       "xp-base": "XP-Basis",
       "xp-ratio": "XP-Verhältnis",

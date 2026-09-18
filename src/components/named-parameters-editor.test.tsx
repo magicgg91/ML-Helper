@@ -192,6 +192,58 @@ describe("named formula parameter editors", () => {
     expect(await screen.findByText("Paramètres enregistrés.")).toBeVisible();
   });
 
+  // Bloc 107/A: the reported bug was a Silver ratio that the public table
+  // computed from and the admin screen disagreed with. It could survive a
+  // check because this form showed what had been TYPED, never what the route
+  // stored — the two are the same only when the save went through untouched.
+  // The route echoes the parameters it parsed; the form now adopts them, so
+  // what is on screen is what the reference computes from.
+  it("Bloc107/A: shows what the route stored, not what was typed into it", async () => {
+    const stored = {
+      ...defaultLevelUpParameters,
+      troops: {
+        ...defaultLevelUpParameters.troops,
+        silver: { coefficient: 32.291367, ratio: 1.243 },
+      },
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(stored), { status: 200 }),
+    );
+    render(<LevelUpParametersEditor initial={defaultLevelUpParameters} />);
+    const ratioField = screen.getByRole("spinbutton", { name: "Argent Ratio" });
+    // The neighbouring league's ratio, which is what the table was reported to
+    // be using — typed here, and not what comes back.
+    fireEvent.change(ratioField, { target: { value: "1.245" } });
+    expect(ratioField).toHaveValue(1.245);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer les paramètres" }),
+    );
+    await waitFor(() => expect(ratioField).toHaveValue(1.243));
+    expect(
+      screen.getByRole("spinbutton", { name: "Argent Coefficient" }),
+    ).toHaveValue(32.291367);
+  });
+
+  // Bloc 107/A: a rejected save must not leave the refused values on screen
+  // looking accepted — this is the half of the report where the admin and the
+  // public reference drifted apart without anything saying so.
+  it("Bloc107/A: keeps the refused values out of the form when the route says no", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "invalid_parameters" }), {
+        status: 400,
+      }),
+    );
+    render(<LevelUpParametersEditor initial={defaultLevelUpParameters} />);
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Argent Coefficient" }),
+      { target: { value: "32.291367" } },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer les paramètres" }),
+    );
+    expect(await screen.findByText(/400/)).toBeVisible();
+  });
+
   // Bloc 42/B: Silver's troop formula is still unconfirmed, but AGENTS.md
   // requires unconfirmed data to stay admin-editable with a default value —
   // this used to be a plain "not confirmed" paragraph, no field at all.

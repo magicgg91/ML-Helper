@@ -6,6 +6,7 @@ import { cityLeagues, type CityParameters } from "../lib/city-parameters";
 import type { TemplarParameters } from "../lib/templar-parameters";
 import {
   hasLevelUpTroopsFormula,
+  parseLevelUpParameters,
   type LevelUpParameters,
 } from "../lib/level-up";
 import type { XpTier } from "../lib/combat-calculators";
@@ -23,7 +24,14 @@ import {
 import { EditorActionBar } from "./editor-action-bar";
 import { selectOnFocus } from "../lib/utils";
 
-function useToolSave(endpoint: string, payload: unknown) {
+function useToolSave(
+  endpoint: string,
+  payload: unknown,
+  // Bloc 107/A: what the server really stored, for editors that adopt it back
+  // — see LevelUpParametersEditor. Omitted, the form keeps its own state, as
+  // every editor did before.
+  onSaved?: (stored: unknown) => void,
+) {
   const t = useTranslations("admin.parameters");
   const [status, setStatus] = useState("");
   async function save() {
@@ -34,6 +42,7 @@ function useToolSave(endpoint: string, payload: unknown) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (response.ok) onSaved?.(await response.json().catch(() => undefined));
       setStatus(
         response.ok ? t("saved") : t("error", { status: response.status }),
       );
@@ -219,6 +228,15 @@ export function LevelUpParametersEditor({
   const { status, save } = useToolSave(
     "/api/admin/guides/references/level-up",
     value,
+    // Bloc 107/A: this form used to show what was TYPED and never what was
+    // stored, so a save the route rejected (or normalised) looked exactly like
+    // one it accepted — and the public table, which computes from the stored
+    // row, could disagree with this screen indefinitely. That is how a wrong
+    // ratio survives a check: the admin reads its own unsaved state back to
+    // itself. The route echoes the parsed parameters, so adopt them. An edit
+    // made while the request was in flight is overwritten, deliberately —
+    // showing the stored values is the point.
+    (stored) => setValue(parseLevelUpParameters(stored)),
   );
   const updateTroops = (
     league: League,
@@ -271,6 +289,15 @@ export function LevelUpParametersEditor({
       <section className="admin-panel">
         <div className="table-scroll">
           <table className="ranking-table">
+            {/* Bloc 107/A: nothing on either screen said which formula these
+                two numbers feed, nor how little room there is between two
+                leagues — Bronze's 1.245 and Silver's 1.243 agree to within
+                0.3% up to level 10 and are 10% apart by level 60. A ratio
+                typed one league off is therefore invisible exactly where an
+                admin would check it. The caption states both. */}
+            <caption className="admin-table-caption">
+              {t("troops-hint")}
+            </caption>
             <thead>
               <tr>
                 <th>{t("league")}</th>

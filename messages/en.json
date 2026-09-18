@@ -1046,6 +1046,7 @@
       "server-error": "Unable to reach the server.",
       "league": "League",
       "coefficient": "Coefficient",
+      "troops-hint": "Formula applied: troops(level) = coefficient × ratio^level, from level 2 on. League ratios differ by only a few thousandths: a wrong value stays invisible at the first levels and is more than 10% off by level 60.",
       "ratio": "Ratio",
       "xp-base": "XP base",
       "xp-ratio": "XP ratio",
