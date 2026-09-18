@@ -35,6 +35,14 @@ export function formatGameNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100;
   const absolute = Math.abs(rounded);
   const units = [
+    // Bloc 63/B: the reference now runs to level 200, where Légende fields
+    // 3.5e20 troops and reaching the level costs 1.8e24 XP. Stopping at P
+    // (1e15) printed those as "348148.01P" and "1818669406.06P" — a compact
+    // format that had stopped compacting. E/Z/Y continue the same SI ladder
+    // the shorter suffixes already use.
+    { threshold: 1e24, suffix: "Y" },
+    { threshold: 1e21, suffix: "Z" },
+    { threshold: 1e18, suffix: "E" },
     { threshold: 1e15, suffix: "P" },
     { threshold: 1e12, suffix: "T" },
     { threshold: 1e9, suffix: "G" },

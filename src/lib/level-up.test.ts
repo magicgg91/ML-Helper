@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   availableLevelUpLeagues,
@@ -136,6 +136,52 @@ describe("Bloc 107/B: XP is labelled by the level it buys", () => {
     const perLeague = leagues.map(() => levelUpXpToReach(101));
     expect(new Set(perLeague).size).toBe(1);
   });
+});
+
+// Bloc 63/B: raising maxLevel in the code is not enough to raise it on a
+// running site. The stored row wins — parseLevelUpParameters only falls back
+// to the default when the field is absent — and maxLevel is not one of the
+// fields the admin editor exposes, so nothing but a migration can move it.
+// This is the Bloc 107 failure mode exactly: the screen and the stored value
+// disagreeing, with nothing to say so.
+describe("Bloc 63/B: the level range is the same wherever it is written down", () => {
+  /** The maxLevel a freshly migrated database ends up holding. */
+  function storedMaxLevel(): number {
+    let value: number | undefined;
+    for (const directory of readdirSync("prisma/migrations").sort()) {
+      let sql: string;
+      try {
+        sql = readFileSync(
+          `prisma/migrations/${directory}/migration.sql`,
+          "utf8",
+        );
+      } catch {
+        continue; // migration_lock.toml and the like
+      }
+      // The seeded JSON, then any later migration that moves the field.
+      for (const pattern of [
+        /"maxLevel"\s*:\s*(\d+)/g,
+        /'\$\.maxLevel'\s*,\s*(\d+)/g,
+      ])
+        for (const match of sql.matchAll(pattern)) value = Number(match[1]);
+    }
+    return value!;
+  }
+
+  it("ships a migration that leaves the database on the code's own maxLevel", () => {
+    expect(storedMaxLevel()).toBe(defaultLevelUpParameters.maxLevel);
+  });
+
+  it("seeds the e2e database on that same maxLevel", () => {
+    // A third copy of the number, and the one the end-to-end suite reads.
+    const seed = readFileSync("prisma/setup-e2e.ts", "utf8");
+    expect(Number(/maxLevel:\s*(\d+)/.exec(seed)![1])).toBe(
+      defaultLevelUpParameters.maxLevel,
+    );
+  });
+
+  it("goes to 200, the highest level reachable in game", () =>
+    expect(defaultLevelUpParameters.maxLevel).toBe(200));
 });
 
 describe("Level Up reference", () => {

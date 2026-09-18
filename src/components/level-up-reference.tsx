@@ -14,6 +14,7 @@ import {
 import type { League } from "../lib/player-settings";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
+import { useNarrowViewport } from "./use-narrow-viewport";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
@@ -95,16 +96,29 @@ export function LevelUpReference({
     type: "conjunction",
   });
   const [page, setPage] = useState(0);
-  const start = page * parameters.pageSize + 1;
+  // Bloc 63/A: one table per page on a narrow screen instead of two side by
+  // side, so a page holds one column's worth of levels rather than two. This
+  // cannot be a stylesheet rule: hiding the second table would leave its 30
+  // levels on no page at all. Narrow therefore has twice as many pages, and
+  // the desktop layout is untouched.
+  const narrow = useNarrowViewport();
+  const perPage = narrow ? parameters.columnSize : parameters.pageSize;
+  const pages = Math.ceil(parameters.maxLevel / perPage);
+  // Rotating a phone (or resizing) changes `pages` under a page index the
+  // user already chose — index 6 is a real page on narrow and past the end on
+  // wide. Clamping here keeps the render valid without an effect writing back
+  // to state; the buttons below move from the clamped value, so the next
+  // click is coherent with what is on screen.
+  const current = Math.min(page, pages - 1);
+  const start = current * perPage + 1;
   const levels = Array.from(
-    { length: Math.min(parameters.pageSize, parameters.maxLevel - start + 1) },
+    { length: Math.min(perPage, parameters.maxLevel - start + 1) },
     (_, index) => start + index,
   );
   const columns = [
     levels.slice(0, parameters.columnSize),
     levels.slice(parameters.columnSize),
   ];
-  const pages = Math.ceil(parameters.maxLevel / parameters.pageSize);
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
@@ -152,16 +166,16 @@ export function LevelUpReference({
           <nav className="pagination" aria-label={t("pagination-label")}>
             <button
               type="button"
-              disabled={page === 0}
-              onClick={() => setPage((value) => value - 1)}
+              disabled={current === 0}
+              onClick={() => setPage(current - 1)}
             >
               {t("previous")}
             </button>
-            <span>{t("page", { current: page + 1, total: pages })}</span>
+            <span>{t("page", { current: current + 1, total: pages })}</span>
             <button
               type="button"
-              disabled={page + 1 >= pages}
-              onClick={() => setPage((value) => value + 1)}
+              disabled={current + 1 >= pages}
+              onClick={() => setPage(current + 1)}
             >
               {t("next")}
             </button>

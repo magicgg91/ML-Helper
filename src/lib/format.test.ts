@@ -49,6 +49,26 @@ describe("formatGameNumber", () => {
   it("keeps the sign on negatives", () => {
     expect(formatGameNumber(-1500)).toBe("-1.5k");
   });
+
+  // Bloc 63/B: the Progression reference now runs to level 200, where Légende
+  // fields ~3.5e20 troops and reaching the level costs ~1.8e24 XP. The unit
+  // table stopped at P (1e15), so those printed as "348148.01P" and
+  // "1818669406.06P" — still technically correct, and no longer compact.
+  it("keeps compacting past peta, where the level-200 rows live", () => {
+    expect(formatGameNumber(3.5e20)).toBe("350E");
+    expect(formatGameNumber(1.8e24)).toBe("1.8Y");
+    expect(formatGameNumber(2.5e21)).toBe("2.5Z");
+  });
+
+  it("never prints more than 3 digits before a suffix, at any magnitude", () => {
+    // What the missing units really cost: the format's own promise. Walked
+    // across every decade the reference can reach, from a single troop at
+    // level 1 to the XP of the last level.
+    for (let exponent = 0; exponent <= 26; exponent += 1)
+      expect(formatGameNumber(1.5 * 10 ** exponent), `1.5e${exponent}`).toMatch(
+        /^\d{1,3}(\.\d{1,2})?[kMGTPEZY]?$/,
+      );
+  });
 });
 
 // Bloc 93/F4: the third formatting style the site used, previously written

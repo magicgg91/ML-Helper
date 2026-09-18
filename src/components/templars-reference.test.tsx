@@ -2,13 +2,83 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
-import { defaultTemplarParameters } from "../lib/templar-parameters";
+import {
+  defaultTemplarParameters,
+  templarLevelCost,
+} from "../lib/templar-parameters";
 import { defaultTemplarPresentationCatalog } from "../lib/templars-presentation";
 import { templarKeys } from "../lib/player-settings";
 import { skillColor } from "../lib/game-images";
+import { mockViewport } from "../test/viewport";
 import { TemplarsReferenceTable } from "./templars-reference";
 
 afterEach(cleanup);
+
+// Bloc 63/C: split in two, the columns stack on a narrow screen (globals.css,
+// ≤900px) and a second header row lands in the middle of what the reader is
+// scrolling straight down. 20 rows never needed splitting at that width.
+describe("Bloc 63/C: Templars costs read as one table on a narrow screen", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => viewport.restore());
+
+  it("puts all 20 levels in a single table, in order, with no pagination", () => {
+    viewport = mockViewport(true);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getAllByRole("table")).toHaveLength(1);
+    // 20 levels and the one header row they now share.
+    expect(screen.getAllByRole("row")).toHaveLength(21);
+    expect(
+      [...document.querySelectorAll("tbody tr td:first-child")].map((cell) =>
+        Number(cell.textContent),
+      ),
+    ).toEqual(Array.from({ length: 20 }, (_, index) => index + 1));
+    expect(document.querySelector(".pagination")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Suivant" })).toBeNull();
+  });
+
+  // The level a row carries used to be computed from its position inside its
+  // column (columnIndex * 10 + i), which only held for the 2x10 split. Level
+  // 11 opening the second column on desktop is where that arithmetic mattered.
+  it("keeps every row's level and running total right in both layouts", () => {
+    for (const narrow of [true, false]) {
+      cleanup();
+      viewport = mockViewport(narrow);
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <TemplarsReferenceTable
+            parameters={defaultTemplarParameters}
+            presentation={defaultTemplarPresentationCatalog}
+          />
+        </NextIntlClientProvider>,
+      );
+      const eleventh = [...document.querySelectorAll("tbody tr")].find(
+        (row) => row.querySelector("td")?.textContent === "11",
+      )!;
+      const cells = eleventh.querySelectorAll("td");
+      expect(cells[0], `niveau, ${narrow ? "mobile" : "desktop"}`).toHaveTextContent("11");
+      // Cumulative is the sum of levels 1..11, so a row that lost track of its
+      // own index would show a neighbour's total here.
+      const costs = Array.from({ length: 11 }, (_, index) =>
+        templarLevelCost(index + 1, defaultTemplarParameters),
+      );
+      const total = costs.reduce((sum, item) => sum + item, 0);
+      // Compared without separators: the French grouping character is a
+      // narrow no-break space, which jest-dom's whitespace normalisation and
+      // toLocaleString do not spell the same way.
+      const digits = (text: string) => text.replace(/[\s\u202f\u00a0]/g, "");
+      expect(digits(cells[2].textContent!)).toBe(String(Math.round(total)));
+      viewport.restore();
+    }
+  });
+});
+
 describe("TemplarsReferenceTable", () => {
   // Bloc 64/E: the 20 levels are split over 2 side-by-side tables of 10,
   // so the header row is counted twice — 22 rows for 20 levels.

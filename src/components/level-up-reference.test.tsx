@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
 import { defaultLevelUpParameters } from "../lib/level-up";
+import { mockViewport } from "../test/viewport";
 import { LevelUpReference } from "./level-up-reference";
 
 const leagueLabels: Record<string, string> = {
@@ -21,6 +22,137 @@ const leagueLabels: Record<string, string> = {
 };
 
 afterEach(cleanup);
+
+function show(league: string) {
+  render(
+    <NextIntlClientProvider locale="fr" messages={messages}>
+      <LevelUpReference parameters={defaultLevelUpParameters} />
+    </NextIntlClientProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: league }));
+}
+
+/** The levels actually printed in the first column of every rendered table. */
+const shownLevels = () =>
+  [...document.querySelectorAll("tbody tr td:first-child")].map((cell) =>
+    Number(cell.textContent),
+  );
+
+// Bloc 63/A: a narrow screen gets ONE table of 30 levels per page instead of
+// the two side-by-side tables desktop keeps. What changes is how many levels a
+// page holds, so the page count changes with it — which is exactly why this
+// could not be a stylesheet rule.
+describe("Bloc 63/A: Progression paginates one table at a time on a narrow screen", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => viewport.restore());
+
+  it("shows a single 30-level table, and twice as many pages as desktop", () => {
+    viewport = mockViewport(true);
+    show("Légende");
+    expect(screen.getAllByRole("table")).toHaveLength(1);
+    // 30 levels plus the table's own header row.
+    expect(screen.getAllByRole("row")).toHaveLength(31);
+    expect(shownLevels()).toEqual(
+      Array.from({ length: 30 }, (_, index) => index + 1),
+    );
+    // 200 levels, 30 to a page.
+    expect(screen.getByText("Page 1 sur 7")).toBeVisible();
+  });
+
+  it("leaves desktop exactly as it was: two tables, 60 levels, half the pages", () => {
+    viewport = mockViewport(false);
+    show("Légende");
+    expect(screen.getAllByRole("table")).toHaveLength(2);
+    expect(screen.getAllByRole("row")).toHaveLength(62);
+    expect(shownLevels()).toEqual(
+      Array.from({ length: 60 }, (_, index) => index + 1),
+    );
+    expect(screen.getByText("Page 1 sur 4")).toBeVisible();
+  });
+
+  it("walks the narrow pages without skipping or repeating a level", () => {
+    viewport = mockViewport(true);
+    show("Légende");
+    fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+    expect(shownLevels()).toEqual(
+      Array.from({ length: 30 }, (_, index) => index + 31),
+    );
+    expect(screen.getByText("Page 2 sur 7")).toBeVisible();
+  });
+
+  // Rotating a phone changes the page count under a page the reader already
+  // chose. Narrow page 7 is past the end of the 4 desktop pages, and an
+  // unclamped index would ask for levels 361-420 — an empty table under a
+  // "Page 7 sur 4" counter.
+  it("survives a rotation from the last narrow page to the wide layout", () => {
+    viewport = mockViewport(true);
+    show("Légende");
+    for (let click = 0; click < 6; click += 1)
+      fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+    expect(screen.getByText("Page 7 sur 7")).toBeVisible();
+    expect(shownLevels()).toEqual(
+      Array.from({ length: 20 }, (_, index) => index + 181),
+    );
+
+    viewport.resize(false);
+    expect(screen.getByText("Page 4 sur 4")).toBeVisible();
+    expect(shownLevels()).toEqual(
+      Array.from({ length: 20 }, (_, index) => index + 181),
+    );
+    expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+  });
+});
+
+// Bloc 63/B: the reference runs to 200, the highest level reachable in game.
+describe("Bloc 63/B: Progression reaches level 200", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => viewport.restore());
+
+  it.each(["Bronze", "Or", "Platine", "Diamant", "Légende"])(
+    "%s shows level 200 on its last page, with a legible troop count",
+    (league) => {
+      viewport = mockViewport(false);
+      show(league);
+      for (let click = 0; click < 3; click += 1)
+        fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+      expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+
+      const last = screen.getAllByRole("row").at(-1)!;
+      const cells = within(last).getAllByRole("cell");
+      expect(cells[0]).toHaveTextContent("200");
+      // The point of the assertion: at level 200 the troop count is ~1e20 and
+      // the XP ~1e24. A compact format that stopped at P printed "348148.01P"
+      // and "1818669406.06P" here — six and ten digits before the suffix,
+      // which is no longer compact. Both must read as one small number and a
+      // suffix.
+      for (const cell of [cells[1], cells[2]])
+        expect(cell.textContent).toMatch(/^\d{1,3}(\.\d{1,2})?[kMGTPEZY]?$/);
+    },
+  );
+
+  // The formulas themselves are pinned against in-game readings by the Bloc
+  // 107 tests, which stop at level 60 — no player reading exists at 200. What
+  // is checkable here is that the six curves stay six distinct curves at the
+  // new top of the range, the property Bloc 107 had to establish at 60.
+  it("keeps the leagues on distinct curves at the new top level", () => {
+    const shown = new Set<string>();
+    for (const league of ["Bronze", "Or", "Platine", "Diamant", "Légende"]) {
+      cleanup();
+      viewport = mockViewport(false);
+      show(league);
+      for (let click = 0; click < 3; click += 1)
+        fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+      const cells = within(screen.getAllByRole("row").at(-1)!).getAllByRole(
+        "cell",
+      );
+      shown.add(cells[2].textContent!);
+    }
+    // Or and Platine have formulas of their own; Bronze, Diamant and Légende
+    // share one, so five leagues produce three distinct values at level 200.
+    expect(shown.size).toBe(3);
+  });
+});
+
 describe("LevelUpReference", () => {
   it("starts empty and waits for a league", () => {
     render(
