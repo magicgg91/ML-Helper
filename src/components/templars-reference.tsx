@@ -8,6 +8,7 @@ import {
   type TemplarParameters,
 } from "../lib/templar-parameters";
 import { CrossReferenceLink } from "./cross-reference-link";
+import { useNarrowViewport } from "./use-narrow-viewport";
 import { GameImage } from "./game-image";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 import { formatExactNumber } from "../lib/format";
@@ -93,13 +94,24 @@ export function TemplarsReferenceTable({
   const costs = Array.from({ length: 20 }, (_, index) =>
     templarLevelCost(index + 1, parameters),
   );
-  const cumulative = costs.map((_, index) =>
-    costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
-  );
+  // Each row carries its own level, so a column never has to be read back
+  // through its position in the split below (Bloc 63/C makes that split
+  // depend on the viewport, and the old `columnIndex * 10` only held for the
+  // one arrangement it was written for).
+  const rows = costs.map((cost, index) => ({
+    level: index + 1,
+    cost,
+    cumulative: costs.slice(0, index + 1).reduce((sum, item) => sum + item, 0),
+  }));
   // Bloc 64/E: 2 columns of 10 levels side by side, the layout Level Up
   // already uses — 20 rows fit in one screen that way, with no pagination
   // to add (Level Up only paginates because it runs far past 20 levels).
-  const columns = [costs.slice(0, 10), costs.slice(10)];
+  // Bloc 63/C: on a narrow screen those two columns stack (globals.css,
+  // ≤900px), which puts a second header row in the middle of a table the
+  // reader is already scrolling straight down. One table of 20 reads
+  // through. Still no pagination either way — 20 rows never need it.
+  const narrow = useNarrowViewport();
+  const columns = narrow ? [rows] : [rows.slice(0, 10), rows.slice(10)];
   return (
     <div className="calculator-stack">
       {/* Bloc 66/B: the presentation tiles come first, before the cost
@@ -116,10 +128,10 @@ export function TemplarsReferenceTable({
       </div>
       <h2 className="editable-reference-title">{t("cost-table")}</h2>
       <section className="split-reference-tables">
-        {columns.map((column, columnIndex) => (
+        {columns.map((column) => (
           <section
             className="calculator-card ranking-table-wrap"
-            key={columnIndex}
+            key={column[0].level}
           >
             <table className="ranking-table reference-simple-table">
               <thead>
@@ -130,23 +142,20 @@ export function TemplarsReferenceTable({
                 </tr>
               </thead>
               <tbody>
-                {column.map((item, indexInColumn) => {
-                  const index = columnIndex * 10 + indexInColumn;
-                  return (
-                    <tr key={index + 1}>
-                      <td>{index + 1}</td>
-                      {/* Bloc 66/D: unlike other reference tables, this cost
-                          must never be compacted to k/M — the task's own
-                          spec example shows the full digit sequence.
-                          Bloc 93/F4: still uncompacted, but through
-                          formatExactNumber so the thousands separators match
-                          the rest of the site (the ranking table already
-                          printed "12 345" where this printed "12345"). */}
-                      <td>{formatExactNumber(item, locale)}</td>
-                      <td>{formatExactNumber(cumulative[index], locale)}</td>
-                    </tr>
-                  );
-                })}
+                {column.map((row) => (
+                  <tr key={row.level}>
+                    <td>{row.level}</td>
+                    {/* Bloc 66/D: unlike other reference tables, this cost
+                        must never be compacted to k/M — the task's own
+                        spec example shows the full digit sequence.
+                        Bloc 93/F4: still uncompacted, but through
+                        formatExactNumber so the thousands separators match
+                        the rest of the site (the ranking table already
+                        printed "12 345" where this printed "12345"). */}
+                    <td>{formatExactNumber(row.cost, locale)}</td>
+                    <td>{formatExactNumber(row.cumulative, locale)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </section>

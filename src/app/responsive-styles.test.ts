@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { narrowViewportMaxWidth } from "../components/use-narrow-viewport";
 
 const css = readFileSync("src/app/globals.css", "utf8");
 
@@ -26,6 +27,19 @@ const variable = (block: string, name: string) =>
   block.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
 
 describe("public responsive styles", () => {
+  // Bloc 63/A+C: the reference tables' breakpoint is written twice — once in
+  // this stylesheet, which arranges the tables, and once in TypeScript, which
+  // is where a paginated table decides how many levels a page holds. They
+  // have to be the same number, or Progression would switch to one table per
+  // page at a width where the stylesheet still lays out two columns.
+  it("declares the reference tables' breakpoint at the same width in CSS and in TS", () => {
+    const stacking = css.match(
+      /@media \(max-width: (\d+)px\)\s*{\s*\.level-up-tables,\s*\.split-reference-tables\s*{\s*grid-template-columns: 1fr;/,
+    );
+    expect(stacking, "the ≤breakpoint stacking rule").not.toBeNull();
+    expect(Number(stacking![1])).toBe(narrowViewportMaxWidth);
+  });
+
   it("always splits the skill summary 5/5 across two rows, on every viewport width", () => {
     // Unconditional — not gated behind any @media breakpoint, so desktop
     // gets the same 2-row split as mobile/tablet instead of one long

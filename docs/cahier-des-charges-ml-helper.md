@@ -315,9 +315,11 @@ Les référentiels ne sont plus gérés ici — voir "Gestion des guides et réf
 | 1 000 – 999 990 | `X.XXk` (ex: `12.4k`) |
 | 1 000 000 – 999 990 000 | `X.XXM` (ex: `3.45M`) |
 | 1 000 000 000 – 999 990 000 000 | `X.XXG` (ex: `7.12G`) |
-| 1 000 000 000 000+ | `X.XXT`, puis `X.XXP` au palier suivant |
+| 1 000 000 000 000+ | `X.XXT`, puis `X.XXP`, `X.XXE`, `X.XXZ`, `X.XXY` aux paliers suivants |
 
 Bascule au palier supérieur dès que la valeur atteint l'équivalent de 999,99 dans l'unité courante (ex: 999,99k → passe en M).
+
+**✅ Révision confirmée par le porteur du projet (18/09/2026) — l'échelle continue au-delà de P avec E (1e18), Z (1e21) et Y (1e24)**, en prolongement de la même série SI que k/M/G/T/P. Motif : l'extension du référentiel Progression au niveau 200 (Bloc 63) a rendu la limite visible — la ligue Légende y aligne 3,5e20 troupes et atteindre le niveau coûte 1,8e24 d'XP, que l'échelle plafonnée à P affichait « 348148.01P » et « 1818669406.06P ». Un format compact qui avait cessé de compacter. La limite existait déjà au niveau 150 (« 3652.47P »), le Bloc 63 l'a seulement rendue impossible à ignorer. Le **sélecteur d'unité en saisie** ci-dessous n'est pas concerné et reste à ×1 / k / M / G / T : il sert à saisir des quantités de production du jeu, qui n'atteignent pas ces ordres de grandeur.
 
 - **✅ Sélecteur d'unité en saisie (pas seulement en affichage)** — pour les champs numériques représentant de grandes quantités issues de la production/progression du jeu (VP du joueur, or disponible dans les calculateurs...), le champ de saisie est accompagné d'un **sélecteur d'unité** (×1 / k / M / G / T) à côté du nombre. Le joueur tape "2" et choisit "G" plutôt que de taper "2000000000".
 

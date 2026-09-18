@@ -2193,6 +2193,51 @@ test("no league button group ever causes a scrollbar on itself, at mobile or des
   }
 });
 
+// Bloc 63/A+B+C: the reference tables rearrange themselves below 900px, and
+// on Progression that changes how many levels a page holds — so the component
+// reads the width in JS (useNarrowViewport) while the stylesheet arranges the
+// tables. Unit tests drive that hook through a stubbed matchMedia; only a real
+// browser proves the two agree, and that the widths they agree on are the ones
+// a phone and a desktop actually report.
+test("Bloc63: the reference tables switch layout at the same width in CSS and in JS", async ({
+  page,
+}) => {
+  const tables = page.locator(".level-up-tables table");
+  const templars = page.locator(".split-reference-tables table");
+
+  // A phone. Progression: one table of 30 levels, so 200 levels make 7 pages.
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/referentiels/level-up");
+  await page.getByRole("button", { name: "Légende" }).click();
+  await expect(tables).toHaveCount(1);
+  await expect(tables.first().locator("tbody tr")).toHaveCount(30);
+  await expect(page.getByText("Page 1 sur 7")).toBeVisible();
+  // And the last page really is reachable, ending on level 200.
+  for (let click = 0; click < 6; click += 1)
+    await page.getByRole("button", { name: "Suivant" }).click();
+  await expect(page.getByText("Page 7 sur 7")).toBeVisible();
+  await expect(
+    tables.first().locator("tbody tr").last().locator("td").first(),
+  ).toHaveText("200");
+
+  // Templiers on the same phone: the 20 rows in one table, no pagination.
+  await page.goto("/referentiels/templars");
+  await expect(templars).toHaveCount(1);
+  await expect(templars.first().locator("tbody tr")).toHaveCount(20);
+  await expect(page.locator(".pagination")).toHaveCount(0);
+
+  // A desktop. Both references go back to two tables side by side, and
+  // Progression's 200 levels fit in half as many pages.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/referentiels/level-up");
+  await page.getByRole("button", { name: "Légende" }).click();
+  await expect(tables).toHaveCount(2);
+  await expect(page.getByText("Page 1 sur 4")).toBeVisible();
+  await page.goto("/referentiels/templars");
+  await expect(templars).toHaveCount(2);
+  await expect(templars.first().locator("tbody tr")).toHaveCount(10);
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 90: admin language visibility. These tests live in this file (rather
 // than a separate spec) on purpose: they create/rely on the Super Admin, and

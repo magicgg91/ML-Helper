@@ -184,7 +184,7 @@ async function main() {
           diamond: { coefficient: 32.2028, ratio: 1.245 },
           legend: { coefficient: 32.2028, ratio: 1.245 },
         },
-        maxLevel: 150,
+        maxLevel: 200,
         columnSize: 30,
         pageSize: 60,
         chestInterval: 10,

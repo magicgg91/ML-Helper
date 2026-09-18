@@ -1485,6 +1485,11 @@ function fmt(n) {
   n = Math.round(n * 100) / 100;
   const sign = n < 0 ? '-' : '';
   n = Math.abs(n);
+  /* ⚠️ Divergence assumée depuis le Bloc 63 (cdc section 3.3) : le site
+     prolonge cette table avec E (1e18), Z (1e21) et Y (1e24). L'extension du
+     référentiel Progression au niveau 200 y amène des valeurs que le sommet en
+     P n'affichait plus de façon compacte. Le prototype garde la table sous
+     laquelle il a servi de référence. */
   const units = [
     { threshold: 1e15, suffix: 'P' }, { threshold: 1e12, suffix: 'T' },
     { threshold: 1e9,  suffix: 'G' }, { threshold: 1e6,  suffix: 'M' },

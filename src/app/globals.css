@@ -4435,6 +4435,12 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   font-variant-numeric: tabular-nums;
 }
 
+/* Bloc 63/A+C: this width is also declared as narrowViewportMaxWidth in
+   src/components/use-narrow-viewport.ts, because Progression has to KNOW
+   which arrangement is on screen — how many levels a page holds is not
+   something a stylesheet can decide — and Templiers collapses its two
+   columns into one table rather than stacking them. A test pins the two
+   declarations to the same number (responsive-styles.test.ts). */
 @media (max-width: 900px) {
   .level-up-tables,
   .split-reference-tables {

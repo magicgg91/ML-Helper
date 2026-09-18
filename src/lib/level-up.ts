@@ -23,7 +23,13 @@ export const defaultLevelUpParameters: LevelUpParameters = {
     diamond: { coefficient: 32.2028, ratio: 1.245 },
     legend: { coefficient: 32.2028, ratio: 1.245 },
   },
-  maxLevel: 150,
+  // Bloc 63/B: 200 is the highest level reachable in game. The six troop
+  // formulas and the XP curve are already valid over the whole span (Blocs 98
+  // and 107), so this only widens what is rendered — no new game data.
+  maxLevel: 200,
+  // A page is two columns of 30 on a wide screen; on a narrow one it is a
+  // single column, so columnSize doubles as the page size there (Bloc 63/A,
+  // level-up-reference.tsx).
   columnSize: 30,
   pageSize: 60,
   chestInterval: 10,
@@ -91,8 +97,8 @@ export function parseLevelUpParameters(value: unknown): LevelUpParameters {
   const raw = value as Partial<LevelUpParameters>;
   return {
     xp: {
-      base: Number(raw.xp?.base ?? 50),
-      ratio: Number(raw.xp?.ratio ?? 1.3),
+      base: Number(raw.xp?.base ?? defaultLevelUpParameters.xp.base),
+      ratio: Number(raw.xp?.ratio ?? defaultLevelUpParameters.xp.ratio),
     },
     troops: Object.fromEntries(
       leagues.map((league) => [
@@ -109,10 +115,16 @@ export function parseLevelUpParameters(value: unknown): LevelUpParameters {
         },
       ]),
     ) as LevelUpParameters["troops"],
-    maxLevel: Number(raw.maxLevel ?? 150),
-    columnSize: Number(raw.columnSize ?? 30),
-    pageSize: Number(raw.pageSize ?? 60),
-    chestInterval: Number(raw.chestInterval ?? 10),
+    // Bloc 63/B: the fallbacks read from defaultLevelUpParameters rather
+    // than repeating its numbers. They used to be literals, so raising
+    // maxLevel above meant raising it here too — a second source of truth for
+    // the same value, and silently stale if only one moved.
+    maxLevel: Number(raw.maxLevel ?? defaultLevelUpParameters.maxLevel),
+    columnSize: Number(raw.columnSize ?? defaultLevelUpParameters.columnSize),
+    pageSize: Number(raw.pageSize ?? defaultLevelUpParameters.pageSize),
+    chestInterval: Number(
+      raw.chestInterval ?? defaultLevelUpParameters.chestInterval,
+    ),
   };
 }
 
