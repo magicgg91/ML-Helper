@@ -9,6 +9,7 @@ import {
   leagueLockFor,
   orderedLadder,
   parseRankingLadder,
+  rankBandShades,
   rankCategoryShade,
   rankingEntryId,
   type RankingEntry,
@@ -239,6 +240,81 @@ describe("rankCategoryShade", () => {
   });
   it("cycles back to the lightest shade past the palette length", () => {
     expect(rankCategoryShade("stay", 5)).toBe(rankCategoryShade("stay", 0));
+  });
+});
+
+// Bloc 110/C: the scale and the interval tiles must paint the same interval
+// the same color, and a shade depends on how many bands of the same movement
+// came before it — so it cannot be recomputed independently on each side.
+describe("rankBandShades", () => {
+  it("shades bands in threshold order, light to dark within each movement", () => {
+    expect(rankBandShades(bandsOf("diamond"))).toEqual([
+      "#a8dcb8",
+      "#7ec99a",
+      "#a8c9e8",
+      "#7eabd9",
+      "#f0b088",
+    ]);
+  });
+
+  it("does not depend on the order the bands arrive in", () => {
+    const bands = bandsOf("diamond");
+    expect(rankBandShades([...bands].reverse())).toEqual(rankBandShades(bands));
+  });
+
+  // The reason this exists at all: calculateRanking drops a band that holds
+  // no integer rank, so the tiles are a SUBSET of the scale's bands. Each
+  // range carries the index of its own band, so a dropped one cannot shift
+  // the colors after it.
+  it("keeps every surviving band's shade when one drops out", () => {
+    const bands = bandsOf("diamond");
+    const shades = rankBandShades(bands);
+    // Two players: only the 60% and 100% bands hold an integer rank.
+    const ranges = calculateRanking(bands, 100, 2).ranges;
+    expect(ranges.map((range) => range.threshold)).toEqual([60, 100]);
+    expect(ranges.map((range) => shades[range.bandIndex])).toEqual([
+      "#7eabd9",
+      "#f0b088",
+    ]);
+    // Shading the survivors on their own instead would repaint the 60% band:
+    // it is the SECOND Maintien of the full ladder but the first of these two.
+    expect(rankBandShades(ranges)[0]).toBe("#a8c9e8");
+  });
+
+  // Codex review (PR #137): two bands can share a threshold — the admin seeds
+  // every new band row at 100 and only the range is validated — so a
+  // threshold is not an identity. Keyed by it, the later band silently took
+  // the earlier one's color.
+  it("gives two bands on the same threshold their own shades", () => {
+    expect(
+      rankBandShades([
+        { threshold: 100, movement: "promotion", target: null, rewards: [] },
+        { threshold: 100, movement: "relegation", target: null, rewards: [] },
+      ]),
+    ).toEqual([
+      rankCategoryShade("promotion", 0),
+      rankCategoryShade("relegation", 0),
+    ]);
+  });
+
+  it("numbers the ranges back to their own bands, duplicates included", () => {
+    const ranges = calculateRanking(
+      [
+        { threshold: 50, movement: "stay", target: null, rewards: [] },
+        { threshold: 100, movement: "promotion", target: null, rewards: [] },
+      ],
+      1,
+      10,
+    ).ranges;
+    expect(ranges.map((range) => range.bandIndex)).toEqual([0, 1]);
+  });
+
+  it("treats a band with no movement as a Maintien, as the scale does", () => {
+    expect(
+      rankBandShades([
+        { threshold: 10, movement: null, target: null, rewards: [] },
+      ]),
+    ).toEqual([rankCategoryShade("stay", 0)]);
   });
 });
 

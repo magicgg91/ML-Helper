@@ -184,6 +184,14 @@ export type RankingRange = RankingBand & {
   rangeStart: number;
   rankStart: number;
   rankEnd: number;
+  /**
+   * Codex review (PR #137): where this range's band sits once the bands are
+   * sorted by threshold. It is the band's only unique handle — a threshold is
+   * not one, since an admin can save two bands on the same one — and it is
+   * what lets a caller line a range back up with its own band after the
+   * filter below has dropped some.
+   */
+  bandIndex: number;
 };
 
 // Palettes par catégorie de mouvement, clair -> foncé au fil des paliers de
@@ -200,6 +208,39 @@ export function rankCategoryShade(
 ): string {
   const shades = rankCategoryShades[category];
   return shades[index % shades.length];
+}
+
+/**
+ * Bloc 110/C: the shade of every band, in sorted-by-threshold order.
+ *
+ * The visual scale and the interval tiles must paint the same interval the
+ * same color — that is the whole point of the tiles carrying a color at all.
+ * A shade depends on how many bands of the same movement came before it, so
+ * it cannot be recomputed independently on each side: the tiles are built
+ * from calculateRanking's ranges, which DROP any band holding no integer
+ * rank, and a dropped band would shift every later shade. Both sides read
+ * this one list instead, built from the bands themselves — the scale by its
+ * own sorted index, a tile by its range's bandIndex.
+ *
+ * Codex review (PR #137): a list, indexed by position, not a map keyed by
+ * threshold. Two bands can share a threshold — the admin's Add action seeds
+ * every new row at 100 and isSavableRankingLadder only checks the range — and
+ * keying by it made the later band silently overwrite the earlier one's
+ * shade, so the interval actually drawn could wear another category's color.
+ */
+export function rankBandShades(bands: RankingBand[]): string[] {
+  const counters: Record<RankMovement, number> = {
+    promotion: 0,
+    stay: 0,
+    relegation: 0,
+  };
+  const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
+  return sorted.map((band) => {
+    const category = band.movement ?? "stay";
+    const shade = rankCategoryShade(category, counters[category]);
+    counters[category] += 1;
+    return shade;
+  });
 }
 
 export function calculateRanking(
@@ -238,7 +279,7 @@ export function calculateRanking(
             : Math.floor((total * band.threshold) / 100);
         const rankStart = previousRankEnd + 1;
         previousRankEnd = rankEnd;
-        return { ...band, rangeStart, rankStart, rankEnd };
+        return { ...band, rangeStart, rankStart, rankEnd, bandIndex: index };
       })
       .filter((range) => range.rankStart <= range.rankEnd),
   };

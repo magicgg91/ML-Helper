@@ -688,8 +688,9 @@ test("Ranking converts position and percentage into league ranges", async ({
   await expect(
     page.getByLabel("Échelle de classement de 100% à 0%"),
   ).toBeVisible();
+  // Bloc 110/C: the summary table is a list of tiles now, one per interval.
   await expect(
-    page.getByRole("cell", { name: "Descente Platine" }),
+    page.locator(".ranking-band-target", { hasText: "Descente Platine" }),
   ).toBeVisible();
 
   // Bloc61/B: at a standard desktop width, the league buttons, the %
@@ -2321,14 +2322,16 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   // Bloc 108/D: two rungs below Or 1 is Argent.
   await expect(page.getByTestId("ranking-league-lock")).toHaveText("Argent");
 
-  // Bloc 108/H: an entry that does have rewards shows speedups in its own
-  // column, beside sapphires and gems.
+  // Bloc 108/H: an entry that does have rewards names speedups beside
+  // sapphires and gems — in every tile since Bloc 110/C, rather than once in
+  // a header row.
   await group.getByRole("button", { name: "Argent", exact: true }).click();
+  const firstTile = page.locator(".ranking-band-tile").first();
   await expect(
-    page.getByRole("columnheader", { name: "Speedups" }),
+    firstTile.locator(".ranking-band-fact dt", { hasText: "Speedups" }),
   ).toBeVisible();
   await expect(
-    page.locator("tbody tr").first().locator("td").nth(4),
+    firstTile.locator(".ranking-band-fact").nth(2).locator("dd"),
   ).toHaveText("7");
 
   // Put the ladder back, so the tests after this one see the six it shipped
@@ -2398,11 +2401,22 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   });
   expect(half).toBeCloseTo(0.5, 2);
 
-  // Mobile: spread evenly, three to a row at most, and 3+3+2+2 rather than a
-  // last row holding one button.
+  // Mobile, Bloc 110/1: two fixed columns, whatever the count — Bloc 109's
+  // three-per-row rule broke the page width once real division names were in
+  // play, so ten rungs are five rows of two.
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/tools/classement");
-  await expect.poll(rowSizes).toEqual([3, 3, 2, 2]);
+  await expect.poll(rowSizes).toEqual([2, 2, 2, 2, 2]);
+  // And the page itself does not scroll sideways — the symptom that was
+  // reported, one level above the group's own overflow checked below.
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    ),
+    "w390 page scrolls sideways",
+  ).toBeLessThanOrEqual(1);
 
   // Bloc 69/F's standing rule, on the new layout: no league group may scroll
   // on itself, in either axis, at any width.
@@ -2468,6 +2482,129 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   }
   await page.getByRole("button", { name: "Enregistrer le classement" }).click();
   await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+});
+
+// Bloc 110: the Classement result zone, measured in a real browser — two
+// fixed columns for the picker on a phone, the two info figures side by side
+// there too, and one tile per interval in the color of its own segment. The
+// six shipped rungs are enough: six is exactly where the mobile rule now
+// differs from desktop's single row, so no admin setup is needed.
+test("Bloc110: Classement lays its picker and its result tiles out at both widths", async ({
+  page,
+}) => {
+  const group = page.locator(".ranking-calculator .family-buttons");
+  const rowSizes = async () =>
+    group
+      .locator(".league-button-row")
+      .evaluateAll((rows) =>
+        rows.map((row) => row.querySelectorAll("button").length),
+      );
+  const pageOverflow = () =>
+    page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    );
+
+  // --- Partie 1: two columns on a phone, and nothing spilling off the page.
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/tools/classement");
+  await expect(group.getByRole("button")).toHaveCount(6);
+  // Polled: the server has no viewport, renders the wide split, and the
+  // client re-splits on hydration (useNarrowViewport).
+  await expect.poll(rowSizes).toEqual([2, 2, 2]);
+  expect(
+    await pageOverflow(),
+    "w390 page scrolls sideways",
+  ).toBeLessThanOrEqual(1);
+  expect(
+    await group.evaluate((el) => el.scrollWidth - el.clientWidth),
+    "w390 picker scrolls on itself",
+  ).toBeLessThanOrEqual(1);
+
+  await group.getByRole("button", { name: "Diamant" }).click();
+
+  // --- Partie 2/B: the two figures stay side by side at 390px.
+  const infoTiles = page.locator(".ranking-info-tiles > .ranking-info-tile");
+  await expect(infoTiles).toHaveCount(2);
+  const boxes = await infoTiles.evaluateAll((tiles) =>
+    tiles.map((tile) => tile.getBoundingClientRect()),
+  );
+  expect(boxes[0].y, "the two info tiles share a line").toBeCloseTo(
+    boxes[1].y,
+    0,
+  );
+  expect(boxes[0].x, "the second sits to the right of the first").toBeLessThan(
+    boxes[1].x,
+  );
+
+  // --- Partie 2/A: no movement/target label against the bar on a phone; the
+  // same wording is in the tiles instead.
+  await expect(page.locator(".ranking-scale-target")).toHaveCount(0);
+  await expect(
+    page.locator(".ranking-band-target", { hasText: "Montée Légende" }).first(),
+  ).toBeVisible();
+
+  // --- Partie 2/C: every tile carries the color of its own segment. Read as
+  // the browser resolves it, paired by the range each one shows.
+  const colorsByRange = (selector: string, label: string) =>
+    page.evaluate(
+      ([selector, label]) =>
+        [...document.querySelectorAll(selector)].map((element) => {
+          const scope =
+            selector === ".ranking-scale-segment"
+              ? element.parentElement!
+              : element;
+          return [
+            scope.querySelector(label)!.textContent!,
+            getComputedStyle(element).getPropertyValue("--band-color").trim(),
+          ] as [string, string];
+        }),
+      [selector, label] as const,
+    );
+  const segments = new Map(
+    await colorsByRange(".ranking-scale-segment", ".ranking-scale-range"),
+  );
+  const tiles = new Map(
+    await colorsByRange(".ranking-band-tile", ".ranking-band-range"),
+  );
+  expect(tiles.size).toBeGreaterThanOrEqual(3);
+  for (const [range, color] of tiles) {
+    expect(color, `tile ${range} carries a color`).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(segments.get(range), `segment ${range}`).toBe(color);
+  }
+  expect(new Set(tiles.values()).size).toBeGreaterThanOrEqual(3);
+
+  // --- Partie 2/D: full width on a phone.
+  const tileWidths = async () =>
+    page.evaluate(() => {
+      const list = document.querySelector(".ranking-band-tiles")!;
+      const listWidth = list.getBoundingClientRect().width;
+      return [...list.querySelectorAll(".ranking-band-tile")].map((tile) => {
+        const box = tile.getBoundingClientRect();
+        return { ratio: box.width / listWidth, y: box.y };
+      });
+    });
+  for (const tile of await tileWidths())
+    expect(tile.ratio, "w390 tile width").toBeCloseTo(1, 1);
+
+  // --- Partie 2/D: half width on desktop, still one per line.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/tools/classement");
+  await group.getByRole("button", { name: "Diamant" }).click();
+  const wide = await tileWidths();
+  expect(wide.length).toBeGreaterThanOrEqual(3);
+  for (const tile of wide)
+    expect(tile.ratio, "w1280 tile width").toBeCloseTo(0.5, 1);
+  // Stacked, not two abreast: every tile starts below the one before it.
+  for (let index = 1; index < wide.length; index += 1)
+    expect(
+      wide[index].y,
+      `tile ${index} sits below tile ${index - 1}`,
+    ).toBeGreaterThan(wide[index - 1].y);
+
+  // And desktop keeps the labels against the bar that mobile drops.
+  await expect(page.locator(".ranking-scale-target").first()).toBeVisible();
 });
 
 // ---------------------------------------------------------------------------
