@@ -15,6 +15,7 @@ import {
   type RankMovement,
   type RankRewardType,
 } from "../lib/ranking";
+import { pickFrEn } from "../lib/translations";
 import { NumberStepper } from "./number-stepper";
 import { usePlayerSettings } from "./use-player-settings";
 
@@ -23,32 +24,44 @@ type Translator = ReturnType<typeof useTranslations>;
 /**
  * Bloc 108/A: an entry's name in the reader's own language.
  *
- * A free-text `name` wins when an admin typed one — it is the rename escape
- * hatch, and it can only ever exist in one language. Otherwise the name is
- * built from the base league, which IS translated (game.leagues.*), plus the
- * division label: "Or" + "1" reads "Or 1" in French and "Gold 1" in English,
- * with nothing to translate by hand.
+ * A free name wins when an admin typed one — the rename escape hatch — and it
+ * is stored per locale, read through pickFrEn so a missing translation falls
+ * back to English like everything else on this site (Codex review, PR #135:
+ * a single-language name would have reached every reader unchanged).
+ * Otherwise the name is built from the base league, which IS translated
+ * (game.leagues.*), plus the division label: "Or" + "1" reads "Or 1" in
+ * French and "Gold 1" in English, with nothing to translate by hand.
  */
-export function rankingEntryLabel(entry: RankingEntry, game: Translator) {
-  if (entry.name) return entry.name;
+export function rankingEntryLabel(
+  entry: RankingEntry,
+  game: Translator,
+  locale: string,
+) {
+  const free = pickFrEn(entry.nameFr, entry.nameEn, locale);
+  if (free) return free;
   const base = entry.league ? game(`leagues.${entry.league}`) : "";
   return entry.division ? `${base} ${entry.division}`.trim() : base;
 }
 
 function targetLabel(
   band: RankingBand,
-  ladder: RankingLadder,
+  entries: RankingLadder,
   t: Translator,
   game: Translator,
+  locale: string,
 ) {
   const target = band.target
-    ? findRankingEntry(ladder, band.target)
+    ? findRankingEntry(entries, band.target)
     : undefined;
-  // A target the admin has since deleted is as unknown as one never set —
-  // better an explicit "to be defined" than a raw id leaking onto the page.
+  // Resolved against the ACTIVE ladder only (Codex review, PR #135): a band
+  // may point at a rung an admin has prepared but not switched on, and naming
+  // it here would put a future division on the public page — the very thing
+  // the active flag exists to prevent. A target the admin has since deleted
+  // is as unknown as one never set, and both read "to be defined" rather than
+  // leaking a raw id.
   if (!band.movement || !target) return t("undefined");
   return t(`movements.${band.movement}`, {
-    league: rankingEntryLabel(target, game),
+    league: rankingEntryLabel(target, game, locale),
   });
 }
 
@@ -73,19 +86,20 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
   const settings = usePlayerSettings();
   const [manualEntry, setManualEntry] = useState("");
   // Bloc 108/E: the player's own division wins, because it is the precise
-  // answer. Without one, a league that still has a single rung resolves on its
-  // own; a league already split into divisions does not, and the player picks
-  // — guessing which half of their league they are in would be inventing data.
+  // answer.
+  const ofLeague = settings.league
+    ? entries.filter((entry) => entry.league === settings.league)
+    : [];
   const fromSettings =
-    entries.find((entry) => entry.id === settings.division)?.id ??
-    (settings.league
-      ? (() => {
-          const ofLeague = entries.filter(
-            (entry) => entry.league === settings.league,
-          );
-          return ofLeague.length === 1 ? ofLeague[0].id : undefined;
-        })()
-      : undefined);
+    // The stored division must still belong to the league the player is in
+    // (Codex review, PR #135): an admin can move an entry to another base
+    // league while its id — which is what was persisted — stays the same, and
+    // the calculator would then quietly show another league's bands.
+    ofLeague.find((entry) => entry.id === settings.division)?.id ??
+    // Without one, a league that still has a single rung resolves on its own;
+    // a league already split into divisions does not, and the player picks —
+    // guessing which half of their league they are in would invent data.
+    (ofLeague.length === 1 ? ofLeague[0].id : undefined);
   const entryId = manualEntry || fromSettings || "";
   const entry = entries.find((item) => item.id === entryId);
   const bands = entry?.bands ?? [];
@@ -128,7 +142,7 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
                   aria-pressed={item.id === entryId}
                   onClick={() => setManualEntry(item.id)}
                 >
-                  {rankingEntryLabel(item, game)}
+                  {rankingEntryLabel(item, game, locale)}
                 </button>
               ))}
             </div>
@@ -185,7 +199,9 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
             <div className="ranking-scale-total ranking-league-lock">
               <span className="label">{t("league-lock")}</span>
               <strong className="value" data-testid="ranking-league-lock">
-                {lock ? rankingEntryLabel(lock, game) : t("league-lock-none")}
+                {lock
+                  ? rankingEntryLabel(lock, game, locale)
+                  : t("league-lock-none")}
               </strong>
             </div>
           ) : null}
@@ -202,14 +218,14 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
             // active/inactive is the only thing that decides visibility.
             <p className="ranking-placeholder">
               {t("errors.missing-bands", {
-                entry: rankingEntryLabel(entry, game),
+                entry: rankingEntryLabel(entry, game, locale),
               })}
             </p>
           ) : (
             <>
               <RankingScale
                 bands={bands}
-                ladder={ladder}
+                entries={entries}
                 percentage={percentage}
               />
               <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
@@ -248,18 +264,18 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
                               : ""
                           }
                         >
-                          {targetLabel(range, ladder, t, game)}
+                          {targetLabel(range, entries, t, game, locale)}
                         </td>
                         {rankRewardTypes.map((type) => {
                           const quantity = rewardQuantity(range, type);
+                          // A reward this row does not grant leaves an empty
+                          // cell rather than a dash: the column header already
+                          // says the type is tracked, which is what was
+                          // missing, and the owner asked for nothing to be
+                          // drawn at 0 as before.
                           return (
-                            <td
-                              key={type}
-                              className={
-                                quantity ? "value" : "value ranking-unknown"
-                              }
-                            >
-                              {quantity ? quantity.toLocaleString(locale) : "—"}
+                            <td key={type} className="value">
+                              {quantity ? quantity.toLocaleString(locale) : ""}
                             </td>
                           );
                         })}
@@ -278,11 +294,11 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
 
 function RankingScale({
   bands,
-  ladder,
+  entries,
   percentage,
 }: {
   bands: RankingBand[];
-  ladder: RankingLadder;
+  entries: RankingLadder;
   percentage: number;
 }) {
   const t = useTranslations("ranking");
@@ -333,7 +349,7 @@ function RankingScale({
               title={t("segment-tooltip", {
                 threshold: band.threshold,
                 start,
-                target: targetLabel(band, ladder, t, game),
+                target: targetLabel(band, entries, t, game, locale),
                 reward: rewardSentence(band, t),
               })}
             />
@@ -348,7 +364,7 @@ function RankingScale({
                   {band.threshold}–{start}%
                 </div>
                 <div className="ranking-scale-target">
-                  {targetLabel(band, ladder, t, game)}
+                  {targetLabel(band, entries, t, game, locale)}
                 </div>
               </div>
             </div>

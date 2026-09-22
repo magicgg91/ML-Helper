@@ -10,6 +10,8 @@ import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
 import { defaultRankingLadder, type RankingLadder } from "../lib/ranking";
+import { defaultPlayerSettings } from "../lib/player-settings";
+import { playerStorageKey } from "./player-settings-panel";
 import { RankingCalculator } from "./ranking-calculator";
 
 const leagueGroup = () => screen.getByRole("group", { name: /Ligue|League/ });
@@ -40,8 +42,9 @@ describe("RankingCalculator", () => {
       screen.getAllByText("Montée Légende", { selector: "td" }),
     ).toHaveLength(2);
     // Bloc 108/H: one column per reward type, so the gems value is a cell of
-    // its own rather than a fragment of a sentence.
-    expect(rewardCells(0)).toEqual(["—", "—", "6"]);
+    // its own rather than a fragment of a sentence. A type this row does not
+    // grant leaves its cell empty — the header already says it is tracked.
+    expect(rewardCells(0)).toEqual(["", "", "6"]);
   });
   // Bloc 108/H: what used to be "100 saphirs, 7 speedup, 6 gemmes" in a
   // single cell is now three cells — the reason being that the sentence simply
@@ -72,7 +75,7 @@ describe("RankingCalculator", () => {
     expect(
       screen.getAllByText("Promotion to Legend", { selector: "td" }),
     ).toHaveLength(2);
-    expect(rewardCells(0)).toEqual(["—", "—", "6"]);
+    expect(rewardCells(0)).toEqual(["", "", "6"]);
   });
   it("shows the editable placeholder for an unknown league", () => {
     renderCalculator();
@@ -283,7 +286,8 @@ const withDivisions: RankingLadder = [
     id: "bronze",
     league: "bronze",
     division: "",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 0,
     active: true,
     bands: [],
@@ -292,7 +296,8 @@ const withDivisions: RankingLadder = [
     id: "silver-2",
     league: "silver",
     division: "2",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 1,
     active: true,
     bands: [],
@@ -301,7 +306,8 @@ const withDivisions: RankingLadder = [
     id: "silver-1",
     league: "silver",
     division: "1",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 2,
     active: true,
     bands: [],
@@ -310,7 +316,8 @@ const withDivisions: RankingLadder = [
     id: "gold-2",
     league: "gold",
     division: "2",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 3,
     active: true,
     bands: [],
@@ -319,7 +326,8 @@ const withDivisions: RankingLadder = [
     id: "gold-1",
     league: "gold",
     division: "1",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 4,
     active: true,
     bands: [
@@ -339,7 +347,8 @@ const withDivisions: RankingLadder = [
     id: "platinum-2",
     league: "platinum",
     division: "2",
-    name: "",
+    nameFr: "",
+    nameEn: "",
     position: 5,
     active: false,
     bands: [
@@ -428,9 +437,10 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
     );
   });
 
-  // Bloc 108/H, end to end on the public side: a reward the row does carry is
-  // named and shown, and one it does not carry reads as an explicit dash
-  // rather than vanishing from a sentence.
+  // Bloc 108/H, end to end on the public side: every reward type has a named
+  // column of its own, so one the row does not grant is visibly absent from a
+  // column that exists, rather than missing from a sentence that never
+  // mentioned it.
   it("Bloc108/H: shows speedups in their own column, beside sapphires and gems", () => {
     renderLadder(withDivisions);
     fireEvent.click(
@@ -439,7 +449,7 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
     expect(
       screen.getByRole("columnheader", { name: "Speedups" }),
     ).toBeVisible();
-    expect(rewardCells(0)).toEqual(["40", "5", "—"]);
+    expect(rewardCells(0)).toEqual(["40", "5", ""]);
   });
 
   it("names a target by its division, not by its base league", () => {
@@ -448,5 +458,147 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
       within(leagueGroup()).getByRole("button", { name: "Or 1" }),
     );
     expect(screen.getByText("Maintien Or 1", { selector: "td" })).toBeVisible();
+  });
+});
+
+// Codex review (PR #135). Each of these pins one finding.
+describe("Bloc 108, revue Codex", () => {
+  afterEach(cleanup);
+
+  // P1: a free name is admin-managed text that reaches every reader, so it is
+  // stored per locale and falls back to English — never shown as typed in one
+  // language to all five.
+  it("P1: reads a free name in the reader's language, falling back to English", () => {
+    const named: RankingLadder = [
+      {
+        id: "champion",
+        league: null,
+        division: "",
+        nameFr: "Champion suprême",
+        nameEn: "Supreme Champion",
+        position: 0,
+        active: true,
+        bands: [],
+      },
+      {
+        // Only English filled in: every locale gets the English one, which is
+        // this project's fallback rule, rather than an empty label.
+        id: "challenger",
+        league: null,
+        division: "",
+        nameFr: "",
+        nameEn: "Challenger",
+        position: 1,
+        active: true,
+        bands: [],
+      },
+    ];
+    renderLadder(named);
+    expect(
+      within(leagueGroup())
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Champion suprême", "Challenger"]);
+
+    cleanup();
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <RankingCalculator ladder={named} />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      within(leagueGroup())
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Supreme Champion", "Challenger"]);
+  });
+
+  // P2: a band may point at a rung prepared but not switched on. Naming it
+  // would put a future division on the public page — what the flag prevents.
+  it("P2: never names an inactive target, in the table or on the scale", () => {
+    const ladder: RankingLadder = [
+      {
+        id: "gold",
+        league: "gold",
+        division: "",
+        nameFr: "",
+        nameEn: "",
+        position: 0,
+        active: true,
+        bands: [
+          {
+            threshold: 100,
+            movement: "promotion",
+            target: "platinum-2",
+            rewards: [{ type: "gems", quantity: 1 }],
+          },
+        ],
+      },
+      {
+        id: "platinum-2",
+        league: "platinum",
+        division: "2",
+        nameFr: "",
+        nameEn: "",
+        position: 1,
+        active: false,
+        bands: [],
+      },
+    ];
+    const { container } = renderLadder(ladder);
+    fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
+    expect(screen.queryByText(/Platine 2/)).toBeNull();
+    expect(
+      screen.getByText("À définir dans l’administration", { selector: "td" }),
+    ).toBeVisible();
+    expect(container.innerHTML).not.toContain("Platine 2");
+  });
+
+  // P2: an admin can move an entry to another base league while its id — what
+  // the player has persisted — stays the same. The stored division must still
+  // belong to the league the player is in, or the calculator would quietly
+  // show another league's bands.
+  it("P2: ignores a stored division whose entry has moved to another league", () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "gold",
+        division: "gold-1",
+        equipmentSkills: {},
+      }),
+    );
+    const moved: RankingLadder = [
+      {
+        // Same id, now under Platine — the player's stored "gold-1".
+        id: "gold-1",
+        league: "platinum",
+        division: "1",
+        nameFr: "",
+        nameEn: "",
+        position: 0,
+        active: true,
+        bands: [],
+      },
+      {
+        id: "gold",
+        league: "gold",
+        division: "",
+        nameFr: "",
+        nameEn: "",
+        position: 1,
+        active: true,
+        bands: [],
+      },
+    ];
+    renderLadder(moved);
+    // Gold is the player's league and has a single rung, so that one resolves
+    // — never the moved entry, whatever its id says.
+    expect(
+      within(leagueGroup()).getByRole("button", { name: /^Or$/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(leagueGroup()).getByRole("button", { name: "Platine 1" }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 });

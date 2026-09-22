@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   EditableDataTable,
   errorKey,
@@ -36,7 +36,8 @@ type EntryDraft = {
   id: string;
   league: League | "";
   division: string;
-  name: string;
+  nameFr: string;
+  nameEn: string;
   active: boolean;
   rows: RankingEditRow[];
 };
@@ -59,7 +60,8 @@ function toDraft(entry: RankingEntry): EntryDraft {
     id: entry.id,
     league: entry.league ?? "",
     division: entry.division,
-    name: entry.name,
+    nameFr: entry.nameFr,
+    nameEn: entry.nameEn,
     active: entry.active,
     rows: entry.bands.map(toEditRow),
   };
@@ -76,7 +78,8 @@ function uniqueEntryId(drafts: EntryDraft[], seed: Partial<EntryDraft>) {
   const base = rankingEntryId({
     league: (seed.league || null) as League | null,
     division: seed.division ?? "",
-    name: seed.name ?? "",
+    nameFr: seed.nameFr ?? "",
+    nameEn: seed.nameEn ?? "",
   });
   const taken = new Set(drafts.map((draft) => draft.id));
   if (!taken.has(base)) return base;
@@ -90,6 +93,7 @@ export function RankingAdminEditor({
   initialLadder: RankingLadder;
 }) {
   const t = useTranslations("admin.ranking");
+  const locale = useLocale();
   const game = useTranslations("game");
   const gameLeagues = useTranslations("game.leagues");
   const [drafts, setDrafts] = useState<EntryDraft[]>(() =>
@@ -107,12 +111,14 @@ export function RankingAdminEditor({
         id: draft.id,
         league: (draft.league || null) as League | null,
         division: draft.division,
-        name: draft.name,
+        nameFr: draft.nameFr,
+        nameEn: draft.nameEn,
         position: 0,
         active: draft.active,
         bands: [],
       },
       game,
+      locale,
     ) || t("entry-untitled");
 
   const updateDraft = (id: string, patch: Partial<EntryDraft>) =>
@@ -139,7 +145,8 @@ export function RankingAdminEditor({
       id: draft.id,
       league: (draft.league || null) as League | null,
       division: draft.division.trim(),
-      name: draft.name.trim(),
+      nameFr: draft.nameFr.trim(),
+      nameEn: draft.nameEn.trim(),
       position: index,
       active: draft.active,
       bands: draft.rows.map((row) => ({
@@ -161,7 +168,7 @@ export function RankingAdminEditor({
       errors[draft.id] = {};
       // An entry with neither a base league nor a name could not be labelled
       // in any language — the one thing a ladder rung cannot do without.
-      if (!draft.league && !draft.name.trim()) {
+      if (!draft.league && !draft.nameFr.trim() && !draft.nameEn.trim()) {
         perEntry[draft.id] = t("entry-name-error");
         invalid = true;
       }
@@ -346,20 +353,28 @@ export function RankingAdminEditor({
                   }
                 />
               </label>
-              <label className="calculator-field">
-                {t("entry-name")}
-                <input
-                  type="text"
-                  aria-label={t("entry-name-field", {
-                    entry: label(draft),
-                    position: index + 1,
-                  })}
-                  value={draft.name}
-                  onChange={(event) =>
-                    updateDraft(draft.id, { name: event.target.value })
-                  }
-                />
-              </label>
+              {/* Codex review (PR #135): a free name is admin-managed text
+                  that reaches every reader, so it is stored per locale and
+                  read with pickFrEn — the same fr/en pair the Templiers
+                  presentation already uses, with English as the fallback. */}
+              {(["Fr", "En"] as const).map((suffix) => (
+                <label className="calculator-field" key={suffix}>
+                  {t(`entry-name-${suffix.toLowerCase()}`)}
+                  <input
+                    type="text"
+                    aria-label={t(`entry-name-${suffix.toLowerCase()}-field`, {
+                      entry: label(draft),
+                      position: index + 1,
+                    })}
+                    value={draft[`name${suffix}`]}
+                    onChange={(event) =>
+                      updateDraft(draft.id, {
+                        [`name${suffix}`]: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+              ))}
               <label className="calculator-field ranking-entry-active">
                 <input
                   type="checkbox"
@@ -427,7 +442,8 @@ export function RankingAdminEditor({
               id: uniqueEntryId(current, {}),
               league: "",
               division: "",
-              name: "",
+              nameFr: "",
+              nameEn: "",
               // Bloc 108/G: off until an admin says otherwise — a new rung is
               // being prepared, not published.
               active: false,

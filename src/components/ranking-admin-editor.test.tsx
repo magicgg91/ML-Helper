@@ -259,7 +259,9 @@ describe("Bloc 108/A: the ladder entries are editable", () => {
       screen.getByRole("button", { name: "Enregistrer le classement" }),
     );
     expect(
-      screen.getByText("Choisis une ligue de base ou saisis un nom libre."),
+      screen.getByText(
+        "Choisis une ligue de base ou saisis un nom libre (FR ou EN).",
+      ),
     ).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();
   });

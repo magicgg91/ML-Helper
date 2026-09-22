@@ -693,7 +693,8 @@ describe("Bloc 108/E: the division field", () => {
       id: "bronze",
       league: "bronze",
       division: "",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: 0,
       active: true,
       bands: [],
@@ -702,7 +703,8 @@ describe("Bloc 108/E: the division field", () => {
       id: "gold-2",
       league: "gold",
       division: "2",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: 1,
       active: true,
       bands: [],
@@ -711,7 +713,8 @@ describe("Bloc 108/E: the division field", () => {
       id: "gold-1",
       league: "gold",
       division: "1",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: 2,
       active: true,
       bands: [],
@@ -720,7 +723,8 @@ describe("Bloc 108/E: the division field", () => {
       id: "diamond-1",
       league: "diamond",
       division: "1",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: 3,
       active: false,
       bands: [],
@@ -775,6 +779,26 @@ describe("Bloc 108/E: the division field", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
     await waitFor(() => expect(stored().league).toBe("bronze"));
     expect(stored().division).toBe("");
+  });
+
+  // Codex review (PR #135): .settings-grid-primary is exactly three columns
+  // (5fr 2fr 3fr) for League/Level/VP, and its mobile rule keys off child
+  // order — a fourth child there pushed Level into VP's column and wrapped VP
+  // onto a row of its own.
+  it("P2: stays out of the three-column League/Level/VP row", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel ladder={ladder} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByText("Paramètres du joueur", { exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+    const primary = container.querySelector(".settings-grid-primary")!;
+    expect(screen.getByLabelText("Division")).toBeVisible();
+    expect(primary.children).toHaveLength(3);
+    expect(primary.querySelector(".settings-grid-division-field")).toBeNull();
+    // And the order the mobile rule depends on is intact: league first.
+    expect(primary.firstElementChild).toHaveClass("settings-grid-league-field");
   });
 
   it("shows nothing at all when no ladder was passed", () => {

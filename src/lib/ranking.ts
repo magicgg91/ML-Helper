@@ -49,8 +49,19 @@ export type RankingEntry = {
   league: League | null;
   /** Division label appended to the league name, e.g. "1". Empty when none. */
   division: string;
-  /** Free-text name, used as-is when set — the rename escape hatch. */
-  name: string;
+  /**
+   * Free name, per locale — the rename escape hatch, for a rung the studio
+   * invents that maps to no league at all.
+   *
+   * Codex review (PR #135): a single free-text name would have shown a French
+   * rename unchanged to every other language, which AGENTS.md forbids for
+   * user-visible text. Admin-managed names are stored per locale in this
+   * project (see templars-presentation's name_fr/name_en), and read through
+   * pickFrEn, which falls back to English — the repo-wide rule for a missing
+   * translation.
+   */
+  nameFr: string;
+  nameEn: string;
   /**
    * Bloc 108/B: explicit rank on the ladder, low = bottom (Bronze). Insertion
    * order is deliberately NOT the source of truth: promotion targets and the
@@ -162,7 +173,8 @@ export const defaultRankingLadder: RankingLadder = [
   id: entry.league,
   league: entry.league as League,
   division: "",
-  name: "",
+  nameFr: "",
+  nameEn: "",
   position: index,
   active: true,
   bands: entry.bands,
@@ -309,10 +321,13 @@ function slugify(value: string): string {
 export function rankingEntryId(entry: {
   league: League | null;
   division: string;
-  name: string;
+  nameFr?: string;
+  nameEn?: string;
 }): string {
-  const base = entry.name
-    ? slugify(entry.name)
+  // English first, so an id stays stable if the French name is edited later.
+  const free = entry.nameEn || entry.nameFr || "";
+  const base = free
+    ? slugify(free)
     : [entry.league ?? "", entry.division]
         .filter(Boolean)
         .map(slugify)
@@ -366,19 +381,23 @@ function parseEntry(value: unknown, index: number): RankingEntry | null {
     ? (row.league as League)
     : null;
   const division = typeof row.division === "string" ? row.division.trim() : "";
-  const name = typeof row.name === "string" ? row.name.trim() : "";
+  const text = (value: unknown) =>
+    typeof value === "string" ? value.trim() : "";
+  const nameFr = text(row.nameFr);
+  const nameEn = text(row.nameEn);
   // An entry with neither a league nor a name could not be labelled at all.
-  if (!league && !name) return null;
+  if (!league && !nameFr && !nameEn) return null;
   const id =
     typeof row.id === "string" && row.id.trim()
       ? row.id.trim()
-      : rankingEntryId({ league, division, name });
+      : rankingEntryId({ league, division, nameFr, nameEn });
   const position = Number(row.position);
   return {
     id,
     league,
     division,
-    name,
+    nameFr,
+    nameEn,
     position: Number.isFinite(position) ? position : index,
     // Absent means active: every entry that existed before Bloc 108 is in
     // production, and a missing flag must never silently hide one.
@@ -419,7 +438,8 @@ export function parseRankingLadder(value: unknown): RankingLadder {
       id: league,
       league,
       division: "",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: index,
       active: true,
       bands: Array.isArray(source[league])
@@ -512,7 +532,7 @@ export function isSavableRankingLadder(ladder: RankingLadder): boolean {
     if (!entry.id) return false;
     if (ids.has(entry.id)) return false;
     ids.add(entry.id);
-    if (!entry.league && !entry.name) return false;
+    if (!entry.league && !entry.nameFr && !entry.nameEn) return false;
     for (const item of entry.bands)
       if (item.threshold <= 0 || item.threshold > 100) return false;
   }

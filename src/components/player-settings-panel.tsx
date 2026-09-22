@@ -324,33 +324,6 @@ export function PlayerSettingsPanel({
                 className="league-buttons-grid"
               />
             </div>
-            {/* Bloc 108/E: only appears once an admin has configured
-                divisions for this league — the studio splits Argent to
-                Diamant from 07/10/2026, and until an entry exists there is
-                nothing to choose. Separate from the league buttons above on
-                purpose: this one feeds the ranking tool alone. */}
-            {divisions.length ? (
-              <label className="settings-grid-division-field">
-                {t("division")}
-                <select
-                  aria-label={t("division")}
-                  value={settings.division}
-                  onChange={(event) =>
-                    setSettings((current) => ({
-                      ...current,
-                      division: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="">{t("division-none")}</option>
-                  {divisions.map((entry) => (
-                    <option key={entry.id} value={entry.id}>
-                      {rankingEntryLabel(entry, game)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
             <label>
               {t("player-level")}
               <NumberStepper
@@ -392,6 +365,39 @@ export function PlayerSettingsPanel({
               </div>
             </label>
           </div>
+          {/* Bloc 108/E: only appears once an admin has configured divisions
+            for this league — the studio splits Argent to Diamant from
+            07/10/2026, and until an entry exists there is nothing to
+            choose. Separate from the league buttons above on purpose: this
+            one feeds the ranking tool alone.
+
+            In a row of its own rather than inside .settings-grid-primary
+            (Codex review, PR #135): that grid is exactly three columns
+            (5fr 2fr 3fr) for League/Level/VP, and its mobile rule keys off
+            child order, so a fourth child there would have pushed Level
+            into VP's column and wrapped VP onto another row. */}
+          {divisions.length ? (
+            <label className="settings-grid-division-field">
+              {t("division")}
+              <select
+                aria-label={t("division")}
+                value={settings.division}
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    division: event.target.value,
+                  }))
+                }
+              >
+                <option value="">{t("division-none")}</option>
+                {divisions.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {rankingEntryLabel(entry, game, locale)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <SettingsSection
             title={t("equipment-skills.title")}

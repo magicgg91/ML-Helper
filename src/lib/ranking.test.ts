@@ -327,7 +327,8 @@ describe("Bloc 108/A: migrating the six fixed leagues to a ladder", () => {
         id: "bronze",
         league: "bronze",
         division: "",
-        name: "",
+        nameFr: "",
+        nameEn: "",
         position: 0,
         active: true,
         bands: [
@@ -345,7 +346,8 @@ describe("Bloc 108/A: migrating the six fixed leagues to a ladder", () => {
       id,
       league: "gold",
       division: "1",
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: 0,
       active: true,
       bands: [],
@@ -358,11 +360,20 @@ describe("Bloc 108/A: migrating the six fixed leagues to a ladder", () => {
   });
 
   it("builds an id from the league and division, or from a free name", () => {
-    expect(rankingEntryId({ league: "gold", division: "1", name: "" })).toBe(
-      "gold-1",
-    );
+    expect(rankingEntryId({ league: "gold", division: "1" })).toBe("gold-1");
+    // Codex review (PR #135): the free name is stored per locale, and the id
+    // is built from the English one first so editing the French name later
+    // cannot move an id that bands already point at.
     expect(
-      rankingEntryId({ league: null, division: "", name: "Élite Suprême" }),
+      rankingEntryId({
+        league: null,
+        division: "",
+        nameFr: "Élite Suprême",
+        nameEn: "Supreme Elite",
+      }),
+    ).toBe("supreme-elite");
+    expect(
+      rankingEntryId({ league: null, division: "", nameFr: "Élite Suprême" }),
     ).toBe("elite-supreme");
   });
 });
@@ -389,7 +400,8 @@ function ladderWithDivisions(
       id,
       league: league as RankingEntry["league"],
       division,
-      name: "",
+      nameFr: "",
+      nameEn: "",
       position: index,
       active: true,
       bands: [],
