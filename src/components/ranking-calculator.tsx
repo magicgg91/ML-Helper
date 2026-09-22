@@ -15,8 +15,10 @@ import {
   type RankMovement,
   type RankRewardType,
 } from "../lib/ranking";
+import { leagueButtonRows, sliceIntoRows } from "../lib/league-button-rows";
 import { pickFrEn } from "../lib/translations";
 import { NumberStepper } from "./number-stepper";
+import { useNarrowViewport } from "./use-narrow-viewport";
 import { usePlayerSettings } from "./use-player-settings";
 
 type Translator = ReturnType<typeof useTranslations>;
@@ -107,6 +109,21 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
   const [percentage, setPercentage] = useState(1);
   const [rank, setRank] = useState(10);
   const result = calculateRanking(bands, percentage, rank);
+  // Bloc 109: how many buttons each row carries. The narrow layout packs
+  // three to a row and the wide one splits in two, so the split depends on a
+  // width only the browser knows — the same server-renders-wide, client-
+  // corrects trade-off useNarrowViewport carries for the reference tables.
+  const buttonRows = leagueButtonRows(entries.length, useNarrowViewport());
+  const entryButton = (item: RankingEntry) => (
+    <button
+      key={item.id}
+      type="button"
+      aria-pressed={item.id === entryId}
+      onClick={() => setManualEntry(item.id)}
+    >
+      {rankingEntryLabel(item, game, locale)}
+    </button>
+  );
 
   return (
     <div className="calculator-stack ranking-calculator">
@@ -126,25 +143,30 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
             .ranking-fields' own mobile rule, independent of this class).
             Bloc 108/A: the buttons are built from the ladder rather than the
             fixed league enum, so a division added in the admin appears here
-            with no code change. */}
+            with no code change.
+            Bloc 109: and since that count is now whatever an admin switched
+            on, the picker lays them over as many rows as it takes — see
+            leagueButtonRows. At six or fewer the markup below is byte for
+            byte what it was, so the layout it has always had is untouched. */}
         <div className="ranking-fields">
           <div className="calculator-field ranking-league-field">
             <span className="ranking-field-label">{t("fields.entry")}</span>
             <div
-              className="family-buttons league-buttons-grid"
+              className={
+                buttonRows.length > 1
+                  ? "family-buttons league-buttons-grid league-buttons-rows"
+                  : "family-buttons league-buttons-grid"
+              }
               role="group"
               aria-label={t("fields.entry")}
             >
-              {entries.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-pressed={item.id === entryId}
-                  onClick={() => setManualEntry(item.id)}
-                >
-                  {rankingEntryLabel(item, game, locale)}
-                </button>
-              ))}
+              {buttonRows.length > 1
+                ? sliceIntoRows(entries, buttonRows).map((row) => (
+                    <div className="league-button-row" key={row[0].id}>
+                      {row.map(entryButton)}
+                    </div>
+                  ))
+                : entries.map(entryButton)}
             </div>
           </div>
           <label className="calculator-field ranking-inline-field ranking-number-field">
