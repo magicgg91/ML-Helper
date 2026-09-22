@@ -76,15 +76,13 @@ function rewardQuantity(band: RankingBand, type: RankRewardType) {
 /**
  * Bloc 110/C: the color both the scale segment and the interval tile use.
  *
- * Both sides read the same map, so they cannot drift. A threshold missing
- * from it cannot happen — the map is built from these very bands — and the
- * fallback is the first shade of the band's own movement, which keeps the two
- * sides in agreement even if that ever stopped being true.
+ * Both sides read the same list at the same index, so they cannot drift.
+ * An index past its end cannot happen — the list is built from these very
+ * bands — and the fallback keeps a color rather than an unset custom property
+ * if that ever stopped being true.
  */
-function bandShade(band: RankingBand, shades: Map<number, string>) {
-  return (
-    shades.get(band.threshold) ?? rankCategoryShade(band.movement ?? "stay", 0)
-  );
+function bandShade(shades: string[], index: number) {
+  return shades[index] ?? rankCategoryShade("stay", 0);
 }
 
 /** The color a segment and its tile share, as a CSS custom property. */
@@ -305,10 +303,14 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
                   straight to the tile that describes it. */}
               <ul className="ranking-band-tiles">
                 {result.ranges.map((range) => (
+                  // Keyed on bandIndex, not on the threshold: two bands can
+                  // share a threshold (Codex review, PR #137), and a
+                  // duplicate React key would let one tile reuse the other's
+                  // DOM node.
                   <RankingBandTile
-                    key={range.threshold}
+                    key={range.bandIndex}
                     range={range}
-                    color={bandShade(range, shades)}
+                    color={bandShade(shades, range.bandIndex)}
                     entries={entries}
                   />
                 ))}
@@ -348,11 +350,7 @@ function RankingBandTile({
   const locale = useLocale();
   const unknownTarget = !range.movement || !range.target;
   return (
-    <li
-      className="ranking-band-tile total-box"
-      style={bandColorStyle(color)}
-      data-testid={`ranking-band-${range.threshold}`}
-    >
+    <li className="ranking-band-tile total-box" style={bandColorStyle(color)}>
       <div className="ranking-band-tile-head">
         <span className="ranking-band-range">
           {range.threshold}–{range.rangeStart}%
@@ -402,7 +400,7 @@ function RankingScale({
   entries: RankingLadder;
   percentage: number;
   narrow: boolean;
-  shades: Map<number, string>;
+  shades: string[];
 }) {
   const t = useTranslations("ranking");
   const game = useTranslations("game");
@@ -433,7 +431,9 @@ function RankingScale({
         const width = band.threshold - start;
         const side = index % 2 === 0 ? "above" : "below";
         return (
-          <div key={band.threshold}>
+          // Keyed on the sorted position rather than the threshold, which two
+          // bands can share (Codex review, PR #137).
+          <div key={index}>
             <div
               className="ranking-scale-segment"
               // Bloc 110/C: the shade travels as a custom property now, the
@@ -442,7 +442,7 @@ function RankingScale({
               style={{
                 left: `${left}%`,
                 width: `${width}%`,
-                ...bandColorStyle(bandShade(band, shades)),
+                ...bandColorStyle(bandShade(shades, index)),
               }}
               title={t("segment-tooltip", {
                 threshold: band.threshold,

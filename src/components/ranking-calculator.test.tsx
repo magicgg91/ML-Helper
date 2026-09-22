@@ -9,7 +9,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
-import { defaultRankingLadder, type RankingLadder } from "../lib/ranking";
+import {
+  defaultRankingLadder,
+  rankCategoryShade,
+  type RankingLadder,
+} from "../lib/ranking";
 import { defaultPlayerSettings } from "../lib/player-settings";
 import { playerStorageKey } from "./player-settings-panel";
 import { mockViewport } from "../test/viewport";
@@ -961,5 +965,56 @@ describe("Bloc 110/C: one tile per interval, in its segment's color", () => {
     ]);
     for (const [range, color] of tiles)
       expect(segments.get(range), `segment ${range}`).toBe(color);
+  });
+});
+
+// Codex review (PR #137), P2. An admin can save two bands on the same
+// threshold: the Add action seeds every new row at 100, and
+// isSavableRankingLadder only checks the range, never uniqueness. Keying the
+// shades by threshold let the later band overwrite the earlier one's color —
+// so the interval actually drawn on the bar could wear another movement
+// category's shade.
+describe("Bloc 110, revue Codex : deux bandes sur le même seuil", () => {
+  afterEach(cleanup);
+
+  const duplicated: RankingLadder = [
+    {
+      id: "gold",
+      league: "gold",
+      division: "",
+      nameFr: "",
+      nameEn: "",
+      position: 0,
+      active: true,
+      bands: [
+        // The interval a reader sees: the whole bar, a promotion.
+        { threshold: 100, movement: "promotion", target: null, rewards: [] },
+        // The zero-width one an admin left behind by adding a row and not
+        // changing its seeded 100 — a relegation, another palette entirely.
+        { threshold: 100, movement: "relegation", target: null, rewards: [] },
+      ],
+    },
+  ];
+
+  it("gives each band its own shade instead of the last one's", () => {
+    const { container } = renderLadder(duplicated);
+    fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
+    const segments = [
+      ...container.querySelectorAll<HTMLElement>(".ranking-scale-segment"),
+    ].map((segment) => segment.style.getPropertyValue("--band-color"));
+    expect(segments).toEqual([
+      rankCategoryShade("promotion", 0),
+      rankCategoryShade("relegation", 0),
+    ]);
+  });
+
+  it("paints the tile with its own band's shade, not a namesake's", () => {
+    renderLadder(duplicated);
+    fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
+    const tiles = bandTiles().map((tile) =>
+      tile.style.getPropertyValue("--band-color"),
+    );
+    expect(tiles.length).toBeGreaterThan(0);
+    expect(tiles[0]).toBe(rankCategoryShade("promotion", 0));
   });
 });
