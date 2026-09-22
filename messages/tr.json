@@ -164,7 +164,9 @@
       "title": "Tapınak bonusu (klan)",
       "help": "Yalnızca klanın Tapınak Şövalyesi katkısını gir (örneğin Hız için 260). Onaylanmış istatistik başına tapınak tabanı, gösterilen toplama otomatik olarak eklenir.",
       "field": "{templar} Tapınağı"
-    }
+    },
+    "division": "Bölüm",
+    "division-none": "Belirtilmedi"
   },
   "city-cost": {
     "name": "Şehir Maliyeti",
@@ -276,23 +278,25 @@
   "ranking": {
     "name": "Sıralama",
     "fields": {
-      "league": "Lig",
       "percentage": "Mevcut yüzden",
-      "rank": "Mevcut sıralaman"
+      "rank": "Mevcut sıralaman",
+      "entry": "Lig / Bölüm"
     },
     "undefined": "Yönetim panelinde tanımlanacak",
     "total-players": "Tahmini oyuncu sayısı",
     "errors": {
-      "select-league": "Hesaplamak için bir lig seç.",
+      "select-league": "Hesaplamak için bir lig veya bölüm seç.",
       "positive-percentage": "Hesaplamak için 0'dan büyük bir yüzde gir.",
-      "missing-bands": "{league} ligi için eşikler ve ödüller yönetim panelinde tanımlanmalıdır."
+      "missing-bands": "{entry} için eşikler ve ödüller yönetimden tanımlanmalı."
     },
     "ranking-ranges": "Sıralama aralıkları",
     "columns": {
       "range": "Aralık",
       "rank": "Aralık sırası",
       "target-league": "Hedef lig",
-      "reward": "Ödül"
+      "sapphires": "Safir",
+      "speedups": "Hızlandırma",
+      "gems": "Mücevher"
     },
     "movements": {
       "promotion": "{league} ligine yükselme",
@@ -305,7 +309,9 @@
       "gems": "{count} mücevher"
     },
     "scale-label": "%100'den %0'a sıralama ölçeği",
-    "segment-tooltip": "%{threshold}–{start} · {target} · {reward}"
+    "segment-tooltip": "%{threshold}–{start} · {target} · {reward}",
+    "league-lock": "Lig kilidi",
+    "league-lock-none": "Yok — altında yeterli basamak yok"
   },
   "stuff-simulator": {
     "name": "Savaş Ekipmanı",
@@ -893,7 +899,7 @@
     },
     "ranking": {
       "title": "Sıralama",
-      "description": "Her aralığı ayrı ayrı düzenle. Bronz ve Altın, verileri onaylanana kadar boş kalabilir.",
+      "description": "Lig ve bölümleri ekle, yeniden adlandır, sırala ve etkinleştir; ardından her birinin aralıklarını düzenle. Verileri doğrulanana kadar bir girdi aralıksız kalabilir.",
       "add": "Aralık ekle",
       "threshold": "Eşik (%)",
       "target": "Hedef lig",
@@ -914,7 +920,7 @@
         "gems": "Mücevherler"
       },
       "range-error": "0 ile 100 arasında bir değer gereklidir.",
-      "pairing-error": "Hareket ve hedef lig birlikte onaylanmalıdır.",
+      "pairing-error": "Hareket ve hedef birlikte doğrulanmalı.",
       "integer-error": "Tam sayı gereklidir.",
       "required": "Bu alan zorunludur.",
       "empty": "Onaylanmış aralık yok.",
@@ -923,7 +929,24 @@
       "saving": "Kaydediliyor…",
       "save-error": "Kaydetme başarısız oldu (HTTP {status}).",
       "saved": "Yapılandırma kaydedildi.",
-      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene."
+      "server-error": "Sunucuya ulaşılamıyor. Daha sonra tekrar dene.",
+      "entry-league": "Temel lig",
+      "entry-no-league": "Yok",
+      "entry-division": "Bölüm",
+      "entry-name": "Serbest ad",
+      "entry-active": "Herkese açık",
+      "entry-untitled": "Adsız girdi",
+      "entry-name-error": "Bir temel lig seç ya da serbest bir ad gir.",
+      "entry-league-field": "{entry} ({position}. basamak) temel lig",
+      "entry-division-field": "{entry} ({position}. basamak) bölüm",
+      "entry-name-field": "{entry} ({position}. basamak) serbest ad",
+      "entry-active-field": "{entry} ({position}. basamak) herkese açık",
+      "add-entry": "Lig veya bölüm ekle",
+      "remove-entry": "{entry} sil",
+      "remove-entry-label": "Girdiyi sil",
+      "remove-entry-confirm": "Bu girdi ve tüm aralıkları silinsin mi?",
+      "move-up": "{entry} yukarı",
+      "move-down": "{entry} aşağı"
     },
     "references": {
       "eyebrow": "Oyun verileri",

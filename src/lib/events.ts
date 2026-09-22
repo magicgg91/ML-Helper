@@ -135,6 +135,17 @@ export type EventsLeagueData = {
 // ever shared between leagues.
 export type EventsCatalog = Record<League, EventsLeagueData>;
 
+// Bloc 108/F, signalé et NON corrigé dans ce bloc. Ce catalogue est indexé
+// par la ligue de base, et ce qu'il porte est saisonnier — la durée de saison
+// varie déjà d'une ligue à l'autre (Bronze court sur 21 jours). Or une
+// division est précisément une partition de l'échelle saisonnière : si le
+// studio donne à Argent 2 et Argent 1 des listes d'événements ou des durées
+// distinctes, cette structure ne peut pas les exprimer, et il faudra une clé
+// par entrée d'échelle plutôt que par ligue. Rien ne dit aujourd'hui que ce
+// sera le cas — à revoir quand la séparation sera observable en jeu
+// (07/10/2026). Le référentiel Progression, lui, ne dépend que du niveau et
+// de la ligue de base : voir la note dans src/lib/level-up.ts.
+
 // Bloc 77 review (Codex PR #95): events chain back-to-back with no gaps, so
 // a league whose events add up to more than its own season length would
 // overflow past 100% on the timeline (Bloc 77/D) — both the admin editor

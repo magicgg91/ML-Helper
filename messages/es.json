@@ -164,7 +164,9 @@
       "title": "Bono de templo (clan)",
       "help": "Introduce solo la contribución de Templarios del clan (por ejemplo, 260 para Velocidad). La base de templo confirmada por estadística se añade automáticamente al total mostrado.",
       "field": "Templo de {templar}"
-    }
+    },
+    "division": "División",
+    "division-none": "Sin precisar"
   },
   "city-cost": {
     "name": "Coste de Ciudad",
@@ -276,23 +278,25 @@
   "ranking": {
     "name": "Clasificación",
     "fields": {
-      "league": "Liga",
       "percentage": "Tu porcentaje actual",
-      "rank": "Tu posición actual"
+      "rank": "Tu posición actual",
+      "entry": "Liga / División"
     },
     "undefined": "Por definir en la administración",
     "total-players": "Número estimado de jugadores",
     "errors": {
-      "select-league": "Elige una liga para calcular.",
+      "select-league": "Elige una liga o división para calcular.",
       "positive-percentage": "Introduce un porcentaje mayor que 0 para calcular.",
-      "missing-bands": "Los umbrales y recompensas deben definirse en la administración para la liga {league}."
+      "missing-bands": "Umbrales y recompensas por definir en la administración para {entry}."
     },
     "ranking-ranges": "Rangos de clasificación",
     "columns": {
       "range": "Rango",
       "rank": "Posición del rango",
       "target-league": "Liga objetivo",
-      "reward": "Recompensa"
+      "sapphires": "Zafiros",
+      "speedups": "Aceleraciones",
+      "gems": "Gemas"
     },
     "movements": {
       "promotion": "Ascenso a {league}",
@@ -305,7 +309,9 @@
       "gems": "{count, plural, one {# gema} other {# gemas}}"
     },
     "scale-label": "Escala de clasificación de 100% a 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
+    "league-lock": "Liga de bloqueo",
+    "league-lock-none": "Ninguna — no hay suficientes escalones por debajo"
   },
   "stuff-simulator": {
     "name": "Equipo de Combate",
@@ -893,7 +899,7 @@
     },
     "ranking": {
       "title": "Clasificación",
-      "description": "Edita cada rango individualmente. Bronce y Oro pueden quedar vacíos hasta que sus datos se confirmen.",
+      "description": "Añade, renombra, reordena y activa ligas y divisiones, y luego edita los tramos de cada una. Una entrada puede quedarse sin tramos mientras sus datos no estén confirmados.",
       "add": "Añadir rango",
       "threshold": "Umbral (%)",
       "target": "Liga objetivo",
@@ -914,7 +920,7 @@
         "gems": "Gemas"
       },
       "range-error": "Se requiere un valor entre 0 y 100.",
-      "pairing-error": "El movimiento y la liga objetivo deben confirmarse juntos.",
+      "pairing-error": "Movimiento y destino deben confirmarse juntos.",
       "integer-error": "Se requiere un número entero.",
       "required": "Este campo es obligatorio.",
       "empty": "Ningún rango confirmado.",
@@ -923,7 +929,24 @@
       "saving": "Guardando…",
       "save-error": "Error al guardar (HTTP {status}).",
       "saved": "Configuración guardada.",
-      "server-error": "No se puede contactar con el servidor. Inténtalo de nuevo más tarde."
+      "server-error": "No se puede contactar con el servidor. Inténtalo de nuevo más tarde.",
+      "entry-league": "Liga base",
+      "entry-no-league": "Ninguna",
+      "entry-division": "División",
+      "entry-name": "Nombre libre",
+      "entry-active": "Activa públicamente",
+      "entry-untitled": "Entrada sin nombre",
+      "entry-name-error": "Elige una liga base o escribe un nombre libre.",
+      "entry-league-field": "{entry} (escalón {position}) liga base",
+      "entry-division-field": "{entry} (escalón {position}) división",
+      "entry-name-field": "{entry} (escalón {position}) nombre libre",
+      "entry-active-field": "{entry} (escalón {position}) activa públicamente",
+      "add-entry": "Añadir una liga o división",
+      "remove-entry": "Eliminar {entry}",
+      "remove-entry-label": "Eliminar la entrada",
+      "remove-entry-confirm": "¿Eliminar esta entrada y todos sus tramos?",
+      "move-up": "Subir {entry}",
+      "move-down": "Bajar {entry}"
     },
     "references": {
       "eyebrow": "Datos del juego",

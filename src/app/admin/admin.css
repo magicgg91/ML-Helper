@@ -44,3 +44,33 @@
   font-size: 0.82rem;
   text-align: left;
 }
+
+/* Bloc 108/A+B+G: each ladder entry now carries its own identity controls
+   (base league, division, free name, active flag) and its order/remove
+   actions, above the band table it already had. */
+.ranking-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ranking-entry-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+.ranking-entry-actions button {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+}
+.ranking-entry-fields {
+  margin-bottom: 0.75rem;
+}
+.ranking-entry-active {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ranking-entry-active input {
+  width: auto;
+}

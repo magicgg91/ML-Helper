@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { PlayerSettingsPanel } from "../../../../../components/player-settings-panel";
 import { ToolCategoryNav } from "../../../../../components/tool-category-nav";
 import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
+import { getRankingLadder } from "../../../../../lib/ranking";
 import { JsonLd } from "../../../../../components/json-ld";
 import { webApplicationJsonLd } from "../../../../../lib/structured-data";
 import { BreadcrumbJsonLd } from "../../../../../components/breadcrumb-json-ld";
@@ -70,7 +71,9 @@ export default async function ToolDetailLayout({
           />
         </>
       )}
-      <PlayerSettingsPanel />
+      {/* Bloc 108/E: the ladder reaches the panel so its division field can
+          offer the divisions an admin has actually configured. */}
+      <PlayerSettingsPanel ladder={await getRankingLadder()} />
       <ToolCategoryNav availability={availability} />
       {children}
     </>

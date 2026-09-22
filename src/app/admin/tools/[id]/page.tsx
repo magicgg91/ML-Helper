@@ -18,7 +18,7 @@ import {
   getXpGainTiers,
 } from "@/lib/admin-formulas-server";
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
-import { getRankingConfig } from "@/lib/ranking";
+import { getRankingLadder } from "@/lib/ranking";
 import { getTranslations } from "next-intl/server";
 
 export default async function EditToolPage({
@@ -46,7 +46,7 @@ export default async function EditToolPage({
     content = <CityParametersEditor initial={await getCityParameters()} />;
   } else if (id === "ranking") {
     title = t("ranking-editor");
-    content = <RankingAdminEditor initialConfig={await getRankingConfig()} />;
+    content = <RankingAdminEditor initialLadder={await getRankingLadder()} />;
   } else if (id === "templars") {
     title = t("templar-parameters");
     // Bloc 66/B: the presentation catalog (Image/Nom/Description/Base

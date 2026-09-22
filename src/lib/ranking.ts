@@ -1,14 +1,8 @@
 import { prisma } from "./prisma";
+import { leagues, type League, type LeagueSelection } from "./player-settings";
 
-export const rankingLeagues = [
-  "bronze",
-  "silver",
-  "gold",
-  "platinum",
-  "diamond",
-  "legend",
-] as const;
-export type RankingLeague = (typeof rankingLeagues)[number];
+export const rankingLeagues = leagues;
+export type RankingLeague = League;
 
 export const rankMovements = ["promotion", "stay", "relegation"] as const;
 export type RankMovement = (typeof rankMovements)[number];
@@ -18,84 +12,161 @@ export type RankRewardType = (typeof rankRewardTypes)[number];
 
 export type RankReward = { type: RankRewardType; quantity: number };
 
-// movement/league are null for a threshold that's confirmed to exist but
+// movement/target are null for a threshold that's confirmed to exist but
 // whose reward isn't confirmed yet (cf. Platine) — rendered as "to be
 // defined" rather than invented text.
 export type RankingBand = {
   threshold: number;
   movement: RankMovement | null;
-  league: RankingLeague | null;
+  // Bloc 108/A: the id of the ladder entry this band sends the player to,
+  // not a league from the fixed enum — the target list is whatever the admin
+  // has created. The six entries migrated from the old shape keep their
+  // league key as their id, so bands that already said `league: "gold"` keep
+  // resolving without any data being rewritten.
+  target: string | null;
   rewards: RankReward[];
 };
-export type RankingConfig = Record<RankingLeague, RankingBand[]>;
+
+/**
+ * Bloc 108/A+B+G: one rung of the ranking ladder — a league, or a division
+ * inside one. The studio splits Argent/Or/Platine/Diamant into Division 2 and
+ * Division 1 from 07/10/2026, so this list is admin-managed rather than a
+ * fixed set of six: entries can be added, renamed, reordered, deactivated and
+ * removed without another development bloc.
+ *
+ * Scope: the ranking tool only. The `League` enum still backs Gemmes,
+ * Équipement, Templiers, Boutique and the player's own league field.
+ */
+export type RankingEntry = {
+  /** Stable key. Bands point at it, so renaming an entry never breaks them. */
+  id: string;
+  /**
+   * The base league this rung belongs to, when it has one. It is what gives
+   * the entry a name in all five languages (game.leagues.*) — a free-text
+   * name could only ever be written in one. Null for an entry that maps to no
+   * league at all, which then must carry a `name`.
+   */
+  league: League | null;
+  /** Division label appended to the league name, e.g. "1". Empty when none. */
+  division: string;
+  /** Free-text name, used as-is when set — the rename escape hatch. */
+  name: string;
+  /**
+   * Bloc 108/B: explicit rank on the ladder, low = bottom (Bronze). Insertion
+   * order is deliberately NOT the source of truth: promotion targets and the
+   * League Lock below are computed from this, and an admin reordering entries
+   * must move them without deleting and recreating anything.
+   */
+  position: number;
+  /**
+   * Bloc 108/G: public visibility. The future divisions can be created now,
+   * filled in, and left inactive until the split actually happens in game.
+   * Independent of whether the entry's bands are complete — an active entry
+   * with no bands shows a "no data yet" state (Bloc 108/C), it is not hidden.
+   */
+  active: boolean;
+  bands: RankingBand[];
+};
+
+export type RankingLadder = RankingEntry[];
 
 function reward(type: RankRewardType, quantity: number): RankReward {
   return { type, quantity };
 }
 
-export const defaultRankingConfig: RankingConfig = {
-  bronze: [],
-  silver: [
-    {
-      threshold: 1,
-      movement: "promotion",
-      league: "gold",
-      rewards: [reward("sapphires", 100), reward("speedups", 7), reward("gems", 6)],
-    },
-    {
-      threshold: 6,
-      movement: "promotion",
-      league: "gold",
-      rewards: [reward("sapphires", 50), reward("speedups", 6), reward("gems", 4)],
-    },
-    {
-      threshold: 15,
-      movement: "promotion",
-      league: "gold",
-      rewards: [reward("sapphires", 25), reward("speedups", 5), reward("gems", 2)],
-    },
-    {
-      threshold: 50,
-      movement: "stay",
-      league: "silver",
-      rewards: [reward("sapphires", 20), reward("speedups", 4), reward("gems", 2)],
-    },
-    {
-      threshold: 75,
-      movement: "stay",
-      league: "silver",
-      rewards: [reward("sapphires", 15), reward("speedups", 3), reward("gems", 1)],
-    },
-    {
-      threshold: 100,
-      movement: "stay",
-      league: "silver",
-      rewards: [reward("sapphires", 10), reward("speedups", 2), reward("gems", 1)],
-    },
-  ],
-  gold: [],
-  platinum: [1, 6, 15, 50, 100].map((threshold) => ({
-    threshold,
-    movement: null,
-    league: null,
-    rewards: [],
-  })),
-  diamond: [
-    { threshold: 1, movement: "promotion", league: "legend", rewards: [reward("gems", 6)] },
-    { threshold: 6, movement: "promotion", league: "legend", rewards: [reward("gems", 4)] },
-    { threshold: 25, movement: "stay", league: "diamond", rewards: [reward("gems", 2)] },
-    { threshold: 60, movement: "stay", league: "diamond", rewards: [reward("gems", 2)] },
-    { threshold: 100, movement: "relegation", league: "platinum", rewards: [reward("gems", 1)] },
-  ],
-  legend: [
-    { threshold: 1, movement: "stay", league: "legend", rewards: [reward("gems", 7)] },
-    { threshold: 6, movement: "stay", league: "legend", rewards: [reward("gems", 5)] },
-    { threshold: 25, movement: "stay", league: "legend", rewards: [reward("gems", 4)] },
-    { threshold: 50, movement: "stay", league: "legend", rewards: [reward("gems", 4)] },
-    { threshold: 60, movement: "stay", league: "legend", rewards: [reward("gems", 3)] },
-    { threshold: 100, movement: "relegation", league: "diamond", rewards: [reward("gems", 3)] },
-  ],
-};
+/** A band in the shorthand the default ladder below is written in. */
+function band(
+  threshold: number,
+  movement: RankMovement | null,
+  target: string | null,
+  rewards: RankReward[] = [],
+): RankingBand {
+  return { threshold, movement, target, rewards };
+}
+
+/**
+ * Bloc 108/A: the six leagues the tool shipped with, now expressed as ladder
+ * entries — same thresholds, same rewards, same targets, in game order from
+ * Bronze at the bottom. Their ids are their league keys, which is what lets a
+ * stored band that still says `league: "gold"` keep pointing at the right rung
+ * after migration (see parseRankingLadder).
+ *
+ * All six are active: they are already in production.
+ */
+export const defaultRankingLadder: RankingLadder = [
+  { league: "bronze", bands: [] },
+  {
+    league: "silver",
+    bands: [
+      band(1, "promotion", "gold", [
+        reward("sapphires", 100),
+        reward("speedups", 7),
+        reward("gems", 6),
+      ]),
+      band(6, "promotion", "gold", [
+        reward("sapphires", 50),
+        reward("speedups", 6),
+        reward("gems", 4),
+      ]),
+      band(15, "promotion", "gold", [
+        reward("sapphires", 25),
+        reward("speedups", 5),
+        reward("gems", 2),
+      ]),
+      band(50, "stay", "silver", [
+        reward("sapphires", 20),
+        reward("speedups", 4),
+        reward("gems", 2),
+      ]),
+      band(75, "stay", "silver", [
+        reward("sapphires", 15),
+        reward("speedups", 3),
+        reward("gems", 1),
+      ]),
+      band(100, "stay", "silver", [
+        reward("sapphires", 10),
+        reward("speedups", 2),
+        reward("gems", 1),
+      ]),
+    ],
+  },
+  { league: "gold", bands: [] },
+  {
+    league: "platinum",
+    // Thresholds confirmed in game, movement and rewards not yet — kept as
+    // nulls rather than invented (AGENTS.md).
+    bands: [1, 6, 15, 50, 100].map((threshold) => band(threshold, null, null)),
+  },
+  {
+    league: "diamond",
+    bands: [
+      band(1, "promotion", "legend", [reward("gems", 6)]),
+      band(6, "promotion", "legend", [reward("gems", 4)]),
+      band(25, "stay", "diamond", [reward("gems", 2)]),
+      band(60, "stay", "diamond", [reward("gems", 2)]),
+      band(100, "relegation", "platinum", [reward("gems", 1)]),
+    ],
+  },
+  {
+    league: "legend",
+    bands: [
+      band(1, "stay", "legend", [reward("gems", 7)]),
+      band(6, "stay", "legend", [reward("gems", 5)]),
+      band(25, "stay", "legend", [reward("gems", 4)]),
+      band(50, "stay", "legend", [reward("gems", 4)]),
+      band(60, "stay", "legend", [reward("gems", 3)]),
+      band(100, "relegation", "diamond", [reward("gems", 3)]),
+    ],
+  },
+].map((entry, index) => ({
+  id: entry.league,
+  league: entry.league as League,
+  division: "",
+  name: "",
+  position: index,
+  active: true,
+  bands: entry.bands,
+}));
 
 export type RankingRange = RankingBand & {
   rangeStart: number;
@@ -111,7 +182,10 @@ const rankCategoryShades: Record<RankMovement, readonly string[]> = {
   relegation: ["#f0b088", "#e8895c", "#d9633a", "#b8452a", "#8f2f1c"],
 };
 
-export function rankCategoryShade(category: RankMovement, index: number): string {
+export function rankCategoryShade(
+  category: RankMovement,
+  index: number,
+): string {
   const shades = rankCategoryShades[category];
   return shades[index % shades.length];
 }
@@ -164,12 +238,6 @@ function parseMovement(value: unknown): RankMovement | null {
     : null;
 }
 
-function parseTargetLeague(value: unknown): RankingLeague | null {
-  return rankingLeagues.includes(value as RankingLeague)
-    ? (value as RankingLeague)
-    : null;
-}
-
 function parseReward(value: unknown): RankReward | null {
   if (!value || typeof value !== "object") return null;
   const type = (value as { type?: unknown }).type;
@@ -205,14 +273,17 @@ const legacyRewardPatterns: Array<[RegExp, RankRewardType]> = [
   [/(\d+)\s*gemmes?/i, "gems"],
 ];
 
-function parseLegacyTarget(
-  value: unknown,
-): { movement: RankMovement | null; league: RankingLeague | null } {
+function parseLegacyTarget(value: unknown): {
+  movement: RankMovement | null;
+  league: RankingLeague | null;
+} {
   if (typeof value !== "string") return { movement: null, league: null };
   const [prefix, ...rest] = value.trim().split(/\s+/);
   const movement = legacyMovementPrefixes[prefix] ?? null;
   const league = legacyLeagueNames[rest.join(" ").toLowerCase()] ?? null;
-  return movement && league ? { movement, league } : { movement: null, league: null };
+  return movement && league
+    ? { movement, league }
+    : { movement: null, league: null };
 }
 
 function parseLegacyRewards(value: unknown): RankReward[] {
@@ -225,53 +296,232 @@ function parseLegacyRewards(value: unknown): RankReward[] {
   return rewards;
 }
 
-export function parseRankingConfig(value: unknown): RankingConfig {
-  if (!value || typeof value !== "object") return defaultRankingConfig;
-  const source = value as Partial<Record<RankingLeague, unknown>>;
-  return Object.fromEntries(
-    rankingLeagues.map((league) => {
-      const rows = Array.isArray(source[league])
-        ? source[league]
-        : defaultRankingConfig[league];
-      const valid = rows
-        .filter((row): row is RankingBand =>
-          Boolean(
-            row &&
-            typeof row === "object" &&
-            Number.isFinite(Number((row as RankingBand).threshold)),
-          ),
-        )
-        .map((row) => {
-          const movement = parseMovement(row.movement);
-          const league = parseTargetLeague(row.league);
-          const rewards = Array.isArray(row.rewards)
-            ? row.rewards
-                .map(parseReward)
-                .filter((item): item is RankReward => item !== null)
-            : [];
-          const legacyTarget =
-            movement || league
-              ? { movement, league }
-              : parseLegacyTarget((row as { target?: unknown }).target);
-          return {
-            threshold: Number(row.threshold),
-            movement: legacyTarget.movement,
-            league: legacyTarget.league,
-            rewards: rewards.length
-              ? rewards
-              : parseLegacyRewards((row as { reward?: unknown }).reward),
-          };
-        })
-        .filter((row) => row.threshold > 0 && row.threshold <= 100)
-        .sort((a, b) => a.threshold - b.threshold);
-      return [league, valid];
-    }),
-  ) as RankingConfig;
+/** Slugifies an admin-typed name into a stable id, e.g. "Or 1" -> "or-1". */
+function slugify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-export async function getRankingConfig(): Promise<RankingConfig> {
+export function rankingEntryId(entry: {
+  league: League | null;
+  division: string;
+  name: string;
+}): string {
+  const base = entry.name
+    ? slugify(entry.name)
+    : [entry.league ?? "", entry.division]
+        .filter(Boolean)
+        .map(slugify)
+        .join("-");
+  return base || "entry";
+}
+
+function parseBand(value: unknown): RankingBand | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const threshold = Number(row.threshold);
+  if (!Number.isFinite(threshold) || threshold <= 0 || threshold > 100)
+    return null;
+  const movement = parseMovement(row.movement);
+  // `target` is the current key; `league` is what the pre-Bloc-108 shape used
+  // for the same thing, and its values were league keys — which are exactly
+  // the ids the six migrated entries carry.
+  const rawTarget = row.target ?? row.league;
+  const target = typeof rawTarget === "string" && rawTarget ? rawTarget : null;
+  // A valid `movement` is what tells the two shapes apart. Without one, the
+  // row may still be a pre-Bloc-27 one, whose `target` is a French sentence
+  // ("Montée Or") rather than an id — read it that way before giving up. A
+  // target that is neither is left as-is here and cleared by resolveTargets,
+  // which is the only place that knows every id on the ladder.
+  const legacy = movement ? null : parseLegacyTarget(rawTarget);
+  const rewards = Array.isArray(row.rewards)
+    ? row.rewards
+        .map(parseReward)
+        .filter((item): item is RankReward => item !== null)
+    : [];
+  return {
+    threshold,
+    movement: legacy?.movement ?? movement,
+    target: legacy?.movement ? legacy.league : target,
+    rewards: rewards.length ? rewards : parseLegacyRewards(row.reward),
+  };
+}
+
+function parseBands(value: unknown): RankingBand[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(parseBand)
+    .filter((item): item is RankingBand => item !== null)
+    .sort((a, b) => a.threshold - b.threshold);
+}
+
+function parseEntry(value: unknown, index: number): RankingEntry | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const league = leagues.includes(row.league as League)
+    ? (row.league as League)
+    : null;
+  const division = typeof row.division === "string" ? row.division.trim() : "";
+  const name = typeof row.name === "string" ? row.name.trim() : "";
+  // An entry with neither a league nor a name could not be labelled at all.
+  if (!league && !name) return null;
+  const id =
+    typeof row.id === "string" && row.id.trim()
+      ? row.id.trim()
+      : rankingEntryId({ league, division, name });
+  const position = Number(row.position);
+  return {
+    id,
+    league,
+    division,
+    name,
+    position: Number.isFinite(position) ? position : index,
+    // Absent means active: every entry that existed before Bloc 108 is in
+    // production, and a missing flag must never silently hide one.
+    active: row.active === undefined ? true : Boolean(row.active),
+    bands: parseBands(row.bands),
+  };
+}
+
+/**
+ * Bloc 108/A: reads the stored ladder, whichever shape it is in.
+ *
+ * Before this bloc the tool stored `{ bronze: [...], silver: [...], ... }` —
+ * six fixed keys, each holding that league's bands. That shape is migrated
+ * here, on read, exactly as the pre-Bloc-27 French-sentence rows already were
+ * further up this file: every league becomes an entry with its league key as
+ * its id, in game order, active, and its bands carried over untouched. No
+ * stored row is rewritten until the next admin save, and nothing is lost.
+ */
+export function parseRankingLadder(value: unknown): RankingLadder {
+  if (!value || typeof value !== "object") return defaultRankingLadder;
+  if (Array.isArray(value)) {
+    const entries = value
+      .map(parseEntry)
+      .filter((entry): entry is RankingEntry => entry !== null);
+    return entries.length
+      ? resolveTargets(orderedLadder(entries))
+      : defaultRankingLadder;
+  }
+  // Legacy shape: one key per league of the fixed enum. Every league becomes
+  // an entry, including one the stored object never had a key for — it keeps
+  // the bands this file ships with, exactly as the previous parser did, so a
+  // partial row cannot blank a league on its way through.
+  const source = value as Record<string, unknown>;
+  if (!leagues.some((league) => Array.isArray(source[league])))
+    return defaultRankingLadder;
+  return resolveTargets(
+    leagues.map((league, index) => ({
+      id: league,
+      league,
+      division: "",
+      name: "",
+      position: index,
+      active: true,
+      bands: Array.isArray(source[league])
+        ? parseBands(source[league])
+        : findRankingEntry(defaultRankingLadder, league)!.bands,
+    })),
+  );
+}
+
+/**
+ * Clears any band target that names no entry on this ladder.
+ *
+ * A target is an entry id, and an id can disappear — an admin deletes the
+ * rung a band pointed at. The band itself stays (its threshold and rewards
+ * are still real), but its destination becomes unknown, which is exactly the
+ * "to be defined" state the tool already had a rendering for.
+ */
+function resolveTargets(ladder: RankingLadder): RankingLadder {
+  const ids = new Set(ladder.map((entry) => entry.id));
+  return ladder.map((entry) => ({
+    ...entry,
+    bands: entry.bands.map((item) =>
+      item.target && ids.has(item.target) ? item : { ...item, target: null },
+    ),
+  }));
+}
+
+/** Bloc 108/B: the ladder in explicit position order, bottom rung first. */
+export function orderedLadder(ladder: RankingLadder): RankingLadder {
+  return [...ladder]
+    .sort((a, b) => a.position - b.position)
+    .map((entry, index) => ({ ...entry, position: index }));
+}
+
+/** Bloc 108/C+G: what the public page shows — active entries, in order. */
+export function activeLadder(ladder: RankingLadder): RankingLadder {
+  return orderedLadder(ladder).filter((entry) => entry.active);
+}
+
+/**
+ * Bloc 108/D: the rung a player cannot be relegated below this season — two
+ * rungs under the one they are in.
+ *
+ * Computed over the ACTIVE ladder: an entry an admin has prepared but not
+ * switched on yet does not exist for the player, and must not shift the
+ * count. Null when there are fewer than two rungs below, which is the honest
+ * answer near the bottom of the ladder rather than clamping to Bronze.
+ *
+ * The studio's own example, on the ladder once the divisions are in: Or 1 ->
+ * Or 2 -> Argent 1, so a player in Or 1 is locked at Argent 1.
+ */
+export const leagueLockDepth = 2;
+
+export function leagueLockFor(
+  ladder: RankingLadder,
+  entryId: string,
+): RankingEntry | null {
+  const active = activeLadder(ladder);
+  const index = active.findIndex((entry) => entry.id === entryId);
+  if (index < 0) return null;
+  return active[index - leagueLockDepth] ?? null;
+}
+
+/** Bloc 108/E: the active divisions configured under one base league. */
+export function divisionsForLeague(
+  ladder: RankingLadder,
+  league: LeagueSelection,
+): RankingLadder {
+  if (!league) return [];
+  return activeLadder(ladder).filter(
+    (entry) => entry.league === league && entry.division !== "",
+  );
+}
+
+export function findRankingEntry(
+  ladder: RankingLadder,
+  entryId: string,
+): RankingEntry | undefined {
+  return ladder.find((entry) => entry.id === entryId);
+}
+
+/**
+ * Whether this ladder can be stored as it is. Ids must be unique — they are
+ * what bands point at, so a duplicate would make a target ambiguous.
+ */
+export function isSavableRankingLadder(ladder: RankingLadder): boolean {
+  if (!ladder.length) return false;
+  const ids = new Set<string>();
+  for (const entry of ladder) {
+    if (!entry.id) return false;
+    if (ids.has(entry.id)) return false;
+    ids.add(entry.id);
+    if (!entry.league && !entry.name) return false;
+    for (const item of entry.bands)
+      if (item.threshold <= 0 || item.threshold > 100) return false;
+  }
+  return true;
+}
+
+export async function getRankingLadder(): Promise<RankingLadder> {
   const table = await prisma.referenceTable.findUnique({
     where: { key: "ranking_leagues" },
   });
-  return table ? parseRankingConfig(table.rows) : defaultRankingConfig;
+  return table ? parseRankingLadder(table.rows) : defaultRankingLadder;
 }

@@ -145,6 +145,14 @@ export const templeBase: NumberMap<TemplarKey> = {
 export type PlayerSettings = {
   level: number;
   league: LeagueSelection;
+  /**
+   * Bloc 108/E: the id of the ranking ladder entry the player sits on, when
+   * their league is split into divisions. Deliberately separate from `league`
+   * above: that one is the enum every other tool reads (Gemmes, Équipement,
+   * Templiers, Boutique) and is untouched by divisions. Empty when the player
+   * has not picked one, or when their league has no division configured.
+   */
+  division: string;
   vp: number;
   vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000;
   equipmentSkills: NumberMap<SkillKey>;
@@ -156,6 +164,7 @@ export type PlayerSettings = {
 export const defaultPlayerSettings = (): PlayerSettings => ({
   level: 1,
   league: "",
+  division: "",
   vp: 0,
   vpUnit: 1_000_000,
   equipmentSkills: emptySkills(),

@@ -4,7 +4,7 @@ import { CityCalculators } from "../../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../../components/skills-calculators";
 import { CombatCalculators } from "../../../../../components/combat-calculators";
-import { getRankingConfig } from "../../../../../lib/ranking";
+import { getRankingLadder } from "../../../../../lib/ranking";
 import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
 import {
   getCityParameters,
@@ -103,12 +103,12 @@ export default async function ToolPage({
       </main>
     );
   if (slug === "classement") {
-    const config = await getRankingConfig();
+    const ladder = await getRankingLadder();
     return (
       <main className="public-main">
         <h1 className="sr-only">{tools("ranking")}</h1>
         {active.ranking ? (
-          <RankingCalculator config={config} />
+          <RankingCalculator ladder={ladder} />
         ) : (
           <p className="empty-state">{tools("calculator-unavailable")}</p>
         )}

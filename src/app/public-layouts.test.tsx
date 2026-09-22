@@ -27,7 +27,12 @@ vi.mock("next-intl/server", () => ({
   getLocale: async () => "fr",
 }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { guide: { findMany: vi.fn().mockResolvedValue([]) } },
+  prisma: {
+    guide: { findMany: vi.fn().mockResolvedValue([]) },
+    // Bloc 108/E: the tool layout now reads the ranking ladder, to hand the
+    // player settings panel the divisions it may offer.
+    referenceTable: { findUnique: vi.fn().mockResolvedValue(null) },
+  },
 }));
 vi.mock("../lib/calculators-server", () => ({
   getCalculatorAvailability: async () => ({

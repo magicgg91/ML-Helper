@@ -9,10 +9,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
-import { defaultRankingConfig } from "../lib/ranking";
+import { defaultRankingLadder, type RankingLadder } from "../lib/ranking";
 import { RankingCalculator } from "./ranking-calculator";
 
 const leagueGroup = () => screen.getByRole("group", { name: /Ligue|League/ });
+/** The 3 reward cells of one body row, in column order. */
+const rewardCells = (row: number) =>
+  [...document.querySelectorAll("tbody tr")[row].querySelectorAll("td")]
+    .slice(3)
+    .map((cell) => cell.textContent);
 const selectLeague = (name: string) =>
   fireEvent.click(within(leagueGroup()).getByRole("button", { name }));
 
@@ -24,7 +29,7 @@ describe("RankingCalculator", () => {
   ) =>
     render(
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <RankingCalculator config={defaultRankingConfig} />
+        <RankingCalculator ladder={defaultRankingLadder} />
       </NextIntlClientProvider>,
     );
   it("converts correlated rank and percentage and renders confirmed rewards", () => {
@@ -34,16 +39,30 @@ describe("RankingCalculator", () => {
     expect(
       screen.getAllByText("Montée Légende", { selector: "td" }),
     ).toHaveLength(2);
-    expect(
-      screen.getByText("6 gemmes", { selector: "td" }),
-    ).toBeInTheDocument();
+    // Bloc 108/H: one column per reward type, so the gems value is a cell of
+    // its own rather than a fragment of a sentence.
+    expect(rewardCells(0)).toEqual(["—", "—", "6"]);
   });
-  it("joins multiple typed rewards into one localized list", () => {
+  // Bloc 108/H: what used to be "100 saphirs, 7 speedup, 6 gemmes" in a
+  // single cell is now three cells — the reason being that the sentence simply
+  // omitted any reward that was absent, so a row without speedups read as
+  // though the tool did not track them.
+  it("Bloc108/H: gives each reward type its own named column", () => {
     renderCalculator();
     selectLeague("Argent");
-    expect(
-      screen.getByText("100 saphirs, 7 speedup, 6 gemmes", { selector: "td" }),
-    ).toBeInTheDocument();
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((cell) => cell.textContent);
+    expect(headers).toEqual([
+      "Plage",
+      "Rang de plage",
+      "Ligue cible",
+      "Saphirs",
+      "Speedups",
+      "Gemmes",
+    ]);
+    expect(rewardCells(0)).toEqual(["100", "7", "6"]);
+    expect(rewardCells(5)).toEqual(["10", "2", "1"]);
   });
   it("renders the target league and rewards translated in English", () => {
     renderCalculator("en", enMessages);
@@ -53,7 +72,7 @@ describe("RankingCalculator", () => {
     expect(
       screen.getAllByText("Promotion to Legend", { selector: "td" }),
     ).toHaveLength(2);
-    expect(screen.getByText("6 gems", { selector: "td" })).toBeInTheDocument();
+    expect(rewardCells(0)).toEqual(["—", "—", "6"]);
   });
   it("shows the editable placeholder for an unknown league", () => {
     renderCalculator();
@@ -189,7 +208,9 @@ describe("RankingCalculator", () => {
     const leagueField = container.querySelector(".ranking-league-field");
     expect(leagueField).not.toBeNull();
     expect(leagueField).not.toHaveClass("ranking-inline-field");
-    expect(leagueField?.firstElementChild?.textContent).toBe("Ligue");
+    expect(leagueField?.firstElementChild?.textContent).toBe(
+      "Ligue / Division",
+    );
     expect(leagueField?.firstElementChild).toHaveClass("ranking-field-label");
   });
 
@@ -253,5 +274,179 @@ describe("RankingCalculator", () => {
     const table = container.querySelector(".ranking-table")!;
     expect(table).not.toBeNull();
     expect(table.closest('[aria-live="polite"]')).not.toBeNull();
+  });
+});
+
+/** A ladder with divisions, one of them not switched on yet. */
+const withDivisions: RankingLadder = [
+  {
+    id: "bronze",
+    league: "bronze",
+    division: "",
+    name: "",
+    position: 0,
+    active: true,
+    bands: [],
+  },
+  {
+    id: "silver-2",
+    league: "silver",
+    division: "2",
+    name: "",
+    position: 1,
+    active: true,
+    bands: [],
+  },
+  {
+    id: "silver-1",
+    league: "silver",
+    division: "1",
+    name: "",
+    position: 2,
+    active: true,
+    bands: [],
+  },
+  {
+    id: "gold-2",
+    league: "gold",
+    division: "2",
+    name: "",
+    position: 3,
+    active: true,
+    bands: [],
+  },
+  {
+    id: "gold-1",
+    league: "gold",
+    division: "1",
+    name: "",
+    position: 4,
+    active: true,
+    bands: [
+      {
+        threshold: 100,
+        movement: "stay",
+        target: "gold-1",
+        rewards: [
+          { type: "sapphires", quantity: 40 },
+          { type: "speedups", quantity: 5 },
+        ],
+      },
+    ],
+  },
+  {
+    // Fully configured, deliberately left off until the split happens in game.
+    id: "platinum-2",
+    league: "platinum",
+    division: "2",
+    name: "",
+    position: 5,
+    active: false,
+    bands: [
+      {
+        threshold: 100,
+        movement: "stay",
+        target: "platinum-2",
+        rewards: [{ type: "gems", quantity: 3 }],
+      },
+    ],
+  },
+];
+
+const renderLadder = (ladder: RankingLadder) =>
+  render(
+    <NextIntlClientProvider locale="fr" messages={frMessages}>
+      <RankingCalculator ladder={ladder} />
+    </NextIntlClientProvider>,
+  );
+
+describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
+  afterEach(cleanup);
+
+  it("offers every active entry, in ladder order, however many there are", () => {
+    renderLadder(withDivisions);
+    expect(
+      within(leagueGroup())
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Bronze", "Argent 2", "Argent 1", "Or 2", "Or 1"]);
+  });
+
+  // Bloc 108/G: the point of the flag — the player prepares Platine 2 now and
+  // switches it on when the game splits, with nothing left to create that day.
+  it("hides an inactive entry even when its data is complete", () => {
+    renderLadder(withDivisions);
+    expect(
+      within(leagueGroup()).queryByRole("button", { name: "Platine 2" }),
+    ).toBeNull();
+  });
+
+  it("shows it as soon as it is switched on, and nothing else changes", () => {
+    const activated = withDivisions.map((entry) =>
+      entry.id === "platinum-2" ? { ...entry, active: true } : entry,
+    );
+    renderLadder(activated);
+    expect(
+      within(leagueGroup()).getByRole("button", { name: "Platine 2" }),
+    ).toBeVisible();
+    // And switching it back off removes it again — both directions.
+    cleanup();
+    renderLadder(withDivisions);
+    expect(
+      within(leagueGroup()).queryByRole("button", { name: "Platine 2" }),
+    ).toBeNull();
+  });
+
+  // Bloc 108/C: completeness of the data is NOT a visibility lever. An active
+  // entry with no thresholds yet says so, the way the Progression reference
+  // does for a league whose formula is not confirmed.
+  it("keeps an active but empty entry visible, with a 'no data yet' state", () => {
+    renderLadder(withDivisions);
+    fireEvent.click(
+      within(leagueGroup()).getByRole("button", { name: "Argent 1" }),
+    );
+    expect(
+      screen.getByText(/à définir dans l’administration pour Argent 1/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  // Bloc 108/D: the new public information.
+  it("shows the League Lock two rungs below, and says so when there is none", () => {
+    renderLadder(withDivisions);
+    fireEvent.click(
+      within(leagueGroup()).getByRole("button", { name: "Or 1" }),
+    );
+    expect(screen.getByTestId("ranking-league-lock")).toHaveTextContent(
+      "Argent 1",
+    );
+    fireEvent.click(
+      within(leagueGroup()).getByRole("button", { name: "Bronze" }),
+    );
+    expect(screen.getByTestId("ranking-league-lock")).toHaveTextContent(
+      /pas assez de paliers/i,
+    );
+  });
+
+  // Bloc 108/H, end to end on the public side: a reward the row does carry is
+  // named and shown, and one it does not carry reads as an explicit dash
+  // rather than vanishing from a sentence.
+  it("Bloc108/H: shows speedups in their own column, beside sapphires and gems", () => {
+    renderLadder(withDivisions);
+    fireEvent.click(
+      within(leagueGroup()).getByRole("button", { name: "Or 1" }),
+    );
+    expect(
+      screen.getByRole("columnheader", { name: "Speedups" }),
+    ).toBeVisible();
+    expect(rewardCells(0)).toEqual(["40", "5", "—"]);
+  });
+
+  it("names a target by its division, not by its base league", () => {
+    renderLadder(withDivisions);
+    fireEvent.click(
+      within(leagueGroup()).getByRole("button", { name: "Or 1" }),
+    );
+    expect(screen.getByText("Maintien Or 1", { selector: "td" })).toBeVisible();
   });
 });

@@ -6,6 +6,12 @@ export type LevelUpParameters = {
   // the admin — AGENTS.md requires unconfirmed data to stay editable with a
   // default value. Bloc 98/A: {0, 0} is that default, and it is what marks a
   // league as not yet confirmed (see hasLevelUpTroopsFormula below).
+  // Bloc 108/F, vérifié : rien ici ne dépend d'une division. Une troupe par
+  // niveau est fonction du niveau et de la ligue de base, la courbe d'XP et le
+  // cycle de coffres sont universels, et aucun paramètre de ce référentiel
+  // n'est saisonnier. La séparation en divisions du Classement ne demande donc
+  // aucun changement de ce côté. (Événement, lui, est saisonnier — voir la
+  // note dans src/lib/events.ts.)
   troops: Record<League, { coefficient: number; ratio: number }>;
   maxLevel: number;
   columnSize: number;

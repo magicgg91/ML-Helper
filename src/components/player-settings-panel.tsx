@@ -4,6 +4,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
+import { divisionsForLeague, type RankingLadder } from "../lib/ranking";
+import { rankingEntryLabel } from "./ranking-calculator";
 import { usePersistedState } from "./use-persisted-state";
 import { formatSkillPercentValue } from "../lib/format";
 import { templarRates } from "../lib/gems-templars";
@@ -72,6 +74,10 @@ export function safePlayerSettings(raw: string): PlayerSettings {
       },
       skillPoints: { ...fallback.skillPoints, ...saved.skillPoints },
       templars: { ...fallback.templars, ...saved.templars },
+      // Bloc 108/E: an id read back from storage is only ever used to match a
+      // ladder entry, but it reaches the DOM as a <select> value — coerce it
+      // rather than trust whatever JSON.parse produced.
+      division: typeof saved.division === "string" ? saved.division : "",
       clanTemple,
     };
   } catch {
@@ -97,7 +103,15 @@ export function replaceEquipmentSkills(equipmentSkills: NumberMap<SkillKey>) {
   );
 }
 
-export function PlayerSettingsPanel() {
+export function PlayerSettingsPanel({
+  // Bloc 108/E: the ranking ladder, for the division field below. Optional
+  // and empty by default, which reads as "no division configured" — the exact
+  // state every tool page was in before this bloc, and the honest answer when
+  // the ladder was not passed.
+  ladder = [],
+}: {
+  ladder?: RankingLadder;
+} = {}) {
   const locale = useLocale();
   const t = useTranslations("player-settings");
   const game = useTranslations("game");
@@ -166,6 +180,9 @@ export function PlayerSettingsPanel() {
   }, [setSettings]);
 
   const available = availableSkillPoints(settings.level, settings.league);
+  // Bloc 108/E: the active divisions of the league the player is in. Empty
+  // when that league has none — the field below then does not render at all.
+  const divisions = divisionsForLeague(ladder, settings.league);
   const allocated = allocatedSkillPoints(settings.skillPoints);
   const templarTotal = templarKeys.reduce(
     (total, key) => total + settings.templars[key],
@@ -203,6 +220,9 @@ export function PlayerSettingsPanel() {
     setSettings((current) => ({
       ...current,
       league,
+      // A division belongs to one league; keeping it after a league change
+      // would leave the ranking tool pointing at a rung the player has left.
+      division: "",
       skillPoints: fitSkillPointsToBudget(
         current.skillPoints,
         current.level,
@@ -304,6 +324,33 @@ export function PlayerSettingsPanel() {
                 className="league-buttons-grid"
               />
             </div>
+            {/* Bloc 108/E: only appears once an admin has configured
+                divisions for this league — the studio splits Argent to
+                Diamant from 07/10/2026, and until an entry exists there is
+                nothing to choose. Separate from the league buttons above on
+                purpose: this one feeds the ranking tool alone. */}
+            {divisions.length ? (
+              <label className="settings-grid-division-field">
+                {t("division")}
+                <select
+                  aria-label={t("division")}
+                  value={settings.division}
+                  onChange={(event) =>
+                    setSettings((current) => ({
+                      ...current,
+                      division: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">{t("division-none")}</option>
+                  {divisions.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {rankingEntryLabel(entry, game)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <label>
               {t("player-level")}
               <NumberStepper
