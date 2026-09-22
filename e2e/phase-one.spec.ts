@@ -2417,10 +2417,52 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     expect(overflow.y, `w${width} vertical`).toBeLessThanOrEqual(1);
   }
 
+  // Codex review (PR #136): the rows must fold rather than spill when the
+  // labels do not fit. Nothing caps a free name's length, so give one an
+  // absurd one and re-check the same no-overflow rule.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/admin/tools/ranking");
+  await page
+    .getByLabel("Argent 2 (rang 7) nom libre FR")
+    .fill("Division Argent Deux Absolument Interminable");
+  await page
+    .getByLabel(
+      "Division Argent Deux Absolument Interminable (rang 7) nom libre EN",
+    )
+    .fill("Absolutely Interminable Silver Division Two");
+  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
+  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+
+  for (const width of [390, 1000, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/tools/classement");
+    await expect(group.getByRole("button")).toHaveCount(10);
+    const overflow = await group.evaluate((element) => ({
+      x: element.scrollWidth - element.clientWidth,
+      y: element.scrollHeight - element.clientHeight,
+      spill:
+        element.getBoundingClientRect().right -
+        document.documentElement.clientWidth,
+    }));
+    expect(overflow.x, `long label, w${width} horizontal`).toBeLessThanOrEqual(
+      1,
+    );
+    expect(overflow.y, `long label, w${width} vertical`).toBeLessThanOrEqual(1);
+    expect(
+      overflow.spill,
+      `long label, w${width} off-page`,
+    ).toBeLessThanOrEqual(1);
+  }
+
   // Put the ladder back to the six this spec's other tests expect.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/admin/tools/ranking");
-  for (const name of ["Argent 2", "Argent 1", "Or 2", "Or 1"]) {
+  for (const name of [
+    "Division Argent Deux Absolument Interminable",
+    "Argent 1",
+    "Or 2",
+    "Or 1",
+  ]) {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: `Supprimer ${name}` }).click();
   }

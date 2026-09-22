@@ -4505,6 +4505,15 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .league-button-row {
   display: flex;
   gap: 0.35rem;
+  /* Codex review (PR #136): wrapping, not nowrap. The group this replaces has
+     wrapped since the Bloc 73/C review for one reason — a button keeps
+     min-width: max-content so its label is never truncated, and the admin can
+     type a name of any length, so a row that cannot fit must fold rather than
+     spill out of the card. Bloc 69/F's standing rule (no league group ever
+     overflows, at any width) depends on it. When the labels do fit, which is
+     the normal case, the row is exactly the split leagueButtonRows asked
+     for. */
+  flex-wrap: wrap;
 }
 .league-button-row > button {
   flex: 1 1 0;
