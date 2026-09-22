@@ -164,7 +164,9 @@
       "title": "Bonus de temple (clan)",
       "help": "Saisis uniquement la contribution des Templiers du clan (ex : 260 pour Vitesse). La base de temple confirmée par statistique s’ajoute automatiquement au total affiché.",
       "field": "Temple {templar}"
-    }
+    },
+    "division": "Division",
+    "division-none": "Non précisée"
   },
   "city-cost": {
     "name": "Coût de Ville",
@@ -276,23 +278,25 @@
   "ranking": {
     "name": "Classement",
     "fields": {
-      "league": "Ligue",
       "percentage": "Ton pourcentage actuel",
-      "rank": "Ton rang actuel"
+      "rank": "Ton rang actuel",
+      "entry": "Ligue / Division"
     },
     "undefined": "À définir dans l’administration",
     "total-players": "Nombre estimé de joueurs",
     "errors": {
-      "select-league": "Choisis une ligue pour calculer.",
+      "select-league": "Choisis une ligue ou une division pour calculer.",
       "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
-      "missing-bands": "Seuils et récompenses à définir dans l’administration pour la ligue {league}."
+      "missing-bands": "Seuils et récompenses à définir dans l’administration pour {entry}."
     },
     "ranking-ranges": "Plages de classement",
     "columns": {
       "range": "Plage",
       "rank": "Rang de plage",
       "target-league": "Ligue cible",
-      "reward": "Récompense"
+      "sapphires": "Saphirs",
+      "speedups": "Speedups",
+      "gems": "Gemmes"
     },
     "movements": {
       "promotion": "Montée {league}",
@@ -305,7 +309,9 @@
       "gems": "{count, plural, one {# gemme} other {# gemmes}}"
     },
     "scale-label": "Échelle de classement de 100% à 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
+    "league-lock": "Ligue de verrou",
+    "league-lock-none": "Aucune — pas assez de paliers en dessous"
   },
   "stuff-simulator": {
     "name": "Équipement de Combat",
@@ -893,7 +899,7 @@
     },
     "ranking": {
       "title": "Classement",
-      "description": "Édite chaque plage individuellement. Bronze et Or peuvent rester sans ligne tant que leurs données ne sont pas confirmées.",
+      "description": "Ajoute, renomme, réordonne et active les ligues et divisions, puis édite les plages de chacune. Une entrée peut rester sans plage tant que ses données ne sont pas confirmées.",
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
@@ -914,7 +920,7 @@
         "gems": "Gemmes"
       },
       "range-error": "Entre 0 et 100 requis.",
-      "pairing-error": "Mouvement et ligue cible doivent être confirmés ensemble.",
+      "pairing-error": "Mouvement et cible doivent être confirmés ensemble.",
       "integer-error": "Nombre entier requis.",
       "required": "Ce champ est obligatoire.",
       "empty": "Aucune plage confirmée.",
@@ -923,7 +929,26 @@
       "saving": "Enregistrement…",
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "saved": "Configuration enregistrée.",
-      "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+      "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
+      "entry-league": "Ligue de base",
+      "entry-no-league": "Aucune",
+      "entry-division": "Division",
+      "entry-active": "Active publiquement",
+      "entry-untitled": "Entrée sans nom",
+      "entry-name-error": "Choisis une ligue de base ou saisis un nom libre (FR ou EN).",
+      "entry-league-field": "{entry} (rang {position}) ligue de base",
+      "entry-division-field": "{entry} (rang {position}) division",
+      "entry-active-field": "{entry} (rang {position}) active publiquement",
+      "add-entry": "Ajouter une ligue ou une division",
+      "remove-entry": "Supprimer {entry}",
+      "remove-entry-label": "Supprimer l’entrée",
+      "remove-entry-confirm": "Supprimer cette entrée et toutes ses plages ?",
+      "move-up": "Monter {entry}",
+      "move-down": "Descendre {entry}",
+      "entry-name-fr": "Nom libre (FR)",
+      "entry-name-en": "Nom libre (EN)",
+      "entry-name-fr-field": "{entry} (rang {position}) nom libre FR",
+      "entry-name-en-field": "{entry} (rang {position}) nom libre EN"
     },
     "references": {
       "eyebrow": "Données du jeu",

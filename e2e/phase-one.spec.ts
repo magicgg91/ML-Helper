@@ -2238,6 +2238,108 @@ test("Bloc63: the reference tables switch layout at the same width in CSS and in
   await expect(templars.first().locator("tbody tr")).toHaveCount(10);
 });
 
+// Bloc 108/A+B+C+D+G: the whole point of the bloc, in one browser pass — an
+// admin creates a division that did not exist, orders it, switches it on, and
+// the public page picks it up with its League Lock computed. Unit tests drive
+// each half; only this proves the round trip through the database, which is
+// where Bloc 107 was lost.
+test("Bloc108: a division created in the admin reaches the public ranking with its League Lock", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/tools/ranking");
+  const headings = page.locator(".ranking-admin-editor .admin-panel h2");
+  await expect(headings).toHaveText([
+    "Bronze",
+    "Argent",
+    "Or",
+    "Platine",
+    "Diamant",
+    "Légende",
+  ]);
+
+  // Create "Or 1" and place it just above Or.
+  await page
+    .getByRole("button", { name: "Ajouter une ligue ou une division" })
+    .click();
+  await page
+    .getByLabel("Entrée sans nom (rang 7) ligue de base")
+    .selectOption("gold");
+  await page.getByLabel("Or (rang 7) division").fill("1");
+  await expect(headings).toHaveText([
+    "Bronze",
+    "Argent",
+    "Or",
+    "Platine",
+    "Diamant",
+    "Légende",
+    "Or 1",
+  ]);
+  // Bloc 108/G: it arrives switched off — a new rung is prepared, not published.
+  const active = page.getByLabel("Or 1 (rang 7) active publiquement");
+  await expect(active).not.toBeChecked();
+
+  // Bloc 108/B: move it from the bottom to just after Or, three rungs up.
+  for (let move = 0; move < 3; move += 1)
+    await page.getByRole("button", { name: "Monter Or 1" }).click();
+  await expect(headings).toHaveText([
+    "Bronze",
+    "Argent",
+    "Or",
+    "Or 1",
+    "Platine",
+    "Diamant",
+    "Légende",
+  ]);
+  await page.getByLabel("Or 1 (rang 4) active publiquement").check();
+  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
+  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+
+  // Public side: the new rung is there, ordered, with no data of its own yet.
+  await page.goto("/tools/classement");
+  const group = page.locator(".ranking-calculator").getByRole("group");
+  await expect(group.getByRole("button")).toHaveText([
+    "Bronze",
+    "Argent",
+    "Or",
+    "Or 1",
+    "Platine",
+    "Diamant",
+    "Légende",
+  ]);
+  await group.getByRole("button", { name: "Or 1", exact: true }).click();
+  // Bloc 108/C: active but empty says so, and is not hidden.
+  await expect(
+    page.getByText(/à définir dans l’administration pour Or 1/i),
+  ).toBeVisible();
+  // Bloc 108/D: two rungs below Or 1 is Argent.
+  await expect(page.getByTestId("ranking-league-lock")).toHaveText("Argent");
+
+  // Bloc 108/H: an entry that does have rewards shows speedups in its own
+  // column, beside sapphires and gems.
+  await group.getByRole("button", { name: "Argent", exact: true }).click();
+  await expect(
+    page.getByRole("columnheader", { name: "Speedups" }),
+  ).toBeVisible();
+  await expect(
+    page.locator("tbody tr").first().locator("td").nth(4),
+  ).toHaveText("7");
+
+  // Put the ladder back, so the tests after this one see the six it shipped
+  // with (this spec runs serially against one database).
+  await page.goto("/admin/tools/ranking");
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Supprimer Or 1" }).click();
+  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
+  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 90: admin language visibility. These tests live in this file (rather
 // than a separate spec) on purpose: they create/rely on the Super Admin, and

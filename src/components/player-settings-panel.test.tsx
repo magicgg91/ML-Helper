@@ -18,6 +18,7 @@ import {
   safePlayerSettings,
 } from "./player-settings-panel";
 import { defaultPlayerSettings } from "../lib/player-settings";
+import type { RankingLadder } from "../lib/ranking";
 import { templarRates } from "../lib/gems-templars";
 
 // Bloc 68/F: the league field is a LeagueButtons group now, not a <select>
@@ -678,5 +679,144 @@ describe("PlayerSettingsPanel", () => {
     expect(screen.getByTestId("clan-temple-total-rusher")).toHaveTextContent(
       "51%",
     );
+  });
+});
+
+// Bloc 108/E: a division field of its own, driven by the ranking ladder and
+// nothing else. The league buttons above it are untouched by this bloc: they
+// still feed Gemmes, Équipement, Templiers and Boutique from the fixed enum.
+describe("Bloc 108/E: the division field", () => {
+  afterEach(cleanup);
+
+  const ladder: RankingLadder = [
+    {
+      id: "bronze",
+      league: "bronze",
+      division: "",
+      nameFr: "",
+      nameEn: "",
+      position: 0,
+      active: true,
+      bands: [],
+    },
+    {
+      id: "gold-2",
+      league: "gold",
+      division: "2",
+      nameFr: "",
+      nameEn: "",
+      position: 1,
+      active: true,
+      bands: [],
+    },
+    {
+      id: "gold-1",
+      league: "gold",
+      division: "1",
+      nameFr: "",
+      nameEn: "",
+      position: 2,
+      active: true,
+      bands: [],
+    },
+    {
+      id: "diamond-1",
+      league: "diamond",
+      division: "1",
+      nameFr: "",
+      nameEn: "",
+      position: 3,
+      active: false,
+      bands: [],
+    },
+  ];
+
+  const open = (props: { ladder?: RankingLadder } = {}) => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel {...props} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByText("Paramètres du joueur", { exact: true }));
+  };
+
+  it("does not exist for a league with no division configured", () => {
+    open({ ladder });
+    fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+    expect(screen.queryByLabelText("Division")).toBeNull();
+  });
+
+  it("offers that league's active divisions once they exist", () => {
+    open({ ladder });
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+    const field = screen.getByLabelText("Division");
+    expect(
+      [...field.querySelectorAll("option")].map((o) => o.textContent),
+    ).toEqual(["Non précisée", "Or 2", "Or 1"]);
+  });
+
+  it("leaves out a division that is not active yet", () => {
+    open({ ladder });
+    fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
+    expect(screen.queryByLabelText("Division")).toBeNull();
+  });
+
+  // The two selectors are independent: picking a division must not touch the
+  // league the rest of the site reads, and changing league must not leave a
+  // division from the previous one behind.
+  it("stores the division without disturbing the league, and clears it on a league change", async () => {
+    open({ ladder });
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+    fireEvent.change(screen.getByLabelText("Division"), {
+      target: { value: "gold-1" },
+    });
+    // The panel persists on a deferred write (usePersistedState, Bloc 93/E1).
+    const stored = () =>
+      JSON.parse(String(window.localStorage.getItem(playerStorageKey) ?? "{}"));
+    await waitFor(() => expect(stored().division).toBe("gold-1"));
+    expect(stored().league).toBe("gold");
+
+    fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
+    await waitFor(() => expect(stored().league).toBe("bronze"));
+    expect(stored().division).toBe("");
+  });
+
+  // Codex review (PR #135): .settings-grid-primary is exactly three columns
+  // (5fr 2fr 3fr) for League/Level/VP, and its mobile rule keys off child
+  // order — a fourth child there pushed Level into VP's column and wrapped VP
+  // onto a row of its own.
+  it("P2: stays out of the three-column League/Level/VP row", () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <PlayerSettingsPanel ladder={ladder} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByText("Paramètres du joueur", { exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+    const primary = container.querySelector(".settings-grid-primary")!;
+    expect(screen.getByLabelText("Division")).toBeVisible();
+    expect(primary.children).toHaveLength(3);
+    expect(primary.querySelector(".settings-grid-division-field")).toBeNull();
+    // And the order the mobile rule depends on is intact: league first.
+    expect(primary.firstElementChild).toHaveClass("settings-grid-league-field");
+  });
+
+  it("shows nothing at all when no ladder was passed", () => {
+    open();
+    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+    expect(screen.queryByLabelText("Division")).toBeNull();
+  });
+
+  it("reads a stored division back, and ignores one of the wrong type", () => {
+    expect(
+      safePlayerSettings(
+        JSON.stringify({ ...defaultPlayerSettings(), division: "gold-1" }),
+      ).division,
+    ).toBe("gold-1");
+    expect(
+      safePlayerSettings(
+        JSON.stringify({ ...defaultPlayerSettings(), division: 7 }),
+      ).division,
+    ).toBe("");
   });
 });

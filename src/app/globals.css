@@ -1099,6 +1099,12 @@ select {
    removed "Échelle visuelle" title — a compact inline label+value instead
    of a full .total-box card, so the total reads as part of that zone's
    own header rather than a separate results block. */
+/* Bloc 108/D: the League Lock line sits directly under the estimated-players
+   line and reuses its layout — same label/value pair, one new row. */
+.ranking-league-lock {
+  margin-top: 0.35rem;
+}
+
 .ranking-scale-total {
   display: flex;
   align-items: baseline;

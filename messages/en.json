@@ -164,7 +164,9 @@
       "title": "Temple bonus (clan)",
       "help": "Enter only the clan's Templar contribution (e.g. 260 for Speed). The confirmed per-stat temple base is added automatically to the displayed total.",
       "field": "{templar} Temple"
-    }
+    },
+    "division": "Division",
+    "division-none": "Not set"
   },
   "city-cost": {
     "name": "City Cost",
@@ -276,23 +278,25 @@
   "ranking": {
     "name": "Ranking",
     "fields": {
-      "league": "League",
       "percentage": "Your current percentage",
-      "rank": "Your current rank"
+      "rank": "Your current rank",
+      "entry": "League / Division"
     },
     "undefined": "To be defined in the administration",
     "total-players": "Estimated number of players",
     "errors": {
-      "select-league": "Choose a league to calculate.",
+      "select-league": "Pick a league or division to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
-      "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
+      "missing-bands": "Thresholds and rewards to be set in the admin for {entry}."
     },
     "ranking-ranges": "Ranking ranges",
     "columns": {
       "range": "Range",
       "rank": "Range rank",
       "target-league": "Target league",
-      "reward": "Reward"
+      "sapphires": "Sapphires",
+      "speedups": "Speedups",
+      "gems": "Gems"
     },
     "movements": {
       "promotion": "Promotion to {league}",
@@ -305,7 +309,9 @@
       "gems": "{count, plural, one {# gem} other {# gems}}"
     },
     "scale-label": "Ranking scale from 100% to 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
+    "league-lock": "League lock",
+    "league-lock-none": "None — not enough rungs below"
   },
   "stuff-simulator": {
     "name": "Combat Equipment",
@@ -893,7 +899,7 @@
     },
     "ranking": {
       "title": "Ranking",
-      "description": "Edit each range individually. Bronze and Gold may remain empty until their data is confirmed.",
+      "description": "Add, rename, reorder and activate leagues and divisions, then edit each one's bands. An entry may stay without bands until its data is confirmed.",
       "add": "Add range",
       "threshold": "Threshold (%)",
       "target": "Target league",
@@ -914,7 +920,7 @@
         "gems": "Gems"
       },
       "range-error": "A value between 0 and 100 is required.",
-      "pairing-error": "Movement and target league must be confirmed together.",
+      "pairing-error": "Movement and target must be confirmed together.",
       "integer-error": "A whole number is required.",
       "required": "This field is required.",
       "empty": "No confirmed range.",
@@ -923,7 +929,26 @@
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
       "saved": "Configuration saved.",
-      "server-error": "Unable to reach the server. Try again later."
+      "server-error": "Unable to reach the server. Try again later.",
+      "entry-league": "Base league",
+      "entry-no-league": "None",
+      "entry-division": "Division",
+      "entry-active": "Active publicly",
+      "entry-untitled": "Unnamed entry",
+      "entry-name-error": "Pick a base league or type a free name (FR or EN).",
+      "entry-league-field": "{entry} (rung {position}) base league",
+      "entry-division-field": "{entry} (rung {position}) division",
+      "entry-active-field": "{entry} (rung {position}) active publicly",
+      "add-entry": "Add a league or division",
+      "remove-entry": "Remove {entry}",
+      "remove-entry-label": "Remove entry",
+      "remove-entry-confirm": "Remove this entry and all its bands?",
+      "move-up": "Move {entry} up",
+      "move-down": "Move {entry} down",
+      "entry-name-fr": "Free name (FR)",
+      "entry-name-en": "Free name (EN)",
+      "entry-name-fr-field": "{entry} (rung {position}) free name FR",
+      "entry-name-en-field": "{entry} (rung {position}) free name EN"
     },
     "references": {
       "eyebrow": "Game data",

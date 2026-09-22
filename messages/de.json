@@ -164,7 +164,9 @@
       "title": "Tempelbonus (Clan)",
       "help": "Gib nur den Templer-Beitrag des Clans ein (z. B. 260 für Geschwindigkeit). Die bestätigte Tempel-Grundlage pro Statistik wird automatisch zur angezeigten Gesamtsumme hinzugefügt.",
       "field": "{templar}-Tempel"
-    }
+    },
+    "division": "Division",
+    "division-none": "Nicht angegeben"
   },
   "city-cost": {
     "name": "Stadtkosten",
@@ -276,23 +278,25 @@
   "ranking": {
     "name": "Rangliste",
     "fields": {
-      "league": "Liga",
       "percentage": "Dein aktueller Prozentsatz",
-      "rank": "Dein aktueller Rang"
+      "rank": "Dein aktueller Rang",
+      "entry": "Liga / Division"
     },
     "undefined": "In der Administration festzulegen",
     "total-players": "Geschätzte Spielerzahl",
     "errors": {
-      "select-league": "Wähle eine Liga zur Berechnung.",
+      "select-league": "Wähle eine Liga oder Division, um zu rechnen.",
       "positive-percentage": "Gib einen Prozentsatz größer als 0 ein, um zu berechnen.",
-      "missing-bands": "Schwellenwerte und Belohnungen müssen in der Administration für die Liga {league} festgelegt werden."
+      "missing-bands": "Schwellen und Belohnungen für {entry} sind in der Verwaltung festzulegen."
     },
     "ranking-ranges": "Ranglisten-Bereiche",
     "columns": {
       "range": "Bereich",
       "rank": "Bereichsrang",
       "target-league": "Zielliga",
-      "reward": "Belohnung"
+      "sapphires": "Saphire",
+      "speedups": "Beschleunigungen",
+      "gems": "Edelsteine"
     },
     "movements": {
       "promotion": "Aufstieg zu {league}",
@@ -305,7 +309,9 @@
       "gems": "{count, plural, one {# Edelstein} other {# Edelsteine}}"
     },
     "scale-label": "Ranglisten-Skala von 100 % bis 0 %",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
+    "league-lock": "Liga-Sperre",
+    "league-lock-none": "Keine — zu wenige Stufen darunter"
   },
   "stuff-simulator": {
     "name": "Kampfausrüstung",
@@ -893,7 +899,7 @@
     },
     "ranking": {
       "title": "Rangliste",
-      "description": "Bearbeite jeden Bereich einzeln. Bronze und Gold können leer bleiben, bis ihre Daten bestätigt sind.",
+      "description": "Ligen und Divisionen hinzufügen, umbenennen, neu ordnen und aktivieren, dann die Stufen jeder Einheit bearbeiten. Ein Eintrag darf ohne Stufen bleiben, solange seine Daten unbestätigt sind.",
       "add": "Bereich hinzufügen",
       "threshold": "Schwellenwert (%)",
       "target": "Zielliga",
@@ -914,7 +920,7 @@
         "gems": "Edelsteine"
       },
       "range-error": "Ein Wert zwischen 0 und 100 ist erforderlich.",
-      "pairing-error": "Bewegung und Zielliga müssen gemeinsam bestätigt werden.",
+      "pairing-error": "Bewegung und Ziel müssen gemeinsam bestätigt werden.",
       "integer-error": "Eine ganze Zahl ist erforderlich.",
       "required": "Dieses Feld ist erforderlich.",
       "empty": "Kein bestätigter Bereich.",
@@ -923,7 +929,26 @@
       "saving": "Wird gespeichert…",
       "save-error": "Speichern fehlgeschlagen (HTTP {status}).",
       "saved": "Konfiguration gespeichert.",
-      "server-error": "Server nicht erreichbar. Versuche es später erneut."
+      "server-error": "Server nicht erreichbar. Versuche es später erneut.",
+      "entry-league": "Basisliga",
+      "entry-no-league": "Keine",
+      "entry-division": "Division",
+      "entry-active": "Öffentlich aktiv",
+      "entry-untitled": "Eintrag ohne Namen",
+      "entry-name-error": "Wähle eine Basisliga oder gib einen freien Namen ein (FR oder EN).",
+      "entry-league-field": "{entry} (Stufe {position}) Basisliga",
+      "entry-division-field": "{entry} (Stufe {position}) Division",
+      "entry-active-field": "{entry} (Stufe {position}) öffentlich aktiv",
+      "add-entry": "Liga oder Division hinzufügen",
+      "remove-entry": "{entry} entfernen",
+      "remove-entry-label": "Eintrag entfernen",
+      "remove-entry-confirm": "Diesen Eintrag und alle seine Stufen entfernen?",
+      "move-up": "{entry} nach oben",
+      "move-down": "{entry} nach unten",
+      "entry-name-fr": "Freier Name (FR)",
+      "entry-name-en": "Freier Name (EN)",
+      "entry-name-fr-field": "{entry} (Stufe {position}) freier Name FR",
+      "entry-name-en-field": "{entry} (Stufe {position}) freier Name EN"
     },
     "references": {
       "eyebrow": "Spieldaten",
