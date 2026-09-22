@@ -2340,6 +2340,94 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
 });
 
+// Bloc 109: the picker's row split is computed from a width the browser alone
+// knows, and the brief's other requirement — the field keeps exactly half the
+// row — is a measurement, not a class. Unit tests cover the formula and the
+// markup; this measures the result.
+test("Bloc109: the league picker splits over rows and keeps its half of the row", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Take the ladder to 10 active rungs: the six shipped plus four divisions.
+  await page.goto("/admin/tools/ranking");
+  for (const [index, division] of ["2", "1", "2", "1"].entries()) {
+    const rung = 7 + index;
+    await page
+      .getByRole("button", { name: "Ajouter une ligue ou une division" })
+      .click();
+    await page
+      .getByLabel(`Entrée sans nom (rang ${rung}) ligue de base`)
+      .selectOption(index < 2 ? "silver" : "gold");
+    const label = index < 2 ? "Argent" : "Or";
+    await page.getByLabel(`${label} (rang ${rung}) division`).fill(division);
+    await page
+      .getByLabel(`${label} ${division} (rang ${rung}) active publiquement`)
+      .check();
+  }
+  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
+  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+
+  const group = page.locator(".ranking-calculator .family-buttons");
+  const rowSizes = async () =>
+    group
+      .locator(".league-button-row")
+      .evaluateAll((rows) =>
+        rows.map((row) => row.querySelectorAll("button").length),
+      );
+
+  // Desktop: two rows of five, and the field still exactly half the row.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/tools/classement");
+  await expect(group.getByRole("button")).toHaveCount(10);
+  // Polled, not read once: the server has no viewport, so it renders the wide
+  // split and the client re-splits on hydration (useNarrowViewport, Bloc 63).
+  // A single read can land on the server's answer.
+  await expect.poll(rowSizes).toEqual([5, 5]);
+  const half = await page.evaluate(() => {
+    const field = document.querySelector(".ranking-league-field")!;
+    const row = field.parentElement!;
+    return (
+      field.getBoundingClientRect().width / row.getBoundingClientRect().width
+    );
+  });
+  expect(half).toBeCloseTo(0.5, 2);
+
+  // Mobile: spread evenly, three to a row at most, and 3+3+2+2 rather than a
+  // last row holding one button.
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/tools/classement");
+  await expect.poll(rowSizes).toEqual([3, 3, 2, 2]);
+
+  // Bloc 69/F's standing rule, on the new layout: no league group may scroll
+  // on itself, in either axis, at any width.
+  for (const width of [390, 1000, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/tools/classement");
+    const overflow = await group.evaluate((element) => ({
+      x: element.scrollWidth - element.clientWidth,
+      y: element.scrollHeight - element.clientHeight,
+    }));
+    expect(overflow.x, `w${width} horizontal`).toBeLessThanOrEqual(1);
+    expect(overflow.y, `w${width} vertical`).toBeLessThanOrEqual(1);
+  }
+
+  // Put the ladder back to the six this spec's other tests expect.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/admin/tools/ranking");
+  for (const name of ["Argent 2", "Argent 1", "Or 2", "Or 1"]) {
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: `Supprimer ${name}` }).click();
+  }
+  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
+  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 90: admin language visibility. These tests live in this file (rather
 // than a separate spec) on purpose: they create/rely on the Super Admin, and

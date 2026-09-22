@@ -55,6 +55,29 @@ describe("public responsive styles", () => {
     expect(mediaBlock).not.toMatch(/\.player-summary-line2/);
   });
 
+  // Bloc 109: the Classement picker can now run to several rows, and the
+  // brief is explicit that its half of the field must not move when it does.
+  // The 50% lives on the FIELD, not on the button group — so splitting the
+  // buttons cannot touch it, and this pins that it stays unconditional:
+  // outside any media query, with no count in sight.
+  it("keeps the Classement league field at 50% for any number of buttons", () => {
+    const rule = /\.ranking-league-field\s*{\s*flex: 0 0 50%;\s*}/;
+    expect(css).toMatch(rule);
+    // Not inside a breakpoint: every @media block must be free of it.
+    for (const block of css.matchAll(/@media[^{]*{([\s\S]*?)\n}/g))
+      expect(block[1]).not.toMatch(/\.ranking-league-field\s*{/);
+  });
+
+  // The multi-row layout stacks rows and lets each share its width; the split
+  // itself is computed in TypeScript, because 3+3+2+2 is not a column count.
+  it("stacks the Classement picker's rows without touching the field", () => {
+    expect(css).toMatch(
+      /\.family-buttons\.league-buttons-rows\s*{\s*display: flex;\s*flex-direction: column;/,
+    );
+    expect(css).toMatch(/\.league-button-row\s*{\s*display: flex;/);
+    expect(css).toMatch(/\.league-button-row > button\s*{\s*flex: 1 1 0;/);
+  });
+
   it("uses a two-column mobile grid for category tabs", () => {
     expect(css).toMatch(
       /nav\.calculator-tabs:not\(\.compact\)\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,

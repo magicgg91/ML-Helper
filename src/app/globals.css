@@ -4487,3 +4487,26 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   border-color: var(--accent-strong);
   background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
 }
+
+/* Bloc 109: the Classement league/division picker, once an admin has switched
+   on more rungs than the row it shipped with can hold. The row SPLIT is
+   computed in TypeScript (src/lib/league-button-rows.ts) because it differs
+   between widths and is not a uniform column count — 3+3+2+2 at ten buttons
+   on a narrow screen is not something a grid can be asked for. All this rule
+   does is stack the rows the component emitted and let each row share its
+   width equally. The field keeps its 50%: that comes from
+   .ranking-league-field above and nothing here touches it. */
+.family-buttons.league-buttons-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow-x: visible;
+}
+.league-button-row {
+  display: flex;
+  gap: 0.35rem;
+}
+.league-button-row > button {
+  flex: 1 1 0;
+  min-width: max-content;
+}

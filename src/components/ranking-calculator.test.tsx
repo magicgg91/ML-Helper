@@ -12,6 +12,7 @@ import enMessages from "../../messages/en.json";
 import { defaultRankingLadder, type RankingLadder } from "../lib/ranking";
 import { defaultPlayerSettings } from "../lib/player-settings";
 import { playerStorageKey } from "./player-settings-panel";
+import { mockViewport } from "../test/viewport";
 import { RankingCalculator } from "./ranking-calculator";
 
 const leagueGroup = () => screen.getByRole("group", { name: /Ligue|League/ });
@@ -600,5 +601,125 @@ describe("Bloc 108, revue Codex", () => {
     expect(
       within(leagueGroup()).getByRole("button", { name: "Platine 1" }),
     ).toHaveAttribute("aria-pressed", "false");
+  });
+});
+
+/** A ladder of `count` active rungs, named so each button is distinguishable. */
+const ladderOf = (count: number): RankingLadder =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `rung-${index + 1}`,
+    league: null,
+    division: "",
+    nameFr: `Rang ${index + 1}`,
+    nameEn: `Rung ${index + 1}`,
+    position: index,
+    active: true,
+    bands: [],
+  }));
+
+/** The buttons of each rendered row, as counts. */
+const rowSizes = () => {
+  const rows = [...document.querySelectorAll(".league-button-row")];
+  return rows.length
+    ? rows.map((row) => row.querySelectorAll("button").length)
+    : [within(leagueGroup()).getAllByRole("button").length];
+};
+
+// Bloc 109: the picker's button count became variable at Bloc 108, so its
+// layout is a formula over that count rather than the single row it shipped
+// with. These check what actually reaches the DOM.
+describe("Bloc 109: the league picker's rows on screen", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => {
+    viewport.restore();
+    cleanup();
+  });
+
+  const show = (count: number, narrow: boolean) => {
+    viewport = mockViewport(narrow);
+    return renderLadder(ladderOf(count));
+  };
+
+  it.each([
+    [7, [4, 3]],
+    [8, [4, 4]],
+    [9, [5, 4]],
+    [10, [5, 5]],
+  ])("desktop lays %i buttons out as %j", (count, expected) => {
+    show(count, false);
+    expect(rowSizes()).toEqual(expected);
+  });
+
+  it.each([
+    [7, [3, 2, 2]],
+    [8, [3, 3, 2]],
+    [9, [3, 3, 3]],
+    [10, [3, 3, 2, 2]],
+  ])("mobile lays %i buttons out as %j", (count, expected) => {
+    show(count, true);
+    expect(rowSizes()).toEqual(expected);
+  });
+
+  it("keeps every button, once, whatever the split", () => {
+    show(10, true);
+    const labels = within(leagueGroup())
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(labels).toEqual(
+      Array.from({ length: 10 }, (_, index) => `Rang ${index + 1}`),
+    );
+  });
+
+  // The buttons still work as one group: the split is presentation, and the
+  // selection must not care which row a rung landed on.
+  it("still selects a rung from any row", () => {
+    show(10, true);
+    const last = within(leagueGroup()).getByRole("button", { name: "Rang 10" });
+    fireEvent.click(last);
+    expect(last).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(leagueGroup()).getByRole("button", { name: "Rang 1" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  // At six or fewer the markup is what it has always been — no row wrappers
+  // at all, so the layout CSS that has always drawn it still does.
+  it.each([false, true])(
+    "leaves six or fewer exactly as they were (narrow=%s)",
+    (narrow) => {
+      show(6, narrow);
+      expect(document.querySelectorAll(".league-button-row")).toHaveLength(0);
+      expect(leagueGroup()).not.toHaveClass("league-buttons-rows");
+      expect(leagueGroup()).toHaveClass(
+        "family-buttons",
+        "league-buttons-grid",
+      );
+      expect(within(leagueGroup()).getAllByRole("button")).toHaveLength(6);
+    },
+  );
+
+  // Bloc 71/B + 73/C: the picker's half of the row is set on the field, not
+  // on the button group, so splitting the buttons cannot move it. Asserted on
+  // the class that carries the 50% (.ranking-league-field, globals.css) and
+  // pinned to the rule itself in responsive-styles.test.ts.
+  it.each([6, 7, 10])(
+    "keeps the field's own 50%% class at %i buttons",
+    (count) => {
+      const { container } = show(count, false);
+      const field = container.querySelector(".ranking-league-field");
+      expect(field).not.toBeNull();
+      expect(field!.querySelector(".family-buttons")).not.toBeNull();
+    },
+  );
+
+  // A rotation re-splits: the row shape is a function of the width, and the
+  // width can change under a mounted picker.
+  it("re-splits when the viewport crosses the breakpoint", () => {
+    show(10, false);
+    expect(rowSizes()).toEqual([5, 5]);
+    viewport.resize(true);
+    expect(rowSizes()).toEqual([3, 3, 2, 2]);
+    viewport.resize(false);
+    expect(rowSizes()).toEqual([5, 5]);
   });
 });
