@@ -69,13 +69,49 @@ describe("public responsive styles", () => {
   });
 
   // The multi-row layout stacks rows and lets each share its width; the split
-  // itself is computed in TypeScript, because 3+3+2+2 is not a column count.
+  // itself is computed in TypeScript, because it differs between widths —
+  // two fixed columns on a phone since Bloc 110/1, ceil(N/2)+floor(N/2) on
+  // desktop — and the stylesheet only ever sees the rows the component chose.
   it("stacks the Classement picker's rows without touching the field", () => {
     expect(css).toMatch(
       /\.family-buttons\.league-buttons-rows\s*{\s*display: flex;\s*flex-direction: column;/,
     );
     expect(css).toMatch(/\.league-button-row\s*{\s*display: flex;/);
     expect(css).toMatch(/\.league-button-row > button\s*{\s*flex: 1 1 0;/);
+  });
+
+  // Bloc 110/B: the two figures heading Classement's result zone sit side by
+  // side at EVERY width — the brief's one stated exception to the full-width
+  // rule the interval tiles follow. A folded row would break that silently,
+  // so the no-wrap is pinned here, and pinned as unconditional.
+  it("keeps Classement's two info tiles on one row at every width", () => {
+    const rule = css.match(/\.ranking-info-tiles\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule, "the .ranking-info-tiles rule").toBeDefined();
+    expect(rule).toMatch(/display: flex;/);
+    expect(rule).toMatch(/flex-wrap: nowrap;/);
+    for (const block of css.matchAll(/@media[^{]*{([\s\S]*?)\n}/g))
+      expect(block[1]).not.toMatch(/\.ranking-info-tiles\s*{/);
+  });
+
+  // Bloc 110/D: the interval tiles are full width on a phone and half width
+  // on desktop — and stacked either way, one per line, never two abreast.
+  it("gives Classement's interval tiles half a row on desktop only", () => {
+    // Stacked: a single-column flex, so nothing can place two side by side.
+    expect(css).toMatch(
+      /\.ranking-band-tiles\s*{\s*display: flex;\s*flex-direction: column;/,
+    );
+    // The 50% exists once, inside the desktop half of the same breakpoint the
+    // rest of this page splits on — so mobile keeps the full width by having
+    // no width rule at all.
+    const desktop = css.match(
+      new RegExp(
+        `@media \\(min-width: ${narrowViewportMaxWidth + 1}px\\) {\\s*\\.ranking-band-tile {\\s*width: 50%;`,
+      ),
+    );
+    expect(desktop, "the desktop half-width rule").not.toBeNull();
+    const base = css.match(/\n\.ranking-band-tile\s*{([\s\S]*?)\n}/)?.[1];
+    expect(base, "the unconditional .ranking-band-tile rule").toBeDefined();
+    expect(base).not.toMatch(/width:/);
   });
 
   it("uses a two-column mobile grid for category tabs", () => {

@@ -9,6 +9,7 @@ import {
   leagueLockFor,
   orderedLadder,
   parseRankingLadder,
+  rankBandShades,
   rankCategoryShade,
   rankingEntryId,
   type RankingEntry,
@@ -239,6 +240,50 @@ describe("rankCategoryShade", () => {
   });
   it("cycles back to the lightest shade past the palette length", () => {
     expect(rankCategoryShade("stay", 5)).toBe(rankCategoryShade("stay", 0));
+  });
+});
+
+// Bloc 110/C: the scale and the interval tiles must paint the same interval
+// the same color, and a shade depends on how many bands of the same movement
+// came before it — so it cannot be recomputed independently on each side.
+describe("rankBandShades", () => {
+  it("shades bands by threshold, light to dark within each movement", () => {
+    const shades = rankBandShades(bandsOf("diamond"));
+    expect([...shades]).toEqual([
+      [1, "#a8dcb8"],
+      [6, "#7ec99a"],
+      [25, "#a8c9e8"],
+      [60, "#7eabd9"],
+      [100, "#f0b088"],
+    ]);
+  });
+
+  it("does not depend on the order the bands arrive in", () => {
+    const bands = bandsOf("diamond");
+    expect([...rankBandShades([...bands].reverse())]).toEqual([
+      ...rankBandShades(bands),
+    ]);
+  });
+
+  // The reason this exists at all: calculateRanking drops a band that holds
+  // no integer rank, so the tiles are a SUBSET of the scale's bands. Keying
+  // by threshold means a dropped band cannot shift the colors after it.
+  it("keeps every surviving band's shade when one drops out", () => {
+    const bands = bandsOf("diamond");
+    const all = rankBandShades(bands);
+    const ranges = calculateRanking(bands, 100, 2).ranges;
+    expect(ranges.length).toBeLessThan(bands.length);
+    for (const range of ranges)
+      expect(all.get(range.threshold), `threshold ${range.threshold}`).toBe(
+        rankBandShades(bands).get(range.threshold),
+      );
+  });
+
+  it("treats a band with no movement as a Maintien, as the scale does", () => {
+    const shades = rankBandShades([
+      { threshold: 10, movement: null, target: null, rewards: [] },
+    ]);
+    expect(shades.get(10)).toBe(rankCategoryShade("stay", 0));
   });
 });
 

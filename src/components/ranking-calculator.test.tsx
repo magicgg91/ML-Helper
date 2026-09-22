@@ -16,10 +16,17 @@ import { mockViewport } from "../test/viewport";
 import { RankingCalculator } from "./ranking-calculator";
 
 const leagueGroup = () => screen.getByRole("group", { name: /Ligue|League/ });
-/** The 3 reward cells of one body row, in column order. */
-const rewardCells = (row: number) =>
-  [...document.querySelectorAll("tbody tr")[row].querySelectorAll("td")]
-    .slice(3)
+/** Bloc 110/C: the interval tiles that replaced the summary table's rows. */
+const bandTiles = () => [
+  ...document.querySelectorAll<HTMLElement>(".ranking-band-tile"),
+];
+/** The names one tile gives its facts, in order. */
+const factNames = (tile: number) =>
+  [...bandTiles()[tile].querySelectorAll("dt")].map((name) => name.textContent);
+/** The 3 reward values of one tile, in order — the rank fact comes first. */
+const rewardCells = (tile: number) =>
+  [...bandTiles()[tile].querySelectorAll(".ranking-band-facts .value")]
+    .slice(1)
     .map((cell) => cell.textContent);
 const selectLeague = (name: string) =>
   fireEvent.click(within(leagueGroup()).getByRole("button", { name }));
@@ -40,7 +47,9 @@ describe("RankingCalculator", () => {
     selectLeague("Diamant");
     expect(screen.getByTestId("ranking-total")).toHaveTextContent("1 000");
     expect(
-      screen.getAllByText("Montée Légende", { selector: "td" }),
+      screen.getAllByText("Montée Légende", {
+        selector: ".ranking-band-target",
+      }),
     ).toHaveLength(2);
     // Bloc 108/H: one column per reward type, so the gems value is a cell of
     // its own rather than a fragment of a sentence. A type this row does not
@@ -48,23 +57,21 @@ describe("RankingCalculator", () => {
     expect(rewardCells(0)).toEqual(["", "", "6"]);
   });
   // Bloc 108/H: what used to be "100 saphirs, 7 speedup, 6 gemmes" in a
-  // single cell is now three cells — the reason being that the sentence simply
-  // omitted any reward that was absent, so a row without speedups read as
-  // though the tool did not track them.
-  it("Bloc108/H: gives each reward type its own named column", () => {
+  // single cell is now three values of their own — the reason being that the
+  // sentence simply omitted any reward that was absent, so a row without
+  // speedups read as though the tool did not track them.
+  // Bloc 110/C: the rule survives the move from table to tiles — the three
+  // types are named in EVERY tile now, not once in a header row.
+  it("Bloc108/H: gives each reward type its own named slot, in every tile", () => {
     renderCalculator();
     selectLeague("Argent");
-    const headers = screen
-      .getAllByRole("columnheader")
-      .map((cell) => cell.textContent);
-    expect(headers).toEqual([
-      "Plage",
-      "Rang de plage",
-      "Ligue cible",
-      "Saphirs",
-      "Speedups",
-      "Gemmes",
-    ]);
+    for (const tile of bandTiles().keys())
+      expect(factNames(tile), `tile ${tile}`).toEqual([
+        "Rang de plage",
+        "Saphirs",
+        "Speedups",
+        "Gemmes",
+      ]);
     expect(rewardCells(0)).toEqual(["100", "7", "6"]);
     expect(rewardCells(5)).toEqual(["10", "2", "1"]);
   });
@@ -74,7 +81,9 @@ describe("RankingCalculator", () => {
       within(leagueGroup()).getByRole("button", { name: "Diamond" }),
     );
     expect(
-      screen.getAllByText("Promotion to Legend", { selector: "td" }),
+      screen.getAllByText("Promotion to Legend", {
+        selector: ".ranking-band-target",
+      }),
     ).toHaveLength(2);
     expect(rewardCells(0)).toEqual(["", "", "6"]);
   });
@@ -166,18 +175,15 @@ describe("RankingCalculator", () => {
   it("colors each segment light-to-dark within its Montée/Maintien/Descente category", () => {
     const { container } = renderCalculator();
     selectLeague("Diamant");
-    const segments = Array.from(
-      container.querySelectorAll(".ranking-scale-segment"),
-    );
+    // Bloc 110/C: the shade travels as --band-color now (the stylesheet
+    // derives the segment's 80%-opaque fill from it) — same shades, same
+    // order, so the palette itself is unchanged.
+    const segments = [
+      ...container.querySelectorAll<HTMLElement>(".ranking-scale-segment"),
+    ];
     expect(
-      segments.map((segment) => (segment as HTMLElement).style.background),
-    ).toEqual([
-      "rgba(168, 220, 184, 0.8)",
-      "rgba(126, 201, 154, 0.8)",
-      "rgba(168, 201, 232, 0.8)",
-      "rgba(126, 171, 217, 0.8)",
-      "rgba(240, 176, 136, 0.8)",
-    ]);
+      segments.map((segment) => segment.style.getPropertyValue("--band-color")),
+    ).toEqual(["#a8dcb8", "#7ec99a", "#a8c9e8", "#7eabd9", "#f0b088"]);
   });
 
   // Bloc 64/G: settles Bloc 62/D's open choice on option (b) — the 2
@@ -237,7 +243,8 @@ describe("RankingCalculator", () => {
     const { container } = renderCalculator();
     selectLeague("Diamant");
     expect(screen.queryByText("Échelle visuelle")).not.toBeInTheDocument();
-    expect(container.querySelector(".ranking-scale-total")).not.toBeNull();
+    // Bloc 110/B: the badge is a tile now, but it still sits atop the zone.
+    expect(container.querySelectorAll(".ranking-info-tile")).toHaveLength(2);
     expect(container.querySelector(".ranking-scale")).not.toBeNull();
   });
 
@@ -256,15 +263,16 @@ describe("RankingCalculator", () => {
       { target: { value: "137" } },
     );
     expect(screen.getByTestId("ranking-total")).toHaveTextContent("158");
-    const rows = screen.getAllByRole("row").slice(1); // drop the header row
-    const lastRow = rows[rows.length - 1];
-    expect(within(lastRow).getByText(/158/)).toBeInTheDocument();
+    const tiles = bandTiles();
+    expect(
+      within(tiles[tiles.length - 1]).getByText(/158/),
+    ).toBeInTheDocument();
   });
 
   // Bloc 92/H1: the whole result area — the always-mounted total, the
-  // not-ready placeholders and the ranges table — sits inside a
+  // not-ready placeholders and the interval tiles — sits inside a
   // permanently-mounted aria-live region so recomputes are announced.
-  it("Bloc92/H1: keeps the total, placeholder and ranges table inside an aria-live region", () => {
+  it("Bloc92/H1: keeps the total, placeholder and interval tiles inside an aria-live region", () => {
     const { container } = renderCalculator();
     expect(
       screen.getByTestId("ranking-total").closest('[aria-live="polite"]'),
@@ -275,9 +283,9 @@ describe("RankingCalculator", () => {
       document.querySelector('[aria-live="polite"] .ranking-placeholder'),
     ).not.toBeNull();
     selectLeague("Diamant");
-    const table = container.querySelector(".ranking-table")!;
-    expect(table).not.toBeNull();
-    expect(table.closest('[aria-live="polite"]')).not.toBeNull();
+    const tiles = container.querySelector(".ranking-band-tiles")!;
+    expect(tiles).not.toBeNull();
+    expect(tiles.closest('[aria-live="polite"]')).not.toBeNull();
   });
 });
 
@@ -447,9 +455,7 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Or 1" }),
     );
-    expect(
-      screen.getByRole("columnheader", { name: "Speedups" }),
-    ).toBeVisible();
+    expect(factNames(0)).toContain("Speedups");
     expect(rewardCells(0)).toEqual(["40", "5", ""]);
   });
 
@@ -458,7 +464,9 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Or 1" }),
     );
-    expect(screen.getByText("Maintien Or 1", { selector: "td" })).toBeVisible();
+    expect(
+      screen.getByText("Maintien Or 1", { selector: ".ranking-band-target" }),
+    ).toBeVisible();
   });
 });
 
@@ -550,7 +558,9 @@ describe("Bloc 108, revue Codex", () => {
     fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
     expect(screen.queryByText(/Platine 2/)).toBeNull();
     expect(
-      screen.getByText("À définir dans l’administration", { selector: "td" }),
+      screen.getByText("À définir dans l’administration", {
+        selector: ".ranking-band-target",
+      }),
     ).toBeVisible();
     expect(container.innerHTML).not.toContain("Platine 2");
   });
@@ -650,14 +660,28 @@ describe("Bloc 109: the league picker's rows on screen", () => {
     expect(rowSizes()).toEqual(expected);
   });
 
+  // Bloc 110/1, replacing Bloc 109's three-per-row mobile rule: two fixed
+  // columns, at any count — six included, which desktop still leaves on one
+  // row.
   it.each([
-    [7, [3, 2, 2]],
-    [8, [3, 3, 2]],
-    [9, [3, 3, 3]],
-    [10, [3, 3, 2, 2]],
+    [6, [2, 2, 2]],
+    [7, [2, 2, 2, 1]],
+    [8, [2, 2, 2, 2]],
+    [10, [2, 2, 2, 2, 2]],
   ])("mobile lays %i buttons out as %j", (count, expected) => {
     show(count, true);
     expect(rowSizes()).toEqual(expected);
+  });
+
+  it("never puts a third button on a mobile row, whatever the count", () => {
+    for (let count = 3; count <= 12; count += 1) {
+      cleanup();
+      viewport.restore();
+      show(count, true);
+      expect(Math.max(...rowSizes()), `${count} buttons`).toBeLessThanOrEqual(
+        2,
+      );
+    }
   });
 
   it("keeps every button, once, whatever the split", () => {
@@ -682,21 +706,16 @@ describe("Bloc 109: the league picker's rows on screen", () => {
     ).toHaveAttribute("aria-pressed", "false");
   });
 
-  // At six or fewer the markup is what it has always been — no row wrappers
-  // at all, so the layout CSS that has always drawn it still does.
-  it.each([false, true])(
-    "leaves six or fewer exactly as they were (narrow=%s)",
-    (narrow) => {
-      show(6, narrow);
-      expect(document.querySelectorAll(".league-button-row")).toHaveLength(0);
-      expect(leagueGroup()).not.toHaveClass("league-buttons-rows");
-      expect(leagueGroup()).toHaveClass(
-        "family-buttons",
-        "league-buttons-grid",
-      );
-      expect(within(leagueGroup()).getAllByRole("button")).toHaveLength(6);
-    },
-  );
+  // On DESKTOP at six or fewer the markup is what it has always been — no row
+  // wrappers at all, so the layout CSS that has always drawn it still does.
+  // Bloc 110/1 narrowed this to desktop: a phone splits at every count now.
+  it("leaves six or fewer exactly as they were on desktop", () => {
+    show(6, false);
+    expect(document.querySelectorAll(".league-button-row")).toHaveLength(0);
+    expect(leagueGroup()).not.toHaveClass("league-buttons-rows");
+    expect(leagueGroup()).toHaveClass("family-buttons", "league-buttons-grid");
+    expect(within(leagueGroup()).getAllByRole("button")).toHaveLength(6);
+  });
 
   // Bloc 71/B + 73/C: the picker's half of the row is set on the field, not
   // on the button group, so splitting the buttons cannot move it. Asserted on
@@ -718,8 +737,229 @@ describe("Bloc 109: the league picker's rows on screen", () => {
     show(10, false);
     expect(rowSizes()).toEqual([5, 5]);
     viewport.resize(true);
-    expect(rowSizes()).toEqual([3, 3, 2, 2]);
+    expect(rowSizes()).toEqual([2, 2, 2, 2, 2]);
     viewport.resize(false);
     expect(rowSizes()).toEqual([5, 5]);
+  });
+
+  // Bloc 110/1: six is where the two layouts now differ — the count the tool
+  // ships with, so this is the case a reader will actually see.
+  it("splits six on a phone while desktop keeps its single row", () => {
+    show(6, true);
+    expect(rowSizes()).toEqual([2, 2, 2]);
+    viewport.resize(false);
+    expect(document.querySelectorAll(".league-button-row")).toHaveLength(0);
+    expect(within(leagueGroup()).getAllByRole("button")).toHaveLength(6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 110, partie 2: the result zone, rebuilt as tiles.
+// ---------------------------------------------------------------------------
+
+/** The color of each scale segment, keyed by the range its own label shows. */
+const segmentColors = () => {
+  const colors = new Map<string, string>();
+  for (const segment of document.querySelectorAll<HTMLElement>(
+    ".ranking-scale-segment",
+  )) {
+    const range = segment.parentElement!.querySelector(".ranking-scale-range")!;
+    colors.set(
+      range.textContent!,
+      segment.style.getPropertyValue("--band-color"),
+    );
+  }
+  return colors;
+};
+/** The same, for the interval tiles. */
+const tileColors = () => {
+  const colors = new Map<string, string>();
+  for (const tile of bandTiles()) {
+    const range = tile.querySelector(".ranking-band-range")!;
+    colors.set(range.textContent!, tile.style.getPropertyValue("--band-color"));
+  }
+  return colors;
+};
+
+describe("Bloc 110/A: the labels hugging the scale", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => {
+    viewport.restore();
+    cleanup();
+  });
+  const show = (narrow: boolean) => {
+    viewport = mockViewport(narrow);
+    renderLadder(defaultRankingLadder);
+    selectLeague("Diamant");
+  };
+
+  // Too small to read against the bar, and the last interval's label
+  // overlapped its neighbour's.
+  it("drops the movement and target league from the bar on a phone", () => {
+    show(true);
+    expect(document.querySelectorAll(".ranking-scale-target")).toHaveLength(0);
+    // The range markers themselves stay: they are what the bar is for.
+    expect(
+      document.querySelectorAll(".ranking-scale-range").length,
+    ).toBeGreaterThan(0);
+  });
+
+  // Moved, not dropped — the wording is still on the page, in the tiles.
+  it("still says Montée Légende, in the interval tiles", () => {
+    show(true);
+    expect(
+      screen.getAllByText("Montée Légende", {
+        selector: ".ranking-band-target",
+      }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("keeps them against the bar on desktop", () => {
+    show(false);
+    expect(
+      document.querySelectorAll(".ranking-scale-target").length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("moves them back when the viewport widens under a mounted scale", () => {
+    show(true);
+    expect(document.querySelectorAll(".ranking-scale-target")).toHaveLength(0);
+    viewport.resize(false);
+    expect(
+      document.querySelectorAll(".ranking-scale-target").length,
+    ).toBeGreaterThan(0);
+  });
+});
+
+describe("Bloc 110/B: the two figures heading the zone", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => {
+    viewport.restore();
+    cleanup();
+  });
+
+  // "Side by side, mobile included" — so the assertion is that they are
+  // siblings of one non-wrapping row, at a width where everything else on
+  // this page stacks. The rule that keeps that row from folding is pinned in
+  // responsive-styles.test.ts.
+  it.each([false, true])(
+    "puts both in one row of tiles (narrow=%s)",
+    (narrow) => {
+      viewport = mockViewport(narrow);
+      const { container } = renderLadder(defaultRankingLadder);
+      selectLeague("Diamant");
+      const row = container.querySelector(".ranking-info-tiles")!;
+      expect(row).not.toBeNull();
+      const tiles = [...row.querySelectorAll(":scope > .ranking-info-tile")];
+      expect(tiles).toHaveLength(2);
+      expect(tiles[0]).toContainElement(screen.getByTestId("ranking-total"));
+      expect(tiles[1]).toContainElement(
+        screen.getByTestId("ranking-league-lock"),
+      );
+    },
+  );
+
+  it("is a real tile, not the inline line it replaced", () => {
+    viewport = mockViewport(false);
+    const { container } = renderLadder(defaultRankingLadder);
+    expect(container.querySelector(".ranking-scale-total")).toBeNull();
+    expect(
+      screen.getByTestId("ranking-total").closest(".total-box"),
+    ).toHaveClass("ranking-info-tile");
+  });
+
+  // Before a league is picked there is no League Lock to show; the row must
+  // still render the figure it does have.
+  it("shows the player-count tile alone until a league is picked", () => {
+    // An earlier test in this file persists player settings, and a stored
+    // league resolves an entry on its own (Bloc 108/E) — which is exactly the
+    // state this one must not be in.
+    window.localStorage.clear();
+    viewport = mockViewport(true);
+    const { container } = renderLadder(defaultRankingLadder);
+    expect(
+      container.querySelectorAll(".ranking-info-tiles > .ranking-info-tile"),
+    ).toHaveLength(1);
+    expect(screen.getByTestId("ranking-total")).toBeInTheDocument();
+  });
+});
+
+describe("Bloc 110/C: one tile per interval, in its segment's color", () => {
+  afterEach(cleanup);
+
+  it("replaces the summary table outright", () => {
+    const { container } = renderLadder(defaultRankingLadder);
+    selectLeague("Diamant");
+    expect(container.querySelector(".ranking-table")).toBeNull();
+    expect(bandTiles().length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("carries the whole row: range, movement, rank range and rewards", () => {
+    renderLadder(defaultRankingLadder);
+    selectLeague("Argent");
+    const tile = bandTiles()[0];
+    // The top interval of Argent: the first 1% of the league, promoted to Or.
+    expect(tile.querySelector(".ranking-band-range")).toHaveTextContent("1–0%");
+    expect(tile.querySelector(".ranking-band-target")).toHaveTextContent(
+      "Montée Or",
+    );
+    expect(factNames(0)).toEqual([
+      "Rang de plage",
+      "Saphirs",
+      "Speedups",
+      "Gemmes",
+    ]);
+    expect(rewardCells(0)).toEqual(["100", "7", "6"]);
+  });
+
+  // The point of coloring them at all: the eye goes from a slice of the bar
+  // to the tile that describes it. Paired by the range each one shows, which
+  // is what a reader would pair them by.
+  it("paints every interval the same color as its own segment", () => {
+    renderLadder(defaultRankingLadder);
+    selectLeague("Diamant");
+    const segments = segmentColors();
+    const tiles = tileColors();
+    expect(tiles.size).toBeGreaterThanOrEqual(3);
+    for (const [range, color] of tiles) {
+      expect(color, `tile ${range} has a color`).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(segments.get(range), `segment ${range}`).toBe(color);
+    }
+    // And they are genuinely different colors, not one shade repeated.
+    expect(new Set(tiles.values()).size).toBeGreaterThanOrEqual(3);
+  });
+
+  // calculateRanking drops any band holding no integer rank, so the tiles and
+  // the segments are NOT the same list. Pairing them by position would shift
+  // every color after the gap — this is the case that proves it does not.
+  it("still pairs correctly when a band holds no rank and drops out", () => {
+    renderLadder(defaultRankingLadder);
+    selectLeague("Diamant");
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Ton rang actuel" }),
+      {
+        target: { value: "2" },
+      },
+    );
+    const segments = segmentColors();
+    const tiles = tileColors();
+    expect(tiles.size).toBeLessThan(segments.size);
+    expect(tiles.size).toBeGreaterThan(0);
+    // The bar itself is unmoved: still the full palette, light to dark within
+    // each movement, over ALL the bands. Shading from the surviving ranges
+    // instead would repaint it as the player types a number.
+    expect([...segments.values()]).toEqual([
+      "#a8dcb8",
+      "#7ec99a",
+      "#a8c9e8",
+      "#7eabd9",
+      "#f0b088",
+    ]);
+    for (const [range, color] of tiles)
+      expect(segments.get(range), `segment ${range}`).toBe(color);
   });
 });

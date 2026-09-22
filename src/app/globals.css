@@ -1095,32 +1095,10 @@ select {
   border-radius: 0.7rem;
   color: var(--muted);
 }
-/* Bloc 62/E, F: sits directly above .ranking-scale, standing in for the
-   removed "Échelle visuelle" title — a compact inline label+value instead
-   of a full .total-box card, so the total reads as part of that zone's
-   own header rather than a separate results block. */
-/* Bloc 108/D: the League Lock line sits directly under the estimated-players
-   line and reuses its layout — same label/value pair, one new row. */
-.ranking-league-lock {
-  margin-top: 0.35rem;
-}
-
-.ranking-scale-total {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  margin: 0.5rem 0.5rem 0;
-}
-.ranking-scale-total .label {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-.ranking-scale-total .value {
-  color: var(--accent-strong);
-  font-size: 1.05rem;
-  font-weight: 700;
-}
+/* Bloc 110/B: the estimated-players and League Lock lines that used to sit
+   here — .ranking-scale-total (Bloc 62/E, F) and .ranking-league-lock
+   (Bloc 108/D), a compact inline label+value each — are tiles now; see
+   .ranking-info-tiles at the end of this file. */
 .ranking-scale {
   position: relative;
   height: 9.5rem;
@@ -1158,6 +1136,10 @@ select {
   height: 0.9rem;
   border-radius: 0.2rem;
   border-inline: 1px solid var(--bg-panel);
+  /* Bloc 110/C: the 80%-opaque fill this has always had, derived from the
+     --band-color the component sets inline — the same property, from the same
+     map, that paints this interval's tile below. */
+  background: color-mix(in srgb, var(--band-color) 80%, transparent);
 }
 .ranking-scale-marker {
   position: absolute;
@@ -4518,4 +4500,114 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .league-button-row > button {
   flex: 1 1 0;
   min-width: max-content;
+}
+
+/* Bloc 110/B: the two figures heading Classement's result zone — the
+   estimated player count and the League Lock — are tiles now, side by side at
+   every width. That is the deliberate exception to the full-width rule the
+   interval tiles below follow: they are the only pair of their kind on this
+   page. They flex-fill rather than sit in a fixed 2-column grid, so the
+   player-count tile spans the row on its own while no entry is picked yet and
+   the League Lock has nothing to show. */
+.ranking-info-tiles {
+  display: flex;
+  /* Never folds — "side by side, mobile included" is the requirement, so this
+     must not fall back to a stack at 390px. */
+  flex-wrap: nowrap;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.ranking-info-tiles > .ranking-info-tile {
+  flex: 1 1 0;
+  min-width: 0;
+}
+/* .calculator-stat puts the label and the value at opposite ends of one line.
+   Half a phone's width is not enough for that, so this pair stacks: label
+   above, value below — the .total-box tile's own native shape. */
+.ranking-info-tile {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.2rem;
+}
+.ranking-info-tile .value {
+  /* .calculator-stat strong right-aligns its value for the inline form; under
+     its own label it reads left. Size kept at what .ranking-scale-total
+     carried, so the figure has exactly the weight it had before. */
+  text-align: left;
+  font-size: 1.05rem;
+  /* "Aucune — pas assez de paliers en dessous" has to wrap inside the tile
+     rather than push it past its half of the row. */
+  overflow-wrap: anywhere;
+}
+
+/* Bloc 110/C+D: one tile per interval, in place of the summary table's rows.
+   Full width on a phone; half width on desktop and stacked one per line, NOT
+   two abreast. They keep the card's left edge — the same line the heading
+   above and the scale beside them start on — which is the choice the brief
+   left open between centred and left-aligned. */
+.ranking-band-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 901px) {
+  .ranking-band-tile {
+    width: 50%;
+  }
+}
+.ranking-band-tile {
+  padding: 0.6rem 0.8rem;
+  /* The color of this interval's own segment on the scale above: a full-height
+     edge plus a wash of the same hue. --band-color is set inline by the
+     component, from the single map the scale reads too (rankBandShades), so
+     the two can never disagree. */
+  border-left: 4px solid var(--band-color);
+  background: color-mix(in srgb, var(--band-color) 12%, var(--bg));
+}
+.ranking-band-tile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+.ranking-band-range {
+  color: var(--accent-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.ranking-band-target {
+  color: var(--emerald-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+/* The rank range and the 3 reward types, each under its own name — the
+   table's headers, carried over: Bloc 108/H's rule is that a type is always
+   named and nothing at all is drawn when its quantity is 0. */
+.ranking-band-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  gap: 0.35rem 0.6rem;
+  margin: 0.5rem 0 0;
+}
+.ranking-band-fact dt {
+  color: var(--text-dim);
+  font-size: 0.68rem;
+}
+.ranking-band-fact dd {
+  margin: 0;
+  /* An empty reward keeps its line, so the four facts stay on one baseline —
+     Bloc 108/H's empty cell, in tile form. */
+  min-height: 1.2em;
+}
+.ranking-band-tile .ranking-band-facts .value {
+  /* .total-box .value's 19px is meant for a tile's single headline figure,
+     not for four of them side by side. */
+  font-size: 0.85rem;
+  font-weight: 600;
 }

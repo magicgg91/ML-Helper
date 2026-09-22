@@ -202,6 +202,34 @@ export function rankCategoryShade(
   return shades[index % shades.length];
 }
 
+/**
+ * Bloc 110/C: the shade of every band, keyed by its threshold.
+ *
+ * The visual scale and the interval tiles must paint the same interval the
+ * same color — that is the whole point of the tiles carrying a color at all.
+ * A shade depends on how many bands of the same movement came before it, so
+ * it cannot be recomputed independently on each side: the tiles are built
+ * from calculateRanking's ranges, which DROP any band holding no integer
+ * rank, and a dropped band would shift every later shade. Both sides read
+ * this one map instead, built from the bands themselves.
+ */
+export function rankBandShades(bands: RankingBand[]): Map<number, string> {
+  const counters: Record<RankMovement, number> = {
+    promotion: 0,
+    stay: 0,
+    relegation: 0,
+  };
+  const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
+  return new Map(
+    sorted.map((band) => {
+      const category = band.movement ?? "stay";
+      const shade = rankCategoryShade(category, counters[category]);
+      counters[category] += 1;
+      return [band.threshold, shade];
+    }),
+  );
+}
+
 export function calculateRanking(
   bands: RankingBand[],
   percentage: number,

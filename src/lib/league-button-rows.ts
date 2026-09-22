@@ -7,40 +7,46 @@
  * row holds, and nothing else: the component slices its entries accordingly
  * and the stylesheet draws the rows.
  *
- * It is a formula, deliberately, not a table of the cases the brief listed —
+ * It is a formula, deliberately, not a table of the cases a brief listed —
  * adding an eleventh rung must not require another bloc.
+ *
+ * Scope: the Classement picker only. The league buttons of every other tool
+ * (Événements, Progression, Villes, Paramètres joueur) come from
+ * LeagueButtons, which never calls this and keeps its own flat layout.
  */
 
 /** Above this count the picker stops fitting on the row it has always used. */
 const singleRowLimit = 6;
-/** The most buttons a narrow screen can carry on one row and stay legible. */
-const narrowRowMax = 3;
+/**
+ * Bloc 110/1: the columns a narrow screen gets, fixed — see below.
+ */
+const narrowColumns = 2;
 
 export function leagueButtonRows(count: number, narrow: boolean): number[] {
-  // At or below six, nothing changes: one flat list, laid out by the CSS that
-  // has always laid it out — a single desktop row, a 3-column grid on mobile.
-  // Returning one row here is what keeps that markup identical.
+  // Bloc 110/1, replacing the narrow rule of Bloc 109 (as many rows as three
+  // per row takes, spread evenly). Three buttons to a row broke the page
+  // width in real conditions: a button keeps min-width: max-content so its
+  // label is never truncated, and three real division names — "Diamant 2",
+  // "Platine 1" — do not fit across a phone. Two fixed columns do, whatever
+  // the names, so the narrow layout no longer depends on the count at all:
+  // ceil(N/2) rows of 2, the last holding 1 when N is odd.
+  if (narrow) {
+    const rows = Math.ceil(count / narrowColumns);
+    return Array.from({ length: rows }, (_, index) =>
+      // The last row is short exactly when N is odd; every other row is full.
+      Math.min(narrowColumns, count - index * narrowColumns),
+    );
+  }
+
+  // Desktop, unchanged since Bloc 109. At or below six, nothing changes: one
+  // flat list, laid out by the CSS that has always laid it out. Returning one
+  // row here is what keeps that markup identical.
   if (count <= singleRowLimit) return [count];
 
-  // Desktop: two rows, never more, split as evenly as the count allows. The
+  // Above six: two rows, never more, split as evenly as the count allows. The
   // picker keeps its 50% of the field's width, so a third row would only make
   // the block taller than the two numeric fields beside it.
-  if (!narrow) return [Math.ceil(count / 2), Math.floor(count / 2)];
-
-  // Narrow: as many rows as it takes at three per row, then the buttons
-  // spread evenly over those rows rather than filling each one in turn. The
-  // difference shows at ten, where filling in turn leaves 3+3+3+1 — a last
-  // row holding a single button under three full ones — against 3+3+2+2.
-  const rows = Math.ceil(count / narrowRowMax);
-  const perRow = Math.floor(count / rows);
-  // The remainder is spread one per row from the top, so no row is ever more
-  // than one button shorter than another. `perRow + 1` cannot exceed three:
-  // reaching perRow = 3 would mean count = 3 × rows exactly, which leaves no
-  // remainder to add.
-  const longer = count % rows;
-  return Array.from({ length: rows }, (_, index) =>
-    index < longer ? perRow + 1 : perRow,
-  );
+  return [Math.ceil(count / 2), Math.floor(count / 2)];
 }
 
 /** Slices `items` into the rows leagueButtonRows describes. */
