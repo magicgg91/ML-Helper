@@ -1463,8 +1463,17 @@
         "website-id-label": "Identifiant du site",
         "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
         "website-id-hint": "Ajouté sur la balise en `data-website-id`. Laisse vide si ton outil n'en demande pas.",
-        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place."
-      }
+        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place.",
+        "script-active": "Script actif",
+        "script-inactive": "Aucun script"
+      },
+      "subtitle": "Les réglages du site public.",
+      "columns-translated": "Guides traduits",
+      "columns-public": "Sur le site public",
+      "translated-none": "Aucun",
+      "visibility-of": "Visibilité de {language} sur le site public",
+      "always-active": "Toujours active",
+      "no-guides": "Aucun guide"
     },
     "open-menu": "Ouvrir le menu"
   },

@@ -3009,7 +3009,9 @@ test("Bloc 90/D: English and French cannot be deactivated", async ({
   await page.goto("/admin/config");
 
   for (const locale of ["en", "fr"]) {
-    await expect(page.getByTestId(`locale-locked-${locale}`)).toBeDisabled();
+    // Bloc 119: the base languages show a padlock and the words "Toujours
+    // active" instead of a control that is there but refuses to move.
+    await expect(page.getByTestId(`locale-locked-${locale}`)).toBeVisible();
     await expect(page.getByTestId(`locale-toggle-${locale}`)).toHaveCount(0);
   }
   for (const locale of ["de", "es", "tr"])

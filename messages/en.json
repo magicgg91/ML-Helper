@@ -1463,8 +1463,17 @@
         "website-id-label": "Site identifier",
         "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
         "website-id-hint": "Added to the tag as `data-website-id`. Leave empty if your tool does not ask for one.",
-        "invalid-website-id": "That identifier contains characters that do not belong in one."
-      }
+        "invalid-website-id": "That identifier contains characters that do not belong in one.",
+        "script-active": "Script active",
+        "script-inactive": "No script"
+      },
+      "subtitle": "The public site's settings.",
+      "columns-translated": "Translated guides",
+      "columns-public": "On the public site",
+      "translated-none": "None",
+      "visibility-of": "Visibility of {language} on the public site",
+      "always-active": "Always active",
+      "no-guides": "No guide"
     },
     "open-menu": "Open the menu"
   },

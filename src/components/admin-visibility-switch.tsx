@@ -20,6 +20,7 @@ export function VisibilitySwitch({
   onChange,
   label,
   disabled = false,
+  testId,
 }: {
   checked: boolean;
   onChange: (next: boolean) => void;
@@ -30,6 +31,12 @@ export function VisibilitySwitch({
    */
   label: string;
   disabled?: boolean;
+  /**
+   * Put on the button itself, not on the wrapper: a test id that resolves to
+   * a span would be clicked in its middle — on the label, next to the
+   * control — and nothing would happen.
+   */
+  testId?: string;
 }) {
   const t = useTranslations("admin.common");
   return (
@@ -39,6 +46,7 @@ export function VisibilitySwitch({
         role="switch"
         aria-checked={checked}
         aria-label={label}
+        data-testid={testId}
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(

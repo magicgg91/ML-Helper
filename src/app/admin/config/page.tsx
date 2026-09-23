@@ -1,19 +1,22 @@
+import { getTranslations } from "next-intl/server";
 import { can } from "@/auth/permissions";
 import { requireCapability } from "@/auth/require-session";
-import { getTranslations } from "next-intl/server";
-import { AdminConfigSection } from "@/components/admin-config-section";
 import {
-  LanguageSettingsPanel,
+  AdminLanguagesPanel,
   type LanguageRow,
-} from "@/components/language-settings-panel";
+} from "@/components/admin-languages-panel";
+import { PageHeader } from "@/components/admin-page-header";
+import { Pill } from "@/components/admin-pill";
+import { AdminSettingsSection } from "@/components/admin-settings-section";
 import { TrackingSettingsPanel } from "@/components/tracking-settings-panel";
 import {
   alwaysActiveLocales,
   getLocaleActiveState,
   isAlwaysActiveLocale,
 } from "@/lib/locale-settings";
+import { prisma } from "@/lib/prisma";
 import { getTrackingSettings } from "@/lib/site-settings";
-import { launchLocales } from "@/lib/translations";
+import { hasLocalizedText, launchLocales } from "@/lib/translations";
 
 // Bloc 90/A: the Configuration tab is restricted to admin and super_admin —
 // requireCapability("configuration.read") renders "Accès interdit" (403) for
@@ -25,10 +28,13 @@ export default async function ConfigAdminPage() {
   // `admin` keeps the rest of the tab; showing them a field whose save is
   // refused would only be a trap.
   const canConfigureScripts = can(session.user.role, "configuration.scripts");
-  const [t, state, tracking] = await Promise.all([
+  const [t, state, tracking, guides] = await Promise.all([
     getTranslations("admin.config"),
     getLocaleActiveState(),
     getTrackingSettings(),
+    // Bloc 119: how many guides are written in each language — the column
+    // that makes the visibility switch answerable rather than blind.
+    prisma.guide.findMany({ select: { content: true } }),
   ]);
   // Bloc 90/B+D: every launched language, the always-active EN/FR base first,
   // each with its public visibility and whether it is locked.
@@ -45,30 +51,46 @@ export default async function ConfigAdminPage() {
     locale,
     active: state[locale as keyof typeof state],
     locked: isAlwaysActiveLocale(locale),
+    translated: guides.filter((guide) =>
+      hasLocalizedText(guide.content, locale),
+    ).length,
+    total: guides.length,
   }));
+
   return (
-    <div className="admin-main">
-      <p className="eyebrow">{t("eyebrow")}</p>
-      <h1>{t("title")}</h1>
-      {/* Bloc 100/C: every section of this tab is its own collapsible block,
-          folded independently of the others — including the ones still to
-          come. */}
-      <AdminConfigSection
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("subtitle")}
+      />
+      <AdminSettingsSection
         title={t("languages-section")}
         description={t("intro")}
       >
-        <LanguageSettingsPanel rows={rows} />
-      </AdminConfigSection>
+        <AdminLanguagesPanel rows={rows} />
+      </AdminSettingsSection>
       {canConfigureScripts && (
-        <AdminConfigSection
+        <AdminSettingsSection
           title={t("tracking.section")}
           description={t("tracking.intro")}
+          actions={
+            <span>
+              <Pill tone={tracking.url ? "ok" : "neutral"}>
+                {t(
+                  tracking.url
+                    ? "tracking.script-active"
+                    : "tracking.script-inactive",
+                )}
+              </Pill>
+            </span>
+          }
         >
           <TrackingSettingsPanel
             url={tracking.url ?? ""}
             websiteId={tracking.websiteId ?? ""}
           />
-        </AdminConfigSection>
+        </AdminSettingsSection>
       )}
     </div>
   );
