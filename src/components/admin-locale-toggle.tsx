@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { adminLocales } from "@/lib/translations";
 import { useLocaleChange } from "./use-locale-change";
 
 // Bloc 47/C: reverts the admin chrome's own display language back to EN/FR
@@ -12,7 +13,8 @@ import { useLocaleChange } from "./use-locale-change";
 // src/proxy.ts clamps the locale actually rendered for /admin down to
 // this same list, so this toggle always shows a real pressed state even
 // after an ES/DE/TR choice made while browsing publicly.
-const adminLocales = ["en", "fr"] as const;
+// Bloc 118: `adminLocales` now comes from lib/translations.ts — one list
+// shared with the middleware clamp and the message files.
 
 export function AdminLocaleToggle() {
   const t = useTranslations("common");

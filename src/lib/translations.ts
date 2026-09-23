@@ -10,6 +10,42 @@ export type LaunchLocale = (typeof launchLocales)[number];
 // config.ts's own defaultLocale.
 export const defaultLaunchLocale: LaunchLocale = "fr";
 
+/**
+ * Bloc 118: the admin is an EN/FR product, and only those two.
+ *
+ * src/proxy.ts clamps every /admin and /login request to one of these two
+ * locales (Bloc 47/C, Bloc 90), so admin chrome is *rendered* in English or
+ * French whatever the visitor picked publicly — which means a DE/ES/TR
+ * translation of it could never appear on screen. Bloc 116/C drew that
+ * conclusion for the audit log alone; this bloc draws it for the whole admin
+ * interface, so `messages/{de,es,tr}.json` carry none of it.
+ *
+ * This is about the admin's OWN interface text, listed in `adminNamespaces`
+ * below. It is not about the content an admin authors for the public site —
+ * guides, the legal notice, reference tables — which the public reads in all
+ * five languages and whose editors (EditorialLocaleSelect, the language
+ * activation panel) still offer the full `launchLocales` list, unchanged.
+ */
+export const adminLocales = ["en", "fr"] as const;
+export type AdminLocale = (typeof adminLocales)[number];
+
+/**
+ * Bloc 118: the top-level message namespaces rendered only under those
+ * clamped routes — the admin chrome (`admin`), its sign-in page (`login`)
+ * and the role names in /admin/users (`roles`, reached through a root
+ * translator as `roles.<role>`).
+ *
+ * Deriving this list by hand would rot; src/i18n/admin-locale-scope.test.ts
+ * recomputes it from the import graph and fails if a namespace joins or
+ * leaves the admin side without this constant following.
+ */
+export const adminNamespaces = ["admin", "login", "roles"] as const;
+
+/** Whether a dotted message key belongs to the admin's own interface text. */
+export function isAdminMessageKey(key: string): boolean {
+  return (adminNamespaces as readonly string[]).includes(key.split(".")[0]);
+}
+
 export function translationRecord(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return Object.fromEntries(

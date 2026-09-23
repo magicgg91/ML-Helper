@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { launchLocales } from "./lib/translations";
+import { adminLocales, launchLocales } from "./lib/translations";
 import { routing } from "./i18n/routing";
 import { trackingConnectOrigin } from "./lib/tracking";
 
@@ -13,8 +13,9 @@ const locales = routing.locales as readonly string[];
 const defaultLocale = routing.defaultLocale;
 // Bloc 47/C review: the admin chrome only offers EN/FR, and admin routes are
 // deliberately NOT locale-prefixed (Bloc 91/E1) — a visitor who picked
-// ES/DE/TR publicly still sees the admin UI in EN.
-const adminLocales = ["en", "fr"];
+// ES/DE/TR publicly still sees the admin UI in EN. Bloc 118: the list moved
+// to lib/translations.ts, next to the namespaces it governs, so this clamp
+// and the EN/FR-only message files can no longer drift apart.
 const mutationMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 // Bloc 47/B: picks the best-matching supported locale out of an
@@ -171,7 +172,9 @@ export function proxy(request: NextRequest) {
       cookieLocale ??
       matchAcceptLanguage(request.headers.get("accept-language"));
     const adminLocale =
-      detected && adminLocales.includes(detected) ? detected : "en";
+      detected && (adminLocales as readonly string[]).includes(detected)
+        ? detected
+        : "en";
     return renderWithLocale(request, adminLocale);
   }
 

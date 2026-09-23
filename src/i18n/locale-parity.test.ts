@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { fallbackLocale, getAvailableLocales } from "./config";
+import { adminLocales, isAdminMessageKey } from "@/lib/translations";
 
 type Messages = Record<string, unknown>;
 
@@ -32,21 +33,24 @@ async function readLocale(locale: string): Promise<Messages> {
 // see. This test is the guard that was absent: it reads the files directly,
 // deliberately bypassing the fallback merge that hides the gap.
 /**
- * Bloc 116/C: the one namespace that is deliberately not in five languages.
+ * Bloc 118: the admin's own interface text is deliberately not in five
+ * languages — it is the one exception to the rule above, and it is now the
+ * whole admin rather than the audit log alone.
  *
- * The audit log is read at /admin/logs, and src/proxy.ts clamps every admin
- * route to English or French — a de/es/tr sentence there could never be
- * rendered. Parity for it is EN/FR, asserted on its own below; the rule for
- * everything else is unchanged.
+ * src/proxy.ts clamps every /admin and /login request to English or French,
+ * so a de/es/tr sentence in `admin`, `login` or `roles` could never be
+ * rendered. Bloc 116/C exempted `admin.logs.` on exactly that reasoning and
+ * left the other 440 admin keys in five languages; this bloc finishes the
+ * job. Parity for these namespaces is EN/FR, asserted on its own below and
+ * in admin-locale-scope.test.ts; the rule for the public site is unchanged
+ * and still strict.
  */
-const adminOnlyNamespace = "admin.logs.";
-const adminLocales = ["en", "fr"];
 
 describe("locale key parity", () => {
   it("gives every locale exactly the same keys as the fallback locale", async () => {
     const locales = await getAvailableLocales();
     const publicKeys = (messages: Messages) =>
-      leafKeys(messages).filter((key) => !key.startsWith(adminOnlyNamespace));
+      leafKeys(messages).filter((key) => !isAdminMessageKey(key));
     const reference = publicKeys(await readLocale(fallbackLocale));
     const referenceKeys = new Set(reference);
 
@@ -64,23 +68,27 @@ describe("locale key parity", () => {
     expect(drift).toEqual({});
   });
 
-  // The exemption above is not a hole: the audit log's own parity is checked
+  // The exemption above is not a hole: the admin's own parity is checked
   // here, and the three locales that cannot render it must not carry it.
-  it("keeps the audit log's sentences in English and French, and only those", async () => {
+  it("keeps the admin's interface text in English and French, and only those", async () => {
     const carriers: Record<string, string[]> = {};
     for (const locale of await getAvailableLocales()) {
-      const keys = leafKeys(await readLocale(locale)).filter((key) =>
-        key.startsWith(adminOnlyNamespace),
-      );
+      const keys = leafKeys(await readLocale(locale)).filter(isAdminMessageKey);
       if (keys.length) carriers[locale] = keys;
     }
-    expect(Object.keys(carriers).sort()).toEqual(adminLocales);
+    expect(Object.keys(carriers).sort()).toEqual([...adminLocales].sort());
     expect(carriers.fr, "French and English have drifted apart").toEqual(
       carriers.en,
     );
+    // A guard against the exemption swallowing the admin whole: the keys it
+    // covers must still be there, in both languages.
     expect(
       carriers.en.some((key) => key.startsWith("admin.logs.messages.")),
       "the audit sentences are gone",
+    ).toBe(true);
+    expect(
+      carriers.en.some((key) => key.startsWith("login.")),
+      "the sign-in page is gone",
     ).toBe(true);
   });
 

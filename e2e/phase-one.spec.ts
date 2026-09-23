@@ -3266,3 +3266,105 @@ test("Bloc116/C: the audit log reads in the admin's own language", async ({
     data: { locale: "es", active: true },
   });
 });
+
+// Bloc 118: the admin is an EN/FR product — the whole of it, not the audit
+// log alone (Bloc 116/C). This walks every admin screen as a reader whose
+// public language is German, and checks both halves of the border on each:
+// the chrome answers in English, and the French it would otherwise answer in
+// is nowhere on the page. The three languages the admin dropped are still
+// listed where they belong — in the editors of content the public reads.
+test("every admin screen stays English for a reader browsing publicly in German", async ({
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  const context = await browser.newContext({ locale: "de-DE" });
+  const page = await context.newPage();
+
+  // The public half, which is also what records NEXT_LOCALE=de: the clamp is
+  // then exercised against a real German preference, not a missing one.
+  await page.goto("/de/tools");
+  await expect(
+    page.getByRole("heading", { name: "Entscheide mit den richtigen Zahlen" }),
+  ).toBeVisible();
+
+  await page.goto("/login");
+  await page.getByLabel("Username").fill("rootadmin");
+  await page.getByLabel("Password").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Every screen of the admin, not a sample: each row is a page, the English
+  // string it must show, and the French string it must not.
+  const screens = [
+    ["/admin", "Overview", "Vue d’ensemble"],
+    ["/admin/tools", "Functional content", "Contenu fonctionnel"],
+    ["/admin/guides", "Editorial content", "Contenu éditorial"],
+    ["/admin/referentiels", "Reference data", "Données de référence"],
+    ["/admin/users", "Create user", "Créer l’utilisateur"],
+    ["/admin/logs", "Word in message", "Mot dans le message"],
+    ["/admin/content", "Institutional page", "Page institutionnelle"],
+    ["/admin/config", "Site configuration", "Configuration du site"],
+  ] as const;
+  for (const [href, english, french] of screens) {
+    await page.goto(href);
+    await expect(
+      page.getByText(english, { exact: true }).first(),
+      `${href} is not in English`,
+    ).toBeVisible();
+    await expect(
+      page.getByText(french, { exact: true }),
+      `${href} still has French on it`,
+    ).toHaveCount(0);
+    // The chrome around it, present on every screen.
+    await expect(page.getByRole("link", { name: "View site" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Voir le site" })).toHaveCount(
+      0,
+    );
+    // And the two languages the admin does offer — no more, no fewer.
+    const toggle = page.getByRole("group", { name: "Language" });
+    await expect(toggle.getByRole("button")).toHaveText(["EN", "FR"]);
+    await expect(toggle.getByRole("button", { name: "EN" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  }
+
+  // `roles` is the third namespace this bloc emptied of DE/ES/TR, and the
+  // only one reached through a root translator — easy to forget, so it gets
+  // its own assertion rather than riding on the page above.
+  await page.goto("/admin/users");
+  const roleSelect = page.getByRole("combobox").first();
+  await expect(
+    roleSelect.getByRole("option", { name: "Read Only" }),
+  ).toHaveCount(1);
+  await expect(
+    roleSelect.getByRole("option", { name: "Lecture Seule" }),
+  ).toHaveCount(0);
+
+  // The border, seen from the other side: what the admin writes FOR the
+  // public is still offered in all five languages. Narrowing the chrome must
+  // never narrow this.
+  await page.goto("/admin/content");
+  await expect(
+    page.locator(".editorial-locale-select select option"),
+  ).toHaveText(["FR", "EN", "DE", "ES", "TR"]);
+  await page.goto("/admin/config");
+  for (const [locale, language] of [
+    ["de", "Deutsch"],
+    ["es", "Español"],
+    ["tr", "Türkçe"],
+  ]) {
+    // Named in the table and switchable from it: the admin still governs the
+    // public site's five languages, in English.
+    await expect(
+      page.getByText(language),
+      `the public language ${language} is no longer listed`,
+    ).toBeVisible();
+    await expect(
+      page.getByTestId(`locale-toggle-${locale}`),
+      `the public language ${language} is no longer manageable`,
+    ).toBeVisible();
+  }
+
+  await context.close();
+});
