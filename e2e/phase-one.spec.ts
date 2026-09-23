@@ -2993,7 +2993,11 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   // And the field is not even shown to them on the Configuration tab.
   await adminPage.goto("/admin/config");
   await expect(adminPage.getByLabel("URL du script de suivi")).toHaveCount(0);
-  await expect(adminPage.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  // Bloc 119: exact — the visibility switch on the same row names the
+  // language too (see the Bloc 90/A test for the same reason).
+  await expect(
+    adminPage.getByRole("cell", { name: "DE Deutsch", exact: true }),
+  ).toBeVisible();
   await adminContext.close();
 
   expect(
