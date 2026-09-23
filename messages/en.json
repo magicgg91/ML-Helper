@@ -866,7 +866,17 @@
       "enabled": "Reference table enabled.",
       "disabled": "Reference table disabled.",
       "no-results": "No reference table found.",
-      "reference-events": "Edit Events"
+      "reference-events": "Edit Events",
+      "subtitle": "The game's data tables, and the tool that reads each one.",
+      "search-label": "Search for a reference table",
+      "search-placeholder": "Reference table name…",
+      "table-caption": "Site reference tables",
+      "columns-used-by": "Used by the tool",
+      "columns-visible": "Visible on the site",
+      "used-by-none": "—",
+      "visibility-of": "Visibility of {reference}",
+      "read-only": "Read-only",
+      "modify": "Edit"
     },
     "guide-editor": {
       "language-label": "Guide language",

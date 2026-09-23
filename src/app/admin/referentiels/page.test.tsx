@@ -1,25 +1,31 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ReferentielsAdminPage from "./page";
+import type { AdminReferenceRow } from "@/components/admin-references-list";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/auth/require-session";
-import { getTranslations } from "next-intl/server";
 
-vi.mock("@/auth/require-session", () => ({
-  requireCapability: vi.fn(),
-}));
+vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    calculator: { findMany: vi.fn() },
-  },
+  prisma: { calculator: { findMany: vi.fn() } },
 }));
+// Titles come from the Référentiels catalogue, tool names from the root one;
+// giving them different shapes keeps the two apart in the assertions.
+const titles: Record<string, string> = {
+  "references.events": "Événements",
+  "references.gemmes": "Gemmes",
+  "references.templiers": "Templiers",
+  "references.consommables": "Boutique",
+  "references.combat-equipment": "Équipements de Combat",
+};
 vi.mock("next-intl/server", () => ({
-  getTranslations: vi.fn(async () => (key: string) => key),
+  getTranslations: async (namespace?: string) => (key: string) =>
+    namespace ? (titles[key] ?? key) : `outil ${key}`,
   getLocale: async () => "fr",
 }));
-vi.mock("@/components/reference-status-list", () => ({
-  ReferenceStatusList: (props: { rows: unknown[] }) => (
-    <pre data-testid="rows">{JSON.stringify(props.rows)}</pre>
+vi.mock("@/components/admin-references-list", () => ({
+  AdminReferencesList: (props: { rows: unknown[]; canWrite: boolean }) => (
+    <pre data-testid="rows">{JSON.stringify(props)}</pre>
   ),
 }));
 
@@ -31,106 +37,86 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("ReferentielsAdminPage", () => {
-  it("gives Templiers its own independent reference row, routed to the shared formula editor (Bloc 33/G)", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
+const reference = (slug: string, active = true) => ({
+  id: `calculator-${slug}`,
+  slug,
+  active,
+});
+
+async function renderPage(role = "super_admin") {
+  mockedRequireCapability.mockResolvedValue({
+    user: { id: "admin", role, name: "Admin" },
+  } as Awaited<ReturnType<typeof requireCapability>>);
+  render(await ReferentielsAdminPage());
+  return JSON.parse(screen.getByTestId("rows").textContent ?? "{}") as {
+    rows: AdminReferenceRow[];
+    canWrite: boolean;
+  };
+}
+
+describe("Bloc 119: the Référentiels page hands the list its rows", () => {
+  it("Bloc33/G: routes Templiers to the formula editor it shares with the tool", async () => {
     mockedCalculatorFindMany.mockResolvedValue([
-      { id: "calculator-templiers-reference", slug: "templiers", active: true },
+      reference("templiers"),
     ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await ReferentielsAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
+    const { rows } = await renderPage();
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
+      // The slug is the id: it is what the visibility endpoint is keyed by.
       id: "templiers",
-      slug: "templiers",
+      title: "Templiers",
       active: true,
       editHref: "/admin/tools/templars?from=referentiels",
     });
-    // No more special-casing: Templiers is toggled the same generic way
-    // as combat-equipment/expedition-equipment/level-up now — no
-    // calculators.toggle-gated override left in the row.
-    expect(rows[0].canToggle).toBeUndefined();
-    expect(rows[0].toggleHref).toBeUndefined();
   });
 
-  it("Bloc43/44: routes the Shop's reference row to its own admin editor, no shared tool to fall back on (internal slug/route stay unchanged per Bloc 48/F)", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
+  it("Bloc43/44 and Bloc60: routes the Boutique and Événements to their own editors", async () => {
     mockedCalculatorFindMany.mockResolvedValue([
-      {
-        id: "calculator-consumables-reference",
-        slug: "consommables",
-        active: true,
-      },
+      reference("consommables"),
+      reference("events", false),
     ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await ReferentielsAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
-    expect(rows[0]).toMatchObject({
-      id: "consommables",
-      slug: "consommables",
-      active: true,
-      editHref: "/admin/referentiels/reference-consommables",
-    });
-  });
-
-  // Bloc60: the 7th reference — same generic wiring as the other 6, so
-  // references_manager (whose access is entirely driven by the shared
-  // references.read/write capabilities this page and the [id] editor both
-  // gate on, never per-slug) reaches it exactly the same way.
-  it("Bloc60: routes the Events reference row to its own admin editor, ships inactive by default", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "references-manager", role: "references_manager", name: "RM" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedCalculatorFindMany.mockResolvedValue([
-      { id: "calculator-events-reference", slug: "events", active: false },
-    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await ReferentielsAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
-    expect(rows[0]).toMatchObject({
-      id: "events",
-      slug: "events",
-      active: false,
-      editHref: "/admin/referentiels/reference-events",
-    });
-  });
-
-  // Bloc 62/C: sorted by the displayed title, not DB/insertion order —
-  // the mocked findMany result below is deliberately in an order that
-  // only makes sense if the page ignored the translated title.
-  it("Bloc62/C: sorts rows alphabetically by their displayed title", async () => {
-    vi.mocked(getTranslations).mockResolvedValueOnce(((key: string) => {
-      const titles: Record<string, string> = {
-        "references.events": "Zèbre",
-        "references.gemmes": "Abricot",
-        "references.templiers": "Mangue",
-      };
-      return titles[key] ?? key;
-    }) as unknown as Awaited<ReturnType<typeof getTranslations>>);
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedCalculatorFindMany.mockResolvedValue([
-      { id: "events", slug: "events", active: true },
-      { id: "gemmes", slug: "gemmes", active: true },
-      { id: "templiers", slug: "templiers", active: true },
-    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
-
-    render(await ReferentielsAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent!);
-    expect(rows.map((row: { title: string }) => row.title)).toEqual([
-      "Abricot",
-      "Mangue",
-      "Zèbre",
+    const { rows } = await renderPage("references_manager");
+    expect(rows.map((row) => row.editHref)).toEqual([
+      "/admin/referentiels/reference-consommables",
+      "/admin/referentiels/reference-events",
     ]);
+    expect(rows[1].active).toBe(false);
+  });
+
+  it("names the tool that reads each reference, and leaves the others blank", async () => {
+    mockedCalculatorFindMany.mockResolvedValue([
+      reference("combat-equipment"),
+      reference("gemmes"),
+      reference("events"),
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+    const { rows } = await renderPage();
+    const usedBy = Object.fromEntries(rows.map((row) => [row.id, row.usedBy]));
+    expect(usedBy["combat-equipment"]).toBe("outil stuff-simulator.name");
+    expect(usedBy.gemmes).toBe("outil gems.name");
+    // Événements feeds no simulator: the cell shows an em dash, not a link.
+    expect(usedBy.events).toBeNull();
+  });
+
+  it("Bloc62/C: sorts rows by the displayed title", async () => {
+    mockedCalculatorFindMany.mockResolvedValue([
+      reference("templiers"),
+      reference("consommables"),
+      reference("events"),
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+    const { rows } = await renderPage();
+    expect(rows.map((row) => row.title)).toEqual([
+      "Boutique",
+      "Événements",
+      "Templiers",
+    ]);
+  });
+
+  it("passes the write permission through", async () => {
+    mockedCalculatorFindMany.mockResolvedValue([
+      reference("templiers"),
+    ] as unknown as Awaited<ReturnType<typeof prisma.calculator.findMany>>);
+    expect((await renderPage("references_manager")).canWrite).toBe(true);
+    cleanup();
+    expect((await renderPage("read_only")).canWrite).toBe(false);
   });
 });

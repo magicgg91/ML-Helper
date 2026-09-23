@@ -866,7 +866,17 @@
       "enabled": "Référentiel activé.",
       "disabled": "Référentiel désactivé.",
       "no-results": "Aucun référentiel.",
-      "reference-events": "Éditer les Événements"
+      "reference-events": "Éditer les Événements",
+      "subtitle": "Les tables de données du jeu, et l’outil qui s’en sert.",
+      "search-label": "Rechercher un référentiel",
+      "search-placeholder": "Nom du référentiel…",
+      "table-caption": "Référentiels du site",
+      "columns-used-by": "Utilisé par l’outil",
+      "columns-visible": "Visible sur le site",
+      "used-by-none": "—",
+      "visibility-of": "Visibilité de {reference}",
+      "read-only": "Lecture seule",
+      "modify": "Modifier"
     },
     "guide-editor": {
       "language-label": "Langue du guide",
