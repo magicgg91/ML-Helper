@@ -124,6 +124,7 @@ export function AdminLanguagesPanel({ rows }: { rows: LanguageRow[] }) {
             checked={row.active}
             disabled={saving === row.locale}
             testId={`locale-toggle-${row.locale}`}
+            labels={{ on: t("active"), off: t("inactive") }}
             label={t("visibility-of", { language: languageName(row.locale) })}
             onChange={(next) => toggle(row, next)}
           />

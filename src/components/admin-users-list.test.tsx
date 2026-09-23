@@ -246,7 +246,49 @@ describe("Bloc 119: creating a user", () => {
     ).toBeInTheDocument();
   });
 
+  it("puts the new account in the table, not only in the database", async () => {
+    // Regression (caught in e2e): this list holds its rows in state, so a
+    // router.refresh() alone updated the sidebar's counter and left the
+    // table one row behind.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          id: "u9",
+          username: "nouveau",
+          role: "guides_manager",
+        }),
+      }),
+    );
+    const panel = openPanel();
+    fireEvent.change(within(panel).getByLabelText("Identifiant"), {
+      target: { value: "nouveau" },
+    });
+    fireEvent.change(within(panel).getByLabelText("Mot de passe"), {
+      target: { value: "un-mot-de-passe-assez-long" },
+    });
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "Créer l’utilisateur" }),
+    );
+    expect(await screen.findByText("Utilisateur créé")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /nouveau/ })).toBeInTheDocument();
+  });
+
   it("creates the account and asks the screen for its data again", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          id: "u9",
+          username: "nouveau",
+          role: "guides_manager",
+        }),
+      }),
+    );
     const panel = openPanel();
     fireEvent.change(within(panel).getByLabelText("Identifiant"), {
       target: { value: "nouveau" },

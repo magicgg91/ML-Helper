@@ -112,25 +112,48 @@ export function AdminUsersList({
     if (newPassword.length < passwordMinimumLength)
       return report(false, t("password-too-short"));
     setBusy(true);
-    const ok = await send("/api/admin/users", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        username: newUsername,
-        password: newPassword,
-        role: newRole,
-      }),
-    });
-    setBusy(false);
-    if (!ok) return;
+    let created: AdminUserRow | undefined;
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: newUsername,
+          password: newPassword,
+          role: newRole,
+        }),
+      });
+      if (!response.ok) {
+        report(false, `${t("error")} (HTTP ${response.status})`);
+        return;
+      }
+      const body = (await response.json()) as {
+        id: string;
+        username: string;
+        role: string;
+      };
+      created = { ...body, active: true };
+    } catch {
+      report(false, t("server-error"));
+      return;
+    } finally {
+      setBusy(false);
+    }
+    // The row is added from what the route answers — its id comes from the
+    // database — rather than waiting for a re-render: this list holds its
+    // rows in state, so a router.refresh() alone would update the sidebar's
+    // counter and leave the table one row behind (caught in e2e).
+    setUsers((current) =>
+      [...current, created].sort((a, b) =>
+        a.username.localeCompare(b.username),
+      ),
+    );
     report(true, t("created"));
     setCreating(false);
     setNewUsername("");
     setNewPassword("");
     setNewRole("read_only");
-    // The new row is the server's to render — its id and creation date come
-    // from the database — so the screen asks for its data again rather than
-    // inventing a row locally.
+    // …and the counters the server renders around it follow.
     router.refresh();
   }
 
@@ -238,6 +261,7 @@ export function AdminUsersList({
           <VisibilitySwitch
             checked={user.active}
             disabled={!canManage || user.id === currentUserId}
+            labels={{ on: t("active"), off: t("inactive") }}
             label={t("visibility-of", { username: user.username })}
             onChange={(next) => setActive(user, next)}
           />

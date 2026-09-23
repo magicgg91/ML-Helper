@@ -965,7 +965,9 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByRole("status")).toHaveText(
     /User created|Utilisateur créé/,
   );
-  await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "phase1admin", exact: true }),
+  ).toBeVisible();
 
   await adminNav.getByRole("link", { name: /Logs|Historique/ }).click();
   await expect(
@@ -973,8 +975,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "rootadmin a créé l’utilisateur phase1admin",
     }),
   ).toBeVisible();
+  // Bloc 119: the role at the time of the action is a pill carrying the
+  // translated label — the raw `super_admin` key is no longer on screen.
   await expect(
-    page.getByRole("cell", { name: "super_admin" }).first(),
+    page.getByRole("cell", { name: "Super Admin" }).first(),
   ).toBeVisible();
 
   // Bloc 50 (2): reference rows (Combat/Expedition/Level-up/Templiers/
@@ -2094,7 +2098,9 @@ test("calculator visibility and guide publication are reversible", async ({
   await page.goto("/guides");
   await expect(page.getByText("Guide visible")).toHaveCount(0);
   await page.goto("/admin/guides");
-  await expect(page.getByRole("cell", { name: "Guide visible" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Guide visible", exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel("Statut de Guide visible")).toHaveValue("draft");
 
   await page.getByLabel("Statut de Guide visible").selectOption("published");
@@ -2819,7 +2825,12 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   await expect(root.getByRole("link", { name: "Configuration" })).toBeVisible();
   const configResponse = await root.goto("/admin/config");
   expect(configResponse?.status()).toBe(200);
-  await expect(root.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  // Bloc 119: the language cell now carries the code beside the name, and the
+  // visibility switch on the same row names the language too — hence the exact
+  // name rather than a substring that matches both cells.
+  await expect(
+    root.getByRole("cell", { name: "DE Deutsch", exact: true }),
+  ).toBeVisible();
 
   const created = await root.request.post("/api/admin/users", {
     data: {

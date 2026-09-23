@@ -20,6 +20,7 @@ export function VisibilitySwitch({
   onChange,
   label,
   disabled = false,
+  labels,
   testId,
 }: {
   checked: boolean;
@@ -31,6 +32,13 @@ export function VisibilitySwitch({
    */
   label: string;
   disabled?: boolean;
+  /**
+   * The two words beside the control. They default to Visible / Masqué,
+   * which is what a tool, a reference or a guide is; an account is active or
+   * disabled, and a language active or inactive, so those screens pass their
+   * own.
+   */
+  labels?: { on: string; off: string };
   /**
    * Put on the button itself, not on the wrapper: a test id that resolves to
    * a span would be clicked in its middle — on the label, next to the
@@ -68,7 +76,7 @@ export function VisibilitySwitch({
           for the eye, so it is hidden from the screen reader rather than
           read twice. */}
       <span aria-hidden="true" className="text-xs font-semibold">
-        {checked ? t("visible") : t("hidden")}
+        {checked ? (labels?.on ?? t("visible")) : (labels?.off ?? t("hidden"))}
       </span>
     </span>
   );

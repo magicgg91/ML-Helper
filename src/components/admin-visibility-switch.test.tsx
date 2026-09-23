@@ -54,3 +54,20 @@ describe("Bloc 119: VisibilitySwitch", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe("Bloc 119: the words beside the switch", () => {
+  it("says Visible / Masqué by default", () => {
+    renderSwitch({ checked: true });
+    expect(screen.getByText("Visible")).toBeInTheDocument();
+  });
+
+  it("takes the screen's own words when it has some", () => {
+    // An account is active or disabled, not visible or hidden.
+    renderSwitch({
+      checked: false,
+      labels: { on: "Actif", off: "Désactivé" },
+    });
+    expect(screen.getByText("Désactivé")).toBeInTheDocument();
+    expect(screen.queryByText("Masqué")).toBeNull();
+  });
+});
