@@ -1386,7 +1386,23 @@
         "xp-gain-rate": {
           "update": "{actor} a modifié les paliers du taux de gain d’XP"
         }
-      }
+      },
+      "eyebrow": "Accès",
+      "subtitle": "Toutes les actions enregistrées dans l’administration.",
+      "filters-label": "Filtres de l’historique",
+      "filter-user-all": "Tous les utilisateurs",
+      "filter-message-placeholder": "Un mot du message…",
+      "day-actions": "{count, plural, =1 {# action} other {# actions}}",
+      "column-time": "Heure",
+      "load-more": "Charger les jours précédents",
+      "purge-title": "Purge du journal",
+      "purge-description": "Supprime définitivement les entrées d’une période. Réservé au Super Admin.",
+      "purge-open": "Purger la période…",
+      "purge-confirm-title": "Purger cette période ?",
+      "purge-confirm-body": "{count, plural, =0 {Aucune entrée n’est concernée par cette période.} =1 {# entrée sera supprimée définitivement.} other {# entrées seront supprimées définitivement.}}",
+      "purge-confirm-action": "Purger",
+      "purge-invalid-range": "La date de fin doit être postérieure à la date de début.",
+      "purged-count": "{count, plural, =1 {# entrée supprimée.} other {# entrées supprimées.}}"
     },
     "content": {
       "eyebrow": "Page institutionnelle",

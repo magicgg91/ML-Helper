@@ -1386,7 +1386,23 @@
         "xp-gain-rate": {
           "update": "{actor} updated the XP gain rate tiers"
         }
-      }
+      },
+      "eyebrow": "Access",
+      "subtitle": "Every action recorded in the administration.",
+      "filters-label": "History filters",
+      "filter-user-all": "All users",
+      "filter-message-placeholder": "A word from the message…",
+      "day-actions": "{count, plural, =1 {# action} other {# actions}}",
+      "column-time": "Time",
+      "load-more": "Load the previous days",
+      "purge-title": "Purge the log",
+      "purge-description": "Permanently deletes the entries of a period. Super Admin only.",
+      "purge-open": "Purge the period…",
+      "purge-confirm-title": "Purge this period?",
+      "purge-confirm-body": "{count, plural, =0 {No entry falls in this period.} =1 {# entry will be permanently deleted.} other {# entries will be permanently deleted.}}",
+      "purge-confirm-action": "Purge",
+      "purge-invalid-range": "The end date must come after the start date.",
+      "purged-count": "{count, plural, =1 {# entry deleted.} other {# entries deleted.}}"
     },
     "content": {
       "eyebrow": "Institutional page",

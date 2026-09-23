@@ -1296,19 +1296,21 @@ test("the audit log paginates by 20 entries", async ({ page }) => {
     expect(response.status()).toBe(200);
   }
 
+  // Bloc 119: the log is grouped by day (each group opens with a <th> row,
+  // so the data rows are the ones carrying a <td>) and loads more days on a
+  // button rather than paging back and forth.
   await page.goto("/admin/logs?q=pagination-user");
-  await expect(page.locator("tbody tr")).toHaveCount(20);
-  await expect(page.getByText("Page 1 / 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Précédent" })).toHaveCount(0);
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
 
-  await page.getByRole("link", { name: "Suivant" }).click();
+  await page
+    .getByRole("link", { name: "Charger les jours précédents" })
+    .click();
   await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
-  await expect(page.locator("tbody tr")).toHaveCount(6);
-  await expect(page.getByText("Page 2 / 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Suivant" })).toHaveCount(0);
-
-  await page.getByRole("link", { name: "Précédent" }).click();
-  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user$/);
+  // The window widens rather than moving: the 26 entries are all on screen.
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
+  await expect(
+    page.getByRole("link", { name: "Charger les jours précédents" }),
+  ).toHaveCount(0);
 });
 
 // Bloc 57: the Boutique reference screen has a single save button (Bloc 42)
@@ -1357,7 +1359,9 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   // still takes the words an admin can see — they are resolved to the keys
   // that carry them before the query runs.
   await page.goto("/admin/logs?q=référentiel Boutique");
-  await expect(page.locator("tbody tr")).toHaveCount(1);
+  // Bloc 119: each day opens with a sub-header row, so the data rows are
+  // the ones carrying a <td>.
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(1);
   await expect(
     page.getByRole("cell", {
       name: /rootadmin a (créé|modifié) le référentiel Boutique/,
@@ -1371,7 +1375,7 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   ).toBeVisible();
 });
 
-test("the dashboard's published-guides counter ignores an inactive guide", async ({
+test("the dashboard's published-guides counter follows the guide's status", async ({
   page,
 }) => {
   await page.goto("/login");
