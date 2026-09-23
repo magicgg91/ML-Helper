@@ -5,7 +5,7 @@ import {
   CombatReferenceScreen,
   ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
-import { ConsumablesReferenceScreen } from "@/components/consumables-admin-editor";
+import { ShopReferenceEditor } from "@/components/admin-shop-editor";
 import { EventsReferenceScreen } from "@/components/events-admin-editor";
 import {
   getCombatReferenceRows,
@@ -62,12 +62,12 @@ export default async function EditReferentielPage({
   }
   if (id === "reference-consommables") {
     return (
-      <div className="admin-main">
-        <h1>{t("reference-consommables")}</h1>
-        <ConsumablesReferenceScreen
-          initialCatalog={await getConsumableCatalog()}
-        />
-      </div>
+      <ShopReferenceEditor
+        initialCatalog={await getConsumableCatalog()}
+        backHref="/admin/referentiels"
+        backLabel={t("title")}
+        title={t("reference-consommables")}
+      />
     );
   }
   if (id === "reference-events") {

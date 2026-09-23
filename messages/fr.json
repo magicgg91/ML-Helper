@@ -1174,7 +1174,15 @@
       "row-destruction": "Destruction",
       "combat-secondary-description": "Pouciel (fusion, destruction) et emplacements de gemmes, par rareté.",
       "expedition-secondary-description": "Terradust (fusion, destruction), par rareté.",
-      "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat"
+      "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat",
+      "consumables-subtitle": "Les objets de la boutique, leur description et leur coût en saphirs.",
+      "texts-in": "Textes en",
+      "item-count": "{count, plural, =0 {aucun objet} one {# objet} other {# objets}}",
+      "item-unnamed": "Objet sans nom",
+      "item-panel": "Objet sélectionné",
+      "description-to-write": "Description à rédiger",
+      "sapphires": "saphirs",
+      "cost-unconfirmed": "Coût à confirmer"
     },
     "common": {
       "back": "Retour",

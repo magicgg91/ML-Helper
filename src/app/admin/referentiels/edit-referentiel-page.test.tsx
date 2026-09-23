@@ -67,15 +67,10 @@ vi.mock("@/components/reference-admin-editors", () => {
     ExpeditionReferenceScreen: Screen,
   };
 });
-vi.mock("@/components/consumables-admin-editor", () => ({
-  ConsumablesReferenceScreen: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+// Bloc 119: the Boutique is on the refonte's EditorHeader too.
+vi.mock("@/components/admin-shop-editor", () => ({
+  ShopReferenceEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
   ),
 }));
 vi.mock("@/components/events-admin-editor", () => ({
@@ -117,16 +112,17 @@ describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => 
     expect(back).toHaveAttribute("href", "/admin/referentiels");
   });
 
-  it("Bloc43/44: routes 'reference-consommables' to ConsumablesReferenceScreen", async () => {
+  it("Bloc43/44: routes 'reference-consommables' to the Boutique editor", async () => {
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-consommables" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/referentiels");
+    expect(screen.getByRole("link", { name: /back/ })).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 
   it("Bloc60: routes 'reference-events' to EventsReferenceScreen", async () => {

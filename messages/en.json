@@ -1174,7 +1174,15 @@
       "row-destruction": "Dismantle",
       "combat-secondary-description": "Pouciel (merge, dismantle) and gem slots, per rarity.",
       "expedition-secondary-description": "Terradust (merge, dismantle), per rarity.",
-      "combat-increments-description": "Per-star increments for the Combat Equipment skills"
+      "combat-increments-description": "Per-star increments for the Combat Equipment skills",
+      "consumables-subtitle": "The shop's items, their description and their cost in sapphires.",
+      "texts-in": "Text in",
+      "item-count": "{count, plural, =0 {no item} one {# item} other {# items}}",
+      "item-unnamed": "Unnamed item",
+      "item-panel": "Selected item",
+      "description-to-write": "Description to write",
+      "sapphires": "sapphires",
+      "cost-unconfirmed": "Cost to confirm"
     },
     "common": {
       "back": "Back",
