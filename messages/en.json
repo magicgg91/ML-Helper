@@ -1181,11 +1181,19 @@
       "server-error": "Unable to reach the server.",
       "league": "League",
       "coefficient": "Coefficient",
-      "troops-hint": "Formula applied: troops(level) = coefficient × ratio^level, from level 2 on. League ratios differ by only a few thousandths: a wrong value stays invisible at the first levels and is more than 10% off by level 60.",
+      "troops-hint": "The leagues’ ratios differ by a few thousandths: a wrong value stays invisible at the first levels and is close to 10% off by level 60. The last two columns make that gap visible straight away.",
       "ratio": "Ratio",
       "xp-base": "XP base",
       "xp-ratio": "XP ratio",
-      "unconfirmed": "Troop formula not confirmed"
+      "unconfirmed": "Troop formula not confirmed",
+      "subtitle": "The XP curve and each league’s troop formula.",
+      "xp-section": "XP",
+      "troops-section": "Troops per league",
+      "troops-formula": "troops(level) = coefficient × ratio^level",
+      "troops-from-level-2": "From level 2 onwards.",
+      "at-level-60": "Level 60",
+      "gap-vs-bronze": "Gap vs Bronze",
+      "gap-value": "{gap}%"
     },
     "city-parameters": {
       "progression": "Progression parameters",

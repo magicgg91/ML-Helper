@@ -15,7 +15,7 @@ import {
   getExpeditionSecondaryBase,
   getExpeditionStarIncrements,
 } from "@/lib/reference-equipment-server";
-import { LevelUpParametersEditor } from "@/components/named-parameters-editor";
+import { ProgressionEditor } from "@/components/admin-progression-editor";
 import { getLevelUpParameters } from "@/lib/admin-formulas-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
@@ -28,13 +28,12 @@ export default async function EditReferentielPage({
   const { id } = await params;
   if (id === "reference-level-up") {
     return (
-      <div className="admin-main">
-        {/* Bloc 35/10.2/10.3: LevelUpParametersEditor now carries its own
-            EditorActionBar (back link + save), matching every other named
-            parameters editor — no separate back link here. */}
-        <h1>{t("reference-level-up")}</h1>
-        <LevelUpParametersEditor initial={await getLevelUpParameters()} />
-      </div>
+      <ProgressionEditor
+        initial={await getLevelUpParameters()}
+        backHref="/admin/referentiels"
+        backLabel={t("title")}
+        title={t("reference-level-up")}
+      />
     );
   }
   if (

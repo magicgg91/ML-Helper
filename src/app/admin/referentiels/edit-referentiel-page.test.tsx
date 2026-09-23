@@ -41,15 +41,12 @@ vi.mock("@/lib/reference-equipment-server", () => ({
   getExpeditionStarIncrements: async () => ({}),
   getExpeditionSecondaryBase: async () => ({}),
 }));
-vi.mock("@/components/named-parameters-editor", () => ({
-  LevelUpParametersEditor: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+// Bloc 119: Progression is the first reference screen on the refonte's
+// EditorHeader, whose back link is the breadcrumb's — so this mock stands in
+// for that shape, not for an EditorActionBar.
+vi.mock("@/components/admin-progression-editor", () => ({
+  ProgressionEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
   ),
 }));
 // Bloc 37/E: each screen now owns a single EditorActionBar internally
@@ -96,15 +93,16 @@ vi.mock("@/components/events-admin-editor", () => ({
 afterEach(cleanup);
 
 describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => {
-  it("shows only one back link on the Progression reference page, owned by its EditorActionBar", async () => {
-    const { container } = render(
+  it("shows exactly one back link on the Progression reference page, the editor's own", async () => {
+    render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-level-up" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const backLinks = container.querySelectorAll(".editor-back-action");
-    expect(backLinks).toHaveLength(1);
+    const back = screen.getAllByRole("link", { name: /back/ });
+    expect(back).toHaveLength(1);
+    expect(back[0]).toHaveAttribute("href", "/admin/referentiels");
   });
 
   it("styles the Combat/Expedition admin page's back link like every EditorActionBar back link", async () => {
