@@ -526,11 +526,24 @@ export function activeLadder(ladder: RankingLadder): RankingLadder {
  *
  * Computed over the ACTIVE ladder: an entry an admin has prepared but not
  * switched on yet does not exist for the player, and must not shift the
- * count. Null when there are fewer than two rungs below, which is the honest
- * answer near the bottom of the ladder rather than clamping to Bronze.
+ * count.
  *
  * The studio's own example, on the ladder once the divisions are in: Or 1 ->
  * Or 2 -> Argent 1, so a player in Or 1 is locked at Argent 1.
+ *
+ * Bloc 111: what happens near the bottom is now specified, and it is a clamp
+ * rather than the "no answer" this shipped with. The ladder's bottom rung is
+ * a FLOOR — Bronze today — and a floor is never a lock: there is nothing
+ * below it to protect, and it is never handed back as another rung's target
+ * either. So the walk back is shortened until it lands somewhere valid:
+ *
+ *   Bronze    -> no lock at all, it is the floor
+ *   Argent 2  -> itself: even one rung back would be the floor
+ *   Argent 1  -> Argent 2: two rungs back would be the floor
+ *
+ * "Bronze" is read positionally, not by league key, for the same reason
+ * everything else in this file is (Bloc 108): the ladder is whatever an admin
+ * ordered, so the floor is whichever rung sits at the bottom of it.
  */
 export const leagueLockDepth = 2;
 
@@ -541,7 +554,11 @@ export function leagueLockFor(
   const active = activeLadder(ladder);
   const index = active.findIndex((entry) => entry.id === entryId);
   if (index < 0) return null;
-  return active[index - leagueLockDepth] ?? null;
+  // The floor has nothing below it to be locked at.
+  if (index === 0) return null;
+  // Walk back, but never onto the floor or past it — shorten the walk to as
+  // little as zero rungs, where the entry is its own lock.
+  return active[Math.max(index - leagueLockDepth, 1)];
 }
 
 /** Bloc 108/E: the active divisions configured under one base league. */

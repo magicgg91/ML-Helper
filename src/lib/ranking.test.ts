@@ -503,10 +503,60 @@ describe("Bloc 108/D: the League Lock is computed, never typed in", () => {
     expect(leagueLockFor(ladderWithDivisions(), from)?.id).toBe(expected);
   });
 
-  it("has no answer for the bottom two rungs, and says so rather than clamping", () => {
-    expect(leagueLockFor(ladderWithDivisions(), "bronze")).toBeNull();
-    expect(leagueLockFor(ladderWithDivisions(), "silver-2")).toBeNull();
-    expect(leagueLockFor(ladderWithDivisions(), "silver-1")?.id).toBe("bronze");
+  // Bloc 111: the three cases near the floor, which Bloc 108 left
+  // unspecified and answered with a plain "none". Bronze is the floor: never
+  // a lock for anyone, and never locked itself.
+  it.each([
+    // Already the floor — nothing below it to be held at.
+    ["bronze", null],
+    // One rung back would be the floor, so the walk shortens to zero rungs.
+    ["silver-2", "silver-2"],
+    // Two rungs back would be the floor, so it shortens to one.
+    ["silver-1", "silver-2"],
+  ])("clamps the lock of %s to %s near the floor", (from, expected) => {
+    expect(leagueLockFor(ladderWithDivisions(), from)?.id ?? null).toBe(
+      expected,
+    );
+  });
+
+  // The rule stated as the property, not as the three cases: whatever the
+  // ladder, the floor is never handed back as anyone's lock.
+  it("never returns the ladder's floor as a lock target", () => {
+    const ladders = [
+      defaultRankingLadder,
+      ladderWithDivisions(),
+      // A floor split into divisions, and a ladder switched down to two
+      // rungs — the shortest one where a lock can exist at all.
+      ladderWithDivisions({ "gold-1": { active: false } }),
+      ladderWithDivisions({
+        "gold-1": { active: false },
+        "gold-2": { active: false },
+        "silver-1": { active: false },
+      }),
+    ];
+    for (const ladder of ladders) {
+      const active = activeLadder(ladder);
+      const floor = active[0]!.id;
+      for (const entry of active)
+        expect(
+          leagueLockFor(ladder, entry.id)?.id,
+          `${entry.id} on a ${active.length}-rung ladder`,
+        ).not.toBe(floor);
+    }
+  });
+
+  // And the walk is only ever shortened, never lengthened: no rung is locked
+  // at something above itself.
+  it("never locks a rung above itself", () => {
+    const active = activeLadder(ladderWithDivisions());
+    for (const [index, entry] of active.entries()) {
+      const lock = leagueLockFor(ladderWithDivisions(), entry.id);
+      if (!lock) continue;
+      expect(
+        active.findIndex((item) => item.id === lock.id),
+        `${entry.id} locks at ${lock.id}`,
+      ).toBeLessThanOrEqual(index);
+    }
   });
 
   // Bloc 108/B: the lock is a consequence of the order, so reordering must

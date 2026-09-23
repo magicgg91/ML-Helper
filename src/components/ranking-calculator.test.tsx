@@ -463,6 +463,22 @@ describe("Bloc 108/C+G: what the public page shows of the ladder", () => {
     );
   });
 
+  // Bloc 111: the near-floor cases, on the public page. Bronze is the floor,
+  // so a rung one or two above it cannot be locked two rungs down — the walk
+  // shortens instead of the tool answering "none".
+  it.each([
+    // Even one rung back would be Bronze, so Argent 2 is its own lock.
+    ["Argent 2", "Argent 2"],
+    // Two rungs back would be Bronze, so the walk stops at Argent 2.
+    ["Argent 1", "Argent 2"],
+  ])("Bloc111: shows %s locked at %s", (from, expected) => {
+    renderLadder(withDivisions);
+    fireEvent.click(within(leagueGroup()).getByRole("button", { name: from }));
+    expect(screen.getByTestId("ranking-league-lock")).toHaveTextContent(
+      expected,
+    );
+  });
+
   // Bloc 108/H, end to end on the public side: every reward the range grants
   // is named where it is shown, rather than folded into a sentence that never
   // mentioned the absent ones.
@@ -989,8 +1005,10 @@ describe("Bloc 112: the League Lock chip in the header", () => {
     expect(
       screen.getByText(/à définir dans l’administration pour Or/i),
     ).toBeInTheDocument();
+    // Argent, not Bronze: Bronze is the floor of this three-rung ladder, and
+    // Bloc 111 shortens the walk rather than landing on it.
     expect(screen.getByTestId("ranking-league-lock")).toHaveTextContent(
-      "Bronze",
+      "Argent",
     );
   });
 
