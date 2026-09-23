@@ -1215,7 +1215,30 @@
     "templar-parameters": {
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
       "base": "Base",
-      "ratio": "Ratio"
+      "ratio": "Ratio",
+      "subtitle": "Le coût de chaque niveau de Templier, et la présentation des cinq Templiers sur le site.",
+      "shared-with-reference": "Référentiel Templiers",
+      "cost-section": "Coût",
+      "preview": "Aperçu des cinq premiers niveaux",
+      "level": "Niveau {level}",
+      "presentation-section": "Présentation",
+      "presentation-help": "Ce que le site affiche pour chaque Templier. Les nombres ne dépendent pas de la langue.",
+      "texts-in": "Textes en",
+      "columns": {
+        "image": "Image",
+        "name": "Nom",
+        "description": "Description",
+        "temple-base": "Base temple",
+        "bonus": "Bonus (%)"
+      },
+      "no-image": "Aucune image",
+      "change-image": "Changer l’image",
+      "image-of": "Chemin de l’image de {name}",
+      "name-of": "Nom de {name}",
+      "description-of": "Description de {name}",
+      "description-to-write": "Description à rédiger",
+      "temple-base-of": "Base temple de {name}",
+      "bonus-of": "Bonus de {name}"
     },
     "xp-gain-rate": {
       "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",

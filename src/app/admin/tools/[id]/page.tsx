@@ -8,8 +8,7 @@ import {
   GemParametersEditor,
   XpGainRateEditor,
 } from "@/components/admin-tool-editors";
-import { TemplarParametersEditor } from "@/components/named-parameters-editor";
-import { TemplarsPresentationEditor } from "@/components/templars-presentation-editor";
+import { TemplarsEditor } from "@/components/admin-templars-editor";
 import { RankingAdminEditor } from "@/components/ranking-admin-editor";
 import {
   getCityParameters,
@@ -84,17 +83,15 @@ export default async function EditToolPage({
   if (id === "templars") {
     // Bloc 66/B: the presentation catalog (Image/Nom/Description/Base
     // Temple/Bonus behind the public tile section) shares this edit point too.
+    // Bloc 119: and now its save, in one transaction with the cost formula.
     return (
-      <div className="admin-main">
-        <h1>{t("templar-parameters")}</h1>
-        <TemplarParametersEditor
-          initial={await getTemplarParameters()}
-          backHref={backHref}
-        />
-        <TemplarsPresentationEditor
-          initialCatalog={await getTemplarPresentation()}
-        />
-      </div>
+      <TemplarsEditor
+        initialParameters={await getTemplarParameters()}
+        initialPresentation={await getTemplarPresentation()}
+        backHref={backHref}
+        backLabel={backLabel}
+        title={t("templar-parameters")}
+      />
     );
   }
   if (id === "xp-gain-rate") {

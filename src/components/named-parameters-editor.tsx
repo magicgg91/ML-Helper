@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { TemplarParameters } from "../lib/templar-parameters";
 import {
   hasLevelUpTroopsFormula,
   parseLevelUpParameters,
@@ -65,46 +64,6 @@ function NumericField({
         onFocus={selectOnFocus}
       />
     </label>
-  );
-}
-
-export function TemplarParametersEditor({
-  initial,
-  backHref = "/admin/tools",
-}: {
-  initial: TemplarParameters;
-  backHref?: string;
-}) {
-  const t = useTranslations("admin.templar-parameters");
-  const tCommon = useTranslations("admin.parameters");
-  const [value, setValue] = useState(initial);
-  const { status, save } = useToolSave("/api/admin/tools/templars", value);
-  return (
-    <div className="calculator-stack">
-      <EditorActionBar backHref={backHref} message={status}>
-        <button
-          className="editor-action editor-action-primary"
-          type="button"
-          onClick={save}
-        >
-          {tCommon("save")}
-        </button>
-      </EditorActionBar>
-      <p>{t("formula")}</p>
-      <div className="calculator-fields">
-        <NumericField
-          label={t("base")}
-          value={value.base}
-          step={1}
-          onChange={(base) => setValue((current) => ({ ...current, base }))}
-        />
-        <NumericField
-          label={t("ratio")}
-          value={value.ratio}
-          onChange={(ratio) => setValue((current) => ({ ...current, ratio }))}
-        />
-      </div>
-    </div>
   );
 }
 

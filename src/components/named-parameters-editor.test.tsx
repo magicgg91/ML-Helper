@@ -8,39 +8,13 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import { defaultLevelUpParameters } from "../lib/level-up";
-import {
-  LevelUpParametersEditor,
-  TemplarParametersEditor,
-} from "./named-parameters-editor";
+import { LevelUpParametersEditor } from "./named-parameters-editor";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 describe("named formula parameter editors", () => {
-  it("exposes only the named Templar base and ratio", () => {
-    render(<TemplarParametersEditor initial={{ base: 150, ratio: 1.3 }} />);
-    expect(screen.getByRole("spinbutton", { name: "Base" })).toHaveValue(150);
-    expect(screen.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(1.3);
-    expect(screen.queryByText(/JSON/i)).toBeNull();
-    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
-      "href",
-      "/admin/tools",
-    );
-  });
-  it("sends a guides_manager reaching this editor from Guides back to Guides, not the Outils table they can't view", () => {
-    render(
-      <TemplarParametersEditor
-        initial={{ base: 150, ratio: 1.3 }}
-        backHref="/admin/guides"
-      />,
-    );
-    expect(screen.getByRole("link", { name: "← Retour" })).toHaveAttribute(
-      "href",
-      "/admin/guides",
-    );
-  });
-
   it("Bloc35 10.2/10.3: LevelUpParametersEditor uses the same EditorActionBar save banner as the other editors", async () => {
     const request = vi
       .spyOn(globalThis, "fetch")

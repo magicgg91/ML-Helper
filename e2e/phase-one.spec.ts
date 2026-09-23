@@ -1063,23 +1063,25 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // the URL carries ?from=referentiels — the editor's own "Retour" now goes
   // back to Référentiels, not Tools, for this exact same shared edit point.
   await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=referentiels$/);
+  // Bloc 119: the back link is the breadcrumb's, and it names the list it
+  // returns to instead of saying "Retour".
   await expect(
-    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+    page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
-  // Bloc 66/B: exact match — the presentation editor sharing this page now
-  // also carries 5 editable "Base Temple N" fields (Bloc 68/C), whose
-  // accessible names otherwise substring-match this same "Base" locator.
-  await page.getByRole("spinbutton", { name: "Base", exact: true }).fill("200");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  // Exact match: the presentation table on the same screen carries "Base
+  // temple de …" fields, which otherwise substring-match this locator.
+  await page.getByLabel("Base", { exact: true }).fill("200");
+  // Bloc 119 §3 bis: one save for the whole screen — the formula and the
+  // presentation catalog, in one transaction.
+  await expect(page.getByText("Modifications non enregistrées")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText("✓ Tout est enregistré")).toBeVisible();
   // Single shared data source (cdc section 6): the same edit reaches both
   // the public reference and the Templars calculator.
   await page.goto("/referentiels/templars");
@@ -1105,7 +1107,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .click();
   await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=referentiels$/);
   await expect(
-    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+    page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres des Gemmes" }),
@@ -1121,82 +1123,52 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // same shared parameters, reached from either admin table. Exact match:
   // see the earlier comment on the same collision with the presentation
   // editor's editable "Base Temple N" fields.
-  await expect(
-    page.getByRole("spinbutton", { name: "Base", exact: true }),
-  ).toHaveValue("200");
-  await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
-    "1.3",
-  );
-  const toolActionBar = page.locator(".editor-action-bar");
-  await expect(
-    toolActionBar.getByRole("link", { name: "← Retour" }),
-  ).toBeVisible();
-  await expect(
-    toolActionBar.getByRole("button", { name: "Enregistrer les paramètres" }),
-  ).toBeVisible();
-  await toolActionBar
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(toolActionBar.getByRole("status")).toHaveText(
-    "Paramètres enregistrés.",
-    { timeout: 15_000 },
-  );
+  await expect(page.getByLabel("Base", { exact: true })).toHaveValue("200");
+  // Bloc 119: written in the admin's own language, so the decimal separator
+  // is the French comma — and the field reads it back.
+  await expect(page.getByLabel("Ratio", { exact: true })).toHaveValue("1,3");
+  await expect(page.getByRole("link", { name: "← Outils" })).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Taux de gain d’XP/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Seuil haut du palier 1" }),
-  ).toHaveValue("40");
+  await expect(page.getByLabel("Seuil haut du palier 1")).toHaveValue("40");
   await expect(page.getByText("∞")).toBeVisible();
-  await page
-    .getByRole("spinbutton", { name: "Taux XP du palier 3" })
-    .fill("110");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await page.getByLabel("Taux XP du palier 3").fill("110");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Troupes en attaque démo/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Bronze X (% des remparts)" }),
-  ).toHaveValue("100");
-  await page
-    .getByRole("spinbutton", { name: "Or X (% des remparts)" })
-    .fill("45");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await expect(page.getByLabel("Bronze X (% des remparts)")).toHaveValue("100");
+  await page.getByLabel("Or X (% des remparts)", { exact: true }).fill("45");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Gemmes/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Vitesse · Légende" }),
-  ).toHaveValue("15");
-  await page.getByRole("spinbutton", { name: "Prix Légende" }).fill("5000");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await expect(page.getByLabel("Vitesse · Légende")).toHaveValue("15");
+  await page.getByLabel("Prix Légende").fill("5000");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 test("deactivating a user blocks sign-in until reactivated", async ({

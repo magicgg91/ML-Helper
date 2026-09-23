@@ -1215,7 +1215,30 @@
     "templar-parameters": {
       "formula": "Cost(n) = round(base × ratio^(n-1))",
       "base": "Base",
-      "ratio": "Ratio"
+      "ratio": "Ratio",
+      "subtitle": "The cost of each Templar level, and how the five Templars are presented on the site.",
+      "shared-with-reference": "Templars reference",
+      "cost-section": "Cost",
+      "preview": "Preview of the first five levels",
+      "level": "Level {level}",
+      "presentation-section": "Presentation",
+      "presentation-help": "What the site shows for each Templar. The numbers do not depend on the language.",
+      "texts-in": "Text in",
+      "columns": {
+        "image": "Image",
+        "name": "Name",
+        "description": "Description",
+        "temple-base": "Temple base",
+        "bonus": "Bonus (%)"
+      },
+      "no-image": "No image",
+      "change-image": "Change the image",
+      "image-of": "Image path of {name}",
+      "name-of": "Name of {name}",
+      "description-of": "Description of {name}",
+      "description-to-write": "Description to write",
+      "temple-base-of": "Temple base of {name}",
+      "bonus-of": "Bonus of {name}"
     },
     "xp-gain-rate": {
       "formula": "XP gain rate = f(target VP / attacker VP ratio)",
