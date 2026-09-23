@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { narrowViewportMaxWidth } from "../components/use-narrow-viewport";
+import { rankCategoryShade, rankMovements } from "../lib/ranking";
+
+/** Every shade the range palette can produce, for the contrast checks below. */
+const rankCategoryShades = rankMovements.flatMap((movement) =>
+  Array.from({ length: 5 }, (_, index) => rankCategoryShade(movement, index)),
+);
 
 const css = readFileSync("src/app/globals.css", "utf8");
 
@@ -80,38 +86,57 @@ describe("public responsive styles", () => {
     expect(css).toMatch(/\.league-button-row > button\s*{\s*flex: 1 1 0;/);
   });
 
-  // Bloc 110/B: the two figures heading Classement's result zone sit side by
-  // side at EVERY width — the brief's one stated exception to the full-width
-  // rule the interval tiles follow. A folded row would break that silently,
-  // so the no-wrap is pinned here, and pinned as unconditional.
-  it("keeps Classement's two info tiles on one row at every width", () => {
-    const rule = css.match(/\.ranking-info-tiles\s*{([\s\S]*?)\n}/)?.[1];
-    expect(rule, "the .ranking-info-tiles rule").toBeDefined();
-    expect(rule).toMatch(/display: flex;/);
-    expect(rule).toMatch(/flex-wrap: nowrap;/);
-    for (const block of css.matchAll(/@media[^{]*{([\s\S]*?)\n}/g))
-      expect(block[1]).not.toMatch(/\.ranking-info-tiles\s*{/);
-  });
-
-  // Bloc 110/D: the interval tiles are full width on a phone and half width
-  // on desktop — and stacked either way, one per line, never two abreast.
-  it("gives Classement's interval tiles half a row on desktop only", () => {
-    // Stacked: a single-column flex, so nothing can place two side by side.
-    expect(css).toMatch(
-      /\.ranking-band-tiles\s*{\s*display: flex;\s*flex-direction: column;/,
-    );
-    // The 50% exists once, inside the desktop half of the same breakpoint the
-    // rest of this page splits on — so mobile keeps the full width by having
-    // no width rule at all.
+  // Bloc 112: the range tiles' two layouts. Desktop is one row of three
+  // groups; a phone is four rows, which only works because the two position
+  // wrappers go display:contents there — that is what lets the percentile sit
+  // beside the result while the ranks sit beside the rewards, from one set of
+  // markup rather than two.
+  it("lays a Classement range tile out as one desktop row and four mobile rows", () => {
     const desktop = css.match(
       new RegExp(
-        `@media \\(min-width: ${narrowViewportMaxWidth + 1}px\\) {\\s*\\.ranking-band-tile {\\s*width: 50%;`,
+        `@media \\(min-width: ${narrowViewportMaxWidth + 1}px\\) \\{\\s*\\.ranking-range-tile \\{([\\s\\S]*?)\\n  \\}`,
       ),
+    )?.[1];
+    expect(desktop, "the desktop tile rule").toBeDefined();
+    expect(desktop).toMatch(/grid-template-columns: 230px minmax\(0, 1fr\)/);
+
+    const mobile = css.match(
+      new RegExp(
+        `@media \\(max-width: ${narrowViewportMaxWidth}px\\) \\{\\s*\\.ranking-range-tile \\{([\\s\\S]*?)\\n  \\}`,
+      ),
+    )?.[1];
+    expect(mobile, "the mobile tile rule").toBeDefined();
+    expect(mobile).toMatch(/"result percentile"/);
+    expect(mobile).toMatch(/"ranks rewards"/);
+    expect(mobile).toMatch(/"bar bar"/);
+    expect(mobile).toMatch(/"bubble bubble"/);
+    expect(css).toMatch(
+      /\.ranking-range-position,\s*\.ranking-range-position-top \{\s*display: contents;/,
     );
-    expect(desktop, "the desktop half-width rule").not.toBeNull();
-    const base = css.match(/\n\.ranking-band-tile\s*{([\s\S]*?)\n}/)?.[1];
-    expect(base, "the unconditional .ranking-band-tile rule").toBeDefined();
-    expect(base).not.toMatch(/width:/);
+  });
+
+  // The League Lock chip: beside the heading on a desktop row, under it on a
+  // phone. The header is a flex row unconditionally and only turns into a
+  // column at the breakpoint.
+  it("drops Classement's League Lock chip under the heading on a phone", () => {
+    expect(css).toMatch(
+      /\.ranking-ranges-header \{\s*display: flex;[\s\S]*?justify-content: space-between;/,
+    );
+    const mobile = css.match(
+      new RegExp(
+        `@media \\(max-width: ${narrowViewportMaxWidth}px\\) \\{\\s*\\.ranking-ranges-header \\{([\\s\\S]*?)\\n  \\}`,
+      ),
+    )?.[1];
+    expect(mobile, "the mobile header rule").toBeDefined();
+    expect(mobile).toMatch(/flex-direction: column;/);
+    expect(mobile).toMatch(/align-items: flex-start;/);
+  });
+
+  // The top range is 1% of the ladder and would otherwise be a hairline.
+  it("keeps the narrowest range segment visible", () => {
+    expect(css).toMatch(
+      /\.ranking-range-bar-segment \{[\s\S]*?min-width: 5px;/,
+    );
   });
 
   it("uses a two-column mobile grid for category tabs", () => {
@@ -203,6 +228,75 @@ describe("public responsive styles", () => {
     )?.[1];
     expect(mobileOverride).toBeDefined();
     expect(mobileOverride).toMatch(/white-space: normal;/);
+  });
+
+  // Bloc 112: the three result colors of the Classement range tiles carry
+  // running text (the target league) on a tile whose background is a band
+  // shade diluted onto the page background — so they must clear AA against
+  // EVERY shade the palette can produce, in both themes, not just against a
+  // flat --bg. The brief's own promotion green measured 4.27 on the lightest
+  // of them, which is why the light theme's is 3 points darker.
+  it("keeps Classement's result colors readable on every tinted tile", () => {
+    const dark = css.match(
+      /:root,\s*:root\[data-theme="dark"\]\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    const light = css.match(
+      /:root\[data-theme="light"\]\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(dark).toBeDefined();
+    expect(light).toBeDefined();
+    // The same dilution the stylesheet applies: 12% of the shade over --bg.
+    const tint = (shade: string, background: string) => {
+      const [a, b] = [rgb(shade), rgb(background)];
+      return `#${a
+        .map((channel, index) =>
+          Math.round(channel * 0.12 + b[index]! * 0.88)
+            .toString(16)
+            .padStart(2, "0"),
+        )
+        .join("")}`;
+    };
+    for (const theme of [dark!, light!]) {
+      const background = variable(theme, "--bg")!;
+      const tiles = rankCategoryShades.map((shade) => tint(shade, background));
+      for (const result of [
+        "--rank-promotion",
+        "--rank-stay",
+        "--rank-relegation",
+      ]) {
+        const color = variable(theme, result)!;
+        for (const tile of tiles)
+          expect(
+            contrast(color, tile),
+            `${result} on ${tile}`,
+          ).toBeGreaterThanOrEqual(4.5);
+        // And the ink inside the badge, which is filled with that same color.
+        expect(
+          contrast(variable(theme, "--rank-strong-ink")!, color),
+          `--rank-strong-ink on ${result}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      // The player's bubble is the same arrangement, on its own fixed hue.
+      expect(
+        contrast(
+          variable(theme, "--rank-player-ink")!,
+          variable(theme, "--rank-player")!,
+        ),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  // The player's marker must never be mistaken for a range's own color.
+  it("keeps the player's color out of the range palette", () => {
+    for (const theme of [
+      css.match(/:root,\s*:root\[data-theme="dark"\]\s*{([\s\S]*?)\n}/)?.[1],
+      css.match(/:root\[data-theme="light"\]\s*{([\s\S]*?)\n}/)?.[1],
+    ]) {
+      expect(theme).toBeDefined();
+      expect(rankCategoryShades).not.toContain(
+        variable(theme!, "--rank-player"),
+      );
+    }
   });
 
   it("keeps all four summary colors at readable contrast in both themes", () => {

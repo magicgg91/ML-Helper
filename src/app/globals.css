@@ -107,6 +107,21 @@
   /* Bloc 78/C: see .star-rating's own comment below — dark theme's
      --foreground was already fine here, so this just points at it. */
   --star-white: var(--foreground);
+  /* Bloc 112: Classement's range tiles. One color per RESULT — distinct from
+     the per-range band shades, which also vary with a range's position inside
+     its movement group. It paints the badge, the target league's name and the
+     bar segment, so it must clear 4.5:1 as text on the tinted tile: these are
+     the light-on-dark reads, the light theme below carries the dark ones, and
+     responsive-styles.test.ts measures both against every band shade.
+     --rank-strong-ink is what sits ON that color inside the badge. */
+  --rank-promotion: #7cc79d;
+  --rank-stay: #8bb4e4;
+  --rank-relegation: #e79a62;
+  --rank-strong-ink: #1b2029;
+  /* The player's own marker and bubble. Fixed to this one hue, never a band
+     shade, so "where you are" can never be confused with a range's color. */
+  --rank-player: #e0805f;
+  --rank-player-ink: #1b2029;
   color-scheme: dark;
 }
 
@@ -168,6 +183,16 @@
      "muted but legible" grey, ~4.9:1 against --surface) instead of
      inventing a new literal or touching --foreground itself. */
   --star-white: var(--text-dim);
+  /* Bloc 112, light theme: the dark reads of the same three results. Verified
+     at 4.83 / 4.93 / 4.56 against the lightest tile any band shade produces —
+     promotion is 3 points darker than the brief's #2f6a4c, which measured
+     4.27 there and would have missed AA. */
+  --rank-promotion: #2c6146;
+  --rank-stay: #34568a;
+  --rank-relegation: #8a4a1c;
+  --rank-strong-ink: #ffffff;
+  --rank-player: #a3341f;
+  --rank-player-ink: #ffffff;
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -1094,102 +1119,6 @@ select {
   border: 1px dashed var(--border);
   border-radius: 0.7rem;
   color: var(--muted);
-}
-/* Bloc 110/B: the estimated-players and League Lock lines that used to sit
-   here — .ranking-scale-total (Bloc 62/E, F) and .ranking-league-lock
-   (Bloc 108/D), a compact inline label+value each — are tiles now; see
-   .ranking-info-tiles at the end of this file. */
-.ranking-scale {
-  position: relative;
-  height: 9.5rem;
-  margin: 1rem 0.5rem 2.5rem;
-  padding: 0 0.5rem;
-}
-.ranking-scale-axis {
-  position: absolute;
-  left: 0.5rem;
-  right: 0.5rem;
-  top: 3.5rem;
-  height: 2px;
-  background: var(--border);
-}
-.ranking-scale-tick {
-  position: absolute;
-  top: 3.15rem;
-  width: 1px;
-  height: 0.85rem;
-  background: var(--text-faint);
-  opacity: 0.35;
-}
-.ranking-scale-tick-label {
-  position: absolute;
-  top: 4.1rem;
-  transform: translateX(-50%);
-  color: var(--text-faint);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.56rem;
-  opacity: 0.6;
-}
-.ranking-scale-segment {
-  position: absolute;
-  top: 3rem;
-  height: 0.9rem;
-  border-radius: 0.2rem;
-  border-inline: 1px solid var(--bg-panel);
-  /* Bloc 110/C: the 80%-opaque fill this has always had, derived from the
-     --band-color the component sets inline — the same property, from the same
-     map, that paints this interval's tile below. */
-  background: color-mix(in srgb, var(--band-color) 80%, transparent);
-}
-.ranking-scale-marker {
-  position: absolute;
-  top: 3.5rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  white-space: nowrap;
-  text-align: center;
-  font-family: var(--font-mono, monospace);
-}
-.ranking-scale-label {
-  position: absolute;
-}
-.ranking-scale-label-above {
-  bottom: 2.1rem;
-}
-.ranking-scale-label-below {
-  top: 2.1rem;
-}
-.ranking-scale-range {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent-strong);
-}
-.ranking-scale-target {
-  font-size: 0.6rem;
-  color: var(--emerald-bright);
-}
-.ranking-scale-player-line {
-  position: absolute;
-  top: 2.4rem;
-  bottom: 2.4rem;
-  width: 2px;
-  background: var(--ember);
-  transform: translateX(-50%);
-  z-index: 3;
-}
-.ranking-scale-player-line::after {
-  content: attr(data-pct);
-  position: absolute;
-  top: -1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--ember);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.62rem;
-  font-weight: 700;
-  white-space: nowrap;
 }
 .ranking-table-wrap {
   overflow-x: auto;
@@ -3182,8 +3111,8 @@ body > main h1 {
     justify-content: flex-start;
   }
 }
-/* Bloc 77/D: the season timeline — same visual principle as .ranking-scale
-   (Bloc 62/F) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
+/* Bloc 77/D: the season timeline — same visual principle as the 100%->0%
+   ranking scale (Bloc 62/F, removed at Bloc 112) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
    76/A all fought width/style regressions from reusing another feature's
    classes here): no percentile ticks or player-position line, since this
    isn't a 0–100% rank scale — segments are sized by cumulative event
@@ -4502,112 +4431,354 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   min-width: max-content;
 }
 
-/* Bloc 110/B: the two figures heading Classement's result zone — the
-   estimated player count and the League Lock — are tiles now, side by side at
-   every width. That is the deliberate exception to the full-width rule the
-   interval tiles below follow: they are the only pair of their kind on this
-   page. They flex-fill rather than sit in a fixed 2-column grid, so the
-   player-count tile spans the row on its own while no entry is picked yet and
-   the League Lock has nothing to show. */
-.ranking-info-tiles {
+/* ---------------------------------------------------------------------------
+   Bloc 112: Classement's "Plages de classement" section.
+
+   What it replaces: the estimated-players tile (the last range's upper bound
+   already is that number), the single 100%->0% scale (every tile carries its
+   own bar now) and the League Lock tile (a chip in the header now). Nothing
+   here computes anything — the ranges, ranks, rewards and the player's own
+   percentage all arrive already calculated.
+   --------------------------------------------------------------------------- */
+
+/* Heading on the left, the header's chips on the right; on a phone they drop
+   under the heading, left aligned. The League Lock is always one of them; the
+   estimated player count joins it only when no range tile ends on that number
+   (Codex review, PR #139). */
+.ranking-ranges-header {
   display: flex;
-  /* Never folds — "side by side, mobile included" is the requirement, so this
-     must not fall back to a stack at 390px. */
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.9rem;
 }
-.ranking-info-tiles > .ranking-info-tile {
-  flex: 1 1 0;
-  min-width: 0;
+.ranking-ranges-header .calculator-heading {
+  margin: 0;
 }
-/* .calculator-stat puts the label and the value at opposite ends of one line.
-   Half a phone's width is not enough for that, so this pair stacks: label
-   above, value below — the .total-box tile's own native shape. */
-.ranking-info-tile {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0.2rem;
+@media (max-width: 900px) {
+  .ranking-ranges-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
-.ranking-info-tile .value {
-  /* .calculator-stat strong right-aligns its value for the inline form; under
-     its own label it reads left. Size kept at what .ranking-scale-total
-     carried, so the figure has exactly the weight it had before. */
-  text-align: left;
-  font-size: 1.05rem;
-  /* "Aucune — pas assez de paliers en dessous" has to wrap inside the tile
-     rather than push it past its half of the row. */
-  overflow-wrap: anywhere;
+.ranking-header-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+@media (max-width: 900px) {
+  .ranking-header-chip {
+    padding: 6px 12px;
+  }
+}
+.ranking-header-chip-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ranking-header-chip-value {
+  color: var(--accent-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+/* The line icons size themselves to their own text unless told otherwise. */
+.ranking-icon {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+.ranking-header-chip > .ranking-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--muted);
 }
 
-/* Bloc 110/C+D: one tile per interval, in place of the summary table's rows.
-   Full width on a phone; half width on desktop and stacked one per line, NOT
-   two abreast. They keep the card's left edge — the same line the heading
-   above and the scale beside them start on — which is the choice the brief
-   left open between centred and left-aligned. */
-.ranking-band-tiles {
+.ranking-range-tiles {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin: 0.75rem 0 0;
+  gap: 0.6rem;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
-@media (min-width: 901px) {
-  .ranking-band-tile {
-    width: 50%;
-  }
-}
-.ranking-band-tile {
-  padding: 0.6rem 0.8rem;
-  /* The color of this interval's own segment on the scale above: a full-height
-     edge plus a wash of the same hue. --band-color is set inline by the
-     component, from the single map the scale reads too (rankBandShades), so
-     the two can never disagree. */
-  border-left: 4px solid var(--band-color);
+.ranking-range-tile {
+  position: relative;
+  /* Clips the accent bar to the tile's own rounded corners. */
+  overflow: hidden;
+  border-radius: 12px;
+  /* The band shade — computed per range, set inline by the component — in its
+     two diluted forms. The strong color below is the result's, not the
+     range's: two Maintien ranges wear different shades but the same blue. */
+  border: 1px solid color-mix(in srgb, var(--band-color) 28%, var(--bg));
   background: color-mix(in srgb, var(--band-color) 12%, var(--bg));
 }
-.ranking-band-tile-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 0.75rem;
+.ranking-range-promotion {
+  --rank-strong: var(--rank-promotion);
 }
-.ranking-band-range {
+.ranking-range-stay {
+  --rank-strong: var(--rank-stay);
+}
+.ranking-range-relegation {
+  --rank-strong: var(--rank-relegation);
+}
+.ranking-range-accent {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 6px;
+  background: var(--band-color);
+}
+
+/* Desktop: one row, three groups — what the range leads to, where it sits,
+   what it pays. The rewards' track grows past its 260px floor rather than
+   letting three 116px tiles (Bronze through Or grant all three) spill over
+   the middle group. */
+@media (min-width: 901px) {
+  .ranking-range-tile {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr) minmax(260px, auto);
+    gap: 28px;
+    align-items: center;
+    padding: 12px 16px 12px 30px;
+  }
+  .ranking-range-position {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .ranking-range-position-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+
+/* Mobile: four rows. The two position wrappers go display:contents so their
+   children become grid items of the tile itself — that is what lets the
+   percentile sit beside the result on row 1 while the ranks sit beside the
+   rewards on row 2, without a second copy of the markup. */
+@media (max-width: 900px) {
+  .ranking-range-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    grid-template-areas:
+      "result percentile"
+      "ranks rewards"
+      "bar bar"
+      "bubble bubble";
+    gap: 10px;
+    padding: 12px 12px 12px 18px;
+  }
+  .ranking-range-position,
+  .ranking-range-position-top {
+    display: contents;
+  }
+  .ranking-range-result {
+    grid-area: result;
+  }
+  .ranking-range-percentile {
+    grid-area: percentile;
+    justify-self: end;
+    align-self: center;
+  }
+  .ranking-range-ranks {
+    grid-area: ranks;
+  }
+  .ranking-range-rewards {
+    grid-area: rewards;
+    /* Three mini-tiles do not fit beside the ranks on a 393px screen, so they
+       fold within their own column instead of pushing the tile off the page. */
+    flex-wrap: wrap;
+  }
+  .ranking-range-bar {
+    grid-area: bar;
+  }
+  .ranking-player-bubble {
+    grid-area: bubble;
+    justify-self: start;
+  }
+  .ranking-range-accent {
+    width: 5px;
+  }
+}
+
+.ranking-range-result {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.ranking-range-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--rank-strong);
+  color: var(--rank-strong-ink);
+}
+.ranking-range-badge > .ranking-icon {
+  width: 20px;
+  height: 20px;
+}
+.ranking-range-result-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ranking-range-verb {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-range-league {
+  color: var(--rank-strong);
+  font-size: 20px;
+  font-weight: 600;
+  /* An admin can type a free name of any length; it wraps rather than pushing
+     the tile wider (the standing Bloc 69/F rule, applied here). */
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .ranking-range-badge {
+    width: 34px;
+    height: 34px;
+  }
+  .ranking-range-badge > .ranking-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .ranking-range-verb {
+    font-size: 12px;
+  }
+  .ranking-range-league {
+    font-size: 17px;
+  }
+}
+
+.ranking-range-ranks {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.ranking-range-ranks-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-range-ranks-value {
   color: var(--accent-strong);
   font-family: var(--font-mono, monospace);
-  font-size: 0.95rem;
+  font-size: 24px;
   font-weight: 700;
+  white-space: nowrap;
 }
-.ranking-band-target {
-  color: var(--emerald-text);
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-/* The rank range and the 3 reward types, each under its own name — the
-   table's headers, carried over: Bloc 108/H's rule is that a type is always
-   named and nothing at all is drawn when its quantity is 0. */
-.ranking-band-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
-  gap: 0.35rem 0.6rem;
-  margin: 0.5rem 0 0;
-}
-.ranking-band-fact dt {
+.ranking-range-percentile {
   color: var(--text-dim);
-  font-size: 0.68rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
 }
-.ranking-band-fact dd {
-  margin: 0;
-  /* An empty reward keeps its line, so the four facts stay on one baseline —
-     Bloc 108/H's empty cell, in tile form. */
-  min-height: 1.2em;
+@media (max-width: 900px) {
+  .ranking-range-ranks-label {
+    font-size: 12px;
+  }
+  .ranking-range-ranks-value {
+    font-size: 21px;
+  }
+  .ranking-range-percentile {
+    font-size: 14px;
+  }
 }
-.ranking-band-tile .ranking-band-facts .value {
-  /* .total-box .value's 19px is meant for a tile's single headline figure,
-     not for four of them side by side. */
-  font-size: 0.85rem;
+
+/* The ladder from best (left) to worst (right), with this range's slice on
+   it. Decorative: the percentile and the player's position are both written
+   out as text on the tile. */
+.ranking-range-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.ranking-range-bar-segment {
+  position: absolute;
+  inset-block: 0;
+  /* The top range is 1% wide and would otherwise be a hairline. */
+  min-width: 5px;
+  border-radius: 999px;
+  background: var(--rank-strong);
+}
+.ranking-range-bar-player {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  /* Centred on the percentage rather than starting at it, so the line marks
+     the value itself. */
+  transform: translateX(-50%);
+  background: var(--rank-player);
+}
+.ranking-player-bubble {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rank-player);
+  color: var(--rank-player-ink);
+  font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Only the rewards a range actually grants. */
+.ranking-range-rewards {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ranking-reward-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 116px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-panel-raised) 60%, transparent);
+}
+.ranking-reward-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-reward-value {
+  color: var(--foreground);
+  font-family: var(--font-mono, monospace);
+  font-size: 18px;
+  font-weight: 700;
+}
+@media (max-width: 900px) {
+  .ranking-reward-tile {
+    width: 84px;
+    padding: 6px 10px;
+  }
+  .ranking-reward-label {
+    font-size: 12px;
+  }
+  .ranking-reward-value {
+    font-size: 16px;
+  }
 }
