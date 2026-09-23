@@ -174,7 +174,9 @@ describe("Bloc 63/B: the level range is the same wherever it is written down", (
 
   it("seeds the e2e database on that same maxLevel", () => {
     // A third copy of the number, and the one the end-to-end suite reads.
-    const seed = readFileSync("prisma/setup-e2e.ts", "utf8");
+    // Bloc 121 moved the seeding out of setup-e2e.ts (now a thin command) and
+    // into e2e-seed.ts, so the suite can replay it between attempts.
+    const seed = readFileSync("prisma/e2e-seed.ts", "utf8");
     expect(Number(/maxLevel:\s*(\d+)/.exec(seed)![1])).toBe(
       defaultLevelUpParameters.maxLevel,
     );
