@@ -994,47 +994,42 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "Éditer les Équipements de Combat",
     }),
   ).toBeVisible({ timeout: 15_000 });
-  // Bloc 35/6.1: the page also renders the Pouciel/gem-slots-per-rarity
-  // editors alongside the main table — Bloc 41/D moved them ahead of it, so
-  // scope to the last table (the main one) rather than every tbody row on
-  // the page.
-  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
-    180,
-    { timeout: 15_000 },
-  );
-  await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
+  // Bloc 119: the 180 rows are grouped into the sets they belong to, folded
+  // by default — the whole point of the rewrite. Unfold one and its own rows
+  // are there, with the set's name on the header rather than repeated on
+  // every row.
+  const firstSet = page
+    .getByRole("button", { name: /emplacements$|emplacement$/ })
+    .first();
+  await expect(firstSet).toBeVisible({ timeout: 15_000 });
+  await expect(firstSet).toHaveAttribute("aria-expanded", "false");
+  await firstSet.click();
+  await expect(page.getByLabel("Ligne 1 Compétence 1")).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements d’Expédition/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  // The page also renders the (single-row) star-increments editor above
-  // this table (Bloc 29/A), so scope to the last table on the page rather
-  // than every tbody row.
-  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
-    120,
-  );
+  // Same grouping on Expédition's 120 rows.
   await expect(
-    page.getByLabel("Expédition ligne 1 Nom du set"),
-  ).not.toHaveValue("");
-  // Regression check: Bloc 37/E replaced this page's per-table save
-  // buttons with a single top action bar that saves every table (star
-  // increments, merge-cost, dismantle, main reference) in one click — edit
-  // two of them and confirm one save persists both, not just the last one
-  // touched.
-  await page.getByLabel("Ligne 1 Or").fill("0.5");
-  const mergeCostSection = page.locator(".editable-reference").nth(1);
-  await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
+    page.getByRole("button", { name: /emplacements$|emplacement$/ }).first(),
+  ).toBeVisible({ timeout: 15_000 });
+  // Regression check: Bloc 37/E replaced this page's per-table save buttons
+  // with a single action that saves every table (star increments,
+  // merge-cost, dismantle, main reference) in one click — edit two of them
+  // and confirm one save persists both, not just the last one touched.
+  await page.getByLabel("Or", { exact: true }).fill("0,5");
+  await page.getByLabel("Libellé de l’indicateur 1 Commun").fill("700");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   // Wait for the async save to actually complete before reloading, or the
   // reload can race ahead of the PUT requests and read back stale defaults.
-  await expect(page.getByText("Référentiel enregistré.")).toBeVisible();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
-  await expect(
-    page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
-  ).toHaveValue("700");
+  await expect(page.getByLabel("Or", { exact: true })).toHaveValue("0,5");
+  await expect(page.getByLabel("Libellé de l’indicateur 1 Commun")).toHaveValue(
+    "700",
+  );
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row

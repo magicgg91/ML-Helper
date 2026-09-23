@@ -87,6 +87,14 @@ describe("Bloc 119: the admin's number field", () => {
     expect(field).toHaveValue("1");
   });
 
+  it("survives a value that is not a number at all", () => {
+    // A stored field holding text arrives as Number(text), which is NaN — and
+    // NaN never equals itself, so a `!==` re-seed would re-render forever.
+    // The equipment reference found this one.
+    expect(() => renderField({ value: Number.NaN })).not.toThrow();
+    expect(screen.getByLabelText("Ratio")).toHaveValue("");
+  });
+
   it("keeps a label for the screen reader even when the column carries it", () => {
     renderField({ label: "Bronze — coefficient", hideLabel: true });
     expect(screen.getByLabelText("Bronze — coefficient")).toBeInTheDocument();

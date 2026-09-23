@@ -65,7 +65,10 @@ export function NumberField({
   // the old text first, and this runs only when the owner really changed the
   // value under us (Annuler, a save that echoes what was stored).
   const [lastValue, setLastValue] = useState(value);
-  if (value !== lastValue) {
+  // Object.is, not !==: a caller handing this a NaN (a field whose stored
+  // text is not a number) would otherwise never compare equal to itself, and
+  // the re-seed would loop forever.
+  if (!Object.is(value, lastValue)) {
     setLastValue(value);
     setText(formatAdminNumber(value, locale));
   }
