@@ -1,6 +1,13 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { launchRecord } from "@/lib/translations";
 import { GuideEditor } from "./guide-editor";
+
+// Bloc 120: one blank draft per launched locale, so these fixtures follow
+// messages/ the way the editor does — adding a language must not mean
+// editing every test that builds a translations record by hand.
+const blankDrafts = () =>
+  launchRecord(() => ({ title: "", excerpt: "", content: "" }));
 import { renderWithIntl as render } from "../test/render-with-intl";
 
 const replace = vi.fn();
@@ -32,6 +39,7 @@ describe("GuideEditor", () => {
           coverImage: "",
           status: "draft",
           translations: {
+            ...blankDrafts(),
             fr: {
               title: "Titre FR",
               excerpt: "Résumé FR",
@@ -42,9 +50,6 @@ describe("GuideEditor", () => {
               excerpt: "English summary",
               content: "English content",
             },
-            de: { title: "", excerpt: "", content: "" },
-            es: { title: "", excerpt: "", content: "" },
-            tr: { title: "", excerpt: "", content: "" },
           },
         }}
       />,
@@ -83,11 +88,9 @@ describe("GuideEditor", () => {
           coverImage: "",
           status: "draft",
           translations: {
+            ...blankDrafts(),
             fr: { title: "Titre", excerpt: "Résumé", content: "~~ancien~~" },
             en: { title: "Title", excerpt: "Summary", content: "" },
-            de: { title: "", excerpt: "", content: "" },
-            es: { title: "", excerpt: "", content: "" },
-            tr: { title: "", excerpt: "", content: "" },
           },
         }}
       />,

@@ -1,13 +1,30 @@
+import { launchLocales } from "./launch-locales.generated";
+
 // Bloc 44: DE/ES/TR activated (files delivered, structure verified against
 // en.json). Polish is still planned but has no messages file, so it is not
 // listed here — Bloc 93/F2 dropped the separate `plannedLocales` constant
 // that recorded it, since nothing ever read it.
-export const launchLocales = ["fr", "en", "de", "es", "tr"] as const;
+//
+// Bloc 120: the list is no longer written here. It is derived from the
+// contents of messages/ by scripts/generate-launch-locales.ts, which runs
+// before dev, build and test, so adding a language is adding a file and
+// nothing else — the promise section 3.3 of the cahier des charges makes.
+// The generated module is a plain array of string literals, which is what
+// lets this stay importable from a client component and keeps the locale
+// segments statically prerenderable; that script's header explains why the
+// alternative (reading the directory at runtime) cannot work here.
+export { launchLocales };
 export type LaunchLocale = (typeof launchLocales)[number];
-// Bloc 91/E1: the site's default locale, kept here (Edge-safe, no node:fs)
-// so src/i18n/routing.ts — imported by the Edge middleware — can reach it
-// without pulling in src/i18n/config.ts's filesystem reads. Mirrors
-// config.ts's own defaultLocale.
+// Bloc 91/E1: the site's default locale, kept here (no node:fs) so
+// src/i18n/routing.ts — imported by the proxy — can reach it without pulling
+// in src/i18n/config.ts's filesystem reads. Mirrors config.ts's own
+// defaultLocale.
+//
+// Deliberately still written by hand: which language a visitor lands in is a
+// product decision, not a consequence of which files exist. Typing it against
+// the derived union is the guard — delete messages/fr.json and this line
+// stops compiling rather than silently pointing at a locale the site no
+// longer ships.
 export const defaultLaunchLocale: LaunchLocale = "fr";
 
 /**

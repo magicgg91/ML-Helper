@@ -21,6 +21,19 @@ describe("page-metadata (Bloc 91/E2+E3)", () => {
     expect(ogLocale("unknown")).toBe("fr_FR");
   });
 
+  // Bloc 120: a language added as a messages/*.json file gets its own
+  // og:locale. This used to be a five-entry table whose default was "fr_FR",
+  // so a sixth language would have told every crawler and share card that its
+  // pages were French.
+  it("derives the code of a language the exception table does not name", () => {
+    expect(ogLocale("pl")).toBe("pl_PL");
+    expect(ogLocale("it")).toBe("it_IT");
+    // English is the exception the table exists for.
+    expect(ogLocale("en")).toBe("en_US");
+    // A regional code keeps its own region rather than repeating the language.
+    expect(ogLocale("pt-br")).toBe("pt_BR");
+  });
+
   it("builds canonical, hreflang, Open Graph and Twitter for a page", () => {
     const meta = pageMetadata({
       locale: "en",

@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { launchLocales, launchRecord } from "@/lib/translations";
 import { LegalNoticeEditor } from "./legal-notice-editor";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
@@ -14,7 +15,9 @@ describe("LegalNoticeEditor", () => {
     const fetch = vi.spyOn(globalThis, "fetch");
     render(
       <LegalNoticeEditor
-        initialContent={{ fr: "## Texte", en: "", de: "", es: "", tr: "" }}
+        initialContent={launchRecord((locale) =>
+          locale === "fr" ? "## Texte" : "",
+        )}
       />,
     );
     const saveButton = screen.getByRole("button", { name: "Enregistrer" });
@@ -45,13 +48,13 @@ describe("LegalNoticeEditor", () => {
       .mockResolvedValue(new Response(null, { status: 200 }));
     render(
       <LegalNoticeEditor
-        initialContent={{
-          fr: "## Ancien texte",
-          en: "## Old text",
-          de: "",
-          es: "",
-          tr: "",
-        }}
+        initialContent={launchRecord((locale) =>
+          locale === "fr"
+            ? "## Ancien texte"
+            : locale === "en"
+              ? "## Old text"
+              : "",
+        )}
       />,
     );
 
@@ -82,13 +85,13 @@ describe("LegalNoticeEditor", () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
-      content: {
-        fr: "## Nouveau\n\nTexte légal",
-        en: "## Old text",
-        de: "",
-        es: "",
-        tr: "",
-      },
+      content: launchRecord((locale) =>
+        locale === "fr"
+          ? "## Nouveau\n\nTexte légal"
+          : locale === "en"
+            ? "## Old text"
+            : "",
+      ),
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Mentions légales enregistrées.",
@@ -101,13 +104,13 @@ describe("LegalNoticeEditor", () => {
       .mockResolvedValue(new Response(null, { status: 200 }));
     render(
       <LegalNoticeEditor
-        initialContent={{
-          fr: "## Ancien texte",
-          en: "## Old text",
-          de: "",
-          es: "",
-          tr: "",
-        }}
+        initialContent={launchRecord((locale) =>
+          locale === "fr"
+            ? "## Ancien texte"
+            : locale === "en"
+              ? "## Old text"
+              : "",
+        )}
       />,
     );
 
@@ -121,33 +124,37 @@ describe("LegalNoticeEditor", () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toEqual({
-      content: {
-        fr: "## Ancien texte",
-        en: "## Updated legal text",
-        de: "",
-        es: "",
-        tr: "",
-      },
+      content: launchRecord((locale) =>
+        locale === "fr"
+          ? "## Ancien texte"
+          : locale === "en"
+            ? "## Updated legal text"
+            : "",
+      ),
     });
   });
 
   // Bloc 44: DE/ES/TR are selectable alongside FR/EN in the same dropdown.
-  it("offers all 5 activated locales in the language selector", () => {
+  // Bloc 120: and so is any language added as a messages/*.json file — the
+  // dropdown follows launchLocales, so this asserts that rather than a list
+  // that would need editing the day a sixth arrives.
+  it("offers every launched locale in the language selector", () => {
     render(
       <LegalNoticeEditor
-        initialContent={{
-          fr: "## Ancien texte",
-          en: "## Old text",
-          de: "",
-          es: "",
-          tr: "",
-        }}
+        initialContent={launchRecord((locale) =>
+          locale === "fr"
+            ? "## Ancien texte"
+            : locale === "en"
+              ? "## Old text"
+              : "",
+        )}
       />,
     );
     const select = screen.getByLabelText("Langue du contenu");
     const options = Array.from(select.querySelectorAll("option")).map(
       (option) => option.textContent,
     );
-    expect(options).toEqual(["FR", "EN", "DE", "ES", "TR"]);
+    expect(options).toEqual(launchLocales.map((l) => l.toUpperCase()));
+    expect(options.length).toBeGreaterThan(2);
   });
 });

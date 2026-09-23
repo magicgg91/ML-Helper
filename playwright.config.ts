@@ -20,6 +20,13 @@ export default defineConfig({
   webServer: {
     command: "pnpm test:e2e:prepare && pnpm dev",
     url: "http://127.0.0.1:3000",
+    // Bloc 120: `pnpm dev` now derives the locale list before starting Next
+    // (scripts/generate-launch-locales.ts), and the first request still has to
+    // compile the route through Turbopack from a cold cache. The two together
+    // measured close enough to Playwright's 60s default to have timed the
+    // suite out once while writing this bloc. Three minutes is room, not a
+    // mask: a server that never comes up still fails the run.
+    timeout: 180_000,
     reuseExistingServer: !process.env.CI,
     env: {
       DATABASE_URL: "file:./e2e.db",

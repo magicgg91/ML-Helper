@@ -15,16 +15,24 @@ const brandSuffix = " | ML-Helper · Million Lords";
 export const titleTemplate = `%s${brandSuffix}`;
 
 // Open Graph locale codes (og:locale expects e.g. "fr_FR", not "fr").
-const ogLocaleByLocale: Record<string, string> = {
-  fr: "fr_FR",
-  en: "en_US",
-  de: "de_DE",
-  es: "es_ES",
-  tr: "tr_TR",
-};
+//
+// Bloc 120: an exception table, no longer the whole list. A language's region
+// cannot be read off its file name — English is en_US, not en_EN — so the
+// ones that differ from the language-repeated form are named here and the
+// rest are derived. The previous version fell back to "fr_FR" for anything it
+// did not list, which would have tagged a newly-added language's pages as
+// French to every crawler and share card.
+const ogRegionExceptions: Record<string, string> = { en: "US" };
+const localeCode = /^([a-z]{2})(?:-([a-z]{2}))?$/i;
 
 export function ogLocale(locale: string): string {
-  return ogLocaleByLocale[locale] ?? "fr_FR";
+  const match = localeCode.exec(locale);
+  // Anything that is not a locale code keeps the previous safe default rather
+  // than producing a malformed og:locale out of it.
+  if (!match) return "fr_FR";
+  const [, language, region] = match;
+  const code = language.toLowerCase();
+  return `${code}_${(ogRegionExceptions[code] ?? region ?? code).toUpperCase()}`;
 }
 
 // The site-wide generated share image (src/app/opengraph-image.tsx). metadataBase

@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GuidesAdminPage from "./page";
+import { launchRecord } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/auth/require-session";
 
@@ -63,9 +64,9 @@ describe("GuidesAdminPage", () => {
 
     const heading = screen.getByText("eyebrow").parentElement;
     expect(heading).toHaveClass("admin-section-heading");
-    expect(
-      screen.getByRole("link", { name: "new" }).parentElement,
-    ).toBe(heading);
+    expect(screen.getByRole("link", { name: "new" }).parentElement).toBe(
+      heading,
+    );
   });
 
   it("Bloc55/B: still puts the 'Nouveau' link next to the eyebrow title when guides exist", async () => {
@@ -90,9 +91,9 @@ describe("GuidesAdminPage", () => {
 
     const heading = screen.getByText("eyebrow").parentElement;
     expect(heading).toHaveClass("admin-section-heading");
-    expect(
-      screen.getByRole("link", { name: "new" }).parentElement,
-    ).toBe(heading);
+    expect(screen.getByRole("link", { name: "new" }).parentElement).toBe(
+      heading,
+    );
   });
 
   // Bloc 55/C: only locales with real written content (hasLocalizedText, no
@@ -130,19 +131,11 @@ describe("GuidesAdminPage", () => {
     render(await GuidesAdminPage());
 
     const rows = JSON.parse(screen.getByTestId("rows").textContent ?? "[]");
-    expect(rows[0].languages).toEqual({
-      fr: true,
-      en: true,
-      de: false,
-      es: false,
-      tr: false,
-    });
-    expect(rows[1].languages).toEqual({
-      fr: true,
-      en: false,
-      de: false,
-      es: false,
-      tr: false,
-    });
+    expect(rows[0].languages).toEqual(
+      launchRecord((locale) => locale === "fr" || locale === "en"),
+    );
+    expect(rows[1].languages).toEqual(
+      launchRecord((locale) => locale === "fr"),
+    );
   });
 });

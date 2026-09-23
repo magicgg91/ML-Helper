@@ -4,7 +4,8 @@ import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
-import { dropEmptyLocales } from "@/lib/translations";
+import { alwaysActiveLocales } from "@/lib/locale-settings";
+import { dropEmptyLocales, launchLocales } from "@/lib/translations";
 
 // Bloc 44: fr/en stay required (unchanged) — DE/ES/TR are activated but
 // their content arrives gradually via admin, never invented here. Bloc 44
@@ -18,14 +19,24 @@ const optionalLocale = z
   .max(100_000)
   .optional()
   .transform((value) => value ?? "");
+// Bloc 120: one field per launched locale, built from launchLocales rather
+// than listed. Spelled out, a language added as a messages/*.json file would
+// have reached the editor's dropdown and then been silently dropped here —
+// Zod strips what the schema does not declare, so the save would have
+// succeeded and the text vanished.
 const schema = z.object({
-  content: z.object({
-    fr: requiredLocale,
-    en: requiredLocale,
-    de: optionalLocale,
-    es: optionalLocale,
-    tr: optionalLocale,
-  }),
+  content: z.object(
+    Object.fromEntries(
+      launchLocales.map((locale) => [
+        locale,
+        (alwaysActiveLocales as readonly string[]).includes(locale)
+          ? requiredLocale
+          : optionalLocale,
+      ]),
+      // Same widening as in services/guides.ts: fromEntries loses the keys and
+      // the two branches are different Zod classes parsing to the same string.
+    ) as unknown as Record<string, z.ZodType<string, unknown>>,
+  ),
 });
 
 export async function PATCH(request: Request) {

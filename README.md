@@ -99,6 +99,36 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
+## Adding a language
+
+Add `messages/<locale>.json` — a two-letter code, or `pt-br` for a regional
+one — and that is the whole change. The list the site routes on is derived
+from the files present in `messages/` by
+`scripts/generate-launch-locales.ts`, which `pnpm dev`, `pnpm build` and
+`pnpm test` each run first (and `pnpm install` after it, through
+`postinstall`). It writes `src/lib/launch-locales.generated.ts`, which is
+git-ignored: never edit it, and never commit it.
+
+Two things the new file itself must respect:
+
+- Start from `messages/en.json` and **drop the `admin`, `login` and `roles`
+  namespaces**. The admin interface is English and French only (Bloc 118) and
+  a test fails if another language carries it.
+- Missing keys fall back to English, so a partial translation is fine; an
+  empty string is not, and is also checked.
+
+The language is then live on the public site and appears in
+Admin → Configuration, where it can be switched off like any other. Only the
+site's default (`defaultLaunchLocale`, French) and the always-active EN/FR
+base are still decided in code, because those are product choices rather than
+a consequence of which files exist.
+
+To run the derivation on its own:
+
+```sh
+pnpm locales:generate
+```
+
 ## Vérification visuelle du prototype
 
 Le projet ne dispose pas encore d'un service de snapshots visuels avec images de référence. Avant validation d'une modification d'interface, vérifier manuellement les points suivants dans les deux thèmes :

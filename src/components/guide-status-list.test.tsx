@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { launchRecord } from "@/lib/translations";
 import { GuideStatusList, type GuideAdminRow } from "./guide-status-list";
 import { renderWithIntl as render } from "../test/render-with-intl";
 
@@ -12,7 +13,7 @@ const row: GuideAdminRow = {
   updatedAt: "01/01/2026",
   status: "draft",
   active: true,
-  languages: { fr: true, en: false, de: false, es: false, tr: false },
+  languages: launchRecord((locale) => locale === "fr"),
 };
 
 afterEach(() => {
@@ -93,7 +94,9 @@ describe("GuideStatusList", () => {
           {
             ...row,
             id: "guide-multi",
-            languages: { fr: true, en: true, de: false, es: false, tr: false },
+            languages: launchRecord(
+              (locale) => locale === "fr" || locale === "en",
+            ),
           },
         ]}
         canPublish={false}
@@ -120,7 +123,7 @@ describe("GuideStatusList", () => {
           {
             ...row,
             id: "guide-mono",
-            languages: { fr: true, en: false, de: false, es: false, tr: false },
+            languages: launchRecord((locale) => locale === "fr"),
           },
         ]}
         canPublish={false}
@@ -128,9 +131,9 @@ describe("GuideStatusList", () => {
         canWrite={true}
       />,
     );
-    expect(
-      screen.getByTestId("guide-language-guide-mono-fr"),
-    ).not.toHaveClass("opacity-40");
+    expect(screen.getByTestId("guide-language-guide-mono-fr")).not.toHaveClass(
+      "opacity-40",
+    );
     for (const locale of ["en", "de", "es", "tr"]) {
       expect(
         screen.getByTestId(`guide-language-guide-mono-${locale}`),

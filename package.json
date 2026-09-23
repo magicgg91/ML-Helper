@@ -3,16 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
+    "build": "pnpm locales:generate && next build",
+    "check": "pnpm lint && pnpm format:check && pnpm test",
+    "dev": "pnpm locales:generate && next dev",
     "format:check": "prettier --check .",
-    "test": "vitest run",
+    "lint": "eslint .",
+    "locales:generate": "tsx scripts/generate-launch-locales.ts",
+    "postinstall": "tsx scripts/generate-launch-locales.ts --if-present",
+    "prisma:generate": "prisma generate",
+    "start": "next start",
+    "test": "pnpm locales:generate && vitest run",
     "test:e2e": "playwright test",
     "test:e2e:prepare": "tsx prisma/setup-e2e.ts",
-    "prisma:generate": "prisma generate",
-    "check": "pnpm lint && pnpm format:check && pnpm test"
+    "typecheck": "pnpm locales:generate && tsc --noEmit"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
