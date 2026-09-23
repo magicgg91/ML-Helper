@@ -1,10 +1,13 @@
 /**
- * Bloc 113: the line icons of the Villes tool's tiles.
+ * Bloc 113, widened by Bloc 114: the line icons of the tools' tiles.
  *
  * They replace the 💰/⚔️ emoji the headings used to carry: an emoji is a
  * different glyph on every platform, is read aloud by screen readers, and
  * cannot take the tile's own color. These are stroke SVG on currentColor,
  * decorative, and sized by the tile.
+ *
+ * Bloc 114 moved the file out of a "city-" name: the Combat tool reuses
+ * SwordsIcon for its maximum-troops tile, and adds the three below.
  */
 
 import { strokeIcon } from "./icon-base";
@@ -76,6 +79,43 @@ export function ChestIcon() {
       <rect x="3" y="10" width="18" height="9" rx="2" />
       <path d="M3 14h18" />
       <path d="M10 14h4v3h-4z" />
+    </svg>
+  );
+}
+
+/** Je suis l'attaquant — a single raised sword. */
+export function SwordIcon() {
+  return (
+    <svg className="tool-icon" {...strokeIcon}>
+      <path d="M18 3h3v3l-9 9-3-3z" />
+      <path d="M9 12l-5 5" />
+      <path d="M4 17l3 3" />
+      <path d="M2 19l3 3" />
+    </svg>
+  );
+}
+
+/** Je suis la cible — a shield. */
+export function ShieldIcon() {
+  return (
+    <svg className="tool-icon" {...strokeIcon}>
+      <path d="M12 3l8 3v6c0 4.2-3.2 7.9-8 9-4.8-1.1-8-4.8-8-9V6z" />
+    </svg>
+  );
+}
+
+/** Remparts de la cible — a crenellated wall. */
+export function WallIcon() {
+  return (
+    <svg className="tool-icon" {...strokeIcon}>
+      <path d="M3 8V5h3v3h4V5h4v3h4V5h3v3" />
+      <rect x="3" y="8" width="18" height="11" />
+      <path d="M3 13.5h18" />
+      <path d="M9 8v5.5" />
+      <path d="M15 8v5.5" />
+      <path d="M12 13.5V19" />
+      <path d="M6 13.5V19" />
+      <path d="M18 13.5V19" />
     </svg>
   );
 }

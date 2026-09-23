@@ -122,6 +122,7 @@
     "skills": "Fähigkeiten",
     "count": "{count, plural, =0 {Kein Werkzeug verfügbar} one {# Werkzeug verfügbar} other {# Werkzeuge verfügbar}}",
     "comingSoon": "Demnächst verfügbar",
+    "comingSoonShort": "Bald",
     "unavailable": "Derzeit nicht verfügbar",
     "navigation-label": "Werkzeugkategorien",
     "city-tabs": "Stadt-Werkzeuge",
@@ -268,7 +269,6 @@
   },
   "xp-gain-rate": {
     "name": "XP-Gewinnrate",
-    "mode-label": "XP-Berechnungsmodus",
     "modes": {
       "attacker": "Ich bin der Angreifer",
       "target": "Ich bin das Ziel"
@@ -277,9 +277,11 @@
       "my-vp": "Meine VP",
       "unit": "VP-Einheit"
     },
-    "columns": {
-      "rate": "XP-Gewinnrate",
-      "opponent-vp": "VP-Bereich des Gegners"
+    "of-xp": "XP",
+    "opponent-vp": "Gegner-VP",
+    "xp-for": {
+      "attacker": "für mich",
+      "target": "für den Angreifer"
     }
   },
   "demo-attack-troops": {
@@ -290,7 +292,10 @@
       "league": "Liga des Angreifers"
     },
     "wall": "Zielmauern",
-    "maximum": "Maximale Truppen"
+    "maximum": "Maximale Truppen",
+    "result-title": "Angriff auf eine Stadt der Stufe {level}",
+    "recall": "Angreifer {league} · Stadt Stufe {level}",
+    "recall-short": "Angreifer {league}"
   },
   "ranking": {
     "name": "Rangliste",

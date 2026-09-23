@@ -191,6 +191,31 @@ describe("public responsive styles", () => {
     expect(mobile).not.toMatch(/overflow-wrap: anywhere;/);
   });
 
+  // Bloc 114/A.1: the Combat sub-tabs wrap 2 per row on a phone as a real
+  // grid — flex-wrap packs the three short labels on one line and strands
+  // the long one, the same way it did for the Outils category nav.
+  it("wraps the Combat sub-tabs two per row on a phone", () => {
+    const mobile = css.match(
+      /\n  \.city-calculators nav\.calculator-tabs \{([\s\S]*?)\n  \}/,
+    )?.[1];
+    expect(mobile, "the mobile sub-tab rule").toBeDefined();
+    expect(mobile).toMatch(/display: grid;/);
+    expect(mobile).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+  });
+
+  // Bloc 114/B: the two XP columns are side by side on a desktop and stack on
+  // a phone — five tiles in half a phone would wrap every range onto 3 lines.
+  it("stacks the two XP columns on a phone", () => {
+    expect(css).toMatch(
+      /\.xp-columns \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/,
+    );
+    const mobile = css.match(/\n  \.xp-columns \{([\s\S]*?)\n  \}/)?.[1];
+    expect(mobile, "the mobile XP column rule").toBeDefined();
+    expect(mobile).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+  });
+
   it("uses a two-column mobile grid for category tabs", () => {
     expect(css).toMatch(
       /nav\.calculator-tabs:not\(\.compact\)\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,

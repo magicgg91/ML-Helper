@@ -136,6 +136,39 @@
   --tool-base: #c9a8ec;
   --tool-temple: #8b6bb8;
   --tool-stuff: #e0bb63;
+  /* Bloc 114/C: the ink of a value on the violet highlight tile, stronger
+     than --accent-strong because that tile is where the one answer sits. */
+  --tool-highlight-ink: #e3d0fa;
+  /* A result tile that is deliberately NOT the answer: neutral fill, so the
+     violet one beside it stays the thing the eye lands on. */
+  --tool-neutral-bg: #2f3541;
+  /* Bloc 114/B: the five steps of the XP scale. A step is a frame, a heavily
+     muted fill of the same hue, and the ink of its rate. They are read as an
+     ordered ramp, never alone: every tile states its own rate in words, so
+     the color adds emphasis rather than carrying the meaning. Measured at
+     >= 4.5:1 for every text on every step, in both themes. */
+  --xp-s0-bg: #2b2228;
+  --xp-s0-border: #6e4348;
+  --xp-s0-ink: #dfa5a5;
+  --xp-s50-bg: #34242a;
+  --xp-s50-border: #8f4a4a;
+  --xp-s50-ink: #e8adad;
+  --xp-s100-bg: #3d262c;
+  --xp-s100-border: #b8474a;
+  --xp-s100-ink: #f0b5b5;
+  --xp-s150-bg: #47272e;
+  --xp-s150-border: #d4484c;
+  --xp-s150-ink: #f6bcbc;
+  --xp-s200-bg: #512930;
+  --xp-s200-border: #f05a5e;
+  --xp-s200-ink: #fcc4c4;
+  /* The two small texts that sit on all five steps at once, so each is
+     picked for the worst of the five. */
+  --xp-caption: #b6a6ab;
+  --xp-range-ink: #f2eef0;
+  /* Bloc 114/A.1: the "coming soon" chip. */
+  --soon-bg: #4a3c22;
+  --soon-ink: #f3e0b4;
   color-scheme: dark;
 }
 
@@ -219,6 +252,27 @@
   --tool-base: #5b21b6;
   --tool-temple: #a78bea;
   --tool-stuff: #d9a441;
+  --tool-highlight-ink: #3b1480;
+  --tool-neutral-bg: #e3e5ea;
+  --xp-s0-bg: #fdf3f3;
+  --xp-s0-border: #f0a8a8;
+  --xp-s0-ink: #9b3b3b;
+  --xp-s50-bg: #fbe5e5;
+  --xp-s50-border: #e06666;
+  --xp-s50-ink: #a82626;
+  --xp-s100-bg: #f8d6d6;
+  --xp-s100-border: #dc2626;
+  --xp-s100-ink: #9f1515;
+  --xp-s150-bg: #f1c6c6;
+  --xp-s150-border: #a11a1a;
+  --xp-s150-ink: #7a1010;
+  --xp-s200-bg: #e8b9b9;
+  --xp-s200-border: #5c0f0f;
+  --xp-s200-ink: #4a0b0b;
+  --xp-caption: #4b5060;
+  --xp-range-ink: #1f2230;
+  --soon-bg: #f3e6c8;
+  --soon-ink: #6b4a0f;
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -967,6 +1021,13 @@ select {
 .calculator-fields-inline .family-buttons {
   margin: 0;
 }
+/* Bloc 114/B: XP Gain Rate has a single parameter, so the shared "share the
+   row equally" rule above hands the whole card to one counter. It is capped
+   at the width the other tools' counters end up with; on a phone the rule
+   below turns every counter into a row of its own anyway. */
+.xp-vp-field {
+  max-width: 22rem;
+}
 /* min-width: max-content (not 0) is the point — flex-basis: 0 alone lets
    a button shrink past its own label, truncating it; pinning the floor
    to the label's own natural width keeps every button's text whole while
@@ -998,101 +1059,14 @@ select {
 .city-maxlevel-gold-field .unit-input {
   grid-template-columns: minmax(0, 1fr) 3.15rem;
 }
-/* Bloc 88 → Bloc 89: Demo Attack Troops result tile — a grey Boutique-style
-   tile (same --surface-muted background as .consumable-tile) sitting below the
-   full-width league block. Bloc 89 retouches: the tile spans only 50% of the
-   width on desktop (Bloc 89/A); its three parts — the still-editable
-   target-city-level field and the two result values — share it in equal thirds
-   (Bloc 89/D); each result value now sits in its own nested mini-tile, a
-   slightly lighter grey than the main tile with its content centered
-   (Bloc 89/B-C). Mobile keeps the Bloc 88/F stack: the city-level field on its
-   own line, the two mini-tiles together on the next line. */
-.demo-attack-tile {
-  display: flex;
-  align-items: stretch;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.6rem;
-  background: var(--surface-muted);
-}
-.demo-attack-tile-level {
+/* Bloc 114/C: the Demo Attack Troops result. The grey half-width tile of
+   Bloc 88/89 is gone — it held an input (the target-city level) among the
+   figures that input drives, and gave the answer a third of a half of the
+   page. The level moved into the parameters card, and the two figures are
+   ordinary tiles: neutral for the wall it has to get through, violet for the
+   troops it takes, which is the one number this tool exists to give. */
+.demo-attack-level-field {
   min-width: 0;
-}
-.demo-attack-tile-results {
-  display: flex;
-  gap: 1rem;
-}
-.demo-attack-tile-results > .total-box {
-  flex: 1 1 0;
-}
-/* Bloc 89/B-C: each result value in its own nested mini-tile — a slightly
-   lighter grey than the main tile (white mixed into --surface-muted so it
-   lightens in both light and dark themes), with its label and value centered.
-   The base .total-box border/background are overridden here. */
-.demo-attack-inner-tile.total-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-  min-width: 0;
-  padding: 0.55rem 0.75rem;
-  border: none;
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--surface-muted), #fff 14%);
-  text-align: center;
-}
-/* Bloc 92/A11y (M1 residual): the mini-tile lightens its background, where
-   even the AA-safe --emerald-text (tuned for the darker --bg/panels) stays at
-   ~2.9:1. In dark theme only, the "troupes max" value gets a lighter mint that
-   clears 4.5:1 on this specific lightened surface; light theme keeps
-   --emerald-text (already ≥4.5:1 on the light mini-tile). */
-:root:not([data-theme="light"]) .demo-attack-inner-tile .value.emerald,
-:root[data-theme="dark"] .demo-attack-inner-tile .value.emerald {
-  color: #98dcbd;
-}
-.demo-attack-inner-tile .label {
-  margin-bottom: 0;
-}
-.demo-attack-tile-empty {
-  flex: 1 1 auto;
-  margin: 0;
-}
-/* Bloc 89/A + /D: on desktop the tile is half-width, and its three parts —
-   the city-level field and the two mini-tiles (lifted out of their flex
-   wrapper with display:contents so they become direct grid items of the tile)
-   — each take an equal third. A 3-column grid with minmax(0, 1fr) tracks gives
-   truly equal thirds regardless of each part's own content width, which plain
-   flex (grow from a 0 basis) does not: the number stepper and the value labels
-   have different min-content sizes, so flex biased the widths. */
-@media (min-width: 901px) {
-  .demo-attack-tile {
-    width: 50%;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: stretch;
-  }
-  .demo-attack-tile-results {
-    display: contents;
-  }
-  /* Codex review (PR #106): in the first-visit empty state (no league yet)
-     the grid holds only the city-level field and the prompt, so the prompt
-     would auto-place into column 2 and leave column 3 empty (flex:1 is inert
-     under grid). Span it across both result columns instead, while the three
-     equal columns still apply once the two result mini-tiles exist. */
-  .demo-attack-tile-empty {
-    grid-column: 2 / -1;
-  }
-}
-/* Bloc 88/F: mobile keeps the league buttons' 2x3 grid (league-buttons-grid,
-   unchanged) and stacks the tile — the city-level field on its own line,
-   then the two result mini-tiles together on the next line. */
-@media (max-width: 900px) {
-  .demo-attack-tile {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 .calculator-field {
   display: grid;
@@ -4922,6 +4896,145 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
      the currency-adjacent accent Bloc 42/C introduced for exactly this. */
   color: var(--amber);
 }
+/* Bloc 114/A.1: the chip a not-yet-built tool wears. A filled pill, not the
+   asterisked sentence a switched-off tool gets (.tab-coming-soon above): one
+   is a promise, the other a warning, and they should not look alike. */
+.tab-soon-pill {
+  margin-left: 0.45rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--soon-bg);
+  color: var(--soon-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* Bloc 114/C: a tile whose label and value share one line. Used where a tile
+   stands alone on its row, which would otherwise leave the value stranded
+   under a short label across the full width. */
+.tool-tile-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.tool-tile-row .tool-tile-head {
+  min-width: 0;
+}
+.tool-tile-row .tool-tile-value {
+  flex: none;
+  font-size: 2.4rem;
+}
+/* The one answer of the sub-tab, on the tile reserved for it. */
+.tool-tile-highlight.tool-tile-row .tool-tile-value {
+  color: var(--tool-highlight-ink);
+}
+.tool-tile-row:not(.tool-tile-highlight) {
+  background: var(--tool-neutral-bg);
+}
+.tool-tile-row:not(.tool-tile-highlight) .tool-tile-value {
+  color: var(--accent-strong);
+}
+
+/* Bloc 114/B: the two XP columns, side by side — "what I gain by attacking"
+   against "what they gain by attacking me", at one glance and one VP. */
+.xp-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.xp-column-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+.xp-tiles {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.xp-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  /* 3px, so the frame reads as the tile's own step rather than as a border. */
+  border: 3px solid var(--xp-tile-border);
+  border-radius: 12px;
+  background: var(--xp-tile-bg);
+  padding: 0.6rem 0.85rem;
+  /* WCAG 2.5.5: the row is tall enough to be a comfortable touch target even
+     though nothing in it is interactive. */
+  min-height: 44px;
+}
+.xp-tile-rate,
+.xp-tile-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0;
+  min-width: 0;
+}
+.xp-tile-range {
+  align-items: flex-end;
+  text-align: right;
+}
+.xp-tile-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: var(--xp-tile-ink);
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.xp-tile-figure small {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.xp-tile-who,
+.xp-tile-caption {
+  color: var(--xp-caption);
+  font-size: 0.8125rem;
+}
+.xp-tile-value {
+  color: var(--xp-range-ink);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+/* Each step names its own three colors once; everything above reads them
+   through the same three variables, so a step is one block to change. */
+.xp-tile-s0 {
+  --xp-tile-bg: var(--xp-s0-bg);
+  --xp-tile-border: var(--xp-s0-border);
+  --xp-tile-ink: var(--xp-s0-ink);
+}
+.xp-tile-s50 {
+  --xp-tile-bg: var(--xp-s50-bg);
+  --xp-tile-border: var(--xp-s50-border);
+  --xp-tile-ink: var(--xp-s50-ink);
+}
+.xp-tile-s100 {
+  --xp-tile-bg: var(--xp-s100-bg);
+  --xp-tile-border: var(--xp-s100-border);
+  --xp-tile-ink: var(--xp-s100-ink);
+}
+.xp-tile-s150 {
+  --xp-tile-bg: var(--xp-s150-bg);
+  --xp-tile-border: var(--xp-s150-border);
+  --xp-tile-ink: var(--xp-s150-ink);
+}
+.xp-tile-s200 {
+  --xp-tile-bg: var(--xp-s200-bg);
+  --xp-tile-border: var(--xp-s200-border);
+  --xp-tile-ink: var(--xp-s200-ink);
+}
 
 /* Armée on the left, Or on the right — the order this bloc fixes everywhere. */
 .tool-breakdowns {
@@ -5151,5 +5264,29 @@ span.tool-share-dot.tool-share-stuff {
   .tool-table tbody th,
   .tool-table tfoot th {
     overflow-wrap: break-word;
+  }
+  /* Bloc 114/A.1: the Combat sub-tabs wrap 2 per row as a real grid. The four
+     labels have very different lengths, so flex-wrap left the longest one
+     alone and stretched on its own line — the same fix .tool-category-grid
+     and the Outils category nav already carry. */
+  .city-calculators nav.calculator-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Bloc 114/B: the two columns stack — attacker first, then target. Five
+     tiles side by side in half a phone would wrap every range onto 3 lines. */
+  .xp-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .xp-tile-figure {
+    font-size: 1.375rem;
+  }
+  .xp-tile-value {
+    font-size: 1.1875rem;
+  }
+  /* Bloc 114/C: the result tiles keep label-left/value-right, at the size the
+     rest of the phone layout uses. */
+  .tool-tile-row .tool-tile-value {
+    font-size: 1.75rem;
   }
 }
