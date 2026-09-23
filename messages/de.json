@@ -177,7 +177,7 @@
       "start-level": "Startstufe",
       "target-level": "Zielstufe"
     },
-    "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
+    "total": "Gesamt",
     "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Stufe {start} → {target}",
     "cost-total": "Kosten",
     "gold-unit": "Gold",
@@ -207,7 +207,7 @@
       "available-gold": "Verfügbares Gold",
       "gold-unit": "Einheit des verfügbaren Golds"
     },
-    "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
+    "total": "Gesamt",
     "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Stufe {level} · {gold} Gold verfügbar",
     "reachable-level": "Maximalstufe",
     "levels-gained": "+{count}",
@@ -225,7 +225,7 @@
       "city-count": "Anzahl der Städte",
       "average-level": "Durchschnittliche Stadtstufe"
     },
-    "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
+    "total": "Gesamt",
     "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Durchschnittsstufe {level}",
     "army-hour": "Armee / Std.",
     "gold-hour": "Gold / Std.",
@@ -293,7 +293,7 @@
     },
     "wall": "Zielmauern",
     "maximum": "Maximale Truppen",
-    "result-title": "Angriff auf eine Stadt der Stufe {level}",
+    "result": "Ergebnis",
     "recall": "Angreifer {league} · Stadt Stufe {level}",
     "recall-short": "Angreifer {league}"
   },

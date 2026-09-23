@@ -177,7 +177,7 @@
       "start-level": "Başlangıç seviyesi",
       "target-level": "Hedef seviye"
     },
-    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "total": "Toplam",
     "recall": "{count, plural, other {# şehir}} · {league} · seviye {start} → {target}",
     "cost-total": "Maliyet",
     "gold-unit": "altın",
@@ -207,7 +207,7 @@
       "available-gold": "Kullanılabilir altın",
       "gold-unit": "Kullanılabilir altın birimi"
     },
-    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "total": "Toplam",
     "recall": "{count, plural, other {# şehir}} · {league} · seviye {level} · {gold} altın mevcut",
     "reachable-level": "Maksimum seviye",
     "levels-gained": "+{count}",
@@ -225,7 +225,7 @@
       "city-count": "Şehir sayısı",
       "average-level": "Ortalama şehir seviyesi"
     },
-    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "total": "Toplam",
     "recall": "{count, plural, other {# şehir}} · {league} · ortalama seviye {level}",
     "army-hour": "Ordu / sa",
     "gold-hour": "Altın / sa",
@@ -293,7 +293,7 @@
     },
     "wall": "Hedef surları",
     "maximum": "Maksimum birlik",
-    "result-title": "Seviye {level} şehre saldırı",
+    "result": "Sonuç",
     "recall": "Saldıran {league} · seviye {level} şehir",
     "recall-short": "Saldıran {league}"
   },

@@ -346,7 +346,7 @@ describe("Bloc 114/C: Troupes en attaque démo in tiles", () => {
     expect(troopsTile.closest(".tool-summary")).not.toHaveTextContent("%");
   });
 
-  it("titles the section by the level and recalls the parameters", () => {
+  it("titles the section and recalls the parameters", () => {
     view();
     openDemo();
     pickLeague("Diamant");
@@ -354,8 +354,10 @@ describe("Bloc 114/C: Troupes en attaque démo in tiles", () => {
       screen.getByRole("spinbutton", { name: "Niveau de ville visée" }),
       { target: { value: "135" } },
     );
+    // Bloc 117: the heading no longer repeats the level the chip beside it
+    // already carries.
     expect(
-      screen.getByRole("heading", { name: "Attaque d’une ville niveau 135" }),
+      screen.getByRole("heading", { name: "Résultat" }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Attaquant Diamant · ville niveau 135"),
@@ -381,5 +383,62 @@ describe("Bloc 114/C: Troupes en attaque démo in tiles", () => {
     // The wall is the target city's own, so a change of attacker league
     // moves the troops it takes and leaves the wall where it was.
     expect(screen.getByTestId("demo-wall").textContent).toBe(wallAtBronze);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 117 — the Troupes en attaque démo heading, likewise.
+//
+// "Attaque d'une ville niveau 135" repeated the level the chip beside it
+// carries. The heading is "Résultat"; the chip keeps the whole detail, and
+// keeps its phone-width short form.
+// ---------------------------------------------------------------------------
+describe("Bloc 117: the demo heading loses what the chip already says", () => {
+  const section = () => screen.getByTestId("demo-troops").closest("section")!;
+  const heading = () =>
+    section().querySelector(".calculator-heading")!.textContent;
+  const chip = () => section().querySelector(".tool-recall")!.textContent;
+
+  const showResult = () => {
+    view();
+    openDemo();
+    pickLeague("Diamant");
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Niveau de ville visée" }),
+      { target: { value: "135" } },
+    );
+  };
+
+  it("reads 'Résultat', and the chip still carries league and level", () => {
+    showResult();
+    expect(heading()).toBe("Résultat");
+    expect(chip()).toBe("Attaquant Diamant · ville niveau 135");
+    // The figures under it are unmoved.
+    expect(screen.getByTestId("demo-wall")).toHaveTextContent("2.85T");
+    expect(screen.getByTestId("demo-troops")).toHaveTextContent("856.06G");
+  });
+
+  // On a phone the chip drops the level (Bloc 114/C) — the heading is a fixed
+  // string either way, so it must not start carrying it back.
+  it("keeps the heading, and the chip's short form, at a phone width", () => {
+    const wide = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    try {
+      showResult();
+      expect(heading()).toBe("Résultat");
+      expect(chip()).toBe("Attaquant Diamant");
+      expect(screen.getByTestId("demo-troops")).toHaveTextContent("856.06G");
+    } finally {
+      window.matchMedia = wide;
+    }
   });
 });

@@ -236,7 +236,7 @@ function DemoAttackTroops({
       <div aria-live="polite">
         {result && league ? (
           <SummarySection
-            title={t("result-title", { level: cityLevel })}
+            title={t("result")}
             recall={
               narrow
                 ? t("recall-short", { league: game(`leagues.${league}`) })
