@@ -1078,7 +1078,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // presentation catalog, in one transaction.
   await expect(page.getByText("Modifications non enregistrées")).toBeVisible();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
     timeout: 15_000,
   });
   await expect(page.getByText("✓ Tout est enregistré")).toBeVisible();
@@ -1129,7 +1129,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByLabel("Ratio", { exact: true })).toHaveValue("1,3");
   await expect(page.getByRole("link", { name: "← Outils" })).toBeVisible();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
     timeout: 15_000,
   });
 
@@ -1142,7 +1142,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByText("∞")).toBeVisible();
   await page.getByLabel("Taux XP du palier 3").fill("110");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
     timeout: 15_000,
   });
 
@@ -1154,7 +1154,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByLabel("Bronze X (% des remparts)")).toHaveValue("100");
   await page.getByLabel("Or X (% des remparts)", { exact: true }).fill("45");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
     timeout: 15_000,
   });
 
@@ -1166,7 +1166,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(page.getByLabel("Vitesse · Légende")).toHaveValue("15");
   await page.getByLabel("Prix Légende").fill("5000");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Paramètres enregistrés.")).toBeVisible({
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
     timeout: 15_000,
   });
 });
@@ -2321,7 +2321,10 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   await expect(page).toHaveURL(/\/admin$/);
 
   await page.goto("/admin/tools/ranking");
-  const headings = page.locator(".ranking-admin-editor .admin-panel h2");
+  // Bloc 119: the ladder is a list on the left and one entry on the right,
+  // so the rungs are named once, in that list, instead of once per stacked
+  // form heading.
+  const headings = page.getByTestId("ranking-entry-name");
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2352,9 +2355,14 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   const active = page.getByLabel("Or 1 (rang 7) active publiquement");
   await expect(active).not.toBeChecked();
 
-  // Bloc 108/B: move it from the bottom to just after Or, three rungs up.
-  for (let move = 0; move < 3; move += 1)
-    await page.getByRole("button", { name: "Monter Or 1" }).click();
+  // Bloc 108/B: move it from the bottom to just after Or, three rungs up. The
+  // move lives in the ⋯ menu now, which closes after each choice.
+  for (let move = 0; move < 3; move += 1) {
+    await page
+      .getByRole("button", { name: "Autres actions pour Or 1" })
+      .click();
+    await page.getByRole("menuitem", { name: "Monter Or 1" }).click();
+  }
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2364,9 +2372,9 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
     "Diamant",
     "Légende",
   ]);
-  await page.getByLabel("Or 1 (rang 4) active publiquement").check();
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByLabel("Or 1 (rang 4) active publiquement").click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   // Public side: the new rung is there, ordered, with no data of its own yet.
   await page.goto("/tools/classement");
@@ -2402,10 +2410,14 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   // Put the ladder back, so the tests after this one see the six it shipped
   // with (this spec runs serially against one database).
   await page.goto("/admin/tools/ranking");
-  page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Supprimer Or 1" }).click();
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  // Bloc 119: the deletion asks in a dialog of the site's own, not the
+  // browser's, and it is reached from the entry's ⋯ menu.
+  await page.getByTestId("ranking-entry-name").getByText("Or 1").click();
+  await page.getByRole("button", { name: "Autres actions pour Or 1" }).click();
+  await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
+  await page.getByRole("button", { name: "Confirmer" }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 
 // Bloc 109: the picker's row split is computed from a width the browser alone
@@ -2436,10 +2448,10 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     await page.getByLabel(`${label} (rang ${rung}) division`).fill(division);
     await page
       .getByLabel(`${label} ${division} (rang ${rung}) active publiquement`)
-      .check();
+      .click();
   }
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   const group = page.locator(".ranking-calculator .family-buttons");
   const rowSizes = async () =>
@@ -2501,6 +2513,8 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   // absurd one and re-check the same no-overflow rule.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/admin/tools/ranking");
+  // Bloc 119: one entry is edited at a time, so pick it in the list first.
+  await page.getByTestId("ranking-entry-name").getByText("Argent 2").click();
   await page
     .getByLabel("Argent 2 (rang 7) nom libre FR")
     .fill("Division Argent Deux Absolument Interminable");
@@ -2509,8 +2523,8 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
       "Division Argent Deux Absolument Interminable (rang 7) nom libre EN",
     )
     .fill("Absolutely Interminable Silver Division Two");
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   for (const width of [390, 1000, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -2542,11 +2556,18 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     "Or 2",
     "Or 1",
   ]) {
-    page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: `Supprimer ${name}` }).click();
+    await page
+      .getByTestId("ranking-entry-name")
+      .getByText(name, { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: `Autres actions pour ${name}` })
+      .click();
+    await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
+    await page.getByRole("button", { name: "Confirmer" }).click();
   }
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 
 // Bloc 110: the Classement result zone, measured in a real browser — two

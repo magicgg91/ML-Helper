@@ -716,7 +716,11 @@
       "remove-of": "Delete {name}",
       "save": "Save",
       "to-fill-in": "To fill in",
-      "unsaved": "Unsaved changes"
+      "unsaved": "Unsaved changes",
+      "saving": "Saving…",
+      "saved": "Changes saved.",
+      "error": "Save failed (HTTP {status}).",
+      "server-error": "Could not reach the server."
     },
     "title": "Administration",
     "view-site": "View the public site",
@@ -1051,7 +1055,16 @@
       "entry-name-fr": "Free name (FR)",
       "entry-name-en": "Free name (EN)",
       "entry-name-fr-field": "{entry} (rung {position}) free name FR",
-      "entry-name-en-field": "{entry} (rung {position}) free name EN"
+      "entry-name-en-field": "{entry} (rung {position}) free name EN",
+      "entries-label": "Ranking entries",
+      "band-count": "{count, plural, =0 {no band} one {# band} other {# bands}}",
+      "entry-position": "Entry {position} of {total}",
+      "entry-actions": "More actions for {entry}",
+      "entry-public": "Publicly visible",
+      "entry-private": "Hidden",
+      "bands-section": "End-of-season bands",
+      "row-actions": "Action",
+      "top": "Top"
     },
     "references": {
       "eyebrow": "Game data",

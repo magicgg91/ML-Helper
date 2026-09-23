@@ -716,7 +716,11 @@
       "remove-of": "Supprimer {name}",
       "save": "Enregistrer",
       "to-fill-in": "À renseigner",
-      "unsaved": "Modifications non enregistrées"
+      "unsaved": "Modifications non enregistrées",
+      "saving": "Enregistrement…",
+      "saved": "Modifications enregistrées.",
+      "error": "Échec de l’enregistrement (HTTP {status}).",
+      "server-error": "Impossible de joindre le serveur."
     },
     "title": "Administration",
     "view-site": "Voir le site public",
@@ -1051,7 +1055,16 @@
       "entry-name-fr": "Nom libre (FR)",
       "entry-name-en": "Nom libre (EN)",
       "entry-name-fr-field": "{entry} (rang {position}) nom libre FR",
-      "entry-name-en-field": "{entry} (rang {position}) nom libre EN"
+      "entry-name-en-field": "{entry} (rang {position}) nom libre EN",
+      "entries-label": "Entrées du classement",
+      "band-count": "{count, plural, =0 {aucune plage} one {# plage} other {# plages}}",
+      "entry-position": "Entrée {position} sur {total}",
+      "entry-actions": "Autres actions pour {entry}",
+      "entry-public": "Visible publiquement",
+      "entry-private": "Masquée",
+      "bands-section": "Plages de fin de saison",
+      "row-actions": "Action",
+      "top": "Top"
     },
     "references": {
       "eyebrow": "Données du jeu",

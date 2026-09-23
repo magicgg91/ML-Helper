@@ -9,7 +9,7 @@ import {
   XpGainRateEditor,
 } from "@/components/admin-tool-editors";
 import { TemplarsEditor } from "@/components/admin-templars-editor";
-import { RankingAdminEditor } from "@/components/ranking-admin-editor";
+import { RankingAdminEditor } from "@/components/admin-ranking-editor";
 import {
   getCityParameters,
   getDemoPercentages,
@@ -74,10 +74,12 @@ export default async function EditToolPage({
   }
   if (id === "ranking") {
     return (
-      <div className="admin-main">
-        <h1>{t("ranking-editor")}</h1>
-        <RankingAdminEditor initialLadder={await getRankingLadder()} />
-      </div>
+      <RankingAdminEditor
+        initialLadder={await getRankingLadder()}
+        backHref={backHref}
+        backLabel={backLabel}
+        title={t("ranking-editor")}
+      />
     );
   }
   if (id === "templars") {

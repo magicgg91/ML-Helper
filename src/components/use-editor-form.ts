@@ -41,7 +41,10 @@ export function useEditorForm<T>({
    */
   validate?: (value: T) => string | undefined;
 }) {
-  const t = useTranslations("admin.parameters");
+  // One save vocabulary for every edit screen: "Paramètres enregistrés."
+  // reads wrong on the Classement or the Boutique, and each screen carrying
+  // its own wording is how six screens ended up saying six different things.
+  const t = useTranslations("admin.editor");
   const [value, setValue] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const status = useSaveStatus();
