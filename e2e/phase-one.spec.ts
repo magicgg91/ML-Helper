@@ -2,7 +2,22 @@ import { expect, test, type Page } from "@playwright/test";
 import { defaultLevelUpParameters } from "../src/lib/level-up";
 import * as OTPAuth from "otpauth";
 
-test.describe.configure({ mode: "serial" });
+// Bloc 116/B: this file opts out of the retry playwright.config.ts grants in
+// CI, and has to.
+//
+// It is one serial scenario, in file order, over one database seeded once
+// before the run by `pnpm test:e2e:prepare`: the second test creates the
+// one-time Super Admin, and everything after it signs in as that account. In
+// serial mode Playwright retries the whole group from its first test, so a
+// retry re-runs that one-time setup against a database that already has it —
+// `/admin` redirects to `/login` instead of `/admin/setup`, and the group can
+// never recover. Seen for real on the first CI run of PR #142.
+//
+// A retry only helps a test that can start from the state it asserts. Making
+// this scenario retryable means giving each attempt its own database, which
+// is its own piece of work; until then, retrying it would turn one flake into
+// a guaranteed red run.
+test.describe.configure({ mode: "serial", retries: 0 });
 
 test("health endpoint confirms application and database availability", async ({
   request,

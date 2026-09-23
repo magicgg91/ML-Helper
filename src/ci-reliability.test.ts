@@ -91,4 +91,22 @@ describe("Bloc 116/B: Playwright retries", () => {
     vi.stubEnv("CI", "1");
     expect((await loadConfig()).retries).toBeLessThanOrEqual(1);
   });
+
+  // A retry only helps a test that can start from the state it asserts. The
+  // serial scenario in phase-one.spec.ts cannot: Playwright retries a serial
+  // group from its first test, which re-runs the one-time Super Admin setup
+  // against a database that already has one. It must keep opting out.
+  it("keeps the serial scenario out of the retry", () => {
+    const spec = readFileSync("e2e/phase-one.spec.ts", "utf8");
+    const configure = spec.match(/test\.describe\.configure\(([^)]*)\)/)?.[1];
+    expect(
+      configure,
+      "phase-one.spec.ts no longer configures itself",
+    ).toBeDefined();
+    expect(configure).toContain('mode: "serial"');
+    expect(
+      configure,
+      "the serial scenario would retry from its first test",
+    ).toContain("retries: 0");
+  });
 });
