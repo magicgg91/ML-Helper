@@ -16,23 +16,25 @@ export const titleTemplate = `%s${brandSuffix}`;
 
 // Open Graph locale codes (og:locale expects e.g. "fr_FR", not "fr").
 //
-// Bloc 120: an exception table, no longer the whole list. A language's region
-// cannot be read off its file name — English is en_US, not en_EN — so the
-// ones that differ from the language-repeated form are named here and the
-// rest are derived. The previous version fell back to "fr_FR" for anything it
-// did not list, which would have tagged a newly-added language's pages as
-// French to every crawler and share card.
-const ogRegionExceptions: Record<string, string> = { en: "US" };
-const localeCode = /^([a-z]{2})(?:-([a-z]{2}))?$/i;
-
+// Bloc 120 review (Codex, PR #145): the region comes from CLDR's likely
+// subtags via Intl, not from a table and not from repeating the language.
+// Repeating it is right for fr/de/es/tr and wrong wherever the two differ —
+// ja_JA and ko_KO are not territories, and a crawler receiving them gets an
+// invalid og:locale. Intl answers ja→JP, ko→KR, en→US, zh→CN without anything
+// here to maintain, which is the whole point of the bloc applied to this
+// field too. (It also answers pt→BR rather than PT; that is CLDR's own
+// likely subtag for Portuguese, and a file named pt-pt.json overrides it.)
 export function ogLocale(locale: string): string {
-  const match = localeCode.exec(locale);
-  // Anything that is not a locale code keeps the previous safe default rather
-  // than producing a malformed og:locale out of it.
-  if (!match) return "fr_FR";
-  const [, language, region] = match;
-  const code = language.toLowerCase();
-  return `${code}_${(ogRegionExceptions[code] ?? region ?? code).toUpperCase()}`;
+  try {
+    const maximized = new Intl.Locale(locale).maximize();
+    const language = maximized.language;
+    const region = maximized.region;
+    if (language && region) return `${language}_${region}`;
+  } catch {
+    // Not a parsable language tag — fall through to the previous safe
+    // default rather than emitting a malformed og:locale from it.
+  }
+  return "fr_FR";
 }
 
 // The site-wide generated share image (src/app/opengraph-image.tsx). metadataBase

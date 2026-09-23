@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { launchLocales } from "./translations";
 import {
   brandedTitle,
   ogLocale,
@@ -25,13 +26,26 @@ describe("page-metadata (Bloc 91/E2+E3)", () => {
   // og:locale. This used to be a five-entry table whose default was "fr_FR",
   // so a sixth language would have told every crawler and share card that its
   // pages were French.
-  it("derives the code of a language the exception table does not name", () => {
+  it("derives the code of a language the table never named", () => {
     expect(ogLocale("pl")).toBe("pl_PL");
     expect(ogLocale("it")).toBe("it_IT");
-    // English is the exception the table exists for.
     expect(ogLocale("en")).toBe("en_US");
-    // A regional code keeps its own region rather than repeating the language.
+    // A regional filename keeps its own region.
     expect(ogLocale("pt-br")).toBe("pt_BR");
+  });
+
+  // Bloc 120 review (Codex, PR #145): the region is CLDR's, not the language
+  // code repeated — "ja_JA" and "ko_KO" name no territory and are invalid
+  // og:locale values, which is what repeating it would have produced.
+  it("uses the real territory where it differs from the language code", () => {
+    expect(ogLocale("ja")).toBe("ja_JP");
+    expect(ogLocale("ko")).toBe("ko_KR");
+    expect(ogLocale("zh")).toBe("zh_CN");
+    expect(ogLocale("cs")).toBe("cs_CZ");
+    expect(ogLocale("uk")).toBe("uk_UA");
+    // Every one of the launched locales still resolves to a real pair.
+    for (const locale of launchLocales)
+      expect(ogLocale(locale)).toMatch(/^[a-z]{2}_[A-Z]{2}$/);
   });
 
   it("builds canonical, hreflang, Open Graph and Twitter for a page", () => {

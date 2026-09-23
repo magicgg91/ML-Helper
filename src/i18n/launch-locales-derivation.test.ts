@@ -277,3 +277,52 @@ describe("Bloc 120: no second copy of the list survives", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("Bloc 120 review (Codex, PR #145): a regional file is negotiable, not just routable", () => {
+  beforeEach(() => vi.resetModules());
+  afterEach(() => vi.doUnmock("@/lib/launch-locales.generated"));
+
+  async function withLocales(locales: readonly string[]) {
+    vi.doMock("@/lib/launch-locales.generated", () => ({
+      launchLocales: locales,
+    }));
+    return (await import("@/proxy")).matchAcceptLanguage;
+  }
+
+  it("matches a browser's pt-BR against pt-br.json", async () => {
+    // The reported symptom: the generator accepts a regional filename, and
+    // negotiation used to compare against the language alone — "pt", which is
+    // not a member of the list — so a Brazilian visitor landed in French with
+    // pt-br.json sitting right there. What fixes this one is the
+    // same-language lookup; the region matters in the case two tests below.
+    const match = await withLocales(["fr", "en", "pt-br"]);
+    expect(match("pt-BR,pt;q=0.9,en;q=0.8")).toBe("pt-br");
+  });
+
+  it("still falls back to the language when only the plain file exists", async () => {
+    const match = await withLocales(["fr", "en", "pt"]);
+    expect(match("pt-BR,pt;q=0.9")).toBe("pt");
+  });
+
+  it("answers a plain pt request with the only Portuguese file there is", async () => {
+    const match = await withLocales(["fr", "en", "pt-br"]);
+    expect(match("pt;q=0.9")).toBe("pt-br");
+  });
+
+  it("prefers the exact regional file over its plain sibling", async () => {
+    // This is what carrying the region through buys: with both files present,
+    // the language alone cannot tell pt-BR from pt-PT, and whichever came
+    // first in the list would answer both.
+    const match = await withLocales(["fr", "en", "pt", "pt-br"]);
+    expect(match("pt-BR,pt;q=0.9")).toBe("pt-br");
+    expect(match("pt-PT,pt;q=0.9")).toBe("pt");
+  });
+
+  it("keeps the ordinary cases exactly as they were", async () => {
+    const match = await withLocales(["fr", "en", "de", "es", "tr"]);
+    expect(match("de-DE,de;q=0.9,en;q=0.5")).toBe("de");
+    expect(match("pt;q=0.9,es;q=0.8,fr;q=0.5")).toBe("es");
+    expect(match("pt-BR,pt;q=0.9")).toBeNull();
+    expect(match(null)).toBeNull();
+  });
+});
