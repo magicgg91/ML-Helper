@@ -1302,7 +1302,10 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   );
   expect(saveResponse.ok()).toBeTruthy();
 
-  await page.goto("/admin/logs?q=référentiel Boutique");
+  // Bloc 116/C: the row stores the sentence's key, so that is what the
+  // search matches; the cell still reads as the French sentence, rendered
+  // from the key at display time.
+  await page.goto("/admin/logs?q=consumables");
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await expect(
     page.getByRole("cell", {
@@ -3147,4 +3150,93 @@ test("Bloc113: the Villes tool fits a phone on all four sub-tabs", async ({
         `${name} breakdown scrolls on itself`,
       ).toBeLessThanOrEqual(1);
   }
+});
+
+// Bloc 116/C: the audit log is stored as a sentence key and its parameters,
+// and rendered in the admin's own language. Three of the writers are
+// exercised here — a user creation, a tool toggle and a locale toggle — and
+// each row is read first in French, then in English, from the same database
+// rows.
+test("Bloc116/C: the audit log reads in the admin's own language", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // 1. A user creation.
+  await page.goto("/admin/users");
+  const createForm = page.locator('form:has(input[name="username"])');
+  await createForm.locator('input[name="username"]').fill("bilingual");
+  await createForm.locator('input[name="password"]').fill("bilingual-password");
+  await createForm.locator('select[name="role"]').selectOption("admin");
+  await createForm
+    .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
+    .click();
+  await expect(page.getByRole("cell", { name: "bilingual" })).toBeVisible();
+
+  // 2. A tool switched off, and 3. a language switched off.
+  const toolResponse = await page.request.patch(
+    "/api/admin/tools/calculator-city-cost",
+    { data: { active: false } },
+  );
+  expect(toolResponse.ok()).toBeTruthy();
+  const localeResponse = await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "es", active: false },
+  });
+  expect(localeResponse.ok()).toBeTruthy();
+
+  const french = [
+    "rootadmin a créé l’utilisateur bilingual",
+    "rootadmin a désactivé l’outil city-cost",
+    "rootadmin a désactivé la langue ES",
+  ];
+  const english = [
+    "rootadmin created user bilingual",
+    "rootadmin deactivated tool city-cost",
+    "rootadmin deactivated the ES language",
+  ];
+
+  await page.goto("/admin/logs");
+  // .first(): earlier tests in this file toggle the same language, so a
+  // sentence can legitimately appear on more than one row.
+  for (const sentence of french)
+    await expect(
+      page.getByRole("cell", { name: sentence }).first(),
+    ).toBeVisible();
+
+  // The same rows, in English: nothing is rewritten in the database, only
+  // resolved differently on the way out.
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: "EN" })
+    .click();
+  await expect(
+    page.getByRole("group", { name: /Language|Langue/ }).getByRole("button", {
+      name: "EN",
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.goto("/admin/logs");
+  for (const sentence of english)
+    await expect(
+      page.getByRole("cell", { name: sentence }).first(),
+    ).toBeVisible();
+  // And not one row is left in French: the language is resolved on the way
+  // out, so switching it moves every row at once.
+  for (const sentence of french)
+    await expect(page.getByRole("cell", { name: sentence })).toHaveCount(0);
+
+  // Put the tool and the language back, so the rest of the suite sees the
+  // state it expects.
+  await page.request.patch("/api/admin/tools/calculator-city-cost", {
+    data: { active: true },
+  });
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "es", active: true },
+  });
 });

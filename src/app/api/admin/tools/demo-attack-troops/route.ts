@@ -23,7 +23,7 @@ export async function PUT(request: Request) {
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
-    target: "les pourcentages d’attaque démo",
+    target: "demo-attack-troops",
   });
   return NextResponse.json(percentages);
 }

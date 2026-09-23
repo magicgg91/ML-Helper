@@ -91,9 +91,17 @@ describe("buildLogsWhere", () => {
     });
   });
 
-  it("filters by a word in the displayed message", () => {
-    expect(buildLogsWhere({ message: "supprimé" })).toEqual({
-      message: { contains: "supprimé" },
+  // Bloc 116/C: the message is a key and its parameters now, so the search
+  // reaches all three places a word can be — the names in the parameters
+  // (which is what an admin types), the key, and the French sentence of
+  // entries written before the change.
+  it("filters across the key, its parameters and the legacy sentence", () => {
+    expect(buildLogsWhere({ message: "toto" })).toEqual({
+      OR: [
+        { messageParams: { contains: "toto" } },
+        { messageKey: { contains: "toto" } },
+        { legacyMessage: { contains: "toto" } },
+      ],
     });
   });
 
@@ -121,7 +129,11 @@ describe("buildLogsWhere", () => {
       buildLogsWhere({ user: "alice", message: "guide", from: "2026-01-01" }),
     ).toEqual({
       user: { username: { contains: "alice" } },
-      message: { contains: "guide" },
+      OR: [
+        { messageParams: { contains: "guide" } },
+        { messageKey: { contains: "guide" } },
+        { legacyMessage: { contains: "guide" } },
+      ],
       createdAt: { gte: new Date("2026-01-01T00:00:00.000") },
     });
   });

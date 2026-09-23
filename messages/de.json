@@ -1157,27 +1157,6 @@
       "activated": "Benutzer aktiviert",
       "deactivated": "Benutzer deaktiviert"
     },
-    "logs": {
-      "title": "Änderungsverlauf",
-      "actor": "Ausführende Person",
-      "actor-role": "Rolle zum Zeitpunkt der Aktion",
-      "message": "Nachricht",
-      "date": "Datum",
-      "start": "Startdatum",
-      "end": "Enddatum",
-      "purge": "Zeitraum löschen",
-      "purged": "Verlauf gelöscht",
-      "error": "Verlauf konnte nicht gelöscht werden",
-      "filter-user": "Benutzer",
-      "filter-message": "Wort in der Nachricht",
-      "filter-apply": "Filtern",
-      "filter-reset": "Zurücksetzen",
-      "no-results": "Kein Eintrag entspricht den Filtern.",
-      "pagination": "Verlaufsseiten",
-      "previous": "Zurück",
-      "next": "Weiter",
-      "page-summary": "Seite {page} / {total}"
-    },
     "content": {
       "eyebrow": "Institutionelle Seite",
       "title": "Impressum",

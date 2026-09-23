@@ -1157,27 +1157,6 @@
       "activated": "Usuario activado",
       "deactivated": "Usuario desactivado"
     },
-    "logs": {
-      "title": "Historial de cambios",
-      "actor": "Autor",
-      "actor-role": "Rol en el momento de la acción",
-      "message": "Mensaje",
-      "date": "Fecha",
-      "start": "Fecha de inicio",
-      "end": "Fecha de fin",
-      "purge": "Purgar rango",
-      "purged": "Historial purgado",
-      "error": "No se pudo purgar el historial",
-      "filter-user": "Usuario",
-      "filter-message": "Palabra en el mensaje",
-      "filter-apply": "Filtrar",
-      "filter-reset": "Restablecer",
-      "no-results": "Ninguna entrada coincide con los filtros.",
-      "pagination": "Paginación del historial",
-      "previous": "Anterior",
-      "next": "Siguiente",
-      "page-summary": "Página {page} / {total}"
-    },
     "content": {
       "eyebrow": "Página institucional",
       "title": "Aviso legal",

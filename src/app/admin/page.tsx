@@ -3,11 +3,15 @@ import { can } from "@/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { getLocale, getTranslations } from "next-intl/server";
 import { referenceToolSlugs } from "@/lib/admin-tools";
+import { auditTranslator, renderAuditMessage } from "@/lib/audit-message";
 
 export default async function AdminPage() {
   const session = await requireAdminSession();
-  const [t, locale] = await Promise.all([
+  const [t, logMessages, locale] = await Promise.all([
     getTranslations("admin.dashboard"),
+    // Bloc 116/C: the recent-activity rows read their sentence from the same
+    // namespace /admin/logs does, in the admin's own language.
+    getTranslations("admin.logs.messages"),
     getLocale(),
   ]);
   const mayViewCalculators = can(session.user.role, "calculators.read");
@@ -131,7 +135,9 @@ export default async function AdminPage() {
                     <tr key={log.id}>
                       <td>{log.user.username}</td>
                       <td>{log.actorRole}</td>
-                      <td colSpan={2}>{log.message}</td>
+                      <td colSpan={2}>
+                        {renderAuditMessage(log, auditTranslator(logMessages))}
+                      </td>
                       <td>{log.createdAt.toLocaleString(locale)}</td>
                     </tr>
                   ))}

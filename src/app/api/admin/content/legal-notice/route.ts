@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { legalNoticeKey } from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
 import { dropEmptyLocales } from "@/lib/translations";
@@ -53,10 +53,10 @@ export async function PATCH(request: Request) {
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          "update",
-          "les mentions légales",
+        ...auditMessageColumns(
+          auditMessage("legal-notice.update", {
+            actor: session.user.name ?? session.user.id,
+          }),
         ),
         action: "update",
         entityType: "static_content",

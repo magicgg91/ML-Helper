@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { isAlwaysActiveLocale } from "@/lib/locale-settings";
 import { prisma } from "@/lib/prisma";
 import { launchLocales } from "@/lib/translations";
@@ -49,10 +49,11 @@ export async function PATCH(request: Request) {
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          active ? "activate" : "deactivate",
-          `la langue ${locale.toUpperCase()}`,
+        ...auditMessageColumns(
+          auditMessage(`locale.${active ? "activate" : "deactivate"}`, {
+            actor: session.user.name ?? session.user.id,
+            locale: locale.toUpperCase(),
+          }),
         ),
         action: active ? "activate" : "deactivate",
         entityType: "locale",

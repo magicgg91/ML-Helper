@@ -1176,7 +1176,112 @@
       "pagination": "Pagination de l’historique",
       "previous": "Précédent",
       "next": "Suivant",
-      "page-summary": "Page {page} / {total}"
+      "page-summary": "Page {page} / {total}",
+      "messages": {
+        "city-parameters": {
+          "update": "{actor} a modifié les paramètres partagés des outils Villes"
+        },
+        "combat-equipment-increments": {
+          "create": "{actor} a créé les incréments par étoile des Équipements de Combat",
+          "update": "{actor} a modifié les incréments par étoile des Équipements de Combat"
+        },
+        "combat-equipment-secondary": {
+          "create": "{actor} a créé le Pouciel (fusion, gemmes, destruction) des Équipements de Combat",
+          "update": "{actor} a modifié le Pouciel (fusion, gemmes, destruction) des Équipements de Combat"
+        },
+        "combat-equipment": {
+          "create": "{actor} a créé le référentiel Équipements de Combat",
+          "update": "{actor} a modifié le référentiel Équipements de Combat"
+        },
+        "consumables": {
+          "create": "{actor} a créé le référentiel Boutique",
+          "update": "{actor} a modifié le référentiel Boutique"
+        },
+        "demo-attack-troops": {
+          "update": "{actor} a modifié les pourcentages d’attaque démo"
+        },
+        "events": {
+          "create": "{actor} a créé le référentiel Événements",
+          "update": "{actor} a modifié le référentiel Événements"
+        },
+        "expedition-equipment-increments": {
+          "create": "{actor} a créé les incréments par étoile des Équipements d’Expédition",
+          "update": "{actor} a modifié les incréments par étoile des Équipements d’Expédition"
+        },
+        "expedition-equipment-secondary": {
+          "create": "{actor} a créé le Terradust (fusion, destruction) des Équipements d’Expédition",
+          "update": "{actor} a modifié le Terradust (fusion, destruction) des Équipements d’Expédition"
+        },
+        "expedition-equipment": {
+          "create": "{actor} a créé le référentiel Équipements d’Expédition",
+          "update": "{actor} a modifié le référentiel Équipements d’Expédition"
+        },
+        "gems": {
+          "update": "{actor} a modifié les paramètres des Gemmes"
+        },
+        "guide": {
+          "activate": "{actor} a activé le guide {title}",
+          "create": "{actor} a créé le guide {title}",
+          "deactivate": "{actor} a désactivé le guide {title}",
+          "delete": "{actor} a supprimé le guide {title}",
+          "publish": "{actor} a publié le guide {title}",
+          "submit_review": "{actor} a soumis en validation le guide {title}",
+          "unpublish": "{actor} a dépublié le guide {title}",
+          "update": "{actor} a modifié le guide {title}",
+          "update_status": "{actor} a changé le statut du guide {title}"
+        },
+        "legal-notice": {
+          "update": "{actor} a modifié les mentions légales"
+        },
+        "level-up": {
+          "update": "{actor} a modifié les paramètres du référentiel Progression"
+        },
+        "locale": {
+          "activate": "{actor} a activé la langue {locale}",
+          "deactivate": "{actor} a désactivé la langue {locale}"
+        },
+        "logs": {
+          "purge": "{actor} a purgé {count, plural, one {# entrée} other {# entrées}} du journal"
+        },
+        "ranking": {
+          "update": "{actor} a modifié les seuils du classement"
+        },
+        "reference": {
+          "activate": "{actor} a activé le référentiel {slug}",
+          "deactivate": "{actor} a désactivé le référentiel {slug}"
+        },
+        "setup": "{actor} a créé le premier compte Super Admin",
+        "templars-reference": {
+          "create": "{actor} a créé la présentation du référentiel Templiers",
+          "update": "{actor} a modifié la présentation du référentiel Templiers"
+        },
+        "templars": {
+          "update": "{actor} a modifié les paramètres des Templiers"
+        },
+        "tool": {
+          "activate": "{actor} a activé l’outil {slug}",
+          "deactivate": "{actor} a désactivé l’outil {slug}"
+        },
+        "totp": {
+          "activate": "{actor} a activé l’authentification à deux facteurs de son compte",
+          "deactivate": "{actor} a désactivé l’authentification à deux facteurs de son compte"
+        },
+        "tracking": {
+          "delete": "{actor} a supprimé l’URL de suivi des visites",
+          "update": "{actor} a modifié l’URL de suivi des visites"
+        },
+        "user": {
+          "activate": "{actor} a activé l’utilisateur {username}",
+          "change_password": "{actor} a changé le mot de passe de son compte",
+          "create": "{actor} a créé l’utilisateur {username}",
+          "deactivate": "{actor} a désactivé l’utilisateur {username}",
+          "delete": "{actor} a supprimé l’utilisateur {username}",
+          "update": "{actor} a modifié l’utilisateur {username}"
+        },
+        "xp-gain-rate": {
+          "update": "{actor} a modifié les paliers du taux de gain d’XP"
+        }
+      }
     },
     "content": {
       "eyebrow": "Page institutionnelle",

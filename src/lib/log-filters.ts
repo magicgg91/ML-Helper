@@ -53,7 +53,17 @@ export function buildLogsWhere(
     where.user = { username: { contains: filters.user } };
   }
   if (filters.message) {
-    where.message = { contains: filters.message };
+    // Bloc 116/C: the message is no longer one French string to match
+    // against. It is a key and its parameters, and the parameters are what an
+    // admin actually types into this box — a username, a guide title, a slug.
+    // Stored as JSON *text* precisely so `contains` still reaches them. The
+    // key is searched too (so "guide.publish" finds those rows), and so is
+    // the French sentence of entries written before this bloc.
+    where.OR = [
+      { messageParams: { contains: filters.message } },
+      { messageKey: { contains: filters.message } },
+      { legacyMessage: { contains: filters.message } },
+    ];
   }
   const from =
     filters.from && isoDatePattern.test(filters.from)

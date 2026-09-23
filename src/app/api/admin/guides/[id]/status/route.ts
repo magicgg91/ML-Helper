@@ -3,7 +3,7 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canChangeGuideStatus, type GuideStatus } from "@/auth/guide-status";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { localizedText } from "@/lib/translations";
 import { canPerformGuideAction } from "@/auth/guide-actions";
 
@@ -64,10 +64,11 @@ export async function PATCH(
         userId: session.user.id,
         actorRole: session.user.role,
         action,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          action,
-          `le guide ${localizedText(before.title, "fr") || before.slug}`,
+        ...auditMessageColumns(
+          auditMessage(`guide.${action}`, {
+            actor: session.user.name ?? session.user.id,
+            title: localizedText(before.title, "fr") || before.slug,
+          }),
         ),
         entityType: "guide",
         entityId: id,

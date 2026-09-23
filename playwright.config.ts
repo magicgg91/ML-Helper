@@ -28,4 +28,17 @@ export default defineConfig({
     },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // Bloc 116/B: one retry, in CI only.
+  //
+  // A retry buys back the failures that are the runner's and not the app's —
+  // a socket reset from the dev server under concurrent load, a container
+  // that stalls — which cost a full red pipeline and a manual re-run twice in
+  // one week here. One, not more: a test that fails twice in a row on the
+  // same commit is telling the truth, and stacking attempts until it passes
+  // is how a genuinely broken test gets shipped. A flaky pass is reported as
+  // "flaky", not as a pass, so the signal survives.
+  //
+  // Locally there are no retries at all: a test that fails while you are
+  // writing it should fail immediately, not after a second attempt.
+  retries: process.env.CI ? 1 : 0,
 });

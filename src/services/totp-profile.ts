@@ -7,7 +7,7 @@ import {
   encryptTotpSecret,
   verifyTotpToken,
 } from "@/auth/totp";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 
 const tokenSchema = z.object({ token: z.string().regex(/^\d{6}$/) });
@@ -48,10 +48,8 @@ export async function enableTotp(userId: string, role: string, input: unknown) {
       data: {
         userId,
         actorRole: role,
-        message: auditMessage(
-          user.username,
-          "activate",
-          "l’authentification à deux facteurs de son compte",
+        ...auditMessageColumns(
+          auditMessage("totp.activate", { actor: user.username }),
         ),
         action: "activate_totp",
         entityType: "user",
@@ -85,10 +83,8 @@ export async function disableTotp(
       data: {
         userId,
         actorRole: role,
-        message: auditMessage(
-          user.username,
-          "deactivate",
-          "l’authentification à deux facteurs de son compte",
+        ...auditMessageColumns(
+          auditMessage("totp.deactivate", { actor: user.username }),
         ),
         action: "deactivate_totp",
         entityType: "user",

@@ -26,7 +26,7 @@ import {
 
 const base = {
   key: "combat-equipment",
-  target: "Équipements de Combat",
+  target: "combat-equipment" as const,
   columns: ["rarity", "set_name"],
   rows: [{ rarity: "Légendaire", set_name: "Spirit Fyra" }],
   userId: "user-1",
@@ -93,8 +93,12 @@ describe("saveReferenceTable", () => {
     const entry = tx.auditLog.create.mock.calls[0][0].data;
     expect(entry.action).toBe("update");
     expect(entry.diff).toEqual({ before: previous, after: base.rows });
-    expect(entry.message).toContain(base.actorName);
-    expect(entry.message).toContain(base.target);
+    // Bloc 116/C: the key is the target's slug plus the action, so an
+    // existing table reads as an update and a first save as a create.
+    expect(entry.messageKey).toBe("combat-equipment.update");
+    expect(JSON.parse(entry.messageParams)).toEqual({
+      actor: base.actorName,
+    });
   });
 
   it("aborts the whole save when the audit entry fails", async () => {

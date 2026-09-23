@@ -1,6 +1,10 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { auditMessage } from "../lib/audit-message";
+import {
+  auditMessage,
+  auditMessageColumns,
+  type AuditTarget,
+} from "../lib/audit-message";
 
 export async function saveFormulaParameters(input: {
   calculatorSlug: string;
@@ -9,7 +13,8 @@ export async function saveFormulaParameters(input: {
   userId: string;
   actorRole: string;
   actorName: string;
-  target: string;
+  /** Bloc 116/C: the slug half of the audit sentence's key, not a phrase. */
+  target: AuditTarget;
 }) {
   const calculator = await prisma.calculator.findUniqueOrThrow({
     where: { slug: input.calculatorSlug },
@@ -35,7 +40,9 @@ export async function saveFormulaParameters(input: {
       data: {
         userId: input.userId,
         actorRole: input.actorRole,
-        message: auditMessage(input.actorName, "update", input.target),
+        ...auditMessageColumns(
+          auditMessage(`${input.target}.update`, { actor: input.actorName }),
+        ),
         action: "update",
         entityType: "formula",
         entityId: formula.id,

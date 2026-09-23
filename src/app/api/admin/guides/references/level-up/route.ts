@@ -21,7 +21,7 @@ export async function PUT(request: Request) {
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
-    target: "les paramètres du référentiel Progression",
+    target: "level-up",
   });
   return NextResponse.json(parameters);
 }

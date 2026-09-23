@@ -1157,27 +1157,6 @@
       "activated": "Kullanıcı etkinleştirildi",
       "deactivated": "Kullanıcı devre dışı bırakıldı"
     },
-    "logs": {
-      "title": "Değişiklik geçmişi",
-      "actor": "İşlemi yapan",
-      "actor-role": "İşlem zamanındaki rol",
-      "message": "Mesaj",
-      "date": "Tarih",
-      "start": "Başlangıç tarihi",
-      "end": "Bitiş tarihi",
-      "purge": "Aralığı temizle",
-      "purged": "Geçmiş temizlendi",
-      "error": "Geçmiş temizlenemedi",
-      "filter-user": "Kullanıcı",
-      "filter-message": "Mesajda kelime",
-      "filter-apply": "Filtrele",
-      "filter-reset": "Sıfırla",
-      "no-results": "Filtrelere uyan giriş yok.",
-      "pagination": "Geçmiş sayfalama",
-      "previous": "Önceki",
-      "next": "Sonraki",
-      "page-summary": "Sayfa {page} / {total}"
-    },
     "content": {
       "eyebrow": "Kurumsal sayfa",
       "title": "Yasal bildirim",

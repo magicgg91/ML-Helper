@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { auditTranslator, renderAuditMessage } from "@/lib/audit-message";
 import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { LogPurgeForm } from "@/components/log-purge-form";
@@ -25,6 +26,9 @@ export default async function LogsPage({
 }: PageProps<"/admin/logs">) {
   const session = await requireCapability("logs.view");
   const t = await getTranslations("admin.logs");
+  // Bloc 116/C: the sentence is resolved here, in the admin's own
+  // language, from the key and parameters the row stores.
+  const messages = await getTranslations("admin.logs.messages");
   const resolvedSearchParams = await searchParams;
   const filters = parseLogFilters(resolvedSearchParams);
   const page = parseLogPage(resolvedSearchParams);
@@ -66,7 +70,7 @@ export default async function LogsPage({
                     </TableCell>
                     <TableCell>{log.actorRole}</TableCell>
                     <TableCell className="whitespace-normal">
-                      {log.message}
+                      {renderAuditMessage(log, auditTranslator(messages))}
                     </TableCell>
                     <TableCell>{log.createdAt.toISOString()}</TableCell>
                   </TableRow>

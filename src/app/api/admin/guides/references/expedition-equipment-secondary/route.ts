@@ -6,7 +6,10 @@ import {
   parseExpeditionDismantleBase,
   parseExpeditionMergeCostBase,
 } from "@/lib/reference-equipment";
-import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
+import {
+  saveReferenceTable,
+  stringField,
+} from "@/services/reference-table-admin";
 
 // Bloc 75/B: the admin editor is now 1 merged table with 2 fixed-order
 // rows — Fusion (Terradust merge cost), Destruction (Terradust on
@@ -39,7 +42,7 @@ export async function PUT(request: Request) {
   ];
   await saveReferenceTable({
     key: referenceKeys.expeditionSecondary,
-    target: "le Terradust (fusion, destruction) des Équipements d’Expédition",
+    target: "expedition-equipment-secondary",
     columns: ["metric_label_fr", "metric_label_en", ...mergeCostRarityKeys],
     rows,
     userId: session.user.id,

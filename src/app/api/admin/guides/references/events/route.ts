@@ -14,7 +14,10 @@ import {
   type EventTierRow,
 } from "@/lib/events";
 import { leagues } from "@/lib/player-settings";
-import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
+import {
+  saveReferenceTable,
+  stringField,
+} from "@/services/reference-table-admin";
 
 function parseTier(raw: unknown): EventTierRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid tier");
@@ -60,11 +63,7 @@ function parseEvent(raw: unknown): EventRow {
 
 function parseSeasonDurationDays(raw: unknown): number {
   const value = Number(raw);
-  if (
-    !Number.isInteger(value) ||
-    value < 1 ||
-    value > maxSeasonDurationDays
-  )
+  if (!Number.isInteger(value) || value < 1 || value > maxSeasonDurationDays)
     throw new Error("invalid season duration");
   return value;
 }
@@ -97,7 +96,7 @@ export async function PUT(request: Request) {
     ) as EventsCatalog;
     await saveReferenceTable({
       key: eventsReferenceKey,
-      target: "le référentiel Événements",
+      target: "events",
       columns: [
         "seasonDurationDays",
         "name",
@@ -113,6 +112,9 @@ export async function PUT(request: Request) {
     });
     return NextResponse.json(catalog);
   } catch {
-    return NextResponse.json({ error: "invalid_reference_rows" }, { status: 400 });
+    return NextResponse.json(
+      { error: "invalid_reference_rows" },
+      { status: 400 },
+    );
   }
 }

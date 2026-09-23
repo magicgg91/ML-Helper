@@ -7,7 +7,10 @@ import {
   parseCombatMergeCostBase,
   parseCombatSkydustBase,
 } from "@/lib/reference-equipment";
-import { saveReferenceTable, stringField } from "@/services/reference-table-admin";
+import {
+  saveReferenceTable,
+  stringField,
+} from "@/services/reference-table-admin";
 
 // Bloc 75/A: the admin editor is now 1 merged table with 3 fixed-order
 // rows — Fusion (merge cost), Gemmes (gem slots), Destruction (skydust) —
@@ -51,7 +54,7 @@ export async function PUT(request: Request) {
   ];
   await saveReferenceTable({
     key: referenceKeys.combatSecondary,
-    target: "le Pouciel (fusion, gemmes, destruction) des Équipements de Combat",
+    target: "combat-equipment-secondary",
     columns: ["metric_label_fr", "metric_label_en", ...mergeCostRarityKeys],
     rows,
     userId: session.user.id,
