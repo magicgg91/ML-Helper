@@ -73,15 +73,9 @@ vi.mock("@/components/admin-shop-editor", () => ({
     <Link href={backHref}>back</Link>
   ),
 }));
-vi.mock("@/components/events-admin-editor", () => ({
-  EventsReferenceScreen: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+vi.mock("@/components/admin-events-editor", () => ({
+  EventsReferenceEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
   ),
 }));
 
@@ -125,15 +119,16 @@ describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => 
     );
   });
 
-  it("Bloc60: routes 'reference-events' to EventsReferenceScreen", async () => {
+  it("Bloc60: routes 'reference-events' to the Événements editor", async () => {
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-events" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/referentiels");
+    expect(screen.getByRole("link", { name: /back/ })).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 });

@@ -6,7 +6,7 @@ import {
   ExpeditionReferenceScreen,
 } from "@/components/reference-admin-editors";
 import { ShopReferenceEditor } from "@/components/admin-shop-editor";
-import { EventsReferenceScreen } from "@/components/events-admin-editor";
+import { EventsReferenceEditor } from "@/components/admin-events-editor";
 import {
   getCombatReferenceRows,
   getCombatSecondaryBase,
@@ -72,10 +72,12 @@ export default async function EditReferentielPage({
   }
   if (id === "reference-events") {
     return (
-      <div className="admin-main">
-        <h1>{t("reference-events")}</h1>
-        <EventsReferenceScreen initialCatalog={await getEventsCatalog()} />
-      </div>
+      <EventsReferenceEditor
+        initialCatalog={await getEventsCatalog()}
+        backHref="/admin/referentiels"
+        backLabel={t("title")}
+        title={t("reference-events")}
+      />
     );
   }
   notFound();

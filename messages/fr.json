@@ -1182,7 +1182,14 @@
       "item-panel": "Objet sélectionné",
       "description-to-write": "Description à rédiger",
       "sapphires": "saphirs",
-      "cost-unconfirmed": "Coût à confirmer"
+      "cost-unconfirmed": "Coût à confirmer",
+      "events-subtitle": "Les événements de chaque ligue, dans l’ordre où ils s’enchaînent, et leurs paliers.",
+      "events-season-title": "Saison",
+      "events-of-league": "Événements — {league}",
+      "event-unnamed": "Événement sans nom",
+      "tier-count": "{count, plural, =0 {aucun palier} one {# palier} other {# paliers}}",
+      "tiers-empty": "Aucun palier pour l’instant.",
+      "events-season-overrun-of": "{league} : la durée cumulée des événements ({total}) dépasse la durée de la saison ({season})."
     },
     "common": {
       "back": "Retour",

@@ -1182,7 +1182,14 @@
       "item-panel": "Selected item",
       "description-to-write": "Description to write",
       "sapphires": "sapphires",
-      "cost-unconfirmed": "Cost to confirm"
+      "cost-unconfirmed": "Cost to confirm",
+      "events-subtitle": "Each league’s events, in the order they chain, and their tiers.",
+      "events-season-title": "Season",
+      "events-of-league": "Events — {league}",
+      "event-unnamed": "Unnamed event",
+      "tier-count": "{count, plural, =0 {no tier} one {# tier} other {# tiers}}",
+      "tiers-empty": "No tier yet.",
+      "events-season-overrun-of": "{league}: the events add up to {total}, which is longer than the season ({season})."
     },
     "common": {
       "back": "Back",

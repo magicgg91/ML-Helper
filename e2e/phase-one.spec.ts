@@ -1477,10 +1477,11 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
   await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
 
   // Bloc 61 pattern: league buttons, not a select box — Bronze by default.
-  const leagueGroup = page.getByRole("group", { name: "Ligue" });
+  // Bloc 119: one league is chosen at a time, so they are a radiogroup.
+  const leagueGroup = page.getByRole("radiogroup", { name: "Ligue" });
   await expect(
-    leagueGroup.getByRole("button", { name: "Bronze" }),
-  ).toHaveAttribute("aria-pressed", "true");
+    leagueGroup.getByRole("radio", { name: "Bronze" }),
+  ).toHaveAttribute("aria-checked", "true");
 
   await page.getByTestId("add-event-bronze").click();
   await page.getByLabel("Nom de l’événement 1").fill("Recruteur");
@@ -1489,12 +1490,12 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .fill("Enrôle des troupes pour la ligue.");
   // Bloc 79/B: buttons instead of a <select> for the fixed 3-value enum.
   await page
-    .getByRole("group", { name: "Durée de l’événement 1" })
-    .getByRole("button", { name: "48h" })
+    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
+    .getByRole("radio", { name: "48h" })
     .click();
-  // The tier list is inside a collapsible <details>, closed by default —
-  // open it before its "+" add-tier button becomes clickable.
-  await page.getByText("Paliers (0)").click();
+  // Bloc 119: an event is one line, and its tiers appear under it only once
+  // it is unfolded.
+  await page.getByRole("button", { name: /^Recruteur/ }).click();
   await page.getByTestId("add-tier-bronze-0").click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
@@ -1504,16 +1505,16 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .fill("100M or + 250 éclats");
   // Bloc 60 review (Codex PR #81): tier text is captured per fr/en field —
   // switch the editorial locale and fill the English pair too.
-  await page.getByLabel("Langue du texte").selectOption("en");
+  await page.getByRole("button", { name: "en", exact: true }).click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
     .fill("1B troops enlisted");
   await page
     .getByLabel("Récompense du palier 1 de Recruteur")
     .fill("100M gold + 250 shards");
-  await page.getByLabel("Langue du texte").selectOption("fr");
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
-  await expect(page.getByRole("status")).toHaveText("Référentiel enregistré.");
+  await page.getByRole("button", { name: "fr", exact: true }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   // Public: entirely independent per league — Légende stays empty while
   // Bronze has the event just saved; the event is closed by default.
@@ -1574,8 +1575,8 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   // tests (same server/db), so Bronze isn't the empty league it looks like
   // in isolation.
   await page
-    .getByRole("group", { name: "Ligue" })
-    .getByRole("button", { name: "Argent" })
+    .getByRole("radiogroup", { name: "Ligue" })
+    .getByRole("radio", { name: "Argent" })
     .click();
   // Argent's season shrunk to 1 day (24h) — a single 48h event then
   // overruns it, simpler to set up than piling up several events.
@@ -1583,14 +1584,18 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
   await page
-    .getByRole("group", { name: "Durée de l’événement 1" })
-    .getByRole("button", { name: "48h" })
+    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
+    .getByRole("radio", { name: "48h" })
     .click();
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
-  await expect(page.getByRole("status")).toHaveText(
-    "Corrige les champs signalés avant l’enregistrement.",
-  );
+  // Bloc 119: the save's own message names the league it refused for — the
+  // screen shows one league at a time.
+  await expect(
+    page.getByText(
+      "Argent : la durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
+    ),
+  ).toBeVisible();
   await expect(
     page.getByText(
       "La durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
