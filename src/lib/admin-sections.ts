@@ -120,3 +120,28 @@ export function isReadOnlyRole(role: string): boolean {
   const sections = roleSections(role);
   return sections.length > 0 && sections.every(({ canWrite }) => !canWrite);
 }
+
+/**
+ * What a role may change, and what it may only look at — the two lists the
+ * Users screen turns into the one-line description under each role's radio
+ * button (Bloc 119 §3).
+ *
+ * The dashboard is left out of both: every role can open it, and it says
+ * nothing about what the role is for.
+ */
+export function roleSectionSummary(role: string): {
+  writable: AdminSectionKey[];
+  readable: AdminSectionKey[];
+} {
+  const sections = roleSections(role).filter(
+    ({ section }) => section.key !== "dashboard",
+  );
+  return {
+    writable: sections
+      .filter(({ canWrite }) => canWrite)
+      .map(({ section }) => section.key),
+    readable: sections
+      .filter(({ canWrite }) => !canWrite)
+      .map(({ section }) => section.key),
+  };
+}

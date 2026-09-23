@@ -111,7 +111,7 @@ const rootTranslator = /(?:useTranslations|getTranslations)\(\s*\)/;
  * The top-level namespaces a file names — as the argument of
  * `useTranslations`/`getTranslations`, or, in a file that builds a root
  * translator, as the first segment of a fully-qualified key
- * (`t("admin.users.role")`, `` t(`roles.${role}`) `` in UsersManager).
+ * (`t("admin.users.role")`, `` t(`roles.${role}`) `` in AdminUsersList).
  *
  * The literal scan is confined to those files on purpose: elsewhere a dotted
  * string is something else entirely — an audit message key in an API route,

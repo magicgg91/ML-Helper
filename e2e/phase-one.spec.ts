@@ -943,12 +943,21 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     name: "Navigation administration",
   });
 
+  // Bloc 119: creation opens a side panel, and the role is a radio button
+  // carrying a description computed from the permission matrix.
   await adminNav.getByRole("link", { name: "Utilisateurs" }).click();
-  const createForm = page.locator('form:has(input[name="username"])');
-  await createForm.locator('input[name="username"]').fill("phase1admin");
-  await createForm.locator('input[name="password"]').fill("phase-one-password");
-  await createForm.locator('select[name="role"]').selectOption("admin");
-  await createForm
+  await page
+    .getByRole("button", { name: /New user|Nouvel utilisateur/ })
+    .click();
+  const createPanel = page.getByRole("dialog", {
+    name: /New user|Nouvel utilisateur/,
+  });
+  await createPanel.getByLabel(/Username|Identifiant/).fill("phase1admin");
+  await createPanel
+    .getByLabel(/Password|Mot de passe/)
+    .fill("phase-one-password");
+  await createPanel.getByRole("radio", { name: /^Admin/ }).check();
+  await createPanel
     .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
     .click();
   await expect(page.getByRole("status")).toHaveText(
@@ -1208,8 +1217,9 @@ test("deactivating a user blocks sign-in until reactivated", async ({
 
   await root.goto("/admin/users");
   const row = root.getByRole("row", { name: /togglable-user/ });
+  // Bloc 119: one switch per row, which says which state it is in.
   await expect(row.getByText("Actif")).toBeVisible();
-  await row.getByRole("button", { name: "Désactiver" }).click();
+  await row.getByRole("switch").click();
   await expect(root.getByRole("status")).toHaveText("Utilisateur désactivé");
   await expect(row.getByText("Désactivé")).toBeVisible();
 
@@ -1228,7 +1238,7 @@ test("deactivating a user blocks sign-in until reactivated", async ({
   );
   await expect(disabledPage).toHaveURL(/\/login$/);
 
-  await row.getByRole("button", { name: "Activer" }).click();
+  await row.getByRole("switch").click();
   await expect(root.getByRole("status")).toHaveText("Utilisateur activé");
   await expect(row.getByText("Actif")).toBeVisible();
 
@@ -1250,6 +1260,15 @@ test("deactivating a user blocks sign-in until reactivated", async ({
     { data: { active: false } },
   );
   expect(selfDeactivate.status()).toBe(400);
+  // Bloc 119: and nobody demotes themselves either — only a Super Admin can
+  // hand the role back, so the account doing it would be taking away the
+  // last hand that could undo it.
+  const selfDemote = await root.request.patch(`/api/admin/users/${selfId}`, {
+    data: { role: "read_only" },
+  });
+  expect(selfDemote.status()).toBe(400);
+  const selfDelete = await root.request.delete(`/api/admin/users/${selfId}`);
+  expect(selfDelete.status()).toBe(400);
 });
 
 test("the audit log paginates by 20 entries", async ({ page }) => {
