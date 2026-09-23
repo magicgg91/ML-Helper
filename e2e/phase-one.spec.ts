@@ -1,23 +1,40 @@
 import { expect, test, type Page } from "@playwright/test";
 import { defaultLevelUpParameters } from "../src/lib/level-up";
 import * as OTPAuth from "otpauth";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { resetE2eDatabase } from "../prisma/e2e-seed";
 
-// Bloc 116/B: this file opts out of the retry playwright.config.ts grants in
-// CI, and has to.
+// Bloc 121: this file is retryable again, which it was not from Bloc 116/B
+// until here.
 //
-// It is one serial scenario, in file order, over one database seeded once
-// before the run by `pnpm test:e2e:prepare`: the second test creates the
-// one-time Super Admin, and everything after it signs in as that account. In
-// serial mode Playwright retries the whole group from its first test, so a
-// retry re-runs that one-time setup against a database that already has it —
-// `/admin` redirects to `/login` instead of `/admin/setup`, and the group can
-// never recover. Seen for real on the first CI run of PR #142.
+// It is one serial scenario, in file order, over one database: the second
+// test creates the one-time Super Admin, and everything after it signs in as
+// that account. In serial mode Playwright retries the whole group from its
+// first test, and that used to replay the one-time setup against a database
+// that already had it — `/admin` redirected to `/login` instead of
+// `/admin/setup`, and the group could never recover. Seen for real on the
+// first CI run of PR #142, which is why the file carried `retries: 0`.
 //
-// A retry only helps a test that can start from the state it asserts. Making
-// this scenario retryable means giving each attempt its own database, which
-// is its own piece of work; until then, retrying it would turn one flake into
-// a guaranteed red run.
-test.describe.configure({ mode: "serial", retries: 0 });
+// The fix is the state, not the retry: the hook below rebuilds the database
+// from scratch before each attempt, so attempt 2 starts from exactly what
+// attempt 1 started from. The Super Admin is not merely re-usable, it is
+// re-created, by the same `/admin/setup` flow the second test exercises.
+//
+// The order dependency inside an attempt is deliberate and unchanged — this
+// is one scenario, not 46 independent tests, and several of them read state
+// an earlier one wrote. What was missing was the guarantee that an attempt
+// begins where the previous one did.
+test.describe.configure({ mode: "serial" });
+
+// Runs once per attempt: Playwright discards the worker when a serial group
+// fails, and the retry brings a new one up through this hook again. It is the
+// only file that writes to the database, and playwright.config.ts orders the
+// `admin` project after `public` so this reset cannot land under a reader.
+test.beforeAll(async () => {
+  await resetE2eDatabase();
+});
 
 test("health endpoint confirms application and database availability", async ({
   request,
@@ -3367,4 +3384,101 @@ test("every admin screen stays English for a reader browsing publicly in German"
   }
 
   await context.close();
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 121 — the retry drill.
+//
+// This is the proof that a second attempt starts from a clean database, and
+// it can only be made by actually failing once. It is therefore off by
+// default: a test that always fails its first attempt would report the suite
+// as flaky on every run, which is exactly the signal Bloc 116/B went to
+// trouble to keep meaningful.
+//
+// Run it on purpose, with retries on, from a clean database — the whole
+// scenario, not this test alone: the drill signs in as the Super Admin the
+// second test creates, so grepping it out of the group leaves it nothing to
+// sign in with.
+//
+//   rm -f prisma/e2e.db
+//   E2E_RETRY_DRILL=1 CI=1 pnpm test:e2e --project=admin
+//
+// Attempt 1 records the Super Admin's id, creates a user, and fails on
+// purpose. Attempt 2 — which Playwright restarts from the first test of this
+// serial group, through the beforeAll reset — asserts that the user is gone
+// and that the Super Admin is a different row: re-created by /admin/setup,
+// not left over. It has to be the last test in the file, because a failure in
+// a serial group skips whatever follows it.
+// ---------------------------------------------------------------------------
+const retryDrillState = path.join(tmpdir(), "ml-helper-retry-drill.json");
+
+test("Bloc 121 retry drill: the second attempt starts from a clean database", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    process.env.E2E_RETRY_DRILL !== "1",
+    "opt-in: see the comment above for the command",
+  );
+  test.skip(
+    testInfo.project.retries < 1,
+    "the drill needs a retry to be granted — run it with CI=1",
+  );
+
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const users = async () =>
+    (await (await page.request.get("/api/admin/users")).json()) as {
+      id: string;
+      username: string;
+    }[];
+  const marker = "retry-drill-marker";
+
+  if (testInfo.retry === 0) {
+    const rootadmin = (await users()).find(
+      (user) => user.username === "rootadmin",
+    );
+    expect(rootadmin, "no Super Admin to record").toBeDefined();
+    const created = await page.request.post("/api/admin/users", {
+      data: { username: marker, role: "read_only", password: "drill-password" },
+    });
+    expect(created.status()).toBe(201);
+    writeFileSync(
+      retryDrillState,
+      JSON.stringify({ rootadminId: rootadmin!.id }),
+      "utf8",
+    );
+    // The controlled failure. Everything above is real state that must not
+    // survive into the next attempt.
+    throw new Error(
+      "Bloc 121 drill: failing attempt 1 on purpose, with a user created and the Super Admin's id recorded",
+    );
+  }
+
+  const { rootadminId } = JSON.parse(readFileSync(retryDrillState, "utf8")) as {
+    rootadminId: string;
+  };
+  rmSync(retryDrillState, { force: true });
+
+  const afterRetry = await users();
+  expect(
+    afterRetry.map((user) => user.username),
+    "a user created by the failed attempt survived into this one",
+  ).not.toContain(marker);
+
+  const rootadmin = afterRetry.find((user) => user.username === "rootadmin");
+  expect(rootadmin, "the Super Admin was not re-created").toBeDefined();
+  expect(
+    rootadmin!.id,
+    "the Super Admin is the same row as attempt 1 — the database was reused, not rebuilt",
+  ).not.toBe(rootadminId);
+
+  // And the seeded content is back as it was, not as attempt 1 left it.
+  await page.goto("/admin");
+  await expect(page.getByText("Vue d’ensemble")).toBeVisible();
 });

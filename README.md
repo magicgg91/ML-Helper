@@ -99,6 +99,23 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
+The end-to-end suite runs as two projects over one dev server. `public` holds
+every read-only spec; `admin` holds `e2e/phase-one.spec.ts`, the one serial
+scenario that writes, and runs only once `public` is done — it rebuilds the
+database before each attempt, and that reset must never land while another
+file is reading. Both get the single retry `CI=1` grants.
+
+To prove a retry really starts from a clean database (opt-in — it fails its
+first attempt on purpose):
+
+```sh
+rm -f prisma/e2e.db
+E2E_RETRY_DRILL=1 CI=1 pnpm test:e2e --project=admin
+```
+
+The expected outcome is `1 flaky`, not `1 failed`: attempt 1 records the Super
+Admin's id and creates a user, attempt 2 finds neither.
+
 ## Adding a language
 
 Add `messages/<locale>.json` — a two-letter code, or `pt-br` for a regional

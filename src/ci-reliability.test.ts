@@ -92,11 +92,13 @@ describe("Bloc 116/B: Playwright retries", () => {
     expect((await loadConfig()).retries).toBeLessThanOrEqual(1);
   });
 
-  // A retry only helps a test that can start from the state it asserts. The
-  // serial scenario in phase-one.spec.ts cannot: Playwright retries a serial
-  // group from its first test, which re-runs the one-time Super Admin setup
-  // against a database that already has one. It must keep opting out.
-  it("keeps the serial scenario out of the retry", () => {
+  // Bloc 121 replaces what stood here. A retry only helps a test that can
+  // start from the state it asserts, and the serial scenario in
+  // phase-one.spec.ts could not — so it used to opt out with `retries: 0`,
+  // and this asserted that it kept doing so. It now rebuilds the database
+  // before each attempt instead, and the assertion is the opposite one: the
+  // opt-out must be gone, and the reset that replaced it must be there.
+  it("lets the serial scenario retry, now that each attempt reseeds", () => {
     const spec = readFileSync("e2e/phase-one.spec.ts", "utf8");
     const configure = spec.match(/test\.describe\.configure\(([^)]*)\)/)?.[1];
     expect(
@@ -106,7 +108,32 @@ describe("Bloc 116/B: Playwright retries", () => {
     expect(configure).toContain('mode: "serial"');
     expect(
       configure,
-      "the serial scenario would retry from its first test",
-    ).toContain("retries: 0");
+      "the serial scenario is opting out of the retry again",
+    ).not.toContain("retries");
+    // The opt-out is only safe to drop because of this hook — asserted
+    // together so one can never be removed without the other.
+    expect(spec, "nothing reseeds the database between attempts").toMatch(
+      /test\.beforeAll\(async \(\) => \{\s*await resetE2eDatabase\(\);/,
+    );
+  });
+
+  // The reset drops tables. Ordering the projects is what keeps it away from
+  // the files that are reading them, so the two belong to the same fix.
+  it("runs the admin scenario after every other file, never alongside", async () => {
+    const config = await loadConfig();
+    const projects = config.projects ?? [];
+    const admin = projects.find((project) => project.name === "admin");
+    const publicProject = projects.find((project) => project.name === "public");
+    expect(admin?.testMatch, "the admin project lost phase-one").toEqual(
+      /phase-one\.spec\.ts/,
+    );
+    expect(
+      publicProject?.testIgnore,
+      "the public project would run phase-one too",
+    ).toEqual(/phase-one\.spec\.ts/);
+    expect(
+      admin?.dependencies,
+      "the reset could land while another file is reading",
+    ).toEqual(["public"]);
   });
 });
