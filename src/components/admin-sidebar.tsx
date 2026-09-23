@@ -16,7 +16,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId } from "react";
-import { can, type AdminCapability } from "@/auth/permissions";
+import { can } from "@/auth/permissions";
+import {
+  adminSectionGroups,
+  adminSections,
+  type AdminSectionKey,
+} from "@/lib/admin-sections";
 import { cn } from "@/lib/utils";
 import { AdminAccountMenu } from "./admin-account-menu";
 import { AdminLocaleToggle } from "./admin-locale-toggle";
@@ -47,103 +52,26 @@ export type AdminSidebarCounts = {
   legalPlaceholders?: number;
 };
 
-type NavEntryKey =
-  | "dashboard"
-  | "tools"
-  | "referentiels"
-  | "guides"
-  | "content"
-  | "users"
-  | "logs"
-  | "config";
-
-type NavEntry = {
-  key: NavEntryKey;
-  href: string;
-  capability: AdminCapability;
-  icon: LucideIcon;
+/**
+ * The icon of each section. The sections themselves — their order, their
+ * group, their href and the capability that opens them — come from
+ * lib/admin-sections.ts, which the Users screen reads too; only the drawing
+ * is this component's business.
+ */
+const icons: Record<AdminSectionKey, LucideIcon> = {
+  dashboard: LayoutDashboardIcon,
+  tools: WrenchIcon,
+  referentiels: LibraryIcon,
+  guides: BookOpenIcon,
+  content: ScaleIcon,
+  users: UsersIcon,
+  logs: HistoryIcon,
+  config: SettingsIcon,
 };
-
-type NavGroup = {
-  /** "main" carries no heading: the dashboard stands on its own (§2). */
-  key: "main" | "content" | "access" | "site";
-  entries: readonly NavEntry[];
-};
-
-const navigation: readonly NavGroup[] = [
-  {
-    key: "main",
-    entries: [
-      {
-        key: "dashboard",
-        href: "/admin",
-        capability: "dashboard.view",
-        icon: LayoutDashboardIcon,
-      },
-    ],
-  },
-  {
-    key: "content",
-    entries: [
-      {
-        key: "tools",
-        href: "/admin/tools",
-        capability: "calculators.read",
-        icon: WrenchIcon,
-      },
-      {
-        key: "referentiels",
-        href: "/admin/referentiels",
-        capability: "references.read",
-        icon: LibraryIcon,
-      },
-      {
-        key: "guides",
-        href: "/admin/guides",
-        capability: "guides.read",
-        icon: BookOpenIcon,
-      },
-      {
-        key: "content",
-        href: "/admin/content",
-        capability: "content.read",
-        icon: ScaleIcon,
-      },
-    ],
-  },
-  {
-    key: "access",
-    entries: [
-      {
-        key: "users",
-        href: "/admin/users",
-        capability: "users.read",
-        icon: UsersIcon,
-      },
-      {
-        key: "logs",
-        href: "/admin/logs",
-        capability: "logs.view",
-        icon: HistoryIcon,
-      },
-    ],
-  },
-  {
-    key: "site",
-    entries: [
-      {
-        key: "config",
-        href: "/admin/config",
-        capability: "configuration.read",
-        icon: SettingsIcon,
-      },
-    ],
-  },
-];
 
 /** The counter shown on an entry, or undefined when it carries none. */
 function entryCount(
-  key: NavEntryKey,
+  key: AdminSectionKey,
   counts: AdminSidebarCounts,
 ): number | undefined {
   if (key === "tools") return counts.tools;
@@ -191,25 +119,25 @@ export function AdminSidebar({
         aria-label={t("navigation-label")}
         className="flex-1 overflow-y-auto px-3 pb-4"
       >
-        {navigation.map((group) => {
-          const entries = group.entries.filter((entry) =>
-            can(role, entry.capability),
+        {adminSectionGroups.map((group) => {
+          const entries = adminSections.filter(
+            (section) => section.group === group && can(role, section.read),
           );
           if (entries.length === 0) return null;
-          const headingId = `${groupHeadingId}-${group.key}`;
+          const headingId = `${groupHeadingId}-${group}`;
           return (
-            <div key={group.key} className="pt-4 first:pt-0">
-              {group.key !== "main" && (
+            <div key={group} className="pt-4 first:pt-0">
+              {group !== "main" && (
                 <p
                   id={headingId}
                   className="admin-eyebrow px-3 pb-2 text-admin-dim"
                 >
-                  {t(`navigation.group-${group.key}`)}
+                  {t(`navigation.group-${group}`)}
                 </p>
               )}
               <ul
                 className="flex flex-col gap-0.5"
-                aria-labelledby={group.key === "main" ? undefined : headingId}
+                aria-labelledby={group === "main" ? undefined : headingId}
               >
                 {entries.map((entry) => {
                   // Same rule as the bar it replaces: /admin is only current
@@ -219,7 +147,7 @@ export function AdminSidebar({
                       ? pathname === entry.href
                       : pathname.startsWith(entry.href);
                   const count = entryCount(entry.key, counts);
-                  const Icon = entry.icon;
+                  const Icon = icons[entry.key];
                   return (
                     <li key={entry.key}>
                       <Link
