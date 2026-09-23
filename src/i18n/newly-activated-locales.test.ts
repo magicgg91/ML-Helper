@@ -9,32 +9,46 @@ function translate(messages: Record<string, unknown>, path: string) {
 }
 
 // Bloc 44: confirms real, delivered DE/ES/TR static text renders correctly
-// (not just present) on 3 different screens — Navigation (every page),
-// /tools, and /admin — for each of the 3 newly-activated locales.
-describe("Bloc 44: DE/ES/TR static text across 3 screens", () => {
+// (not just present) on the public screens — Navigation (every page) and
+// /tools — for each of the 3 newly-activated locales.
+//
+// Bloc 118: /admin used to be the third screen here, asserting "Panel" and
+// "Kontrol Paneli". The admin is EN/FR now, so that expectation moved to the
+// opposite assertion below: the same key, read in the same three locales,
+// must come back in English. The public half is deliberately untouched — it
+// is this bloc's non-regression guard that narrowing the admin narrowed
+// nothing else.
+describe("Bloc 44: DE/ES/TR static text on the public screens", () => {
   const expectations = {
     de: {
       "Navigation.tools": "Werkzeuge",
       "tools.title": "Entscheide mit den richtigen Zahlen",
-      "admin.dashboard.title": "Dashboard",
     },
     es: {
       "Navigation.tools": "Herramientas",
       "tools.title": "Decide con las cifras correctas",
-      "admin.dashboard.title": "Panel",
     },
     tr: {
       "Navigation.tools": "Araçlar",
       "tools.title": "Doğru rakamlarla karar ver",
-      "admin.dashboard.title": "Kontrol Paneli",
     },
   } as const;
 
   for (const [locale, keys] of Object.entries(expectations)) {
-    it(`renders ${locale.toUpperCase()} text on Navigation, /tools and /admin`, async () => {
+    it(`renders ${locale.toUpperCase()} text on Navigation and /tools`, async () => {
       const messages = await getMessagesForLocale(locale);
       for (const [path, expected] of Object.entries(keys))
         expect(translate(messages, path)).toBe(expected);
     });
   }
+
+  // The admin screen these three locales used to cover, now on the other
+  // side of the border drawn by Bloc 118.
+  it("reads the admin dashboard in English in all three", async () => {
+    for (const locale of ["de", "es", "tr"]) {
+      const messages = await getMessagesForLocale(locale);
+      expect(translate(messages, "admin.dashboard.title")).toBe("Dashboard");
+      expect(translate(messages, "login.title")).toBe("Admin sign in");
+    }
+  });
 });
