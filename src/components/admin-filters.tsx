@@ -107,7 +107,7 @@ export function SearchInput({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="admin-focus h-[var(--admin-control-h)] w-full rounded-admin-control border border-admin-card-border bg-admin-card pr-3 pl-9 text-sm text-admin-text placeholder:text-admin-dim"
+        className="admin-control admin-focus h-[var(--admin-control-h)] w-full rounded-admin-control border border-admin-card-border bg-admin-card pr-3 pl-9 text-sm text-admin-text placeholder:text-admin-dim"
       />
     </div>
   );

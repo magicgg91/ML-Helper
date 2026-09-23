@@ -117,11 +117,13 @@ describe("Bloc 38 public reference/homepage styles", () => {
   });
 
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
+    // Bloc 119: the selector lost its `main` prefix — the admin's <main> is
+    // the shell's, and each screen's container below it is a div.
     expect(css).toMatch(
-      /main\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
+      /\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
     );
     expect(css).toMatch(
-      /main\.admin-main input\[type="number"\]::-webkit-inner-spin-button,\s*\nmain\.admin-main input\[type="number"\]::-webkit-outer-spin-button\s*{\s*appearance: none;/,
+      /\.admin-main input\[type="number"\]::-webkit-inner-spin-button,\s*\n\.admin-main input\[type="number"\]::-webkit-outer-spin-button\s*{\s*appearance: none;/,
     );
   });
 
@@ -383,7 +385,9 @@ describe("Bloc 68/B: Boutique tile cost badge moves under the name, mobile only"
   // top-right via space-between — the mobile override above must not leak
   // into the base (non-media-query) rule.
   it("leaves the desktop rule untouched: still a row, still space-between", () => {
-    const heading = css.match(/\.consumable-tile-heading\s*{([\s\S]*?)\n}/)?.[1];
+    const heading = css.match(
+      /\.consumable-tile-heading\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(heading).toBeDefined();
     expect(heading).toMatch(/justify-content: space-between/);
     expect(heading).not.toMatch(/flex-direction/);
@@ -481,7 +485,9 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
   it("B: lays the Templiers tiles out 3 per row, dropping to 1 column on mobile, images at 6rem", () => {
     const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(grid).toBeDefined();
-    expect(grid).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+    expect(grid).toMatch(
+      /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+    );
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -499,7 +505,9 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
       "gems-tile-title",
       "templars-tile-title",
     ]) {
-      const rule = css.match(new RegExp(`\\.${selector}\\s*{([\\s\\S]*?)\\n}`))?.[1];
+      const rule = css.match(
+        new RegExp(`\\.${selector}\\s*{([\\s\\S]*?)\\n}`),
+      )?.[1];
       expect(rule, selector).toBeDefined();
       expect(rule, selector).toMatch(/font-size: 1\.1rem;/);
     }
@@ -525,7 +533,9 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
       /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-rarity\s*{([\s\S]*?)\n {2}}/,
     )?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/,
+    );
     expect(css).toMatch(
       /\.reference-filter-grid-rarity button:nth-child\(1\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(2\)\s*{\s*\n\s*grid-column: span 3;/,
     );
@@ -629,7 +639,9 @@ describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
   it("gives .templars-cost-fields 3 equal columns on desktop, 1 on mobile", () => {
     const rule = css.match(/\.templars-cost-fields\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    );
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -657,7 +669,9 @@ describe("Bloc 69/A: banner buttons center their content vertically", () => {
 // buttons, and full-width numeric fields.
 describe("Bloc 69/G: Ranking mobile-only redesign", () => {
   it("stacks each ranking field's label above its control on mobile only, leaving the desktop inline-label rule untouched", () => {
-    const desktopRule = css.match(/\.ranking-inline-field\s*{([\s\S]*?)\n}/)?.[1];
+    const desktopRule = css.match(
+      /\.ranking-inline-field\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(desktopRule).toBeDefined();
     expect(desktopRule).toMatch(/align-items: center;/);
     expect(desktopRule).not.toMatch(/flex-direction: column;/);
@@ -701,7 +715,9 @@ describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern
     // .ranking-inline-field itself must still exist for the 2 numeric
     // fields (Bloc 64/G, tested in Bloc 69/G above) — only the league
     // field's own rule declares the 50% width independently.
-    const leagueRule = css.match(/\.ranking-league-field\s*{([\s\S]*?)\n}/)?.[1];
+    const leagueRule = css.match(
+      /\.ranking-league-field\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(leagueRule).toBeDefined();
     expect(leagueRule).not.toMatch(/display: flex;/);
   });
@@ -968,19 +984,17 @@ describe("Bloc 73/C: Classement league buttons genuinely hold 50%, at every desk
 // (never "N★"/"N*" text) for both the equipment and each gem.
 describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column right", () => {
   it("lays the slot's body out as a row: left column (image+star), right column (stacked gems)", () => {
+    expect(css).toMatch(/\.stuff-slot-layout\s*{\s*\n\s*display: flex;/);
     expect(css).toMatch(
-      /\.stuff-slot-layout\s*{\s*\n\s*display: flex;/,
+      /\.stuff-slot-left\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/,
     );
-    expect(css).toMatch(/\.stuff-slot-left\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/);
     expect(css).toMatch(
       /\.stuff-slot-gems\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/,
     );
   });
 
   it("defines the shared star-rating rendering (converts fully to a distinct yellow past level 4)", () => {
-    expect(css).toMatch(
-      /\.star-rating svg\s*{\s*\n\s*fill: currentColor;/,
-    );
+    expect(css).toMatch(/\.star-rating svg\s*{\s*\n\s*fill: currentColor;/);
     // Bloc 74/B replaced the var(--amber-bright) reference — see that
     // block below for the current (fixed-value) rule.
     expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: #a8710a;/);
@@ -1007,7 +1021,9 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     )?.[0];
     expect(mediaBlock).toBeDefined();
     expect(mediaBlock).toMatch(/max-height: 1\.6rem;/);
-    expect(mediaBlock).toMatch(/\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/);
+    expect(mediaBlock).toMatch(
+      /\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/,
+    );
   });
 
   // Bloc 78/B: Expedition gets its own mobile floor for the new
@@ -1151,7 +1167,9 @@ describe("Bloc 80/C: Événements admin event row is a real grid, aligned across
   });
 
   it("gives Nom a fixed width too, same width-per-column requirement the grid above needs to actually line up", () => {
-    const rule = css.match(/\.events-admin-name-field input\s*{([\s\S]*?)\n}/)?.[0];
+    const rule = css.match(
+      /\.events-admin-name-field input\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/width: 14rem;/);
   });
@@ -1233,15 +1251,21 @@ describe("Bloc 80/E: Récompense (tier level) is 3x the base field width, Object
 
 describe("Bloc 80/F: the manual color picker's toggle + popup swatch grid", () => {
   it("styles the toggle as a round swatch button and the popup as a floating grid of round options", () => {
-    const toggle = css.match(/\.events-color-picker-toggle\s*{([\s\S]*?)\n}/)?.[0];
+    const toggle = css.match(
+      /\.events-color-picker-toggle\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(toggle).toBeDefined();
     expect(toggle).toMatch(/border-radius: 999px;/);
 
-    const options = css.match(/\.events-color-picker-options\s*{([\s\S]*?)\n}/)?.[0];
+    const options = css.match(
+      /\.events-color-picker-options\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(options).toBeDefined();
     expect(options).toMatch(/position: absolute;/);
 
-    const option = css.match(/\.events-color-picker-option\s*{([\s\S]*?)\n}/)?.[0];
+    const option = css.match(
+      /\.events-color-picker-option\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(option).toBeDefined();
     expect(option).toMatch(/border-radius: 999px;/);
   });
@@ -1314,7 +1338,9 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
   it("lays out a 2-per-row grid, 1 on mobile — same breakpoint/columns as .consumable-tile-grid", () => {
     const rule = css.match(/\.events-tile-grid\s*{([\s\S]*?)\n}/)?.[0];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
     const mobileBlock = css.match(
       /@media \(max-width: 900px\) {\s*\n\s*\.events-tile-grid\s*{([\s\S]*?)\n\s*}/,
     )?.[0];
@@ -1337,7 +1363,9 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
     expect(tileRule).toBeDefined();
     expect(tileRule).toMatch(/background: var\(--surface-muted\);/);
 
-    const headingRule = css.match(/\.events-tile-heading\s*{([\s\S]*?)\n}/)?.[0];
+    const headingRule = css.match(
+      /\.events-tile-heading\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(headingRule).toBeDefined();
     expect(headingRule).toMatch(/justify-content: space-between;/);
 

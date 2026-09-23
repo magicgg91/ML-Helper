@@ -185,7 +185,7 @@ export function AdminGuidesList({
           value={guide.status}
           disabled={!canWrite}
           onChange={(event) => changeStatus(guide, event.target.value)}
-          className="admin-focus h-[var(--admin-control-h-sm)] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm"
+          className="admin-control admin-focus h-[var(--admin-control-h-sm)] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm"
         >
           {statuses
             // Publishing stays a publisher's action: the option is not even

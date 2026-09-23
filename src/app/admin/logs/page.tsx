@@ -60,7 +60,7 @@ export default async function LogsPage({
   ]);
   const totalPages = Math.max(1, Math.ceil(total / logsPageSize));
   return (
-    <main className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {can(session.user.role, "logs.purge") && <LogPurgeForm />}
       <LogFilterForm filters={filters} t={t} />
       {logs.length === 0 ? (
@@ -113,6 +113,6 @@ export default async function LogsPage({
           )}
         </nav>
       )}
-    </main>
+    </div>
   );
 }

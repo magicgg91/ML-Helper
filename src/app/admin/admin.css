@@ -119,6 +119,32 @@
   width: auto;
 }
 
+/* Bloc 119 — l'administration sort des règles d'éléments nus de globals.css.
+   Le site public y style `main` (une carte de 42rem centrée à 15vh), `h1`
+   (un dégradé clippé sur le texte) et les champs par nom d'élément. Le shell
+   de l'admin a sa propre mise en page et sa propre échelle typographique, et
+   les hérite sinon. Le reset est délibérément limité à ce que la refonte
+   pose elle-même : les écrans pas encore réécrits gardent les règles dont
+   ils dépendent encore. */
+.admin-shell main {
+  width: auto;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+.admin-shell h1 {
+  background: none;
+  color: inherit;
+}
+/* Les champs de la refonte. globals.css impose aux `input`/`select` une
+   hauteur minimale et la police monospace — réservée ici aux heures, aux
+   identifiants et aux codes de langue (§1). */
+.admin-shell .admin-control {
+  min-height: 0;
+  font-family: var(--font-sans);
+}
+
 /* Bloc 119 — l'échelle typographique de l'admin, en utilitaires Tailwind
    (`@utility`, donc composables avec les variantes) plutôt que répétée en
    valeurs arbitraires dans chaque composant. La couleur n'y est pas : elle

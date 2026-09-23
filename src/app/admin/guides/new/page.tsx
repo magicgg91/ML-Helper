@@ -8,7 +8,7 @@ export default async function NewGuidePage() {
   const session = await requireCapability("guides.write");
   const t = await getTranslations("admin.guides");
   return (
-    <main className="admin-main">
+    <div className="admin-main">
       <p className="eyebrow">{t("title")}</p>
       <h1>{t("new-title")}</h1>
       <GuideEditor
@@ -25,6 +25,6 @@ export default async function NewGuidePage() {
           })),
         }}
       />
-    </main>
+    </div>
   );
 }

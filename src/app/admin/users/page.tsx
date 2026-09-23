@@ -9,11 +9,11 @@ export default async function UsersPage() {
     orderBy: { username: "asc" },
   });
   return (
-    <main>
+    <div>
       <UsersManager
         users={users}
         canManage={can(session.user.role, "users.manage")}
       />
-    </main>
+    </div>
   );
 }

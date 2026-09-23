@@ -211,8 +211,9 @@ describe("Bloc 119: recent activity", () => {
     expect(screen.getByText('repeat:{"count":2}')).toBeInTheDocument();
     // Paris, not UTC: 16:08 UTC is 18:08 in September.
     expect(screen.getByText("18:08 – 18:12")).toBeInTheDocument();
-    // The single entry keeps its own line and no count pill.
-    expect(screen.getByText("claire")).toBeInTheDocument();
+    // The other author's entry keeps its own line and no count pill. The
+    // sentence names its author, so the row does not repeat it.
+    expect(screen.getByText(/^guide\.publish/)).toBeInTheDocument();
     expect(screen.queryByText('repeat:{"count":1}')).toBeNull();
   });
 

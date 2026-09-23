@@ -19,7 +19,7 @@ export default async function EditGuidePage({
     excerpt = translationRecord(guide.excerpt),
     content = translationRecord(guide.content);
   return (
-    <main className="admin-main">
+    <div className="admin-main">
       <p className="eyebrow">{t("title")}</p>
       <h1>{t("edit-title")}</h1>
       <GuideEditor
@@ -37,6 +37,6 @@ export default async function EditGuidePage({
           })),
         }}
       />
-    </main>
+    </div>
   );
 }

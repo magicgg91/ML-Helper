@@ -13,7 +13,7 @@ export default async function StaticContentAdminPage() {
   });
   const content = translationRecord(legalNotice?.content);
   return (
-    <main className="admin-main">
+    <div className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <LegalNoticeEditor
         initialContent={launchRecord(
@@ -24,6 +24,6 @@ export default async function StaticContentAdminPage() {
               : ""),
         )}
       />
-    </main>
+    </div>
   );
 }

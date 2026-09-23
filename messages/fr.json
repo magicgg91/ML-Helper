@@ -780,7 +780,8 @@
       "todo-guides-action": "Ouvrir les guides",
       "see-all": "Tout l’historique",
       "repeat": "×{count}",
-      "times-label": "Heures des {count} actions"
+      "times-label": "Heures des {count} actions",
+      "card-ratio": "{active} / {total}"
     },
     "setup": {
       "eyebrow": "Configuration initiale",

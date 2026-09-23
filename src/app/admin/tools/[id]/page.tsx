@@ -111,9 +111,9 @@ export default async function EditToolPage({
     notFound();
   }
   return (
-    <main className="admin-main">
+    <div className="admin-main">
       <h1>{title}</h1>
       {content}
-    </main>
+    </div>
   );
 }

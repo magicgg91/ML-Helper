@@ -107,6 +107,9 @@ export default async function AdminPage() {
     key: string;
     href: string;
     label: string;
+    /** The two numbers, big — "11 / 11". */
+    ratio: string;
+    /** And the sentence that says what they count. */
     value: string;
     tone: PillTone;
     pill: string;
@@ -116,6 +119,7 @@ export default async function AdminPage() {
     cards.push({
       key: "tools",
       href: "/admin/tools",
+      ratio: t("card-ratio", { active: activeTools, total: totalTools }),
       label: t("tools"),
       value: t("tools-summary", { active: activeTools, total: totalTools }),
       tone: activeTools === totalTools ? "ok" : "warn",
@@ -128,6 +132,10 @@ export default async function AdminPage() {
     cards.push({
       key: "referentiels",
       href: "/admin/referentiels",
+      ratio: t("card-ratio", {
+        active: activeReferences,
+        total: totalReferences,
+      }),
       label: t("references"),
       value: t("references-summary", {
         active: activeReferences,
@@ -145,6 +153,7 @@ export default async function AdminPage() {
     cards.push({
       key: "guides",
       href: "/admin/guides",
+      ratio: t("card-ratio", { active: publishedGuides, total: totalGuides }),
       label: t("guides"),
       value: t("guides-summary", {
         published: publishedGuides,
@@ -162,6 +171,7 @@ export default async function AdminPage() {
     cards.push({
       key: "users",
       href: "/admin/users",
+      ratio: t("card-ratio", { active: activeUsers, total: totalUsers }),
       label: t("users"),
       value: t("users-summary", { active: activeUsers, total: totalUsers }),
       tone: activeUsers === totalUsers ? "ok" : "neutral",
@@ -258,9 +268,10 @@ export default async function AdminPage() {
               className="admin-focus flex flex-col gap-2 rounded-admin-card border border-admin-card-border bg-admin-card p-5 transition-colors hover:border-admin-accent"
             >
               <span className="admin-eyebrow text-admin-dim">{card.label}</span>
-              <span className="font-admin-display text-xl font-semibold">
-                {card.value}
+              <span className="font-admin-display text-2xl leading-none font-semibold">
+                {card.ratio}
               </span>
+              <span className="text-xs text-admin-dim">{card.value}</span>
               <span>
                 <Pill tone={card.tone}>{card.pill}</Pill>
               </span>
@@ -318,10 +329,9 @@ export default async function AdminPage() {
                     className="border-t border-admin-rule-soft py-3 first:border-t-0 first:pt-0"
                   >
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <span className="font-semibold">{group.author}</span>
-                      <span className="flex-1 text-admin-dim">
-                        {group.message}
-                      </span>
+                      {/* The sentence names its own author ("rootadmin a
+                          publié…"), so the column that repeated it is gone. */}
+                      <span className="flex-1">{group.message}</span>
                       {group.times.length > 1 && (
                         <Pill tone="neutral">
                           {t("repeat", { count: group.times.length })}

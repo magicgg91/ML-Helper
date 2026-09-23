@@ -28,13 +28,13 @@ export default async function EditReferentielPage({
   const { id } = await params;
   if (id === "reference-level-up") {
     return (
-      <main className="admin-main">
+      <div className="admin-main">
         {/* Bloc 35/10.2/10.3: LevelUpParametersEditor now carries its own
             EditorActionBar (back link + save), matching every other named
             parameters editor — no separate back link here. */}
         <h1>{t("reference-level-up")}</h1>
         <LevelUpParametersEditor initial={await getLevelUpParameters()} />
-      </main>
+      </div>
     );
   }
   if (
@@ -43,7 +43,7 @@ export default async function EditReferentielPage({
   ) {
     const combat = id === "reference-combat-equipment";
     return (
-      <main className="admin-main">
+      <div className="admin-main">
         <h1>{combat ? t("reference-combat") : t("reference-expedition")}</h1>
         {combat ? (
           <CombatReferenceScreen
@@ -58,25 +58,25 @@ export default async function EditReferentielPage({
             secondaryInitial={await getExpeditionSecondaryBase()}
           />
         )}
-      </main>
+      </div>
     );
   }
   if (id === "reference-consommables") {
     return (
-      <main className="admin-main">
+      <div className="admin-main">
         <h1>{t("reference-consommables")}</h1>
         <ConsumablesReferenceScreen
           initialCatalog={await getConsumableCatalog()}
         />
-      </main>
+      </div>
     );
   }
   if (id === "reference-events") {
     return (
-      <main className="admin-main">
+      <div className="admin-main">
         <h1>{t("reference-events")}</h1>
         <EventsReferenceScreen initialCatalog={await getEventsCatalog()} />
-      </main>
+      </div>
     );
   }
   notFound();

@@ -47,7 +47,7 @@ export default async function ConfigAdminPage() {
     locked: isAlwaysActiveLocale(locale),
   }));
   return (
-    <main className="admin-main">
+    <div className="admin-main">
       <p className="eyebrow">{t("eyebrow")}</p>
       <h1>{t("title")}</h1>
       {/* Bloc 100/C: every section of this tab is its own collapsible block,
@@ -70,6 +70,6 @@ export default async function ConfigAdminPage() {
           />
         </AdminConfigSection>
       )}
-    </main>
+    </div>
   );
 }
