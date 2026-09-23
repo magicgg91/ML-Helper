@@ -26,7 +26,12 @@ export default async function LegalPage() {
   ]);
   return (
     <main className="public-main">
+      {/* Bloc 119: the notice is written one idea per line, and CommonMark
+          folds a lone newline into a space — the page read as one run-on
+          paragraph. The admin preview renders it with the same option, so
+          what an editor sees is what a visitor gets. */}
       <MarkdownRenderer
+        breaks
         markdown={localizedText(
           legalNotice?.content ?? defaultLegalNoticeContent,
           locale,

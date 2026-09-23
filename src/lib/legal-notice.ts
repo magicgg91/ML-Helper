@@ -158,18 +158,26 @@ const placeholderMarkers = [
 ];
 
 /**
- * Every placeholder of a notice, in the order it appears — the list the alert
- * banner shows and the first of which its "Aller au premier" button targets.
+ * The pattern itself, as a fresh RegExp.
  *
- * A new RegExp per call on purpose: a shared global one carries `lastIndex`
- * between calls and would skip half the matches on the second screen to ask.
+ * A new one per call on purpose: a shared global regex carries `lastIndex`
+ * between calls and would skip half the matches on the second caller to ask —
+ * and there are three (the badge, the dashboard, the screen's own banner),
+ * plus the preview's highlighter.
  */
-export function legalNoticePlaceholders(content: string): string[] {
-  const pattern = new RegExp(
+export function legalNoticePlaceholderPattern(): RegExp {
+  return new RegExp(
     `\\[[^\\]]*(?:${placeholderMarkers.join("|")})[^\\]]*\\]`,
     "gi",
   );
-  return content.match(pattern) ?? [];
+}
+
+/**
+ * Every placeholder of a notice, in the order it appears — the list the alert
+ * banner shows and the first of which its "Aller au premier" button targets.
+ */
+export function legalNoticePlaceholders(content: string): string[] {
+  return content.match(legalNoticePlaceholderPattern()) ?? [];
 }
 
 /** How many fields are left to fill in — 0 when the notice is complete. */

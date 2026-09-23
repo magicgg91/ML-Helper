@@ -131,18 +131,18 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
 
   // Point 2: the Ranking tool must display as "Classement" in French.
   await expect(
-    page.locator("td.font-medium", { hasText: "Classement" }),
+    page.getByRole("cell", { name: "Classement", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.locator("td.font-medium", { hasText: "Ranking" }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("cell", { name: "Ranking" })).toHaveCount(0);
 
-  // Point 5: a Catégorie column sits next to the tool name.
+  // Point 5, revu au Bloc 119: la catégorie n'est plus une colonne mais un
+  // sous-en-tête de groupe, avec le nombre d'outils qu'il contient.
+  await expect(
+    page.getByRole("columnheader", { name: /^Villes/ }),
+  ).toBeVisible();
   await expect(
     page.getByRole("columnheader", { name: "Catégorie" }),
-  ).toBeVisible();
-  const cityCostRow = page.getByRole("row", { name: "Coût de Ville" });
-  await expect(cityCostRow.getByRole("cell", { name: "Villes" })).toBeVisible();
+  ).toHaveCount(0);
 
   // Point 4: the 3 Villes simulators share the same edit destination.
   for (const tool of [
@@ -163,7 +163,9 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
 
   // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
   // in the confirmed Combat, Expedition, Gems, Templars order.
-  const toolLabels = await page.locator("td.font-medium").allTextContents();
+  const toolLabels = await page
+    .locator("tbody tr:has(td) td:first-child")
+    .allTextContents();
   const competencesLabels = [
     "Équipement de Combat",
     "Équipements d’Expédition",
