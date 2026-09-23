@@ -9,7 +9,6 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "locales:generate": "tsx scripts/generate-launch-locales.ts",
-    "postinstall": "tsx scripts/generate-launch-locales.ts --if-present",
     "prisma:generate": "prisma generate",
     "start": "next start",
     "test": "pnpm locales:generate && vitest run",

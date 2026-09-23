@@ -121,10 +121,14 @@ Admin's id and creates a user, attempt 2 finds neither.
 Add `messages/<locale>.json` — a two-letter code, or `pt-br` for a regional
 one — and that is the whole change. The list the site routes on is derived
 from the files present in `messages/` by
-`scripts/generate-launch-locales.ts`, which `pnpm dev`, `pnpm build` and
-`pnpm test` each run first (and `pnpm install` after it, through
-`postinstall`). It writes `src/lib/launch-locales.generated.ts`, which is
-git-ignored: never edit it, and never commit it.
+`scripts/generate-launch-locales.ts`, which `pnpm dev`, `pnpm build`,
+`pnpm test` and `pnpm typecheck` each run first. It writes
+`src/lib/launch-locales.generated.ts`, which is git-ignored: never edit it,
+and never commit it.
+
+On a fresh clone that file does not exist yet, so a tool invoked directly
+rather than through those scripts (`npx vitest`, `npx tsc`) reports it as a
+missing module. `pnpm locales:generate` writes it.
 
 Two things the new file itself must respect:
 

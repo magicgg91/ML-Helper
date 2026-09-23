@@ -111,32 +111,27 @@ export function generate(root: string): {
 }
 
 /**
- * Run as a command. `--if-present` is for `postinstall`, which also runs in
- * the Docker `dependencies` stage where only the lockfile has been copied:
- * there is no messages/ directory to read there, and the build stage
- * regenerates anyway, so a missing directory is a silent no-op rather than a
- * failed install.
+ * Run as a command: `pnpm locales:generate`, which `dev`, `build`, `test` and
+ * `typecheck` each chain before doing anything else.
+ *
+ * It used to also run from `postinstall`, with an `--if-present` flag that
+ * skipped a missing messages/ directory. That broke the Docker image: its
+ * `dependencies` stage copies only the manifests and runs `pnpm install`, so
+ * `postinstall` fired in an image where this very file did not exist yet and
+ * failed the build (run 818). The flag guarded the absence of the directory;
+ * what was missing was the script. Nothing calls this outside a working tree
+ * now, so a missing messages/ is a broken checkout and says so.
  */
-function main(argv: readonly string[]) {
-  const root = process.cwd();
-  const optional = argv.includes("--if-present");
-  try {
-    readdirSync(path.join(root, messagesDirectory));
-  } catch (error) {
-    if (optional) return;
-    throw error;
-  }
-  const { locales, changed } = generate(root);
+function main() {
+  const { locales, changed } = generate(process.cwd());
   if (changed)
     console.log(
       `${generatedModulePath}: ${locales.length} locales (${locales.join(", ")})`,
     );
 }
 
-// `tsx scripts/generate-launch-locales.ts` runs this; importing the module
-// from a test does not.
 if (
   process.argv[1] &&
   fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
 )
-  main(process.argv.slice(2));
+  main();

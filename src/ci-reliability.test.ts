@@ -137,3 +137,74 @@ describe("Bloc 116/B: Playwright retries", () => {
     ).toEqual(["public"]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Bloc 122 — an install-time script may only need what the image has by then.
+// ---------------------------------------------------------------------------
+describe("Bloc 122: install lifecycle scripts and the Docker dependencies stage", () => {
+  /**
+   * What broke: Bloc 120 added `postinstall: tsx
+   * scripts/generate-launch-locales.ts`. The Dockerfile's `dependencies` stage
+   * copies the manifests and nothing else before running `pnpm install`, so
+   * the hook fired in an image where that script did not exist, `pnpm install`
+   * exited 1 and the whole image build died (run 818). CI never caught it:
+   * the `image` job is `if: github.event_name == 'push'`, so no pull request
+   * ever exercises it.
+   *
+   * The rule, rather than the instance: whatever `pnpm install` triggers can
+   * only reach files that stage has already copied.
+   */
+  const lifecycle = ["preinstall", "install", "postinstall", "prepare"];
+
+  /** The files `COPY`'d into the dependencies stage before `pnpm install`. */
+  function copiedBeforeInstall(): string[] {
+    const dockerfile = readFileSync("Dockerfile", "utf8").split("\n");
+    const start = dockerfile.findIndex((line) =>
+      /^FROM .* AS dependencies/.test(line),
+    );
+    expect(
+      start,
+      "the dependencies stage is gone from the Dockerfile",
+    ).toBeGreaterThanOrEqual(0);
+    const copied: string[] = [];
+    for (const line of dockerfile.slice(start + 1)) {
+      if (/^RUN\s+pnpm install/.test(line)) return copied;
+      if (/^FROM /.test(line)) break;
+      const copy = /^COPY\s+(.+)$/.exec(line.trim());
+      // Everything but the destination, which is the last token.
+      if (copy) copied.push(...copy[1].split(/\s+/).slice(0, -1));
+    }
+    throw new Error("no `RUN pnpm install` found in the dependencies stage");
+  }
+
+  it("asks pnpm install for nothing the stage has not copied yet", () => {
+    const { scripts } = JSON.parse(readFileSync("package.json", "utf8")) as {
+      scripts: Record<string, string>;
+    };
+    const copied = new Set(copiedBeforeInstall());
+    for (const hook of lifecycle) {
+      const command = scripts[hook];
+      if (!command) continue;
+      // Any token that looks like a path into the repository.
+      for (const [, file] of command.matchAll(/(^|\s)([\w./-]+\/[\w./-]+)/g))
+        expect(
+          copied.has(file),
+          `${hook} runs "${file}", which the Docker dependencies stage has not copied — the image build will fail on it`,
+        ).toBe(true);
+    }
+  });
+
+  // The instance, kept alongside the rule: the hook that caused it is gone,
+  // and the generation it did is chained into the scripts that need it.
+  it("generates the locale list from the scripts that need it, not from install", () => {
+    const { scripts } = JSON.parse(readFileSync("package.json", "utf8")) as {
+      scripts: Record<string, string>;
+    };
+    expect(scripts.postinstall).toBeUndefined();
+    for (const script of ["dev", "build", "test", "typecheck"])
+      expect(
+        scripts[script],
+        `${script} no longer derives the locale list first`,
+      ).toContain("locales:generate");
+  });
+});
