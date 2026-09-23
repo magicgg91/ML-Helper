@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
 import {
+  auditKeysMatching,
   auditMessage,
   auditMessageColumns,
   auditTargets,
@@ -141,5 +142,52 @@ describe("Bloc 116/C: rendering is defensive", () => {
     expect(parseAuditParams("not json")).toEqual({});
     expect(parseAuditParams("[1,2]")).toEqual({});
     expect(parseAuditParams("")).toEqual({});
+  });
+});
+
+// Bloc 116/C review (Codex, PR #142): storing the key instead of the sentence
+// made the words an admin can actually see unsearchable — the row holds
+// `consumables.update` and an actor name, and the column reads "a modifié le
+// référentiel Boutique". The query is translated into keys so those words
+// reach the rows again.
+describe("Bloc 116/C review: the logs filter searches what is on screen", () => {
+  const tree = (locale: "fr" | "en") =>
+    (locale === "fr" ? frMessages : enMessages).admin.logs.messages;
+
+  it.each([
+    [
+      "fr",
+      "référentiel Boutique",
+      ["consumables.create", "consumables.update"],
+    ],
+    ["en", "the Shop reference", ["consumables.create", "consumables.update"]],
+    ["fr", "supprimé l’utilisateur", ["user.delete"]],
+    ["en", "deleted user", ["user.delete"]],
+  ] as const)("finds %s %o", (locale, query, expected) => {
+    expect(auditKeysMatching(tree(locale), query).sort()).toEqual(
+      [...expected].sort(),
+    );
+  });
+
+  it("matches a verb across every sentence that uses it", () => {
+    // "modifié" is the verb of every parameter save, so it must reach them
+    // all rather than one arbitrary row.
+    const keys = auditKeysMatching(tree("fr"), "modifié");
+    expect(keys.length).toBeGreaterThan(10);
+    expect(keys).toContain("legal-notice.update");
+    expect(keys).toContain("ranking.update");
+  });
+
+  it("searches the reader's own language, not the other one", () => {
+    expect(auditKeysMatching(tree("en"), "modifié")).toEqual([]);
+    expect(auditKeysMatching(tree("fr"), "updated")).toEqual([]);
+  });
+
+  it("ignores case and an empty query", () => {
+    expect(auditKeysMatching(tree("fr"), "RÉFÉRENTIEL BOUTIQUE")).toEqual(
+      auditKeysMatching(tree("fr"), "référentiel Boutique"),
+    );
+    expect(auditKeysMatching(tree("fr"), "   ")).toEqual([]);
+    expect(auditKeysMatching(undefined, "anything")).toEqual([]);
   });
 });

@@ -120,3 +120,39 @@ export function renderAuditMessage(
   if (!t.has(row.messageKey)) return row.messageKey;
   return t(row.messageKey, parseAuditParams(row.messageParams));
 }
+
+/**
+ * Bloc 116/C review (Codex, PR #142): the keys whose sentence contains
+ * `query`, in whatever language the given message tree is written.
+ *
+ * The logs filter is labelled "a word in the message", and what an admin sees
+ * in that column is a sentence — "a modifié le référentiel Boutique". Storing
+ * the key instead of the sentence made those words unsearchable: the row
+ * holds `consumables.update` and an actor name, and nothing else. Rendering
+ * every row to filter them is not an option (the page is one query, and the
+ * journal is purged precisely because it grows), so the query is translated
+ * instead of the rows: the sentences are known — they are the message file —
+ * so the words an admin can see are matched there, and the keys that match
+ * are handed to the query.
+ *
+ * What this reaches is the fixed part of a sentence. A word that only exists
+ * in a parameter (a username, a guide title) is matched separately, against
+ * the stored parameters; a query straddling the two ("rootadmin a modifié")
+ * matches neither, which is the one seam left.
+ */
+export function auditKeysMatching(
+  messages: unknown,
+  query: string,
+  prefix = "",
+): string[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle || !messages || typeof messages !== "object") return [];
+  return Object.entries(messages as Record<string, unknown>).flatMap(
+    ([key, value]) => {
+      const dotted = prefix ? `${prefix}.${key}` : key;
+      if (typeof value === "string")
+        return value.toLowerCase().includes(needle) ? [dotted] : [];
+      return auditKeysMatching(value, query, dotted);
+    },
+  );
+}

@@ -1,5 +1,9 @@
-import { getTranslations } from "next-intl/server";
-import { auditTranslator, renderAuditMessage } from "@/lib/audit-message";
+import { getMessages, getTranslations } from "next-intl/server";
+import {
+  auditKeysMatching,
+  auditTranslator,
+  renderAuditMessage,
+} from "@/lib/audit-message";
 import { requireCapability } from "@/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { LogPurgeForm } from "@/components/log-purge-form";
@@ -32,7 +36,18 @@ export default async function LogsPage({
   const resolvedSearchParams = await searchParams;
   const filters = parseLogFilters(resolvedSearchParams);
   const page = parseLogPage(resolvedSearchParams);
-  const where = buildLogsWhere(filters);
+  // Bloc 116/C review: a word typed into the filter is a word of a sentence,
+  // so it is matched against the sentences — in this admin's own language —
+  // and the keys that match join the query.
+  const allMessages = (await getMessages()) as {
+    admin?: { logs?: { messages?: unknown } };
+  };
+  const where = buildLogsWhere(
+    filters,
+    filters.message
+      ? auditKeysMatching(allMessages.admin?.logs?.messages, filters.message)
+      : [],
+  );
   const [logs, total] = await Promise.all([
     prisma.auditLog.findMany({
       where,

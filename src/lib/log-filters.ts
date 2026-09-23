@@ -47,6 +47,12 @@ export function logsPageHref(filters: LogFilterInput, page: number): string {
 
 export function buildLogsWhere(
   filters: LogFilterInput,
+  /**
+   * Bloc 116/C review: the keys whose sentence contains the searched word, in
+   * the reader's own language (auditKeysMatching). The page computes them
+   * from its own messages; this function stays free of next-intl.
+   */
+  matchingKeys: string[] = [],
 ): Prisma.AuditLogWhereInput {
   const where: Prisma.AuditLogWhereInput = {};
   if (filters.user) {
@@ -60,8 +66,15 @@ export function buildLogsWhere(
     // key is searched too (so "guide.publish" finds those rows), and so is
     // the French sentence of entries written before this bloc.
     where.OR = [
+      // The sentences the word appears in, resolved before the query.
+      ...(matchingKeys.length ? [{ messageKey: { in: matchingKeys } }] : []),
+      // The names the sentence interpolates — a username, a guide title, a
+      // slug — which is the other half of what an admin types. Stored as JSON
+      // text precisely so `contains` reaches them.
       { messageParams: { contains: filters.message } },
+      // The key itself, so "guide.publish" finds those rows too.
       { messageKey: { contains: filters.message } },
+      // And the French sentence of entries written before Bloc 116/C.
       { legacyMessage: { contains: filters.message } },
     ];
   }

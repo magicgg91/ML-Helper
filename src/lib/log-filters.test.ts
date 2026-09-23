@@ -105,6 +105,26 @@ describe("buildLogsWhere", () => {
     });
   });
 
+  // Bloc 116/C review: a word of the sentence on screen is resolved to the
+  // keys that carry it, and those lead the OR.
+  it("leads with the sentences the searched word appears in", () => {
+    expect(
+      buildLogsWhere({ message: "Boutique" }, [
+        "consumables.create",
+        "consumables.update",
+      ]).OR,
+    ).toEqual([
+      { messageKey: { in: ["consumables.create", "consumables.update"] } },
+      { messageParams: { contains: "Boutique" } },
+      { messageKey: { contains: "Boutique" } },
+      { legacyMessage: { contains: "Boutique" } },
+    ]);
+  });
+
+  it("omits the key clause entirely when no sentence matches", () => {
+    expect(buildLogsWhere({ message: "toto" }, []).OR).toHaveLength(3);
+  });
+
   it("filters by an inclusive date range", () => {
     const where = buildLogsWhere({ from: "2026-01-01", to: "2026-01-31" });
     expect(where.createdAt).toEqual({

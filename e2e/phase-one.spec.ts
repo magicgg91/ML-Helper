@@ -1302,10 +1302,10 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   );
   expect(saveResponse.ok()).toBeTruthy();
 
-  // Bloc 116/C: the row stores the sentence's key, so that is what the
-  // search matches; the cell still reads as the French sentence, rendered
-  // from the key at display time.
-  await page.goto("/admin/logs?q=consumables");
+  // Bloc 116/C review: the row stores the sentence's key, but the search
+  // still takes the words an admin can see — they are resolved to the keys
+  // that carry them before the query runs.
+  await page.goto("/admin/logs?q=référentiel Boutique");
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await expect(
     page.getByRole("cell", {
@@ -3230,6 +3230,17 @@ test("Bloc116/C: the audit log reads in the admin's own language", async ({
   // out, so switching it moves every row at once.
   for (const sentence of french)
     await expect(page.getByRole("cell", { name: sentence })).toHaveCount(0);
+
+  // Bloc 116/C review (Codex, PR #142): the filter takes a word of the
+  // sentence on screen, in the language on screen — not the storage key.
+  await page.goto("/admin/logs?q=deactivated tool");
+  await expect(
+    page.getByRole("cell", { name: "rootadmin deactivated tool city-cost" }),
+  ).toBeVisible();
+  // And a French word finds nothing while the admin reads English, which is
+  // the same rule seen from the other side.
+  await page.goto("/admin/logs?q=désactivé l’outil");
+  await expect(page.getByText("No entry matches the filters.")).toBeVisible();
 
   // Put the tool and the language back, so the rest of the suite sees the
   // state it expects.
