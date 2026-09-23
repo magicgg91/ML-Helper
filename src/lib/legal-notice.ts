@@ -132,3 +132,47 @@ export const defaultLegalNoticeContent = {
   fr: defaultFrenchLegalNotice,
   en: defaultEnglishLegalNotice,
 };
+
+/**
+ * Bloc 119: the fields of the legal notice that are still blanks.
+ *
+ * The default notice ships with bracketed placeholders the site owner has to
+ * fill in — the publisher's name, the host's address — plus one bracketed
+ * note to revisit if cookies are ever added. Until they are replaced, they
+ * are printed to the public as-is, so three screens count them: the sidebar's
+ * amber badge, the dashboard's "à traiter" block and the alert banner of the
+ * Pages légales screen.
+ *
+ * The regex lives here, once, rather than in each of those three. Its markers
+ * are read off the shipped content rather than invented: the French notice
+ * says "À COMPLÉTER" and "À AJUSTER", the English one "TO BE COMPLETED" and
+ * "TO BE ADJUSTED", and a test pins the two lists to each other so a
+ * translation that coins a third wording is caught rather than silently
+ * counted as zero.
+ */
+const placeholderMarkers = [
+  "À COMPLÉTER",
+  "TO BE COMPLETED",
+  "À AJUSTER",
+  "TO BE ADJUSTED",
+];
+
+/**
+ * Every placeholder of a notice, in the order it appears — the list the alert
+ * banner shows and the first of which its "Aller au premier" button targets.
+ *
+ * A new RegExp per call on purpose: a shared global one carries `lastIndex`
+ * between calls and would skip half the matches on the second screen to ask.
+ */
+export function legalNoticePlaceholders(content: string): string[] {
+  const pattern = new RegExp(
+    `\\[[^\\]]*(?:${placeholderMarkers.join("|")})[^\\]]*\\]`,
+    "gi",
+  );
+  return content.match(pattern) ?? [];
+}
+
+/** How many fields are left to fill in — 0 when the notice is complete. */
+export function countLegalNoticePlaceholders(content: string): number {
+  return legalNoticePlaceholders(content).length;
+}

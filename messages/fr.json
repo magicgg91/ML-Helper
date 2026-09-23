@@ -704,17 +704,21 @@
   },
   "admin": {
     "title": "Administration",
-    "view-site": "Voir le site",
+    "view-site": "Voir le site public",
     "navigation-label": "Navigation administration",
     "navigation": {
       "dashboard": "Tableau de bord",
       "tools": "Outils",
       "referentiels": "Référentiels",
       "guides": "Guides",
-      "content": "Conditions d’utilisation",
+      "content": "Pages légales",
       "users": "Utilisateurs",
       "logs": "Historique",
-      "config": "Configuration"
+      "config": "Configuration",
+      "group-content": "Contenu",
+      "group-access": "Accès",
+      "group-site": "Site",
+      "legal-to-do": "{count, plural, =1 {# champ à compléter} other {# champs à compléter}}"
     },
     "account": {
       "change-password": "Changer mon mot de passe",
@@ -739,7 +743,8 @@
         "invalid": "Le code d’authentification est invalide ou expiré.",
         "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
         "disable-error": "Le mot de passe ou le code d’authentification est invalide."
-      }
+      },
+      "title": "Mon compte"
     },
     "dashboard": {
       "eyebrow": "Vue d’ensemble",
@@ -1350,7 +1355,8 @@
         "website-id-hint": "Ajouté sur la balise en `data-website-id`. Laisse vide si ton outil n'en demande pas.",
         "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place."
       }
-    }
+    },
+    "open-menu": "Ouvrir le menu"
   },
   "roles": {
     "super_admin": "Super Admin",

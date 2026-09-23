@@ -704,17 +704,21 @@
   },
   "admin": {
     "title": "Administration",
-    "view-site": "View site",
+    "view-site": "View the public site",
     "navigation-label": "Administration navigation",
     "navigation": {
       "dashboard": "Dashboard",
       "tools": "Tools",
       "referentiels": "References",
       "guides": "Guides",
-      "content": "Terms of use",
+      "content": "Legal pages",
       "users": "Users",
       "logs": "History",
-      "config": "Configuration"
+      "config": "Configuration",
+      "group-content": "Content",
+      "group-access": "Access",
+      "group-site": "Site",
+      "legal-to-do": "{count, plural, =1 {# field to fill in} other {# fields to fill in}}"
     },
     "account": {
       "change-password": "Change my password",
@@ -739,7 +743,8 @@
         "invalid": "The authentication code is invalid or expired.",
         "setup-error": "Unable to start two-factor authentication setup.",
         "disable-error": "The password or authentication code is invalid."
-      }
+      },
+      "title": "My account"
     },
     "dashboard": {
       "eyebrow": "Overview",
@@ -1350,7 +1355,8 @@
         "website-id-hint": "Added to the tag as `data-website-id`. Leave empty if your tool does not ask for one.",
         "invalid-website-id": "That identifier contains characters that do not belong in one."
       }
-    }
+    },
+    "open-menu": "Open the menu"
   },
   "roles": {
     "super_admin": "Super Admin",

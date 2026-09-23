@@ -3333,10 +3333,14 @@ test("every admin screen stays English for a reader browsing publicly in German"
       `${href} still has French on it`,
     ).toHaveCount(0);
     // The chrome around it, present on every screen.
-    await expect(page.getByRole("link", { name: "View site" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Voir le site" })).toHaveCount(
-      0,
-    );
+    // Bloc 119 renamed this link "Voir le site public" / "View the public
+    // site" and moved it from the top bar into the side column.
+    await expect(
+      page.getByRole("link", { name: "View the public site" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Voir le site public" }),
+    ).toHaveCount(0);
     // And the two languages the admin does offer — no more, no fewer.
     const toggle = page.getByRole("group", { name: "Language" });
     await expect(toggle.getByRole("button")).toHaveText(["EN", "FR"]);

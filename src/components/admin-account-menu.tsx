@@ -9,9 +9,17 @@ type TotpEnrollment = { secret: string; qrCodeDataUrl: string };
 
 export function AdminAccountMenu({
   username,
+  label,
   totpEnabled: initialTotpEnabled,
 }: {
   username: string;
+  /**
+   * Bloc 119: what the summary reads. The menu used to sit in the top bar,
+   * where the username was the only thing naming the account; in the sidebar
+   * the username is already displayed above it, so the summary says what the
+   * panel is instead of repeating it. Defaults to the old behaviour.
+   */
+  label?: string;
   totpEnabled: boolean;
 }) {
   const t = useTranslations("admin.account");
@@ -69,7 +77,7 @@ export function AdminAccountMenu({
   return (
     <div className="admin-account">
       <details>
-        <summary>{username}</summary>
+        <summary>{label ?? username}</summary>
         <div className="admin-account-menu">
           <form action={changePassword}>
             <strong>{t("change-password")}</strong>
