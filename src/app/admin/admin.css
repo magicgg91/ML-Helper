@@ -32,6 +32,42 @@
   --radius-lg: 0.6rem;
   --radius-md: calc(0.6rem - 2px);
   --radius-sm: calc(0.6rem - 4px);
+
+  /* Bloc 119: the refonte's own tokens, exposed as Tailwind utility names
+     (bg-admin-card, text-admin-dim, border-admin-rule…). `inline` means the
+     utility carries the `var(--admin-…)` reference itself rather than a copy
+     of its value, so each class resolves against the cascade where it is
+     used — which is what lets one class follow the light/dark switch of the
+     `.admin-shell` layer defined at the bottom of this file. The names above
+     stay as they are: they belong to the shadcn components already shipped,
+     and repointing them would restyle those screens before their own commit
+     rewrites them. */
+  --color-admin-page: var(--admin-page);
+  --color-admin-sidebar: var(--admin-sidebar);
+  --color-admin-sidebar-border: var(--admin-sidebar-border);
+  --color-admin-card: var(--admin-card);
+  --color-admin-card-border: var(--admin-card-border);
+  --color-admin-head: var(--admin-head);
+  --color-admin-rule: var(--admin-rule);
+  --color-admin-rule-soft: var(--admin-rule-soft);
+  --color-admin-text: var(--admin-text);
+  --color-admin-dim: var(--admin-text-dim);
+  --color-admin-accent: var(--admin-accent);
+  --color-admin-accent-hover: var(--admin-accent-hover);
+  --color-admin-accent-deep: var(--admin-accent-deep);
+  --color-admin-accent-soft: var(--admin-accent-soft);
+  --color-admin-accent-soft-ink: var(--admin-accent-soft-ink);
+  --color-admin-on-accent: var(--admin-on-accent);
+  --color-admin-ok: var(--admin-ok);
+  --color-admin-ok-ink: var(--admin-ok-ink);
+  --color-admin-warn: var(--admin-warn);
+  --color-admin-warn-ink: var(--admin-warn-ink);
+  --color-admin-neutral: var(--admin-neutral);
+  --color-admin-neutral-ink: var(--admin-neutral-ink);
+  --color-admin-danger-ink: var(--admin-danger-ink);
+  --color-admin-danger-border: var(--admin-danger-border);
+  --radius-admin-card: var(--admin-card-radius);
+  --radius-admin-control: var(--admin-control-radius);
 }
 
 /* Bloc 107/A: the note above the level-up troop table, explaining which form
@@ -73,4 +109,94 @@
 }
 .ranking-entry-active input {
   width: auto;
+}
+
+/* ---------------------------------------------------------------------------
+ * Bloc 119 — tokens de l'administration.
+ *
+ * Une couche à elle, portée par `.admin-shell`, et non une réécriture des
+ * variables de globals.css : le site public garde sa palette telle quelle. Les
+ * valeurs claires viennent du brief ; les sombres sont dérivées des variables
+ * sombres existantes (--bg, --bg-panel, --text, --violet-bright…) plutôt
+ * qu'inventées, pour que l'admin reste de la même famille que le reste du site
+ * quand on bascule le thème.
+ *
+ * Contrastes mesurés, les deux thèmes, tous ≥ 4.5:1 (WCAG AA texte normal) :
+ *   clair  texte/page 13.68  second/page 5.16  second/en-tête 5.90
+ *          accent/carte 8.54  doux 8.96  ok 6.24  alerte 7.47  neutre 7.86
+ *          danger 7.51  bouton principal 8.54  accent sombre 15.06
+ *   sombre texte/page 12.88  second/page 6.53  second/en-tête 5.30
+ *          accent/carte 7.25  doux 7.10  ok 6.78  alerte 7.03  neutre 6.71
+ *          danger 5.67  bouton principal 5.45  accent sombre 9.08
+ * ------------------------------------------------------------------------- */
+.admin-shell {
+  --admin-page: #e7e9ef;
+  --admin-sidebar: #f4f5f8;
+  --admin-sidebar-border: #d9dce4;
+  --admin-card: #ffffff;
+  --admin-card-border: #dcdfe7;
+  --admin-card-radius: 12px;
+  --admin-head: #f7f8fa;
+  --admin-rule: #e3e5ec;
+  --admin-rule-soft: #eceef3;
+  --admin-text: #1c1e27;
+  --admin-text-dim: #5b6070;
+  --admin-accent: #5b2bb5;
+  --admin-accent-hover: #4a2296;
+  --admin-accent-deep: #2b1760;
+  --admin-accent-soft: #eee8fa;
+  --admin-accent-soft-ink: #4a2296;
+  --admin-on-accent: #ffffff;
+  --admin-ok: #e3f2e9;
+  --admin-ok-ink: #1b6340;
+  --admin-warn: #fbefd6;
+  --admin-warn-ink: #6e4300;
+  --admin-neutral: #eceef2;
+  --admin-neutral-ink: #434856;
+  --admin-danger-ink: #9a2f1c;
+  --admin-danger-border: #e6bfb5;
+
+  /* Dimensions — section 1 du brief, nommées pour ne pas être réécrites au
+     cas par cas dans chaque page. */
+  --admin-control-h: 40px;
+  --admin-control-h-sm: 34px;
+  --admin-control-radius: 8px;
+  --admin-pill-h: 24px;
+  --admin-switch-w: 40px;
+  --admin-switch-h: 24px;
+  --admin-row-h: 58px;
+  --admin-row-h-edit: 52px;
+  --admin-page-pad: 36px;
+  --admin-page-pad-lg: 40px;
+  --admin-stack: 24px;
+}
+
+:root[data-theme="dark"] .admin-shell,
+:root:not([data-theme="light"]) .admin-shell {
+  --admin-page: var(--bg);
+  --admin-sidebar: var(--bg-panel);
+  --admin-sidebar-border: var(--border);
+  --admin-card: var(--bg-panel);
+  --admin-card-border: var(--border);
+  --admin-head: var(--bg-panel-raised);
+  --admin-rule: var(--border);
+  --admin-rule-soft: #2c333f;
+  --admin-text: var(--text);
+  --admin-text-dim: var(--text-dim);
+  /* L'accent plein sur fond sombre ne peut pas être le violet clair : un
+     bouton violet porte du texte blanc, qui a besoin d'un fond assez foncé. */
+  --admin-accent: #7a4fd0;
+  --admin-accent-hover: #8b63dd;
+  --admin-accent-deep: #3a1f6e;
+  --admin-accent-soft: #2e2348;
+  --admin-accent-soft-ink: var(--violet-bright);
+  --admin-on-accent: #ffffff;
+  --admin-ok: #1d3a2b;
+  --admin-ok-ink: #7fd0a5;
+  --admin-warn: #3a2f16;
+  --admin-warn-ink: #e3b765;
+  --admin-neutral: #2b313c;
+  --admin-neutral-ink: #b4bac7;
+  --admin-danger-ink: #e08a72;
+  --admin-danger-border: #6b3a2e;
 }
