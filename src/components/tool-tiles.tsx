@@ -53,6 +53,7 @@ export function SummaryTile({
   badge,
   highlight = false,
   wide = false,
+  row = false,
   testId,
 }: {
   icon: ReactNode;
@@ -66,6 +67,12 @@ export function SummaryTile({
   highlight?: boolean;
   /** Spans the full row on a phone, where tiles are otherwise two per row. */
   wide?: boolean;
+  /**
+   * Bloc 114/C: title on the left, value on the right, on one line. For a
+   * tile that stands alone on its row and would otherwise be mostly empty
+   * space under a short label.
+   */
+  row?: boolean;
   testId?: string;
 }) {
   return (
@@ -74,6 +81,7 @@ export function SummaryTile({
         "tool-tile",
         highlight ? "tool-tile-highlight" : "",
         wide ? "tool-tile-wide" : "",
+        row ? "tool-tile-row" : "",
       ]
         .filter(Boolean)
         .join(" ")}

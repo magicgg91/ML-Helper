@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { TabLabel } from "./tab-label";
+import { TabLabel, type TabBadgeStyle } from "./tab-label";
 import { handleTablistKeydown } from "./use-tablist-keyboard";
 
 // Bloc 93/M1: the WAI-ARIA Tabs plumbing was written out by hand at 6 sites
@@ -21,6 +21,14 @@ type TabBase = {
   available?: boolean;
   /** Badge + title shown when the tab is unavailable. */
   unavailableLabel?: string;
+  /** Bloc 114/A.1: "pill" for a tool that does not exist yet. */
+  badgeStyle?: TabBadgeStyle;
+  /**
+   * The tooltip, when the badge is too short to carry the whole message —
+   * a "Bientôt" pill still hovers as "Bientôt disponible". Defaults to the
+   * badge itself, so the two cannot say different things by accident.
+   */
+  unavailableTitle?: string;
 };
 
 /**
@@ -64,6 +72,9 @@ export function TabList<Key extends string>({
       {tabs.map((tab) => {
         const available = tab.available ?? true;
         const badge = available ? undefined : tab.unavailableLabel;
+        const tooltip = available
+          ? undefined
+          : (tab.unavailableTitle ?? tab.unavailableLabel);
         const hasPanel = tab.hasPanel ?? true;
         const selected = hasPanel && active === tab.key;
         const selectableKey = tab.key as Key;
@@ -80,10 +91,14 @@ export function TabList<Key extends string>({
             // Disabled tabs are skipped by that handler and take no tab stop.
             tabIndex={hasPanel ? (selected ? 0 : -1) : undefined}
             disabled={!available}
-            title={badge}
+            title={tooltip}
             onClick={hasPanel ? () => onSelect(selectableKey) : undefined}
           >
-            <TabLabel label={tab.label} badge={badge} />
+            <TabLabel
+              label={tab.label}
+              badge={badge}
+              badgeStyle={tab.badgeStyle}
+            />
           </button>
         );
       })}

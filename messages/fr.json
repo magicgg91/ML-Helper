@@ -122,6 +122,7 @@
     "skills": "Compétences",
     "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
     "comingSoon": "Bientôt disponible",
+    "comingSoonShort": "Bientôt",
     "unavailable": "Indisponible actuellement",
     "navigation-label": "Catégories d’outils",
     "city-tabs": "Outils Villes",
@@ -268,7 +269,6 @@
   },
   "xp-gain-rate": {
     "name": "Taux de gain d’XP",
-    "mode-label": "Mode de calcul d’XP",
     "modes": {
       "attacker": "Je suis l’attaquant",
       "target": "Je suis la cible"
@@ -277,9 +277,11 @@
       "my-vp": "Ma VP",
       "unit": "Unité de VP"
     },
-    "columns": {
-      "rate": "Taux de gain d’XP",
-      "opponent-vp": "Plage de VP adverse"
+    "of-xp": "d’XP",
+    "opponent-vp": "VP adverse",
+    "xp-for": {
+      "attacker": "pour moi",
+      "target": "pour l’attaquant"
     }
   },
   "demo-attack-troops": {
@@ -290,7 +292,10 @@
       "league": "Ligue de l’attaquant"
     },
     "wall": "Remparts de la cible",
-    "maximum": "Troupes maximum"
+    "maximum": "Troupes maximum",
+    "result-title": "Attaque d’une ville niveau {level}",
+    "recall": "Attaquant {league} · ville niveau {level}",
+    "recall-short": "Attaquant {league}"
   },
   "ranking": {
     "name": "Classement",

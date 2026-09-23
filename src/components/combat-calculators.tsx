@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { formatGameNumber } from "../lib/format";
 import type { CityParameters } from "../lib/city-parameters";
@@ -14,19 +14,25 @@ import {
 } from "../lib/combat-calculators";
 import type { League } from "../lib/player-settings";
 import { LeagueButtons } from "./league-select";
-import { NumberStepper } from "./number-stepper";
 import { TabList, TabPanel } from "./tabs";
+import { AmountUnitField, Field, type AmountUnit } from "./tool-fields";
+import { SummarySection, SummaryTile } from "./tool-tiles";
+import { ShieldIcon, SwordIcon, SwordsIcon, WallIcon } from "./tool-icons";
+import { useNarrowViewport } from "./use-narrow-viewport";
 import { useSyncedLeague } from "./use-synced-league";
 import { CrossReferenceLink } from "./cross-reference-link";
 import { referenceCatalog, referenceHref } from "../lib/reference-catalog";
 
-const units = [
-  ["×1", 1],
-  ["k", 1e3],
-  ["M", 1e6],
-  ["G", 1e9],
-  ["T", 1e12],
-] as const;
+/**
+ * The tier's rate, spaced the way the reader's own language spaces a percent
+ * — "50 %" in French, "50%" in English — rather than by a hard-coded space.
+ */
+function ratePercent(rate: number, locale: string) {
+  return (rate / 100).toLocaleString(locale, {
+    style: "percent",
+    maximumFractionDigits: 1,
+  });
+}
 
 function rangeLabel(minimum: number, maximum: number | null) {
   if (maximum === null) return `≥ ${formatGameNumber(minimum)}`;
@@ -34,6 +40,86 @@ function rangeLabel(minimum: number, maximum: number | null) {
   return `${formatGameNumber(minimum)} – ${formatGameNumber(maximum)}`;
 }
 
+/**
+ * Bloc 114/B: which of the five red steps each tier wears, by position.
+ *
+ * Keyed by index, not by rate: the five tiers are admin-editable
+ * (formula_params), so two of them could carry the same rate and a lookup by
+ * rate would then paint one of the pair with the other's color — the bug
+ * Bloc 112 fixed on the ranking bands. Position is what the scale means.
+ *
+ * The two columns are not the same ramp, and deliberately so. Attacking, the
+ * step tracks the XP I stand to gain: more XP, deeper red. Being attacked, it
+ * tracks how far above me the opponent is — a foe at 250% of my VP (the 0%
+ * tier) is the dangerous one, so the deepest step sits at the top of that
+ * column and the rest of it, where the opponent is at or below my own weight,
+ * shares the middle step.
+ */
+const xpTileSteps: Record<XpMode, readonly string[]> = {
+  attacker: ["s0", "s50", "s100", "s150", "s200"],
+  target: ["s200", "s150", "s100", "s100", "s100"],
+};
+
+function XpModeColumn({
+  mode,
+  icon,
+  title,
+  tiers,
+  vp,
+}: {
+  mode: XpMode;
+  icon: React.ReactNode;
+  title: string;
+  tiers: XpTier[];
+  vp: number;
+}) {
+  const t = useTranslations("xp-gain-rate");
+  const locale = useLocale();
+  const headingId = `xp-column-${mode}`;
+  const ranges = xpOpponentRanges(vp, mode, tiers);
+  return (
+    <section className="calculator-card xp-column">
+      <h2 className="calculator-heading xp-column-title" id={headingId}>
+        {icon}
+        {title}
+      </h2>
+      <ul className="xp-tiles" aria-labelledby={headingId}>
+        {ranges.map((range, index) => (
+          <li
+            key={index}
+            className={`xp-tile xp-tile-${xpTileSteps[mode][index]}`}
+          >
+            <p className="xp-tile-rate">
+              <span className="xp-tile-figure">
+                {ratePercent(range.rate, locale)}
+                <small>{t("of-xp")}</small>
+              </span>
+              <small className="xp-tile-who">{t(`xp-for.${mode}`)}</small>
+            </p>
+            <p className="xp-tile-range">
+              <small className="xp-tile-caption">{t("opponent-vp")}</small>
+              <span
+                className="xp-tile-value"
+                data-testid={`xp-range-${mode}-${index}`}
+              >
+                {rangeLabel(range.minimum, range.maximum)}
+              </span>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * Bloc 114/B: both roles at once.
+ *
+ * The attacker/target switch is gone. It hid exactly the half of the answer a
+ * reader needs to compare — what I gain by attacking someone, against what
+ * they gain by attacking me — behind a click, and the two columns fit side by
+ * side at the same VP.
+ */
 function XpGainRate({
   tiers,
   levelUpReferenceActive,
@@ -47,77 +133,41 @@ function XpGainRate({
   const levelUpReference = referenceCatalog.find(
     (item) => item.slug === "level-up",
   )!;
-  const [mode, setMode] = useState<XpMode>("attacker");
   const [vp, setVp] = useState(0);
-  const [unit, setUnit] = useState(1e6);
-  const ranges = xpOpponentRanges(vp * unit, mode, tiers);
+  const [unit, setUnit] = useState<AmountUnit>(1_000_000);
   return (
     <div className="calculator-stack">
       <section className="calculator-card">
-        <TabList
-          as="div"
-          className="mode-switch"
-          idPrefix="combat-mode"
-          label={t("mode-label")}
-          active={mode}
-          onSelect={setMode}
-          tabs={(["attacker", "target"] as const).map((item) => ({
-            key: item,
-            label: t(`modes.${item}`),
-          }))}
-        />
-        <label className="calculator-field">
-          {t("fields.my-vp")}
-          <div className="unit-input">
-            <NumberStepper
-              label={t("fields.my-vp")}
-              value={vp}
-              min={0}
-              onChange={setVp}
-            />
-            <select
-              aria-label={t("fields.unit")}
-              value={unit}
-              onChange={(event) => setUnit(Number(event.target.value))}
-            >
-              {units.map(([label, value]) => (
-                <option value={value} key={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </label>
+        <div className="calculator-fields-inline">
+          <AmountUnitField
+            label={t("fields.my-vp")}
+            unitLabel={t("fields.unit")}
+            amount={vp}
+            unit={unit}
+            onAmountChange={setVp}
+            onUnitChange={setUnit}
+            className="city-level-target xp-vp-field"
+          />
+        </div>
       </section>
-      {/* Bloc 92/M2 + H1: the mode switch above is a role="tablist"; both
-          modes feed this one table, so the tabpanel's id/labelledby follow the
-          active mode (only the active panel is rendered, mirroring
-          reference-tables.tsx). It doubles as the H1 live region so the
-          recomputed opponent-VP ranges are announced. */}
-      <TabPanel idPrefix="combat-mode" tabKey={mode} aria-live="polite">
-        <section className="calculator-card">
-          <div className="table-scroll">
-            <table className="ranking-table">
-              <thead>
-                <tr>
-                  <th>{t("columns.rate")}</th>
-                  <th>{t("columns.opponent-vp")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ranges.map((range) => (
-                  <tr key={range.rate}>
-                    <td className="value">{range.rate}%</td>
-                    <td data-testid={`xp-range-${range.rate}`}>
-                      {rangeLabel(range.minimum, range.maximum)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </TabPanel>
+      {/* Bloc 92/H1: the ranges recompute silently as the VP changes, so a
+          permanently-mounted live region announces them. */}
+      <div className="xp-columns" aria-live="polite">
+        <XpModeColumn
+          mode="attacker"
+          icon={<SwordIcon />}
+          title={t("modes.attacker")}
+          tiers={tiers}
+          vp={vp * unit}
+        />
+        <XpModeColumn
+          mode="target"
+          icon={<ShieldIcon />}
+          title={t("modes.target")}
+          tiers={tiers}
+          vp={vp * unit}
+        />
+      </div>
       {/* Bloc 67: the missing tool->reference direction, added the same
           way Combat/Expedition Equipment/Gemmes/Templiers already have it —
           the reference already links here (?open=xp), but nothing linked
@@ -146,6 +196,10 @@ function DemoAttackTroops({
   percentages: Record<League, number>;
 }) {
   const t = useTranslations("demo-attack-troops");
+  const game = useTranslations("game");
+  // The chip drops the city level on a phone, where the section's own
+  // heading right above it already states the level.
+  const narrow = useNarrowViewport();
   const [cityLevel, setCityLevel] = useState(1);
   const [league, setLeague] = useSyncedLeague();
   const result = league
@@ -153,64 +207,67 @@ function DemoAttackTroops({
     : null;
   return (
     <div className="calculator-stack">
-      {/* Bloc 88/A: the league block stays full-width; only its buttons take
-          50% of it (league-buttons-half, desktop) — mobile keeps the 2x3
-          grid (league-buttons-grid). Auto-selection from Player Settings is
-          unchanged (useSyncedLeague). */}
+      {/* Bloc 114/C: one parameters card. The target-city level used to sit
+          inside the result tile (Bloc 88/C), which put an input among the
+          figures it drives; it belongs beside the league it is read with. */}
       <section className="calculator-card">
-        <div className="calculator-field demo-attack-league-field">
-          {t("fields.league")}
-          <LeagueButtons
-            label={t("fields.league")}
-            value={league}
-            onChange={setLeague}
-            className="league-buttons-grid league-buttons-half"
-          />
-        </div>
-      </section>
-      {/* Bloc 88/B-E → Bloc 89: a grey Boutique-style tile below (not beside)
-          the league block, holding the still-editable target-city-level field
-          (Bloc 88/C) next to the wall + maximum-troops results (Bloc 88/D),
-          the percentage removed (Bloc 88/E). Bloc 89: the tile is half-width
-          on desktop (A) with its three parts in equal thirds (D), and each
-          result value moves into its own nested, slightly-lighter mini-tile
-          with centered content (B-C). */}
-      {/* Bloc 92/H1: aria-live sits on the tile itself, not a new wrapper — on
-          desktop the tile is a 3-column grid whose result mini-tiles are lifted
-          in via display:contents, so wrapping the wall/troops conditional in a
-          div would break the equal-thirds layout. The tile is permanently
-          mounted, so the placeholder->result transition and recomputes are both
-          announced. */}
-      <div className="demo-attack-tile" aria-live="polite">
-        <label className="calculator-field demo-attack-tile-level">
-          {t("fields.city-level")}
-          <NumberStepper
+        <div className="calculator-fields-inline">
+          <div className="calculator-field calculator-league-field">
+            {t("fields.league")}
+            <LeagueButtons
+              label={t("fields.league")}
+              value={league}
+              onChange={setLeague}
+              className="league-buttons-grid"
+            />
+          </div>
+          <Field
             label={t("fields.city-level")}
             value={cityLevel}
             min={1}
             max={200}
+            className="city-level-target demo-attack-level-field"
             onChange={(value) => setCityLevel(Math.floor(value))}
           />
-        </label>
-        {result ? (
-          <div className="demo-attack-tile-results">
-            <div className="total-box demo-attack-inner-tile">
-              <span className="label">{t("wall")}</span>
-              <strong className="value" data-testid="demo-wall">
-                {formatGameNumber(result.wall)}
-              </strong>
-            </div>
-            <div className="total-box demo-attack-inner-tile">
-              <span className="label">{t("maximum")}</span>
-              <strong className="value emerald" data-testid="demo-troops">
-                {formatGameNumber(result.troops)}
-              </strong>
-            </div>
-          </div>
+        </div>
+      </section>
+      {/* Bloc 92/H1: permanently-mounted live region, so both the
+          placeholder->result transition and later recomputes are announced. */}
+      <div aria-live="polite">
+        {result && league ? (
+          <SummarySection
+            title={t("result-title", { level: cityLevel })}
+            recall={
+              narrow
+                ? t("recall-short", { league: game(`leagues.${league}`) })
+                : t("recall", {
+                    league: game(`leagues.${league}`),
+                    level: cityLevel,
+                  })
+            }
+          >
+            <SummaryTile
+              icon={<WallIcon />}
+              label={t("wall")}
+              value={formatGameNumber(result.wall)}
+              row
+              wide
+              testId="demo-wall"
+            />
+            <SummaryTile
+              icon={<SwordsIcon />}
+              label={t("maximum")}
+              value={formatGameNumber(result.troops)}
+              highlight
+              row
+              wide
+              testId="demo-troops"
+            />
+          </SummarySection>
         ) : (
-          <p className="empty-state demo-attack-tile-empty">
-            {t("select-league")}
-          </p>
+          // Bloc 92/A11y (Codex PR #116): no role="status" — the live region
+          // around it already announces this placeholder.
+          <p className="empty-state">{t("select-league")}</p>
         )}
       </div>
     </div>
@@ -256,19 +313,25 @@ export function CombatCalculators({
         tabs={[
           // Bloc 32/C: not-yet-implemented placeholders, ordered ahead of the
           // 2 working tools — permanently disabled, no Calculator DB row and
-          // so no panel to point at.
+          // so no panel to point at. Bloc 114/A.1: a "Bientôt" pill rather
+          // than the asterisked sentence a switched-off tool wears — this is
+          // a promise, not a warning, and the sentence stays as the tooltip.
           {
             key: "combat-simulator" as const,
             label: tools("combat-simulator"),
             available: false,
-            unavailableLabel: tools("comingSoon"),
+            unavailableLabel: tools("comingSoonShort"),
+            unavailableTitle: tools("comingSoon"),
+            badgeStyle: "pill" as const,
             hasPanel: false,
           },
           {
             key: "enemy-troops" as const,
             label: tools("enemy-troops"),
             available: false,
-            unavailableLabel: tools("comingSoon"),
+            unavailableLabel: tools("comingSoonShort"),
+            unavailableTitle: tools("comingSoon"),
+            badgeStyle: "pill" as const,
             hasPanel: false,
           },
           {

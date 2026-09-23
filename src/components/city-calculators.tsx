@@ -16,7 +16,7 @@ import {
   defaultCityParameters,
   type CityParameters,
 } from "../lib/city-parameters";
-import { NumberStepper } from "./number-stepper";
+import { AmountUnitField, Field, type AmountUnit } from "./tool-fields";
 import { LeagueButtons } from "./league-select";
 import { TabList, TabPanel } from "./tabs";
 import {
@@ -26,7 +26,7 @@ import {
   StairsUpIcon,
   SwordsIcon,
   TrophyIcon,
-} from "./city-icons";
+} from "./tool-icons";
 import {
   BreakdownTable,
   DistributionBar,
@@ -41,7 +41,6 @@ import { usePlayerSettings } from "./use-player-settings";
 import { useSyncedLeague } from "./use-synced-league";
 
 type Calculator = "cost" | "max-level" | "production" | "rewards";
-type AmountUnit = 1 | 1_000 | 1_000_000 | 1_000_000_000 | 1_000_000_000_000;
 
 const number = (value: number) => formatGameNumber(value);
 
@@ -51,52 +50,6 @@ function LeagueRequired() {
   // placeholder sits inside a permanently-mounted aria-live="polite" region
   // that already announces it; a nested live region can double-announce.
   return <p className="empty-state">{common("select-league")}</p>;
-}
-
-function Field({
-  label,
-  accessibleLabel,
-  value,
-  onChange,
-  onCommit,
-  min = 1,
-  max,
-  step,
-  className,
-}: {
-  label: string;
-  /**
-   * Bloc 113/E: a longer name for the control alone, when two fields share a
-   * visible label. It must CONTAIN that label (WCAG 2.5.3) — "Heures reçues —
-   * Armée" does, so speech input still reaches the field by what it reads.
-   */
-  accessibleLabel?: string;
-  value: number;
-  onChange: (value: number) => void;
-  onCommit?: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  className?: string;
-}) {
-  return (
-    <label
-      className={
-        className ? `calculator-field ${className}` : "calculator-field"
-      }
-    >
-      {label}
-      <NumberStepper
-        label={accessibleLabel ?? label}
-        value={value}
-        onChange={onChange}
-        onCommit={onCommit}
-        min={min}
-        max={max}
-        step={step}
-      />
-    </label>
-  );
 }
 
 /**
@@ -426,14 +379,6 @@ function CostCalculator({
   );
 }
 
-const budgetUnits = [
-  ["×1", 1],
-  ["k", 1_000],
-  ["M", 1_000_000],
-  ["G", 1_000_000_000],
-  ["T", 1_000_000_000_000],
-] as const;
-
 /**
  * Bloc 113/C: how far a purse goes.
  *
@@ -455,7 +400,7 @@ function MaxLevelCalculator({
   const [cityCount, setCityCount] = useState(1);
   const [startLevel, setStartLevel] = useState(1);
   const [budget, setBudget] = useState(0);
-  const [unit, setUnit] = useState(1_000);
+  const [unit, setUnit] = useState<AmountUnit>(1_000);
   const [league, setLeague] = useSyncedLeague();
   const result = maximumReachableLevel(
     startLevel,
@@ -503,29 +448,15 @@ function MaxLevelCalculator({
             className="city-maxlevel-narrow-field"
             onChange={(v) => setStartLevel(Math.floor(v))}
           />
-          <label className="calculator-field city-maxlevel-gold-field city-level-target">
-            {t("fields.available-gold")}
-            <div className="unit-input">
-              <NumberStepper
-                label={t("fields.available-gold")}
-                value={budget}
-                min={0}
-                step={0.1}
-                onChange={setBudget}
-              />
-              <select
-                aria-label={t("fields.gold-unit")}
-                value={unit}
-                onChange={(event) => setUnit(Number(event.target.value))}
-              >
-                {budgetUnits.map(([label, value]) => (
-                  <option value={value} key={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </label>
+          <AmountUnitField
+            label={t("fields.available-gold")}
+            unitLabel={t("fields.gold-unit")}
+            amount={budget}
+            unit={unit}
+            onAmountChange={setBudget}
+            onUnitChange={setUnit}
+            className="city-maxlevel-gold-field city-level-target"
+          />
         </div>
       </section>
       {/* Bloc 92/H1: permanently-mounted live region so the reachable-level
@@ -815,50 +746,6 @@ function ProductionCalculator({
         )}
       </div>
     </div>
-  );
-}
-
-function AmountUnitField({
-  label,
-  unitLabel,
-  amount,
-  unit,
-  onAmountChange,
-  onUnitChange,
-}: {
-  label: string;
-  unitLabel: string;
-  amount: number;
-  unit: AmountUnit;
-  onAmountChange: (value: number) => void;
-  onUnitChange: (value: AmountUnit) => void;
-}) {
-  return (
-    <label className="calculator-field">
-      {label}
-      <div className="unit-input">
-        <NumberStepper
-          label={label}
-          value={amount}
-          min={0}
-          step={0.1}
-          onChange={onAmountChange}
-        />
-        <select
-          aria-label={unitLabel}
-          value={unit}
-          onChange={(event) =>
-            onUnitChange(Number(event.target.value) as AmountUnit)
-          }
-        >
-          <option value={1}>×1</option>
-          <option value={1_000}>k</option>
-          <option value={1_000_000}>M</option>
-          <option value={1_000_000_000}>G</option>
-          <option value={1_000_000_000_000}>T</option>
-        </select>
-      </div>
-    </label>
   );
 }
 

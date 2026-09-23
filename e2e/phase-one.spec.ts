@@ -337,11 +337,12 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
 
 test("Combat tools cover XP modes and demo league bands", async ({ page }) => {
   await page.goto("/tools/combat");
-  await expect(page.getByTestId(/xp-range-/)).toHaveCount(5);
+  // Bloc 114/B: both roles are on screen at once, five tiers each — the
+  // attacker/target switch these two lines used to click through is gone.
+  await expect(page.getByTestId(/^xp-range-/)).toHaveCount(10);
   await page.getByRole("spinbutton", { name: "Ma VP" }).fill("1");
-  await expect(page.getByTestId("xp-range-0")).toHaveText("< 400k");
-  await page.getByRole("tab", { name: "Je suis la cible" }).click();
-  await expect(page.getByTestId("xp-range-200")).toHaveText("< 500k");
+  await expect(page.getByTestId("xp-range-attacker-0")).toHaveText("< 400k");
+  await expect(page.getByTestId("xp-range-target-4")).toHaveText("< 500k");
   await page.getByRole("tab", { name: "Troupes en attaque démo" }).click();
   // Bloc 68/J: the league <select> is replaced by single-select buttons.
   const demoLeagueGroup = page.getByRole("group", {

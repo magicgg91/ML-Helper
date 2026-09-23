@@ -7,56 +7,72 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
-import messages from "../../messages/fr.json";
+import frMessages from "../../messages/fr.json";
+import enMessages from "../../messages/en.json";
 import { defaultCityParameters } from "../lib/city-parameters";
+import type { XpTier } from "../lib/combat-calculators";
 import { CombatCalculators } from "./combat-calculators";
 
 afterEach(cleanup);
-const view = () =>
+
+const view = (props: Partial<{ xpTiers: XpTier[] }> = {}) =>
   render(
-    <NextIntlClientProvider locale="fr" messages={messages}>
-      <CombatCalculators cityParameters={defaultCityParameters} />
+    <NextIntlClientProvider locale="fr" messages={frMessages}>
+      <CombatCalculators cityParameters={defaultCityParameters} {...props} />
     </NextIntlClientProvider>,
   );
 
+/** Puts "Ma VP" at the value the brief's acceptance table uses. */
+const setVp = (amount: string, unit: string) => {
+  fireEvent.change(screen.getByLabelText("Unité de VP"), {
+    target: { value: unit },
+  });
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Ma VP" }), {
+    target: { value: amount },
+  });
+};
+
+/** The five ranges of one column, top to bottom. */
+const rangesOf = (mode: "attacker" | "target") =>
+  [0, 1, 2, 3, 4].map(
+    (index) => screen.getByTestId(`xp-range-${mode}-${index}`).textContent,
+  );
+
+/** The step class of each tile of one column, top to bottom. */
+const stepsOf = (mode: "attacker" | "target") =>
+  [0, 1, 2, 3, 4].map((index) => {
+    const tile = screen
+      .getByTestId(`xp-range-${mode}-${index}`)
+      .closest(".xp-tile") as HTMLElement;
+    return [...tile.classList].find((name) => /^xp-tile-s\d+$/.test(name));
+  });
+
+const openDemo = () =>
+  fireEvent.click(screen.getByRole("tab", { name: "Troupes en attaque démo" }));
+
+const pickLeague = (name: string) =>
+  fireEvent.click(
+    within(
+      screen.getByRole("group", { name: "Ligue de l’attaquant" }),
+    ).getByRole("button", { name }),
+  );
+
 describe("CombatCalculators", () => {
-  it("shows five XP tiers in both modes", () => {
-    view();
-    expect(screen.getAllByTestId(/xp-range-/)).toHaveLength(5);
-    fireEvent.change(screen.getByRole("spinbutton", { name: "Ma VP" }), {
-      target: { value: "1" },
-    });
-    fireEvent.click(screen.getByRole("tab", { name: "Je suis la cible" }));
-    expect(screen.getAllByTestId(/xp-range-/)).toHaveLength(5);
-    expect(screen.getByTestId("xp-range-200")).toHaveTextContent("< 500k");
-  });
-
-  it("shows the 2 not-yet-implemented Combat placeholders, disabled, ahead of the 2 working tools, in the fixed order (Bloc 32/C)", () => {
-    view();
-    const tabs = within(
-      screen.getByRole("tablist", { name: "Outils Combat" }),
-    ).getAllByRole("tab");
-    expect(tabs.map((tab) => tab.textContent)).toEqual([
-      "Combat Bientôt disponible",
-      "Troupes ennemies Bientôt disponible",
-      "Taux de gain d’XP",
-      "Troupes en attaque démo",
-    ]);
-    const [combat, enemyTroops] = tabs;
-    expect(combat).toBeDisabled();
-    expect(combat).toHaveAttribute("title", "Bientôt disponible");
-    expect(enemyTroops).toBeDisabled();
-    expect(enemyTroops).toHaveAttribute("title", "Bientôt disponible");
-    fireEvent.click(combat);
-    expect(combat).toHaveAttribute("aria-selected", "false");
-  });
-
-  it("shows the 'coming soon' text permanently, not only on hover (Bloc 33/N)", () => {
-    view();
-    const combat = screen.getByRole("tab", { name: /^Combat/ });
-    expect(combat.querySelector(".tab-coming-soon")).toHaveTextContent(
-      "Bientôt disponible",
+  // Bloc 53/F: the Progression reference's cross-link passes ?open=xp,
+  // forwarded here as initialTool — must select that tab directly instead
+  // of always defaulting to whichever tab is firstAvailable.
+  it("Bloc53/F: initialTool selects the given tab directly", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatCalculators
+          cityParameters={defaultCityParameters}
+          initialTool="demo"
+        />
+      </NextIntlClientProvider>,
     );
+    expect(
+      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
+    ).toHaveAttribute("aria-selected", "true");
   });
 
   // Bloc 67: the reciprocal direction — this tool now links back to its
@@ -75,7 +91,7 @@ describe("CombatCalculators", () => {
   // only shows the "unavailable" message.
   it("Bloc68 review: hides the cross-link to Progression when its reference is independently disabled", () => {
     render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
         <CombatCalculators
           cityParameters={defaultCityParameters}
           levelUpReferenceActive={false}
@@ -87,185 +103,283 @@ describe("CombatCalculators", () => {
     ).not.toBeInTheDocument();
   });
 
-  // Bloc 53/F: the Progression reference's cross-link now passes ?open=xp,
-  // forwarded here as initialTool — must select that tab directly instead
-  // of always defaulting to whichever tab is firstAvailable.
-  it("Bloc53/F: initialTool selects the given tab directly", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <CombatCalculators
-          cityParameters={defaultCityParameters}
-          initialTool="demo"
-        />
-      </NextIntlClientProvider>,
-    );
-    expect(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    ).toHaveAttribute("aria-selected", "true");
-  });
-
-  // Bloc 68/J: the league field is now a button group (LeagueButtons),
-  // not a <select> — same interaction pattern as league-select.test.tsx.
-  it("calculates demo troops from the shared wall parameters", () => {
+  // Bloc 92/M2: the tools tablist wires each tab to its tabpanel
+  // (aria-controls <-> id/aria-labelledby). The nested mode-switch tablist
+  // Bloc 92 also covered is gone with Bloc 114/B.
+  it("Bloc92/M2: wires the XP tools tab to its tabpanel", () => {
     view();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    );
-    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    for (const button of within(league).getAllByRole("button"))
-      expect(button).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
-    fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
-    expect(screen.getByTestId("demo-wall")).toHaveTextContent("70");
-    expect(screen.getByTestId("demo-wall")).not.toHaveClass("emerald");
-    expect(screen.getByTestId("demo-troops")).toHaveTextContent("70");
-    expect(screen.getByTestId("demo-troops")).toHaveClass("emerald");
-  });
-
-  // Bloc 88/A: the league block keeps its visible "Ligue de l’attaquant"
-  // title and the mobile 2x3 grid class (league-buttons-grid), and its
-  // buttons now take 50% of the full-width block on desktop
-  // (league-buttons-half). The city-level field moved out to the result
-  // tile (Bloc 88/C), so the league field is no longer on a shared inline
-  // row.
-  it("Bloc88/A: the league block has a visible title, the 2x3 grid class and the 50% modifier", () => {
-    view();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    );
-    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    const wrapper = league.closest(".demo-attack-league-field");
-    expect(wrapper).toContainElement(league);
-    expect(wrapper).toHaveTextContent("Ligue de l’attaquant");
-    expect(league).toHaveClass("league-buttons-grid");
-    expect(league).toHaveClass("league-buttons-half");
-  });
-
-  // Bloc 88/C-E: the target-city-level field lives inside the result tile,
-  // editing it recalculates live, and no percentage is shown anywhere.
-  it("Bloc88/C-E: city-level field is in the tile, recalculates live, shows no percentage", () => {
-    view();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    );
-    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
-
-    const tile = screen.getByTestId("demo-wall").closest(".demo-attack-tile");
-    expect(tile).not.toBeNull();
-    // The city-level field is inside the tile, next to the results.
-    const cityLevel = screen.getByRole("spinbutton", {
-      name: "Niveau de ville visée",
-    });
-    expect(tile).toContainElement(cityLevel);
-    expect(tile).toContainElement(screen.getByTestId("demo-troops"));
-
-    // Live recalculation: raising the city level changes both values.
-    const wallBefore = screen.getByTestId("demo-wall").textContent;
-    const troopsBefore = screen.getByTestId("demo-troops").textContent;
-    fireEvent.change(cityLevel, { target: { value: "50" } });
-    expect(screen.getByTestId("demo-wall").textContent).not.toBe(wallBefore);
-    expect(screen.getByTestId("demo-troops").textContent).not.toBe(
-      troopsBefore,
-    );
-
-    // Bloc 88/E: no percentage anywhere in the tool.
-    expect(tile).not.toHaveTextContent("%");
-  });
-
-  // Bloc 89/B: each result value now sits in its own nested mini-tile
-  // (.demo-attack-inner-tile) inside the main result tile — the wall and the
-  // maximum-troops values in two distinct inner tiles. The lighter grey,
-  // centering, 50% width and equal thirds are paint/geometry, covered by the
-  // e2e spec.
-  it("Bloc89/B: wall and troops each sit in their own nested mini-tile", () => {
-    view();
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    );
-    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
-    fireEvent.click(within(league).getByRole("button", { name: "Bronze" }));
-
-    const wallTile = screen
-      .getByTestId("demo-wall")
-      .closest(".demo-attack-inner-tile") as HTMLElement | null;
-    const troopsTile = screen
-      .getByTestId("demo-troops")
-      .closest(".demo-attack-inner-tile") as HTMLElement | null;
-    expect(wallTile).not.toBeNull();
-    expect(troopsTile).not.toBeNull();
-    // Two distinct inner tiles, both inside the main result tile.
-    expect(wallTile).not.toBe(troopsTile);
-    const tile = screen.getByTestId("demo-wall").closest(".demo-attack-tile");
-    expect(tile).toContainElement(wallTile);
-    expect(tile).toContainElement(troopsTile);
-    // They keep the shared .total-box styling hook.
-    expect(wallTile).toHaveClass("total-box");
-    expect(troopsTile).toHaveClass("total-box");
-  });
-
-  // Bloc 92/M2: both the main tools tablist and the nested XP mode-switch
-  // tablist wire each tab to its tabpanel (aria-controls <-> id/aria-labelledby).
-  it("Bloc92/M2: wires the XP tools tab and the nested mode tabs to their tabpanels", () => {
-    view();
-    // Main tools tablist (XP is the default active tab).
     const xpTab = screen.getByRole("tab", { name: "Taux de gain d’XP" });
     expect(xpTab).toHaveAttribute("id", "combat-tools-tab-xp");
     expect(xpTab).toHaveAttribute("aria-controls", "combat-tools-panel-xp");
     const xpPanel = document.getElementById("combat-tools-panel-xp")!;
     expect(xpPanel).toHaveAttribute("role", "tabpanel");
     expect(xpPanel).toHaveAttribute("aria-labelledby", "combat-tools-tab-xp");
-
-    // Nested mode-switch tablist inside XpGainRate (attacker is the default).
-    const attackerTab = screen.getByRole("tab", {
-      name: "Je suis l’attaquant",
-    });
-    expect(attackerTab).toHaveAttribute("id", "combat-mode-tab-attacker");
-    expect(attackerTab).toHaveAttribute(
-      "aria-controls",
-      "combat-mode-panel-attacker",
-    );
-    const attackerPanel = document.getElementById(
-      "combat-mode-panel-attacker",
-    )!;
-    expect(attackerPanel).toHaveAttribute("role", "tabpanel");
-    expect(attackerPanel).toHaveAttribute(
-      "aria-labelledby",
-      "combat-mode-tab-attacker",
-    );
-    // Switching mode moves the panel id to the newly active tab.
-    fireEvent.click(screen.getByRole("tab", { name: "Je suis la cible" }));
-    const targetPanel = document.getElementById("combat-mode-panel-target")!;
-    expect(targetPanel).toHaveAttribute("role", "tabpanel");
-    expect(targetPanel).toHaveAttribute(
-      "aria-labelledby",
-      "combat-mode-tab-target",
-    );
   });
 
-  // Bloc 92/H1: the XP opponent-VP table and the Demo Attack wall/troops
-  // result each sit inside a permanently-mounted aria-live region.
+  // Bloc 92/H1: the XP ranges and the demo result each sit inside a
+  // permanently-mounted aria-live region.
   it("Bloc92/H1: keeps the XP ranges and the demo result inside aria-live regions", () => {
     view();
     expect(
-      screen.getAllByTestId(/xp-range-/)[0].closest('[aria-live="polite"]'),
+      screen.getByTestId("xp-range-attacker-0").closest('[aria-live="polite"]'),
     ).not.toBeNull();
 
-    fireEvent.click(
-      screen.getByRole("tab", { name: "Troupes en attaque démo" }),
-    );
-    // Bloc 92/A11y (Codex PR #116): placeholder dropped its role="status" to
-    // avoid nesting inside the demo tile's live region; find it by class.
+    openDemo();
+    // Bloc 92/A11y (Codex PR #116): the placeholder dropped its role="status"
+    // to avoid nesting inside the live region that already announces it.
     expect(
-      document.querySelector('[aria-live="polite"] .demo-attack-tile-empty'),
+      document.querySelector('[aria-live="polite"] .empty-state'),
     ).not.toBeNull();
-    fireEvent.click(
-      within(
-        screen.getByRole("group", { name: "Ligue de l’attaquant" }),
-      ).getByRole("button", { name: "Bronze" }),
-    );
+    pickLeague("Bronze");
     expect(
       screen.getByTestId("demo-wall").closest('[aria-live="polite"]'),
     ).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 114 — the Combat tool in tiles.
+// ---------------------------------------------------------------------------
+describe("Bloc 114/A: the two not-yet-built sub-tabs", () => {
+  // Bloc 32/C ordering is unchanged; only how the two placeholders say so.
+  it("badges them with a short pill and keeps the sentence as the tooltip", () => {
+    view();
+    const tabs = within(
+      screen.getByRole("tablist", { name: "Outils Combat" }),
+    ).getAllByRole("tab");
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      "CombatBientôt",
+      "Troupes ennemiesBientôt",
+      "Taux de gain d’XP",
+      "Troupes en attaque démo",
+    ]);
+    const [combat, enemyTroops] = tabs;
+    for (const tab of [combat, enemyTroops]) {
+      expect(tab).toBeDisabled();
+      expect(tab).toHaveAttribute("title", "Bientôt disponible");
+      expect(tab.querySelector(".tab-soon-pill")).toHaveTextContent("Bientôt");
+      // The asterisked treatment is for a tool that exists and is switched
+      // off — a placeholder must not wear it too.
+      expect(tab.querySelector(".tab-coming-soon")).toBeNull();
+    }
+    fireEvent.click(combat);
+    expect(combat).toHaveAttribute("aria-selected", "false");
+  });
+
+  // The pill is the placeholders' own treatment: a calculator an admin has
+  // disabled keeps the asterisked sentence it has carried since Bloc 33/N.
+  it("leaves a switched-off calculator on the asterisked badge", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <CombatCalculators
+          cityParameters={defaultCityParameters}
+          availability={{ xp: true, demo: false }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const demo = screen.getByRole("tab", { name: /^Troupes en attaque démo/ });
+    expect(demo.querySelector(".tab-coming-soon")).toHaveTextContent(
+      "Désactivé — inaccessible actuellement",
+    );
+    expect(demo.querySelector(".tab-soon-pill")).toBeNull();
+  });
+});
+
+describe("Bloc 114/B: Taux de gain d’XP shows both roles at once", () => {
+  it("has no attacker/target switch left", () => {
+    view();
+    expect(
+      screen.queryByRole("tab", { name: "Je suis l’attaquant" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("tab", { name: "Je suis la cible" }),
+    ).not.toBeInTheDocument();
+    // Both are headings of their own column instead.
+    expect(
+      screen.getByRole("heading", { name: /Je suis l’attaquant/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Je suis la cible/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows all ten tiles together, five per column", () => {
+    view();
+    expect(screen.getAllByTestId(/^xp-range-/)).toHaveLength(10);
+    for (const mode of ["attacker", "target"] as const) {
+      const list = screen.getByRole("list", {
+        name: mode === "attacker" ? /Je suis l’attaquant/ : /Je suis la cible/,
+      });
+      expect(within(list).getAllByRole("listitem")).toHaveLength(5);
+    }
+  });
+
+  // The brief's own acceptance table, both columns at once.
+  it("reads the brief's case of 11.2 G VP", () => {
+    view();
+    setVp("11.2", String(1_000_000_000));
+    expect(rangesOf("attacker")).toEqual([
+      "< 4.48G",
+      "4.48G – 5.6G",
+      "5.6G – 16.8G",
+      "16.8G – 22.4G",
+      "≥ 22.4G",
+    ]);
+    expect(rangesOf("target")).toEqual([
+      "≥ 28G",
+      "22.4G – 28G",
+      "7.47G – 22.4G",
+      "5.6G – 7.47G",
+      "< 5.6G",
+    ]);
+  });
+
+  it("paints the two columns on their own ramps", () => {
+    view();
+    expect(stepsOf("attacker")).toEqual([
+      "xp-tile-s0",
+      "xp-tile-s50",
+      "xp-tile-s100",
+      "xp-tile-s150",
+      "xp-tile-s200",
+    ]);
+    expect(stepsOf("target")).toEqual([
+      "xp-tile-s200",
+      "xp-tile-s150",
+      "xp-tile-s100",
+      "xp-tile-s100",
+      "xp-tile-s100",
+    ]);
+  });
+
+  // The five tiers are admin-editable, so two of them may end up carrying the
+  // same rate. The step is chosen by position for exactly that reason: keyed
+  // by rate, the pair would share one step and the ramp would lose a rung.
+  it("keeps one step per tier even when two tiers share a rate", () => {
+    const tiers: XpTier[] = [
+      { low: 0, high: 40, rate: 100 },
+      { low: 40, high: 50, rate: 100 },
+      { low: 50, high: 150, rate: 100 },
+      { low: 150, high: 200, rate: 150 },
+      { low: 200, high: null, rate: 200 },
+    ];
+    view({ xpTiers: tiers });
+    expect(stepsOf("attacker")).toEqual([
+      "xp-tile-s0",
+      "xp-tile-s50",
+      "xp-tile-s100",
+      "xp-tile-s150",
+      "xp-tile-s200",
+    ]);
+  });
+
+  it("spaces the percent the way the reader's own language does", () => {
+    view();
+    const french = screen
+      .getByTestId("xp-range-attacker-1")
+      .closest(".xp-tile")!
+      .querySelector(".xp-tile-figure")!;
+    // French puts a narrow no-break space before the sign; English does not.
+    expect(french.textContent).toBe("50 %d’XP");
+    cleanup();
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <CombatCalculators cityParameters={defaultCityParameters} />
+      </NextIntlClientProvider>,
+    );
+    const english = screen
+      .getByTestId("xp-range-attacker-1")
+      .closest(".xp-tile")!
+      .querySelector(".xp-tile-figure")!;
+    expect(english.textContent).toBe("50%of XP");
+  });
+
+  it("names who each column's rate is for", () => {
+    view();
+    const attacker = screen
+      .getByTestId("xp-range-attacker-0")
+      .closest(".xp-tile")!;
+    const target = screen.getByTestId("xp-range-target-0").closest(".xp-tile")!;
+    expect(attacker).toHaveTextContent("pour moi");
+    expect(target).toHaveTextContent("pour l’attaquant");
+    expect(attacker).toHaveTextContent("VP adverse");
+  });
+});
+
+describe("Bloc 114/C: Troupes en attaque démo in tiles", () => {
+  it("puts the city level in the parameters card, beside the league", () => {
+    view();
+    openDemo();
+    const cityLevel = screen.getByRole("spinbutton", {
+      name: "Niveau de ville visée",
+    });
+    const league = screen.getByRole("group", { name: "Ligue de l’attaquant" });
+    const card = cityLevel.closest(".calculator-card");
+    expect(card).toContainElement(league);
+    // It is a parameter, not a result: no tile holds it any more.
+    expect(cityLevel.closest(".tool-tile")).toBeNull();
+    // Bloc 114/A.3: the counter the reader varies carries the violet border.
+    expect(cityLevel.closest(".calculator-field")).toHaveClass(
+      "city-level-target",
+    );
+  });
+
+  it("gives the wall and the troops one tile each, the troops highlighted", () => {
+    view();
+    openDemo();
+    expect(screen.getByText(/Choisis une ligue/)).toBeInTheDocument();
+    pickLeague("Diamant");
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Niveau de ville visée" }),
+      { target: { value: "135" } },
+    );
+    expect(screen.getByTestId("demo-wall")).toHaveTextContent("2.85T");
+    expect(screen.getByTestId("demo-troops")).toHaveTextContent("856.06G");
+
+    const wallTile = screen.getByTestId("demo-wall").closest(".tool-tile")!;
+    const troopsTile = screen.getByTestId("demo-troops").closest(".tool-tile")!;
+    expect(wallTile).not.toBe(troopsTile);
+    // The answer wears the violet; the wall it has to get through does not.
+    expect(troopsTile).toHaveClass("tool-tile-highlight");
+    expect(wallTile).not.toHaveClass("tool-tile-highlight");
+    // Bloc 88/E: still no percentage anywhere in the tool.
+    expect(troopsTile.closest(".tool-summary")).not.toHaveTextContent("%");
+  });
+
+  it("titles the section by the level and recalls the parameters", () => {
+    view();
+    openDemo();
+    pickLeague("Diamant");
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Niveau de ville visée" }),
+      { target: { value: "135" } },
+    );
+    expect(
+      screen.getByRole("heading", { name: "Attaque d’une ville niveau 135" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Attaquant Diamant · ville niveau 135"),
+    ).toBeInTheDocument();
+  });
+
+  it("recalculates live when either parameter changes", () => {
+    view();
+    openDemo();
+    pickLeague("Bronze");
+    const before = screen.getByTestId("demo-troops").textContent;
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Niveau de ville visée" }),
+      { target: { value: "50" } },
+    );
+    expect(screen.getByTestId("demo-troops").textContent).not.toBe(before);
+    const troopsAtBronze = screen.getByTestId("demo-troops").textContent;
+    const wallAtBronze = screen.getByTestId("demo-wall").textContent;
+    pickLeague("Diamant");
+    expect(screen.getByTestId("demo-troops").textContent).not.toBe(
+      troopsAtBronze,
+    );
+    // The wall is the target city's own, so a change of attacker league
+    // moves the troops it takes and leaves the wall where it was.
+    expect(screen.getByTestId("demo-wall").textContent).toBe(wallAtBronze);
   });
 });
