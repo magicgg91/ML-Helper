@@ -292,7 +292,7 @@ function CostCalculator({
         ) : (
           <>
             <SummarySection
-              title={t("total-cities", { count: cityCount })}
+              title={t("total")}
               recall={t("recall", {
                 count: cityCount,
                 league: game(`leagues.${league}`),
@@ -467,7 +467,7 @@ function MaxLevelCalculator({
           <LeagueRequired />
         ) : (
           <SummarySection
-            title={t("total-cities", { count: cityCount })}
+            title={t("total")}
             recall={t("recall", {
               count: cityCount,
               league: game(`leagues.${league}`),
@@ -673,7 +673,7 @@ function ProductionCalculator({
         ) : (
           <>
             <SummarySection
-              title={t("total-cities", { count: cityCount })}
+              title={t("total")}
               recall={t("recall", {
                 count: cityCount,
                 league: game(`leagues.${league}`),

@@ -177,7 +177,7 @@
       "start-level": "Starting level",
       "target-level": "Target level"
     },
-    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "total": "Total",
     "recall": "{count, plural, one {# city} other {# cities}} · {league} · level {start} → {target}",
     "cost-total": "Cost",
     "gold-unit": "gold",
@@ -207,7 +207,7 @@
       "available-gold": "Available gold",
       "gold-unit": "Available gold unit"
     },
-    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "total": "Total",
     "recall": "{count, plural, one {# city} other {# cities}} · {league} · level {level} · {gold} gold available",
     "reachable-level": "Max level",
     "levels-gained": "+{count}",
@@ -225,7 +225,7 @@
       "city-count": "Number of cities",
       "average-level": "Average city level"
     },
-    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
+    "total": "Total",
     "recall": "{count, plural, one {# city} other {# cities}} · {league} · average level {level}",
     "army-hour": "Army / h",
     "gold-hour": "Gold / h",
@@ -293,7 +293,7 @@
     },
     "wall": "Target walls",
     "maximum": "Maximum troops",
-    "result-title": "Attacking a level {level} city",
+    "result": "Result",
     "recall": "{league} attacker · level {level} city",
     "recall-short": "{league} attacker"
   },

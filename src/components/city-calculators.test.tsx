@@ -436,7 +436,7 @@ describe("CityCalculators", () => {
     // Only one result heading now — the old separate "Pour 1 ville" title
     // is gone.
     expect(screen.queryByText("Pour 1 ville")).not.toBeInTheDocument();
-    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const heading = screen.getByRole("heading", { name: "Total" });
     const section = heading.closest("section")!;
     // Bloc 113/B: the five tiles, in the order the bloc fixes — Armée before
     // Or, and no rentability tile.
@@ -503,7 +503,7 @@ describe("CityCalculators", () => {
     expect(
       screen.queryByText("Ville seule (niveau atteint)"),
     ).not.toBeInTheDocument();
-    const heading = screen.getByRole("heading", { name: /Total pour 1 ville/ });
+    const heading = screen.getByRole("heading", { name: "Total" });
     const section = heading.closest("section")!;
     for (const testId of [
       "max-level-result",
@@ -764,5 +764,123 @@ describe("Bloc 113: the Villes tool in tiles", () => {
     }
     expect(document.body.textContent).not.toContain("💰");
     expect(document.body.textContent).not.toContain("⚔️");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bloc 117 — the section heading stops repeating the chip beside it.
+//
+// "Total pour 1 ville" said what "1 ville · Diamant · niveau 100 → 120"
+// already said, two centimetres to its right. The heading is now just
+// "Total", and the chip is untouched — which is what these check: the short
+// title on each of the three sub-tabs, the chip's exact wording still there,
+// and the figures under them unmoved.
+// ---------------------------------------------------------------------------
+describe("Bloc 117: the Villes headings lose what the chip already says", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  const show = () =>
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+  const pickLeague = (name: string) =>
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
+        name,
+      }),
+    );
+  const setField = (name: string, value: string) =>
+    fireEvent.change(screen.getByRole("spinbutton", { name }), {
+      target: { value },
+    });
+
+  /** The heading of the section a result tile sits in. */
+  const headingOf = (testId: string) =>
+    screen
+      .getByTestId(testId)
+      .closest("section")!
+      .querySelector(".calculator-heading")!.textContent;
+
+  /** The recall chip of that same section. */
+  const chipOf = (testId: string) =>
+    screen
+      .getByTestId(testId)
+      .closest("section")!
+      .querySelector(".tool-recall")!.textContent;
+
+  it("Coût: reads 'Total', and the chip still carries the whole detail", () => {
+    show();
+    pickLeague("Diamant");
+    setField("Nombre de villes", "10");
+    setField("Niveau de départ", "100");
+    setField("Niveau cible", "120");
+    expect(headingOf("city-cost-total")).toBe("Total");
+    expect(chipOf("city-cost-total")).toBe(
+      "10 villes · Diamant · niveau 100 → 120",
+    );
+    // And the figures are where they were.
+    expect(screen.getByTestId("city-cost-total")).toHaveTextContent("1.29T");
+    expect(screen.getByTestId("city-cost-vp")).toHaveTextContent("+74.9M");
+  });
+
+  it("Niveau max: reads 'Total', chip and figures unchanged", () => {
+    show();
+    fireEvent.click(
+      screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+    );
+    pickLeague("Diamant");
+    setField("Nombre de villes", "5");
+    setField("Niveau de départ", "130");
+    setField("Or disponible", "7.3");
+    fireEvent.change(screen.getByLabelText("Unité de l’or disponible"), {
+      target: { value: String(1_000_000_000_000) },
+    });
+    expect(headingOf("max-level-result")).toBe("Total");
+    expect(chipOf("max-level-result")).toBe(
+      "5 villes · Diamant · niveau 130 · 7.3T d’or disponible",
+    );
+    expect(screen.getByTestId("max-level-result")).toHaveTextContent("135");
+  });
+
+  it("Production: reads 'Total', chip and figures unchanged", () => {
+    show();
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    pickLeague("Diamant");
+    setField("Nombre de villes", "10");
+    setField("Niveau moyen des villes", "130");
+    expect(headingOf("city-production-army")).toBe("Total");
+    expect(chipOf("city-production-army")).toBe(
+      "10 villes · Diamant · niveau moyen 130",
+    );
+    expect(screen.getByTestId("city-production-vp")).toHaveTextContent(
+      "250.89M",
+    );
+  });
+
+  // The heading is a fixed string, so it cannot drift with the viewport —
+  // asserted rather than assumed, since the chip beside it does change on a
+  // phone in the Combat tool.
+  it("keeps the same heading at a phone width", () => {
+    const wide = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    try {
+      show();
+      pickLeague("Diamant");
+      expect(headingOf("city-cost-total")).toBe("Total");
+    } finally {
+      window.matchMedia = wide;
+    }
   });
 });

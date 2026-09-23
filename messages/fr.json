@@ -177,7 +177,7 @@
       "start-level": "Niveau de départ",
       "target-level": "Niveau cible"
     },
-    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "total": "Total",
     "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {start} → {target}",
     "cost-total": "Coût",
     "gold-unit": "or",
@@ -207,7 +207,7 @@
       "available-gold": "Or disponible",
       "gold-unit": "Unité de l’or disponible"
     },
-    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "total": "Total",
     "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {level} · {gold} d’or disponible",
     "reachable-level": "Niveau max",
     "levels-gained": "+{count}",
@@ -225,7 +225,7 @@
       "city-count": "Nombre de villes",
       "average-level": "Niveau moyen des villes"
     },
-    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "total": "Total",
     "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau moyen {level}",
     "army-hour": "Armée / h",
     "gold-hour": "Or / h",
@@ -293,7 +293,7 @@
     },
     "wall": "Remparts de la cible",
     "maximum": "Troupes maximum",
-    "result-title": "Attaque d’une ville niveau {level}",
+    "result": "Résultat",
     "recall": "Attaquant {league} · ville niveau {level}",
     "recall-short": "Attaquant {league}"
   },
