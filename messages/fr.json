@@ -1077,7 +1077,13 @@
       "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat"
     },
     "common": {
-      "back": "Retour"
+      "back": "Retour",
+      "cancel": "Annuler",
+      "close": "Fermer",
+      "confirm": "Confirmer",
+      "hidden": "Masqué",
+      "more-actions": "Autres actions",
+      "visible": "Visible"
     },
     "parameters": {
       "save": "Enregistrer les paramètres",

@@ -68,6 +68,14 @@
   --color-admin-danger-border: var(--admin-danger-border);
   --radius-admin-card: var(--admin-card-radius);
   --radius-admin-control: var(--admin-control-radius);
+  /* The site's three families, under admin names. `font-admin-mono` is
+     deliberately narrow in use: hours, identifiers and language codes, never
+     tables or figures (Bloc 119 §1). The family behind it is the repo's
+     JetBrains Mono (Bloc 116/A), not the IBM Plex Mono the brief names — see
+     the PR for that gap. */
+  --font-admin-display: var(--font-serif);
+  --font-admin-body: var(--font-sans);
+  --font-admin-mono: var(--font-mono);
 }
 
 /* Bloc 107/A: the note above the level-up troop table, explaining which form
@@ -109,6 +117,45 @@
 }
 .ranking-entry-active input {
   width: auto;
+}
+
+/* Bloc 119 — l'échelle typographique de l'admin, en utilitaires Tailwind
+   (`@utility`, donc composables avec les variantes) plutôt que répétée en
+   valeurs arbitraires dans chaque composant. La couleur n'y est pas : elle
+   vient des classes de token (text-admin-text, text-admin-dim), pour qu'un
+   même surtitre puisse être dimmé ici et accentué là. */
+@utility admin-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+@utility admin-title {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+@utility admin-section-title {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+/* Un seul anneau de focus pour toute l'admin : chaque contrôle porte
+   `admin-focus` au lieu de réécrire la même règle, et l'anneau suit le thème
+   parce qu'il lit le token d'accent. */
+@utility admin-focus {
+  &:focus-visible {
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+  }
+}
+@utility admin-column-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* ---------------------------------------------------------------------------

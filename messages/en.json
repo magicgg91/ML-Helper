@@ -1077,7 +1077,13 @@
       "combat-increments-description": "Per-star increments for the Combat Equipment skills"
     },
     "common": {
-      "back": "Back"
+      "back": "Back",
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Confirm",
+      "hidden": "Hidden",
+      "more-actions": "More actions",
+      "visible": "Visible"
     },
     "parameters": {
       "save": "Save parameters",
