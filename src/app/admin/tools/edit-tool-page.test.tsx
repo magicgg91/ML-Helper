@@ -18,6 +18,10 @@ vi.mock("@/components/named-parameters-editor", () => ({
       back
     </a>
   ),
+}));
+// Bloc 119: the four screens that are nothing but named numbers moved to
+// their own module when they were rewritten on the refonte's components.
+vi.mock("@/components/admin-tool-editors", () => ({
   CityParametersEditor: () => null,
   DemoAttackTroopsEditor: () => null,
   GemParametersEditor: ({ backHref }: { backHref: string }) => (

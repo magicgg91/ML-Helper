@@ -1195,16 +1195,22 @@
       "gold": "Multiplicateur Or",
       "vp": {
         "base": "Base VP",
-        "ratio": "Ratio VP"
+        "ratio": "Ratio VP",
+        "title": "VP"
       },
       "walls": {
         "base": "Base Remparts",
-        "ratio": "Ratio Remparts"
+        "ratio": "Ratio Remparts",
+        "title": "Remparts"
       },
       "cost": {
         "base": "Base Coût",
-        "ratio": "Ratio Coût"
-      }
+        "ratio": "Ratio Coût",
+        "title": "Coût"
+      },
+      "subtitle": "Base et ratio des trois courbes de ville, et les multiplicateurs de chaque ligue.",
+      "used-by": "Utilisé par {count} outils",
+      "progression-help": "Chaque courbe suit la forme valeur(niveau) = base × ratio^(niveau − 1)."
     },
     "templar-parameters": {
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
@@ -1217,18 +1223,36 @@
       "upper-bound": "Seuil haut (%)",
       "upper-bound-field": "Seuil haut du palier {tier}",
       "rate": "Taux XP (%)",
-      "rate-field": "Taux XP du palier {tier}"
+      "rate-field": "Taux XP du palier {tier}",
+      "subtitle": "Les cinq paliers du taux de gain d’XP, du plus bas au plus haut.",
+      "tiers": "Paliers",
+      "from": "À partir de (%)",
+      "up-to": "Jusqu’à (%)",
+      "preview": "Aperçu",
+      "no-upper-bound": "Sans limite haute",
+      "not-increasing": "Les seuils ne sont pas strictement croissants : vérifie les paliers avant d’enregistrer."
     },
     "demo-attack-troops": {
       "formula": "TroupesMax = (X % / 100) × Remparts(niveau de la ville visée)",
-      "percentage": "X (% des remparts)"
+      "percentage": "X (% des remparts)",
+      "subtitle": "Part des remparts engagée en attaque démo, ligue par ligue.",
+      "per-league": "Pourcentage par ligue",
+      "league": "Ligue",
+      "preview": "Aperçu"
     },
     "gems": {
       "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
       "value": "Valeur de base par compétence et par ligue",
       "value-field": "{skill} · {league}",
       "price": "Prix d’achat des gemmes par ligue (en saphirs)",
-      "price-field": "Prix {league}"
+      "price-field": "Prix {league}",
+      "subtitle": "Valeur d’une gemme par compétence et par ligue, et prix d’achat en saphirs.",
+      "skill": "Compétence",
+      "league": "Ligue",
+      "price-column": "Prix",
+      "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu.",
+      "sapphires": "saphirs",
+      "no-price": "—"
     },
     "users": {
       "title": "Utilisateurs administrateurs",

@@ -66,8 +66,14 @@ export function adminReferenceEditHref(slug: string): string {
   return adminToolEditHref(slug) ?? `/admin/referentiels/reference-${slug}`;
 }
 
-/** The tools that edit their parameters on the same screen as this one. */
-function toolsSharing(href: string): CalculatorSlug[] {
+/**
+ * The tools that edit their parameters on the same screen as this one.
+ *
+ * Exported for the shared editor itself (Bloc 119 §3 bis): the "Utilisé par N
+ * outils" chips of Paramètres Villes partagés name the same tools the Outils
+ * table counts, from this one mapping.
+ */
+export function toolsSharingEditor(href: string): CalculatorSlug[] {
   return toolSlugs.filter((slug) => adminToolEditHref(slug) === href);
 }
 
@@ -81,7 +87,7 @@ export function toolParameterSource(slug: string): ToolParameterSource {
     };
   const href = adminToolEditHref(slug);
   if (!href) return { kind: "none" };
-  const shared = toolsSharing(href);
+  const shared = toolsSharingEditor(href);
   return shared.length > 1
     ? { kind: "shared", href, tools: shared }
     : { kind: "own", href };

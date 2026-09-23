@@ -1195,16 +1195,22 @@
       "gold": "Gold multiplier",
       "vp": {
         "base": "VP base",
-        "ratio": "VP ratio"
+        "ratio": "VP ratio",
+        "title": "VP"
       },
       "walls": {
         "base": "Walls base",
-        "ratio": "Walls ratio"
+        "ratio": "Walls ratio",
+        "title": "Walls"
       },
       "cost": {
         "base": "Cost base",
-        "ratio": "Cost ratio"
-      }
+        "ratio": "Cost ratio",
+        "title": "Cost"
+      },
+      "subtitle": "Base and ratio of the three city curves, and each league’s multipliers.",
+      "used-by": "Used by {count} tools",
+      "progression-help": "Each curve follows value(level) = base × ratio^(level − 1)."
     },
     "templar-parameters": {
       "formula": "Cost(n) = round(base × ratio^(n-1))",
@@ -1217,18 +1223,36 @@
       "upper-bound": "Upper bound (%)",
       "upper-bound-field": "Tier {tier} upper bound",
       "rate": "XP rate (%)",
-      "rate-field": "Tier {tier} XP rate"
+      "rate-field": "Tier {tier} XP rate",
+      "subtitle": "The five XP gain rate tiers, from the lowest to the highest.",
+      "tiers": "Tiers",
+      "from": "From (%)",
+      "up-to": "Up to (%)",
+      "preview": "Preview",
+      "no-upper-bound": "No upper bound",
+      "not-increasing": "The thresholds are not strictly increasing: check the tiers before saving."
     },
     "demo-attack-troops": {
       "formula": "MaxTroops = (X% / 100) × Walls(target city level)",
-      "percentage": "X (% of walls)"
+      "percentage": "X (% of walls)",
+      "subtitle": "The share of the walls a demo attack fields, league by league.",
+      "per-league": "Percentage per league",
+      "league": "League",
+      "preview": "Preview"
     },
     "gems": {
       "formula": "Gem value = base value (per skill and per league)",
       "value": "Base value per skill and per league",
       "value-field": "{skill} · {league}",
       "price": "Gem purchase price per league (in sapphires)",
-      "price-field": "{league} price"
+      "price-field": "{league} price",
+      "subtitle": "A gem’s value per skill and per league, and the purchase price in sapphires.",
+      "skill": "Skill",
+      "league": "League",
+      "price-column": "Price",
+      "price-help": "Bronze has no purchase price in the game.",
+      "sapphires": "sapphires",
+      "no-price": "—"
     },
     "users": {
       "title": "Admin users",
