@@ -977,9 +977,9 @@ describe("Bloc 112: the League Lock chip in the header", () => {
       "Plages de classement",
     );
     expect(header).toContainElement(screen.getByTestId("ranking-league-lock"));
-    expect(header.querySelector(".ranking-lock-chip-label")).toHaveTextContent(
-      "Ligue verrou",
-    );
+    expect(
+      header.querySelector(".ranking-chip-lock .ranking-header-chip-label"),
+    ).toHaveTextContent("Ligue verrou");
     // No tile left where the pair used to be.
     expect(document.querySelector(".ranking-info-tiles")).toBeNull();
   });
@@ -1019,6 +1019,71 @@ describe("Bloc 112: the League Lock chip in the header", () => {
     renderLadder(defaultRankingLadder);
     expect(document.querySelector(".ranking-ranges-header")).toBeNull();
     expect(screen.queryByTestId("ranking-league-lock")).toBeNull();
+  });
+});
+
+// Codex review (PR #139), P2. The estimated-players figure was removed on
+// the grounds that the last range ends on it — true only of a range reaching
+// 100%: calculateRanking ceils there and floors everywhere else. A ladder can
+// stop short of 100 (isSavableRankingLadder only checks 0 < t <= 100), and a
+// small enough population can drop the 100% range from one that has it. In
+// both cases the figure was nowhere on the page.
+describe("Bloc 112, revue Codex : le total quand aucune plage ne le porte", () => {
+  afterEach(cleanup);
+
+  /** A one-rung ladder whose single range stops at `top` percent. */
+  const stoppingAt = (top: number): RankingLadder => [
+    {
+      id: "gold",
+      league: "gold",
+      division: "",
+      nameFr: "",
+      nameEn: "",
+      position: 0,
+      active: true,
+      bands: [
+        { threshold: top, movement: "stay", target: "gold", rewards: [] },
+      ],
+    },
+  ];
+  const show = (ladder: RankingLadder) => {
+    renderLadder(ladder);
+    fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
+  };
+
+  it("shows the figure when the ladder stops short of 100%", () => {
+    show(stoppingAt(80));
+    // 10th at 1% deduces 1000 players; the only range ends at 80% of them.
+    expect(partOf(0, ".ranking-range-ranks-value")).toMatch(/800$/);
+    expect(screen.getByTestId("ranking-total").textContent).toMatch(
+      /1[\s\u00a0\u202f]000$/,
+    );
+  });
+
+  it("keeps it hidden when a range does end on the total", () => {
+    show(stoppingAt(100));
+    expect(partOf(0, ".ranking-range-ranks-value")).toMatch(
+      /1[\s\u00a0\u202f]000$/,
+    );
+    expect(screen.queryByTestId("ranking-total")).toBeNull();
+  });
+
+  it("shows it for an entry whose thresholds are not filled in yet", () => {
+    show([{ ...stoppingAt(100)[0], bands: [] }]);
+    expect(bandTiles()).toHaveLength(0);
+    expect(screen.getByTestId("ranking-total")).toBeInTheDocument();
+  });
+
+  // The other way the figure could go missing would be the 100% range being
+  // dropped for want of players — it cannot be, and ranking.test.ts pins that
+  // as a property. So a ladder stopping short is the whole of this case.
+  it("stays hidden while there is nothing to deduce", () => {
+    show(stoppingAt(80));
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
+      { target: { value: "0" } },
+    );
+    expect(screen.queryByTestId("ranking-total")).toBeNull();
   });
 });
 

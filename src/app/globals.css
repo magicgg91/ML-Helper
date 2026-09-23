@@ -4441,8 +4441,10 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
    percentage all arrive already calculated.
    --------------------------------------------------------------------------- */
 
-/* Heading on the left, League Lock chip on the right; on a phone the chip
-   drops under the heading, left aligned. */
+/* Heading on the left, the header's chips on the right; on a phone they drop
+   under the heading, left aligned. The League Lock is always one of them; the
+   estimated player count joins it only when no range tile ends on that number
+   (Codex review, PR #139). */
 .ranking-ranges-header {
   display: flex;
   flex-wrap: wrap;
@@ -4460,7 +4462,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
     align-items: flex-start;
   }
 }
-.ranking-lock-chip {
+.ranking-header-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -4471,16 +4473,16 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   background: var(--surface-muted);
 }
 @media (max-width: 900px) {
-  .ranking-lock-chip {
+  .ranking-header-chip {
     padding: 6px 12px;
   }
 }
-.ranking-lock-chip-label {
+.ranking-header-chip-label {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 700;
 }
-.ranking-lock-chip-value {
+.ranking-header-chip-value {
   color: var(--accent-strong);
   font-family: var(--font-mono, monospace);
   font-size: 0.85rem;
@@ -4492,7 +4494,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   width: 1em;
   height: 1em;
 }
-.ranking-lock-chip > .ranking-icon {
+.ranking-header-chip > .ranking-icon {
   width: 1.05rem;
   height: 1.05rem;
   color: var(--muted);

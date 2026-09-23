@@ -2543,7 +2543,7 @@ test("Bloc110+112: Classement lays its picker and its range tiles out at both wi
     header.evaluate((element) => {
       const heading = element.querySelector("h2")!.getBoundingClientRect();
       const chip = element
-        .querySelector(".ranking-lock-chip")!
+        .querySelector(".ranking-header-chip")!
         .getBoundingClientRect();
       return {
         headingLeft: heading.left,

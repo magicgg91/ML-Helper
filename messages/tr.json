@@ -283,6 +283,7 @@
       "entry": "Lig / Bölüm"
     },
     "undefined": "Yönetim panelinde tanımlanacak",
+    "total-players": "Tahmini oyuncu sayısı",
     "errors": {
       "select-league": "Hesaplamak için bir lig veya bölüm seç.",
       "positive-percentage": "Hesaplamak için 0'dan büyük bir yüzde gir.",

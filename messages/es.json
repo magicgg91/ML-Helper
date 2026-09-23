@@ -283,6 +283,7 @@
       "entry": "Liga / División"
     },
     "undefined": "Por definir en la administración",
+    "total-players": "Número estimado de jugadores",
     "errors": {
       "select-league": "Elige una liga o división para calcular.",
       "positive-percentage": "Introduce un porcentaje mayor que 0 para calcular.",

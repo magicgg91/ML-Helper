@@ -246,6 +246,32 @@ describe("rankCategoryShade", () => {
 // Bloc 110/C: the scale and the interval tiles must paint the same interval
 // the same color, and a shade depends on how many bands of the same movement
 // came before it — so it cannot be recomputed independently on each side.
+// Codex review (PR #139): Bloc 112 stopped drawing the deduced player count
+// on the grounds that a range reaching 100% ends on it. That holds only if
+// such a range is always rendered — so this pins that it survives any
+// population, however small, while every range below it can be dropped.
+describe("the 100% range is never dropped", () => {
+  const bands = bandsOf("diamond");
+
+  it.each([1, 2, 3, 7, 50, 1000])(
+    "keeps it with a population of about %i",
+    (rank) => {
+      const result = calculateRanking(bands, 100, rank);
+      const top = result.ranges.at(-1);
+      expect(top?.threshold, `${rank} players`).toBe(100);
+      // And it really does end on the deduced total, ceiled.
+      expect(top?.rankEnd).toBe(Math.ceil(result.total!));
+    },
+  );
+
+  it("can drop every range below it", () => {
+    // One player: no lower range holds a whole rank, the top one still does.
+    expect(
+      calculateRanking(bands, 100, 1).ranges.map((range) => range.threshold),
+    ).toEqual([100]);
+  });
+});
+
 describe("rankBandShades", () => {
   it("shades bands in threshold order, light to dark within each movement", () => {
     expect(rankBandShades(bandsOf("diamond"))).toEqual([

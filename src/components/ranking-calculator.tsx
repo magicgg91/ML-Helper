@@ -137,6 +137,16 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
   // Bloc 110/C: computed once, from the bands, and handed to both the scale
   // and the tiles — see rankBandShades.
   const shades = rankBandShades(bands);
+  // Codex review (PR #139): whether the deduced population is readable from
+  // the tiles at all. Only a range reaching 100% ends on it, so if none of
+  // the RENDERED ranges does, the figure needs showing on its own.
+  // Carries the number rather than a flag, so the rendering below needs no
+  // non-null assertion to get at it.
+  const totalOffScreen =
+    result.total !== null &&
+    !result.ranges.some((range) => range.threshold === 100)
+      ? Math.ceil(result.total)
+      : null;
   // Bloc 109: how many buttons each row carries. The split depends on a width
   // only the browser knows — the same server-renders-wide, client-corrects
   // trade-off useNarrowViewport carries for the reference tables.
@@ -247,16 +257,38 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
           {entry ? (
             <div className="ranking-ranges-header">
               <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
+              {/* Codex review (PR #139): the estimated player count was
+                  removed because the last range ends on it — but that only
+                  holds for a range reaching 100%, and calculateRanking says
+                  so itself: every other range floors at its own percentage.
+                  isSavableRankingLadder allows a ladder stopping short of
+                  100, and a small enough population can drop the 100% range
+                  even from a ladder that has one. In both cases the figure is
+                  nowhere else on the page, so it comes back — as a chip, and
+                  only then, so nothing redundant is ever redrawn. */}
+              {totalOffScreen !== null ? (
+                <p className="ranking-header-chip ranking-chip-total">
+                  <span className="ranking-header-chip-label">
+                    {t("total-players")}
+                  </span>
+                  <strong
+                    className="ranking-header-chip-value"
+                    data-testid="ranking-total"
+                  >
+                    {totalOffScreen.toLocaleString(locale)}
+                  </strong>
+                </p>
+              ) : null}
               {/* Bloc 108/D: the rung the player cannot fall below this
                   season. Computed, never typed in by an admin. Bloc 112
                   shrank it from a tile to this chip. */}
-              <p className="ranking-lock-chip">
+              <p className="ranking-header-chip ranking-chip-lock">
                 <LeagueLockIcon />
-                <span className="ranking-lock-chip-label">
+                <span className="ranking-header-chip-label">
                   {t("league-lock")}
                 </span>
                 <strong
-                  className="ranking-lock-chip-value"
+                  className="ranking-header-chip-value"
                   data-testid="ranking-league-lock"
                 >
                   {lock

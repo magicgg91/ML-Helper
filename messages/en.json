@@ -283,6 +283,7 @@
       "entry": "League / Division"
     },
     "undefined": "To be defined in the administration",
+    "total-players": "Estimated number of players",
     "errors": {
       "select-league": "Pick a league or division to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
