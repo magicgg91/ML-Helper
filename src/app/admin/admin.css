@@ -66,6 +66,8 @@
   --color-admin-neutral-ink: var(--admin-neutral-ink);
   --color-admin-danger-ink: var(--admin-danger-ink);
   --color-admin-danger-border: var(--admin-danger-border);
+  --color-admin-formula: var(--admin-formula);
+  --color-admin-formula-border: var(--admin-formula-border);
   --radius-admin-card: var(--admin-card-radius);
   --radius-admin-control: var(--admin-control-radius);
   /* The site's three families, under admin names. `font-admin-mono` is
@@ -228,6 +230,12 @@
   --admin-neutral-ink: #434856;
   --admin-danger-ink: #9a2f1c;
   --admin-danger-border: #e6bfb5;
+  /* L'encart de formule (§3 bis) — une nuance plus claire que l'accent doux
+     des pastilles, pour qu'un encart de formule ne se lise pas comme une
+     pastille étirée. Contrastes mesurés sur ce fond : clair 14.90 (texte),
+     9.61 (surtitre), 5.62 (note) ; sombre 12.80, 7.96, 6.49. */
+  --admin-formula: #f4f1fc;
+  --admin-formula-border: #e1d8f6;
 
   /* Dimensions — section 1 du brief, nommées pour ne pas être réécrites au
      cas par cas dans chaque page. */
@@ -272,4 +280,6 @@
   --admin-neutral-ink: #b4bac7;
   --admin-danger-ink: #e08a72;
   --admin-danger-border: #6b3a2e;
+  --admin-formula: #241b3a;
+  --admin-formula-border: #3a2d5c;
 }

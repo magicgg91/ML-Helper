@@ -703,6 +703,21 @@
     "error-disabled": "Compte désactivé, contacter l’administrateur."
   },
   "admin": {
+    "editor": {
+      "all-saved": "Tout est enregistré",
+      "breadcrumb": "Fil d’Ariane",
+      "cancel": "Annuler",
+      "formula": "Formule",
+      "language-to-create": "{language} — à créer",
+      "leave-warning": "Des modifications ne sont pas enregistrées. Quitter cette page les perdra.",
+      "move-down-of": "Descendre {name}",
+      "move-up-of": "Monter {name}",
+      "not-a-number": "Nombre attendu",
+      "remove-of": "Supprimer {name}",
+      "save": "Enregistrer",
+      "to-fill-in": "À renseigner",
+      "unsaved": "Modifications non enregistrées"
+    },
     "title": "Administration",
     "view-site": "Voir le site public",
     "navigation-label": "Navigation administration",

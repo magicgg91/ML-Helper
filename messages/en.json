@@ -703,6 +703,21 @@
     "error-disabled": "Account disabled, contact the administrator."
   },
   "admin": {
+    "editor": {
+      "all-saved": "All changes saved",
+      "breadcrumb": "Breadcrumb",
+      "cancel": "Cancel",
+      "formula": "Formula",
+      "language-to-create": "{language} — to create",
+      "leave-warning": "Some changes are not saved. Leaving this page will lose them.",
+      "move-down-of": "Move {name} down",
+      "move-up-of": "Move {name} up",
+      "not-a-number": "A number is expected",
+      "remove-of": "Delete {name}",
+      "save": "Save",
+      "to-fill-in": "To fill in",
+      "unsaved": "Unsaved changes"
+    },
     "title": "Administration",
     "view-site": "View the public site",
     "navigation-label": "Administration navigation",
