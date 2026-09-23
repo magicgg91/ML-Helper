@@ -26,7 +26,12 @@ const coverImageUrl = z.union([
   }),
   z.literal(""),
 ]);
-const emptyLocaleContent = { title: "", excerpt: "", content: "" };
+type LocaleContent = z.infer<typeof localeContent>;
+const emptyLocaleContent: LocaleContent = {
+  title: "",
+  excerpt: "",
+  content: "",
+};
 // Bloc 44 review: a request that omits a DE/ES/TR locale entirely (every
 // caller predating this bloc, e.g. e2e's raw API calls) is just as valid
 // as one that sends it empty — defaults to blank rather than rejecting
@@ -50,13 +55,26 @@ export const guideInputSchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     category: z.array(z.enum(guideCategories)).min(1),
     coverImage: coverImageUrl,
-    translations: z.object({
-      fr: localeContent,
-      en: localeContent,
-      de: optionalLocaleContent,
-      es: optionalLocaleContent,
-      tr: optionalLocaleContent,
-    }),
+    // Bloc 120: one field per launched locale, built from launchLocales
+    // rather than listed. Spelling the five out here was the last place a new
+    // messages/*.json file would NOT have reached: the language appeared on
+    // the public site while Zod silently stripped its content from every
+    // save, and `input.translations[locale]` below stopped type-checking.
+    translations: z.object(
+      Object.fromEntries(
+        launchLocales.map((locale) => [
+          locale,
+          requiredLocales.includes(locale)
+            ? localeContent
+            : optionalLocaleContent,
+        ]),
+        // Object.fromEntries widens the keys back to `string`, and the two
+        // branches are different Zod classes that happen to parse to the same
+        // shape. The cast restores the per-locale record the rest of this file
+        // reads; the schemas themselves are untouched, so what runs at
+        // validation time is exactly what was built above.
+      ) as unknown as Record<LaunchLocale, z.ZodType<LocaleContent, unknown>>,
+    ),
   })
   .superRefine((value, context) => {
     if (!value.translations.fr.title && !value.translations.en.title)

@@ -2,7 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { fallbackLocale, getAvailableLocales } from "./config";
-import { adminLocales, isAdminMessageKey } from "@/lib/translations";
+import {
+  adminLocales,
+  isAdminMessageKey,
+  launchLocales,
+} from "@/lib/translations";
 
 type Messages = Record<string, unknown>;
 
@@ -92,8 +96,14 @@ describe("locale key parity", () => {
     ).toBe(true);
   });
 
-  it("covers all 5 shipped locales", async () => {
-    expect(await getAvailableLocales()).toEqual(["de", "en", "es", "fr", "tr"]);
+  // Bloc 120: the shipped set is no longer written down anywhere, so this
+  // asserts the invariant instead of the inventory — the files on disk and
+  // the list the app routes on are the same set, and the two the site is
+  // built around are in it.
+  it("routes on exactly the locales the translation files define", async () => {
+    expect(await getAvailableLocales()).toEqual([...launchLocales].sort());
+    expect([...launchLocales]).toContain(fallbackLocale);
+    expect([...launchLocales]).toContain("fr");
   });
 
   it("has no empty or whitespace-only translation", async () => {

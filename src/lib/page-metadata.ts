@@ -15,16 +15,26 @@ const brandSuffix = " | ML-Helper · Million Lords";
 export const titleTemplate = `%s${brandSuffix}`;
 
 // Open Graph locale codes (og:locale expects e.g. "fr_FR", not "fr").
-const ogLocaleByLocale: Record<string, string> = {
-  fr: "fr_FR",
-  en: "en_US",
-  de: "de_DE",
-  es: "es_ES",
-  tr: "tr_TR",
-};
-
+//
+// Bloc 120 review (Codex, PR #145): the region comes from CLDR's likely
+// subtags via Intl, not from a table and not from repeating the language.
+// Repeating it is right for fr/de/es/tr and wrong wherever the two differ —
+// ja_JA and ko_KO are not territories, and a crawler receiving them gets an
+// invalid og:locale. Intl answers ja→JP, ko→KR, en→US, zh→CN without anything
+// here to maintain, which is the whole point of the bloc applied to this
+// field too. (It also answers pt→BR rather than PT; that is CLDR's own
+// likely subtag for Portuguese, and a file named pt-pt.json overrides it.)
 export function ogLocale(locale: string): string {
-  return ogLocaleByLocale[locale] ?? "fr_FR";
+  try {
+    const maximized = new Intl.Locale(locale).maximize();
+    const language = maximized.language;
+    const region = maximized.region;
+    if (language && region) return `${language}_${region}`;
+  } catch {
+    // Not a parsable language tag — fall through to the previous safe
+    // default rather than emitting a malformed og:locale from it.
+  }
+  return "fr_FR";
 }
 
 // The site-wide generated share image (src/app/opengraph-image.tsx). metadataBase

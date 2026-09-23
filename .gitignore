@@ -41,3 +41,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Bloc 120: derived from messages/ by scripts/generate-launch-locales.ts
+# before every dev, build and test run — never edited, never committed.
+/src/lib/launch-locales.generated.ts

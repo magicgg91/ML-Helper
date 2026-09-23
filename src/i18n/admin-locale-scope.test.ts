@@ -177,9 +177,15 @@ describe("Bloc 118: the admin's interface text is English and French only", () =
     // Not a sample: `keys` above is every leaf of the whole file, and a single
     // surviving admin key in de/es/tr names itself in the failure.
     expect(Object.keys(survivors).sort()).toEqual([...adminLocales].sort());
-    expect(survivors.de).toBeUndefined();
-    expect(survivors.es).toBeUndefined();
-    expect(survivors.tr).toBeUndefined();
+    // Bloc 120: every locale that is not one of the admin's two, whatever
+    // messages/ now holds — a sixth language added as a file is covered by
+    // this the day it lands, without being named here.
+    for (const locale of launchLocales)
+      if (!(adminLocales as readonly string[]).includes(locale))
+        expect(
+          survivors[locale],
+          `${locale} carries admin text`,
+        ).toBeUndefined();
     // And the two that keep it really do keep all of it.
     expect(survivors.en.length).toBeGreaterThan(400);
   });
@@ -292,7 +298,11 @@ describe("Bloc 118: the public site keeps its five languages", () => {
     // intros are read by the public in five languages, so their editors keep
     // offering five — narrowing the admin chrome must never narrow those.
     expect(editorialLocales).toEqual(launchLocales);
-    expect(launchLocales).toEqual(["fr", "en", "de", "es", "tr"]);
+    // Bloc 120: more than the two the admin chrome is clamped to, without
+    // naming them — the list is derived from messages/ now.
+    expect(launchLocales.length).toBeGreaterThan(adminLocales.length);
+    for (const locale of adminLocales)
+      expect([...launchLocales]).toContain(locale);
   });
 
   it("keeps every public namespace in all five locales", async () => {

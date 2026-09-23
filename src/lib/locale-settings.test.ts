@@ -45,8 +45,14 @@ describe("locked vs deactivatable locales (Bloc 90/D)", () => {
     expect(isAlwaysActiveLocale("fr")).toBe(true);
     expect(isAlwaysActiveLocale("de")).toBe(false);
   });
-  it("makes only DE, ES and TR deactivatable", () => {
-    expect([...deactivatableLocales].sort()).toEqual(["de", "es", "tr"]);
+  // Bloc 120: "everything but the EN/FR base" rather than the three names —
+  // the guardrail is the same, but a language added as a messages/*.json file
+  // no longer makes this red.
+  it("makes every launched locale but the EN/FR base deactivatable", () => {
+    expect([...deactivatableLocales].sort()).toEqual(
+      launchLocales.filter((locale) => !isAlwaysActiveLocale(locale)).sort(),
+    );
+    expect(deactivatableLocales).not.toHaveLength(0);
     expect(isDeactivatableLocale("de")).toBe(true);
     expect(isDeactivatableLocale("en")).toBe(false);
     expect(isDeactivatableLocale("fr")).toBe(false);
@@ -56,20 +62,18 @@ describe("locked vs deactivatable locales (Bloc 90/D)", () => {
 describe("getLocaleActiveState / getActiveLocales", () => {
   it("defaults every launched locale to active when nothing is stored", async () => {
     findMany.mockResolvedValue([]);
-    expect(await getLocaleActiveState()).toEqual({
-      fr: true,
-      en: true,
-      de: true,
-      es: true,
-      tr: true,
-    });
+    expect(await getLocaleActiveState()).toEqual(
+      Object.fromEntries(launchLocales.map((locale) => [locale, true])),
+    );
     expect(await getActiveLocales()).toEqual([...launchLocales]);
   });
 
   it("hides a deactivated locale from the active list (Bloc 90/B+C)", async () => {
     findMany.mockResolvedValue([{ locale: "de", active: false }]);
     expect((await getLocaleActiveState()).de).toBe(false);
-    expect(await getActiveLocales()).toEqual(["fr", "en", "es", "tr"]);
+    expect(await getActiveLocales()).toEqual(
+      launchLocales.filter((locale) => locale !== "de"),
+    );
   });
 
   it("forces EN/FR active even if a stored row says otherwise (Bloc 90/D)", async () => {
@@ -93,6 +97,8 @@ describe("getLocaleActiveState / getActiveLocales", () => {
 describe("editorial locales stay all five (Bloc 90/F)", () => {
   it("never filters by active state", () => {
     expect(editorialLocales).toEqual(launchLocales);
-    expect(editorialLocales).toHaveLength(5);
+    // More than the EN/FR the admin chrome is clamped to (Blocs 118/120):
+    // editorial content follows the public site, not the admin.
+    expect(editorialLocales.length).toBeGreaterThan(2);
   });
 });

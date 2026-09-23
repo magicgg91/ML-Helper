@@ -8,6 +8,7 @@ import {
 } from "@/components/language-settings-panel";
 import { TrackingSettingsPanel } from "@/components/tracking-settings-panel";
 import {
+  alwaysActiveLocales,
   getLocaleActiveState,
   isAlwaysActiveLocale,
 } from "@/lib/locale-settings";
@@ -29,11 +30,17 @@ export default async function ConfigAdminPage() {
     getLocaleActiveState(),
     getTrackingSettings(),
   ]);
-  // Bloc 90/B+D: the 5 launched languages, EN/FR first, each with its public
-  // visibility and whether it is locked (always-active EN/FR).
-  const order = ["en", "fr", "de", "es", "tr"].filter((locale) =>
-    (launchLocales as readonly string[]).includes(locale),
-  );
+  // Bloc 90/B+D: every launched language, the always-active EN/FR base first,
+  // each with its public visibility and whether it is locked.
+  //
+  // Bloc 120: derived from launchLocales rather than listed here. The previous
+  // hardcoded order *filtered* against launchLocales, so a language added as a
+  // messages/*.json file would have been missing from this table — present on
+  // the public site, but impossible to deactivate.
+  const order = [
+    ...alwaysActiveLocales,
+    ...launchLocales.filter((locale) => !isAlwaysActiveLocale(locale)),
+  ];
   const rows: LanguageRow[] = order.map((locale) => ({
     locale,
     active: state[locale as keyof typeof state],
