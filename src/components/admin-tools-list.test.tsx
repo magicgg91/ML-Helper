@@ -13,7 +13,11 @@ afterEach(cleanup);
 
 const messages = {
   admin: {
-    common: { visible: "Visible", hidden: "Masqué" },
+    common: {
+      visible: "Visible",
+      hidden: "Masqué",
+      "read-only": "Lecture seule",
+    },
     tools: {
       columns: { tool: "Outil", action: "Action" },
       "category-values": {
@@ -36,7 +40,6 @@ const messages = {
       edit: "Modifier",
       open: "Ouvrir",
       "nothing-to-edit": "Rien à modifier",
-      "read-only": "Lecture seule",
       "visibility-of": "Visibilité de {tool}",
       "no-results": "Aucun outil ne correspond à cette recherche.",
       active: "Actif",

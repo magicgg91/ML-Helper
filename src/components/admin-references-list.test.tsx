@@ -16,7 +16,11 @@ afterEach(cleanup);
 
 const messages = {
   admin: {
-    common: { visible: "Visible", hidden: "Masqué" },
+    common: {
+      visible: "Visible",
+      hidden: "Masqué",
+      "read-only": "Lecture seule",
+    },
     referentiels: {
       columns: { title: "Titre", actions: "Actions" },
       "search-label": "Rechercher un référentiel",
@@ -26,7 +30,6 @@ const messages = {
       "columns-visible": "Visible sur le site",
       "used-by-none": "—",
       "visibility-of": "Visibilité de {reference}",
-      "read-only": "Lecture seule",
       modify: "Modifier",
       "no-results": "Aucun référentiel.",
       "visibility-error": "Impossible de modifier la visibilité.",

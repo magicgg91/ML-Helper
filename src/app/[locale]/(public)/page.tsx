@@ -58,7 +58,7 @@ export default async function HomePage() {
       getCalculatorAvailability(),
       getLocale(),
       prisma.guide.findMany({
-        where: { status: "published", active: true },
+        where: { status: "published" },
         orderBy: { publishedAt: "desc" },
         take: 6,
       }),

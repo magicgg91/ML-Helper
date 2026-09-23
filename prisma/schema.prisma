@@ -12,8 +12,13 @@ model Guide {
   id          String    @id @default(uuid())
   slug        String    @unique
   category    Json
+  // Bloc 119: the one state of a guide. It used to carry a second,
+  // independent `active` flag, so "published" and "visible" were two
+  // switches with one meaning between them — a published guide could be
+  // invisible, and the admin showed both without saying which one won. The
+  // flag is gone; `status` is the answer (migration
+  // 20260923100000_guides_single_status).
   status      String    @default("draft")
-  active      Boolean   @default(true)
   title       Json
   content     Json
   excerpt     Json
@@ -23,12 +28,13 @@ model Guide {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   publishedAt DateTime? @map("published_at")
 
-  // Bloc 93/F5: every public read filters on exactly this pair and orders by
+  // Bloc 93/F5: every public read filters on the status and orders by
   // publishedAt — the guides list, the home page, the public layout (so: on
   // every public request), and the sitemap. Slug lookups are already served
   // by @unique above. Guides are written only from the admin, so the write
   // cost of the index is negligible next to the read frequency.
-  @@index([status, active, publishedAt])
+  // Bloc 119: `active` left the pair with the column itself.
+  @@index([status, publishedAt])
   @@map("guides")
 }
 

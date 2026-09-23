@@ -37,6 +37,7 @@ export function AdminReferencesList({
   canWrite: boolean;
 }) {
   const t = useTranslations("admin.referentiels");
+  const common = useTranslations("admin.common");
   const [references, setReferences] = useState(rows);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
@@ -139,7 +140,7 @@ export function AdminReferencesList({
                   <Link href={row.editHref}>{t("modify")}</Link>
                 </AdminButton>
               ) : null,
-            explain: () => t("read-only"),
+            explain: () => common("read-only"),
           }}
         />
       </div>

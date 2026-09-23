@@ -67,7 +67,6 @@ export async function DELETE(
           before: {
             slug: before.slug,
             status: before.status,
-            active: before.active,
           },
         },
       },

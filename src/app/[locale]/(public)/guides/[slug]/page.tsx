@@ -18,7 +18,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
   const guide = await prisma.guide.findFirst({
-    where: { slug, status: "published", active: true },
+    where: { slug, status: "published" },
   });
   if (!guide) return {};
   const t = await getTranslations("Public");
@@ -57,7 +57,7 @@ export default async function GuidePage({
     getTranslations("Navigation"),
   ]);
   const guide = await prisma.guide.findFirst({
-    where: { slug, status: "published", active: true },
+    where: { slug, status: "published" },
   });
   if (!guide) notFound();
   const categories = parseGuideCategories(guide.category);

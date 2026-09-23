@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [active, guides] = await Promise.all([
     getCalculatorAvailability(),
     prisma.guide.findMany({
-      where: { status: "published", active: true },
+      where: { status: "published" },
       select: { slug: true, updatedAt: true },
     }),
   ]);

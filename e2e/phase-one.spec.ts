@@ -972,7 +972,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements de Combat/ })
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
   await expect(
     page.getByRole("heading", {
@@ -992,7 +992,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements d’Expédition/ })
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
   // The page also renders the (single-row) star-increments editor above
   // this table (Bloc 29/A), so scope to the last table on the page rather
@@ -1029,20 +1029,20 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // dedicated Calculator row, distinct from the Templars tool's own) —
   // toggling it here must not affect the public Templars tool at all.
   const templarsGuideRow = page.getByRole("row", { name: /Templiers/ });
-  await templarsGuideRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(templarsGuideRow).toContainText("Inactif");
+  // Bloc 119: the ⏻ pair became one switch, and the row says Visible /
+  // Masqué instead of Actif / Inactif.
+  await templarsGuideRow.getByRole("switch").click();
+  await expect(templarsGuideRow).toContainText("Masqué");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Templiers" })).toBeEnabled();
   await page.goto("/admin/referentiels");
   const templarsGuideRowAfterReload = page.getByRole("row", {
     name: /Templiers/,
   });
+  await templarsGuideRowAfterReload.getByRole("switch").click();
+  await expect(templarsGuideRowAfterReload).toContainText("Visible");
   await templarsGuideRowAfterReload
-    .getByRole("button", { name: "Activer" })
-    .click();
-  await expect(templarsGuideRowAfterReload).toContainText("Actif");
-  await templarsGuideRowAfterReload
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
   // Bloc 35/7.1, updated Bloc 50: opened from the Référentiels admin row, so
   // the URL carries ?from=referentiels — the editor's own "Retour" now goes
@@ -1077,17 +1077,17 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // Templiers just above, for the new Gemmes reference.
   await page.goto("/admin/referentiels");
   const gemmesGuideRow = page.getByRole("row", { name: /Gemmes/ });
-  await gemmesGuideRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(gemmesGuideRow).toContainText("Inactif");
+  await gemmesGuideRow.getByRole("switch").click();
+  await expect(gemmesGuideRow).toContainText("Masqué");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Gemmes" })).toBeEnabled();
   await page.goto("/admin/referentiels");
   const gemmesGuideRowAfterReload = page.getByRole("row", { name: /Gemmes/ });
+  await gemmesGuideRowAfterReload.getByRole("switch").click();
+  await expect(gemmesGuideRowAfterReload).toContainText("Visible");
   await gemmesGuideRowAfterReload
-    .getByRole("button", { name: "Activer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(gemmesGuideRowAfterReload).toContainText("Actif");
-  await gemmesGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=referentiels$/);
   await expect(
     page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
@@ -1404,19 +1404,22 @@ test("the dashboard's published-guides counter ignores an inactive guide", async
   );
   expect(afterPublish).toBe(before + 1);
 
+  // Bloc 119: a guide has one state. Taking it out of the public site is
+  // unpublishing it — the visibility flag that used to sit next to the
+  // status is gone (migration 20260923100000_guides_single_status).
   expect(
     (
-      await page.request.patch(`/api/admin/guides/${guideId}/active`, {
-        data: { active: false },
+      await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+        data: { status: "draft" },
       })
     ).status(),
   ).toBe(200);
 
   await page.goto("/admin");
-  const afterDeactivate = publishedCount(
+  const afterUnpublish = publishedCount(
     (await page.getByText(/\d+ publiés \/ \d+ au total/).textContent()) ?? "",
   );
-  expect(afterDeactivate).toBe(before);
+  expect(afterUnpublish).toBe(before);
 });
 
 // Bloc 60: the 7th reference — "Événements" (per-league personal quests).
@@ -1457,21 +1460,19 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
 
   await page.goto("/admin/referentiels");
   const row = page.getByRole("row", { name: /Événements/ });
-  await expect(row.getByText("Inactif")).toBeVisible();
-  await row.getByRole("button", { name: "Activer" }).click();
-  // Exact match required: getByText's default substring match would treat
-  // "Inactif" itself as satisfying "Actif" (it contains that substring),
-  // so a plain `getByText("Actif")` here would resolve immediately without
-  // actually waiting for the toggle's fetch to land — then the next line's
-  // page.goto (a hard navigation) would cancel that still-in-flight PATCH.
-  await expect(row.getByText("Actif", { exact: true })).toBeVisible();
+  await expect(row.getByText("Masqué")).toBeVisible();
+  await row.getByRole("switch").click();
+  // The word only changes once the PATCH has landed, which is what makes
+  // this an actual wait: the next line is a hard navigation, and it would
+  // otherwise cancel a request still in flight.
+  await expect(row.getByText("Visible")).toBeVisible();
 
   // Bloc 60 review (Codex PR #81): now visible in public discovery too.
   await page.goto("/referentiels");
   await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(1);
 
   await page.goto("/admin/referentiels");
-  await row.getByRole("link", { name: "Éditer" }).click();
+  await row.getByRole("link", { name: "Modifier" }).click();
   await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
 
   // Bloc 61 pattern: league buttons, not a select box — Bronze by default.
@@ -1857,14 +1858,6 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
     ).toBe(canAuthor ? 200 : 403);
     expect(
       (
-        await page.request.patch(`/api/admin/guides/${guideId}/active`, {
-          data: { active: false },
-        })
-      ).status(),
-      `${roleCase.username} toggle`,
-    ).toBe(canAuthor ? 200 : 403);
-    expect(
-      (
         await page.request.patch(`/api/admin/guides/${guideId}/status`, {
           data: { status: "pending_review" },
         })
@@ -2006,24 +1999,37 @@ test("guide editor supports the complete editorial lifecycle", async ({
     await page.getByRole("button", { name: category }).click();
     await expect(page.getByText("Guide édité et publié")).toBeVisible();
   }
+  // Bloc 119: one control for the state — the ⏻ pair is gone, so taking a
+  // guide off the public site is moving it back to draft, from the row's own
+  // status control or from its ⋯ menu.
   await page.goto("/admin/guides");
-  const publishedRow = page.getByRole("row", { name: /Guide édité et publié/ });
-  await publishedRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide désactivé.");
+  await page
+    .getByLabel("Statut de Guide édité et publié")
+    .selectOption("draft");
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
   await page.goto("/admin/guides");
-  const disabledRow = page.getByRole("row", { name: /Guide édité et publié/ });
-  await disabledRow.getByRole("button", { name: "Activer" }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide activé.");
+  await page
+    .getByRole("button", { name: "Autres actions pour Guide édité et publié" })
+    .click();
+  await page.getByRole("menuitem", { name: "Publier" }).click();
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toBeVisible();
+
+  // Deleting goes through a dialog that names the guide, not a full-width
+  // red button in the row.
   await page.goto("/admin/guides");
-  page.once("dialog", (dialog) => dialog.accept());
   await page
-    .getByRole("row", { name: /Guide édité et publié/ })
-    .getByRole("button", { name: "Supprimer" })
+    .getByRole("button", { name: "Autres actions pour Guide édité et publié" })
     .click();
+  await page.getByRole("menuitem", { name: "Supprimer…" }).click();
+  const deleteDialog = page.getByRole("dialog", {
+    name: "Supprimer ce guide ?",
+  });
+  await expect(deleteDialog).toContainText("Guide édité et publié");
+  await deleteDialog.getByRole("button", { name: "Supprimer" }).click();
   await expect(page.getByRole("status")).toHaveText(
     "Guide supprimé définitivement.",
   );

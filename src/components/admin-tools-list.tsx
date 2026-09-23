@@ -55,6 +55,7 @@ export function AdminToolsList({
   canOpenReferences: boolean;
 }) {
   const t = useTranslations("admin.tools");
+  const common = useTranslations("admin.common");
   const [tools, setTools] = useState(rows);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("all");
@@ -220,7 +221,7 @@ export function AdminToolsList({
             explain: (row) =>
               row.source.kind === "none"
                 ? t("nothing-to-edit")
-                : t("read-only"),
+                : common("read-only"),
           }}
         />
       </div>

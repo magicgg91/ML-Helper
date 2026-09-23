@@ -73,7 +73,7 @@ export default async function AdminPage() {
       ? prisma.calculator.count({ where: toolFilter })
       : Promise.resolve(0),
     mayViewGuides
-      ? prisma.guide.count({ where: { status: "published", active: true } })
+      ? prisma.guide.count({ where: { status: "published" } })
       : Promise.resolve(0),
     mayViewGuides ? prisma.guide.count() : Promise.resolve(0),
     mayViewReferences

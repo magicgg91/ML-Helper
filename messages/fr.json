@@ -831,7 +831,31 @@
       "enabled": "Guide activé.",
       "disabled": "Guide désactivé.",
       "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
-      "deleted": "Guide supprimé définitivement."
+      "deleted": "Guide supprimé définitivement.",
+      "subtitle": "Les guides publiés sur le site, leurs traductions et leur statut.",
+      "search-label": "Rechercher un guide",
+      "search-placeholder": "Titre du guide…",
+      "filter-label": "Statut",
+      "filter-all": "Tous",
+      "filter-published": "Publiés",
+      "filter-drafts": "Brouillons",
+      "filter-missing": "Traduction manquante",
+      "table-caption": "Guides du site",
+      "columns-guide": "Guide",
+      "columns-translations": "Traductions",
+      "columns-modified": "Modifié",
+      "byline": "{author} · créé le {date}",
+      "translation-edit": "Modifier la version {language} de {title}",
+      "translation-create": "Créer la version {language} de {title}",
+      "legend": "Puce pleine : version rédigée. Puce en pointillés : traduction à créer.",
+      "modify": "Modifier",
+      "more-actions": "Autres actions pour {title}",
+      "view-on-site": "Voir sur le site",
+      "publish": "Publier",
+      "unpublish": "Repasser en brouillon",
+      "delete-confirm-title": "Supprimer ce guide ?",
+      "delete-confirm-body": "« {title} » sera supprimé définitivement, dans toutes ses langues. Cette action est irréversible.",
+      "delete-error": "Impossible de supprimer ce guide."
     },
     "referentiels": {
       "eyebrow": "Données de référence",
@@ -875,7 +899,6 @@
       "columns-visible": "Visible sur le site",
       "used-by-none": "—",
       "visibility-of": "Visibilité de {reference}",
-      "read-only": "Lecture seule",
       "modify": "Modifier"
     },
     "guide-editor": {
@@ -958,7 +981,6 @@
       "source-none": "Aucun paramètre",
       "open": "Ouvrir",
       "nothing-to-edit": "Rien à modifier",
-      "read-only": "Lecture seule",
       "visibility-of": "Visibilité de {tool}",
       "no-results": "Aucun outil ne correspond à cette recherche."
     },
@@ -1132,7 +1154,8 @@
       "confirm": "Confirmer",
       "hidden": "Masqué",
       "more-actions": "Autres actions",
-      "visible": "Visible"
+      "visible": "Visible",
+      "read-only": "Lecture seule"
     },
     "parameters": {
       "save": "Enregistrer les paramètres",

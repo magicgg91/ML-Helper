@@ -831,7 +831,31 @@
       "enabled": "Guide enabled.",
       "disabled": "Guide disabled.",
       "delete-forbidden": "Your role does not allow deleting this guide.",
-      "deleted": "Guide permanently deleted."
+      "deleted": "Guide permanently deleted.",
+      "subtitle": "The guides on the site, their translations and their status.",
+      "search-label": "Search for a guide",
+      "search-placeholder": "Guide title…",
+      "filter-label": "Status",
+      "filter-all": "All",
+      "filter-published": "Published",
+      "filter-drafts": "Drafts",
+      "filter-missing": "Missing a translation",
+      "table-caption": "Site guides",
+      "columns-guide": "Guide",
+      "columns-translations": "Translations",
+      "columns-modified": "Modified",
+      "byline": "{author} · created on {date}",
+      "translation-edit": "Edit the {language} version of {title}",
+      "translation-create": "Create the {language} version of {title}",
+      "legend": "Solid chip: version written. Dotted chip: translation to create.",
+      "modify": "Edit",
+      "more-actions": "More actions for {title}",
+      "view-on-site": "View on the site",
+      "publish": "Publish",
+      "unpublish": "Move back to draft",
+      "delete-confirm-title": "Delete this guide?",
+      "delete-confirm-body": "“{title}” will be permanently deleted, in every language. This cannot be undone.",
+      "delete-error": "This guide could not be deleted."
     },
     "referentiels": {
       "eyebrow": "Reference data",
@@ -875,7 +899,6 @@
       "columns-visible": "Visible on the site",
       "used-by-none": "—",
       "visibility-of": "Visibility of {reference}",
-      "read-only": "Read-only",
       "modify": "Edit"
     },
     "guide-editor": {
@@ -958,7 +981,6 @@
       "source-none": "No parameters",
       "open": "Open",
       "nothing-to-edit": "Nothing to edit",
-      "read-only": "Read-only",
       "visibility-of": "Visibility of {tool}",
       "no-results": "No tool matches this search."
     },
@@ -1132,7 +1154,8 @@
       "confirm": "Confirm",
       "hidden": "Hidden",
       "more-actions": "More actions",
-      "visible": "Visible"
+      "visible": "Visible",
+      "read-only": "Read-only"
     },
     "parameters": {
       "save": "Save parameters",
