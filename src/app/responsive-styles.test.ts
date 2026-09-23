@@ -139,6 +139,58 @@ describe("public responsive styles", () => {
     );
   });
 
+  // Bloc 113/A.10: the Villes tiles are one equal row on a desktop and two
+  // per row on a phone, where the headline tile spans both columns.
+  it("lays the Villes tiles out two per row on a phone", () => {
+    expect(css).toMatch(/\.tool-tiles \{\s*display: flex;/);
+    const mobile = css.match(
+      new RegExp(
+        `@media \\(max-width: ${narrowViewportMaxWidth}px\\) \\{\\s*(?:/\\*[\\s\\S]*?\\*/\\s*)?\\.tool-tiles \\{([\\s\\S]*?)\\n  \\}`,
+      ),
+    )?.[1];
+    expect(mobile, "the mobile .tool-tiles rule").toBeDefined();
+    expect(mobile).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    expect(css).toMatch(/\.tool-tile-wide \{\s*grid-column: 1 \/ -1;/);
+  });
+
+  // The two breakdowns sit side by side on a desktop — Armée then Or — and
+  // stack on a phone, where two tables would each be too narrow to read.
+  it("stacks the Villes breakdowns and reward cards on a phone", () => {
+    expect(css).toMatch(
+      /\.tool-breakdowns \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/,
+    );
+    const mobile = css.match(
+      new RegExp(
+        `@media \\(max-width: ${narrowViewportMaxWidth}px\\)[\\s\\S]*?\\.tool-breakdowns,\\s*\\.tool-reward-cards,\\s*\\.tool-reward-fields \\{([\\s\\S]*?)\\n  \\}`,
+      ),
+    )?.[1];
+    expect(mobile, "the mobile stacking rule").toBeDefined();
+    expect(mobile).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+    // The two reskill tiles stack as well: "Armée si full Recruteur" does
+    // not fit half a phone.
+    const reskill = css.match(
+      /\n  \.tool-tiles-reskill \{([\s\S]*?)\n  \}/,
+    )?.[1];
+    expect(reskill, "the mobile reskill rule").toBeDefined();
+    expect(reskill).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+  });
+
+  // A source name wraps between words on a phone, never inside one: with
+  // `anywhere` the column may shrink below its longest word, which printed
+  // "Temple" as "Templ / e" in the Armée breakdown at 393px.
+  it("wraps a breakdown source name between words, not inside one", () => {
+    // The two-space indent is the rule inside the phone media query; the
+    // unconditional rule for the same selector is flush left.
+    const mobile = css.match(
+      /\n  \.tool-table tbody th,\n  \.tool-table tfoot th \{([\s\S]*?)\n  \}/,
+    )?.[1];
+    expect(mobile, "the mobile source-name rule").toBeDefined();
+    expect(mobile).toMatch(/overflow-wrap: break-word;/);
+    expect(mobile).not.toMatch(/overflow-wrap: anywhere;/);
+  });
+
   it("uses a two-column mobile grid for category tabs", () => {
     expect(css).toMatch(
       /nav\.calculator-tabs:not\(\.compact\)\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,

@@ -176,17 +176,26 @@
       "start-level": "Başlangıç seviyesi",
       "target-level": "Hedef seviye"
     },
-    "start": "Başlangıç",
-    "target": "Hedef",
-    "wall": "Sur",
-    "gold-hour": "Altın/sa",
-    "army-hour": "Ordu/sa",
-    "gold-unit": "altın",
     "total-cities": "{count, plural, other {# şehir için toplam}}",
-    "cost-total": "Toplam maliyet",
-    "vp-gained": "Kazanılan toplam VP",
-    "gold-transition": "Altın/sa önce → sonra",
-    "army-transition": "Ordu/sa önce → sonra"
+    "recall": "{count, plural, other {# şehir}} · {league} · seviye {start} → {target}",
+    "cost-total": "Maliyet",
+    "gold-unit": "altın",
+    "wall": "Duvar",
+    "vp-gained": "Kazanılan VP",
+    "army-hour": "Ordu / sa",
+    "gold-hour": "Altın / sa",
+    "per-city": "şehir başına",
+    "columns": {
+      "source": "Kaynak",
+      "level": "Sv. {level}",
+      "gap": "Fark"
+    },
+    "total-per-city": "Toplam / şehir",
+    "total-all": "{count, plural, other {Toplam # şehir}}",
+    "base": "Taban",
+    "temple": "Tapınak",
+    "equipment": "Ekipman",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Ulaşılabilir Maksimum Seviye",
@@ -197,15 +206,16 @@
       "available-gold": "Kullanılabilir altın",
       "gold-unit": "Kullanılabilir altın birimi"
     },
-    "wall": "Sur",
-    "gold-hour": "Altın/sa",
-    "army-hour": "Ordu/sa",
     "total-cities": "{count, plural, other {# şehir için toplam}}",
-    "reachable-level": "Ulaşılabilir hedef seviye",
+    "recall": "{count, plural, other {# şehir}} · {league} · seviye {level} · {gold} altın mevcut",
+    "reachable-level": "Maksimum seviye",
+    "levels-gained": "+{count}",
     "remaining-gold": "Kalan altın",
-    "vp-gained": "Kazanılan toplam VP",
-    "gold-transition": "Altın/sa önce → sonra",
-    "army-transition": "Ordu/sa önce → sonra"
+    "gold-unit": "altın",
+    "vp-gained": "Kazanılan VP",
+    "army-hour": "Ordu / sa",
+    "gold-hour": "Altın / sa",
+    "none": "—"
   },
   "city-production": {
     "name": "Üretim",
@@ -214,40 +224,47 @@
       "city-count": "Şehir sayısı",
       "average-level": "Ortalama şehir seviyesi"
     },
-    "per-city-base": "Şehir başına — taban",
+    "total-cities": "{count, plural, other {# şehir için toplam}}",
+    "recall": "{count, plural, other {# şehir}} · {league} · ortalama seviye {level}",
+    "army-hour": "Ordu / sa",
+    "gold-hour": "Altın / sa",
     "vp": "VP",
-    "wall": "Sur",
-    "gold-hour": "Altın/sa",
-    "army-hour": "Ordu/sa",
-    "gold-total": "💰 Altın — Toplam üretim",
-    "troops-total": "⚔️ Birlikler — Toplam üretim",
+    "per-city": "şehir başına",
+    "columns": {
+      "source": "Kaynak",
+      "production": "Üretim",
+      "share": "Pay"
+    },
+    "total-per-city": "Toplam / şehir",
+    "total-all-level": "{count, plural, other {Seviye {level} · toplam # şehir}}",
     "base": "Taban",
-    "equipment": "Ekipman",
     "temple": "Tapınak",
-    "vp-total": "Toplam VP",
+    "equipment": "Ekipman",
+    "none": "—",
     "full-production": {
       "title": "Tam üretim yeniden dağıtımı",
-      "note": "Mevcut {points} puanın tamamı yatırılarak, taban üretimden hesaplanan simülasyon.",
-      "gold": "Tam Refah ile altın",
-      "troops": "Tam Askere Alan ile birlikler"
+      "note": "{points} puanın tamamı yatırıldı · taban üretim üzerinden hesaplandı",
+      "army": "Tam Askere Alan ile ordu",
+      "gold": "Tam Refah ile altın"
     }
   },
   "city-rewards": {
     "name": "Üretim Ödülleri",
+    "army": {
+      "title": "Ordu",
+      "base": "Taban ordu üretimi",
+      "base-unit": "Ordu üretim birimi",
+      "hours": "Alınan saatler",
+      "bonus": "Elde edilen ordu bonusu"
+    },
     "gold": {
       "title": "Altın",
       "base": "Taban altın üretimi",
       "base-unit": "Altın üretim birimi",
-      "hours": "Alınan altın saatleri",
+      "hours": "Alınan saatler",
       "bonus": "Elde edilen altın bonusu"
     },
-    "troops": {
-      "title": "Birlikler",
-      "base": "Taban birlik üretimi",
-      "base-unit": "Birlik üretim birimi",
-      "hours": "Alınan birlik saatleri",
-      "bonus": "Elde edilen birlik bonusu"
-    }
+    "bonus-short": "Elde edilen bonus"
   },
   "xp-gain-rate": {
     "name": "XP Kazanım Oranı",

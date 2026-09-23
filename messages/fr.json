@@ -176,17 +176,26 @@
       "start-level": "Niveau de départ",
       "target-level": "Niveau cible"
     },
-    "start": "Départ",
-    "target": "Cible",
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
-    "gold-unit": "or",
     "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
-    "cost-total": "Coût total",
-    "vp-gained": "VP total gagné",
-    "gold-transition": "Or/h avant → après",
-    "army-transition": "Armée/h avant → après"
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {start} → {target}",
+    "cost-total": "Coût",
+    "gold-unit": "or",
+    "wall": "Mur",
+    "vp-gained": "VP gagnés",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
+    "per-city": "par ville",
+    "columns": {
+      "source": "Source",
+      "level": "Niv. {level}",
+      "gap": "Écart"
+    },
+    "total-per-city": "Total / ville",
+    "total-all": "{count, plural, one {Total # ville} other {Total # villes}}",
+    "base": "Base",
+    "temple": "Temple",
+    "equipment": "Stuff",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Niveau Max Atteignable",
@@ -197,15 +206,16 @@
       "available-gold": "Or disponible",
       "gold-unit": "Unité de l’or disponible"
     },
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
     "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
-    "reachable-level": "Niveau cible atteignable",
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {level} · {gold} d’or disponible",
+    "reachable-level": "Niveau max",
+    "levels-gained": "+{count}",
     "remaining-gold": "Or restant",
-    "vp-gained": "VP total gagné",
-    "gold-transition": "Or/h avant → après",
-    "army-transition": "Armée/h avant → après"
+    "gold-unit": "or",
+    "vp-gained": "VP gagnés",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
+    "none": "—"
   },
   "city-production": {
     "name": "Production",
@@ -214,40 +224,47 @@
       "city-count": "Nombre de villes",
       "average-level": "Niveau moyen des villes"
     },
-    "per-city-base": "Par ville — base",
+    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau moyen {level}",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
     "vp": "VP",
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
-    "gold-total": "💰 Or — Production totale",
-    "troops-total": "⚔️ Troupes — Production totale",
+    "per-city": "par ville",
+    "columns": {
+      "source": "Source",
+      "production": "Production",
+      "share": "Part"
+    },
+    "total-per-city": "Total / ville",
+    "total-all-level": "{count, plural, one {Total # ville niveau {level}} other {Total # villes niveau {level}}}",
     "base": "Base",
-    "equipment": "Stuff",
     "temple": "Temple",
-    "vp-total": "VP total",
+    "equipment": "Stuff",
+    "none": "—",
     "full-production": {
       "title": "Si reskill full-prod",
-      "note": "Simulation avec les {points} points disponibles investis intégralement, calculée sur la production de base.",
-      "gold": "Or si full Prospérité",
-      "troops": "Troupes si full Recruteur"
+      "note": "{points} points investis intégralement · calculé sur la production de base",
+      "army": "Armée si full Recruteur",
+      "gold": "Or si full Prospérité"
     }
   },
   "city-rewards": {
     "name": "Récompenses de Production",
+    "army": {
+      "title": "Armée",
+      "base": "Production d’armée de base",
+      "base-unit": "Unité de production d’armée",
+      "hours": "Heures reçues",
+      "bonus": "Bonus armée obtenu"
+    },
     "gold": {
       "title": "Or",
       "base": "Production d’or de base",
       "base-unit": "Unité de production d’or",
-      "hours": "Heures Or reçues",
-      "bonus": "Bonus Or obtenu"
+      "hours": "Heures reçues",
+      "bonus": "Bonus or obtenu"
     },
-    "troops": {
-      "title": "Troupes",
-      "base": "Production de troupes de base",
-      "base-unit": "Unité de production de troupes",
-      "hours": "Heures Troupes reçues",
-      "bonus": "Bonus Troupes obtenu"
-    }
+    "bonus-short": "Bonus obtenu"
   },
   "xp-gain-rate": {
     "name": "Taux de gain d’XP",
