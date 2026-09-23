@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Cinzel, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { siteUrl } from "@/lib/site-url";
@@ -10,29 +10,56 @@ import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
 
 // Bloc 91/M1: self-host the display fonts through next/font instead of the
-// render-blocking Google Fonts @import globals.css used to carry. next/font
-// downloads the files at build time, serves them same-origin (one fewer CSP
-// domain, no third-party request — simpler on the RGPD front), preloads them
-// and applies an automatic size-adjust fallback. Only the weights the CSS
-// actually uses are requested. Each family is exposed as a CSS custom property
-// (--font-sans/-serif/-mono) that globals.css references.
-const fontSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+// render-blocking Google Fonts @import globals.css used to carry — served
+// same-origin (one fewer CSP domain, no third-party request — simpler on the
+// RGPD front), preloaded, with an automatic size-adjust fallback. Each family
+// is exposed as a CSS custom property (--font-sans/-serif/-mono) that
+// globals.css references.
+//
+// Bloc 116/A: `local`, not `google`. next/font/google self-hosts what it
+// serves, but it DOWNLOADS the files from Google at build time and at every
+// `next dev` start — a network call in the critical path of the build. That
+// call failed twice in one morning in CI (PR #140's Docker image job, then
+// PR #141's e2e web server), both times with
+// `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`. The
+// files now live in ./fonts (see its README for which subset and how to add a
+// weight), so a build reads them off disk and no network can take it down.
+const fontSans = localFont({
+  src: [
+    { path: "./fonts/ibm-plex-sans-400-latin.woff2", weight: "400" },
+    { path: "./fonts/ibm-plex-sans-500-latin.woff2", weight: "500" },
+    { path: "./fonts/ibm-plex-sans-600-latin.woff2", weight: "600" },
+  ],
   variable: "--font-sans",
   display: "swap",
 });
-const fontSerif = Cinzel({
-  subsets: ["latin"],
-  weight: ["600", "700"],
+const fontSerif = localFont({
+  src: [
+    { path: "./fonts/cinzel-600-latin.woff2", weight: "600" },
+    { path: "./fonts/cinzel-700-latin.woff2", weight: "700" },
+  ],
   variable: "--font-serif",
   display: "swap",
+  // Cinzel is a serif, so its size-adjust donor is the serif of the two
+  // next/font/local offers (the default is Arial).
+  adjustFontFallback: "Times New Roman",
 });
-const fontMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const fontMono = localFont({
+  src: [
+    { path: "./fonts/jetbrains-mono-400-latin.woff2", weight: "400" },
+    { path: "./fonts/jetbrains-mono-500-latin.woff2", weight: "500" },
+    { path: "./fonts/jetbrains-mono-600-latin.woff2", weight: "600" },
+  ],
   variable: "--font-mono",
   display: "swap",
+  // next/font/local only offers Arial or Times New Roman as the metric donor,
+  // and neither is monospaced: adjusting a proportional font to JetBrains
+  // Mono's metrics would misalign every column of figures during the swap.
+  // A real monospace stack is the better trade here — the mono text is short
+  // numbers in tiles and tables, where the cell grid matters more than a few
+  // pixels of reflow.
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
 
 // Bloc 42/J: the previous "ML-Helper Admin" / "administration" default

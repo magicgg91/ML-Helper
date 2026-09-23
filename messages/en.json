@@ -1176,7 +1176,112 @@
       "pagination": "History pagination",
       "previous": "Previous",
       "next": "Next",
-      "page-summary": "Page {page} / {total}"
+      "page-summary": "Page {page} / {total}",
+      "messages": {
+        "city-parameters": {
+          "update": "{actor} updated the parameters shared by the Cities tools"
+        },
+        "combat-equipment-increments": {
+          "create": "{actor} created the per-star increments of Combat Equipment",
+          "update": "{actor} updated the per-star increments of Combat Equipment"
+        },
+        "combat-equipment-secondary": {
+          "create": "{actor} created the Pouciel (merging, gems, scrapping) of Combat Equipment",
+          "update": "{actor} updated the Pouciel (merging, gems, scrapping) of Combat Equipment"
+        },
+        "combat-equipment": {
+          "create": "{actor} created the Combat Equipment reference",
+          "update": "{actor} updated the Combat Equipment reference"
+        },
+        "consumables": {
+          "create": "{actor} created the Shop reference",
+          "update": "{actor} updated the Shop reference"
+        },
+        "demo-attack-troops": {
+          "update": "{actor} updated the demo-attack percentages"
+        },
+        "events": {
+          "create": "{actor} created the Events reference",
+          "update": "{actor} updated the Events reference"
+        },
+        "expedition-equipment-increments": {
+          "create": "{actor} created the per-star increments of Expedition Equipment",
+          "update": "{actor} updated the per-star increments of Expedition Equipment"
+        },
+        "expedition-equipment-secondary": {
+          "create": "{actor} created the Terradust (merging, scrapping) of Expedition Equipment",
+          "update": "{actor} updated the Terradust (merging, scrapping) of Expedition Equipment"
+        },
+        "expedition-equipment": {
+          "create": "{actor} created the Expedition Equipment reference",
+          "update": "{actor} updated the Expedition Equipment reference"
+        },
+        "gems": {
+          "update": "{actor} updated the Gems parameters"
+        },
+        "guide": {
+          "activate": "{actor} activated guide {title}",
+          "create": "{actor} created guide {title}",
+          "deactivate": "{actor} deactivated guide {title}",
+          "delete": "{actor} deleted guide {title}",
+          "publish": "{actor} published guide {title}",
+          "submit_review": "{actor} submitted guide {title} for review",
+          "unpublish": "{actor} unpublished guide {title}",
+          "update": "{actor} updated guide {title}",
+          "update_status": "{actor} changed the status of guide {title}"
+        },
+        "legal-notice": {
+          "update": "{actor} updated the legal notice"
+        },
+        "level-up": {
+          "update": "{actor} updated the Progression reference parameters"
+        },
+        "locale": {
+          "activate": "{actor} activated the {locale} language",
+          "deactivate": "{actor} deactivated the {locale} language"
+        },
+        "logs": {
+          "purge": "{actor} purged {count, plural, one {# journal entry} other {# journal entries}}"
+        },
+        "ranking": {
+          "update": "{actor} updated the ranking thresholds"
+        },
+        "reference": {
+          "activate": "{actor} activated the {slug} reference",
+          "deactivate": "{actor} deactivated the {slug} reference"
+        },
+        "setup": "{actor} created the first Super Admin account",
+        "templars-reference": {
+          "create": "{actor} created the Templars reference presentation",
+          "update": "{actor} updated the Templars reference presentation"
+        },
+        "templars": {
+          "update": "{actor} updated the Templars parameters"
+        },
+        "tool": {
+          "activate": "{actor} activated tool {slug}",
+          "deactivate": "{actor} deactivated tool {slug}"
+        },
+        "totp": {
+          "activate": "{actor} enabled two-factor authentication on their account",
+          "deactivate": "{actor} disabled two-factor authentication on their account"
+        },
+        "tracking": {
+          "delete": "{actor} removed the visit-tracking URL",
+          "update": "{actor} updated the visit-tracking URL"
+        },
+        "user": {
+          "activate": "{actor} activated user {username}",
+          "change_password": "{actor} changed their own account password",
+          "create": "{actor} created user {username}",
+          "deactivate": "{actor} deactivated user {username}",
+          "delete": "{actor} deleted user {username}",
+          "update": "{actor} updated user {username}"
+        },
+        "xp-gain-rate": {
+          "update": "{actor} updated the XP gain rate tiers"
+        }
+      }
     },
     "content": {
       "eyebrow": "Institutional page",

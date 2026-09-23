@@ -50,7 +50,7 @@ export async function PUT(request: Request) {
     ) as TemplarPresentationCatalog;
     await saveReferenceTable({
       key: templarsPresentationReferenceKey,
-      target: "la présentation du référentiel Templiers",
+      target: "templars-reference",
       columns: [
         "image",
         "name_fr",

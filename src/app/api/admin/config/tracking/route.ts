@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 import {
   trackingScriptUrlKey,
@@ -89,10 +89,10 @@ export async function PUT(request: Request) {
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          url ? "update" : "delete",
-          "l'URL de suivi des visites",
+        ...auditMessageColumns(
+          auditMessage(`tracking.${url ? "update" : "delete"}`, {
+            actor: session.user.name ?? session.user.id,
+          }),
         ),
         action: url ? "update" : "delete",
         entityType: "site_setting",

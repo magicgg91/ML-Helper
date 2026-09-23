@@ -2,7 +2,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { isAdminRole } from "@/auth/roles";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 
 async function actorName(id: string) {
   return (
@@ -39,10 +39,8 @@ export async function createAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(
-          actor,
-          "create",
-          `l’utilisateur ${user.username}`,
+        ...auditMessageColumns(
+          auditMessage("user.create", { actor, username: user.username }),
         ),
         action: "create",
         entityType: "user",
@@ -96,7 +94,9 @@ export async function updateAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(actor, action, `l’utilisateur ${user.username}`),
+        ...auditMessageColumns(
+          auditMessage(`user.${action}`, { actor, username: user.username }),
+        ),
         action,
         entityType: "user",
         entityId: id,
@@ -127,10 +127,8 @@ export async function deleteAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(
-          actor,
-          "delete",
-          `l’utilisateur ${user.username}`,
+        ...auditMessageColumns(
+          auditMessage("user.delete", { actor, username: user.username }),
         ),
         action: "delete",
         entityType: "user",

@@ -95,16 +95,26 @@ model LoginThrottle {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String   @map("user_id")
-  actorRole  String   @map("actor_role")
-  message    String   @default("")
-  action     String
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  diff       Json?
-  createdAt  DateTime @default(now()) @map("created_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  actorRole     String   @map("actor_role")
+  /// Bloc 116/C: the sentence this entry reads as, as a key into
+  /// admin.logs.messages (see src/lib/audit-message.ts) rather than the
+  /// French string the column below used to hold.
+  messageKey    String   @default("") @map("message_key")
+  /// Its interpolated values, as JSON text — text, not Json, so the logs
+  /// search can still `contains` over the names it holds.
+  messageParams String   @default("{}") @map("message_params")
+  /// Entries written before Bloc 116/C, whose French sentence is all there
+  /// is. Nothing writes it any more; /admin/logs falls back to it when
+  /// messageKey is empty, so an install's history stays readable.
+  legacyMessage String   @default("") @map("message")
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  diff          Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([createdAt])
   @@map("audit_logs")

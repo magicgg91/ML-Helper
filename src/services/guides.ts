@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 import {
   launchLocales,
@@ -21,11 +21,9 @@ const localeContent = z.object({
 // unwanted outbound requests). Restrict it to an http(s) URL (the shape the
 // guide editor always stores) or the empty string.
 const coverImageUrl = z.union([
-  z
-    .url()
-    .refine((value) => /^https?:\/\//i.test(value), {
-      message: "cover image must be an http(s) URL",
-    }),
+  z.url().refine((value) => /^https?:\/\//i.test(value), {
+    message: "cover image must be an http(s) URL",
+  }),
   z.literal(""),
 ]);
 const emptyLocaleContent = { title: "", excerpt: "", content: "" };
@@ -121,10 +119,11 @@ export async function createGuide(
         action: "create",
         entityType: "guide",
         entityId: guide.id,
-        message: auditMessage(
-          actor.name,
-          "create",
-          `le guide ${input.translations.fr.title || input.translations.en.title}`,
+        ...auditMessageColumns(
+          auditMessage("guide.create", {
+            actor: actor.name,
+            title: input.translations.fr.title || input.translations.en.title,
+          }),
         ),
         diff: {
           after: {
@@ -166,10 +165,11 @@ export async function updateGuide(
         action: "update",
         entityType: "guide",
         entityId: id,
-        message: auditMessage(
-          actor.name,
-          "update",
-          `le guide ${input.translations.fr.title || input.translations.en.title}`,
+        ...auditMessageColumns(
+          auditMessage("guide.update", {
+            actor: actor.name,
+            title: input.translations.fr.title || input.translations.en.title,
+          }),
         ),
         diff: { before: { slug: before.slug }, after: { slug: guide.slug } },
       },

@@ -59,7 +59,7 @@ export async function PUT(request: Request) {
     });
     await saveReferenceTable({
       key: referenceKeys.combat,
-      target: "le référentiel Équipements de Combat",
+      target: "combat-equipment",
       columns: Object.keys(rows[0]),
       rows,
       userId: session.user.id,

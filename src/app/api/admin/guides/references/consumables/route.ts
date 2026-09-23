@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { consumablesReferenceKey } from "@/lib/consumables-server";
-import { consumableCategories, type ConsumableCatalog } from "@/lib/consumables";
+import {
+  consumableCategories,
+  type ConsumableCatalog,
+} from "@/lib/consumables";
 import {
   numericString,
   saveReferenceTable,
@@ -47,11 +50,14 @@ export async function PUT(request: Request) {
       throw new Error("invalid catalog");
     const source = body as Record<string, unknown>;
     const catalog: ConsumableCatalog = Object.fromEntries(
-      consumableSections.map((section) => [section, parseRows(source[section])]),
+      consumableSections.map((section) => [
+        section,
+        parseRows(source[section]),
+      ]),
     ) as ConsumableCatalog;
     await saveReferenceTable({
       key: consumablesReferenceKey,
-      target: "le référentiel Boutique",
+      target: "consumables",
       columns: [
         "image",
         "name_fr",

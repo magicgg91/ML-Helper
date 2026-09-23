@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { isSavableRankingLadder, parseRankingLadder } from "@/lib/ranking";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 
 export async function PUT(request: Request) {
   const session = await authorizedSession("calculators.write");
@@ -38,10 +38,10 @@ export async function PUT(request: Request) {
         data: {
           userId: session.user.id,
           actorRole: session.user.role,
-          message: auditMessage(
-            session.user.name ?? session.user.id,
-            "update",
-            "les seuils du classement",
+          ...auditMessageColumns(
+            auditMessage("ranking.update", {
+              actor: session.user.name ?? session.user.id,
+            }),
           ),
           action: "update",
           entityType: "reference_table",

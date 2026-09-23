@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canPerformGuideAction } from "@/auth/guide-actions";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 
@@ -32,10 +32,11 @@ export async function PATCH(
         action,
         entityType: "guide",
         entityId: id,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          action,
-          `le guide ${localizedText(before.title, "fr") || before.slug}`,
+        ...auditMessageColumns(
+          auditMessage(`guide.${action}`, {
+            actor: session.user.name ?? session.user.id,
+            title: localizedText(before.title, "fr") || before.slug,
+          }),
         ),
         diff: {
           before: { active: before.active },

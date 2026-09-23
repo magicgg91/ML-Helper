@@ -91,10 +91,38 @@ describe("buildLogsWhere", () => {
     });
   });
 
-  it("filters by a word in the displayed message", () => {
-    expect(buildLogsWhere({ message: "supprimé" })).toEqual({
-      message: { contains: "supprimé" },
+  // Bloc 116/C: the message is a key and its parameters now, so the search
+  // reaches all three places a word can be — the names in the parameters
+  // (which is what an admin types), the key, and the French sentence of
+  // entries written before the change.
+  it("filters across the key, its parameters and the legacy sentence", () => {
+    expect(buildLogsWhere({ message: "toto" })).toEqual({
+      OR: [
+        { messageParams: { contains: "toto" } },
+        { messageKey: { contains: "toto" } },
+        { legacyMessage: { contains: "toto" } },
+      ],
     });
+  });
+
+  // Bloc 116/C review: a word of the sentence on screen is resolved to the
+  // keys that carry it, and those lead the OR.
+  it("leads with the sentences the searched word appears in", () => {
+    expect(
+      buildLogsWhere({ message: "Boutique" }, [
+        "consumables.create",
+        "consumables.update",
+      ]).OR,
+    ).toEqual([
+      { messageKey: { in: ["consumables.create", "consumables.update"] } },
+      { messageParams: { contains: "Boutique" } },
+      { messageKey: { contains: "Boutique" } },
+      { legacyMessage: { contains: "Boutique" } },
+    ]);
+  });
+
+  it("omits the key clause entirely when no sentence matches", () => {
+    expect(buildLogsWhere({ message: "toto" }, []).OR).toHaveLength(3);
   });
 
   it("filters by an inclusive date range", () => {
@@ -121,7 +149,11 @@ describe("buildLogsWhere", () => {
       buildLogsWhere({ user: "alice", message: "guide", from: "2026-01-01" }),
     ).toEqual({
       user: { username: { contains: "alice" } },
-      message: { contains: "guide" },
+      OR: [
+        { messageParams: { contains: "guide" } },
+        { messageKey: { contains: "guide" } },
+        { legacyMessage: { contains: "guide" } },
+      ],
       createdAt: { gte: new Date("2026-01-01T00:00:00.000") },
     });
   });

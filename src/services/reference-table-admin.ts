@@ -1,10 +1,19 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { auditMessage } from "../lib/audit-message";
+import {
+  auditMessage,
+  auditMessageColumns,
+  type AuditTarget,
+} from "../lib/audit-message";
 
 export async function saveReferenceTable(args: {
   key: string;
-  target: string;
+  /**
+   * Bloc 116/C: the slug of what is being saved, which is half of the audit
+   * sentence's key ("events" -> "events.create" / "events.update"). It used
+   * to be the French noun phrase itself.
+   */
+  target: AuditTarget;
   columns: string[];
   // Bloc 48/B: Boutique's admin editor now saves 4 tables grouped in a
   // single plain object (one array per category) instead of one flat
@@ -49,10 +58,10 @@ export async function saveReferenceTable(args: {
         action: before ? "update" : "create",
         entityType: "reference_table",
         entityId: table.id,
-        message: auditMessage(
-          args.actorName,
-          before ? "update" : "create",
-          args.target,
+        ...auditMessageColumns(
+          auditMessage(`${args.target}.${before ? "update" : "create"}`, {
+            actor: args.actorName,
+          }),
         ),
         diff: { before: before?.rows ?? null, after: rows },
       },

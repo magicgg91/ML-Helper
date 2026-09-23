@@ -2,7 +2,22 @@ import { expect, test, type Page } from "@playwright/test";
 import { defaultLevelUpParameters } from "../src/lib/level-up";
 import * as OTPAuth from "otpauth";
 
-test.describe.configure({ mode: "serial" });
+// Bloc 116/B: this file opts out of the retry playwright.config.ts grants in
+// CI, and has to.
+//
+// It is one serial scenario, in file order, over one database seeded once
+// before the run by `pnpm test:e2e:prepare`: the second test creates the
+// one-time Super Admin, and everything after it signs in as that account. In
+// serial mode Playwright retries the whole group from its first test, so a
+// retry re-runs that one-time setup against a database that already has it —
+// `/admin` redirects to `/login` instead of `/admin/setup`, and the group can
+// never recover. Seen for real on the first CI run of PR #142.
+//
+// A retry only helps a test that can start from the state it asserts. Making
+// this scenario retryable means giving each attempt its own database, which
+// is its own piece of work; until then, retrying it would turn one flake into
+// a guaranteed red run.
+test.describe.configure({ mode: "serial", retries: 0 });
 
 test("health endpoint confirms application and database availability", async ({
   request,
@@ -1302,6 +1317,9 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   );
   expect(saveResponse.ok()).toBeTruthy();
 
+  // Bloc 116/C review: the row stores the sentence's key, but the search
+  // still takes the words an admin can see — they are resolved to the keys
+  // that carry them before the query runs.
   await page.goto("/admin/logs?q=référentiel Boutique");
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await expect(
@@ -3147,4 +3165,104 @@ test("Bloc113: the Villes tool fits a phone on all four sub-tabs", async ({
         `${name} breakdown scrolls on itself`,
       ).toBeLessThanOrEqual(1);
   }
+});
+
+// Bloc 116/C: the audit log is stored as a sentence key and its parameters,
+// and rendered in the admin's own language. Three of the writers are
+// exercised here — a user creation, a tool toggle and a locale toggle — and
+// each row is read first in French, then in English, from the same database
+// rows.
+test("Bloc116/C: the audit log reads in the admin's own language", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // 1. A user creation.
+  await page.goto("/admin/users");
+  const createForm = page.locator('form:has(input[name="username"])');
+  await createForm.locator('input[name="username"]').fill("bilingual");
+  await createForm.locator('input[name="password"]').fill("bilingual-password");
+  await createForm.locator('select[name="role"]').selectOption("admin");
+  await createForm
+    .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
+    .click();
+  await expect(page.getByRole("cell", { name: "bilingual" })).toBeVisible();
+
+  // 2. A tool switched off, and 3. a language switched off.
+  const toolResponse = await page.request.patch(
+    "/api/admin/tools/calculator-city-cost",
+    { data: { active: false } },
+  );
+  expect(toolResponse.ok()).toBeTruthy();
+  const localeResponse = await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "es", active: false },
+  });
+  expect(localeResponse.ok()).toBeTruthy();
+
+  const french = [
+    "rootadmin a créé l’utilisateur bilingual",
+    "rootadmin a désactivé l’outil city-cost",
+    "rootadmin a désactivé la langue ES",
+  ];
+  const english = [
+    "rootadmin created user bilingual",
+    "rootadmin deactivated tool city-cost",
+    "rootadmin deactivated the ES language",
+  ];
+
+  await page.goto("/admin/logs");
+  // .first(): earlier tests in this file toggle the same language, so a
+  // sentence can legitimately appear on more than one row.
+  for (const sentence of french)
+    await expect(
+      page.getByRole("cell", { name: sentence }).first(),
+    ).toBeVisible();
+
+  // The same rows, in English: nothing is rewritten in the database, only
+  // resolved differently on the way out.
+  await page
+    .getByRole("group", { name: /Language|Langue/ })
+    .getByRole("button", { name: "EN" })
+    .click();
+  await expect(
+    page.getByRole("group", { name: /Language|Langue/ }).getByRole("button", {
+      name: "EN",
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.goto("/admin/logs");
+  for (const sentence of english)
+    await expect(
+      page.getByRole("cell", { name: sentence }).first(),
+    ).toBeVisible();
+  // And not one row is left in French: the language is resolved on the way
+  // out, so switching it moves every row at once.
+  for (const sentence of french)
+    await expect(page.getByRole("cell", { name: sentence })).toHaveCount(0);
+
+  // Bloc 116/C review (Codex, PR #142): the filter takes a word of the
+  // sentence on screen, in the language on screen — not the storage key.
+  await page.goto("/admin/logs?q=deactivated tool");
+  await expect(
+    page.getByRole("cell", { name: "rootadmin deactivated tool city-cost" }),
+  ).toBeVisible();
+  // And a French word finds nothing while the admin reads English, which is
+  // the same rule seen from the other side.
+  await page.goto("/admin/logs?q=désactivé l’outil");
+  await expect(page.getByText("No entry matches the filters.")).toBeVisible();
+
+  // Put the tool and the language back, so the rest of the suite sees the
+  // state it expects.
+  await page.request.patch("/api/admin/tools/calculator-city-cost", {
+    data: { active: true },
+  });
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "es", active: true },
+  });
 });
