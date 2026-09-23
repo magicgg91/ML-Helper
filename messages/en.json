@@ -283,35 +283,28 @@
       "entry": "League / Division"
     },
     "undefined": "To be defined in the administration",
-    "total-players": "Estimated number of players",
     "errors": {
       "select-league": "Pick a league or division to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
       "missing-bands": "Thresholds and rewards to be set in the admin for {entry}."
     },
     "ranking-ranges": "Ranking ranges",
-    "columns": {
-      "range": "Range",
-      "rank": "Range rank",
-      "target-league": "Target league",
+    "tile": {
+      "ranks": "Ranks",
       "sapphires": "Sapphires",
       "speedups": "Speedups",
       "gems": "Gems"
     },
     "movements": {
-      "promotion": "Promotion to {league}",
-      "stay": "Stay in {league}",
-      "relegation": "Relegation to {league}"
+      "promotion": "Promotion",
+      "stay": "Stay",
+      "relegation": "Relegation"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# sapphire} other {# sapphires}}",
-      "speedups": "{count} speedup",
-      "gems": "{count, plural, one {# gem} other {# gems}}"
-    },
-    "scale-label": "Ranking scale from 100% to 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
     "league-lock": "League lock",
-    "league-lock-none": "None — not enough rungs below"
+    "league-lock-none": "None — not enough rungs below",
+    "percentile-top": "Top {value}%",
+    "percentile-range": "{from} → {to}%",
+    "player-position": "You · {percentage}%"
   },
   "stuff-simulator": {
     "name": "Combat Equipment",

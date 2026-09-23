@@ -283,35 +283,28 @@
       "entry": "Ligue / Division"
     },
     "undefined": "À définir dans l’administration",
-    "total-players": "Nombre estimé de joueurs",
     "errors": {
       "select-league": "Choisis une ligue ou une division pour calculer.",
       "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
       "missing-bands": "Seuils et récompenses à définir dans l’administration pour {entry}."
     },
     "ranking-ranges": "Plages de classement",
-    "columns": {
-      "range": "Plage",
-      "rank": "Rang de plage",
-      "target-league": "Ligue cible",
+    "tile": {
+      "ranks": "Rangs",
       "sapphires": "Saphirs",
       "speedups": "Speedups",
       "gems": "Gemmes"
     },
     "movements": {
-      "promotion": "Montée {league}",
-      "stay": "Maintien {league}",
-      "relegation": "Descente {league}"
+      "promotion": "Montée",
+      "stay": "Maintien",
+      "relegation": "Descente"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
-      "speedups": "{count} speedup",
-      "gems": "{count, plural, one {# gemme} other {# gemmes}}"
-    },
-    "scale-label": "Échelle de classement de 100% à 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
-    "league-lock": "Ligue de verrou",
-    "league-lock-none": "Aucune — pas assez de paliers en dessous"
+    "league-lock": "Ligue verrou",
+    "league-lock-none": "Aucune — pas assez de paliers en dessous",
+    "percentile-top": "Top {value} %",
+    "percentile-range": "{from} → {to} %",
+    "player-position": "Vous · {percentage} %"
   },
   "stuff-simulator": {
     "name": "Équipement de Combat",

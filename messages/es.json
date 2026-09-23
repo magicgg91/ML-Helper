@@ -283,35 +283,28 @@
       "entry": "Liga / División"
     },
     "undefined": "Por definir en la administración",
-    "total-players": "Número estimado de jugadores",
     "errors": {
       "select-league": "Elige una liga o división para calcular.",
       "positive-percentage": "Introduce un porcentaje mayor que 0 para calcular.",
       "missing-bands": "Umbrales y recompensas por definir en la administración para {entry}."
     },
     "ranking-ranges": "Rangos de clasificación",
-    "columns": {
-      "range": "Rango",
-      "rank": "Posición del rango",
-      "target-league": "Liga objetivo",
+    "tile": {
+      "ranks": "Posiciones",
       "sapphires": "Zafiros",
       "speedups": "Aceleraciones",
       "gems": "Gemas"
     },
     "movements": {
-      "promotion": "Ascenso a {league}",
-      "stay": "Permanencia en {league}",
-      "relegation": "Descenso a {league}"
+      "promotion": "Ascenso",
+      "stay": "Permanencia",
+      "relegation": "Descenso"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# zafiro} other {# zafiros}}",
-      "speedups": "{count} aceleración",
-      "gems": "{count, plural, one {# gema} other {# gemas}}"
-    },
-    "scale-label": "Escala de clasificación de 100% a 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}",
     "league-lock": "Liga de bloqueo",
-    "league-lock-none": "Ninguna — no hay suficientes escalones por debajo"
+    "league-lock-none": "Ninguna — no hay suficientes escalones por debajo",
+    "percentile-top": "Top {value} %",
+    "percentile-range": "{from} → {to} %",
+    "player-position": "Tú · {percentage} %"
   },
   "stuff-simulator": {
     "name": "Equipo de Combate",

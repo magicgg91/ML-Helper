@@ -684,14 +684,21 @@ test("Ranking converts position and percentage into league ranges", async ({
     .locator(".ranking-calculator")
     .getByRole("group", { name: "Ligue" });
   await rankingLeagueGroup.getByRole("button", { name: "Diamant" }).click();
-  await expect(page.getByTestId("ranking-total")).toHaveText("1 000");
+  // Bloc 112: no estimated-players figure and no global scale any more — the
+  // ladder is read from the range tiles, one per range.
+  await expect(page.getByTestId("ranking-total")).toHaveCount(0);
+  await expect(page.locator(".ranking-scale")).toHaveCount(0);
+  const lastTile = page.locator(".ranking-range-tile").last();
   await expect(
-    page.getByLabel("Échelle de classement de 100% à 0%"),
+    lastTile.locator(".ranking-range-verb", { hasText: "Descente" }),
   ).toBeVisible();
-  // Bloc 110/C: the summary table is a list of tiles now, one per interval.
   await expect(
-    page.locator(".ranking-band-target", { hasText: "Descente Platine" }),
+    lastTile.locator(".ranking-range-league", { hasText: "Platine" }),
   ).toBeVisible();
+  // The number the removed tile used to show is the last range's own end.
+  await expect(lastTile.locator(".ranking-range-ranks-value")).toContainText(
+    /1[\s\u00a0\u202f]000$/,
+  );
 
   // Bloc61/B: at a standard desktop width, the league buttons, the %
   // field and the rank field must sit on a single row — checked by their
@@ -2323,16 +2330,15 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   await expect(page.getByTestId("ranking-league-lock")).toHaveText("Argent");
 
   // Bloc 108/H: an entry that does have rewards names speedups beside
-  // sapphires and gems — in every tile since Bloc 110/C, rather than once in
-  // a header row.
+  // sapphires and gems — named on its own mini-tile since Bloc 112, rather
+  // than once in a header row.
   await group.getByRole("button", { name: "Argent", exact: true }).click();
-  const firstTile = page.locator(".ranking-band-tile").first();
-  await expect(
-    firstTile.locator(".ranking-band-fact dt", { hasText: "Speedups" }),
-  ).toBeVisible();
-  await expect(
-    firstTile.locator(".ranking-band-fact").nth(2).locator("dd"),
-  ).toHaveText("7");
+  const firstTile = page.locator(".ranking-range-tile").first();
+  const speedups = firstTile.locator(".ranking-reward-tile", {
+    hasText: "Speedups",
+  });
+  await expect(speedups).toBeVisible();
+  await expect(speedups.locator(".ranking-reward-value")).toHaveText("7");
 
   // Put the ladder back, so the tests after this one see the six it shipped
   // with (this spec runs serially against one database).
@@ -2489,7 +2495,7 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
 // there too, and one tile per interval in the color of its own segment. The
 // six shipped rungs are enough: six is exactly where the mobile rule now
 // differs from desktop's single row, so no admin setup is needed.
-test("Bloc110: Classement lays its picker and its result tiles out at both widths", async ({
+test("Bloc110+112: Classement lays its picker and its range tiles out at both widths", async ({
   page,
 }) => {
   const group = page.locator(".ranking-calculator .family-buttons");
@@ -2506,8 +2512,9 @@ test("Bloc110: Classement lays its picker and its result tiles out at both width
         document.documentElement.clientWidth,
     );
 
-  // --- Partie 1: two columns on a phone, and nothing spilling off the page.
-  await page.setViewportSize({ width: 390, height: 900 });
+  // --- Bloc 110/1: two columns on a phone, and nothing spilling off the
+  // page. Measured at the brief's own target width, an iPhone 16.
+  await page.setViewportSize({ width: 393, height: 900 });
   await page.goto("/tools/classement");
   await expect(group.getByRole("button")).toHaveCount(6);
   // Polled: the server has no viewport, renders the wide split, and the
@@ -2515,96 +2522,172 @@ test("Bloc110: Classement lays its picker and its result tiles out at both width
   await expect.poll(rowSizes).toEqual([2, 2, 2]);
   expect(
     await pageOverflow(),
-    "w390 page scrolls sideways",
+    "w393 page scrolls sideways",
   ).toBeLessThanOrEqual(1);
   expect(
     await group.evaluate((el) => el.scrollWidth - el.clientWidth),
-    "w390 picker scrolls on itself",
+    "w393 picker scrolls on itself",
   ).toBeLessThanOrEqual(1);
 
   await group.getByRole("button", { name: "Diamant" }).click();
 
-  // --- Partie 2/B: the two figures stay side by side at 390px.
-  const infoTiles = page.locator(".ranking-info-tiles > .ranking-info-tile");
-  await expect(infoTiles).toHaveCount(2);
-  const boxes = await infoTiles.evaluateAll((tiles) =>
-    tiles.map((tile) => tile.getBoundingClientRect()),
-  );
-  expect(boxes[0].y, "the two info tiles share a line").toBeCloseTo(
-    boxes[1].y,
+  // --- Bloc 112: nothing of the old head of this zone survives.
+  await expect(page.getByTestId("ranking-total")).toHaveCount(0);
+  await expect(page.locator(".ranking-scale")).toHaveCount(0);
+  await expect(page.locator(".ranking-info-tiles")).toHaveCount(0);
+
+  // The League Lock is a chip in the section header; on a phone it sits under
+  // the heading, left aligned with it.
+  const header = page.locator(".ranking-ranges-header");
+  const chipPlacement = () =>
+    header.evaluate((element) => {
+      const heading = element.querySelector("h2")!.getBoundingClientRect();
+      const chip = element
+        .querySelector(".ranking-lock-chip")!
+        .getBoundingClientRect();
+      return {
+        headingLeft: heading.left,
+        headingBottom: heading.bottom,
+        chipLeft: chip.left,
+        chipTop: chip.top,
+        chipRight: chip.right,
+      };
+    });
+  const mobileChip = await chipPlacement();
+  expect(
+    mobileChip.chipTop,
+    "w393 chip sits under the heading",
+  ).toBeGreaterThanOrEqual(mobileChip.headingBottom - 1);
+  expect(mobileChip.chipLeft, "w393 chip is left aligned").toBeCloseTo(
+    mobileChip.headingLeft,
     0,
   );
-  expect(boxes[0].x, "the second sits to the right of the first").toBeLessThan(
-    boxes[1].x,
-  );
 
-  // --- Partie 2/A: no movement/target label against the bar on a phone; the
-  // same wording is in the tiles instead.
-  await expect(page.locator(".ranking-scale-target")).toHaveCount(0);
-  await expect(
-    page.locator(".ranking-band-target", { hasText: "Montée Légende" }).first(),
-  ).toBeVisible();
-
-  // --- Partie 2/C: every tile carries the color of its own segment. Read as
-  // the browser resolves it, paired by the range each one shows.
-  const colorsByRange = (selector: string, label: string) =>
-    page.evaluate(
-      ([selector, label]) =>
-        [...document.querySelectorAll(selector)].map((element) => {
-          const scope =
-            selector === ".ranking-scale-segment"
-              ? element.parentElement!
-              : element;
-          return [
-            scope.querySelector(label)!.textContent!,
-            getComputedStyle(element).getPropertyValue("--band-color").trim(),
-          ] as [string, string];
-        }),
-      [selector, label] as const,
+  // The acceptance criterion the redesign is judged on: nothing spills at the
+  // brief's target width, neither the page nor any tile.
+  expect(
+    await pageOverflow(),
+    "w393 page scrolls sideways",
+  ).toBeLessThanOrEqual(1);
+  const tileOverflow = () =>
+    page.locator(".ranking-range-tile").evaluateAll((tiles) =>
+      tiles.map((tile) => ({
+        self: tile.scrollWidth - tile.clientWidth,
+        spill:
+          tile.getBoundingClientRect().right -
+          document.documentElement.clientWidth,
+      })),
     );
-  const segments = new Map(
-    await colorsByRange(".ranking-scale-segment", ".ranking-scale-range"),
-  );
-  const tiles = new Map(
-    await colorsByRange(".ranking-band-tile", ".ranking-band-range"),
-  );
-  expect(tiles.size).toBeGreaterThanOrEqual(3);
-  for (const [range, color] of tiles) {
-    expect(color, `tile ${range} carries a color`).toMatch(/^#[0-9a-f]{6}$/i);
-    expect(segments.get(range), `segment ${range}`).toBe(color);
+  for (const [index, tile] of (await tileOverflow()).entries()) {
+    expect(
+      tile.self,
+      `w393 tile ${index} scrolls on itself`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      tile.spill,
+      `w393 tile ${index} spills off the page`,
+    ).toBeLessThanOrEqual(1);
   }
-  expect(new Set(tiles.values()).size).toBeGreaterThanOrEqual(3);
 
-  // --- Partie 2/D: full width on a phone.
-  const tileWidths = async () =>
-    page.evaluate(() => {
-      const list = document.querySelector(".ranking-band-tiles")!;
-      const listWidth = list.getBoundingClientRect().width;
-      return [...list.querySelectorAll(".ranking-band-tile")].map((tile) => {
-        const box = tile.getBoundingClientRect();
-        return { ratio: box.width / listWidth, y: box.y };
-      });
-    });
-  for (const tile of await tileWidths())
-    expect(tile.ratio, "w390 tile width").toBeCloseTo(1, 1);
+  // Argent grants all three rewards; the layout must hold at 393px too.
+  await group.getByRole("button", { name: "Argent", exact: true }).click();
+  await expect(
+    page.locator(".ranking-range-tile").first().locator(".ranking-reward-tile"),
+  ).toHaveCount(3);
+  expect(
+    await pageOverflow(),
+    "w393 page scrolls sideways with 3 rewards",
+  ).toBeLessThanOrEqual(1);
+  for (const [index, tile] of (await tileOverflow()).entries())
+    expect(
+      tile.spill,
+      `w393 3-reward tile ${index} spills`,
+    ).toBeLessThanOrEqual(1);
 
-  // --- Partie 2/D: half width on desktop, still one per line.
+  // --- Desktop: the chip rejoins the heading's line, and a tile is one row.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/tools/classement");
   await group.getByRole("button", { name: "Diamant" }).click();
-  const wide = await tileWidths();
-  expect(wide.length).toBeGreaterThanOrEqual(3);
-  for (const tile of wide)
-    expect(tile.ratio, "w1280 tile width").toBeCloseTo(0.5, 1);
-  // Stacked, not two abreast: every tile starts below the one before it.
-  for (let index = 1; index < wide.length; index += 1)
-    expect(
-      wide[index].y,
-      `tile ${index} sits below tile ${index - 1}`,
-    ).toBeGreaterThan(wide[index - 1].y);
+  const wideChip = await chipPlacement();
+  expect(wideChip.chipTop, "w1280 chip shares the heading's line").toBeLessThan(
+    wideChip.headingBottom,
+  );
+  expect(
+    wideChip.chipLeft,
+    "w1280 chip sits to the right of the heading",
+  ).toBeGreaterThan(wideChip.headingLeft);
 
-  // And desktop keeps the labels against the bar that mobile drops.
-  await expect(page.locator(".ranking-scale-target").first()).toBeVisible();
+  const firstRow = await page
+    .locator(".ranking-range-tile")
+    .first()
+    .evaluate((tile) => {
+      const box = (selector: string) =>
+        tile.querySelector(selector)!.getBoundingClientRect();
+      return {
+        result: box(".ranking-range-result"),
+        position: box(".ranking-range-position"),
+        rewards: box(".ranking-range-rewards"),
+      };
+    });
+  expect(
+    firstRow.position.left,
+    "position sits right of the result",
+  ).toBeGreaterThan(firstRow.result.right - 1);
+  expect(
+    firstRow.rewards.left,
+    "rewards sit right of the position",
+  ).toBeGreaterThan(firstRow.position.right - 1);
+
+  // Diamant pays gems alone: one mini-tile, no empty slots.
+  await expect(
+    page.locator(".ranking-range-tile").first().locator(".ranking-reward-tile"),
+  ).toHaveCount(1);
+
+  // --- The bar: each segment on its own slice, and the player marked once.
+  const segments = await page
+    .locator(".ranking-range-tile")
+    .evaluateAll((tiles) =>
+      tiles.map((tile) => {
+        const bar = tile
+          .querySelector(".ranking-range-bar")!
+          .getBoundingClientRect();
+        const segment = tile
+          .querySelector(".ranking-range-bar-segment")!
+          .getBoundingClientRect();
+        return {
+          start: Math.round(((segment.left - bar.left) / bar.width) * 100),
+          width: Math.round((segment.width / bar.width) * 100),
+        };
+      }),
+    );
+  expect(segments.map((segment) => segment.start)).toEqual([0, 1, 6, 25, 60]);
+  // The top range is 1% wide and still drawn, thanks to its 5px floor.
+  expect(segments[0].width).toBeGreaterThan(0);
+  await expect(page.getByTestId("ranking-player-marker")).toHaveCount(1);
+
+  // --- The colors: the browser's own reads, per range and per result.
+  const colors = await page
+    .locator(".ranking-range-tile")
+    .evaluateAll((tiles) =>
+      tiles.map((tile) => ({
+        band: getComputedStyle(tile).getPropertyValue("--band-color").trim(),
+        accent: getComputedStyle(tile.querySelector(".ranking-range-accent")!)
+          .backgroundColor,
+        league: getComputedStyle(tile.querySelector(".ranking-range-league")!)
+          .color,
+        segment: getComputedStyle(
+          tile.querySelector(".ranking-range-bar-segment")!,
+        ).backgroundColor,
+      })),
+    );
+  // Every range has its own shade, and the accent bar wears it unchanged.
+  expect(new Set(colors.map((color) => color.band)).size).toBe(colors.length);
+  // The strong color is the RESULT's, so the two Maintien ranges share it
+  // while their own shades differ.
+  expect(colors[2].league).toBe(colors[3].league);
+  expect(colors[2].band).not.toBe(colors[3].band);
+  expect(colors[0].league).not.toBe(colors[2].league);
+  for (const color of colors) expect(color.segment).toBe(color.league);
 });
 
 // ---------------------------------------------------------------------------
