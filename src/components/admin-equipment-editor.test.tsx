@@ -241,7 +241,7 @@ describe("Bloc 119: the equipment reference editor", () => {
     expect(screen.getByLabelText("Libellé de l’indicateur 1")).toHaveValue(
       "Fusion",
     );
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(screen.getByLabelText("Libellé de l’indicateur 1")).toHaveValue(
       "Merge",
     );
@@ -258,6 +258,15 @@ describe("Bloc 119: the equipment reference editor", () => {
       metric_label_fr: "Fusion",
       metric_label_en: "Merging",
     });
+  });
+
+  it("says it saved in the admin's one save vocabulary", async () => {
+    // Not "Référentiel enregistré." — every edit screen says the same thing.
+    renderCombat(rows);
+    save();
+    expect(
+      await screen.findByText("Modifications enregistrées."),
+    ).toBeInTheDocument();
   });
 
   it("keeps the sentence about unconfirmed values", () => {

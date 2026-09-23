@@ -1489,8 +1489,11 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .getByRole("radio", { name: "48h" })
     .click();
   // Bloc 119: an event is one line, and its tiers appear under it only once
-  // it is unfolded.
-  await page.getByRole("button", { name: /^Recruteur/ }).click();
+  // it is unfolded — an event you have just added opens on its own, so there
+  // is nothing to click here.
+  await expect(
+    page.getByRole("button", { name: /^Recruteur/ }),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByTestId("add-tier-bronze-0").click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
@@ -1500,14 +1503,14 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .fill("100M or + 250 éclats");
   // Bloc 60 review (Codex PR #81): tier text is captured per fr/en field —
   // switch the editorial locale and fill the English pair too.
-  await page.getByRole("button", { name: "en", exact: true }).click();
+  await page.getByRole("button", { name: /^EN — English/ }).click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
     .fill("1B troops enlisted");
   await page
     .getByLabel("Récompense du palier 1 de Recruteur")
     .fill("100M gold + 250 shards");
-  await page.getByRole("button", { name: "fr", exact: true }).click();
+  await page.getByRole("button", { name: /^FR — Français/ }).click();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
@@ -1594,6 +1597,7 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await expect(
     page.getByText(
       "La durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
+      { exact: true },
     ),
   ).toBeVisible();
 
@@ -3250,14 +3254,25 @@ test("Bloc116/C: the audit log reads in the admin's own language", async ({
 
   // 1. A user creation.
   await page.goto("/admin/users");
-  const createForm = page.locator('form:has(input[name="username"])');
-  await createForm.locator('input[name="username"]').fill("bilingual");
-  await createForm.locator('input[name="password"]').fill("bilingual-password");
-  await createForm.locator('select[name="role"]').selectOption("admin");
-  await createForm
+  // Bloc 119: creation happens in a side panel, and the role is a radio with
+  // a one-line description rather than a bare <select>.
+  await page
+    .getByRole("button", { name: /New user|Nouvel utilisateur/ })
+    .click();
+  const createPanel = page.getByRole("dialog", {
+    name: /New user|Nouvel utilisateur/,
+  });
+  await createPanel.getByLabel(/Username|Identifiant/).fill("bilingual");
+  await createPanel
+    .getByLabel(/Password|Mot de passe/)
+    .fill("bilingual-password");
+  await createPanel.getByRole("radio", { name: /^Admin/ }).check();
+  await createPanel
     .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
     .click();
-  await expect(page.getByRole("cell", { name: "bilingual" })).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "bilingual", exact: true }),
+  ).toBeVisible();
 
   // 2. A tool switched off, and 3. a language switched off.
   const toolResponse = await page.request.patch(
@@ -3364,7 +3379,9 @@ test("every admin screen stays English for a reader browsing publicly in German"
     ["/admin/tools", "Functional content", "Contenu fonctionnel"],
     ["/admin/guides", "Editorial content", "Contenu éditorial"],
     ["/admin/referentiels", "Reference data", "Données de référence"],
-    ["/admin/users", "Create user", "Créer l’utilisateur"],
+    // Bloc 119: "Create user" now lives inside the creation panel, which is
+    // closed on arrival — the button that opens it is what the page shows.
+    ["/admin/users", "New user", "Nouvel utilisateur"],
     ["/admin/logs", "Word in message", "Mot dans le message"],
     ["/admin/content", "Institutional page", "Page institutionnelle"],
     ["/admin/config", "Site configuration", "Configuration du site"],
@@ -3401,21 +3418,35 @@ test("every admin screen stays English for a reader browsing publicly in German"
   // only one reached through a root translator — easy to forget, so it gets
   // its own assertion rather than riding on the page above.
   await page.goto("/admin/users");
-  const roleSelect = page.getByRole("combobox").first();
+  // Bloc 119: the role is chosen from radios in the creation panel, each with
+  // a line describing what it may do.
+  await page.getByRole("button", { name: "New user" }).click();
+  const createPanel = page.getByRole("dialog", { name: "New user" });
   await expect(
-    roleSelect.getByRole("option", { name: "Read Only" }),
+    createPanel.getByRole("radio", { name: /Read Only/ }),
   ).toHaveCount(1);
   await expect(
-    roleSelect.getByRole("option", { name: "Lecture Seule" }),
+    createPanel.getByRole("radio", { name: /Lecture Seule/ }),
   ).toHaveCount(0);
 
   // The border, seen from the other side: what the admin writes FOR the
   // public is still offered in all five languages. Narrowing the chrome must
   // never narrow this.
   await page.goto("/admin/content");
-  await expect(
-    page.locator(".editorial-locale-select select option"),
-  ).toHaveText(["FR", "EN", "DE", "ES", "TR"]);
+  const contentLanguages = page.getByRole("tablist", {
+    name: "Content language",
+  });
+  await expect(contentLanguages.getByRole("tab")).toHaveCount(5);
+  for (const language of [
+    "Français",
+    "English",
+    "Deutsch",
+    "Español",
+    "Türkçe",
+  ])
+    await expect(
+      contentLanguages.getByRole("tab", { name: new RegExp(language) }),
+    ).toHaveCount(1);
   await page.goto("/admin/config");
   for (const [locale, language] of [
     ["de", "Deutsch"],

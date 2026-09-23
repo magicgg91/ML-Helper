@@ -720,7 +720,8 @@
       "saving": "Saving…",
       "saved": "Changes saved.",
       "error": "Save failed (HTTP {status}).",
-      "server-error": "Could not reach the server."
+      "server-error": "Could not reach the server.",
+      "language-tab": "{language}"
     },
     "title": "Administration",
     "view-site": "View the public site",
@@ -1084,7 +1085,8 @@
       "entry-private": "Hidden",
       "bands-section": "End-of-season bands",
       "row-actions": "Action",
-      "top": "Top"
+      "top": "Top",
+      "band-name": "Band {row} of {entry}"
     },
     "references": {
       "eyebrow": "Game data",
@@ -1226,7 +1228,8 @@
       "set-inconsistent-help": "This set's rows do not share a family or a rarity: edit them row by row, and the set becomes editable as a whole again.",
       "edit-set": "Edit the {set} set",
       "show-more-sets": "Show more sets",
-      "unknown-value-warning": "Only fill in an unknown value once it is confirmed in game."
+      "unknown-value-warning": "Only fill in an unknown value once it is confirmed in game.",
+      "tier-name": "Tier {row} of {event}"
     },
     "common": {
       "back": "Back",

@@ -128,7 +128,7 @@ describe("Bloc 119: the Boutique editor", () => {
 
   it("edits one language without touching the other", async () => {
     const request = renderEditor();
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(within(panel()).getByLabelText("Nom")).toHaveValue("Welcome");
     fireEvent.change(within(panel()).getByLabelText("Nom"), {
       target: { value: "Hello" },

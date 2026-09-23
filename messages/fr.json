@@ -720,7 +720,8 @@
       "saving": "Enregistrement…",
       "saved": "Modifications enregistrées.",
       "error": "Échec de l’enregistrement (HTTP {status}).",
-      "server-error": "Impossible de joindre le serveur."
+      "server-error": "Impossible de joindre le serveur.",
+      "language-tab": "{language}"
     },
     "title": "Administration",
     "view-site": "Voir le site public",
@@ -1084,7 +1085,8 @@
       "entry-private": "Masquée",
       "bands-section": "Plages de fin de saison",
       "row-actions": "Action",
-      "top": "Top"
+      "top": "Top",
+      "band-name": "Plage {row} de {entry}"
     },
     "references": {
       "eyebrow": "Données du jeu",
@@ -1226,7 +1228,8 @@
       "set-inconsistent-help": "Les lignes de ce set n’ont pas la même famille ou la même rareté : édite-les ligne par ligne, puis le set redeviendra modifiable d’un bloc.",
       "edit-set": "Modifier le set {set}",
       "show-more-sets": "Afficher plus de sets",
-      "unknown-value-warning": "Ne renseigne une valeur inconnue qu’après confirmation en jeu."
+      "unknown-value-warning": "Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
+      "tier-name": "Palier {row} de {event}"
     },
     "common": {
       "back": "Retour",

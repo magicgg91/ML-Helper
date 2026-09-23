@@ -230,6 +230,9 @@ export function EquipmentReferenceEditor({
   usedByTool?: { label: string; href: string };
 }) {
   const t = useTranslations("admin.references");
+  // The save speaks the admin's one save vocabulary, like every other edit
+  // screen; only the "one of the three tables failed" case is this screen's own.
+  const editor = useTranslations("admin.editor");
   const game = useTranslations("game");
   const common = useTranslations("common");
   const languageNames = useTranslations("admin.config.languages");
@@ -417,7 +420,7 @@ export function EquipmentReferenceEditor({
     }));
 
   async function save() {
-    status.pending(t("saving"));
+    status.pending(editor("saving"));
     const put = (endpoint: string, body: unknown) =>
       fetch(endpoint, {
         method: "PUT",
@@ -445,13 +448,13 @@ export function EquipmentReferenceEditor({
         form.rows,
       );
       if (!main.ok) {
-        status.error(t("save-error", { status: main.status }));
+        status.error(editor("error", { status: main.status }));
         return;
       }
       setSaved(form);
-      status.success(t("saved"));
+      status.success(editor("saved"));
     } catch {
-      status.error(t("server-error"));
+      status.error(editor("server-error"));
     }
   }
 

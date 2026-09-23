@@ -431,10 +431,13 @@ export function EventsReferenceEditor({
                               ))}
                               <td className="px-2 py-1">
                                 <RowActions
-                                  name={t("tier-row-label", {
+                                  // The tier, not one of its fields: reusing
+                                  // a field's label would make "Monter
+                                  // Objectif du palier 1" collide with the
+                                  // Objectif field itself.
+                                  name={t("tier-name", {
                                     event: event.name || t("event-unnamed"),
                                     row: tierIndex + 1,
-                                    field: t("tier-columns.objective"),
                                   })}
                                   isFirst={tierIndex === 0}
                                   isLast={tierIndex === event.tiers.length - 1}

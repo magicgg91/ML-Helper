@@ -58,13 +58,14 @@ export function LangTabs({
               key={code}
               type="button"
               aria-pressed={code === locale}
-              aria-label={
-                empty
-                  ? t("language-to-create", {
-                      language: languageNames?.[code] ?? code.toUpperCase(),
-                    })
-                  : undefined
-              }
+              // The button shows the code and is named by the language: a
+              // two-letter code is an abbreviation, not a name, and the
+              // label carries both so speech input still finds it.
+              aria-label={t(empty ? "language-to-create" : "language-tab", {
+                language: `${code.toUpperCase()} — ${
+                  languageNames?.[code] ?? code.toUpperCase()
+                }`,
+              })}
               className={cn(
                 "admin-focus inline-flex h-[var(--admin-control-h-sm)] items-center rounded-admin-control border px-3 font-admin-mono text-xs font-semibold uppercase",
                 code === locale

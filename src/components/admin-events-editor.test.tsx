@@ -140,7 +140,7 @@ describe("Bloc 119: the Événements editor", () => {
 
   it("edits one language's texts without touching the other", async () => {
     const request = renderEditor();
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(screen.getByLabelText("Description de l’événement 1")).toHaveValue(
       "Build buildings.",
     );

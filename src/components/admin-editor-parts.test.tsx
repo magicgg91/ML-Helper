@@ -70,11 +70,11 @@ describe("Bloc 119: LangTabs", () => {
 
   it("presses the one being edited", () => {
     renderTabs();
-    expect(screen.getByRole("button", { name: "fr" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /^FR/ })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    expect(screen.getByRole("button", { name: "en" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /^EN/ })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
@@ -82,13 +82,15 @@ describe("Bloc 119: LangTabs", () => {
 
   it("marks a language with nothing written in it yet", () => {
     renderTabs((locale) => locale !== "de");
-    const german = screen.getByRole("button", { name: "Deutsch — à créer" });
+    const german = screen.getByRole("button", {
+      name: "DE — Deutsch — à créer",
+    });
     expect(german.className).toContain("border-dashed");
   });
 
   it("switches without the caller losing anything — it only reports", () => {
     const { onChange } = renderTabs();
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(onChange).toHaveBeenCalledWith("en");
   });
 });

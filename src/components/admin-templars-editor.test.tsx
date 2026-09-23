@@ -66,7 +66,7 @@ describe("Bloc 119: the Templiers screen", () => {
     fireEvent.change(screen.getByLabelText("Nom de Attaque"), {
       target: { value: "Frappe" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(screen.getByLabelText("Nom de Attaque")).toHaveValue("Attack");
     fireEvent.change(screen.getByLabelText("Nom de Attaque"), {
       target: { value: "Strike" },
@@ -85,7 +85,7 @@ describe("Bloc 119: the Templiers screen", () => {
     fireEvent.change(screen.getByLabelText("Base temple de Attaque"), {
       target: { value: "42" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "en" }));
+    fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
     expect(screen.getByLabelText("Base temple de Attaque")).toHaveValue("42");
   });
 

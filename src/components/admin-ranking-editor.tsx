@@ -613,7 +613,12 @@ export function RankingAdminEditor({
                             ))}
                             <td className="px-3">
                               <RowActions
-                                name={rowLabel(t("threshold"))}
+                                // The band, not one of its fields (see the
+                                // Événements editor for the same reason).
+                                name={t("band-name", {
+                                  entry: label(selected),
+                                  row: index + 1,
+                                })}
                                 onRemove={() =>
                                   updateDraft(selected.id, {
                                     rows: selected.rows.filter(
