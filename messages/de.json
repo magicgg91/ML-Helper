@@ -176,17 +176,26 @@
       "start-level": "Startstufe",
       "target-level": "Zielstufe"
     },
-    "start": "Start",
-    "target": "Ziel",
-    "wall": "Mauer",
-    "gold-hour": "Gold/Std.",
-    "army-hour": "Armee/Std.",
-    "gold-unit": "Gold",
     "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
-    "cost-total": "Gesamtkosten",
-    "vp-gained": "Insgesamt erhaltene VP",
-    "gold-transition": "Gold/Std. vorher → nachher",
-    "army-transition": "Armee/Std. vorher → nachher"
+    "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Stufe {start} → {target}",
+    "cost-total": "Kosten",
+    "gold-unit": "Gold",
+    "wall": "Mauer",
+    "vp-gained": "Gewonnene VP",
+    "army-hour": "Armee / Std.",
+    "gold-hour": "Gold / Std.",
+    "per-city": "pro Stadt",
+    "columns": {
+      "source": "Quelle",
+      "level": "Stufe {level}",
+      "gap": "Differenz"
+    },
+    "total-per-city": "Gesamt / Stadt",
+    "total-all": "{count, plural, one {Gesamt # Stadt} other {Gesamt # Städte}}",
+    "base": "Basis",
+    "temple": "Tempel",
+    "equipment": "Ausrüstung",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Maximal erreichbare Stufe",
@@ -197,15 +206,16 @@
       "available-gold": "Verfügbares Gold",
       "gold-unit": "Einheit des verfügbaren Golds"
     },
-    "wall": "Mauer",
-    "gold-hour": "Gold/Std.",
-    "army-hour": "Armee/Std.",
     "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
-    "reachable-level": "Erreichbare Zielstufe",
+    "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Stufe {level} · {gold} Gold verfügbar",
+    "reachable-level": "Maximalstufe",
+    "levels-gained": "+{count}",
     "remaining-gold": "Verbleibendes Gold",
-    "vp-gained": "Insgesamt erhaltene VP",
-    "gold-transition": "Gold/Std. vorher → nachher",
-    "army-transition": "Armee/Std. vorher → nachher"
+    "gold-unit": "Gold",
+    "vp-gained": "Gewonnene VP",
+    "army-hour": "Armee / Std.",
+    "gold-hour": "Gold / Std.",
+    "none": "—"
   },
   "city-production": {
     "name": "Produktion",
@@ -214,40 +224,47 @@
       "city-count": "Anzahl der Städte",
       "average-level": "Durchschnittliche Stadtstufe"
     },
-    "per-city-base": "Pro Stadt — Basis",
+    "total-cities": "{count, plural, one {Gesamt für # Stadt} other {Gesamt für # Städte}}",
+    "recall": "{count, plural, one {# Stadt} other {# Städte}} · {league} · Durchschnittsstufe {level}",
+    "army-hour": "Armee / Std.",
+    "gold-hour": "Gold / Std.",
     "vp": "VP",
-    "wall": "Mauer",
-    "gold-hour": "Gold/Std.",
-    "army-hour": "Armee/Std.",
-    "gold-total": "💰 Gold — Gesamtproduktion",
-    "troops-total": "⚔️ Truppen — Gesamtproduktion",
+    "per-city": "pro Stadt",
+    "columns": {
+      "source": "Quelle",
+      "production": "Produktion",
+      "share": "Anteil"
+    },
+    "total-per-city": "Gesamt / Stadt",
+    "total-all-level": "{count, plural, one {Gesamt # Stadt auf Stufe {level}} other {Gesamt # Städte auf Stufe {level}}}",
     "base": "Basis",
-    "equipment": "Ausrüstung",
     "temple": "Tempel",
-    "vp-total": "VP gesamt",
+    "equipment": "Ausrüstung",
+    "none": "—",
     "full-production": {
       "title": "Voll-Produktions-Reskill",
-      "note": "Simulation mit allen {points} verfügbaren Punkten investiert, berechnet ausgehend von der Basisproduktion.",
-      "gold": "Gold mit vollem Wohlstand",
-      "troops": "Truppen mit vollem Rekrutierer"
+      "note": "{points} Punkte vollständig investiert · berechnet ausgehend von der Basisproduktion",
+      "army": "Armee mit vollem Rekrutierer",
+      "gold": "Gold mit vollem Wohlstand"
     }
   },
   "city-rewards": {
     "name": "Produktionsbelohnungen",
+    "army": {
+      "title": "Armee",
+      "base": "Armee-Basisproduktion",
+      "base-unit": "Einheit der Armee-Produktion",
+      "hours": "Erhaltene Stunden",
+      "bonus": "Erhaltener Armeebonus"
+    },
     "gold": {
       "title": "Gold",
       "base": "Gold-Basisproduktion",
       "base-unit": "Einheit der Gold-Produktion",
-      "hours": "Erhaltene Goldstunden",
+      "hours": "Erhaltene Stunden",
       "bonus": "Erhaltener Goldbonus"
     },
-    "troops": {
-      "title": "Truppen",
-      "base": "Truppen-Basisproduktion",
-      "base-unit": "Einheit der Truppen-Produktion",
-      "hours": "Erhaltene Truppenstunden",
-      "bonus": "Erhaltener Truppenbonus"
-    }
+    "bonus-short": "Erhaltener Bonus"
   },
   "xp-gain-rate": {
     "name": "XP-Gewinnrate",

@@ -492,7 +492,11 @@ test("the Cities category exposes its three working calculators", async ({
   await cityLeagueGroup.getByRole("button", { name: "Légende" }).click();
   // Bloc 33/C: "city-cost-one" was merged into the single "Total" block's
   // "city-cost-total" testid (cityCount defaults to 1, same figure).
-  await expect(page.getByTestId("city-cost-total")).toHaveText("10 or");
+  // Bloc 113/A.5: the unit is its own element beside the figure now.
+  await expect(page.getByTestId("city-cost-total")).toHaveText("10");
+  await expect(
+    page.getByTestId("city-cost-total").locator("xpath=.."),
+  ).toContainText("or");
 
   // Bloc 34/C: the target-level floor is enforced on blur/commit, not on
   // every keystroke — typing "100" over a min-2 field must not reset to
@@ -528,7 +532,12 @@ test("the Cities category exposes its three working calculators", async ({
     .getByRole("group", { name: "Ligue" })
     .getByRole("button", { name: "Légende" })
     .click();
-  await expect(page.getByText("Or — Production totale")).toBeVisible();
+  // Bloc 113/D: the full-reskill figures moved under their own headed
+  // section, with the skill each one assumes named on its tile.
+  await expect(
+    page.getByRole("heading", { name: "Si reskill full-prod" }),
+  ).toBeVisible();
+  await expect(page.getByText("Or si full Prospérité")).toBeVisible();
   await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
 });
 
@@ -545,27 +554,19 @@ test("Récompenses de Production is a standalone Villes calculator with no share
     .getByRole("spinbutton", { name: "Production d’or de base" })
     .fill("2");
   await page.getByLabel("Unité de production d’or").selectOption("1000");
-  await page.getByRole("spinbutton", { name: "Heures Or reçues" }).fill("5");
-  const goldBonus = page
-    .getByText("Bonus Or obtenu")
-    .locator("xpath=ancestor::div[contains(@class,'calculator-stat')]")
-    .locator("strong");
+  await page.getByRole("spinbutton", { name: "Heures reçues — Or" }).fill("5");
+  const goldBonus = page.getByTestId("city-rewards-gold");
   await expect(goldBonus).toHaveText("10k");
 
   await page
-    .getByRole("spinbutton", { name: "Production de troupes de base" })
+    .getByRole("spinbutton", { name: "Production d’armée de base" })
     .fill("4");
+  await page.getByLabel("Unité de production d’armée").selectOption("1000000");
   await page
-    .getByLabel("Unité de production de troupes")
-    .selectOption("1000000");
-  await page
-    .getByRole("spinbutton", { name: "Heures Troupes reçues" })
+    .getByRole("spinbutton", { name: "Heures reçues — Armée" })
     .fill("2");
-  const troopsBonus = page
-    .getByText("Bonus Troupes obtenu")
-    .locator("xpath=ancestor::div[contains(@class,'calculator-stat')]")
-    .locator("strong");
-  await expect(troopsBonus).toHaveText("8M");
+  const armyBonus = page.getByTestId("city-rewards-army");
+  await expect(armyBonus).toHaveText("8M");
   await expect(goldBonus).toHaveText("10k");
 });
 
@@ -609,25 +610,38 @@ test("all three City tools use all six confirmed league multipliers", async ({
       .getByRole("button", { name: playerLeagueLabels[league] })
       .click();
 
+    // Bloc 113/B: the boosted per-city production is the breakdown table's
+    // "Total / ville" row; the tile beside it carries the gain instead.
     await page.getByRole("tab", { name: "Coût de Ville" }).click();
-    await expect(page.getByTestId("city-cost-gold")).toContainText(
-      `${boostedGold} →`,
-    );
-    await expect(page.getByTestId("city-cost-army")).toContainText(
-      `${boostedArmy} →`,
-    );
+    for (const [table, expected] of [
+      ["city-cost-gold-table", boostedGold],
+      ["city-cost-army-table", boostedArmy],
+    ] as const)
+      await expect(
+        page.getByTestId(table).locator("tr.tool-row-total td").first(),
+      ).toHaveText(expected);
 
-    await page.getByRole("tab", { name: "Niveau Max Atteignable" }).click();
-    await expect(page.getByTestId("city-max-level-gold")).toHaveText(
-      `${boostedGold} → ${boostedGold}`,
-    );
-    await expect(page.getByTestId("city-max-level-army")).toHaveText(
-      `${boostedArmy} → ${boostedArmy}`,
-    );
-
+    // Bloc 113/C leaves Niveau Max with tiles only — it prints no absolute
+    // production any more, so there is nothing to read there.
     await page.getByRole("tab", { name: "Production", exact: true }).click();
-    await expect(page.getByTestId("city-production-gold")).toHaveText(baseGold);
-    await expect(page.getByTestId("city-production-army")).toHaveText(baseArmy);
+    await expect(page.getByTestId("city-production-gold")).toHaveText(
+      `${boostedGold}/h`,
+    );
+    await expect(page.getByTestId("city-production-army")).toHaveText(
+      `${boostedArmy}/h`,
+    );
+    for (const [table, expected] of [
+      ["city-production-gold-table", baseGold],
+      ["city-production-army-table", baseArmy],
+    ] as const)
+      await expect(
+        page
+          .getByTestId(table)
+          .locator("tbody tr")
+          .first()
+          .locator("td")
+          .first(),
+      ).toHaveText(expected.replace("/h", ""));
   }
 });
 
@@ -3081,4 +3095,55 @@ test("Bloc 91/E1: the 5 languages have their own URL, with distinct hreflang and
   await page.locator(".locale-select-trigger").click();
   await page.getByRole("option", { name: "EN", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/tools\/competences\?open=gems$/);
+});
+
+test("Bloc113: the Villes tool fits a phone on all four sub-tabs", async ({
+  page,
+}) => {
+  const subTabs = [
+    "Coût de Ville",
+    "Niveau Max Atteignable",
+    "Production",
+    "Récompenses de Production",
+  ];
+  const overflow = () =>
+    page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    );
+
+  await page.setViewportSize({ width: 393, height: 900 });
+  await page.goto("/tools/villes");
+  for (const name of subTabs) {
+    await page.getByRole("tab", { name, exact: true }).click();
+    // Fill the sub-tab so the tiles and tables carry real figures: an empty
+    // placeholder cannot overflow, so measuring it would prove nothing.
+    if (name !== "Récompenses de Production")
+      await page
+        .locator(".city-calculators")
+        .getByRole("group", { name: "Ligue" })
+        .getByRole("button", { name: "Diamant", exact: true })
+        .click();
+    if (name === "Coût de Ville") {
+      await page
+        .getByRole("spinbutton", { name: "Nombre de villes" })
+        .fill("10");
+      await page.getByRole("spinbutton", { name: "Niveau cible" }).fill("120");
+      await expect(page.getByTestId("city-cost-total")).toBeVisible();
+    }
+    if (name === "Récompenses de Production") {
+      await page
+        .getByRole("spinbutton", { name: "Production d’armée de base" })
+        .fill("3.78");
+      await expect(page.getByTestId("city-rewards-army")).toBeVisible();
+    }
+    expect(await overflow(), `${name} scrolls sideways`).toBeLessThanOrEqual(1);
+    // Bloc 113/A.10: a breakdown may wrap, never scroll on itself either.
+    for (const table of await page.locator(".tool-table").all())
+      expect(
+        await table.evaluate((el) => el.scrollWidth - el.clientWidth),
+        `${name} breakdown scrolls on itself`,
+      ).toBeLessThanOrEqual(1);
+  }
 });

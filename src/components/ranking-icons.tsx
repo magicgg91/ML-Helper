@@ -11,17 +11,7 @@
  */
 
 import type { RankMovement, RankRewardType } from "../lib/ranking";
-
-const strokeIcon = {
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  "aria-hidden": true,
-  focusable: "false",
-} as const;
+import { strokeIcon } from "./icon-base";
 
 /**
  * A band with no movement set yet is drawn with the Maintien bars — the same

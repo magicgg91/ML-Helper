@@ -122,6 +122,20 @@
      shade, so "where you are" can never be confused with a range's color. */
   --rank-player: #e0805f;
   --rank-player-ink: #1b2029;
+  /* Bloc 113: the Villes tool's tiles. A gain is green — as a value, and as
+     the multiplier badge's fill with --tool-gain-ink on it. The highlight is
+     the violet reserved for a headline result and an N-city total; the green
+     surface is for a tile that is itself a gain. The three share colors name
+     where a production comes from, and are read beside their own legend. */
+  --tool-gain: #7cc79d;
+  --tool-gain-ink: #1b2029;
+  --tool-highlight-bg: #322a4a;
+  --tool-highlight-border: #4a3d6b;
+  --tool-green-bg: #24352b;
+  --tool-green-border: #35513f;
+  --tool-base: #c9a8ec;
+  --tool-temple: #8b6bb8;
+  --tool-stuff: #e0bb63;
   color-scheme: dark;
 }
 
@@ -193,6 +207,18 @@
   --rank-strong-ink: #ffffff;
   --rank-player: #a3341f;
   --rank-player-ink: #ffffff;
+  /* Bloc 113, light theme: the brief's own values. White on --tool-gain
+     measures 6.5:1 for the badge, and the gain color reads 5.8:1 on a card,
+     5.5:1 on the green surface and 4.6:1 on the violet highlight. */
+  --tool-gain: #256a47;
+  --tool-gain-ink: #ffffff;
+  --tool-highlight-bg: #ddd3f5;
+  --tool-highlight-border: #b9a6e8;
+  --tool-green-bg: #e2efe7;
+  --tool-green-border: #b7d6c3;
+  --tool-base: #5b21b6;
+  --tool-temple: #a78bea;
+  --tool-stuff: #d9a441;
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -4780,5 +4806,350 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   }
   .ranking-reward-value {
     font-size: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Bloc 113: the Villes tool, as tiles.
+
+   Four sub-tabs that each used to lay their results out their own way now
+   share one vocabulary: a summary block of tiles, a per-city breakdown table
+   and a share bar. Nothing here computes anything — every figure arrives
+   already calculated, as it did before the redesign.
+   --------------------------------------------------------------------------- */
+
+/* Heading on the left, a grey chip recalling the parameters on the right. */
+.tool-summary-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.tool-summary-header .calculator-heading {
+  margin: 0;
+}
+.tool-recall {
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* One row of equal tiles, however many there are. */
+.tool-tiles {
+  display: flex;
+  gap: 0.6rem;
+}
+.tool-tiles > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.tool-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: var(--bg);
+}
+/* Bloc 113/A.7: the violet is a headline result or an N-city total, never
+   decoration — exactly one tile per sub-tab may wear it. */
+.tool-tile-highlight {
+  border-color: var(--tool-highlight-border);
+  background: var(--tool-highlight-bg);
+}
+.tool-tile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.tool-tile-label {
+  min-width: 0;
+}
+/* The badge is pushed to the title's far end, on that same line. */
+.tool-tile-head > .tool-badge {
+  margin-left: auto;
+}
+.tool-tile-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.6rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.tool-tile-unit {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.tool-badge {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--tool-gain);
+  color: var(--tool-gain-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* Bloc 113/A.8: an absolute figure is violet, a gain is green, and a source
+   that produces nothing is greyed with an em dash in place of its gap. */
+.tool-value-violet {
+  color: var(--accent-strong);
+}
+.tool-value-green {
+  color: var(--tool-gain);
+}
+.tool-value-muted {
+  color: var(--text-dim);
+}
+.tool-icon {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  /* --amber, not --gold: the palette rule reserves --gold for genuinely
+     Legendary game data (color-palette.test.ts enforces it), and --amber is
+     the currency-adjacent accent Bloc 42/C introduced for exactly this. */
+  color: var(--amber);
+}
+
+/* Armée on the left, Or on the right — the order this bloc fixes everywhere. */
+.tool-breakdowns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+.tool-breakdown-title {
+  margin-bottom: 0.8rem;
+}
+.tool-breakdown-title small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.tool-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.3rem;
+}
+.tool-table th,
+.tool-table td {
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+}
+.tool-table thead th {
+  padding-block: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tool-table tbody th,
+.tool-table tfoot th {
+  border-radius: 0.6rem 0 0 0.6rem;
+  background: var(--surface-muted);
+  font-weight: 400;
+}
+.tool-table tbody td,
+.tool-table tfoot td {
+  background: var(--surface-muted);
+}
+.tool-table tbody tr td:last-child,
+.tool-table tfoot tr td:last-child {
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+/* Numbers right-aligned under their own header, in the monospace face every
+   figure on this site uses. */
+.tool-table .tool-cell {
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+}
+.tool-table thead th.tool-cell {
+  font-family: inherit;
+}
+.tool-row-total th,
+.tool-row-total td {
+  font-weight: 700;
+}
+/* Bloc 113/A.7: the N-city row, the one violet line of the table. */
+.tool-row-grand th,
+.tool-row-grand td {
+  background: var(--tool-highlight-bg);
+  font-weight: 700;
+}
+.tool-row-grand th {
+  box-shadow: inset 1px 0 0 var(--tool-highlight-border);
+}
+
+/* Where a production comes from. Decorative: the table above says the same. */
+.tool-shares {
+  margin-top: 0.9rem;
+}
+.tool-share-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.tool-share-slice {
+  height: 100%;
+}
+.tool-share-base,
+span.tool-share-dot.tool-share-base {
+  background: var(--tool-base);
+}
+.tool-share-temple,
+span.tool-share-dot.tool-share-temple {
+  background: var(--tool-temple);
+}
+.tool-share-stuff,
+span.tool-share-dot.tool-share-stuff {
+  background: var(--tool-stuff);
+}
+.tool-share-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.tool-share-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.tool-share-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 3px;
+}
+
+/* Bloc 113/D+E: a tile that is itself a gain sits on its own green surface. */
+.tool-tiles-reskill .tool-tile,
+.tool-reward-card .tool-tile {
+  border-color: var(--tool-green-border);
+  background: var(--tool-green-bg);
+}
+
+/* Bloc 113/B: the two levels read as one range, with the target picked out. */
+.city-level-range {
+  display: flex;
+  flex: 2 1 0;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.city-level-range .calculator-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.city-level-arrow {
+  padding-bottom: 0.55rem;
+  color: var(--muted);
+}
+.city-level-target .number-stepper {
+  border-color: var(--accent-strong);
+}
+.city-level-target .number-stepper input {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+/* Bloc 113/E: two self-contained cards, side by side. */
+.tool-reward-cards {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.tool-reward-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tool-reward-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (max-width: 900px) {
+  /* Bloc 113/A.10: tiles two to a row, and the headline one across both. */
+  .tool-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tool-tile-wide {
+    grid-column: 1 / -1;
+  }
+  .tool-tile-value {
+    font-size: 1.35rem;
+  }
+  .tool-breakdowns,
+  .tool-reward-cards,
+  .tool-reward-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Bloc 113/D: the two reskill tiles go one under the other — their
+     labels name a skill and do not fit half a phone. */
+  .tool-tiles-reskill {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Each counter on its own line: its label on the left, the stepper right. */
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  /* The counter keeps a readable width but stays shrinkable: `0 0 auto`
+     sized it from the <input>'s own intrinsic width (~316px), which pushed
+     the whole page 21px wide at 393px. */
+  .city-calculators .calculator-fields-inline .number-stepper {
+    flex: 0 1 11rem;
+    min-width: 0;
+  }
+  .city-calculators .calculator-fields-inline .unit-input {
+    flex: 0 1 15rem;
+    min-width: 0;
+  }
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field)
+    > span,
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field)
+    > .calculator-field-label {
+    min-width: 0;
+  }
+  .city-level-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* The arrow only reads as one between two side-by-side counters. */
+  .city-level-arrow {
+    display: none;
+  }
+  .tool-table th,
+  .tool-table td {
+    padding: 0.5rem 0.55rem;
+  }
+  /* A source name may take two lines rather than push the table wider.
+     break-word, not anywhere: anywhere lets the column shrink below its
+     longest word, which cut "Temple" in half at 393px. */
+  .tool-table tbody th,
+  .tool-table tfoot th {
+    overflow-wrap: break-word;
   }
 }
