@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { renderWithIntl as render } from "../../../test/render-with-intl";
 
 vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => key,
+  getTranslations: async () =>
+    Object.assign((key: string) => key, {
+      has: () => false,
+    }),
+  getLocale: async () => "fr",
 }));
 vi.mock("@/auth/require-session", () => ({
   requireCapability: async () => ({
@@ -29,12 +33,15 @@ describe("EditGuidePage", () => {
     vi.mocked(prisma.guide.findUnique).mockResolvedValue({
       id: "guide-1",
       slug: "premiers-pas",
-      category: "[]",
+      category: [],
       coverImage: null,
       status: "draft",
-      title: "{}",
-      excerpt: "{}",
-      content: "{}",
+      title: { fr: "Premiers pas" },
+      excerpt: {},
+      content: {},
+      author: "claire",
+      createdAt: new Date("2026-09-01T08:00:00Z"),
+      updatedAt: new Date("2026-09-02T08:00:00Z"),
     } as unknown as Awaited<ReturnType<typeof prisma.guide.findUnique>>);
 
     render(
@@ -44,6 +51,11 @@ describe("EditGuidePage", () => {
       }),
     );
 
-    expect(screen.getByText("edit-title")).toBeInTheDocument();
+    // Bloc 119: the screen is headed by the guide it edits, not by a
+    // generic "Éditer un guide".
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Premiers pas" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("claire")).toBeInTheDocument();
   });
 });

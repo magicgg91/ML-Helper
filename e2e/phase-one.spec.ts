@@ -1952,11 +1952,15 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/guides/new");
-  await page.getByText(/Catégories du guide \(\d+ sélectionnée/).click();
-  await page.getByText("Combat & conquête", { exact: true }).click();
-  await page.getByText("Clan & stratégie collective", { exact: true }).click();
+  // Bloc 119: the categories are chips in a card of their own, not a folded
+  // block, and the cover URL sits in its own card.
+  const categories = page.getByRole("region", { name: "Catégories du guide" });
+  await categories.getByRole("button", { name: "Combat & conquête" }).click();
+  await categories
+    .getByRole("button", { name: "Clan & stratégie collective" })
+    .click();
   await page
-    .getByLabel("Image représentative")
+    .getByLabel("URL de l’image")
     .fill("https://example.com/guide-cover.jpg");
   await page.getByLabel("Titre (FR)").fill("Guide cycle complet");
   await page.getByLabel("Résumé (FR)").fill("Résumé du cycle complet");
@@ -1971,19 +1975,21 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await expect(page.locator(".w-md-editor-preview del")).toHaveText(
     "ancienne règle",
   );
-  await page.getByRole("button", { name: "Soumettre en review" }).click();
+  // rootadmin may publish, so the hand-off to review is not on their card —
+  // save, then publish from the Publication card.
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
     timeout: 15_000,
   });
   await page.getByLabel("Titre (FR)").fill("Guide édité et publié");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
     timeout: 15_000,
   });
   await page.goto("/admin/guides");
   const row = page.getByRole("row", { name: /Guide édité et publié/ });
-  await expect(row.getByRole("combobox")).toHaveValue("pending_review");
+  await expect(row.getByRole("combobox")).toHaveValue("draft");
   await row.getByRole("combobox").selectOption("published");
   await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
@@ -3105,9 +3111,9 @@ test("Bloc 90/F: admin can still edit content in a deactivated language", async 
   await b90SetLocaleActive(page, "es", false);
 
   await page.goto("/admin/guides/new");
-  const picker = page.getByLabel("Langue du guide");
-  await expect(picker.locator("option", { hasText: "ES" })).toHaveCount(1);
-  await picker.selectOption("es");
+  // Bloc 119: the languages are tabs, not a dropdown.
+  const picker = page.getByRole("tablist", { name: "Langue du guide" });
+  await picker.getByRole("tab", { name: /Español/ }).click();
   const title = page.getByLabel("Titre (ES)");
   await title.fill("Título en español");
   await expect(title).toHaveValue("Título en español");

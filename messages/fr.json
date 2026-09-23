@@ -939,7 +939,7 @@
         "evenements": "Événements & classement",
         "clan": "Clan & stratégie collective"
       },
-      "cover-image": "URL de l’image représentative",
+      "cover-image": "Image représentative",
       "cover-image-placeholder": "https://exemple.fr/image-guide.jpg",
       "cover-image-preview": "Aperçu de l’image représentative",
       "save": "Enregistrer",
@@ -952,7 +952,27 @@
       "duplicate-slug": "Un guide utilise déjà ce titre/slug.",
       "invalid": "Le guide contient des champs invalides ou incomplets.",
       "status-forbidden": "Guide enregistré, mais ton rôle ne permet pas ce changement de statut.",
-      "saved": "Guide enregistré."
+      "saved": "Guide enregistré.",
+      "new-title": "Nouveau guide",
+      "to-create": "à créer",
+      "mode-label": "Affichage de l’éditeur",
+      "mode-write": "Écrire",
+      "mode-split": "Côte à côte",
+      "mode-preview": "Aperçu",
+      "excerpt-help": "Affiché dans la liste des guides.",
+      "publication": "Publication",
+      "author": "Auteur",
+      "created-at": "Créé le",
+      "updated-at": "Modifié le",
+      "view-on-site": "Voir sur le site",
+      "back-to-draft": "Repasser en brouillon",
+      "no-cover-image": "Aucune image",
+      "cover-image-url": "URL de l’image",
+      "status": {
+        "draft": "Brouillon",
+        "pending_review": "En relecture",
+        "published": "Publié"
+      }
     },
     "tools": {
       "eyebrow": "Contenu fonctionnel",

@@ -10,8 +10,9 @@ import {
 } from "@/lib/markdown-plugins";
 import { legalNoticePlaceholders } from "@/lib/legal-notice";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
-import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
+import { AdminLocaleTabs } from "./admin-locale-tabs";
+import { MarkdownModeSwitch, type MarkdownMode } from "./admin-markdown-modes";
 import { GuideMarkdownEditor } from "./guide-markdown-editor";
 import { Pill } from "./admin-pill";
 import { useSaveStatus } from "./use-save-status";
@@ -29,8 +30,6 @@ import { useSaveStatus } from "./use-save-status";
  * single line breaks included, which neither did before.
  */
 
-type Mode = "edit" | "live" | "preview";
-
 export function AdminLegalEditor({
   initialContent,
   languageNames,
@@ -44,7 +43,7 @@ export function AdminLegalEditor({
   const [locale, setLocale] = useState<LaunchLocale>("fr");
   const [content, setContent] = useState(initialContent);
   const [saved, setSaved] = useState(initialContent);
-  const [mode, setMode] = useState<Mode>("live");
+  const [mode, setMode] = useState<MarkdownMode>("live");
   const status = useSaveStatus();
   const textareaId = useId();
 
@@ -92,12 +91,6 @@ export function AdminLegalEditor({
     }, 0);
   }
 
-  const modes: { value: Mode; label: string }[] = [
-    { value: "edit", label: t("mode-write") },
-    { value: "live", label: t("mode-split") },
-    { value: "preview", label: t("mode-preview") },
-  ];
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -144,56 +137,25 @@ export function AdminLegalEditor({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          role="tablist"
-          aria-label={t("languages-label")}
-          className="flex gap-1"
-        >
-          {launchLocales.map((code) => {
-            const empty = !(content[code] ?? "").trim();
-            return (
-              <button
-                key={code}
-                type="button"
-                role="tab"
-                aria-selected={code === locale}
-                tabIndex={code === locale ? 0 : -1}
-                onClick={() => setLocale(code)}
-                className={cn(
-                  "admin-focus inline-flex h-[var(--admin-control-h-sm)] items-center gap-2 rounded-admin-control border px-3 text-sm",
-                  code === locale
-                    ? "border-admin-accent bg-admin-accent-soft text-admin-accent-soft-ink"
-                    : "border-admin-card-border text-admin-dim hover:text-admin-text",
-                  empty && "border-dashed",
-                )}
-              >
-                {languageNames[code] ?? code.toUpperCase()}
-                {empty && (
-                  <span className="text-xs opacity-80">{t("to-create")}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <AdminLocaleTabs
+          locale={locale}
+          onChange={setLocale}
+          filled={(code) => Boolean((content[code] ?? "").trim())}
+          label={t("languages-label")}
+          languageNames={languageNames}
+          toCreateLabel={t("to-create")}
+        />
 
-        <div role="group" aria-label={t("mode-label")} className="flex gap-1">
-          {modes.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              aria-pressed={mode === item.value}
-              onClick={() => setMode(item.value)}
-              className={cn(
-                "admin-focus inline-flex h-[var(--admin-control-h-sm)] items-center rounded-admin-control border px-3 text-sm",
-                mode === item.value
-                  ? "border-admin-accent bg-admin-accent-soft text-admin-accent-soft-ink"
-                  : "border-admin-card-border text-admin-dim hover:text-admin-text",
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <MarkdownModeSwitch
+          mode={mode}
+          onChange={setMode}
+          label={t("mode-label")}
+          labels={{
+            edit: t("mode-write"),
+            live: t("mode-split"),
+            preview: t("mode-preview"),
+          }}
+        />
       </div>
 
       <GuideMarkdownEditor

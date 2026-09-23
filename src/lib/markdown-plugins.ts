@@ -15,11 +15,15 @@ export const markdownRemarkPlugins = [remarkGfm];
  * in the admin preview and on the public page alike. This adds the `<br>` a
  * writer means by pressing Enter once.
  *
- * Deliberately NOT the default: guides are long-form prose, often hard-
- * wrapped at 80 columns by whoever wrote them, and turning every wrap into a
- * visible break would rewrite pages nobody asked to change. The legal notice
- * opts in; the guides keep CommonMark (Bloc 119 §3, "vérifie que le rendu des
- * guides n'est pas modifié sans le vouloir").
+ * Bloc 119 §3 bis asks for "le même correctif de retours à la ligne" on the
+ * guide editor, so guides opt in too — the public page and the admin preview
+ * together, which is the point: a preview that renders differently from the
+ * page is not a preview. §3's caution was about not changing the guides
+ * *unintentionally*; this is intentional, and it does change how an already
+ * published guide reads if its author hard-wrapped their paragraphs. Dropping
+ * `breaks` from the guide page and the guide editor reverts it in two lines.
+ *
+ * Still not the default: a caller says which rendering it wants.
  */
 export const markdownRemarkPluginsWithBreaks = [remarkGfm, remarkBreaks];
 // Bloc 56: rehypeRaw must run before rehypeSanitize — it parses raw HTML

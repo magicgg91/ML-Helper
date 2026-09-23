@@ -107,8 +107,12 @@ export default async function GuidePage({
           // Bloc 91/M5: the page owns the <h1> (the guide title above), so the
           // body's Markdown headings are normalized to sit under it — a
           // leading `# …` becomes an <h2> instead of a second <h1>.
+          // Bloc 119 §3 bis: single line breaks are honoured here and in the
+          // admin preview alike — a preview that renders differently from the
+          // page is not a preview.
           <MarkdownRenderer
             markdown={localizedText(guide.content, locale)}
+            breaks
             shiftHeadings
           />
         ) : (

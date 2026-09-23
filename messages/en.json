@@ -939,7 +939,7 @@
         "evenements": "Events & ranking",
         "clan": "Clan & collective strategy"
       },
-      "cover-image": "Representative image URL",
+      "cover-image": "Cover image",
       "cover-image-placeholder": "https://example.com/guide-cover.jpg",
       "cover-image-preview": "Representative image preview",
       "save": "Save",
@@ -952,7 +952,27 @@
       "duplicate-slug": "A guide already uses this title/slug.",
       "invalid": "The guide contains invalid or incomplete fields.",
       "status-forbidden": "Guide saved, but your role does not allow this status change.",
-      "saved": "Guide saved."
+      "saved": "Guide saved.",
+      "new-title": "New guide",
+      "to-create": "to create",
+      "mode-label": "Editor view",
+      "mode-write": "Write",
+      "mode-split": "Side by side",
+      "mode-preview": "Preview",
+      "excerpt-help": "Shown in the guides list.",
+      "publication": "Publication",
+      "author": "Author",
+      "created-at": "Created on",
+      "updated-at": "Updated on",
+      "view-on-site": "View on the site",
+      "back-to-draft": "Back to draft",
+      "no-cover-image": "No image",
+      "cover-image-url": "Image URL",
+      "status": {
+        "draft": "Draft",
+        "pending_review": "In review",
+        "published": "Published"
+      }
     },
     "tools": {
       "eyebrow": "Functional content",
