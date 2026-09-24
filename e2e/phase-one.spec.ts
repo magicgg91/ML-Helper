@@ -1020,16 +1020,14 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // merge-cost, dismantle, main reference) in one click — edit two of them
   // and confirm one save persists both, not just the last one touched.
   await page.getByLabel("Or", { exact: true }).fill("0,5");
-  await page.getByLabel("Libellé de l’indicateur 1 Commun").fill("700");
+  await page.getByLabel("Fusion Commun").fill("700");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   // Wait for the async save to actually complete before reloading, or the
   // reload can race ahead of the PUT requests and read back stale defaults.
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Or", { exact: true })).toHaveValue("0,5");
-  await expect(page.getByLabel("Libellé de l’indicateur 1 Commun")).toHaveValue(
-    "700",
-  );
+  await expect(page.getByLabel("Fusion Commun")).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
