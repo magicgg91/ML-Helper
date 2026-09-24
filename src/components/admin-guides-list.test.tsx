@@ -93,10 +93,8 @@ const rows: AdminGuideRow[] = [
   },
 ];
 
-function renderList(
-  props: Partial<Parameters<typeof AdminGuidesList>[0]> = {},
-) {
-  render(
+function list(props: Partial<Parameters<typeof AdminGuidesList>[0]> = {}) {
+  return (
     <NextIntlClientProvider locale="fr" messages={messages}>
       <AdminGuidesList
         rows={rows}
@@ -106,8 +104,14 @@ function renderList(
         canDelete
         {...props}
       />
-    </NextIntlClientProvider>,
+    </NextIntlClientProvider>
   );
+}
+
+function renderList(
+  props: Partial<Parameters<typeof AdminGuidesList>[0]> = {},
+) {
+  return render(list(props));
 }
 
 describe("Bloc 119: the Guides table", () => {
@@ -119,6 +123,26 @@ describe("Bloc 119: the Guides table", () => {
     );
     // Europe/Paris, in the admin's language.
     expect(screen.getByText("claire · créé le 01/09/2026")).toBeInTheDocument();
+  });
+
+  // Bloc 126/D: the rows live in state because deleting a guide and changing
+  // its status edit the list in place, and that state used to be seeded once
+  // and never again. Switching the admin to English is a server re-render
+  // with the same guides under their English titles: the shell around this
+  // table repainted, the table did not, and the titles stayed French until a
+  // full page load.
+  it("takes the rows the server re-renders, so a language change lands", () => {
+    const { rerender } = renderList();
+    expect(screen.getByRole("link", { name: "Les clans" })).toBeInTheDocument();
+    rerender(
+      list({
+        rows: rows.map((row) =>
+          row.id === "g2" ? { ...row, title: "The clans" } : row,
+        ),
+      }),
+    );
+    expect(screen.getByRole("link", { name: "The clans" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Les clans" })).toBeNull();
   });
 
   it("shows the last change as a short date", () => {

@@ -2105,27 +2105,35 @@ test("the guides list reads a guide in the admin's own language", async ({
   const frenchOnly = page.url();
 
   await page.goto("/admin/guides");
+  // `exact`, because the translation chips beside the title are links too and
+  // their labels name the guide ("Modifier la version English de …").
   await expect(
-    page.getByRole("link", { name: "Les deux langues" }),
+    page.getByRole("link", { name: "Les deux langues", exact: true }),
   ).toBeVisible();
 
-  // Switch the admin itself to English, from the control in the sidebar.
+  // Switch the admin itself to English, from the control in the sidebar, and
+  // stay on the page: the toggle refreshes in place rather than reloading, so
+  // this is also what proves the table takes the rows that come back.
   await page
     .getByRole("group", { name: /Langue|Language/ })
     .getByRole("button", { name: "EN" })
     .click();
+  // The page around the table is the first thing the refresh repaints; wait
+  // for it, so the assertions below are about the table and not the request.
   await expect(
-    page.getByRole("heading", { level: 1, name: "Guides" }),
+    page.getByText(
+      "The guides on the site, their translations and their status.",
+    ),
   ).toBeVisible();
 
   // The guide that has both reads English...
   await expect(
-    page.getByRole("link", { name: "Both languages" }),
+    page.getByRole("link", { name: "Both languages", exact: true }),
   ).toBeVisible();
   // ...and the one written in French alone still reads, rather than showing
   // an empty cell where its title belongs.
   await expect(
-    page.getByRole("link", { name: "Le français seulement" }),
+    page.getByRole("link", { name: "Le français seulement", exact: true }),
   ).toBeVisible();
 
   // And the editor opens on the language the admin is working in.
