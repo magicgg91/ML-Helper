@@ -844,8 +844,8 @@ select:where(:not(.admin-shell select)) {
    Bloc 53/D: same exclusion for /guides and /referentiels' own smaller
    titles, added below. */
 .hero h1,
-.public-main > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title),
-.guide-shell h1 {
+.public-main
+  > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title) {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
   font-size: clamp(2.25rem, 6vw, 4.8rem);
@@ -892,9 +892,10 @@ select:where(:not(.admin-shell select)) {
   gap: 0.65rem;
   margin-top: 1rem;
 }
+/* Bloc 129 §3.5 : .guide-shell quitte ce groupe — l'article d'un guide
+   n'est plus une carte posée sur la page, c'est la colonne de lecture. */
 .public-card,
-.empty-state,
-.guide-shell {
+.empty-state {
   padding: 0.9rem 1rem;
   border: 1px solid var(--border);
   border-radius: 1rem;
@@ -6104,5 +6105,269 @@ span.tool-share-dot.tool-share-stuff {
      rest of the phone layout uses. */
   .tool-tile-row .tool-tile-value {
     font-size: 1.75rem;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.5 — la page d'un guide.
+   --------------------------------------------------------------------- */
+.guide-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21.25rem;
+  gap: 2.5rem;
+  align-items: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.guide-header h1 {
+  margin: 0.5rem 0 1rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 48 px, et plus le dégradé violet (§1.1 le supprime). */
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.guide-lead {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+/* §3.5 : les métadonnées en pastilles, sans émoji et sans barre à gauche. */
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text3);
+  font-size: 0.8rem;
+}
+.guide-header-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* §3.5 : illustration carrée de 340 px. */
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  background: var(--ph);
+}
+.guide-header-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-body {
+  display: grid;
+  grid-template-columns: 16.25rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+  padding-top: 2rem;
+}
+.guide-aside {
+  position: sticky;
+  top: 2rem;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+}
+.guide-toc {
+  width: 100%;
+}
+.guide-toc-title {
+  margin: 0 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.guide-toc ul {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-toc a {
+  display: block;
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 2px solid var(--divider);
+  color: var(--text3);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.guide-toc a:hover {
+  color: var(--accent);
+}
+/* §3.5 : la section en cours, surlignée par sa bordure gauche. */
+.guide-toc a[aria-current="location"] {
+  border-left-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.guide-shell {
+  /* §3.5 : la largeur de lecture. */
+  max-width: 46.25rem;
+}
+.guide-shell .markdown-content {
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.guide-shell .markdown-content h2 {
+  margin: 2.5rem 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.75rem;
+  line-height: 1.2;
+  scroll-margin-top: 2rem;
+}
+.guide-shell .markdown-content h3 {
+  margin: 2rem 0 0.75rem;
+  color: var(--text);
+  font-size: 1.2rem;
+  scroll-margin-top: 2rem;
+}
+/* §3.5 : l'encadré « À retenir ». */
+.guide-callout {
+  margin: 1.75rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 0.9rem;
+  background: var(--accent-soft);
+}
+.guide-callout > * {
+  margin: 0;
+}
+.guide-callout > * + * {
+  margin-top: 0.6rem;
+}
+.guide-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.guide-callout-title::before {
+  content: "★";
+  font-size: 0.9rem;
+}
+/* §3.5 : les illustrations, avec leur légende. */
+.guide-figure {
+  margin: 2rem 0;
+}
+.guide-figure-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--ph);
+}
+.guide-figure-media img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+.guide-figure figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+/* §3.5 : « Continuer avec ». */
+.guide-continue {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.guide-continue h2 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.35rem;
+}
+.guide-continue ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-continue a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.guide-continue a:hover {
+  border-color: var(--accent);
+}
+.guide-continue-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--ph);
+}
+.guide-continue-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-continue-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.guide-continue-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.guide-continue-arrow {
+  margin-left: auto;
+  color: var(--accent);
+}
+@media (max-width: 62rem) {
+  .guide-header,
+  .guide-body,
+  .guide-continue ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide-body {
+    gap: 2rem;
+  }
+  .guide-aside {
+    position: static;
   }
 }

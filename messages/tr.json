@@ -587,7 +587,13 @@
     "no-results": "Bu filtrelere uyan rehber yok.",
     "detail": {
       "eyebrow": "{category} kategorisinde rehber",
-      "not-translated": "Bu rehber henüz bu dile çevrilmedi."
+      "not-translated": "Bu rehber henüz bu dile çevrilmedi.",
+      "toc": "İçindekiler",
+      "intro": "Giriş",
+      "reading-time": "Okuma: ~{minutes} dk",
+      "callout": "Aklında kalsın",
+      "continue": "Şununla devam et",
+      "kind": "Rehber"
     },
     "index-intro": "Stratejini keskinleştir: oyunun mekaniklerini anlamak ve daha rahat ilerlemek için topluluğun rehberleri.",
     "tool-pill": "Araç: {name}",

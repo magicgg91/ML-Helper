@@ -587,7 +587,13 @@
     "no-results": "Aucun guide ne correspond à ces filtres.",
     "detail": {
       "eyebrow": "Guide · {category}",
-      "not-translated": "Ce guide n’est pas encore traduit dans cette langue."
+      "not-translated": "Ce guide n’est pas encore traduit dans cette langue.",
+      "toc": "Sommaire",
+      "intro": "Introduction",
+      "reading-time": "Lecture : ~{minutes} min",
+      "callout": "À retenir",
+      "continue": "Continuer avec",
+      "kind": "Guide"
     },
     "index-intro": "Affûte ta stratégie : les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
     "tool-pill": "Outil : {name}",

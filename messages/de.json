@@ -587,7 +587,13 @@
     "no-results": "Keine Anleitung entspricht diesen Filtern.",
     "detail": {
       "eyebrow": "Anleitung in {category}",
-      "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt."
+      "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt.",
+      "toc": "Inhalt",
+      "intro": "Einleitung",
+      "reading-time": "Lesezeit: ~{minutes} Min.",
+      "callout": "Zum Merken",
+      "continue": "Weiter mit",
+      "kind": "Guide"
     },
     "index-intro": "Schärfe deine Strategie: die Guides der Community, um die Spielmechaniken zu verstehen und ruhiger voranzukommen.",
     "tool-pill": "Werkzeug: {name}",

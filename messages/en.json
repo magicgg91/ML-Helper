@@ -587,7 +587,13 @@
     "no-results": "No guide matches these filters.",
     "detail": {
       "eyebrow": "Guide in {category}",
-      "not-translated": "This guide has not been translated into this language yet."
+      "not-translated": "This guide has not been translated into this language yet.",
+      "toc": "Contents",
+      "intro": "Introduction",
+      "reading-time": "Read: ~{minutes} min",
+      "callout": "Key point",
+      "continue": "Continue with",
+      "kind": "Guide"
     },
     "index-intro": "Sharpen your strategy: community guides to understand the game's mechanics and progress more calmly.",
     "tool-pill": "Tool: {name}",

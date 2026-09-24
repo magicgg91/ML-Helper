@@ -587,7 +587,13 @@
     "no-results": "Ninguna guía coincide con estos filtros.",
     "detail": {
       "eyebrow": "Guía en {category}",
-      "not-translated": "Esta guía aún no se ha traducido a este idioma."
+      "not-translated": "Esta guía aún no se ha traducido a este idioma.",
+      "toc": "Índice",
+      "intro": "Introducción",
+      "reading-time": "Lectura: ~{minutes} min",
+      "callout": "Para recordar",
+      "continue": "Continúa con",
+      "kind": "Guía"
     },
     "index-intro": "Afina tu estrategia: las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
     "tool-pill": "Herramienta: {name}",

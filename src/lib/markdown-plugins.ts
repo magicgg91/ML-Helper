@@ -2,6 +2,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { headingId } from "./guide-outline";
 import { legalNoticePlaceholderPattern } from "./legal-notice";
 
 export const markdownRemarkPlugins = [remarkGfm];
@@ -165,4 +166,182 @@ export const markdownRehypePluginsWithPlaceholders = [
   rehypeRaw,
   rehypeSanitize,
   rehypeHighlightPlaceholders,
+];
+
+/**
+ * Bloc 129 §3.5 : une ancre sur chaque titre, pour que le sommaire y mène.
+ *
+ * Après la désinfection, comme le surligneur des mentions légales et pour la
+ * même raison : le schéma de rehype-sanitize ne laisse pas passer un `id`
+ * arbitraire, et celui-ci est fabriqué par ce code à partir d'un texte déjà
+ * désinfecté.
+ *
+ * Les identifiants sont attribués à tous les titres dans l'ordre du
+ * document, pas seulement aux H2 : guideOutline fait exactement pareil, donc
+ * les deux suites de suffixes restent alignées quand deux titres portent le
+ * même libellé.
+ */
+export function rehypeHeadingIds() {
+  return (tree: HastNode): void => {
+    const taken = new Set<string>();
+    forEachNode(tree, (node) => {
+      if (headingLevel(node) === null) return;
+      const withProps = node as HastNode & {
+        properties?: Record<string, unknown>;
+      };
+      withProps.properties = {
+        ...withProps.properties,
+        id: headingId(textOf(node), taken),
+      };
+    });
+  };
+}
+
+/** Le texte d'un nœud, enfants compris — le libellé d'un titre. */
+function textOf(node: HastNode): string {
+  const parts: string[] = [];
+  forEachNode(node, (child) => {
+    const value = (child as HastNode & { value?: string }).value;
+    if (child.type === "text" && typeof value === "string") parts.push(value);
+  });
+  return parts.join("").trim();
+}
+
+/** La ligne `[ILLUSTRATION — légende]` que les guides utilisent aujourd'hui. */
+const illustrationPattern = /^\[ILLUSTRATION\s*[—-]\s*([\s\S]*)\]$/;
+
+/** Le marqueur d'un encadré « À retenir » en tête de citation. */
+const calloutPattern = /^\[!retenir\]\s*/i;
+
+/**
+ * Bloc 129 §3.5 : deux blocs que le corps d'un guide peut porter.
+ *
+ * 1. Un encadré « À retenir », écrit `> [!retenir]` en tête de citation —
+ *    la syntaxe proposée par le brief, et celle des alertes GitHub, donc
+ *    déjà familière. Une citation ordinaire reste une citation.
+ * 2. Les lignes `[ILLUSTRATION — légende]`, qui deviennent une vraie figure
+ *    avec sa légende, et une image ordinaire de même. L'emplacement reste
+ *    vide tant qu'aucun fichier n'est fourni (§1.3).
+ *
+ * Après la désinfection : `aside`, `figure` et `figcaption` ne sont pas dans
+ * le schéma de rehype-sanitize, donc insérés avant, ils disparaîtraient sans
+ * laisser de trace. Ce code n'ajoute que des éléments à lui, autour de texte
+ * déjà désinfecté.
+ */
+export function rehypeGuideBlocks(labels: {
+  callout: string;
+  illustration: string;
+}) {
+  return (tree: HastNode): void => {
+    forEachNode(tree, (node) => {
+      if (!node.children) return;
+      node.children = node.children.map((child) => {
+        const callout = asCallout(child, labels.callout);
+        if (callout) return callout;
+        return asFigure(child, labels.illustration) ?? child;
+      });
+    });
+  };
+}
+
+type HastElement = HastNode & {
+  properties?: Record<string, unknown>;
+  value?: string;
+};
+
+function asCallout(node: HastNode, label: string): HastNode | undefined {
+  if (node.type !== "element" || node.tagName !== "blockquote")
+    return undefined;
+  const paragraph = node.children?.find(
+    (child) => child.type === "element" && child.tagName === "p",
+  );
+  const first = paragraph?.children?.[0] as HastElement | undefined;
+  if (!first || first.type !== "text" || typeof first.value !== "string")
+    return undefined;
+  if (!calloutPattern.test(first.value)) return undefined;
+  first.value = first.value.replace(calloutPattern, "");
+  return {
+    type: "element",
+    tagName: "aside",
+    properties: { className: ["guide-callout"] },
+    children: [
+      {
+        type: "element",
+        tagName: "p",
+        properties: { className: ["guide-callout-title"] },
+        children: [{ type: "text", value: label } as HastElement],
+      } as HastNode,
+      ...(node.children ?? []),
+    ],
+  } as HastNode;
+}
+
+function asFigure(node: HastNode, placeholder: string): HastNode | undefined {
+  if (node.type !== "element" || node.tagName !== "p") return undefined;
+  const children = node.children ?? [];
+  const only = children.length === 1 ? (children[0] as HastElement) : undefined;
+  // Une image seule dans son paragraphe : figure + légende tirée de l'alt.
+  if (only?.type === "element" && only.tagName === "img") {
+    const alt = String((only.properties as { alt?: unknown })?.alt ?? "");
+    return figure(only, alt);
+  }
+  // La ligne `[ILLUSTRATION — …]` : l'emplacement vide et sa légende.
+  if (only?.type !== "text" || typeof only.value !== "string") return undefined;
+  const match = illustrationPattern.exec(only.value.trim());
+  if (!match) return undefined;
+  return figure(
+    {
+      type: "element",
+      tagName: "span",
+      properties: { className: ["image-placeholder"] },
+      children: [{ type: "text", value: placeholder } as HastElement],
+    } as HastNode,
+    match[1]!.trim(),
+  );
+}
+
+function figure(media: HastNode, caption: string): HastNode {
+  return {
+    type: "element",
+    tagName: "figure",
+    properties: { className: ["guide-figure"] },
+    children: [
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["guide-figure-media"] },
+        children: [media],
+      } as HastNode,
+      ...(caption
+        ? [
+            {
+              type: "element",
+              tagName: "figcaption",
+              // `properties` doit exister, même vide : le convertisseur
+              // hast → React le lit sans le tester.
+              properties: {},
+              children: [{ type: "text", value: caption } as HastElement],
+            } as HastNode,
+          ]
+        : []),
+    ],
+  } as HastNode;
+}
+
+/**
+ * Le pipeline d'un guide : HTML brut, renumérotation des titres,
+ * désinfection, puis les ancres et les deux blocs du §3.5.
+ */
+export const guideRehypePlugins = (labels: {
+  callout: string;
+  illustration: string;
+}) => [
+  rehypeRaw,
+  rehypeShiftHeadings,
+  rehypeSanitize,
+  rehypeHeadingIds,
+  // Refermé sur ses libellés plutôt que passé en options : react-markdown
+  // attend un tuple mutable, et la fermeture dit la même chose sans avoir à
+  // relâcher le type.
+  () => rehypeGuideBlocks(labels),
 ];

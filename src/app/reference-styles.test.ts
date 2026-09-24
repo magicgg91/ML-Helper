@@ -61,7 +61,10 @@ describe("Bloc 38 public reference/homepage styles", () => {
 
   it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
     const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
+      // Bloc 129 §3.5 : .guide-shell h1 a quitté ce groupe — le titre d'un
+      // guide vit maintenant dans son en-tête à deux colonnes, avec sa
+      // propre taille (§1.1). La règle générique et ses exclusions restent.
+      /\.hero h1,\s*\n\.public-main\s*>\s*h1([^,{]*)\s*{/,
     );
     expect(match).not.toBeNull();
     expect(match![1]).toContain(":not(.tools-page-title)");
@@ -72,7 +75,10 @@ describe("Bloc 38 public reference/homepage styles", () => {
   // treatment, added to the same exclusion list above.
   it("Bloc53/D: also excludes .guides-page-title/.referentiels-page-title from the generic hero-title rule", () => {
     const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
+      // Bloc 129 §3.5 : .guide-shell h1 a quitté ce groupe — le titre d'un
+      // guide vit maintenant dans son en-tête à deux colonnes, avec sa
+      // propre taille (§1.1). La règle générique et ses exclusions restent.
+      /\.hero h1,\s*\n\.public-main\s*>\s*h1([^,{]*)\s*{/,
     );
     expect(match).not.toBeNull();
     expect(match![1]).toContain(":not(.guides-page-title)");
