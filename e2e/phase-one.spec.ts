@@ -925,8 +925,11 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
+  // Bloc 125 §2: the admin names this button in its own words ("Passer en
+  // thème sombre / clair"), which the public header does not — it keeps the
+  // wording it had. Same button, same glyph, same behaviour.
   await expect(
-    page.getByRole("button", { name: "Activer le mode clair" }),
+    page.getByRole("button", { name: "Passer en thème clair" }),
   ).toHaveText("☀");
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
@@ -990,9 +993,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("link", { name: "Modifier" })
     .click();
   await expect(
-    page.getByRole("heading", {
-      name: "Éditer les Équipements de Combat",
-    }),
+    page.getByRole("heading", { level: 1, name: "Équipements de Combat" }),
   ).toBeVisible({ timeout: 15_000 });
   // Bloc 119: the 180 rows are grouped into the sets they belong to, folded
   // by default — the whole point of the rewrite. Unfold one and its own rows
@@ -1061,9 +1062,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
-  await expect(
-    page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Templiers" })).toBeVisible();
   // Exact match: the presentation table on the same screen carries "Base
   // temple de …" fields, which otherwise substring-match this locator.
   await page.getByLabel("Base", { exact: true }).fill("200");
@@ -1103,7 +1102,8 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
-    page.getByRole("heading", { name: "Paramètres des Gemmes" }),
+    // The h1 exactly: a section below it is headed "Prix d’achat des gemmes…".
+    page.getByRole("heading", { level: 1, name: "Gemmes" }),
   ).toBeVisible();
 
   await page.goto("/admin");
@@ -1482,15 +1482,19 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .getByLabel("Description de l’événement 1")
     .fill("Enrôle des troupes pour la ligue.");
   // Bloc 79/B: buttons instead of a <select> for the fixed 3-value enum.
+  // Bloc 125 §6: the same segmented control as the sidebar's language pair —
+  // three loose buttons did not say that picking one unpicks the others.
   await page
-    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
-    .getByRole("radio", { name: "48h" })
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
     .click();
   // Bloc 119: an event is one line, and its tiers appear under it only once
   // it is unfolded — an event you have just added opens on its own, so there
-  // is nothing to click here.
+  // is nothing to click here. Bloc 125 §6: the row carries no title of its
+  // own any more (the name was printed twice), so the chevron is named by
+  // what it folds.
   await expect(
-    page.getByRole("button", { name: /^Recruteur/ }),
+    page.getByRole("button", { name: "Paliers (0) de l’événement 1" }),
   ).toHaveAttribute("aria-expanded", "true");
   await page.getByTestId("add-tier-bronze-0").click();
   await page
@@ -1580,8 +1584,8 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
   await page
-    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
-    .getByRole("radio", { name: "48h" })
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
     .click();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
@@ -3404,8 +3408,10 @@ test("every admin screen stays English for a reader browsing publicly in German"
       page.getByRole("link", { name: "Voir le site public" }),
     ).toHaveCount(0);
     // And the two languages the admin does offer — no more, no fewer.
+    // Bloc 125 §2: read FR | EN, the order the maquette asks for. The list
+    // itself is unchanged; only the order it is drawn in.
     const toggle = page.getByRole("group", { name: "Language" });
-    await expect(toggle.getByRole("button")).toHaveText(["EN", "FR"]);
+    await expect(toggle.getByRole("button")).toHaveText(["FR", "EN"]);
     await expect(toggle.getByRole("button", { name: "EN" })).toHaveAttribute(
       "aria-pressed",
       "true",
