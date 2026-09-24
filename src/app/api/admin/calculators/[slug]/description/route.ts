@@ -6,6 +6,7 @@ import { isReferenceCalculatorSlug } from "@/lib/admin-tools";
 import { prisma } from "@/lib/prisma";
 import { revalidateContent } from "@/lib/revalidate-content";
 import {
+  parseToolDescription,
   toolDescriptionMaxLength,
   toolDescriptionToStore,
 } from "@/lib/tool-description";
@@ -30,6 +31,8 @@ import { launchLocales } from "@/lib/translations";
 // had to be caught by asking the route rather than by using the screen.
 // Unknown locales are still refused, so a key the site does not ship cannot
 // be written into the row.
+//
+// Accepting a partial body means honouring it: see the merge below.
 const schema = z.object({
   description: z.partialRecord(
     z.enum(launchLocales),
@@ -59,7 +62,18 @@ export async function PATCH(
       { status: 404 },
     );
 
-  const description = toolDescriptionToStore(parsed.data.description);
+  // PATCH, and it behaves like one: a locale the body carries is written, a
+  // locale it omits is left as it was found, and a locale sent blank is
+  // cleared. Storing `parsed.data.description` on its own would have made a
+  // partial body destructive — `toolDescriptionToStore` reads every launch
+  // locale, so an omitted one came out blank and was dropped from the row,
+  // deleting a translation the caller never mentioned. The panel sends all
+  // five languages every time, so no screen could ever have shown this; the
+  // route test beside this file asks with one language, which does.
+  const description = toolDescriptionToStore({
+    ...parseToolDescription(before.description),
+    ...parsed.data.description,
+  });
   const updated = await prisma.$transaction(async (tx) => {
     const row = await tx.calculator.update({
       where: { slug },

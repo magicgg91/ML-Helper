@@ -121,6 +121,36 @@ describe("Bloc 130: describing a tool or a reference", () => {
     expect(field()).toHaveValue("");
   });
 
+  // Codex review on PR #151: Cancel, Escape and the backdrop all leave the
+  // panel mounted — closing it is the parent dropping its target. The draft
+  // used to be seeded once per row, so reopening the same row brought back
+  // the text the admin had walked away from, and the next save stored it.
+  it("forgets a draft the admin cancelled, on the same row", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ description: {} }), { status: 200 }),
+      );
+    const view = (row: typeof target | undefined) => (
+      <NextIntlClientProvider locale="fr" messages={fr}>
+        <DescriptionPanel target={row} onClose={vi.fn()} onSaved={vi.fn()} />
+      </NextIntlClientProvider>
+    );
+    const { rerender } = render(view(target));
+    fireEvent.change(field(), { target: { value: "Un brouillon abandonné." } });
+
+    rerender(view(undefined));
+    rerender(view(target));
+
+    expect(field()).toHaveValue("Le prix d’une ville.");
+    // And what a save would store, which is the damage the stale draft did.
+    save();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(
+      JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).description.fr,
+    ).toBe("Le prix d’une ville.");
+  });
+
   it("says which languages the public cannot see", () => {
     renderPanel({ hiddenLocales: ["de"], languageNames: { de: "Deutsch" } });
     expect(

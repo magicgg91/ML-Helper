@@ -63,22 +63,30 @@ export function DescriptionPanel({
   const t = useTranslations("admin.descriptions");
   const editor = useTranslations("admin.editor");
   const [locale, setLocale] = useState<LaunchLocale>("fr");
-  // Keyed on the row: opening another one starts from its own text rather
-  // than from what the previous panel was showing.
+  // Keyed on the row being edited: opening another one — or the same one
+  // again — starts from its own stored text rather than from what the
+  // previous panel was showing.
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<string>();
   const status = useSaveStatus();
   const fieldId = useId();
 
-  if (target && editing !== target.slug) {
-    setEditing(target.slug);
-    setDraft(
-      Object.fromEntries(
-        launchLocales.map((code) => [code, target.description[code] ?? ""]),
-      ),
-    );
-    setLocale("fr");
-    status.reset();
+  // Re-seeded on every open cycle, not once per row: `editing` is cleared
+  // when the panel closes, so reopening the same row starts from what is
+  // stored. Keeping the slug across a close made a cancelled draft come
+  // back — Cancel, Escape and the backdrop all leave the panel mounted, and
+  // the next save would have persisted text the admin had discarded.
+  if (target?.slug !== editing) {
+    setEditing(target?.slug);
+    if (target) {
+      setDraft(
+        Object.fromEntries(
+          launchLocales.map((code) => [code, target.description[code] ?? ""]),
+        ),
+      );
+      setLocale("fr");
+      status.reset();
+    }
   }
 
   async function save() {
