@@ -14,10 +14,23 @@ const lightBlock = globalsCss.slice(
   globalsCss.indexOf(':root[data-theme="light"] body'),
 );
 
-function extractHex(block: string, name: string): string {
-  const match = new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6});`).exec(block);
+/**
+ * La couleur réellement portée par un jeton, alias compris.
+ *
+ * Bloc 129 : la moitié des anciens noms (--bg-panel, --text-dim,
+ * --surface-muted…) sont devenus des alias des jetons du §1.2. Sans cette
+ * résolution, chaque assertion ci-dessous s'arrêterait sur « not found » au
+ * lieu de vérifier la couleur — ce qui reviendrait à ne plus rien vérifier.
+ */
+function extractHex(block: string, name: string, seen: string[] = []): string {
+  const match = new RegExp(`--${name}:\\s*([^;]+);`).exec(block);
   if (!match) throw new Error(`--${name} not found in the given CSS block`);
-  return match[1];
+  const value = match[1]!.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
+  const alias = /^var\(--([a-z0-9-]+)\)$/.exec(value);
+  if (!alias || seen.includes(name))
+    throw new Error(`--${name} resolves to "${value}", not a hex color`);
+  return extractHex(block, alias[1]!, [...seen, name]);
 }
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {
@@ -41,10 +54,34 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   };
 }
 
-// Blue-slate/anthracite range: wide enough to allow the existing palette's
-// hue (~214-220°) while still excluding brown (~20-40°) and the violet
-// accent's own hue (~260-280°) from ever being used for a background.
-const blueSlateHueRange = { min: 190, max: 250 };
+// Plage de teintes des neutres. Elle couvrait l'ardoise bleutée d'origine
+// (~214-220°) ; le Bloc 129 §1.2 retiente la rampe sombre vers le violet de
+// l'accent (~246-251°) et garde la rampe claire bleutée (~223-228°). Le
+// garde-fou reste le même : ni brun (~20-40°), ni le violet franc de
+// l'accent lui-même (~260-280°), jamais un fond neutre pur.
+const blueSlateHueRange = { min: 190, max: 255 };
+
+/** Le rapport de contraste WCAG entre deux couleurs hex. */
+function contrastRatio(foreground: string, background: string): number {
+  const luminance = (hex: string) => {
+    const value = Number.parseInt(hex.slice(1), 16);
+    const channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(
+      (channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      },
+    );
+    return (
+      channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+    );
+  };
+  const [lighter, darker] = [luminance(foreground), luminance(background)].sort(
+    (a, b) => b - a,
+  );
+  return (lighter! + 0.05) / (darker! + 0.05);
+}
 
 describe("color palette — violet accent, gold reserved for legendary", () => {
   it("points --accent and --accent-strong at violet, not gold, in both themes", () => {
@@ -89,8 +126,12 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     expect(globalsCss).not.toMatch(/rgb\(201 160 74/);
   });
 
+  // Bloc 129 §1.2 : --bg-panel-raised suit --raised, que le brief veut
+  // blanc pur en thème clair (c'est l'onglet actif, posé sur une carte
+  // elle-même teintée). La page et les cartes, elles, restent teintées —
+  // c'est ce que cette règle protégeait, et elle le protège toujours.
   it("keeps the light theme tinted (never pure white), same blue family as dark", () => {
-    for (const name of ["bg", "bg-panel", "bg-panel-raised", "surface-muted"]) {
+    for (const name of ["bg", "bg-panel", "surface-muted"]) {
       const hex = extractHex(lightBlock, name);
       expect(hex.toLowerCase()).not.toBe("#ffffff");
       const { h, s } = hexToHsl(hex);
@@ -100,36 +141,102 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     }
   });
 
-  it("Bloc 34/F: lightens the dark theme's background family by one notch, same hue", () => {
-    // A 2nd tester pass asked for the dark navy/anthracite background to be
-    // a little brighter — not a retint, not a jump to a light background.
-    // Locks in the exact tokens agreed on, and checks each new hue matches
-    // its pre-Bloc-34 value exactly, so a future change can't silently
-    // drift the hue while "just" nudging lightness.
-    const before: Record<string, string> = {
-      bg: "#12151b",
-      "bg-panel": "#191d25",
-      "bg-panel-raised": "#20252f",
-      border: "#2b313d",
-      "surface-muted": "#252a34",
+  // Bloc 129 §1.2 remplace ici le verrou du Bloc 34/F, qui figeait les cinq
+  // hex de la rampe anthracite bleutée (--bg #1b2029, --bg-panel #222833,
+  // --bg-panel-raised #29303d, --border #343c4a, --surface-muted #2f3541) et
+  // vérifiait que le Bloc 34 n'avait fait que les éclaircir. Cette palette
+  // n'existe plus : le brief la remplace entièrement par les 21 jetons
+  // ci-dessous. Le verrou est donc reporté sur la nouvelle table — et il
+  // couvre les 21, pas 5, si bien qu'une valeur ne peut plus dériver
+  // silencieusement du §1.2 qu'un relecteur a validé.
+  it("Bloc 129 §1.2: porte exactement les 21 jetons du brief, dans les deux thèmes", () => {
+    const brief = {
+      dark: {
+        bg: "#14131a",
+        surface: "#1d1c26",
+        sunk: "#18171f",
+        raised: "#2a2740",
+        border: "#2f2d3b",
+        strong: "#3d3a4c",
+        divider: "#2a2835",
+        dashed: "#4b4859",
+        field: "#17161e",
+        kbd: "#26242f",
+        footer: "#100f15",
+        text: "#edebf4",
+        text2: "#d6d3e2",
+        text3: "#bab6c8",
+        muted: "#9d99ae",
+        accent: "#b8a0f5",
+        "accent-soft": "#241d3c",
+        "accent-border": "#43366b",
+        "accent-solid": "#a386ee",
+        "on-accent": "#15121f",
+        ph: "#262432",
+      },
+      light: {
+        bg: "#e5e7ec",
+        surface: "#f2f3f6",
+        sunk: "#e9ebf0",
+        raised: "#ffffff",
+        border: "#d3d6dd",
+        strong: "#c9cdd5",
+        divider: "#dee0e6",
+        dashed: "#b8bdc8",
+        field: "#fafafb",
+        kbd: "#edeef2",
+        footer: "#dcdfe6",
+        text: "#17151f",
+        text2: "#2e3240",
+        text3: "#3a3f4b",
+        muted: "#4f5563",
+        accent: "#5b2db0",
+        "accent-soft": "#ede7f8",
+        "accent-border": "#d6c9f0",
+        "accent-solid": "#5b2db0",
+        "on-accent": "#ffffff",
+        ph: "#dcdee4",
+      },
     };
-    const after: Record<string, string> = {
-      bg: "#1b2029",
-      "bg-panel": "#222833",
-      "bg-panel-raised": "#29303d",
-      border: "#343c4a",
-      "surface-muted": "#2f3541",
-    };
-    for (const name of Object.keys(after)) {
-      expect(extractHex(darkBlock, name).toLowerCase()).toBe(after[name]);
-      const beforeHsl = hexToHsl(before[name]!);
-      const afterHsl = hexToHsl(after[name]!);
-      // 8-bit hex quantization can shift the rounded hue by a degree even
-      // when the underlying color math kept it fixed — same navy family,
-      // not a retint, is what actually matters here.
-      expect(Math.abs(afterHsl.h - beforeHsl.h)).toBeLessThanOrEqual(2);
-      expect(afterHsl.l).toBeGreaterThan(beforeHsl.l);
+    for (const [theme, block] of [
+      ["dark", darkBlock],
+      ["light", lightBlock],
+    ] as const)
+      for (const [name, hex] of Object.entries(brief[theme]))
+        expect(
+          extractHex(block, name).toLowerCase(),
+          `--${name} en thème ${theme}`,
+        ).toBe(hex);
+  });
+
+  // La carte « Commence ici » est la seule exception que le §1.2 s'autorise :
+  // ses couleurs sont fixes, donc définies une fois et jamais redéfinies dans
+  // le bloc clair — sans quoi elle suivrait le thème, ce que le brief refuse.
+  it("Bloc 129 §1.2: la carte « Commence ici » garde ses couleurs dans les deux thèmes", () => {
+    for (const name of [
+      "start-here-bg",
+      "start-here-art",
+      "start-here-badge",
+      "start-here-badge-ink",
+      "start-here-title",
+      "start-here-text",
+    ]) {
+      expect(darkBlock).toMatch(new RegExp(`--${name}:\\s*#[0-9a-fA-F]{6};`));
+      expect(lightBlock).not.toMatch(new RegExp(`--${name}:`));
     }
+    // Et le couple encre/fond du badge doré reste lisible (AA).
+    expect(
+      contrastRatio(
+        extractHex(darkBlock, "start-here-badge-ink"),
+        extractHex(darkBlock, "start-here-badge"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(
+        extractHex(darkBlock, "start-here-text"),
+        extractHex(darkBlock, "start-here-bg"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   // Bloc 81/B: the event picker's 10 swatches (Bloc 80/F) read as "too dark"

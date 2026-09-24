@@ -8,10 +8,64 @@
      same navy/anthracite hue (220°) and saturation, lightness nudged up
      ~4.5 points on bg/bg-panel/bg-panel-raised/border/surface-muted below.
      Contrast against --text stays well above WCAG AA (12.9:1/11.7:1). */
-  --bg: #1b2029;
-  --bg-panel: #222833;
-  --bg-panel-raised: #29303d;
-  --border: #343c4a;
+  /* ------------------------------------------------------------------
+     Bloc 129 §1.2 — les 21 jetons des pages publiques.
+
+     Ils remplacent la rampe anthracite bleutée des Blocs 34/F et 91 : le
+     neutre penche maintenant vers le violet de l'accent (teinte ~246-250
+     en sombre, ~220-225 en clair, au lieu de ~215 partout). Les noms sont
+     ceux du tableau du brief, à la lettre, pour qu'on puisse lire le §1.2
+     et le retrouver ici ligne pour ligne.
+
+     Les anciens noms (--bg-panel, --text-dim, --surface-muted…) restent
+     définis, mais comme des alias de ceux-ci. C'est volontaire : ce qui
+     n'est pas réécrit par ce bloc — l'intérieur des outils et des
+     référentiels, hors périmètre — suit la nouvelle palette sans qu'on
+     touche à son balisage, au lieu de garder l'ancienne et de jurer avec
+     le reste de la page.
+
+     Les couleurs qui portent du sens de jeu (--gold, --rarity-*, --xp-*,
+     --rank-*, --tool-*) ne sont PAS retouchées. Seul leur contraste sur
+     les nouveaux fonds est revérifié (color-palette.test.ts). */
+  --bg: #14131a;
+  --surface: #1d1c26;
+  --sunk: #18171f;
+  --raised: #2a2740;
+  --border: #2f2d3b;
+  --strong: #3d3a4c;
+  --divider: #2a2835;
+  --dashed: #4b4859;
+  --field: #17161e;
+  --kbd: #26242f;
+  --footer: #100f15;
+  --text2: #d6d3e2;
+  --text3: #bab6c8;
+  --muted: #9d99ae;
+  --accent-soft: #241d3c;
+  --accent-border: #43366b;
+  --accent-solid: #a386ee;
+  --on-accent: #15121f;
+  --ph: #262432;
+  /* --text et --accent ferment la liste des 21, définis plus bas avec
+     leur historique : --text avec les autres encres, --accent sur
+     --violet (le test de palette vérifie qu'il n'attrape jamais l'or). */
+  /* Les anciens noms, désormais alias. --bg-panel-raised suit --raised :
+     en thème clair le §1.2 le veut blanc pur, ce que color-palette.test.ts
+     interdisait jusqu'ici pour toute surface — la règle vaut toujours pour
+     la page et les cartes, pas pour l'élément surélevé (onglet actif). */
+  --bg-panel: var(--surface);
+  --bg-panel-raised: var(--raised);
+  /* Bloc 129 §1.2, la seule exception à la palette : la carte « Commence
+     ici » (guide Bien débuter) garde ses couleurs propres dans les deux
+     thèmes. Définies une fois ici, sans contre-partie dans le bloc clair —
+     même procédé que --event-* plus bas : ce sont des couleurs fixes, pas
+     un accent qui doit s'adapter au thème. */
+  --start-here-bg: #2b1d4f;
+  --start-here-art: #3a2a66;
+  --start-here-badge: #e7c878;
+  --start-here-badge-ink: #2b1d4f;
+  --start-here-title: #ffffff;
+  --start-here-text: #d9d2ea;
   /* Reserved for genuinely Legendary game data (rarity badges, item
      highlights) — never a generic interface accent. Use --accent /
      --accent-strong (violet) for buttons, links, focus states, hover. */
@@ -33,7 +87,12 @@
      on --bg, --bg-panel and --bg-panel-raised. */
   --emerald-text: #63a892;
   --ember: #c05a3e;
-  --violet: #8b6bb8;
+  /* Bloc 129 §1.2 : --accent vaut #B8A0F5 en thème sombre. Il continue de
+     pointer sur --violet (règle de palette : l'accent est violet, jamais
+     l'or), donc c'est --violet qui prend la valeur du brief.
+     --violet-bright, qui porte --accent-strong (survol, état fort), reste
+     plus clair que lui. */
+  --violet: #b8a0f5;
   --violet-bright: #c9a8ec;
   /* Bloc 80/F, Bloc 81/B review: the event color picker's own fixed
      palette (5 base hues x 2 shades = 10 options) — deliberately NOT the
@@ -74,12 +133,17 @@
   --event-text-amber: #facc15;
   --event-text-ember: #fca5a5;
   --event-text-sapphire: #93c5fd;
-  --text: #e9e4d8;
+  /* Bloc 129 §1.2 : l'encre principale, désormais très légèrement
+     violacée elle aussi (elle était crème, #e9e4d8). */
+  --text: #edebf4;
   /* Bloc 92/A11y (H2): lightened from #9299a6 so secondary/dim text clears
      WCAG AA (4.5:1) on the game-tinted tile surfaces it lands on (gems league
      headers, templars stats, Boutique descriptions) — it was 4.04–4.49:1
-     there. Still greyer than --text on the plain backgrounds. */
-  --text-dim: #9ea4b0;
+     there. Still greyer than --text on the plain backgrounds.
+     Bloc 129 §1.2 : ce rôle s'appelle --muted dans le brief, et c'est lui
+     qui porte la valeur ; --text-dim reste comme alias pour tout ce qui
+     n'est pas réécrit par ce bloc. */
+  --text-dim: var(--muted);
   /* Bloc 91/M8: raised from #5c6472 (WCAG ~2.5:1, failed AA). Codex review: the
      value must clear 4.5:1 on the DARKEST surface it lands on — the raised
      panel (#29303d) behind .login-card small — not just the page bg/panels, so
@@ -97,12 +161,12 @@
   --summary-total: #f08a65;
   --background: var(--bg);
   --foreground: var(--text);
-  --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
-  --surface-muted: #2f3541;
+  /* Bloc 129 : la surface sourde suit --kbd, le jeton du §1.2 qui joue ce
+     rôle-là (fond discret posé sur la carte). */
+  --surface-muted: var(--kbd);
   --accent: var(--violet);
   --accent-strong: var(--violet-bright);
-  --muted: var(--text-dim);
   --success: var(--emerald-bright);
   /* Bloc 78/C: see .star-rating's own comment below — dark theme's
      --foreground was already fine here, so this just points at it. */
@@ -173,10 +237,29 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #e4e7eb;
-  --bg-panel: #f0f2f5;
-  --bg-panel-raised: #f6f7f9;
-  --border: #c5cad2;
+  /* Bloc 129 §1.2 — les mêmes 21 jetons, versant clair. Même ordre que le
+     tableau du brief et que le bloc sombre ci-dessus. */
+  --bg: #e5e7ec;
+  --surface: #f2f3f6;
+  --sunk: #e9ebf0;
+  --raised: #ffffff;
+  --border: #d3d6dd;
+  --strong: #c9cdd5;
+  --divider: #dee0e6;
+  --dashed: #b8bdc8;
+  --field: #fafafb;
+  --kbd: #edeef2;
+  --footer: #dcdfe6;
+  --text2: #2e3240;
+  --text3: #3a3f4b;
+  --muted: #4f5563;
+  --accent-soft: #ede7f8;
+  --accent-border: #d6c9f0;
+  --accent-solid: #5b2db0;
+  --on-accent: #ffffff;
+  --ph: #dcdee4;
+  --bg-panel: var(--surface);
+  --bg-panel-raised: var(--raised);
   --gold: #9b6f1e;
   --gold-bright: #704b0e;
   --amber: #8f5c14;
@@ -191,12 +274,15 @@
      and panels (--emerald itself is only 4.49:1 as text on --bg here). */
   --emerald-text: #2f6b57;
   --ember: #a7432e;
-  --violet: #75549d;
+  /* Bloc 129 §1.2 : accent clair = #5B2DB0, porté par --violet (cf. le
+     bloc sombre). --violet-bright reste le violet fort du survol. */
+  --violet: #5b2db0;
   --violet-bright: #5b21b6;
-  --text: #20242b;
+  --text: #17151f;
   /* Bloc 91/M8: darkened from #626976 (WCAG ~4.05:1) / #858b95 (~2.5:1) so
-     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim. */
-  --text-dim: #5b6270;
+     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim.
+     Bloc 129 §1.2 : la valeur vit sur --muted, --text-dim en est l'alias. */
+  --text-dim: var(--muted);
   /* Bloc 92/A11y (L2): darkened from #666d78 (4.21:1 on --bg, under AA) so
      .total-box small and other faint text clear 4.5:1 on the light page bg;
      stays lighter than --text-dim, per the tier ordering. */
@@ -217,12 +303,10 @@
   --summary-total: #8f3210;
   --background: var(--bg);
   --foreground: var(--text);
-  --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
-  --surface-muted: #d9dde3;
+  --surface-muted: var(--kbd);
   --accent: var(--violet);
   --accent-strong: var(--violet-bright);
-  --muted: var(--text-dim);
   --success: var(--emerald-bright);
   /* Bloc 78/C: --foreground (--text, #20242b) reads as near-black for the
      small filled star icons specifically, even though every other label
@@ -286,15 +370,19 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, sans-serif);
+  /* Bloc 129 §4 : le voile ambiant écrivait les deux couleurs en dur
+     (l'ancien --violet #8b6bb8 et l'ancien --emerald #4a9179), donc il
+     gardait la teinte d'avant la refonte et ne suivait pas le thème. Il
+     passe par les jetons ; à 6 % il reste un voile, pas une couleur. */
   background-image:
     radial-gradient(
       ellipse at top left,
-      rgb(139 107 184 / 6%),
+      color-mix(in srgb, var(--accent) 6%, transparent),
       transparent 50%
     ),
     radial-gradient(
       ellipse at bottom right,
-      rgb(74 145 121 / 6%),
+      color-mix(in srgb, var(--success) 6%, transparent),
       transparent 50%
     );
   /* Bloc 105: the violet glow is pushed 10rem down the page, so the very top
