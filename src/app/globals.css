@@ -463,34 +463,67 @@ select:where(:not(.admin-shell select)) {
 .public-shell {
   min-height: 100vh;
 }
-.public-header,
-.public-footer {
-  width: min(74rem, calc(100% - 2rem));
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
+/* Bloc 129 §1.3 : 1200 px de large au plus, centré. Le pied de page ne
+   partage plus cette règle : il porte son propre fond sur toute la largeur
+   et range son contenu en quatre colonnes (§2.2). */
 .public-header {
   position: relative;
   z-index: 30;
-  min-height: 4.5rem;
+  width: min(75rem, calc(100% - 2rem));
+  /* §2.1 : 88 px. */
+  min-height: 5.5rem;
+  margin: 0 auto;
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
   border-bottom: 1px solid var(--border);
 }
+/* Bloc 129 §2.1 : 440 px de large au plus, 44 px de haut, une loupe à
+   gauche et le rappel de la touche « / » à droite. */
 .site-search {
   position: relative;
   flex: 1 1 14rem;
-  max-width: 22rem;
+  max-width: 27.5rem;
+}
+.site-search-label {
+  position: relative;
+  display: block;
+}
+.site-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.site-search-shortcut {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--strong);
+  border-radius: 0.35rem;
+  background: var(--kbd);
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  transform: translateY(-50%);
 }
 .site-search-label input {
   width: 100%;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--border);
+  height: 2.75rem;
+  /* De la place pour la loupe à gauche et pour la touche à droite. */
+  padding: 0 2.6rem 0 2.5rem;
+  border: 1px solid var(--strong);
   border-radius: 999px;
-  background: var(--bg-panel-raised);
+  background: var(--field);
   color: var(--text);
+  /* §1.1 : la recherche quitte la police à chasse fixe. */
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.9rem;
 }
 .site-search-label input::placeholder {
   color: var(--text-dim);
@@ -578,24 +611,219 @@ select:where(:not(.admin-shell select)) {
 .public-footer a {
   text-decoration: none;
 }
-/* Bloc 91/M7: the footer's site-section links. */
-.public-footer-nav {
+/* Bloc 129 §2.2 : le pied de page passe d'une rangée de liens (Bloc 91/M7)
+   à quatre colonnes — la marque et ce que fait le site, puis Outils,
+   Référentiels et Aide. La ligne du bas porte le copyright et les mentions
+   légales. */
+.public-footer {
+  margin-top: 4rem;
+  padding: 3rem 0 1.5rem;
+  border-top: 1px solid var(--strong);
+  background: var(--footer);
+}
+.public-footer-grid,
+.public-footer-bottom {
+  width: min(75rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+.public-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+}
+.public-footer-brand-col {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+  max-width: 32rem;
+}
+.public-footer-brand {
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.public-footer-lead {
+  margin: 0;
+  color: var(--text3);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.public-footer-note {
+  margin: 0;
+  /* --text-faint tombe sous 4.5:1 sur le fond du pied de page en thème
+     clair (4.40:1) ; --muted y tient (5.60:1). */
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.public-footer-col-title {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.public-footer-col ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.public-footer-col a {
+  color: var(--text3);
+  font-size: 0.9rem;
+}
+.public-footer-col a:hover {
+  color: var(--accent);
+}
+.public-footer-bottom {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
 }
-.public-footer-nav a:hover {
-  color: var(--accent-strong);
+.public-footer-bottom a {
+  color: var(--muted);
 }
+.public-footer-bottom a:hover {
+  color: var(--accent);
+}
+@media (max-width: 60rem) {
+  .public-footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .public-footer-brand-col {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 34rem) {
+  .public-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 129 §2.3 : le fil d'Ariane, sur toutes les pages sauf l'accueil. */
+.breadcrumb {
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+.breadcrumb-separator {
+  color: var(--border);
+}
+.breadcrumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
+/* Bloc 129 §2 : l'en-tête de page — titre, description d'une ligne, action. */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.page-header-copy {
+  max-width: 52rem;
+}
+.page-header h1 {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 44 px sur les pages d'index. */
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.page-header-lead {
+  margin: 0.75rem 0 0;
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+.page-header-action {
+  flex: none;
+}
+@media (max-width: 48rem) {
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+/* Bloc 129 §2.4 : « Signaler une erreur », bouton secondaire. */
+.report-error-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.report-error-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Bloc 129 §2.1 : la marque porte un sous-titre, qui dit de quel jeu ce
+   site est le compagnon. Les deux lignes forment un seul lien. */
 .brand {
-  color: var(--accent-strong);
-  font-size: 1.2rem;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  display: grid;
+  gap: 0.1rem;
+  line-height: 1.15;
+}
+.brand-name {
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.brand-tagline {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 .public-main {
-  width: min(74rem, calc(100% - 2rem));
+  width: min(75rem, calc(100% - 2rem));
   min-height: 38vh;
   margin: 2rem auto 5rem;
   padding: 0;
@@ -2272,16 +2500,29 @@ select,
   background: var(--bg-panel);
   color: var(--accent-strong);
 }
+/* §2.1 : l'entrée active porte le fond tendre de l'accent, son contour et
+   sa couleur — pas seulement une graisse de plus. */
 .public-header-nav a[aria-current="page"] {
-  border-color: var(--accent-strong);
-  background: var(--bg-panel);
-  color: var(--accent-strong);
-  font-weight: 800;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+/* §2.1 : Contact, un cran en retrait des trois sections du site. */
+.public-nav-subdued {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+}
+.public-nav-subdued[aria-current="page"] {
+  font-weight: 600;
 }
 .theme-toggle {
   display: inline-grid;
-  width: 2.2rem;
-  height: 2.2rem;
+  /* §2.1 : 40 px. */
+  width: 2.5rem;
+  height: 2.5rem;
   place-items: center;
   padding: 0;
   border: 1px solid var(--border);

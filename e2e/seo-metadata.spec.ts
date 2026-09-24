@@ -427,7 +427,7 @@ test("Bloc 103: declares the status-bar colour, follows the theme, and never goe
   await page.reload();
   // aria-pressed flips only once ThemeToggle's deferred read has landed, so
   // waiting on it pins the click below to the toggle's own work.
-  const toggle = page.getByRole("button", { name: "Activer le mode sombre" });
+  const toggle = page.getByRole("button", { name: "Passer en thème sombre" });
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
 
   const themeColor = page.locator('meta[name="theme-color"]');

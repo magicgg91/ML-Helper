@@ -6,8 +6,8 @@
     "increase": "Augmenter {label}",
     "select-league": "Choisis une ligue pour calculer.",
     "language": "Langue",
-    "theme-light": "Activer le mode clair",
-    "theme-dark": "Activer le mode sombre",
+    "theme-light": "Passer en thème clair",
+    "theme-dark": "Passer en thème sombre",
     "star-count": "{level} étoiles",
     "duration-hours": "{hours}h"
   },
@@ -459,11 +459,13 @@
     "menu": "Menu",
     "main": "Navigation principale",
     "footer": "Pied de page",
-    "home": "Accueil"
+    "home": "Accueil",
+    "tagline": "Compagnon Million Lords",
+    "breadcrumb": "Fil d'Ariane"
   },
   "search": {
     "label": "Rechercher sur le site",
-    "placeholder": "Rechercher",
+    "placeholder": "Rechercher un outil, un référentiel, un guide…",
     "results-label": "Résultats de recherche",
     "no-results": "Aucun résultat.",
     "types": {
@@ -486,7 +488,8 @@
     },
     "meta": {
       "siteTitle": "ML-Helper — Outils et guides Million Lords"
-    }
+    },
+    "report-error": "Signaler une erreur"
   },
   "contact": {
     "eyebrow": "Contact",
@@ -1546,5 +1549,14 @@
     "title": "Page introuvable",
     "description": "Cette page n’existe pas ou a été déplacée. Voici par où continuer :",
     "home": "Accueil"
+  },
+  "footer": {
+    "lead": "Outils, référentiels et guides de la communauté pour préparer chaque décision sur Million Lords.",
+    "note": "Site communautaire non officiel, sans lien avec l'éditeur du jeu.",
+    "help": "Aide",
+    "start-here": "Bien débuter",
+    "all-guides": "Tous les guides",
+    "all-references": "Tous les référentiels",
+    "copyright": "© {year} ML-Helper"
   }
 }

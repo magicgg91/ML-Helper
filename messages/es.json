@@ -6,8 +6,8 @@
     "increase": "Aumentar {label}",
     "select-league": "Elige una liga para calcular.",
     "language": "Idioma",
-    "theme-light": "Activar modo claro",
-    "theme-dark": "Activar modo oscuro",
+    "theme-light": "Cambiar al tema claro",
+    "theme-dark": "Cambiar al tema oscuro",
     "star-count": "{level} estrellas",
     "duration-hours": "{hours} h"
   },
@@ -459,11 +459,13 @@
     "menu": "Menú",
     "main": "Navegación principal",
     "footer": "Pie de página",
-    "home": "Inicio"
+    "home": "Inicio",
+    "tagline": "Compañero de Million Lords",
+    "breadcrumb": "Ruta de navegación"
   },
   "search": {
     "label": "Buscar en el sitio",
-    "placeholder": "Buscar",
+    "placeholder": "Busca una herramienta, una referencia, una guía…",
     "results-label": "Resultados de búsqueda",
     "no-results": "Sin resultados.",
     "types": {
@@ -486,7 +488,8 @@
       "guide-fallback": "Una guía de Million Lords en ML Helper.",
       "guides": "Guías y tablas de referencia para Million Lords: costes, estadísticas y mecánicas de juego verificadas por la comunidad.",
       "legal": "Aviso legal del sitio web ML Helper."
-    }
+    },
+    "report-error": "Informar de un error"
   },
   "contact": {
     "eyebrow": "Contacto",
@@ -696,5 +699,14 @@
     "title": "Página no encontrada",
     "description": "Esta página no existe o se ha movido. Aquí puedes continuar:",
     "home": "Inicio"
+  },
+  "footer": {
+    "lead": "Herramientas, referencias y guías de la comunidad para preparar cada decisión en Million Lords.",
+    "note": "Sitio comunitario no oficial, sin vínculo con la editora del juego.",
+    "help": "Ayuda",
+    "start-here": "Empieza aquí",
+    "all-guides": "Todas las guías",
+    "all-references": "Todas las referencias",
+    "copyright": "© {year} ML-Helper"
   }
 }

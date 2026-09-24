@@ -220,7 +220,7 @@ test("tool routes alone expose persistent player settings", async ({
     new RegExp("/referentiels/templars$"),
   );
   const publicThemeToggle = page.getByRole("button", {
-    name: "Activer le mode clair",
+    name: "Passer en thème clair",
   });
   await expect(publicThemeToggle).toHaveText("☀");
   await publicThemeToggle.click();
@@ -361,7 +361,7 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
   // (>= 4.5:1) against the panel background — asserted here as the exact
   // raised color, with the ratio itself covered by
   // responsive-styles.test.ts.
-  await page.getByRole("button", { name: /Activer le mode clair/ }).click();
+  await page.getByRole("button", { name: /Passer en thème clair/ }).click();
   const totalColor = await page
     .locator(".player-summary-line2 .sk-value")
     .first()

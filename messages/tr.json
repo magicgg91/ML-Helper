@@ -6,8 +6,8 @@
     "increase": "{label} artır",
     "select-league": "Hesaplamak için bir lig seç.",
     "language": "Dil",
-    "theme-light": "Açık modu etkinleştir",
-    "theme-dark": "Koyu modu etkinleştir",
+    "theme-light": "Açık temaya geç",
+    "theme-dark": "Koyu temaya geç",
     "star-count": "{level} yıldız",
     "duration-hours": "{hours} sa"
   },
@@ -459,11 +459,13 @@
     "menu": "Menü",
     "main": "Ana gezinme",
     "footer": "Alt bilgi",
-    "home": "Ana sayfa"
+    "home": "Ana sayfa",
+    "tagline": "Million Lords yardımcısı",
+    "breadcrumb": "Gezinme yolu"
   },
   "search": {
     "label": "Sitede ara",
-    "placeholder": "Ara",
+    "placeholder": "Bir araç, bir referans, bir rehber ara…",
     "results-label": "Arama sonuçları",
     "no-results": "Sonuç yok.",
     "types": {
@@ -486,7 +488,8 @@
       "guide-fallback": "ML Helper'da bir Million Lords rehberi.",
       "guides": "Million Lords için rehberler ve referans tabloları: toplulukça doğrulanmış maliyetler, istatistikler ve oyun mekanikleri.",
       "legal": "ML Helper web sitesinin yasal bildirimi."
-    }
+    },
+    "report-error": "Hata bildir"
   },
   "contact": {
     "eyebrow": "İletişim",
@@ -696,5 +699,14 @@
     "title": "Sayfa bulunamadı",
     "description": "Bu sayfa mevcut değil veya taşındı. Buradan devam edebilirsin:",
     "home": "Ana sayfa"
+  },
+  "footer": {
+    "lead": "Million Lords'ta her kararı hazırlamak için topluluğun araçları, referansları ve rehberleri.",
+    "note": "Resmî olmayan topluluk sitesi, oyunun yayıncısıyla bağlantısı yoktur.",
+    "help": "Yardım",
+    "start-here": "Buradan başla",
+    "all-guides": "Tüm rehberler",
+    "all-references": "Tüm referanslar",
+    "copyright": "© {year} ML-Helper"
   }
 }

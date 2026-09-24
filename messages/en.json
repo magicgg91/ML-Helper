@@ -6,8 +6,8 @@
     "increase": "Increase {label}",
     "select-league": "Choose a league to calculate.",
     "language": "Language",
-    "theme-light": "Enable light mode",
-    "theme-dark": "Enable dark mode",
+    "theme-light": "Switch to light theme",
+    "theme-dark": "Switch to dark theme",
     "star-count": "{level} stars",
     "duration-hours": "{hours}h"
   },
@@ -459,11 +459,13 @@
     "menu": "Menu",
     "main": "Main navigation",
     "footer": "Footer",
-    "home": "Home"
+    "home": "Home",
+    "tagline": "Million Lords companion",
+    "breadcrumb": "Breadcrumb"
   },
   "search": {
     "label": "Search the site",
-    "placeholder": "Search",
+    "placeholder": "Search for a tool, a reference, a guide…",
     "results-label": "Search results",
     "no-results": "No results.",
     "types": {
@@ -486,7 +488,8 @@
     },
     "meta": {
       "siteTitle": "ML-Helper — Million Lords tools and guides"
-    }
+    },
+    "report-error": "Report an error"
   },
   "contact": {
     "eyebrow": "Contact",
@@ -1546,5 +1549,14 @@
     "title": "Page not found",
     "description": "This page doesn’t exist or has moved. Here is where to go next:",
     "home": "Home"
+  },
+  "footer": {
+    "lead": "Community tools, references and guides to prepare every decision in Million Lords.",
+    "note": "Unofficial community site, unaffiliated with the game's publisher.",
+    "help": "Help",
+    "start-here": "Start here",
+    "all-guides": "All guides",
+    "all-references": "All references",
+    "copyright": "© {year} ML-Helper"
   }
 }
