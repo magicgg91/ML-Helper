@@ -19,6 +19,7 @@ export function AdminOverlay({
   labelledBy,
   describedBy,
   placement = "center",
+  layer = "dialog",
   className,
   children,
 }: {
@@ -28,6 +29,13 @@ export function AdminOverlay({
   labelledBy: string;
   describedBy?: string;
   placement?: "center" | "right" | "left";
+  /**
+   * Bloc 125 §3: which step of the admin's z-index scale this surface sits
+   * on. A drawer is a place you work in; a dialog is a question asked *about*
+   * that work, so it has to come out above it — deleting a user is confirmed
+   * over the panel that lists them.
+   */
+  layer?: "drawer" | "dialog";
   className?: string;
   children: ReactNode;
 }) {
@@ -36,7 +44,8 @@ export function AdminOverlay({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex bg-black/40",
+        "fixed inset-0 flex bg-black/40",
+        layer === "drawer" ? "z-[var(--z-drawer)]" : "z-[var(--z-dialog)]",
         placement === "center" && "items-center justify-center p-4",
         placement === "right" && "justify-end",
         placement === "left" && "justify-start",

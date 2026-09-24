@@ -38,7 +38,7 @@ const shell = () => (
     <AdminShell
       role="super_admin"
       username="rootadmin"
-      totpEnabled={false}
+
       counts={{}}
     >
       <p>contenu de la page</p>
@@ -71,12 +71,33 @@ describe("Bloc 119: AdminShell", () => {
     // Which of the two is shown is a CSS decision (lg = 1024 px), so that a
     // server render — which has no viewport — is never wrong for a frame.
     const { container } = renderShell();
-    expect(container.querySelector(".hidden.lg\\:flex")).toBeInTheDocument();
+    expect(
+      container.querySelector("aside.hidden.lg\\:block"),
+    ).toBeInTheDocument();
     expect(
       screen
         .getByRole("button", { name: "Ouvrir le menu" })
         .closest(".lg\\:hidden"),
     ).toBeInTheDocument();
+  });
+
+  it("gives the column a viewport of its own that the page scrolls past", () => {
+    // Bloc 125 §1: the bottom of the menu walked off the screen on a long
+    // page because the column was a flex sibling of the content and took its
+    // height. Two grid tracks, and an `aside` that is 100dvh and sticky, is
+    // what keeps it still.
+    const { container } = renderShell();
+    const shell = container.querySelector(".admin-shell");
+    expect(shell?.className).toContain("grid");
+    expect(shell?.className).toContain("lg:grid-cols-[248px_minmax(0,1fr)]");
+    expect(shell?.className).toContain("min-h-[100dvh]");
+    const column = container.querySelector("aside");
+    expect(column?.className).toContain("sticky");
+    expect(column?.className).toContain("top-0");
+    expect(column?.className).toContain("h-[100dvh]");
+    // …and nothing between the two clips the page: an `overflow` anywhere up
+    // the tree would silently kill `position: sticky`.
+    expect(shell?.className).not.toContain("overflow");
   });
 
   it("opens the navigation in a drawer, and closes it on Escape", () => {

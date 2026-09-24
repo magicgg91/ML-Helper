@@ -36,6 +36,7 @@ export function SidePanel({
       onClose={onClose}
       labelledBy={titleId}
       placement="right"
+      layer="drawer"
       className="flex h-full w-full max-w-md flex-col border-l border-admin-card-border"
     >
       <div className="flex items-start justify-between gap-4 border-b border-admin-rule px-6 py-5">

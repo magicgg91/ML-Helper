@@ -147,6 +147,23 @@ export function hasLocalizedText(value: unknown, locale: string): boolean {
  * NOT cross-fall-back: an absent override there means "use the built-in
  * label", not "use the other language".
  */
+/**
+ * Bloc 125 §9: the languages a reference's free text is actually stored in.
+ *
+ * Boutique, Événements, the Templiers catalogue and the equipment labels each
+ * keep one French field and one other-language field, which `pickFrEn` above
+ * reads back. Their editors offered all five launch locales anyway, and
+ * collapsed DE/ES/TR onto the English one — so typing a German name saved it
+ * into the English column, showed it back on the German tab (which reads the
+ * same column), and destroyed the English text without saying so. The tabs
+ * offer this pair instead: what the model holds, and nothing it does not.
+ */
+export const contentPairLocales = [
+  "fr",
+  "en",
+] as const satisfies readonly LaunchLocale[];
+export type ContentPairLocale = (typeof contentPairLocales)[number];
+
 export function pickFrEn(fr: string, en: string, locale: string): string {
   return locale === "fr" ? fr || en : en || fr;
 }

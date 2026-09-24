@@ -223,6 +223,27 @@ describe("Bloc 119: Gemmes", () => {
     expect(saved.gemPrice.legend).toBe(7000);
   });
 
+  it("lines the prices up under the leagues they belong to", () => {
+    // Bloc 125 §4: the prices used to be a second, vertical table listing the
+    // six leagues all over again, one per row. Reading "how much is a Gold
+    // gem" meant finding Gold in a column above and Gold in a row below. One
+    // shared column template answers it by position, so the two grids have
+    // to be the same grid.
+    const { container } = render(
+      <GemParametersEditor initial={defaultGemParameters} {...screenProps} />,
+    );
+    const grids = [
+      ...container.querySelectorAll(
+        ".grid-cols-\\[180px_repeat\\(6\\,minmax\\(0\\,1fr\\)\\)\\]",
+      ),
+    ];
+    // The header, the ten skill rows, and the one price row.
+    expect(grids).toHaveLength(12);
+    // One row for the prices, named by the unit, not six rows of one price.
+    expect(screen.getByText("Prix (saphirs)")).toBeInTheDocument();
+    expect(screen.queryByText("saphirs", { exact: true })).toBeNull();
+  });
+
   it("says Bronze has no purchase price rather than showing an empty field", () => {
     render(
       <GemParametersEditor initial={defaultGemParameters} {...screenProps} />,

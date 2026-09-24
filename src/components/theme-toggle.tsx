@@ -4,7 +4,19 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { applyThemeColor, type Theme } from "@/lib/theme-color";
 
-export function ThemeToggle() {
+/**
+ * Bloc 125 §2: the admin needs this button 34 px square, borderless, and
+ * named in its own words — without changing how it looks or reads on the
+ * public header, which is not this bloc's business. Both are props, and both
+ * default to exactly what the public site had.
+ */
+export function ThemeToggle({
+  className,
+  labels,
+}: {
+  className?: string;
+  labels?: { toDark: string; toLight: string };
+} = {}) {
   const t = useTranslations("common");
   const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => {
@@ -35,12 +47,16 @@ export function ThemeToggle() {
     applyThemeColor(next);
     localStorage.setItem("mlhelper_theme", next);
   }
+  const label =
+    theme === "dark"
+      ? (labels?.toLight ?? t("theme-light"))
+      : (labels?.toDark ?? t("theme-dark"));
   return (
     <button
-      className="theme-toggle"
+      className={className ?? "theme-toggle"}
       type="button"
       onClick={toggle}
-      aria-label={t(theme === "dark" ? "theme-light" : "theme-dark")}
+      aria-label={label}
       aria-pressed={theme === "light"}
     >
       <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>

@@ -2,8 +2,16 @@
 
 import { MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
+import { AdminPopover, type PopoverPlacement } from "./admin-popover";
 
 /**
  * Bloc 119: the ⋯ menu that collects a row's secondary actions.
@@ -27,21 +35,42 @@ export type OverflowMenuItem = {
   href?: string;
   tone?: "default" | "danger";
   disabled?: boolean;
+  /** Bloc 125 §2: the icon a menu entry carries, when its menu shows icons. */
+  icon?: ReactNode;
+  /** A rule above this entry — what separates "Mon compte" from the way out. */
+  separatorBefore?: boolean;
 };
 
 export function OverflowMenu({
   label,
   items,
+  trigger,
+  triggerClassName,
+  placement = "bottom-end",
 }: {
   /** Names the menu: "Autres actions pour Guide des ligues". */
   label: string;
   items: readonly OverflowMenuItem[];
+  /**
+   * Bloc 125 §2: what the button shows. The ⋯ glyph when left out, which is
+   * every row menu; the account block passes its own avatar-and-name.
+   */
+  trigger?: ReactNode;
+  /** Replaces the ⋯ button's own box when the trigger is not a glyph. */
+  triggerClassName?: string;
+  /**
+   * Where the menu would like to open. `top-start` is what the account block
+   * asks for — it sits at the very bottom of the column. Bloc 125 §3: this is
+   * a preference, not an order; the popover flips to the other side when
+   * there is not enough room on this one.
+   */
+  placement?: PopoverPlacement;
 }) {
   const triggerId = useId();
   const menuId = useId();
   const container = useRef<HTMLDivElement | null>(null);
   const menu = useRef<HTMLDivElement | null>(null);
-  const trigger = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   // Which end to land on once the menu is on screen: a click starts at the
   // top, ArrowUp on the trigger starts at the bottom.
@@ -52,6 +81,12 @@ export function OverflowMenu({
       '[role="menuitem"]:not([disabled])',
     ) ?? []),
   ];
+
+  // The menu is in a portal now (Bloc 125 §3), so "inside" is no longer
+  // "inside this element in the DOM tree": both halves have to be asked.
+  const inside = (node: Node) =>
+    Boolean(container.current?.contains(node)) ||
+    Boolean(menu.current?.contains(node));
 
   useEffect(() => {
     if (!open) return;
@@ -68,7 +103,7 @@ export function OverflowMenu({
     // pointerdown rather than click, so the menu is gone before the other
     // trigger acts on its own event.
     function onPointerDown(event: PointerEvent) {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
+      if (!inside(event.target as Node)) setOpen(false);
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
@@ -76,7 +111,7 @@ export function OverflowMenu({
 
   function close({ restoreFocus }: { restoreFocus: boolean }) {
     setOpen(false);
-    if (restoreFocus) trigger.current?.focus();
+    if (restoreFocus) triggerRef.current?.focus();
   }
 
   function openAt(end: "first" | "last") {
@@ -125,7 +160,8 @@ export function OverflowMenu({
 
   const itemClasses = (item: OverflowMenuItem) =>
     cn(
-      "admin-focus flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm whitespace-nowrap",
+      "admin-focus flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm whitespace-nowrap [&_svg]:size-4 [&_svg]:shrink-0",
+      item.separatorBefore && "mt-1 border-t border-admin-rule-soft pt-2",
       item.tone === "danger" ? "text-admin-danger-ink" : "text-admin-text",
       item.disabled
         ? "cursor-not-allowed opacity-50"
@@ -136,7 +172,7 @@ export function OverflowMenu({
     <div className="relative inline-block" ref={container}>
       <button
         id={triggerId}
-        ref={trigger}
+        ref={triggerRef}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -144,18 +180,27 @@ export function OverflowMenu({
         aria-label={label}
         onClick={() => (open ? close({ restoreFocus: true }) : openAt("first"))}
         onKeyDown={onTriggerKeyDown}
-        className="admin-focus inline-flex size-[var(--admin-control-h-sm)] cursor-pointer items-center justify-center rounded-admin-control border border-admin-card-border bg-admin-card text-admin-dim hover:text-admin-text"
+        className={
+          triggerClassName ??
+          "admin-focus inline-flex size-[var(--admin-control-h-sm)] cursor-pointer items-center justify-center rounded-admin-control border border-admin-card-border bg-admin-card text-admin-dim hover:text-admin-text"
+        }
       >
-        <MoreHorizontalIcon aria-hidden="true" className="size-4" />
+        {trigger ?? (
+          <MoreHorizontalIcon aria-hidden="true" className="size-4" />
+        )}
       </button>
-      {open && (
+      <AdminPopover
+        anchorRef={triggerRef}
+        open={open}
+        placement={placement}
+        className="min-w-48 rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg"
+      >
         <div
           id={menuId}
           ref={menu}
           role="menu"
           aria-labelledby={triggerId}
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 z-20 mt-1 min-w-48 overflow-hidden rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg"
         >
           {items.map((item) =>
             item.href !== undefined && !item.disabled ? (
@@ -167,6 +212,7 @@ export function OverflowMenu({
                 onClick={() => close({ restoreFocus: false })}
                 className={itemClasses(item)}
               >
+                {item.icon}
                 {item.label}
               </Link>
             ) : (
@@ -182,12 +228,13 @@ export function OverflowMenu({
                 }}
                 className={itemClasses(item)}
               >
+                {item.icon}
                 {item.label}
               </button>
             ),
           )}
         </div>
-      )}
+      </AdminPopover>
     </div>
   );
 }

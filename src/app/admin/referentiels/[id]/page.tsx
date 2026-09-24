@@ -26,6 +26,9 @@ export default async function EditReferentielPage({
     getTranslations("admin.referentiels"),
     getTranslations(),
   ]);
+  // Bloc 125 §8: the screen is named after the reference it edits, with the
+  // same name the Référentiels table shows — one name per reference, not a
+  // short one in the list and an "Éditer …" one on the screen.
   const { id } = await params;
   if (id === "reference-level-up") {
     return (
@@ -33,7 +36,7 @@ export default async function EditReferentielPage({
         initial={await getLevelUpParameters()}
         backHref="/admin/referentiels"
         backLabel={t("title")}
-        title={t("reference-level-up")}
+        title={t("references.level-up")}
       />
     );
   }
@@ -67,7 +70,7 @@ export default async function EditReferentielPage({
           incrementsInitial={await getCombatStarIncrements()}
           backHref="/admin/referentiels"
           backLabel={t("title")}
-          title={t("reference-combat")}
+          title={t("references.combat-equipment")}
           usedByTool={usedByTool}
         />
       );
@@ -87,7 +90,7 @@ export default async function EditReferentielPage({
         incrementsInitial={await getExpeditionStarIncrements()}
         backHref="/admin/referentiels"
         backLabel={t("title")}
-        title={t("reference-expedition")}
+        title={t("references.expedition-equipment")}
         usedByTool={usedByTool}
       />
     );
@@ -98,7 +101,7 @@ export default async function EditReferentielPage({
         initialCatalog={await getConsumableCatalog()}
         backHref="/admin/referentiels"
         backLabel={t("title")}
-        title={t("reference-consommables")}
+        title={t("references.consommables")}
       />
     );
   }
@@ -108,7 +111,7 @@ export default async function EditReferentielPage({
         initialCatalog={await getEventsCatalog()}
         backHref="/admin/referentiels"
         backLabel={t("title")}
-        title={t("reference-events")}
+        title={t("references.events")}
       />
     );
   }

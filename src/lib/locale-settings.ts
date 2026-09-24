@@ -54,6 +54,20 @@ export async function getActiveLocales(): Promise<LaunchLocale[]> {
   return launchLocales.filter((locale) => state[locale]);
 }
 
+/**
+ * Bloc 125 §9: the launch locales an admin has switched off, so they are
+ * absent from the public site.
+ *
+ * The complement of getActiveLocales, and the thing the editors of five-
+ * language content need in order to say so on the tab: a translation that is
+ * written but nowhere to be seen is a language waiting to be launched, not a
+ * save that failed.
+ */
+export async function hiddenPublicLocales(): Promise<LaunchLocale[]> {
+  const state = await getLocaleActiveState();
+  return launchLocales.filter((locale) => !state[locale]);
+}
+
 // Bloc 90/E: which locale a page renders in, given the visitor's NEXT_LOCALE
 // cookie and the currently-active locales. No cookie → the first-visit
 // default (FR, always active); an active cookie → itself; a cookie pointing

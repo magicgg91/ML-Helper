@@ -925,8 +925,11 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
+  // Bloc 125 §2: the admin names this button in its own words ("Passer en
+  // thème sombre / clair"), which the public header does not — it keeps the
+  // wording it had. Same button, same glyph, same behaviour.
   await expect(
-    page.getByRole("button", { name: "Activer le mode clair" }),
+    page.getByRole("button", { name: "Passer en thème clair" }),
   ).toHaveText("☀");
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
@@ -990,9 +993,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .getByRole("link", { name: "Modifier" })
     .click();
   await expect(
-    page.getByRole("heading", {
-      name: "Éditer les Équipements de Combat",
-    }),
+    page.getByRole("heading", { level: 1, name: "Équipements de Combat" }),
   ).toBeVisible({ timeout: 15_000 });
   // Bloc 119: the 180 rows are grouped into the sets they belong to, folded
   // by default — the whole point of the rewrite. Unfold one and its own rows
@@ -1061,9 +1062,7 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await expect(
     page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
-  await expect(
-    page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Templiers" })).toBeVisible();
   // Exact match: the presentation table on the same screen carries "Base
   // temple de …" fields, which otherwise substring-match this locator.
   await page.getByLabel("Base", { exact: true }).fill("200");
@@ -1103,7 +1102,8 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
-    page.getByRole("heading", { name: "Paramètres des Gemmes" }),
+    // The h1 exactly: a section below it is headed "Prix d’achat des gemmes…".
+    page.getByRole("heading", { level: 1, name: "Gemmes" }),
   ).toBeVisible();
 
   await page.goto("/admin");
@@ -1482,15 +1482,19 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .getByLabel("Description de l’événement 1")
     .fill("Enrôle des troupes pour la ligue.");
   // Bloc 79/B: buttons instead of a <select> for the fixed 3-value enum.
+  // Bloc 125 §6: the same segmented control as the sidebar's language pair —
+  // three loose buttons did not say that picking one unpicks the others.
   await page
-    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
-    .getByRole("radio", { name: "48h" })
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
     .click();
   // Bloc 119: an event is one line, and its tiers appear under it only once
   // it is unfolded — an event you have just added opens on its own, so there
-  // is nothing to click here.
+  // is nothing to click here. Bloc 125 §6: the row carries no title of its
+  // own any more (the name was printed twice), so the chevron is named by
+  // what it folds.
   await expect(
-    page.getByRole("button", { name: /^Recruteur/ }),
+    page.getByRole("button", { name: "Paliers (0) de l’événement 1" }),
   ).toHaveAttribute("aria-expanded", "true");
   await page.getByTestId("add-tier-bronze-0").click();
   await page
@@ -1580,8 +1584,8 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
   await page
-    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
-    .getByRole("radio", { name: "48h" })
+    .getByRole("group", { name: "Durée de l’événement 1" })
+    .getByRole("button", { name: "48h" })
     .click();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
@@ -3404,8 +3408,10 @@ test("every admin screen stays English for a reader browsing publicly in German"
       page.getByRole("link", { name: "Voir le site public" }),
     ).toHaveCount(0);
     // And the two languages the admin does offer — no more, no fewer.
+    // Bloc 125 §2: read FR | EN, the order the maquette asks for. The list
+    // itself is unchanged; only the order it is drawn in.
     const toggle = page.getByRole("group", { name: "Language" });
-    await expect(toggle.getByRole("button")).toHaveText(["EN", "FR"]);
+    await expect(toggle.getByRole("button")).toHaveText(["FR", "EN"]);
     await expect(toggle.getByRole("button", { name: "EN" })).toHaveAttribute(
       "aria-pressed",
       "true",
@@ -3462,6 +3468,410 @@ test("every admin screen stays English for a reader browsing publicly in German"
       `the public language ${language} is no longer manageable`,
     ).toBeVisible();
   }
+
+  await context.close();
+});
+
+// Bloc 125 §1: the column has a viewport of its own.
+//
+// The refonte made it a flex sibling of the page, so it took the page's
+// height — and on Équipements de Combat, which is metres long, its bottom
+// (language, theme, the account block) sat kilometres below the fold. This
+// scrolls that exact page to the bottom and checks the column has not moved
+// and is still whole on screen.
+test("Bloc 125/1: the side menu stays whole while a long page scrolls", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  // 409 in the serial run, where the Super Admin already exists; 201 when
+  // this test is run on its own against a freshly reset database.
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/referentiels/reference-combat-equipment");
+  // The column itself, and with it the block at its bottom — the part that
+  // used to be metres below the fold.
+  const column = page.locator("aside").first();
+  const bottomLink = page.getByRole("link", { name: "Voir le site public" });
+  await expect(bottomLink).toBeInViewport();
+
+  const viewport = page.viewportSize()!;
+  const before = (await column.boundingBox())!;
+  expect(
+    Math.round(before.y + before.height),
+    "the column is taller than the viewport before anything is scrolled",
+  ).toBeLessThanOrEqual(viewport.height);
+
+  // The page really is long enough for this to mean something.
+  const scrollable = await page.evaluate(
+    () => document.documentElement.scrollHeight - window.innerHeight,
+  );
+  expect(
+    scrollable,
+    "the page is not long enough to prove anything",
+  ).toBeGreaterThan(600);
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect
+    .poll(async () => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(600);
+
+  const after = (await column.boundingBox())!;
+  expect(Math.round(after.y), "the column moved when the page scrolled").toBe(
+    Math.round(before.y),
+  );
+  expect(
+    Math.round(after.y + after.height),
+    "the bottom of the column left the viewport",
+  ).toBeLessThanOrEqual(viewport.height);
+  await expect(
+    bottomLink,
+    "the block at the bottom of the menu is no longer on screen",
+  ).toBeInViewport();
+
+  await context.close();
+});
+
+// Bloc 125 §2: the account menu, and the screen behind it.
+//
+// "Mon compte" used to be a <details> at the bottom of the side column: it
+// unfolded the password form and the whole two-factor enrolment — QR code
+// included — downwards inside a 248 px column, over the navigation. It is a
+// menu and a screen now, and every role has one.
+test("Bloc 125/2: the account block opens a menu, and Mon compte is its own screen", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Nothing of the account settings is on the page until the menu is opened.
+  await expect(page.getByLabel("Mot de passe actuel")).toHaveCount(0);
+  const account = page.getByRole("button", { name: "Compte de rootadmin" });
+  await expect(account).toHaveAttribute("aria-expanded", "false");
+  await account.click();
+  await expect(account).toHaveAttribute("aria-expanded", "true");
+
+  // The menu opens upwards: it sits at the very bottom of a 100dvh column,
+  // and a menu below it would open off-screen.
+  const menu = page.getByRole("menu");
+  const menuBox = (await menu.boundingBox())!;
+  const triggerBox = (await account.boundingBox())!;
+  expect(
+    menuBox.y + menuBox.height,
+    "the account menu opens downwards, off the bottom of the column",
+  ).toBeLessThanOrEqual(triggerBox.y + 1);
+
+  // Escape closes it and hands the focus back, as every popover here does.
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(account).toBeFocused();
+
+  await account.click();
+  await page.getByRole("menuitem", { name: "Mon compte" }).click();
+  await expect(page).toHaveURL(/\/admin\/account$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Mon compte",
+  );
+  await expect(page.getByLabel("Mot de passe actuel")).toBeVisible();
+  await expect(
+    page.getByLabel("Confirmation du nouveau mot de passe"),
+  ).toBeVisible();
+  await expect(page.getByText("Désactivée")).toBeVisible();
+
+  // Bloc 86 unchanged: the screen is behind the same door as the rest of the
+  // admin — signed out, it sends you to the login page, not to the form.
+  const anonymous = await browser.newContext();
+  const visitor = await anonymous.newPage();
+  await visitor.goto("/admin/account");
+  await expect(visitor).toHaveURL(/\/login/);
+  await anonymous.close();
+
+  await context.close();
+});
+
+// Bloc 125 §3: the Événements colour picker, which nobody could use.
+//
+// The swatch grid was an absolute box inside the event row, and the row
+// clipped it: all that ever appeared was the sliver of it that fitted under
+// the swatch. It is a portal on the popover layer now. This opens it, checks
+// the whole grid is really on screen and over the page, picks a colour,
+// and checks Escape gives the focus back.
+test("Bloc 125/3: the colour picker opens whole, over the page", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/referentiels/reference-events");
+  // The seeded database ships no events, so this makes one to open a picker
+  // on. It is never saved: the test closes the page on it.
+  await page.getByTestId("add-event-bronze").click();
+  const swatch = page.getByTestId("event-color-bronze-0");
+  await expect(swatch).toBeVisible();
+  await expect(swatch).toHaveAttribute("aria-expanded", "false");
+  await swatch.click();
+  await expect(swatch).toHaveAttribute("aria-expanded", "true");
+
+  // Out of the row and into the body: nothing above it can clip it now.
+  const grid = page
+    .locator('[role="group"]')
+    .filter({ has: page.getByTestId("event-color-bronze-0-violet") });
+  await expect(grid).toBeVisible();
+  expect(
+    await grid.evaluate((el) => el.closest(".events-color-picker") !== null),
+    "the swatch grid is still inside the row that was clipping it",
+  ).toBe(false);
+
+  // Every swatch of the grid is on screen, not just the first row of them.
+  const swatches = grid.getByRole("button");
+  const count = await swatches.count();
+  expect(count).toBeGreaterThan(5);
+  for (let index = 0; index < count; index += 1)
+    await expect(swatches.nth(index)).toBeInViewport();
+
+  // Picking one closes the grid and hands the focus back to the swatch.
+  await page.getByTestId("event-color-bronze-0-violet").click();
+  await expect(grid).toHaveCount(0);
+  await expect(swatch).toBeFocused();
+
+  // …and so does Escape.
+  await swatch.click();
+  await expect(grid).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(grid).toHaveCount(0);
+  await expect(swatch).toBeFocused();
+
+  await context.close();
+});
+
+// Bloc 125 §8: every edit screen is named after the thing it edits.
+//
+// Each one used to carry a second, longer phrase of its own — "Éditer la
+// Boutique" on the screen against "Boutique" in the table that links to it,
+// "Paramètres de coût des Templiers" against "Templiers" — so the same
+// reference was called two different things depending on where you were
+// standing, and some titles began with a verb while others did not. The
+// names now come from the one place the rest of the site already names them.
+test("Bloc 125/8: each edit screen is named after what it edits, in French", async ({
+  browser,
+}) => {
+  test.setTimeout(120_000);
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const screens = [
+    ["/admin/tools/ranking", "Outils", "Classement"],
+    ["/admin/tools/city-parameters", "Outils", "Paramètres Villes partagés"],
+    ["/admin/tools/gems", "Outils", "Gemmes"],
+    ["/admin/tools/xp-gain-rate", "Outils", "Taux de gain d’XP"],
+    ["/admin/tools/templars", "Outils", "Templiers"],
+    ["/admin/tools/demo-attack-troops", "Outils", "Troupes en attaque démo"],
+    ["/admin/referentiels/reference-consommables", "Référentiels", "Boutique"],
+    ["/admin/referentiels/reference-events", "Référentiels", "Événements"],
+    [
+      "/admin/referentiels/reference-combat-equipment",
+      "Référentiels",
+      "Équipements de Combat",
+    ],
+    [
+      "/admin/referentiels/reference-expedition-equipment",
+      "Référentiels",
+      "Équipements d’Expédition",
+    ],
+    ["/admin/referentiels/reference-level-up", "Référentiels", "Progression"],
+  ] as const;
+
+  for (const [url, section, name] of screens) {
+    await page.goto(url);
+    await expect(
+      page.getByRole("heading", { level: 1 }),
+      `${url}: the h1`,
+    ).toHaveText(name);
+    await expect(
+      page.getByRole("link", { name: `← ${section}` }),
+      `${url}: the trail back`,
+    ).toBeVisible();
+  }
+
+  // The twelfth screen, a guide, is named by its own title rather than by a
+  // label — covered where that title is built (admin-guide-editor.test.tsx),
+  // since the seeded database ships no guide to open here.
+
+  await context.close();
+});
+
+// Bloc 125 §9: the language tabs tell the truth about what is stored.
+//
+// Reproduced in a browser before anything was changed: on the Boutique's DE
+// tab, typing a German name saved it into the *English* column, showed it
+// back on the DE tab — which reads that same column — and destroyed the
+// English text with nothing said anywhere. Four screens did this, because
+// they offered five languages over a model that holds two.
+test("Bloc 125/9: fr/en content offers fr and en, and five-language content says which are hidden", async ({
+  browser,
+}) => {
+  test.setTimeout(120_000);
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // The four screens whose rows hold one French field and one for everybody
+  // else. None of them may offer a tab for a column it does not have.
+  for (const url of [
+    "/admin/referentiels/reference-consommables",
+    "/admin/referentiels/reference-events",
+    "/admin/tools/templars",
+    "/admin/referentiels/reference-combat-equipment",
+  ]) {
+    await page.goto(url);
+    await expect(
+      page.getByRole("button", { name: /^FR — Français/ }),
+      `${url}: the French tab`,
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^EN — English/ }),
+      `${url}: the English tab`,
+    ).toBeVisible();
+    for (const absent of [/^DE — /, /^ES — /, /^TR — /])
+      await expect(
+        page.getByRole("button", { name: absent }),
+        `${url}: ${absent} has no column to write to`,
+      ).toHaveCount(0);
+  }
+
+  // Editing the English text leaves the French alone, end to end.
+  await page.goto("/admin/referentiels/reference-consommables");
+  const name = () => page.getByLabel(/^Nom/).first();
+  await expect(name()).toBeVisible();
+  const french = await name().inputValue();
+  await page.getByRole("button", { name: /^EN — English/ }).click();
+  await name().fill("Bloc125 English name");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await page.reload();
+  await expect(name()).toBeVisible();
+  expect(await name().inputValue(), "the French text was overwritten").toBe(
+    french,
+  );
+  await page.getByRole("button", { name: /^EN — English/ }).click();
+  expect(await name().inputValue()).toBe("Bloc125 English name");
+
+  // And the public site reads each language from its own column.
+  await page.goto("/en/referentiels/shop");
+  await expect(page.getByText("Bloc125 English name")).toBeVisible();
+  await page.goto("/fr/referentiels/shop");
+  await expect(page.getByText(french)).toBeVisible();
+  await expect(page.getByText("Bloc125 English name")).toHaveCount(0);
+
+  // A guide really is stored in all five, so its tabs keep all five — and say
+  // which of them the public cannot see, so a translation that is written and
+  // invisible does not read as a save that failed.
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "de", active: false },
+  });
+  await page.goto("/admin/guides/new");
+  const german = page.getByRole("tab", { name: /Deutsch/ });
+  await expect(german).toBeVisible();
+  await expect(german).toContainText("masquée sur le site");
+  await expect(
+    page.getByRole("tab", { name: /Français/ }),
+    "an always-active language is never marked hidden",
+  ).not.toContainText("masquée sur le site");
+
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "de", active: true },
+  });
+  await context.close();
+});
+
+// Codex review (PR #149): the account menu is reachable on a phone.
+//
+// Below 1024 px the side column is a drawer, and the account menu is
+// portalled out of it to the body. On the ordinary popover step of the scale
+// it opened *underneath* the drawer: measured, `elementFromPoint` on its own
+// "Mon compte" entry returned the drawer. Since that menu is the only way
+// into /admin/account, a phone or tablet admin could not reach their own
+// password or two-factor settings at all.
+test("Bloc 125/3: the account menu opens above the drawer on a phone", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 420, height: 860 },
+  });
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  await page.getByRole("button", { name: "Compte de rootadmin" }).click();
+  const item = page.getByRole("menuitem", { name: "Mon compte" });
+  await expect(item).toBeVisible();
+
+  // Visible is not enough — the drawer covered it while it was "visible".
+  const box = (await item.boundingBox())!;
+  const covering = await page.evaluate(
+    ({ x, y }) =>
+      Boolean(document.elementFromPoint(x, y)?.closest('[role="menuitem"]')),
+    { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+  );
+  expect(covering, "something is covering the account menu").toBe(true);
+
+  // The proof that matters: it opens the screen.
+  await item.click();
+  await expect(page).toHaveURL(/\/admin\/account$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Mon compte",
+  );
 
   await context.close();
 });

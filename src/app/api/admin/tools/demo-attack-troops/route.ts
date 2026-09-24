@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { leagues } from "@/lib/player-settings";
@@ -25,5 +26,6 @@ export async function PUT(request: Request) {
     actorName: session.user.name ?? session.user.id,
     target: "demo-attack-troops",
   });
+  await revalidateContent("tools");
   return NextResponse.json(percentages);
 }

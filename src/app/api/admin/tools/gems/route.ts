@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { parseGemParameters } from "@/lib/gem-parameters";
@@ -24,5 +25,6 @@ export async function PUT(request: Request) {
     actorName: session.user.name ?? session.user.id,
     target: "gems",
   });
+  await revalidateContent("references", "gems");
   return NextResponse.json(parameters);
 }

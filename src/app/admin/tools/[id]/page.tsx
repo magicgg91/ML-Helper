@@ -43,6 +43,12 @@ export default async function EditToolPage({
     getTranslations("admin.referentiels"),
     getTranslations(),
   ]);
+  // Bloc 125 §8: a screen is named after the thing it edits, with the name
+  // the rest of the site already uses for it — "Outils / Templiers", not
+  // "Outils / Paramètres de coût des Templiers". Each screen used to carry a
+  // second, longer phrase of its own, so the same reference was called two
+  // different things depending on which table you came from, and some of
+  // them started with a verb while others did not.
   // Bloc 35/7.1, updated Bloc 50, generalised Bloc 119: the shared edit points
   // (Templiers, Gemmes) are reached from either table, and the ?from query
   // param — set by adminToolEditHref per the slug that linked here — says
@@ -78,7 +84,7 @@ export default async function EditToolPage({
         initialLadder={await getRankingLadder()}
         backHref={backHref}
         backLabel={backLabel}
-        title={t("ranking-editor")}
+        title={names("ranking.name")}
       />
     );
   }
@@ -92,7 +98,7 @@ export default async function EditToolPage({
         initialPresentation={await getTemplarPresentation()}
         backHref={backHref}
         backLabel={backLabel}
-        title={t("templar-parameters")}
+        title={references("references.templiers")}
       />
     );
   }
@@ -102,7 +108,7 @@ export default async function EditToolPage({
         initial={await getXpGainTiers()}
         backHref={backHref}
         backLabel={backLabel}
-        title={t("xp-gain-rate-editor")}
+        title={names("xp-gain-rate.name")}
       />
     );
   }
@@ -112,7 +118,7 @@ export default async function EditToolPage({
         initial={await getDemoPercentages()}
         backHref={backHref}
         backLabel={backLabel}
-        title={t("demo-attack-troops-editor")}
+        title={names("demo-attack-troops.name")}
       />
     );
   }
@@ -122,7 +128,7 @@ export default async function EditToolPage({
         initial={await getGemParameters()}
         backHref={backHref}
         backLabel={backLabel}
-        title={t("gems-editor")}
+        title={references("references.gemmes")}
       />
     );
   }

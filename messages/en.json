@@ -762,9 +762,18 @@
         "disabled": "Two-factor authentication disabled.",
         "invalid": "The authentication code is invalid or expired.",
         "setup-error": "Unable to start two-factor authentication setup.",
-        "disable-error": "The password or authentication code is invalid."
+        "disable-error": "The password or authentication code is invalid.",
+        "status-on": "On",
+        "status-off": "Off",
+        "disable-confirm": "Two-factor authentication will be turned off on your account. You can turn it back on at any time.",
+        "your-password": "Your password"
       },
-      "title": "My account"
+      "title": "My account",
+      "menu": "{username}’s account",
+      "subtitle": "Your password and your two-factor authentication.",
+      "password-hint": "12 characters minimum.",
+      "confirm-password": "Confirm the new password",
+      "password-mismatch": "The new password and its confirmation do not match."
     },
     "dashboard": {
       "eyebrow": "Overview",
@@ -865,10 +874,6 @@
         "title": "Title",
         "actions": "Actions"
       },
-      "reference-combat": "Edit Combat Equipment",
-      "reference-expedition": "Edit Expedition Equipment",
-      "reference-level-up": "Edit Level Up",
-      "reference-consommables": "Edit the Shop",
       "references": {
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
@@ -882,7 +887,6 @@
       "enabled": "Reference table enabled.",
       "disabled": "Reference table disabled.",
       "no-results": "No reference table found.",
-      "reference-events": "Edit Events",
       "subtitle": "The game's data tables, and the tool that reads each one.",
       "search-label": "Search for a reference table",
       "search-placeholder": "Reference table name…",
@@ -940,7 +944,8 @@
         "draft": "Draft",
         "pending_review": "In review",
         "published": "Published"
-      }
+      },
+      "language-hidden": "hidden on the site"
     },
     "tools": {
       "eyebrow": "Functional content",
@@ -963,11 +968,6 @@
       "server-error": "Unable to reach the server. Try again later.",
       "edit": "Edit",
       "city-parameters": "Shared City parameters",
-      "ranking-editor": "Ranking thresholds",
-      "templar-parameters": "Templar cost parameters",
-      "xp-gain-rate-editor": "XP gain rate tiers",
-      "demo-attack-troops-editor": "Demo attack percentages",
-      "gems-editor": "Gem parameters",
       "subtitle": "The public tools, where their parameters come from, and their visibility.",
       "search-label": "Search for a tool",
       "search-placeholder": "Tool name…",
@@ -1065,7 +1065,8 @@
         "image": "Image path",
         "name": "Name",
         "description": "Description",
-        "cost": "Cost (Sapphires)"
+        "cost": "Cost (Sapphires)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Add ({category})",
       "confirm-remove": "Permanently delete this item?",
@@ -1215,7 +1216,8 @@
       "description-of": "Description of {name}",
       "description-to-write": "Description to write",
       "temple-base-of": "Temple base of {name}",
-      "bonus-of": "Bonus of {name}"
+      "bonus-of": "Bonus of {name}",
+      "preview-levels": "Preview — cost of levels {first} to {last}"
     },
     "xp-gain-rate": {
       "formula": "XP gain rate = f(target VP / attacker VP ratio)",
@@ -1247,11 +1249,10 @@
       "price-field": "{league} price",
       "subtitle": "A gem’s value per skill and per league, and the purchase price in sapphires.",
       "skill": "Skill",
-      "league": "League",
-      "price-column": "Price",
       "price-help": "Bronze has no purchase price in the game.",
       "sapphires": "sapphires",
-      "no-price": "—"
+      "no-price": "—",
+      "price-row": "Price (sapphires)"
     },
     "users": {
       "title": "Admin users",
@@ -1457,7 +1458,8 @@
       "mode-split": "Side by side",
       "mode-preview": "Preview",
       "mode-label": "Editor display",
-      "todo-list-label": "Fields to fill in"
+      "todo-list-label": "Fields to fill in",
+      "language-hidden": "hidden on the site"
     },
     "forbidden": {
       "eyebrow": "Error 403",
@@ -1513,7 +1515,11 @@
       "always-active": "Always active",
       "no-guides": "No guide"
     },
-    "open-menu": "Open the menu"
+    "open-menu": "Open the menu",
+    "theme": {
+      "to-dark": "Switch to the dark theme",
+      "to-light": "Switch to the light theme"
+    }
   },
   "roles": {
     "super_admin": "Super Admin",

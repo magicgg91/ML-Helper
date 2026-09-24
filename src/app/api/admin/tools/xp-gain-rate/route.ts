@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { parseXpTiers } from "@/lib/combat-calculators";
@@ -25,5 +26,6 @@ export async function PUT(request: Request) {
     actorName: session.user.name ?? session.user.id,
     target: "xp-gain-rate",
   });
+  await revalidateContent("tools");
   return NextResponse.json({ tiers });
 }

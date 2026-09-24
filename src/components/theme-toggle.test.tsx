@@ -101,3 +101,27 @@ describe("ThemeToggle", () => {
     expect(themeColor()).toBe(themeBackground.dark);
   });
 });
+
+describe("Bloc 125 §2: the admin's own skin and wording", () => {
+  it("takes a class and a pair of labels, and leaves the public defaults alone", () => {
+    render(
+      <ThemeToggle
+        className="admin-theme-button"
+        labels={{
+          toDark: "Passer en thème sombre",
+          toLight: "Passer en thème clair",
+        }}
+      />,
+    );
+    // Starts dark (the pre-paint default), so the button offers the light one.
+    const button = screen.getByRole("button", {
+      name: "Passer en thème clair",
+    });
+    expect(button).toHaveClass("admin-theme-button");
+    expect(button).not.toHaveClass("theme-toggle");
+    // The public header's own wording is nowhere near this instance.
+    expect(
+      screen.queryByRole("button", { name: "Activer le mode clair" }),
+    ).toBeNull();
+  });
+});

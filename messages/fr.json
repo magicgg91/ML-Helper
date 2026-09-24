@@ -762,9 +762,18 @@
         "disabled": "Authentification à deux facteurs désactivée.",
         "invalid": "Le code d’authentification est invalide ou expiré.",
         "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
-        "disable-error": "Le mot de passe ou le code d’authentification est invalide."
+        "disable-error": "Le mot de passe ou le code d’authentification est invalide.",
+        "status-on": "Activée",
+        "status-off": "Désactivée",
+        "disable-confirm": "L’authentification à deux facteurs sera désactivée sur ton compte. Tu pourras la réactiver à tout moment.",
+        "your-password": "Ton mot de passe"
       },
-      "title": "Mon compte"
+      "title": "Mon compte",
+      "menu": "Compte de {username}",
+      "subtitle": "Ton mot de passe et ton authentification à deux facteurs.",
+      "password-hint": "12 caractères au minimum.",
+      "confirm-password": "Confirmation du nouveau mot de passe",
+      "password-mismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas."
     },
     "dashboard": {
       "eyebrow": "Vue d’ensemble",
@@ -865,10 +874,6 @@
         "title": "Titre",
         "actions": "Actions"
       },
-      "reference-combat": "Éditer les Équipements de Combat",
-      "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Progression",
-      "reference-consommables": "Éditer la Boutique",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
@@ -882,7 +887,6 @@
       "enabled": "Référentiel activé.",
       "disabled": "Référentiel désactivé.",
       "no-results": "Aucun référentiel.",
-      "reference-events": "Éditer les Événements",
       "subtitle": "Les tables de données du jeu, et l’outil qui s’en sert.",
       "search-label": "Rechercher un référentiel",
       "search-placeholder": "Nom du référentiel…",
@@ -940,7 +944,8 @@
         "draft": "Brouillon",
         "pending_review": "En relecture",
         "published": "Publié"
-      }
+      },
+      "language-hidden": "masquée sur le site"
     },
     "tools": {
       "eyebrow": "Contenu fonctionnel",
@@ -963,11 +968,6 @@
       "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
       "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
-      "ranking-editor": "Seuils du classement",
-      "templar-parameters": "Paramètres de coût des Templiers",
-      "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
-      "demo-attack-troops-editor": "Pourcentages d’attaque démo",
-      "gems-editor": "Paramètres des Gemmes",
       "subtitle": "Les outils publics, leur source de paramètres et leur visibilité.",
       "search-label": "Rechercher un outil",
       "search-placeholder": "Nom de l’outil…",
@@ -1065,7 +1065,8 @@
         "image": "Chemin de l’image",
         "name": "Nom",
         "description": "Description",
-        "cost": "Coût (Saphirs)"
+        "cost": "Coût (Saphirs)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Ajouter ({category})",
       "confirm-remove": "Supprimer définitivement cet objet ?",
@@ -1215,7 +1216,8 @@
       "description-of": "Description de {name}",
       "description-to-write": "Description à rédiger",
       "temple-base-of": "Base temple de {name}",
-      "bonus-of": "Bonus de {name}"
+      "bonus-of": "Bonus de {name}",
+      "preview-levels": "Aperçu — coût des niveaux {first} à {last}"
     },
     "xp-gain-rate": {
       "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",
@@ -1247,11 +1249,10 @@
       "price-field": "Prix {league}",
       "subtitle": "Valeur d’une gemme par compétence et par ligue, et prix d’achat en saphirs.",
       "skill": "Compétence",
-      "league": "Ligue",
-      "price-column": "Prix",
       "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu.",
       "sapphires": "saphirs",
-      "no-price": "—"
+      "no-price": "—",
+      "price-row": "Prix (saphirs)"
     },
     "users": {
       "title": "Utilisateurs administrateurs",
@@ -1457,7 +1458,8 @@
       "mode-split": "Côte à côte",
       "mode-preview": "Aperçu",
       "mode-label": "Affichage de l’éditeur",
-      "todo-list-label": "Champs à compléter"
+      "todo-list-label": "Champs à compléter",
+      "language-hidden": "masquée sur le site"
     },
     "forbidden": {
       "eyebrow": "Erreur 403",
@@ -1513,7 +1515,11 @@
       "always-active": "Toujours active",
       "no-guides": "Aucun guide"
     },
-    "open-menu": "Ouvrir le menu"
+    "open-menu": "Ouvrir le menu",
+    "theme": {
+      "to-dark": "Passer en thème sombre",
+      "to-light": "Passer en thème clair"
+    }
   },
   "roles": {
     "super_admin": "Super Admin",

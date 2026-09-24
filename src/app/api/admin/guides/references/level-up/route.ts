@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import {
@@ -23,5 +24,6 @@ export async function PUT(request: Request) {
     actorName: session.user.name ?? session.user.id,
     target: "level-up",
   });
+  await revalidateContent("references", "level-up");
   return NextResponse.json(parameters);
 }

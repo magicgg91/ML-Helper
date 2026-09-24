@@ -13,7 +13,7 @@ import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
 } from "@/lib/templars-presentation";
-import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { EditorHeader } from "./admin-editor-header";
@@ -45,10 +45,6 @@ type TemplarsScreen = {
 };
 
 /** The two editorial languages this catalog stores (as every reference does). */
-function fieldLocale(locale: LaunchLocale): "fr" | "en" {
-  return locale === "fr" ? "fr" : "en";
-}
-
 const previewLevels = [1, 2, 3, 4, 5];
 
 export function TemplarsEditor({
@@ -64,7 +60,7 @@ export function TemplarsEditor({
   const t = useTranslations("admin.templar-parameters");
   const names = useTranslations("game.templars");
   const languageNames = useTranslations("admin.config.languages");
-  const [locale, setLocale] = useState<LaunchLocale>("fr");
+  const [locale, setLocale] = useState<ContentPairLocale>("fr");
   const form = useEditorForm<TemplarsScreen>({
     initial: {
       parameters: initialParameters,
@@ -74,7 +70,7 @@ export function TemplarsEditor({
   });
   const { parameters, presentation } = form.value;
 
-  const lang = fieldLocale(locale);
+  const lang = locale;
   const nameKey = `name_${lang}` as const;
   const descriptionKey = `description_${lang}` as const;
 
@@ -114,7 +110,12 @@ export function TemplarsEditor({
 
       <EditorSection title={t("cost-section")}>
         <FormulaBox>{t("formula")}</FormulaBox>
-        <div className="flex flex-wrap gap-3">
+        {/* Bloc 125 §5: the preview sits on the same line as the two numbers
+            it is computed from, aligned on their baseline, instead of a
+            paragraph below them. What the ratio does to the first five
+            levels is the answer to "what should I type here" — it belongs
+            beside the field, not under it. */}
+        <div className="grid items-end gap-5 lg:grid-cols-[200px_200px_minmax(0,1fr)]">
           <NumberField
             label={t("base")}
             value={parameters.base}
@@ -137,22 +138,39 @@ export function TemplarsEditor({
               }))
             }
           />
-        </div>
-        <div>
-          <p className="admin-eyebrow mb-2 text-admin-dim">{t("preview")}</p>
-          <ul className="flex flex-wrap gap-2">
-            {previewLevels.map((level) => (
-              <li
-                key={level}
-                className="rounded-admin-control border border-admin-card-border bg-admin-head px-3 py-2 text-sm"
-              >
-                <span className="text-admin-dim">{t("level", { level })}</span>{" "}
-                <span className="font-semibold tabular-nums text-admin-text">
-                  {formatGameNumber(templarLevelCost(level, parameters))}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="admin-eyebrow text-admin-dim">
+              {t("preview-levels", {
+                first: previewLevels[0],
+                last: previewLevels[previewLevels.length - 1],
+              })}
+            </span>
+            {/* The five costs as one line of figures, in the order the
+                eyebrow above announces. The labelled chips this replaces
+                wrapped onto a second line at this width, which broke the
+                36 px the row is aligned on; each figure still says which
+                level it is, for anyone reading with a screen reader.
+                `tabular-nums`, not a monospace face: Bloc 119 §1 keeps that
+                family for hours, identifiers and language codes. */}
+            <ol className="flex h-9 items-center gap-2 overflow-hidden rounded-admin-control border border-admin-card-border bg-admin-head px-3 text-sm">
+              {previewLevels.map((level, index) => (
+                <li
+                  key={level}
+                  className="flex items-center gap-2 whitespace-nowrap"
+                >
+                  {index > 0 && (
+                    <span aria-hidden="true" className="text-admin-dim">
+                      ·
+                    </span>
+                  )}
+                  <span className="sr-only">{t("level", { level })}</span>
+                  <span className="font-semibold tabular-nums text-admin-text">
+                    {formatGameNumber(templarLevelCost(level, parameters))}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </EditorSection>
 
@@ -161,15 +179,16 @@ export function TemplarsEditor({
         description={t("presentation-help")}
         actions={
           <LangTabs
+            locales={contentPairLocales}
             locale={locale}
             onChange={setLocale}
             label={t("texts-in")}
             filled={(code) => {
-              const field = `name_${fieldLocale(code)}` as const;
+              const field = `name_${code}` as const;
               return templarKeys.some((key) => presentation[key][field].trim());
             }}
             languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
+              contentPairLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)

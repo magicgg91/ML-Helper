@@ -101,7 +101,9 @@ describe("Bloc 119: the Boutique editor", () => {
     // The screen this replaces edited several lines of Markdown through a
     // single-line input a few centimetres wide.
     renderEditor();
-    const description = within(panel()).getByLabelText("Description");
+    const description = within(panel()).getByLabelText(
+      "Description · Markdown",
+    );
     expect(description.tagName).toBe("TEXTAREA");
     expect(description).toHaveValue(
       "## Titre\nLa boutique ouvre chaque semaine.",
@@ -237,5 +239,38 @@ describe("Bloc 119: descriptionExcerpt", () => {
   it("says nothing about an empty description", () => {
     expect(descriptionExcerpt("")).toBe("");
     expect(descriptionExcerpt("   \n  ")).toBe("");
+  });
+});
+
+describe("Bloc 125 §7: the description box holds a description", () => {
+  it("is six rows tall, resizable, and set for prose", () => {
+    renderEditor();
+    const description = within(panel()).getByLabelText(
+      "Description · Markdown",
+    );
+    expect(description.tagName).toBe("TEXTAREA");
+    expect(description).toHaveAttribute("rows", "6");
+    expect(description.className).toContain("min-h-[150px]");
+    expect(description.className).toContain("resize-y");
+    // 13px over 1.6 — read back as a paragraph, not as a one-line field.
+    expect(description.className).toContain("text-[13px]");
+    expect(description.className).toContain("leading-[1.6]");
+    expect(description.className).not.toContain("font-admin-mono");
+  });
+
+  it("keeps the sapphire cost under it, for the categories that have one", () => {
+    renderEditor();
+    // The screen opens on Intro, whose rows are a currency explained rather
+    // than an item priced — so there is nothing to cost there.
+    expect(within(panel()).queryByLabelText(/Coût/)).toBeNull();
+    fireEvent.click(screen.getByText("Conseiller de guerre"));
+    const cost = within(panel()).getByLabelText(/Coût/);
+    expect(cost).toBeVisible();
+    // Under the description, not beside it.
+    expect(
+      within(panel())
+        .getByLabelText("Description · Markdown")
+        .compareDocumentPosition(cost) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

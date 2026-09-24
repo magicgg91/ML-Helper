@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { hiddenPublicLocales } from "@/lib/locale-settings";
 import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
 import { GuideEditor } from "@/components/admin-guide-editor";
@@ -17,12 +18,13 @@ export default async function EditGuidePage({
   searchParams,
 }: PageProps<"/admin/guides/[id]">) {
   const session = await requireCapability("guides.write");
-  const [t, languages, locale] = await Promise.all([
+  const [t, languages, locale, hiddenLocales] = await Promise.all([
     getTranslations("admin.guides"),
     // Named where the Configuration screen names them (Bloc 119): one list of
     // language names for the whole admin.
     getTranslations("admin.config.languages"),
     getLocale(),
+    hiddenPublicLocales(),
   ]);
   const [{ id }, { lang }] = await Promise.all([params, searchParams]);
   // The guides list links a translation as `?lang=de`; anything else opens on
@@ -37,6 +39,7 @@ export default async function EditGuidePage({
     content = translationRecord(guide.content);
   return (
     <GuideEditor
+      hiddenLocales={hiddenLocales}
       canPublish={can(session.user.role, "guides.publish")}
       backHref="/admin/guides"
       backLabel={t("title")}
