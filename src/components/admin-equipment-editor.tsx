@@ -64,6 +64,18 @@ const expeditionUnconfirmedFields = [
   "secondary_stat_pct",
 ];
 
+/**
+ * What each indicator row is called when the admin has not renamed it — the
+ * same default the public page falls back to, so three anonymous rows are
+ * never what the admin is asked to edit.
+ */
+const secondaryDefaultLabels: Record<string, string> = {
+  mergeCost: "row-merge",
+  gemSlots: "row-gems",
+  skydust: "row-destruction",
+  dismantle: "row-destruction",
+};
+
 /** How many sets are rendered before "Afficher plus de sets". */
 const setsPerPage = 12;
 
@@ -460,6 +472,10 @@ export function EquipmentReferenceEditor({
 
   const labelKey =
     `metric_label_${labelLocale === "fr" ? "fr" : "en"}` as const;
+  /** The row's own name: what the admin typed, or the canonical default. */
+  const secondaryName = (index: number) =>
+    form.secondary[index][labelKey] ||
+    equipment(secondaryDefaultLabels[secondaryInitial.rows[index].key]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -541,6 +557,11 @@ export function EquipmentReferenceEditor({
                   <td className="px-3">
                     <input
                       aria-label={t("secondary-row-label", { row: index + 1 })}
+                      placeholder={equipment(
+                        secondaryDefaultLabels[
+                          secondaryInitial.rows[index].key
+                        ],
+                      )}
                       className="admin-control admin-focus h-9 w-full min-w-[140px] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
                       type="text"
                       value={row[labelKey]}
@@ -559,7 +580,7 @@ export function EquipmentReferenceEditor({
                   {mergeCostRarityKeys.map((key) => (
                     <td key={key} className="px-3 text-right">
                       <NumberField
-                        label={`${row[labelKey] || t("secondary-row-label", { row: index + 1 })} ${game(`rarities.${rarityKeys[key] ?? key}`)}`}
+                        label={`${secondaryName(index)} ${game(`rarities.${rarityKeys[key] ?? key}`)}`}
                         hideLabel
                         width="s"
                         value={row[key] === "" ? null : Number(row[key])}

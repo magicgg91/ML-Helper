@@ -260,6 +260,20 @@ describe("Bloc 119: the equipment reference editor", () => {
     });
   });
 
+  it("names an indicator row nobody has renamed", () => {
+    // Three empty label boxes would leave the admin editing anonymous rows;
+    // the placeholder is the same name the public page falls back to.
+    renderCombat(rows);
+    expect(screen.getByLabelText("Libellé de l’indicateur 2")).toHaveAttribute(
+      "placeholder",
+      "Gemmes",
+    );
+    // And the numbers of that row are named by it, not by its position.
+    expect(screen.getByLabelText("Gemmes Commun")).toHaveValue("0");
+    // A row the admin did rename keeps their word.
+    expect(screen.getByLabelText("Fusion Commun")).toHaveValue("1");
+  });
+
   it("says it saved in the admin's one save vocabulary", async () => {
     // Not "Référentiel enregistré." — every edit screen says the same thing.
     renderCombat(rows);

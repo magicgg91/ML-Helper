@@ -78,6 +78,25 @@ describe("Bloc 119: the Boutique editor", () => {
     expect(screen.queryByText("## Titre")).toBeNull();
   });
 
+  it("opens on the first section that has something in it", () => {
+    // An empty Intro would otherwise show a list with no panel beside it.
+    const empty = { ...catalog, intro: [] };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}", { status: 200 }),
+    );
+    render(
+      <ShopReferenceEditor
+        initialCatalog={structuredClone(empty)}
+        backHref="/admin/referentiels"
+        backLabel="Référentiels"
+        title="Boutique"
+      />,
+    );
+    expect(within(panel()).getByLabelText("Nom")).toHaveValue(
+      "Conseiller de guerre",
+    );
+  });
+
   it("edits a description in a box that holds more than one line", () => {
     // The screen this replaces edited several lines of Markdown through a
     // single-line input a few centimetres wide.

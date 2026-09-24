@@ -77,7 +77,14 @@ export function ShopReferenceEditor({
   const [selected, setSelected] = useState<{
     section: ShopSection;
     index: number;
-  }>({ section: "intro", index: 0 });
+  }>(() => ({
+    // The first section that has anything in it: opening on an empty Intro
+    // would show a list with no panel beside it.
+    section:
+      shopSections.find((section) => initialCatalog[section].length > 0) ??
+      "intro",
+    index: 0,
+  }));
   const [removing, setRemoving] = useState<{
     section: ShopSection;
     index: number;

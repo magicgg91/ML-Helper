@@ -70,8 +70,11 @@ describe("admin page translations", () => {
 
   it("covers the existing ranking tool editor", async () => {
     const { en, fr } = await translators();
-    expect(en("admin.ranking.save")).toBe("Save ranking");
-    expect(fr("admin.ranking.save")).toBe("Enregistrer le classement");
+    // Bloc 119: the screen's own save wording moved to the shared
+    // admin.editor vocabulary, so this spot-check reads a key the Classement
+    // editor still owns.
+    expect(en("admin.ranking.add")).toBe("Add range");
+    expect(fr("admin.ranking.add")).toBe("Ajouter une plage");
   });
 
   it("covers /admin/users", async () => {
@@ -94,8 +97,13 @@ describe("admin page translations", () => {
 
   it("covers reference editors integrated into /admin/guides", async () => {
     const { en, fr } = await translators();
-    expect(en("admin.references.save")).toBe("Save entire table");
-    expect(fr("admin.references.save")).toBe("Enregistrer toute la table");
+    // Bloc 119: likewise — and the sentence the brief requires kept.
+    expect(en("admin.references.unknown-value-warning")).toBe(
+      "Only fill in an unknown value once it is confirmed in game.",
+    );
+    expect(fr("admin.references.unknown-value-warning")).toBe(
+      "Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
+    );
   });
 
   it("covers the legal notice editor", async () => {
