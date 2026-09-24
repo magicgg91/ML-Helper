@@ -8,6 +8,7 @@ import { ConfirmDialog } from "./admin-confirm-dialog";
 import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { FilterChips, SearchInput } from "./admin-filters";
 import { OverflowMenu, type OverflowMenuItem } from "./admin-overflow-menu";
+import { useServerRows } from "./use-server-rows";
 import { formatAdminDate, formatAdminShortDate } from "@/lib/admin-dates";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
@@ -73,26 +74,10 @@ export function AdminGuidesList({
   const t = useTranslations("admin.guides");
   const common = useTranslations("admin.common");
   const locale = useLocale();
-  const [guides, setGuides] = useState(rows);
-  // Bloc 126/D: the rows are held in state because deleting a guide and
-  // changing its status edit the list in place — but the state was seeded
-  // once and never re-seeded, so anything the server re-rendered afterwards
-  // was ignored. Switching the admin to English is exactly that: the server
-  // sends the same guides with their English titles, `router.refresh()`
-  // repaints the whole shell around this table, and the table kept showing
-  // the French titles it had been mounted with until a full page load.
-  //
-  // Re-seeding during render rather than in an effect, the way NumberField
-  // does: an effect would paint the stale list for one frame first. `rows` is
-  // a new array only when the server really re-rendered, so this does not
-  // fire on ordinary client re-renders — and both mutations above write to
-  // the server before they touch this state, so a fresh server list always
-  // already carries them.
-  const [lastRows, setLastRows] = useState(rows);
-  if (lastRows !== rows) {
-    setLastRows(rows);
-    setGuides(rows);
-  }
+  // Bloc 126/D, généralisé au Bloc 128: the rows follow what the server
+  // re-renders, so a language change reaches the table and not only the
+  // chrome around it.
+  const [guides, setGuides] = useServerRows(rows);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [message, setMessage] = useState("");

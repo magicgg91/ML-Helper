@@ -8,6 +8,7 @@ import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { FilterChips, SearchInput } from "./admin-filters";
 import { Pill } from "./admin-pill";
 import { VisibilitySwitch } from "./admin-visibility-switch";
+import { useServerRows } from "./use-server-rows";
 
 /**
  * Bloc 119: the Outils list.
@@ -56,7 +57,10 @@ export function AdminToolsList({
 }) {
   const t = useTranslations("admin.tools");
   const common = useTranslations("admin.common");
-  const [tools, setTools] = useState(rows);
+  // Bloc 128: the rows follow what the server re-renders. Their labels
+  // and their order are resolved server-side in the admin's own language,
+  // so a language change has to reach them and not only the chrome.
+  const [tools, setTools] = useServerRows(rows);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("all");
   const [message, setMessage] = useState("");

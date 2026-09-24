@@ -4064,3 +4064,61 @@ test("Bloc 121 retry drill: the second attempt starts from a clean database", as
   await page.goto("/admin");
   await expect(page.getByText("Vue d’ensemble")).toBeVisible();
 });
+
+// Bloc 128: the language switch refreshes the admin in place rather than
+// reloading it, and every screen has to follow — not only the menu and the
+// page's own heading, but the rows of the tables themselves.
+//
+// Three screens were not following, for two different reasons: Outils and
+// Référentiels held their rows in state seeded once, and Utilisateurs held
+// its columns in a memo whose dependency list left the translators out. This
+// walks the admin in French, switches to English without leaving the page,
+// and checks that nothing French is left behind in the data.
+test("every admin list follows a language change made in place", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const switchTo = async (code: "FR" | "EN") => {
+    await page
+      .getByRole("group", { name: /Langue|Language/ })
+      .getByRole("button", { name: code })
+      .click();
+  };
+
+  // Outils: the tool names are server-side translations, and so is the order
+  // they are sorted in.
+  await page.goto("/admin/tools");
+  await expect(page.getByText("Coût de Ville")).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByText("City Cost")).toBeVisible();
+  await expect(page.getByText("Coût de Ville")).toHaveCount(0);
+  await switchTo("FR");
+
+  // Référentiels: same, on its titles and on the tool each one feeds.
+  await page.goto("/admin/referentiels");
+  await expect(page.getByText("Équipements de Combat").first()).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByText("Combat Equipment").first()).toBeVisible();
+  await expect(page.getByText("Équipements de Combat")).toHaveCount(0);
+  await switchTo("FR");
+
+  // Utilisateurs: the rows are not translated, the table around them is —
+  // its headers, and the "(toi)" that marks the signed-in account.
+  await page.goto("/admin/users");
+  await expect(
+    page.getByRole("columnheader", { name: "Utilisateur" }),
+  ).toBeVisible();
+  await expect(page.getByText("(toi)")).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByRole("columnheader", { name: "User" })).toBeVisible();
+  await expect(page.getByText("(you)")).toBeVisible();
+  await expect(page.getByText("(toi)")).toHaveCount(0);
+  await switchTo("FR");
+});

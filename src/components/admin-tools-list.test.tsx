@@ -95,8 +95,8 @@ const rows: AdminToolRow[] = [
   },
 ];
 
-function renderList(props: Partial<Parameters<typeof AdminToolsList>[0]> = {}) {
-  render(
+function list(props: Partial<Parameters<typeof AdminToolsList>[0]> = {}) {
+  return (
     <NextIntlClientProvider locale="fr" messages={messages}>
       <AdminToolsList
         rows={rows}
@@ -105,11 +105,34 @@ function renderList(props: Partial<Parameters<typeof AdminToolsList>[0]> = {}) {
         canOpenReferences
         {...props}
       />
-    </NextIntlClientProvider>,
+    </NextIntlClientProvider>
   );
 }
 
+function renderList(props: Partial<Parameters<typeof AdminToolsList>[0]> = {}) {
+  return render(list(props));
+}
+
 describe("Bloc 119: the Outils table", () => {
+  // Bloc 128: the tool names and the order they are in are both resolved on
+  // the server, in the admin's own language. The language switch refreshes
+  // the page without reloading it, so the table has to take what comes back —
+  // before this, it kept the French names under an English page until
+  // somebody reloaded by hand.
+  it("takes the rows the server re-renders, so a language change lands", () => {
+    const { rerender } = renderList();
+    expect(screen.getByText("Récompenses de Production")).toBeInTheDocument();
+    rerender(
+      list({
+        rows: rows.map((row) =>
+          row.id === "2" ? { ...row, label: "Production Rewards" } : row,
+        ),
+      }),
+    );
+    expect(screen.getByText("Production Rewards")).toBeInTheDocument();
+    expect(screen.queryByText("Récompenses de Production")).toBeNull();
+  });
+
   it("groups the rows by category, with a count per group", () => {
     renderList();
     expect(
