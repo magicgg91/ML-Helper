@@ -23,6 +23,12 @@ vi.mock("next-intl/server", () => ({
   },
 }));
 vi.mock("next/server", () => ({ connection: async () => undefined }));
+// Bloc 129 §3.9 : la page lit la description du référentiel en base
+// (Bloc 130). Aucune n'est écrite ici — ni en production à la livraison —
+// et la ligne de description n'est alors pas rendue.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({}),
+}));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: vi.fn(async () => ({
     "combat-equipment": true,
@@ -115,7 +121,10 @@ describe("ReferencePage metadata (Bloc 42/J)", () => {
 });
 
 describe("ReferencePage", () => {
-  it("Bloc35 1.3: gives the title a one-line class, same treatment as the tools page", async () => {
+  // Bloc 129 §3.9 : le titre passe dans l'en-tête de page commun (§2) et
+  // perd la classe qui le forçait sur une ligne. Ce qui compte reste le
+  // même : un seul H1, qui nomme le référentiel.
+  it("Bloc129/§3.9: nomme le référentiel dans l'en-tête de page", async () => {
     render(
       await ReferencePage({
         params: Promise.resolve({ locale: "fr", slug: "expedition-equipment" }),
@@ -124,8 +133,9 @@ describe("ReferencePage", () => {
     );
     const heading = screen.getByRole("heading", {
       name: "Équipements d’Expédition",
+      level: 1,
     });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc 67: renamed from "Level Up" — the slug/URL stay unchanged
@@ -139,7 +149,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("level-up-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Progression" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   it("Bloc36/A: routes the new 'gems' slug to GemsReferenceTable, the 5th reference actually built", async () => {
@@ -151,7 +161,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("gems-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Gemmes" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc 48/F: renamed Consommables -> Boutique, URL /consommables ->
@@ -165,7 +175,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("consumables-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Boutique" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc60: the 7th reference, routed the same way as every other one.
@@ -178,7 +188,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("events-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Événements" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc60: ships inactive by default — invisible on the public site until

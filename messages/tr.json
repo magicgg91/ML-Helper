@@ -138,7 +138,10 @@
     },
     "index-title": "Araçlar",
     "index-intro": "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet.",
-    "settings-note": "Oyuncu ayarlarını bir kez gir: bütün araçlar onları kullanır."
+    "settings-note": "Oyuncu ayarlarını bir kez gir: bütün araçlar onları kullanır.",
+    "further-reading": "Daha ileri git",
+    "kind": "Araç",
+    "kind-guide": "Rehber"
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
@@ -689,7 +692,11 @@
     "index-intro": "Temel verileri bul: ekipmandan mücevherlere ve tapınakçılara, mağaza sarf malzemelerine kadar oyunun kesin maliyetleri, istatistikleri ve kademeleri.",
     "missing-title": "Bir referans mı eksik?",
     "missing-text": "Burada hangi verileri görmek istediğini bize söyle.",
-    "missing-cta": "Öner"
+    "missing-cta": "Öner",
+    "catalog-short": {
+      "combat-equipment": "Savaş ekipmanı",
+      "expedition-equipment": "Sefer ekipmanı"
+    }
   },
   "combat-equipment": {
     "name": "Savaş Ekipmanı",

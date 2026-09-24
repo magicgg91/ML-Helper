@@ -138,7 +138,10 @@
     },
     "index-title": "Tools",
     "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision.",
-    "settings-note": "Fill in your player settings once: every tool picks them up."
+    "settings-note": "Fill in your player settings once: every tool picks them up.",
+    "further-reading": "Go further",
+    "kind": "Tool",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Player settings",
@@ -689,7 +692,11 @@
     "index-intro": "Find the key data: the game's exact costs, stats and tiers, from equipment to gems and templars, all the way to the shop's consumables.",
     "missing-title": "A reference missing?",
     "missing-text": "Tell us which data you would like to find here.",
-    "missing-cta": "Suggest"
+    "missing-cta": "Suggest",
+    "catalog-short": {
+      "combat-equipment": "Combat equip.",
+      "expedition-equipment": "Expedition equip."
+    }
   },
   "combat-equipment": {
     "name": "Combat Equipment",

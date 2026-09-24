@@ -138,7 +138,10 @@
     },
     "index-title": "Werkzeuge",
     "index-intro": "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung.",
-    "settings-note": "Trage deine Spielereinstellungen einmal ein: alle Werkzeuge übernehmen sie."
+    "settings-note": "Trage deine Spielereinstellungen einmal ein: alle Werkzeuge übernehmen sie.",
+    "further-reading": "Mehr dazu",
+    "kind": "Werkzeug",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Spielereinstellungen",
@@ -689,7 +692,11 @@
     "index-intro": "Finde die wichtigsten Daten: genaue Kosten, Werte und Stufen des Spiels, von der Ausrüstung über Edelsteine und Templer bis zu den Verbrauchsgütern des Shops.",
     "missing-title": "Fehlt eine Referenz?",
     "missing-text": "Sag uns, welche Daten du hier finden möchtest.",
-    "missing-cta": "Vorschlagen"
+    "missing-cta": "Vorschlagen",
+    "catalog-short": {
+      "combat-equipment": "Kampfausrüstung",
+      "expedition-equipment": "Expeditionsausr."
+    }
   },
   "combat-equipment": {
     "name": "Kampfausrüstung",

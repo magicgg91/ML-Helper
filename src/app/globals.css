@@ -839,13 +839,13 @@ select:where(:not(.admin-shell select)) {
    smaller) font-size clamp — `.public-main > h1` (a class + a type
    selector) outranks a lone class selector, so only their `white-space:
    nowrap` was actually landing, on text sized for this rule's huge
-   clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
-   Bloc 33/35's narrower clamps needed all along to actually apply.
-   Bloc 53/D: same exclusion for /guides and /referentiels' own smaller
-   titles, added below. */
-.hero h1,
-.public-main
-  > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title) {
+   clamp(2.25rem, 6vw, 4.8rem) instead.
+
+   Bloc 129 : les quatre exclusions tombent avec les classes qu'elles
+   visaient — plus aucun titre ne les porte, les pages d'index passant par
+   l'en-tête de page commun (§2). Reste .hero h1, seul à être encore rendu
+   par ce sélecteur. */
+.hero h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
   font-size: clamp(2.25rem, 6vw, 4.8rem);
@@ -5051,44 +5051,11 @@ body > main h1 {
   color: var(--on-accent);
 }
 
-/* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one
-   line at any viewport width instead of breaking onto 2 at narrow ones. */
-.tools-page-title {
-  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 35/1.3: same one-line treatment for the reference page titles, which
-   run a bit longer ("Équipements d'Expédition") than the tools subtitle. */
-.reference-page-title {
-  font-size: clamp(1rem, 1vw + 4.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 53/D: /guides and /referentiels get the same smaller-title + intro
-   sentence treatment /tools got in Bloc 38/K, reusing the homepage's own
-   Guides/Référentiels section copy (Home.guidesTitle/guidesDescription and
-   Home.referentielsTitle/referentielsDescription) instead of the short
-   index-page title these pages showed before. */
-.guides-page-title,
-.referentiels-page-title {
-  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 84: on real mobile widths, the clamp()'s font-size floor still left
-   .tools-page-title/.referentiels-page-title's own titles ("Décide avec
-   les bons chiffres", "Retrouve les données clés") too wide for the
-   viewport — nowrap then visually truncated the text instead of wrapping
-   it. Must come after both rules above in source order: same specificity,
-   so an earlier media-query override loses the cascade to a later
-   unconditional rule even while its own condition is active. */
-@media (max-width: 900px) {
-  .tools-page-title,
-  .referentiels-page-title {
-    white-space: normal;
-  }
-}
+/* Bloc 129 §3.2/§3.9 : .tools-page-title et .reference-page-title ont
+   disparu avec les titres qu'elles habillaient — les quatre pages d'index
+   et les pages référentiel passent par l'en-tête de page commun (§2), dont
+   le titre a sa propre taille (§1.1). Idem pour .guides-page-title et
+   .referentiels-page-title plus bas. */
 
 /* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
    count based on how many tiles there are — each column's floor is either
@@ -6539,5 +6506,244 @@ span.tool-share-dot.tool-share-stuff {
   .legal-body {
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.8 et §3.9 — les gabarits outil et référentiel.
+   --------------------------------------------------------------------- */
+.tool-page-head,
+.tool-nav-card,
+.further-reading {
+  width: min(75rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+.tool-page-head {
+  margin-top: 2rem;
+}
+/* §3.8 : la navigation entre outils, dans une carte. */
+.tool-nav-card {
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+/* La rangée des catégories : quatre colonnes égales sur fond creux. */
+.tool-nav-card .category-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  background: var(--sunk);
+}
+.tool-nav-card .category-btn {
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.5rem 0.6rem;
+  border-color: transparent;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--text3);
+  font-size: 0.85rem;
+}
+/* §3.8 : vignette carrée de 32 px, nom, nombre d'outils en chasse fixe. */
+.category-btn-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 0.4rem;
+  background: var(--ph);
+}
+.category-btn-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.category-btn-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.category-btn-count {
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+}
+.tool-nav-card .category-btn[aria-current="page"] .category-btn-count {
+  color: var(--accent);
+}
+.tool-nav-card .category-btn:hover {
+  color: var(--accent);
+}
+/* L'onglet actif : la surface surélevée du §1.2, contour et texte accent. */
+.tool-nav-card .category-btn[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--raised);
+  color: var(--accent);
+}
+/* §3.8 : « la rangée des outils de la catégorie, sur toute la largeur,
+   onglets répartis à parts égales », soulignée sous l'onglet actif. */
+.tool-nav-card + main .calculator-tabs,
+.tool-nav-card ~ main .calculator-tabs {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.tool-nav-card ~ main .calculator-tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text3);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+.tool-nav-card ~ main .calculator-tabs button:hover:not(:disabled) {
+  color: var(--accent);
+}
+.tool-nav-card ~ main .calculator-tabs button[aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+}
+@media (max-width: 48rem) {
+  .tool-nav-card .category-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tool-nav-card ~ main .calculator-tabs {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* §3.9 : les sept référentiels sur une seule rangée d'onglets. */
+.reference-switcher {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  width: min(75rem, calc(100% - 2rem));
+  gap: 0.25rem;
+  margin: 1.5rem auto 0;
+  padding: 0.35rem;
+  border-radius: 0.9rem;
+  background: var(--sunk);
+}
+.reference-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  color: var(--text3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.reference-tab:hover {
+  color: var(--accent);
+}
+.reference-tab[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--raised);
+  color: var(--accent);
+}
+.reference-tab-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  overflow: hidden;
+  border-radius: 0.35rem;
+  background: var(--ph);
+}
+.reference-tab-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Un référentiel pas encore ouvert garde sa place et son avertissement
+   (Bloc 62/J : toujours visible, pas seulement au survol — sur tactile, une
+   infobulle ne s'affiche jamais). Dans une rangée serrée, l'avertissement
+   passe sous le libellé au lieu de déborder sur l'onglet voisin. */
+.reference-tab-unavailable {
+  flex-wrap: wrap;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.reference-tab-unavailable .tool-unavailable {
+  flex-basis: 100%;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+@media (max-width: 62rem) {
+  .reference-switcher {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 34rem) {
+  .reference-switcher {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .reference-tab-label {
+    display: none;
+  }
+}
+/* §3.8 : « Aller plus loin ». */
+.further-reading {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.further-reading h2 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.35rem;
+}
+.further-reading ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.further-reading a {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.further-reading a:hover {
+  border-color: var(--accent);
+}
+.further-reading-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+@media (max-width: 48rem) {
+  .further-reading ul {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

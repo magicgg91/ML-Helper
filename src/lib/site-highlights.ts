@@ -1,5 +1,6 @@
 import type { CalculatorSlug } from "./calculator-catalog";
 import { parseGuideCategories, type GuideCategory } from "./guide-categories";
+import type { ToolCategorySlug } from "./tool-links";
 
 /**
  * Bloc 129 : les listes que le brief demande de rendre configurables plutôt
@@ -57,15 +58,23 @@ export const mostUsedEntries: HighlightEntry[] = [
 export const guideToolLinks: Record<string, CalculatorSlug> = {};
 
 /**
- * La section « Aller plus loin » d'une page outil (§3.8) : par slug d'outil,
- * les guides et outils voisins à proposer. Section masquée si l'outil n'a
- * aucune entrée, comme le demande le brief.
+ * La section « Aller plus loin » d'une page outil (§3.8) : les guides et
+ * outils voisins à proposer. Section masquée sans entrée, comme le demande
+ * le brief.
+ *
+ * Clé : le slug de la catégorie, pas celui d'un outil. Une page de catégorie
+ * héberge plusieurs outils derrière des onglets côté client, et la section
+ * vit sous la page, pas sous l'onglet — la clé suit donc ce que la page sait
+ * d'elle-même.
+ *
+ * Vide à la livraison : les guides se désignent par slug, et ceux de
+ * production ne sont pas dans le dépôt (voir le PR).
  */
 export type FurtherReadingEntry =
   { kind: "guide"; slug: string } | { kind: "tool"; slug: CalculatorSlug };
 
 export const furtherReading: Partial<
-  Record<CalculatorSlug, FurtherReadingEntry[]>
+  Record<ToolCategorySlug, FurtherReadingEntry[]>
 > = {};
 
 /**

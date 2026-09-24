@@ -59,30 +59,26 @@ describe("Bloc 38 public reference/homepage styles", () => {
     expect(css).not.toMatch(/\.home-tools\s*{\s*margin-top:/);
   });
 
-  it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
-    const match = css.match(
-      // Bloc 129 §3.5 : .guide-shell h1 a quitté ce groupe — le titre d'un
-      // guide vit maintenant dans son en-tête à deux colonnes, avec sa
-      // propre taille (§1.1). La règle générique et ses exclusions restent.
-      /\.hero h1,\s*\n\.public-main\s*>\s*h1([^,{]*)\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.tools-page-title)");
-    expect(match![1]).toContain(":not(.reference-page-title)");
-  });
-
-  // Bloc 53/D: /guides and /referentiels get the same smaller-title
-  // treatment, added to the same exclusion list above.
-  it("Bloc53/D: also excludes .guides-page-title/.referentiels-page-title from the generic hero-title rule", () => {
-    const match = css.match(
-      // Bloc 129 §3.5 : .guide-shell h1 a quitté ce groupe — le titre d'un
-      // guide vit maintenant dans son en-tête à deux colonnes, avec sa
-      // propre taille (§1.1). La règle générique et ses exclusions restent.
-      /\.hero h1,\s*\n\.public-main\s*>\s*h1([^,{]*)\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.guides-page-title)");
-    expect(match![1]).toContain(":not(.referentiels-page-title)");
+  // Bloc 129 : les deux tests qui vivaient ici vérifiaient que la règle
+  // générique du titre de hero excluait .tools-page-title,
+  // .reference-page-title, .guides-page-title et .referentiels-page-title —
+  // quatre classes posées par les Blocs 33/35/53 pour donner à ces titres
+  // une taille plus petite que le clamp géant du hero. Aucune n'existe plus :
+  // les quatre pages d'index et les pages référentiel passent par l'en-tête
+  // de page commun (§2), qui a sa propre taille (§1.1). Ce qui reste à
+  // vérifier, c'est qu'on n'a pas laissé les exclusions derrière les classes.
+  it("Bloc129: ni les classes de titre d'index, ni les exclusions qui les visaient", () => {
+    // Sur les sélecteurs, pas sur le texte : les commentaires ont le droit
+    // de raconter d'où l'on vient.
+    for (const name of [
+      "tools-page-title",
+      "reference-page-title",
+      "guides-page-title",
+      "referentiels-page-title",
+    ]) {
+      expect(css).not.toMatch(new RegExp(`\\.${name}[,\\s]*{`));
+      expect(css).not.toContain(`:not(.${name})`);
+    }
   });
 
   it("M: gives Level Up/Templiers/Gemmes' shared table class alternating row colors", () => {
@@ -313,11 +309,12 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
     expect(rule).toMatch(/min-width: 0;/);
   });
 
-  it("D: /guides and /referentiels get their own smaller title class, excluded from the generic hero-title rule", () => {
-    expect(css).toMatch(
-      /\.guides-page-title,\s*\n\.referentiels-page-title\s*{/,
-    );
-  });
+  // Bloc 129 : /guides et /referentiels n'ont plus de classe de titre à eux.
+  // Le Bloc 53/D la leur avait donnée pour qu'ils reprennent les titres des
+  // sections de l'accueil, plus petits que le clamp du hero ; le brief leur
+  // rend leur propre titre, rendu par l'en-tête de page commun (§2), qui a
+  // sa taille à lui. Le test qui gardait cette classe est remplacé, plus
+  // haut, par celui qui vérifie qu'elle n'a pas survécu à son usage.
 
   it("E: the cross-reference banner/mini-card CSS replaces the old plain-text .reference-cross-link rule", () => {
     expect(css).not.toMatch(/\.reference-cross-link\s*{/);

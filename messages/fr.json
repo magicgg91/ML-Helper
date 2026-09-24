@@ -138,7 +138,10 @@
     },
     "index-title": "Outils",
     "index-intro": "Décide avec les bons chiffres : explore les coûts, la production, le classement et les compétences avec des simulateurs conçus pour préparer chaque décision.",
-    "settings-note": "Renseigne tes paramètres du joueur une seule fois : ils sont repris par tous les outils."
+    "settings-note": "Renseigne tes paramètres du joueur une seule fois : ils sont repris par tous les outils.",
+    "further-reading": "Aller plus loin",
+    "kind": "Outil",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Paramètres du joueur",
@@ -689,7 +692,11 @@
     "index-intro": "Retrouve les données clés : coûts, statistiques et paliers exacts du jeu, des équipements aux gemmes et templiers, jusqu'aux consommables de la boutique.",
     "missing-title": "Il manque un référentiel ?",
     "missing-text": "Dis-nous quelles données tu aimerais retrouver ici.",
-    "missing-cta": "Proposer"
+    "missing-cta": "Proposer",
+    "catalog-short": {
+      "combat-equipment": "Équip. de combat",
+      "expedition-equipment": "Équip. d'expédition"
+    }
   },
   "combat-equipment": {
     "name": "Équipements de Combat",

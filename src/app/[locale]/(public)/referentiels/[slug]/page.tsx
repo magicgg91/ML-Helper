@@ -29,6 +29,11 @@ import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { pageMetadata } from "@/lib/page-metadata";
+import { Breadcrumb } from "@/components/public-breadcrumb";
+import { PageHeader } from "@/components/public-page-header";
+import { ReportErrorLink } from "@/components/report-error-link";
+import { contactPageLabel } from "@/lib/contact-link";
+import { getPublicDescriptions } from "@/lib/tool-descriptions-server";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-json-ld";
 
 export async function generateMetadata({
@@ -74,12 +79,14 @@ export default async function ReferencePage({
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
-  const [active, t, nav, locale] = await Promise.all([
+  const [active, t, nav, publicT, locale] = await Promise.all([
     getCalculatorAvailability(),
     getTranslations("references"),
     getTranslations("Navigation"),
+    getTranslations("Public"),
     getLocale(),
   ]);
+  const descriptions = await getPublicDescriptions(locale);
   const name = t(`catalog.${reference.slug}`);
 
   return (
@@ -95,8 +102,28 @@ export default async function ReferencePage({
           { path: `/referentiels/${slug}`, label: name },
         ]}
       />
-      <p className="eyebrow">{t("eyebrow")}</p>
-      <h1 className="reference-page-title">{name}</h1>
+      {/* Bloc 129 §2.3 et §3.9 : fil d'Ariane visible et en-tête de page
+          standard. Le surtitre disparaît (§3.9 n'en prévoit pas) et la
+          description d'une ligne vient de la base (Bloc 130), pas d'une clé
+          i18n — absente, la ligne n'est pas rendue. */}
+      <Breadcrumb
+        label={nav("breadcrumb")}
+        items={[
+          { label: nav("home"), href: "/" },
+          { label: nav("referentiels"), href: "/referentiels" },
+          { label: name },
+        ]}
+      />
+      <PageHeader
+        title={name}
+        description={descriptions[reference.calculatorSlug] || undefined}
+        action={
+          <ReportErrorLink
+            label={publicT("report-error")}
+            page={contactPageLabel(nav("referentiels"), name)}
+          />
+        }
+      />
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
           <CombatReferenceTable

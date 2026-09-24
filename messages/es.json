@@ -138,7 +138,10 @@
     },
     "index-title": "Herramientas",
     "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión.",
-    "settings-note": "Rellena tus parámetros de jugador una sola vez: todas las herramientas los reutilizan."
+    "settings-note": "Rellena tus parámetros de jugador una sola vez: todas las herramientas los reutilizan.",
+    "further-reading": "Ir más lejos",
+    "kind": "Herramienta",
+    "kind-guide": "Guía"
   },
   "player-settings": {
     "title": "Ajustes del jugador",
@@ -689,7 +692,11 @@
     "index-intro": "Encuentra los datos clave: costes, estadísticas y niveles exactos del juego, del equipo a las gemas y templarios, hasta los consumibles de la tienda.",
     "missing-title": "¿Falta una referencia?",
     "missing-text": "Dinos qué datos te gustaría encontrar aquí.",
-    "missing-cta": "Proponer"
+    "missing-cta": "Proponer",
+    "catalog-short": {
+      "combat-equipment": "Equipo de combate",
+      "expedition-equipment": "Equipo de exped."
+    }
   },
   "combat-equipment": {
     "name": "Equipo de Combate",
