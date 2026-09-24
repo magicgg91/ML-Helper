@@ -493,7 +493,8 @@
       "siteTitle": "ML-Helper — Outils et guides Million Lords"
     },
     "report-error": "Signaler une erreur",
-    "image-placeholder": "Illustration"
+    "image-placeholder": "Illustration",
+    "legal-updated": "Dernière mise à jour : {date}"
   },
   "contact": {
     "eyebrow": "Contact",

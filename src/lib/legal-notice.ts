@@ -184,3 +184,25 @@ export function legalNoticePlaceholders(content: string): string[] {
 export function countLegalNoticePlaceholders(content: string): number {
   return legalNoticePlaceholders(content).length;
 }
+
+/**
+ * Bloc 129 §3.7 : le titre du document et le reste, séparés.
+ *
+ * La page rend le titre elle-même — avec la date de mise à jour sous lui —
+ * et le corps dans sa colonne de lecture. Sans cette séparation, le `#` du
+ * markdown ferait un second H1 au milieu du contenu.
+ *
+ * Un document sans titre en tête est rendu tel quel : la page utilise alors
+ * son propre libellé.
+ */
+export function splitLeadingHeading(markdown: string): {
+  title?: string;
+  body: string;
+} {
+  const match = /^\s*#\s+(.+?)\s*(?:\n|$)/.exec(markdown);
+  if (!match) return { body: markdown };
+  return {
+    title: match[1]!.trim(),
+    body: markdown.slice(match[0].length).replace(/^\s*\n/, ""),
+  };
+}

@@ -493,7 +493,8 @@
       "legal": "ML Helper web sitesinin yasal bildirimi."
     },
     "report-error": "Hata bildir",
-    "image-placeholder": "Görsel"
+    "image-placeholder": "Görsel",
+    "legal-updated": "Son güncelleme: {date}"
   },
   "contact": {
     "eyebrow": "İletişim",

@@ -161,10 +161,16 @@ export function rehypeHighlightPlaceholders() {
   };
 }
 
-/** The legal notice's own pipeline: raw HTML, sanitization, then highlights. */
+/**
+ * The legal notice's own pipeline: raw HTML, sanitization, then highlights.
+ *
+ * Bloc 129 §3.7 : plus les ancres, pour que le sommaire de la page y mène.
+ * Les titres ne sont PAS renumérotés ici — le document porte son propre H1.
+ */
 export const markdownRehypePluginsWithPlaceholders = [
   rehypeRaw,
   rehypeSanitize,
+  rehypeHeadingIds,
   rehypeHighlightPlaceholders,
 ];
 

@@ -19,11 +19,14 @@ export function GuideToc({
   headings,
   label,
   introLabel,
+  introHref = "#guide-top",
 }: {
   headings: GuideHeading[];
   label: string;
   /** Le premier lien, vers le haut de l'article. */
   introLabel: string;
+  /** L'ancre de ce premier lien — les mentions légales ont la leur. */
+  introHref?: string;
 }) {
   const [current, setCurrent] = useState<string>();
 
@@ -57,7 +60,7 @@ export function GuideToc({
       <p className="guide-toc-title">{label}</p>
       <ul>
         <li>
-          <a href="#guide-top" aria-current={current ? undefined : "location"}>
+          <a href={introHref} aria-current={current ? undefined : "location"}>
             {introLabel}
           </a>
         </li>

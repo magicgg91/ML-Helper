@@ -6475,3 +6475,69 @@ span.tool-share-dot.tool-share-stuff {
     position: static;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.7 — les mentions légales.
+   --------------------------------------------------------------------- */
+.legal-header {
+  margin-bottom: 2rem;
+}
+.legal-header h1 {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+}
+.legal-updated {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.legal-body {
+  display: grid;
+  grid-template-columns: 16.25rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+.legal-content {
+  /* §3.7 : même largeur de lecture que les guides, texte à 16 px. */
+  max-width: 46.25rem;
+}
+.legal-content .markdown-content {
+  color: var(--text2);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+/* §3.7 : une bordure sépare les sections. */
+.legal-content .markdown-content h2 {
+  margin: 2.5rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.5rem;
+  line-height: 1.25;
+  scroll-margin-top: 2rem;
+}
+.legal-content .markdown-content h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+/* §3.7 : les champs encore à compléter, surlignés aux couleurs de l'accent
+   plutôt qu'au jaune par défaut du <mark>. Le surlignage suit le motif du
+   texte, donc il s'éteint tout seul quand le vrai texte est saisi. */
+.legal-placeholder {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.3rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+@media (max-width: 62rem) {
+  .legal-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}

@@ -65,7 +65,15 @@ export type GuideHeading = { id: string; label: string };
  * produit. Les blocs de code sont ignorés — un `#` en début de ligne dans un
  * exemple de code n'est pas un titre.
  */
-export function guideOutline(markdown: string): GuideHeading[] {
+export function guideOutline(
+  markdown: string,
+  /**
+   * `shift: false` pour un document qui porte son propre H1 et dont les
+   * titres ne sont pas renumérotés — les mentions légales (§3.7). Le
+   * sommaire liste alors les H2 tels qu'ils sont écrits.
+   */
+  { shift = true }: { shift?: boolean } = {},
+): GuideHeading[] {
   const lines = markdown.split("\n");
   const found: { level: number; label: string }[] = [];
   let inFence = false;
@@ -78,7 +86,9 @@ export function guideOutline(markdown: string): GuideHeading[] {
     const match = /^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
     if (match) found.push({ level: match[1]!.length, label: match[2]!.trim() });
   }
-  const levels = shiftedHeadingLevels(found.map((entry) => entry.level));
+  const levels = shift
+    ? shiftedHeadingLevels(found.map((entry) => entry.level))
+    : found.map((entry) => entry.level);
   const taken = new Set<string>();
   return found.flatMap((entry, index) => {
     // Chaque titre consomme un identifiant, y compris ceux qui ne sont pas

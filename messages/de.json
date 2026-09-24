@@ -493,7 +493,8 @@
       "legal": "Impressum der Website ML Helper."
     },
     "report-error": "Fehler melden",
-    "image-placeholder": "Illustration"
+    "image-placeholder": "Illustration",
+    "legal-updated": "Zuletzt aktualisiert: {date}"
   },
   "contact": {
     "eyebrow": "Kontakt",
