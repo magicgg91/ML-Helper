@@ -64,6 +64,7 @@ const rows: AdminToolRow[] = [
       href: "/admin/tools/city-parameters",
       sharedCount: 3,
     },
+    description: { fr: "Ce que coûte une ville." },
   },
   {
     id: "2",
@@ -72,6 +73,7 @@ const rows: AdminToolRow[] = [
     category: "villes",
     active: true,
     source: { kind: "none" },
+    description: {},
   },
   {
     id: "3",
@@ -80,6 +82,7 @@ const rows: AdminToolRow[] = [
     category: "classement",
     active: false,
     source: { kind: "own", href: "/admin/tools/ranking" },
+    description: {},
   },
   {
     id: "4",
@@ -92,6 +95,7 @@ const rows: AdminToolRow[] = [
       href: "/admin/referentiels/reference-combat-equipment",
       referenceLabel: "Équipements de Combat",
     },
+    description: {},
   },
 ];
 

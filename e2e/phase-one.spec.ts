@@ -4122,3 +4122,83 @@ test("every admin list follows a language change made in place", async ({
   await expect(page.getByText("(toi)")).toHaveCount(0);
   await switchTo("FR");
 });
+
+// Bloc 130: the one-line description of a tool and of a reference, editable
+// from the list each one is on, in every language the site ships.
+//
+// Both are rows of the same table, so both are exercised here — and in two
+// different languages each, because a description that only ever round-trips
+// in French would not prove the shape stores N languages.
+test("a tool and a reference carry a description in several languages", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const describe = async (
+    list: string,
+    row: string,
+    texts: Record<string, string>,
+  ) => {
+    await page.goto(list);
+    const panel = page.getByRole("dialog");
+    await page.getByRole("button", { name: `Décrire ${row}` }).click();
+    for (const [code, text] of Object.entries(texts)) {
+      await panel
+        .getByRole("button", { name: new RegExp(`^${code.toUpperCase()}`) })
+        .click();
+      await panel.getByRole("textbox").fill(text);
+    }
+    await panel
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(panel).toHaveCount(0);
+  };
+
+  // A tool, in French and German.
+  await describe("/admin/tools", "Coût de Ville", {
+    fr: "Le prix d’une ville, niveau par niveau.",
+    de: "Der Preis einer Stadt, Stufe für Stufe.",
+  });
+  // A reference, in French and Spanish.
+  await describe("/admin/referentiels", "Équipements de Combat", {
+    fr: "Toutes les pièces, par set.",
+    es: "Todas las piezas, por conjunto.",
+  });
+
+  // Read back from the database, not from the page that wrote it.
+  await page.goto("/admin/tools");
+  const cityRow = page.getByRole("row", { name: /Coût de Ville/ });
+  await expect(cityRow.getByText("2 langues")).toBeVisible();
+  await page.getByRole("button", { name: "Décrire Coût de Ville" }).click();
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByRole("textbox")).toHaveValue(
+    "Le prix d’une ville, niveau par niveau.",
+  );
+  await panel.getByRole("button", { name: /^DE/ }).click();
+  await expect(panel.getByRole("textbox")).toHaveValue(
+    "Der Preis einer Stadt, Stufe für Stufe.",
+  );
+  // A language nobody wrote stays empty rather than borrowing another's text.
+  await panel.getByRole("button", { name: /^TR/ }).click();
+  await expect(panel.getByRole("textbox")).toHaveValue("");
+  await panel.getByRole("button", { name: "Annuler" }).click();
+
+  await page.goto("/admin/referentiels");
+  await expect(
+    page
+      .getByRole("row", { name: /Équipements de Combat/ })
+      .getByText("2 langues"),
+  ).toBeVisible();
+
+  // Every other record is still undescribed: the field is empty by default,
+  // and describing one does not touch its neighbours.
+  await expect(
+    page.getByRole("row", { name: /Événements/ }).getByText("aucune langue"),
+  ).toBeVisible();
+});
