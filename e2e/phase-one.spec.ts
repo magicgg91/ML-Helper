@@ -2068,6 +2068,71 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
 });
 
+// Bloc 126/D: a guide typed in one language alone, read from the admin in the
+// other. The editor writes both fr and en whatever was filled in, so the
+// missing side is stored blank rather than left out — and a blank one used to
+// win the lookup, leaving the row's title empty.
+test("the guides list reads a guide in the admin's own language", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // One guide with both languages, one written in French alone.
+  await page.goto("/admin/guides/new");
+  await page.getByLabel("Titre (FR)").fill("Les deux langues");
+  await page.getByLabel("Contenu Markdown (FR)").fill("Contenu FR");
+  await page.getByRole("tab", { name: /English/ }).click();
+  await page.getByLabel("Titre (EN)").fill("Both languages");
+  await page.getByLabel("Contenu Markdown (EN)").fill("EN content");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.goto("/admin/guides/new");
+  await page.getByLabel("Titre (FR)").fill("Le français seulement");
+  await page.getByLabel("Contenu Markdown (FR)").fill("Contenu FR");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
+    timeout: 15_000,
+  });
+  const frenchOnly = page.url();
+
+  await page.goto("/admin/guides");
+  await expect(
+    page.getByRole("link", { name: "Les deux langues" }),
+  ).toBeVisible();
+
+  // Switch the admin itself to English, from the control in the sidebar.
+  await page
+    .getByRole("group", { name: /Langue|Language/ })
+    .getByRole("button", { name: "EN" })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Guides" }),
+  ).toBeVisible();
+
+  // The guide that has both reads English...
+  await expect(
+    page.getByRole("link", { name: "Both languages" }),
+  ).toBeVisible();
+  // ...and the one written in French alone still reads, rather than showing
+  // an empty cell where its title belongs.
+  await expect(
+    page.getByRole("link", { name: "Le français seulement" }),
+  ).toBeVisible();
+
+  // And the editor opens on the language the admin is working in.
+  await page.goto(frenchOnly);
+  await expect(page.getByRole("tab", { selected: true })).toHaveText(/English/);
+});
+
 test("calculator visibility and guide publication are reversible", async ({
   page,
 }) => {

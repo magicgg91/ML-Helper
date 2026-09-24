@@ -7,11 +7,14 @@ import { requireCapability } from "@/auth/require-session";
 
 vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: { guide: { findMany: vi.fn() } } }));
+// Bloc 126/D: the admin's own language, which src/proxy.ts clamps to EN/FR.
+// A let rather than a constant so a test can read the page in both.
+let adminLocale = "fr";
 vi.mock("next-intl/server", () => {
   const translator = Object.assign((key: string) => key, { has: () => true });
   return {
     getTranslations: async () => translator,
-    getLocale: async () => "fr",
+    getLocale: async () => adminLocale,
   };
 });
 vi.mock("@/components/admin-guides-list", () => ({
@@ -26,6 +29,7 @@ const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  adminLocale = "fr";
 });
 
 const guide = (overrides: Record<string, unknown> = {}) => ({
@@ -115,6 +119,48 @@ describe("Bloc 119: the Guides page hands the list its rows", () => {
       canWrite: true,
       canPublish: true,
       canDelete: true,
+    });
+  });
+
+  // Bloc 126/D: the title an admin reads is the one in the language they are
+  // reading the admin in.
+  describe("the title follows the admin's own language", () => {
+    const titled = async (title: Record<string, string>, locale: string) => {
+      adminLocale = locale;
+      mockedGuideFindMany.mockResolvedValue([
+        guide({ title }),
+      ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
+      const { rows } = await renderPage();
+      return rows[0].title;
+    };
+
+    it("reads each language its own title", async () => {
+      const both = { fr: "Bien débuter", en: "Getting started" };
+      expect(await titled(both, "fr")).toBe("Bien débuter");
+      cleanup();
+      expect(await titled(both, "en")).toBe("Getting started");
+    });
+
+    // The case the brief calls rare but possible, in the shape the editor
+    // really writes it: the language that was not filled in is stored as a
+    // blank string, not left out. Before this bloc that blank won the
+    // lookup and the row's title was empty.
+    it("falls back across a blank side rather than showing nothing", async () => {
+      expect(await titled({ fr: "Bien débuter", en: "" }, "en")).toBe(
+        "Bien débuter",
+      );
+      cleanup();
+      expect(await titled({ fr: "", en: "Getting started" }, "fr")).toBe(
+        "Getting started",
+      );
+    });
+
+    it("falls back the same way when the language is simply absent", async () => {
+      expect(await titled({ fr: "Bien débuter" }, "en")).toBe("Bien débuter");
+      cleanup();
+      expect(await titled({ en: "Getting started" }, "fr")).toBe(
+        "Getting started",
+      );
     });
   });
 

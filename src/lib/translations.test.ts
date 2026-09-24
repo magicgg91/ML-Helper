@@ -40,6 +40,34 @@ describe("localizedText", () => {
   it("still resolves fr directly when fr is the active locale itself", () => {
     expect(localizedText({ fr: "Bonjour", en: "Hi" }, "fr")).toBe("Bonjour");
   });
+
+  // Bloc 126/D: the shape the guide editor really writes. Guides validate on
+  // "fr OR en", and services/guides.ts stores both columns whatever the admin
+  // filled in, so a guide typed in one language alone arrives here with the
+  // other side present and blank. `??` fell back on an absent key but not on
+  // a blank one, and every English-reading surface rendered nothing — which
+  // is what an admin browsing in English saw in place of the guide's title.
+  describe("a translation that was written blank", () => {
+    it("falls back like an absent one, in both directions", () => {
+      expect(localizedText({ fr: "Bonjour", en: "" }, "en")).toBe("Bonjour");
+      expect(localizedText({ fr: "", en: "Hi" }, "fr")).toBe("Hi");
+    });
+
+    it("does not stop the chain on its way to a language that has one", () => {
+      // de is blank, en is blank, fr is written: fr is what there is.
+      expect(localizedText({ fr: "Bonjour", en: "", de: "" }, "de")).toBe(
+        "Bonjour",
+      );
+    });
+
+    it("treats a field cleared to whitespace as cleared", () => {
+      expect(localizedText({ fr: "Bonjour", en: "   " }, "en")).toBe("Bonjour");
+    });
+
+    it("still returns an empty string when every language is blank", () => {
+      expect(localizedText({ fr: "", en: "" }, "fr")).toBe("");
+    });
+  });
 });
 
 describe("multilingual dynamic content", () => {
