@@ -58,14 +58,14 @@ describe("admin page translations", () => {
 
   // Bloc 68 review (Codex): the Bloc 67 rename added its translated value
   // under the wrong namespace (admin.tools, never read by
-  // EditReferentielPage) and left the key it actually consumes
-  // (admin.referentiels.reference-level-up) untranslated — this exact
-  // real-translation lookup is what would have caught it.
+  // EditReferentielPage) and left the key it actually consumes untranslated —
+  // this exact real-translation lookup is what would have caught it.
+  // Bloc 125 §8: the screen is named after the reference, with the name the
+  // Référentiels table already shows, so that key is the one to check.
   it("covers the Progression reference editor heading (/admin/referentiels/reference-level-up)", async () => {
-    const { fr } = await translators();
-    expect(fr("admin.referentiels.reference-level-up")).toBe(
-      "Éditer Progression",
-    );
+    const { en, fr } = await translators();
+    expect(fr("admin.referentiels.references.level-up")).toBe("Progression");
+    expect(en("admin.referentiels.references.level-up")).toBe("Level Up");
   });
 
   it("covers the existing ranking tool editor", async () => {

@@ -3664,6 +3664,71 @@ test("Bloc 125/3: the colour picker opens whole, over the page", async ({
   await context.close();
 });
 
+// Bloc 125 §8: every edit screen is named after the thing it edits.
+//
+// Each one used to carry a second, longer phrase of its own — "Éditer la
+// Boutique" on the screen against "Boutique" in the table that links to it,
+// "Paramètres de coût des Templiers" against "Templiers" — so the same
+// reference was called two different things depending on where you were
+// standing, and some titles began with a verb while others did not. The
+// names now come from the one place the rest of the site already names them.
+test("Bloc 125/8: each edit screen is named after what it edits, in French", async ({
+  browser,
+}) => {
+  test.setTimeout(120_000);
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const screens = [
+    ["/admin/tools/ranking", "Outils", "Classement"],
+    ["/admin/tools/city-parameters", "Outils", "Paramètres Villes partagés"],
+    ["/admin/tools/gems", "Outils", "Gemmes"],
+    ["/admin/tools/xp-gain-rate", "Outils", "Taux de gain d’XP"],
+    ["/admin/tools/templars", "Outils", "Templiers"],
+    ["/admin/tools/demo-attack-troops", "Outils", "Troupes en attaque démo"],
+    ["/admin/referentiels/reference-consommables", "Référentiels", "Boutique"],
+    ["/admin/referentiels/reference-events", "Référentiels", "Événements"],
+    [
+      "/admin/referentiels/reference-combat-equipment",
+      "Référentiels",
+      "Équipements de Combat",
+    ],
+    [
+      "/admin/referentiels/reference-expedition-equipment",
+      "Référentiels",
+      "Équipements d’Expédition",
+    ],
+    ["/admin/referentiels/reference-level-up", "Référentiels", "Progression"],
+  ] as const;
+
+  for (const [url, section, name] of screens) {
+    await page.goto(url);
+    await expect(
+      page.getByRole("heading", { level: 1 }),
+      `${url}: the h1`,
+    ).toHaveText(name);
+    await expect(
+      page.getByRole("link", { name: `← ${section}` }),
+      `${url}: the trail back`,
+    ).toBeVisible();
+  }
+
+  // The twelfth screen, a guide, is named by its own title rather than by a
+  // label — covered where that title is built (admin-guide-editor.test.tsx),
+  // since the seeded database ships no guide to open here.
+
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //
