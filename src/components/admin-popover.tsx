@@ -95,6 +95,13 @@ export function AdminPopover({
 } & Omit<React.HTMLAttributes<HTMLDivElement>, "children">) {
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<Position>();
+  /**
+   * Codex review (PR #149): a popover whose trigger lives inside the drawer
+   * has to clear the drawer. Read from the anchor rather than passed in by
+   * every caller: the same OverflowMenu is a row menu on a wide screen and a
+   * drawer menu on a narrow one, and nothing at the call site knows which.
+   */
+  const [overDrawer, setOverDrawer] = useState(false);
 
   // Both in one callback ref rather than an effect: when the popover closes,
   // React hands this `null`, and dropping the position with the element is
@@ -108,6 +115,7 @@ export function AdminPopover({
   const place = useCallback(() => {
     const anchor = anchorRef.current;
     if (!anchor || !box) return;
+    setOverDrawer(anchor.closest('[role="dialog"]') !== null);
     setPosition(
       resolvePopoverPosition({
         anchor: anchor.getBoundingClientRect(),
@@ -158,7 +166,10 @@ export function AdminPopover({
           opacity: position ? 1 : 0,
           pointerEvents: position ? undefined : "none",
         }}
-        className={cn("z-[var(--z-popover)]", className)}
+        className={cn(
+          overDrawer ? "z-[var(--z-drawer-popover)]" : "z-[var(--z-popover)]",
+          className,
+        )}
         {...rest}
       >
         {children}

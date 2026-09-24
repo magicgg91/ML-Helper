@@ -276,6 +276,13 @@
   --z-sticky: 40;
   --z-popover: 50;
   --z-drawer: 60;
+  /* Codex review (PR #149): a popover opened from *inside* the drawer has to
+     clear the drawer, or it opens underneath it. Measured below 1024 px
+     before this existed: the account menu came out at 50 against a backdrop
+     at 60, and `elementFromPoint` on its own "Mon compte" entry returned the
+     drawer — the one way into /admin/account, unreachable on a phone. It is
+     the step the wide gaps were left for. */
+  --z-drawer-popover: 70;
   --z-dialog: 100;
   --z-toast: 110;
 

@@ -349,10 +349,17 @@ a {
    flattening the font-size and font-weight of every button, which the
    refonte writes as Tailwind utilities (@layer utilities). Measured before
    the fix: "Enregistrer" came out 14px/400 where its classes ask for
-   14px/600, and a 12px/600 segmented option came out 14px/400. */
-button:not(.admin-shell button),
-input:not(.admin-shell input),
-select:not(.admin-shell select) {
+   14px/600, and a 12px/600 segmented option came out 14px/400.
+
+   The exclusion is wrapped in `:where()`, which contributes nothing to
+   specificity, so this reset stays at 0-0-1 exactly as it was. Codex review
+   (PR #149): written as a bare `:not()` it weighed 0-1-2 and started beating
+   the component rules below it, which are 0-1-1 — measured on /fr/tools:
+   a league button went from 12.48px to 16px, and a stepper button from
+   15px monospace to 12.48px sans. */
+button:where(:not(.admin-shell button)),
+input:where(:not(.admin-shell input)),
+select:where(:not(.admin-shell select)) {
   font: inherit;
 }
 /* Bloc 92/A11y (L1): one consistent keyboard focus indicator for every

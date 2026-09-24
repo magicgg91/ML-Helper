@@ -3827,6 +3827,55 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await context.close();
 });
 
+// Codex review (PR #149): the account menu is reachable on a phone.
+//
+// Below 1024 px the side column is a drawer, and the account menu is
+// portalled out of it to the body. On the ordinary popover step of the scale
+// it opened *underneath* the drawer: measured, `elementFromPoint` on its own
+// "Mon compte" entry returned the drawer. Since that menu is the only way
+// into /admin/account, a phone or tablet admin could not reach their own
+// password or two-factor settings at all.
+test("Bloc 125/3: the account menu opens above the drawer on a phone", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 420, height: 860 },
+  });
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  await page.getByRole("button", { name: "Compte de rootadmin" }).click();
+  const item = page.getByRole("menuitem", { name: "Mon compte" });
+  await expect(item).toBeVisible();
+
+  // Visible is not enough — the drawer covered it while it was "visible".
+  const box = (await item.boundingBox())!;
+  const covering = await page.evaluate(
+    ({ x, y }) =>
+      Boolean(document.elementFromPoint(x, y)?.closest('[role="menuitem"]')),
+    { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+  );
+  expect(covering, "something is covering the account menu").toBe(true);
+
+  // The proof that matters: it opens the screen.
+  await item.click();
+  await expect(page).toHaveURL(/\/admin\/account$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Mon compte",
+  );
+
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //
