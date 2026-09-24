@@ -53,15 +53,54 @@ export function groupEquipmentSets(
 }
 
 /**
+ * Which of a row's fields can be "not confirmed yet".
+ *
+ * Bloc 126/C: some of them only mean anything alongside another. A combat
+ * slot's third percentage belongs to its third skill, and 30 of the 180
+ * delivered rows have no third skill at all — 117 have no fourth. Counted
+ * flat, those absences read as 294 values waiting to be looked up in the
+ * game, which is 294 things nobody can ever do: the skill is not missing
+ * from the data, it is missing from the piece of equipment.
+ *
+ * So a pair contributes exactly when its owner names a real skill or stat
+ * and the value beside it is blank — the one case where somebody could go
+ * into the game, read a number and fill it in.
+ */
+export type UnconfirmedFields = {
+  /** Fields that stand on their own, whatever else the row holds. */
+  own: readonly string[];
+  /** `[the field it belongs to, the field that depends on it]`. */
+  pairs: readonly (readonly [owner: string, dependent: string])[];
+};
+
+const blank = (row: Record<string, string>, field: string) =>
+  (row[field] ?? "").trim() === "";
+
+/**
+ * Whether a field names something rather than standing for its absence.
+ *
+ * Bloc 37/G: "" is "nobody has said", "none" is "there is none here". The two
+ * are written differently and mean different things, but neither of them is a
+ * skill, so neither gives the percentage beside it anything to describe.
+ */
+const namesSomething = (row: Record<string, string>, field: string) =>
+  !blank(row, field) && row[field].trim() !== "none";
+
+/**
  * How many of a row's own fields nobody has confirmed yet.
  *
- * An empty string is "not known yet"; "none" is a confirmed absence (Bloc
- * 37/G) and does not count. The set's own three fields are not passed in —
- * they belong to the set header, not to the row.
+ * The set's own three fields are not passed in — they belong to the set
+ * header, not to the row.
  */
 export function countUnconfirmed(
   row: Record<string, string>,
-  fields: readonly string[],
+  fields: UnconfirmedFields,
 ): number {
-  return fields.filter((field) => (row[field] ?? "").trim() === "").length;
+  return (
+    fields.own.filter((field) => blank(row, field)).length +
+    fields.pairs.filter(
+      ([owner, dependent]) =>
+        namesSomething(row, owner) && blank(row, dependent),
+    ).length
+  );
 }
