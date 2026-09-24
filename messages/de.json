@@ -137,7 +137,8 @@
       "skills": "Optimiere Ausrüstung und Fähigkeiten in Million Lords: Kampf- und Expeditionsausrüstung, Edelsteine und Templer, inklusive Fusionskosten."
     },
     "index-title": "Werkzeuge",
-    "index-intro": "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung."
+    "index-intro": "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung.",
+    "settings-note": "Trage deine Spielereinstellungen einmal ein: alle Werkzeuge übernehmen sie."
   },
   "player-settings": {
     "title": "Spielereinstellungen",
@@ -587,7 +588,10 @@
     "detail": {
       "eyebrow": "Anleitung in {category}",
       "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt."
-    }
+    },
+    "index-intro": "Schärfe deine Strategie: die Guides der Community, um die Spielmechaniken zu verstehen und ruhiger voranzukommen.",
+    "tool-pill": "Werkzeug: {name}",
+    "start-here": "Fang hier an"
   },
   "references": {
     "eyebrow": "Referenztabellen",
@@ -658,7 +662,11 @@
       "gems": "Alle Edelsteine in Million Lords: Bonus pro Fähigkeit und pro Liga, Slots und Fusionskosten in Saphiren, mit Multi-Fähigkeiten-Optimierung.",
       "shop": "Million-Lords-Shop-Referenz: Verbrauchsgüter und von der Community geprüfte Daten, um im richtigen Moment auszugeben.",
       "events": "Million-Lords-Event-Referenz: von der Community geprüfte Daten und Belohnungen, um dich auf jedes Event vorzubereiten."
-    }
+    },
+    "index-intro": "Finde die wichtigsten Daten: genaue Kosten, Werte und Stufen des Spiels, von der Ausrüstung über Edelsteine und Templer bis zu den Verbrauchsgütern des Shops.",
+    "missing-title": "Fehlt eine Referenz?",
+    "missing-text": "Sag uns, welche Daten du hier finden möchtest.",
+    "missing-cta": "Vorschlagen"
   },
   "combat-equipment": {
     "name": "Kampfausrüstung",

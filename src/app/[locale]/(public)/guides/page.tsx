@@ -1,50 +1,78 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { connection } from "next/server";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { localizedText } from "@/lib/translations";
 import { GuidesHub } from "@/components/guides-hub";
-import { getTranslations } from "next-intl/server";
+import { Breadcrumb } from "@/components/public-breadcrumb";
+import { PageHeader } from "@/components/public-page-header";
 import { parseGuideCategories } from "@/lib/guide-categories";
 import { pageMetadata } from "@/lib/page-metadata";
+import { plainText } from "@/lib/plain-text";
+import { guideToolLinks, resolveFeaturedGuide } from "@/lib/site-highlights";
+import { toolEntryHref } from "@/lib/tool-links";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([
+  const [t, guides, locale] = await Promise.all([
     getTranslations("Public"),
+    getTranslations("guides"),
     getLocale(),
   ]);
   return pageMetadata({
     locale,
     path: "/guides",
     title: t("guides"),
-    description: t("descriptions.guides"),
+    description: guides("index-intro"),
   });
 }
 
 export default async function GuidesPage() {
   await connection();
-  const locale = await getLocale();
-  const tHome = await getTranslations("Home");
+  const [locale, t, navigation, publicT, rootT] = await Promise.all([
+    getLocale(),
+    getTranslations("guides"),
+    getTranslations("Navigation"),
+    getTranslations("Public"),
+    getTranslations(),
+  ]);
   const guides = await prisma.guide.findMany({
     where: { status: "published" },
     orderBy: { publishedAt: "desc" },
   });
+  const featured = resolveFeaturedGuide(guides);
   return (
     <main className="public-main">
-      {/* Bloc 53/D: same title + intro sentence as the homepage's guides
-          section, so /guides reads as the same entry point reached a
-          different way (Bloc 38/K's treatment for /tools). */}
-      <h1 className="guides-page-title">{tHome("guidesTitle")}</h1>
-      <p>{tHome("guidesDescription")}</p>
+      <Breadcrumb
+        label={navigation("breadcrumb")}
+        items={[
+          { label: navigation("home"), href: "/" },
+          { label: navigation("guides") },
+        ]}
+      />
+      <PageHeader title={t("title")} description={t("index-intro")} />
       <GuidesHub
-        guides={guides.map((guide) => ({
-          id: guide.id,
-          slug: guide.slug,
-          categories: parseGuideCategories(guide.category),
-          title: localizedText(guide.title, locale),
-          excerpt: localizedText(guide.excerpt, locale),
-          coverImage: guide.coverImage,
-        }))}
+        featuredId={featured?.id}
+        placeholderLabel={publicT("image-placeholder")}
+        guides={guides.map((guide) => {
+          // §3.4 : l'outil associé vient de la configuration. Sans entrée,
+          // pas de pastille — le brief donne les associations par titre de
+          // guide, et un slug inventé pointerait à côté (voir le PR).
+          const toolSlug = guideToolLinks[guide.slug];
+          const toolLink = toolSlug ? toolEntryHref(toolSlug) : undefined;
+          return {
+            id: guide.id,
+            slug: guide.slug,
+            categories: parseGuideCategories(guide.category),
+            title: localizedText(guide.title, locale),
+            // §1.4 : le résumé s'affichait avec son markdown brut.
+            excerpt: plainText(localizedText(guide.excerpt, locale)),
+            coverImage: guide.coverImage,
+            tool:
+              toolSlug && toolLink
+                ? { href: toolLink, label: rootT(`${toolSlug}.name`) }
+                : undefined,
+          };
+        })}
       />
     </main>
   );

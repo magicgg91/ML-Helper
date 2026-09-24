@@ -24,11 +24,20 @@ import { GameImage } from "./game-image";
 // unneeded; the direct /referentiels/<slug> URL already showed the
 // "unavailable" message on its own (see the [slug] page), but this grid
 // linked to it anyway.
+export type ReferenceSuggestionCard = {
+  href: string;
+  title: string;
+  text: string;
+  cta: string;
+};
+
 export function ReferenceCatalogGrid({
   t,
   limit,
   locale,
   active,
+  descriptions,
+  suggestion,
 }: {
   t: (key: string) => string;
   limit?: number;
@@ -38,6 +47,15 @@ export function ReferenceCatalogGrid({
   // alphabetically rather than the first N declared.
   locale: string;
   active: CalculatorAvailability;
+  /**
+   * Bloc 129 §3.3 : la description d'une ligne de chaque référentiel, par
+   * slug public. Elle vient de `calculators.description` en base (Bloc 130),
+   * jamais d'une clé i18n. Une description absente n'affiche pas de ligne
+   * vide : le §5 demande de masquer, pas d'inventer.
+   */
+  descriptions?: Record<string, string>;
+  /** La 8e case du §3.3, « Il manque un référentiel ? ». */
+  suggestion?: ReferenceSuggestionCard;
 }) {
   const available = sortByLabel(
     referenceCatalog.filter((reference) => active[reference.calculatorSlug]),
@@ -69,9 +87,28 @@ export function ReferenceCatalogGrid({
           </div>
           <div className="tool-category-copy">
             <h2>{t(`catalog.${reference.slug}`)}</h2>
+            {descriptions?.[reference.slug] ? (
+              <p className="reference-card-description">
+                {descriptions[reference.slug]}
+              </p>
+            ) : null}
           </div>
         </Link>
       ))}
+      {suggestion ? (
+        <Link
+          className="reference-suggestion-card"
+          href={suggestion.href}
+          prefetch={false}
+        >
+          <span className="reference-suggestion-plus" aria-hidden="true">
+            +
+          </span>
+          <span className="reference-suggestion-title">{suggestion.title}</span>
+          <span className="reference-suggestion-text">{suggestion.text}</span>
+          <span className="reference-suggestion-cta">{suggestion.cta} →</span>
+        </Link>
+      ) : null}
     </div>
   );
 }

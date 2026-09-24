@@ -54,12 +54,17 @@ describe("ToolsPage", () => {
     expect(screen.queryByText("open")).not.toBeInTheDocument();
   });
 
-  it("removes the page title and shows only the one-line subtitle (Bloc 33/F)", async () => {
+  // Bloc 129 §3.2 : le titre passe dans l'en-tête de page commun (§2), donc
+  // il perd la classe .tools-page-title qui existait pour rétrécir une
+  // phrase longue sur une ligne (Bloc 33/F). Ce que ce test protège reste
+  // le même : un seul H1, et pas de surtitre au-dessus.
+  it("Bloc129/§3.2: un seul H1 dans l'en-tête de page, sans surtitre", async () => {
     render(await ToolsPage());
     expect(screen.queryByText("eyebrow")).not.toBeInTheDocument();
-    const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading).toHaveTextContent("title");
-    expect(heading).toHaveClass("tools-page-title");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(
+      screen.getByRole("heading", { level: 1 }).closest(".page-header"),
+    ).not.toBeNull();
   });
 
   it("keeps an unavailable category as a non-interactive card", async () => {

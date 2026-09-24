@@ -137,7 +137,8 @@
       "skills": "Million Lords'ta ekipmanını ve yeteneklerini optimize et: savaş ve keşif ekipmanları, mücevherler ve tapınakçılar, birleştirme maliyetleriyle."
     },
     "index-title": "Araçlar",
-    "index-intro": "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet."
+    "index-intro": "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet.",
+    "settings-note": "Oyuncu ayarlarını bir kez gir: bütün araçlar onları kullanır."
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
@@ -587,7 +588,10 @@
     "detail": {
       "eyebrow": "{category} kategorisinde rehber",
       "not-translated": "Bu rehber henüz bu dile çevrilmedi."
-    }
+    },
+    "index-intro": "Stratejini keskinleştir: oyunun mekaniklerini anlamak ve daha rahat ilerlemek için topluluğun rehberleri.",
+    "tool-pill": "Araç: {name}",
+    "start-here": "Buradan başla"
   },
   "references": {
     "eyebrow": "Referans tabloları",
@@ -658,7 +662,11 @@
       "gems": "Million Lords'taki tüm mücevherler: yetenek ve lig başına bonus, yuvalar ve safir cinsinden birleştirme maliyeti, çoklu yetenek optimizasyonuyla.",
       "shop": "Million Lords mağaza referansı: sarf malzemeleri ve doğru anda harcama yapman için toplulukça doğrulanmış veriler.",
       "events": "Million Lords etkinlik referansı: her etkinliğe hazırlanman için toplulukça doğrulanmış veriler ve ödüller."
-    }
+    },
+    "index-intro": "Temel verileri bul: ekipmandan mücevherlere ve tapınakçılara, mağaza sarf malzemelerine kadar oyunun kesin maliyetleri, istatistikleri ve kademeleri.",
+    "missing-title": "Bir referans mı eksik?",
+    "missing-text": "Burada hangi verileri görmek istediğini bize söyle.",
+    "missing-cta": "Öner"
   },
   "combat-equipment": {
     "name": "Savaş Ekipmanı",

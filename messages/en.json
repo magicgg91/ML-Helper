@@ -137,7 +137,8 @@
       "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
     },
     "index-title": "Tools",
-    "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision."
+    "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision.",
+    "settings-note": "Fill in your player settings once: every tool picks them up."
   },
   "player-settings": {
     "title": "Player settings",
@@ -587,7 +588,10 @@
     "detail": {
       "eyebrow": "Guide in {category}",
       "not-translated": "This guide has not been translated into this language yet."
-    }
+    },
+    "index-intro": "Sharpen your strategy: community guides to understand the game's mechanics and progress more calmly.",
+    "tool-pill": "Tool: {name}",
+    "start-here": "Start here"
   },
   "references": {
     "eyebrow": "Reference tables",
@@ -658,7 +662,11 @@
       "gems": "Every gem in Million Lords: bonus per skill and per league, slots and the merge cost in sapphires, with multi-skill optimisation.",
       "shop": "Million Lords shop reference: consumables and community-verified data to help you spend at the right moment.",
       "events": "Million Lords events reference: community-verified data and rewards to help you prepare for every event."
-    }
+    },
+    "index-intro": "Find the key data: the game's exact costs, stats and tiers, from equipment to gems and templars, all the way to the shop's consumables.",
+    "missing-title": "A reference missing?",
+    "missing-text": "Tell us which data you would like to find here.",
+    "missing-cta": "Suggest"
   },
   "combat-equipment": {
     "name": "Combat Equipment",

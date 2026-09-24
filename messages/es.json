@@ -137,7 +137,8 @@
       "skills": "Optimiza tu equipo y tus habilidades en Million Lords: equipo de combate y de expedición, gemas y templarios, con los costes de fusión."
     },
     "index-title": "Herramientas",
-    "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión."
+    "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión.",
+    "settings-note": "Rellena tus parámetros de jugador una sola vez: todas las herramientas los reutilizan."
   },
   "player-settings": {
     "title": "Ajustes del jugador",
@@ -587,7 +588,10 @@
     "detail": {
       "eyebrow": "Guía en {category}",
       "not-translated": "Esta guía aún no se ha traducido a este idioma."
-    }
+    },
+    "index-intro": "Afina tu estrategia: las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
+    "tool-pill": "Herramienta: {name}",
+    "start-here": "Empieza aquí"
   },
   "references": {
     "eyebrow": "Tablas de referencia",
@@ -658,7 +662,11 @@
       "gems": "Todas las gemas de Million Lords: bonificación por habilidad y por liga, ranuras y coste de fusión en zafiros, con optimización multihabilidad.",
       "shop": "Referencia de la tienda de Million Lords: consumibles y datos verificados por la comunidad para gastar en el momento adecuado.",
       "events": "Referencia de los eventos de Million Lords: datos y recompensas verificados por la comunidad para preparar cada evento."
-    }
+    },
+    "index-intro": "Encuentra los datos clave: costes, estadísticas y niveles exactos del juego, del equipo a las gemas y templarios, hasta los consumibles de la tienda.",
+    "missing-title": "¿Falta una referencia?",
+    "missing-text": "Dinos qué datos te gustaría encontrar aquí.",
+    "missing-cta": "Proponer"
   },
   "combat-equipment": {
     "name": "Equipo de Combate",

@@ -57,10 +57,14 @@ export const toolCategories: Array<{
   },
 ];
 
+export type CategoryToolLink = { href: string; label: string };
+
 export function ToolCategoryGrid({
   active,
   locale,
   t,
+  toolLinks,
+  order,
 }: {
   active: CalculatorAvailability;
   // Bloc 64/A: the tiles are ordered by the label actually shown, so the
@@ -68,68 +72,110 @@ export function ToolCategoryGrid({
   // admin lists got at Bloc 62/C.
   locale: string;
   t: Awaited<ReturnType<typeof getTranslations<"tools">>>;
+  /**
+   * Bloc 129 §3.2 : sur l'index Outils, la carte d'une catégorie liste ses
+   * outils, un lien par outil. L'accueil (§3.1) montre les mêmes cartes
+   * sans cette liste — d'où un paramètre, plutôt qu'une seconde grille qui
+   * dupliquerait la mise en page.
+   */
+  toolLinks?: Record<string, CategoryToolLink[]>;
+  /**
+   * L'ordre imposé par le §3.2 (Villes, Compétences, Combat, Classement).
+   * Sans lui, les cartes restent triées par libellé traduit (Bloc 64/A).
+   */
+  order?: readonly string[];
 }) {
+  const ordered = order
+    ? [...toolCategories].sort(
+        (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
+      )
+    : sortByLabel(toolCategories, (item) => t(item.label), locale);
   return (
     <div className="tool-category-grid">
-      {sortByLabel(toolCategories, (item) => t(item.label), locale).map(
-        (category, index) => {
-          const count = category.calculators.filter(
-            (slug) => active[slug],
-          ).length;
-          const available = count > 0;
-          const content = (
-            <>
-              <div className="tool-category-image">
-                <GameImage
-                  src={category.image}
-                  alt=""
-                  width={500}
-                  height={500}
-                  // Bloc 64/A review: whichever tile the sort puts first is
-                  // the LCP image, so eager-loading follows the rendered
-                  // position — it used to name Villes, which is only first
-                  // while the order is the catalog's own.
-                  eager={index === 0}
-                  // Bloc 104: nothing, rather than a placeholder image. The
-                  // illustration ships with the repo, so it cannot go
-                  // missing on its own; and an <img> here is serialised into
-                  // the RSC payload and preloaded whether or not it renders.
-                  // The .tool-category-image box keeps its square footprint
-                  // either way, so a failed load leaves a gap, not a reflow.
-                  fallback={null}
-                />
-              </div>
-              <div className="tool-category-copy">
-                <h2>{t(category.label)}</h2>
-                <strong className="tool-count">{t("count", { count })}</strong>
-                {!available && (
-                  <span className="tool-unavailable">{t("comingSoon")}</span>
-                )}
-              </div>
-            </>
-          );
-          return available ? (
-            <Link
-              className="tool-category-card"
-              href={`/tools/${category.slug}`}
-              key={category.slug}
-              // Bloc 91/F6: skip the per-card RSC prefetch on this grid.
-              prefetch={false}
-            >
-              {content}
-            </Link>
-          ) : (
-            <article
-              className="tool-category-card public-card-disabled"
-              key={category.slug}
-              data-disabled
-              title={t("unavailable")}
-            >
-              {content}
+      {ordered.map((category, index) => {
+        const count = category.calculators.filter(
+          (slug) => active[slug],
+        ).length;
+        const available = count > 0;
+        const content = (
+          <>
+            <div className="tool-category-image">
+              <GameImage
+                src={category.image}
+                alt=""
+                width={500}
+                height={500}
+                // Bloc 64/A review: whichever tile the sort puts first is
+                // the LCP image, so eager-loading follows the rendered
+                // position — it used to name Villes, which is only first
+                // while the order is the catalog's own.
+                eager={index === 0}
+                // Bloc 104: nothing, rather than a placeholder image. The
+                // illustration ships with the repo, so it cannot go
+                // missing on its own; and an <img> here is serialised into
+                // the RSC payload and preloaded whether or not it renders.
+                // The .tool-category-image box keeps its square footprint
+                // either way, so a failed load leaves a gap, not a reflow.
+                fallback={null}
+              />
+            </div>
+            <div className="tool-category-copy">
+              <h2>{t(category.label)}</h2>
+              <strong className="tool-count">{t("count", { count })}</strong>
+              {!available && (
+                <span className="tool-unavailable">{t("comingSoon")}</span>
+              )}
+            </div>
+          </>
+        );
+        const links = toolLinks?.[category.slug] ?? [];
+        // Une carte qui liste ses outils ne peut pas être elle-même un
+        // lien : on n'imbrique pas un lien dans un lien. Le lien de
+        // catégorie couvre alors l'image et le titre, et chaque outil
+        // porte le sien.
+        if (available && links.length > 0)
+          return (
+            <article className="tool-category-card" key={category.slug}>
+              <Link
+                className="tool-category-head"
+                href={`/tools/${category.slug}`}
+                prefetch={false}
+              >
+                {content}
+              </Link>
+              <ul className="tool-category-tools">
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} prefetch={false}>
+                      <span>{link.label}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </article>
           );
-        },
-      )}
+        return available ? (
+          <Link
+            className="tool-category-card"
+            href={`/tools/${category.slug}`}
+            key={category.slug}
+            // Bloc 91/F6: skip the per-card RSC prefetch on this grid.
+            prefetch={false}
+          >
+            {content}
+          </Link>
+        ) : (
+          <article
+            className="tool-category-card public-card-disabled"
+            key={category.slug}
+            data-disabled
+            title={t("unavailable")}
+          >
+            {content}
+          </article>
+        );
+      })}
     </div>
   );
 }

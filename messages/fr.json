@@ -137,7 +137,8 @@
       "skills": "Optimise ton équipement et tes compétences dans Million Lords : équipements de combat et d'expédition, gemmes et templiers, coûts de fusion inclus."
     },
     "index-title": "Outils",
-    "index-intro": "Décide avec les bons chiffres : explore les coûts, la production, le classement et les compétences avec des simulateurs conçus pour préparer chaque décision."
+    "index-intro": "Décide avec les bons chiffres : explore les coûts, la production, le classement et les compétences avec des simulateurs conçus pour préparer chaque décision.",
+    "settings-note": "Renseigne tes paramètres du joueur une seule fois : ils sont repris par tous les outils."
   },
   "player-settings": {
     "title": "Paramètres du joueur",
@@ -587,7 +588,10 @@
     "detail": {
       "eyebrow": "Guide · {category}",
       "not-translated": "Ce guide n’est pas encore traduit dans cette langue."
-    }
+    },
+    "index-intro": "Affûte ta stratégie : les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
+    "tool-pill": "Outil : {name}",
+    "start-here": "Commence ici"
   },
   "references": {
     "eyebrow": "Référentiels",
@@ -658,7 +662,11 @@
       "gems": "Toutes les gemmes de Million Lords : bonus par compétence et par ligue, emplacements et coût de fusion en saphirs, avec optimisation multi-compétences.",
       "shop": "Référentiel de la boutique de Million Lords : consommables et données vérifiées par la communauté pour dépenser au bon moment.",
       "events": "Référentiel des événements de Million Lords : données et récompenses vérifiées par la communauté pour préparer chaque événement."
-    }
+    },
+    "index-intro": "Retrouve les données clés : coûts, statistiques et paliers exacts du jeu, des équipements aux gemmes et templiers, jusqu'aux consommables de la boutique.",
+    "missing-title": "Il manque un référentiel ?",
+    "missing-text": "Dis-nous quelles données tu aimerais retrouver ici.",
+    "missing-cta": "Proposer"
   },
   "combat-equipment": {
     "name": "Équipements de Combat",
