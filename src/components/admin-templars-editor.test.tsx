@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import { defaultTemplarPresentationCatalog } from "../lib/templars-presentation";
@@ -114,5 +120,32 @@ describe("Bloc 119: the Templiers screen", () => {
       "href",
       "/admin/referentiels",
     );
+  });
+});
+
+describe("Bloc 125 §5: the preview sits beside what computes it", () => {
+  it("puts Base, Ratio and the preview on one row", () => {
+    renderEditor();
+    const row = document.body.querySelector(
+      ".lg\\:grid-cols-\\[200px_200px_minmax\\(0\\,1fr\\)\\]",
+    );
+    expect(row).not.toBeNull();
+    // All three really are in it: the two fields and the five levels.
+    expect(within(row as HTMLElement).getByLabelText("Base")).toBeVisible();
+    expect(within(row as HTMLElement).getByLabelText("Ratio")).toBeVisible();
+    expect(
+      within(row as HTMLElement).getByText("Aperçu — coût des niveaux 1 à 5"),
+    ).toBeVisible();
+  });
+
+  it("recomputes the preview from the tool's own function as the ratio changes", () => {
+    renderEditor();
+    const sequence = () =>
+      screen.getByText("Niveau 5").closest("ol")!.textContent;
+    const before = sequence();
+    fireEvent.change(screen.getByLabelText("Ratio"), {
+      target: { value: "2" },
+    });
+    expect(sequence()).not.toBe(before);
   });
 });

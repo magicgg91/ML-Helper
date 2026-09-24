@@ -316,12 +316,14 @@ export function ShopReferenceEditor({
               />
             </label>
             <label className="flex flex-col gap-1 text-xs font-medium text-admin-dim">
-              {t("consumables-columns.description")}
-              {/* Several lines of Markdown, in a box that holds several lines
-                  of Markdown — and resizable, because nobody can guess how
-                  long an item's description wants to be. */}
+              {t("consumables-columns.description-markdown")}
+              {/* Bloc 125 §7: six rows, 150 px at the very least, resizable
+                  vertically, and set at 13/1.6 — the line height of something
+                  read back as prose rather than of a one-line field. The
+                  label says Markdown, because that is what goes in it. */}
               <textarea
-                className="admin-control admin-focus min-h-[160px] resize-y rounded-admin-control border border-admin-card-border bg-admin-card px-2 py-1.5 text-sm text-admin-text"
+                rows={6}
+                className="admin-control admin-focus min-h-[150px] resize-y rounded-admin-control border border-admin-card-border bg-admin-card px-2 py-1.5 font-admin-body text-[13px] leading-[1.6] text-admin-text"
                 value={item[descriptionKey]}
                 onChange={(event) =>
                   setField(descriptionKey, event.target.value)

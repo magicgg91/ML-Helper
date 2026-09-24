@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { cityLeagues, type CityParameters } from "@/lib/city-parameters";
 import type { XpTier } from "@/lib/combat-calculators";
 import {
@@ -222,6 +223,18 @@ export function CityParametersEditor({
 
 /* ------------------------------------------------------------------ Gemmes */
 
+/**
+ * Bloc 125 §4: one column template for both sections of the screen, so a
+ * price lands exactly under the league it belongs to.
+ *
+ * The two used to be independent tables — a wide one of skills × leagues, and
+ * under it a second, vertical one listing the six leagues again, one per row.
+ * Reading "how much does a Gold gem cost" meant finding Gold in a column
+ * above and then Gold in a row below. One grid, shared, answers it by
+ * position.
+ */
+const gemGrid = "grid-cols-[180px_repeat(6,minmax(0,1fr))]";
+
 export function GemParametersEditor({
   initial,
   backHref,
@@ -251,105 +264,114 @@ export function GemParametersEditor({
       />
       <FormulaBox>{t("formula")}</FormulaBox>
       <EditorSection title={t("value")}>
-        <EditTable
-          caption={t("value")}
-          head={
-            <>
-              <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
+        {/* Not a <table>: every field here carries its own accessible name
+            ("Attaque en Or"), so the grid adds alignment without taking any
+            of the meaning away — and it is the same grid the prices use. */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[46rem]">
+            <div
+              className={cn(
+                "grid items-center gap-x-3 border-b border-admin-rule pb-2",
+                gemGrid,
+              )}
+            >
+              <span className="admin-column-head px-3 text-admin-dim">
                 {t("skill")}
-              </th>
+              </span>
               {allLeagues.map((league) => (
-                <NumberHead key={league}>
+                <span
+                  key={league}
+                  className="admin-column-head px-3 text-right text-admin-dim"
+                >
                   {game(`leagues.${league}`)}
-                </NumberHead>
+                </span>
               ))}
-            </>
-          }
-        >
-          {skillKeys.map((skill) => (
-            <EditRow key={skill}>
-              <td className="px-3 font-semibold text-admin-text">
-                {game(`skills.${skill}`)}
-              </td>
-              {allLeagues.map((league) => (
-                <td key={league} className="px-3 text-right">
-                  <NumberField
-                    label={t("value-field", {
-                      skill: game(`skills.${skill}`),
-                      league: game(`leagues.${league}`),
-                    })}
-                    hideLabel
-                    width="s"
-                    value={value.skillLeagueValue[skill][league]}
-                    onChange={(next) =>
-                      form.setValue((current) => ({
-                        ...current,
-                        skillLeagueValue: {
-                          ...current.skillLeagueValue,
-                          [skill]: {
-                            ...current.skillLeagueValue[skill],
-                            [league]: next as number,
-                          },
-                        },
-                      }))
-                    }
-                  />
-                </td>
-              ))}
-            </EditRow>
-          ))}
-        </EditTable>
-      </EditorSection>
-      <EditorSection title={t("price")} description={t("price-help")}>
-        <EditTable
-          caption={t("price")}
-          head={
-            <>
-              <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
-                {t("league")}
-              </th>
-              <NumberHead>{t("price-column")}</NumberHead>
-            </>
-          }
-        >
-          {allLeagues.map((league) => {
-            // Bronze has no purchase price in the model (gemLeagues excludes
-            // it), so the row says so instead of showing an empty field that
-            // would look like a value waiting to be typed.
-            const priced = (gemLeagues as League[]).includes(league);
-            return (
-              <EditRow key={league}>
-                <td className="px-3 font-semibold text-admin-text">
-                  {game(`leagues.${league}`)}
-                </td>
-                <td className="px-3 text-right">
-                  {priced ? (
+            </div>
+            {skillKeys.map((skill) => (
+              <div
+                key={skill}
+                className={cn(
+                  "grid items-center gap-x-3 border-b border-admin-rule-soft py-1 last:border-0",
+                  gemGrid,
+                )}
+              >
+                <span className="px-3 text-sm font-semibold text-admin-text">
+                  {game(`skills.${skill}`)}
+                </span>
+                {allLeagues.map((league) => (
+                  <span key={league} className="flex justify-end px-3">
                     <NumberField
-                      label={t("price-field", {
+                      label={t("value-field", {
+                        skill: game(`skills.${skill}`),
                         league: game(`leagues.${league}`),
                       })}
                       hideLabel
-                      width="l"
-                      unit={t("sapphires")}
-                      value={value.gemPrice[league as GemLeague]}
+                      width="s"
+                      value={value.skillLeagueValue[skill][league]}
                       onChange={(next) =>
                         form.setValue((current) => ({
                           ...current,
-                          gemPrice: {
-                            ...current.gemPrice,
-                            [league]: next as number,
+                          skillLeagueValue: {
+                            ...current.skillLeagueValue,
+                            [skill]: {
+                              ...current.skillLeagueValue[skill],
+                              [league]: next as number,
+                            },
                           },
                         }))
                       }
                     />
-                  ) : (
-                    <span className="text-admin-dim">{t("no-price")}</span>
-                  )}
-                </td>
-              </EditRow>
-            );
-          })}
-        </EditTable>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </EditorSection>
+      <EditorSection title={t("price")} description={t("price-help")}>
+        <div className="overflow-x-auto">
+          <div className="min-w-[46rem]">
+            <div className={cn("grid items-center gap-x-3", gemGrid)}>
+              {/* The unit is said once, in the row's name, instead of being
+                  repeated in all six cells. */}
+              <span className="px-3 text-sm font-semibold text-admin-text">
+                {t("price-row")}
+              </span>
+              {allLeagues.map((league) => {
+                // Bronze has no purchase price in the model (gemLeagues
+                // excludes it), so its cell says so instead of showing an
+                // empty field that would look like a value waiting to be
+                // typed.
+                const priced = (gemLeagues as League[]).includes(league);
+                return (
+                  <span key={league} className="flex justify-end px-3">
+                    {priced ? (
+                      <NumberField
+                        label={t("price-field", {
+                          league: game(`leagues.${league}`),
+                        })}
+                        hideLabel
+                        width="s"
+                        value={value.gemPrice[league as GemLeague]}
+                        onChange={(next) =>
+                          form.setValue((current) => ({
+                            ...current,
+                            gemPrice: {
+                              ...current.gemPrice,
+                              [league]: next as number,
+                            },
+                          }))
+                        }
+                      />
+                    ) : (
+                      <span className="text-admin-dim">{t("no-price")}</span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </EditorSection>
     </div>
   );

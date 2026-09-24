@@ -114,7 +114,12 @@ export function TemplarsEditor({
 
       <EditorSection title={t("cost-section")}>
         <FormulaBox>{t("formula")}</FormulaBox>
-        <div className="flex flex-wrap gap-3">
+        {/* Bloc 125 §5: the preview sits on the same line as the two numbers
+            it is computed from, aligned on their baseline, instead of a
+            paragraph below them. What the ratio does to the first five
+            levels is the answer to "what should I type here" — it belongs
+            beside the field, not under it. */}
+        <div className="grid items-end gap-5 lg:grid-cols-[200px_200px_minmax(0,1fr)]">
           <NumberField
             label={t("base")}
             value={parameters.base}
@@ -137,22 +142,39 @@ export function TemplarsEditor({
               }))
             }
           />
-        </div>
-        <div>
-          <p className="admin-eyebrow mb-2 text-admin-dim">{t("preview")}</p>
-          <ul className="flex flex-wrap gap-2">
-            {previewLevels.map((level) => (
-              <li
-                key={level}
-                className="rounded-admin-control border border-admin-card-border bg-admin-head px-3 py-2 text-sm"
-              >
-                <span className="text-admin-dim">{t("level", { level })}</span>{" "}
-                <span className="font-semibold tabular-nums text-admin-text">
-                  {formatGameNumber(templarLevelCost(level, parameters))}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="admin-eyebrow text-admin-dim">
+              {t("preview-levels", {
+                first: previewLevels[0],
+                last: previewLevels[previewLevels.length - 1],
+              })}
+            </span>
+            {/* The five costs as one line of figures, in the order the
+                eyebrow above announces. The labelled chips this replaces
+                wrapped onto a second line at this width, which broke the
+                36 px the row is aligned on; each figure still says which
+                level it is, for anyone reading with a screen reader.
+                `tabular-nums`, not a monospace face: Bloc 119 §1 keeps that
+                family for hours, identifiers and language codes. */}
+            <ol className="flex h-9 items-center gap-2 overflow-hidden rounded-admin-control border border-admin-card-border bg-admin-head px-3 text-sm">
+              {previewLevels.map((level, index) => (
+                <li
+                  key={level}
+                  className="flex items-center gap-2 whitespace-nowrap"
+                >
+                  {index > 0 && (
+                    <span aria-hidden="true" className="text-admin-dim">
+                      ·
+                    </span>
+                  )}
+                  <span className="sr-only">{t("level", { level })}</span>
+                  <span className="font-semibold tabular-nums text-admin-text">
+                    {formatGameNumber(templarLevelCost(level, parameters))}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </EditorSection>
 

@@ -77,10 +77,16 @@ const save = () =>
 describe("Bloc 119: the Événements editor", () => {
   it("puts an event on one line, with its tiers folded away", () => {
     renderEditor();
-    expect(screen.getByRole("button", { name: /^Architecte/ })).toHaveAttribute(
-      "aria-expanded",
-      "false",
+    // Bloc 125 §6: the row carries no serif title any more — the name was
+    // printed twice, once as the card's heading and once in its own field.
+    // The chevron is named by what it folds.
+    expect(screen.queryByRole("heading", { name: "Architecte" })).toBeNull();
+    expect(screen.getByLabelText("Nom de l’événement 1")).toHaveValue(
+      "Architecte",
     );
+    expect(
+      screen.getByRole("button", { name: "Paliers (1) de l’événement 1" }),
+    ).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("1 palier")).toBeInTheDocument();
     expect(
       screen.getByLabelText("Objectif du palier 1 de Architecte"),
@@ -89,7 +95,9 @@ describe("Bloc 119: the Événements editor", () => {
 
   it("shows an event's tiers once it is unfolded", () => {
     renderEditor();
-    fireEvent.click(screen.getByRole("button", { name: /^Architecte/ }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Paliers (1) de l’événement 1" }),
+    );
     const objective = screen.getByLabelText(
       "Objectif du palier 1 de Architecte",
     );
@@ -109,7 +117,9 @@ describe("Bloc 119: the Événements editor", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Argent" }));
     expect(screen.getByText("Aucun objet pour l’instant.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "Bronze" }));
-    expect(screen.getByRole("button", { name: /^Architecte/ })).toBeVisible();
+    expect(screen.getByLabelText("Nom de l’événement 1")).toHaveValue(
+      "Architecte",
+    );
     save();
     await waitFor(() => expect(request).toHaveBeenCalled());
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
@@ -122,10 +132,16 @@ describe("Bloc 119: the Événements editor", () => {
     fireEvent.change(screen.getByLabelText("Nom de l’événement 1"), {
       target: { value: "Bâtisseur" },
     });
-    const durations = screen.getAllByRole("radiogroup", {
+    // Bloc 125 §6: a segmented control, the same one the sidebar's language
+    // pair uses — three loose buttons did not say that picking one unpicks
+    // the others.
+    const durations = screen.getAllByRole("group", {
       name: "Durée de l’événement 1",
-    })[0];
-    fireEvent.click(within(durations).getByRole("radio", { name: "48h" }));
+    })[0]!;
+    fireEvent.click(within(durations).getByRole("button", { name: "48h" }));
+    expect(
+      within(durations).getByRole("button", { name: "48h" }),
+    ).toHaveAttribute("aria-pressed", "true");
     save();
     await waitFor(() => expect(request).toHaveBeenCalled());
     expect(request.mock.calls[0][0]).toBe(
@@ -168,7 +184,11 @@ describe("Bloc 119: the Événements editor", () => {
 
   it("adds a tier to the event whose button was pressed", async () => {
     const request = renderEditor();
-    fireEvent.click(screen.getByRole("button", { name: /^Conquérant/ }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Paliers (0) de l’événement 2",
+      }),
+    );
     fireEvent.click(screen.getByTestId("add-tier-bronze-1"));
     fireEvent.change(
       screen.getByLabelText("Objectif du palier 1 de Conquérant"),
@@ -211,5 +231,38 @@ describe("Bloc 119: the Événements editor", () => {
       await screen.findByText("Ce champ est obligatoire."),
     ).toBeInTheDocument();
     expect(request).not.toHaveBeenCalled();
+  });
+});
+
+describe("Bloc 125 §6: an event is a row, not a card", () => {
+  it("separates the events with a rule instead of framing each one", () => {
+    renderEditor();
+    const row = screen
+      .getByLabelText("Nom de l’événement 1")
+      .closest("div[class*='border-b']");
+    expect(row).not.toBeNull();
+    // A card of its own would have a border on all four sides and a radius.
+    expect(row!.className).not.toContain("rounded-admin-card");
+    expect(row!.className).toContain("border-b");
+  });
+
+  it("tints the row that is open, and indents what it contains", () => {
+    renderEditor();
+    const chevron = screen.getByRole("button", {
+      name: "Paliers (1) de l’événement 1",
+    });
+    const row = chevron.closest("div[class*='border-b']")!;
+    expect(row.className).not.toContain("bg-admin-row-open");
+    fireEvent.click(chevron);
+    expect(
+      screen
+        .getByRole("button", { name: "Paliers (1) de l’événement 1" })
+        .closest("div[class*='border-b']")!.className,
+    ).toContain("bg-admin-row-open");
+    expect(
+      screen
+        .getByLabelText("Objectif du palier 1 de Architecte")
+        .closest("div[class*='pl-16']"),
+    ).not.toBeNull();
   });
 });

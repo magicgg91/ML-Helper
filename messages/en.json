@@ -1074,7 +1074,8 @@
         "image": "Image path",
         "name": "Name",
         "description": "Description",
-        "cost": "Cost (Sapphires)"
+        "cost": "Cost (Sapphires)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Add ({category})",
       "confirm-remove": "Permanently delete this item?",
@@ -1224,7 +1225,8 @@
       "description-of": "Description of {name}",
       "description-to-write": "Description to write",
       "temple-base-of": "Temple base of {name}",
-      "bonus-of": "Bonus of {name}"
+      "bonus-of": "Bonus of {name}",
+      "preview-levels": "Preview — cost of levels {first} to {last}"
     },
     "xp-gain-rate": {
       "formula": "XP gain rate = f(target VP / attacker VP ratio)",
@@ -1260,7 +1262,8 @@
       "price-column": "Price",
       "price-help": "Bronze has no purchase price in the game.",
       "sapphires": "sapphires",
-      "no-price": "—"
+      "no-price": "—",
+      "price-row": "Price (sapphires)"
     },
     "users": {
       "title": "Admin users",

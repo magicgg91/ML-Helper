@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  * the click, not a field whose value is submitted later — the same
  * distinction LangTabs draws. The group carries the label.
  */
-export function AdminSegmented<T extends string>({
+export function AdminSegmented<T extends string | number>({
   options,
   value,
   onChange,
@@ -49,7 +49,7 @@ export function AdminSegmented<T extends string>({
         const active = option === value;
         return (
           <button
-            key={option}
+            key={String(option)}
             type="button"
             disabled={disabled}
             aria-pressed={active}

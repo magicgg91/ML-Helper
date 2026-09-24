@@ -1074,7 +1074,8 @@
         "image": "Chemin de l’image",
         "name": "Nom",
         "description": "Description",
-        "cost": "Coût (Saphirs)"
+        "cost": "Coût (Saphirs)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Ajouter ({category})",
       "confirm-remove": "Supprimer définitivement cet objet ?",
@@ -1224,7 +1225,8 @@
       "description-of": "Description de {name}",
       "description-to-write": "Description à rédiger",
       "temple-base-of": "Base temple de {name}",
-      "bonus-of": "Bonus de {name}"
+      "bonus-of": "Bonus de {name}",
+      "preview-levels": "Aperçu — coût des niveaux {first} à {last}"
     },
     "xp-gain-rate": {
       "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",
@@ -1260,7 +1262,8 @@
       "price-column": "Prix",
       "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu.",
       "sapphires": "saphirs",
-      "no-price": "—"
+      "no-price": "—",
+      "price-row": "Prix (saphirs)"
     },
     "users": {
       "title": "Utilisateurs administrateurs",

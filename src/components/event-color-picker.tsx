@@ -30,12 +30,19 @@ export function EventColorPicker({
   label,
   swatchLabel,
   testId,
+  compact = false,
 }: {
   value: EventColor;
   onChange: (color: EventColor) => void;
   label: string;
   swatchLabel: (color: EventColor) => string;
   testId: string;
+  /**
+   * Bloc 125 §6: the 14 px swatch of an event row, against the 1.9 rem one
+   * the screen used before. A dot in a row of fields, not a control competing
+   * with them for attention.
+   */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +84,11 @@ export function EventColorPicker({
       <button
         type="button"
         ref={toggleRef}
-        className="events-color-picker-toggle"
+        className={
+          compact
+            ? "events-color-picker-toggle events-color-picker-toggle-compact"
+            : "events-color-picker-toggle"
+        }
         style={{ background: eventColorVar(value) }}
         aria-haspopup="true"
         aria-expanded={open}

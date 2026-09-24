@@ -67,6 +67,7 @@
   --color-admin-danger-ink: var(--admin-danger-ink);
   --color-admin-danger-border: var(--admin-danger-border);
   --color-admin-segment: var(--admin-segment);
+  --color-admin-row-open: var(--admin-row-open);
   --color-admin-hover: var(--admin-hover);
   --color-admin-formula: var(--admin-formula);
   --color-admin-formula-border: var(--admin-formula-border);
@@ -261,6 +262,9 @@
      peut atteindre 3:1, et la couleur du texte ne dépend pas du thème. */
   --admin-segment: #e4e6ec;
   --admin-hover: #e9eaf0;
+  /* Bloc 125 §6 — le fond d'une ligne dépliée : assez pour relier une ligne
+     à ce qu'elle contient, pas assez pour faire une carte. */
+  --admin-row-open: #fbfbfd;
 
   /* Bloc 125 §3 — une seule échelle de superposition pour toute l'admin.
      Les valeurs en dur d'avant (z-20 sur un menu ⋯, z-50 sur les trois
@@ -326,4 +330,5 @@
      distinguait pas de la carte (#222833), l'option active était invisible. */
   --admin-segment: #151a22;
   --admin-hover: #2c333f;
+  --admin-row-open: #232a34;
 }

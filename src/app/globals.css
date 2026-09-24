@@ -3003,6 +3003,13 @@ body > main h1 {
   background: var(--bg-panel-raised);
   box-shadow: 0 0.5rem 1.2rem rgb(0 0 0 / 20%);
 }
+/* Bloc 125 §6: the swatch of an admin event row — a 14 px dot among fields,
+   not a control the size of a button beside them. */
+.events-color-picker-toggle-compact {
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
+}
 .events-color-picker-option {
   width: 1.6rem;
   height: 1.6rem;

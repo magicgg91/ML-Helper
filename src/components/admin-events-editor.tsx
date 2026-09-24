@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
@@ -9,7 +10,6 @@ import {
   maxSeasonDurationDays,
   totalEventHours,
   type EventColor,
-  type EventDuration,
   type EventRow,
   type EventsCatalog,
   type EventTierRow,
@@ -18,7 +18,6 @@ import { leagues, type League } from "@/lib/player-settings";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
-import { CollapsibleGroup } from "./admin-collapsible-group";
 import { EditorHeader } from "./admin-editor-header";
 import { EditorSection } from "./admin-editor-section";
 import { LangTabs } from "./admin-lang-tabs";
@@ -26,6 +25,7 @@ import { NumberField } from "./admin-number-field";
 import { Pill } from "./admin-pill";
 import { RowActions } from "./admin-row-actions";
 import type { EditorScreenProps } from "./admin-tool-editors";
+import { AdminSegmented } from "./admin-segmented";
 import { EventColorPicker } from "./event-color-picker";
 import { useEditorForm } from "./use-editor-form";
 
@@ -264,92 +264,104 @@ export function EventsReferenceEditor({
         {events.length === 0 ? (
           <p className="text-sm text-admin-dim">{t("empty")}</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="-mx-6 -mb-6 flex flex-col">
             {events.map((event, index) => {
               const rowLabel = (field: string) =>
                 t("event-row-label", { row: index + 1, field });
+              const expanded = open.has(index);
+              const panelId = `${league}-event-${index}`;
               return (
-                <CollapsibleGroup
+                // Bloc 125 §6: a row, not a framed card. The name used to be
+                // printed twice — once as the card's serif title and once in
+                // its own field — and a stack of ten bordered boxes read as
+                // ten screens rather than one list.
+                <div
                   key={index}
-                  title={event.name || t("event-unnamed")}
-                  open={open.has(index)}
-                  onToggle={(next) =>
-                    setOpen((current) => {
-                      const updated = new Set(current);
-                      if (next) updated.add(index);
-                      else updated.delete(index);
-                      return updated;
-                    })
-                  }
-                  badges={
+                  className={cn(
+                    "border-b border-admin-rule-soft last:border-0",
+                    expanded && "bg-admin-row-open",
+                  )}
+                >
+                  <div className="grid items-center gap-3 px-5 py-3 xl:grid-cols-[32px_14px_200px_minmax(0,1fr)_150px_110px_100px]">
+                    <button
+                      type="button"
+                      aria-expanded={expanded}
+                      aria-controls={panelId}
+                      aria-label={rowLabel(
+                        t("events-tiers-summary", {
+                          count: event.tiers.length,
+                        }),
+                      )}
+                      className="admin-focus flex size-8 items-center justify-center rounded-admin-control text-admin-dim hover:bg-admin-hover hover:text-admin-text"
+                      onClick={() =>
+                        setOpen((current) => {
+                          const updated = new Set(current);
+                          if (expanded) updated.delete(index);
+                          else updated.add(index);
+                          return updated;
+                        })
+                      }
+                    >
+                      <ChevronRightIcon
+                        aria-hidden="true"
+                        className={cn(
+                          "size-4 transition-transform",
+                          expanded && "rotate-90",
+                        )}
+                      />
+                    </button>
+                    <EventColorPicker
+                      value={event.color}
+                      label={rowLabel(t("events-columns.color"))}
+                      swatchLabel={(color) => t(`event-colors.${color}`)}
+                      testId={`event-color-${league}-${index}`}
+                      compact
+                      onChange={(color: EventColor) =>
+                        patchEvent(index, { color })
+                      }
+                    />
+                    <input
+                      aria-label={rowLabel(t("events-columns.name"))}
+                      className="admin-control admin-focus h-9 w-full rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
+                      type="text"
+                      value={event.name}
+                      onChange={(e) =>
+                        patchEvent(index, { name: e.target.value })
+                      }
+                    />
+                    <input
+                      aria-label={rowLabel(t("events-columns.description"))}
+                      className={cn(
+                        "admin-control admin-focus h-9 w-full min-w-0 rounded-admin-control border bg-admin-card px-2 text-sm text-admin-text",
+                        event[descriptionKey].trim()
+                          ? "border-admin-card-border"
+                          : "border-dashed border-admin-warn-ink/60",
+                      )}
+                      placeholder={t("description-to-write")}
+                      type="text"
+                      value={event[descriptionKey]}
+                      onChange={(e) =>
+                        patchEvent(index, {
+                          [descriptionKey]: e.target.value,
+                        })
+                      }
+                    />
+                    {/* The same segmented control as the sidebar's language
+                        pair (§2): three loose buttons did not say that
+                        picking one unpicks the others. */}
+                    <AdminSegmented
+                      options={eventDurations}
+                      value={event.duration}
+                      label={rowLabel(t("events-columns.duration"))}
+                      optionLabel={(duration) =>
+                        common("duration-hours", { hours: duration })
+                      }
+                      onChange={(duration) => patchEvent(index, { duration })}
+                    />
                     <Pill tone="neutral">
                       {t("tier-count", { count: event.tiers.length })}
                     </Pill>
-                  }
-                  actions={
-                    <>
-                      <EventColorPicker
-                        value={event.color}
-                        label={rowLabel(t("events-columns.color"))}
-                        swatchLabel={(color) => t(`event-colors.${color}`)}
-                        testId={`event-color-${league}-${index}`}
-                        onChange={(color: EventColor) =>
-                          patchEvent(index, { color })
-                        }
-                      />
-                      <input
-                        aria-label={rowLabel(t("events-columns.name"))}
-                        className="admin-control admin-focus h-9 w-[160px] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
-                        type="text"
-                        value={event.name}
-                        onChange={(e) =>
-                          patchEvent(index, { name: e.target.value })
-                        }
-                      />
-                      <input
-                        aria-label={rowLabel(t("events-columns.description"))}
-                        className={cn(
-                          "admin-control admin-focus h-9 w-[240px] rounded-admin-control border bg-admin-card px-2 text-sm text-admin-text",
-                          event[descriptionKey].trim()
-                            ? "border-admin-card-border"
-                            : "border-dashed border-admin-warn-ink/60",
-                        )}
-                        placeholder={t("description-to-write")}
-                        type="text"
-                        value={event[descriptionKey]}
-                        onChange={(e) =>
-                          patchEvent(index, {
-                            [descriptionKey]: e.target.value,
-                          })
-                        }
-                      />
-                      <div
-                        aria-label={rowLabel(t("events-columns.duration"))}
-                        className="flex gap-1"
-                        role="radiogroup"
-                      >
-                        {eventDurations.map((duration) => (
-                          <button
-                            key={duration}
-                            type="button"
-                            role="radio"
-                            aria-checked={event.duration === duration}
-                            className={cn(
-                              "admin-focus rounded-admin-control border px-2 py-1 text-xs font-semibold",
-                              event.duration === duration
-                                ? "border-admin-accent bg-admin-accent-soft text-admin-accent-soft-ink"
-                                : "border-admin-card-border text-admin-dim",
-                            )}
-                            onClick={() =>
-                              patchEvent(index, {
-                                duration: duration as EventDuration,
-                              })
-                            }
-                          >
-                            {common("duration-hours", { hours: duration })}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="flex justify-end">
                       <RowActions
                         name={event.name || t("event-unnamed")}
                         isFirst={index === 0}
@@ -360,124 +372,133 @@ export function EventsReferenceEditor({
                           setEvents(events.filter((_, i) => i !== index))
                         }
                       />
-                    </>
-                  }
-                >
-                  <div className="flex flex-col gap-3 p-3">
-                    {event.tiers.length === 0 ? (
-                      <p className="text-sm text-admin-dim">
-                        {t("tiers-empty")}
-                      </p>
-                    ) : (
-                      <table className="w-full border-collapse text-sm">
-                        <caption className="sr-only">
-                          {t("events-tiers-summary", {
-                            count: event.tiers.length,
-                          })}
-                        </caption>
-                        <thead>
-                          <tr className="border-b border-admin-rule">
-                            <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
-                              #
-                            </th>
-                            <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
-                              {t("tier-columns.objective")}
-                            </th>
-                            <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
-                              {t("tier-columns.reward")}
-                            </th>
-                            <th className="admin-column-head px-2 py-1 text-right text-admin-dim">
-                              {t("actions")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {event.tiers.map((tier, tierIndex) => (
-                            <tr
-                              key={tierIndex}
-                              className="border-b border-admin-rule-soft last:border-0"
-                            >
-                              <td className="px-2 py-1 text-admin-dim">
-                                {tierIndex + 1}
-                              </td>
-                              {(
-                                [
-                                  [objectiveKey, "objective"],
-                                  [rewardKey, "reward"],
-                                ] as const
-                              ).map(([key, column]) => (
-                                <td key={column} className="px-2 py-1">
-                                  <input
-                                    aria-label={t("tier-row-label", {
+                    </div>
+                  </div>
+                  <div hidden={!expanded} id={panelId}>
+                    {/* Indented under the row it belongs to: the tiers of an
+                        event are inside it, and at the same left edge they
+                        read as a second list of events. */}
+                    <div className="flex flex-col gap-3 pt-1 pr-5 pb-4 pl-16">
+                      {event.tiers.length === 0 ? (
+                        <p className="text-sm text-admin-dim">
+                          {t("tiers-empty")}
+                        </p>
+                      ) : (
+                        <table className="w-full border-collapse text-sm">
+                          <caption className="sr-only">
+                            {t("events-tiers-summary", {
+                              count: event.tiers.length,
+                            })}
+                          </caption>
+                          <thead>
+                            <tr className="border-b border-admin-rule">
+                              <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
+                                #
+                              </th>
+                              <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
+                                {t("tier-columns.objective")}
+                              </th>
+                              <th className="admin-column-head px-2 py-1 text-left text-admin-dim">
+                                {t("tier-columns.reward")}
+                              </th>
+                              <th className="admin-column-head px-2 py-1 text-right text-admin-dim">
+                                {t("actions")}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {event.tiers.map((tier, tierIndex) => (
+                              <tr
+                                key={tierIndex}
+                                className="border-b border-admin-rule-soft last:border-0"
+                              >
+                                <td className="px-2 py-1 text-admin-dim">
+                                  {tierIndex + 1}
+                                </td>
+                                {(
+                                  [
+                                    [objectiveKey, "objective"],
+                                    [rewardKey, "reward"],
+                                  ] as const
+                                ).map(([key, column]) => (
+                                  <td key={column} className="px-2 py-1">
+                                    <input
+                                      aria-label={t("tier-row-label", {
+                                        event: event.name || t("event-unnamed"),
+                                        row: tierIndex + 1,
+                                        field: t(`tier-columns.${column}`),
+                                      })}
+                                      className="admin-control admin-focus h-9 w-full rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
+                                      type="text"
+                                      value={tier[key]}
+                                      onChange={(e) =>
+                                        setTiers(
+                                          index,
+                                          event.tiers.map((item, i) =>
+                                            i === tierIndex
+                                              ? {
+                                                  ...item,
+                                                  [key]: e.target.value,
+                                                }
+                                              : item,
+                                          ),
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                ))}
+                                <td className="px-2 py-1">
+                                  <RowActions
+                                    // The tier, not one of its fields: reusing
+                                    // a field's label would make "Monter
+                                    // Objectif du palier 1" collide with the
+                                    // Objectif field itself.
+                                    name={t("tier-name", {
                                       event: event.name || t("event-unnamed"),
                                       row: tierIndex + 1,
-                                      field: t(`tier-columns.${column}`),
                                     })}
-                                    className="admin-control admin-focus h-9 w-full rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
-                                    type="text"
-                                    value={tier[key]}
-                                    onChange={(e) =>
+                                    isFirst={tierIndex === 0}
+                                    isLast={
+                                      tierIndex === event.tiers.length - 1
+                                    }
+                                    onMoveUp={() =>
+                                      moveTier(index, tierIndex, -1)
+                                    }
+                                    onMoveDown={() =>
+                                      moveTier(index, tierIndex, 1)
+                                    }
+                                    onRemove={() =>
                                       setTiers(
                                         index,
-                                        event.tiers.map((item, i) =>
-                                          i === tierIndex
-                                            ? { ...item, [key]: e.target.value }
-                                            : item,
+                                        event.tiers.filter(
+                                          (_, i) => i !== tierIndex,
                                         ),
                                       )
                                     }
                                   />
                                 </td>
-                              ))}
-                              <td className="px-2 py-1">
-                                <RowActions
-                                  // The tier, not one of its fields: reusing
-                                  // a field's label would make "Monter
-                                  // Objectif du palier 1" collide with the
-                                  // Objectif field itself.
-                                  name={t("tier-name", {
-                                    event: event.name || t("event-unnamed"),
-                                    row: tierIndex + 1,
-                                  })}
-                                  isFirst={tierIndex === 0}
-                                  isLast={tierIndex === event.tiers.length - 1}
-                                  onMoveUp={() =>
-                                    moveTier(index, tierIndex, -1)
-                                  }
-                                  onMoveDown={() =>
-                                    moveTier(index, tierIndex, 1)
-                                  }
-                                  onRemove={() =>
-                                    setTiers(
-                                      index,
-                                      event.tiers.filter(
-                                        (_, i) => i !== tierIndex,
-                                      ),
-                                    )
-                                  }
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                    <AdminButton
-                      type="button"
-                      size="sm"
-                      className="self-start"
-                      data-testid={`add-tier-${league}-${index}`}
-                      onClick={() =>
-                        setTiers(index, [
-                          ...event.tiers,
-                          { ...emptyEventTierRow },
-                        ])
-                      }
-                    >
-                      {t("add-tier")}
-                    </AdminButton>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                      <AdminButton
+                        type="button"
+                        size="sm"
+                        className="self-start"
+                        data-testid={`add-tier-${league}-${index}`}
+                        onClick={() =>
+                          setTiers(index, [
+                            ...event.tiers,
+                            { ...emptyEventTierRow },
+                          ])
+                        }
+                      >
+                        {t("add-tier")}
+                      </AdminButton>
+                    </div>
                   </div>
-                </CollapsibleGroup>
+                </div>
               );
             })}
           </div>
