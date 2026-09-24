@@ -1427,7 +1427,7 @@
       "filter-message-placeholder": "A word from the message…",
       "day-actions": "{count, plural, =1 {# action} other {# actions}}",
       "column-time": "Time",
-      "load-more": "Load the previous days",
+      "load-more": "Load more",
       "purge-title": "Purge the log",
       "purge-description": "Permanently deletes the entries of a period. Super Admin only.",
       "purge-open": "Purge the period…",

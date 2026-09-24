@@ -179,7 +179,18 @@ export default async function LogsPage({
       {hasMore && (
         <div className="flex justify-center">
           <AdminButton asChild>
-            <Link href={logsPageHref(filters, page + 1)}>{t("load-more")}</Link>
+            {/* Bloc 126/A: `scroll={false}`. Each click re-renders the whole
+                page with one more window of days, and Next's default is to
+                scroll to the top of the first Page element whenever that
+                element is not in the viewport — which, standing at the bottom
+                of 20 days of history, it never is. So reading the fourth
+                window meant scrolling back down through the first three. The
+                rows above the button do not move when it is clicked, so
+                keeping the scroll position leaves the reader exactly where
+                they were, with the new days appended below. */}
+            <Link href={logsPageHref(filters, page + 1)} scroll={false}>
+              {t("load-more")}
+            </Link>
           </AdminButton>
         </div>
       )}

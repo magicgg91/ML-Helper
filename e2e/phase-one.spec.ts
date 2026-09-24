@@ -1270,18 +1270,37 @@ test("the audit log paginates by 20 entries", async ({ page }) => {
   // Bloc 119: the log is grouped by day (each group opens with a <th> row,
   // so the data rows are the ones carrying a <td>) and loads more days on a
   // button rather than paging back and forth.
-  await page.goto("/admin/logs?q=pagination-user");
-  await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
+  // Bloc 126/A: the button reads "Charger plus" — it widens the window, and
+  // what arrives is older entries, not necessarily older *days*.
+  //
+  // Twice, at two different scroll positions: the button sits at the bottom
+  // of the list, so the position a reader clicks from is whatever the page
+  // height puts them at, and two viewport heights give two of them. Read
+  // after scrollIntoViewIfNeeded, because click() scrolls the target into
+  // view itself and would otherwise be measuring its own scrolling.
+  for (const height of [600, 400]) {
+    await page.setViewportSize({ width: 1280, height });
+    await page.goto("/admin/logs?q=pagination-user");
+    await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
 
-  await page
-    .getByRole("link", { name: "Charger les jours précédents" })
-    .click();
-  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
-  // The window widens rather than moving: the 26 entries are all on screen.
-  await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
-  await expect(
-    page.getByRole("link", { name: "Charger les jours précédents" }),
-  ).toHaveCount(0);
+    const more = page.getByRole("link", { name: "Charger plus" });
+    await more.scrollIntoViewIfNeeded();
+    const scrollBefore = await page.evaluate(() => window.scrollY);
+    // The reader really is down the page: without this the assertion below
+    // would pass on a page that never scrolled at all.
+    expect(scrollBefore).toBeGreaterThan(0);
+
+    await more.click();
+    await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
+    // The window widens rather than moving: the 26 entries are all on screen.
+    await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
+    await expect(page.getByRole("link", { name: "Charger plus" })).toHaveCount(
+      0,
+    );
+    // Bloc 126/A: and the reader is still where they were. Before the fix
+    // this was 0 — the top of a list they had just scrolled through.
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+  }
 });
 
 // Bloc 57: the Boutique reference screen has a single save button (Bloc 42)

@@ -23,6 +23,26 @@ vi.mock("next-intl/server", () => {
     getLocale: async () => "fr",
   };
 });
+// Bloc 126/A: `scroll` is a Link prop, consumed by the router and never
+// forwarded to the <a>, so the real component leaves nothing in the DOM to
+// assert. This stand-in renders the same anchor and puts the prop where a
+// test can see it; the e2e measures the scroll position for real.
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    scroll,
+    children,
+    ...rest
+  }: {
+    href: string;
+    scroll?: boolean;
+    children: React.ReactNode;
+  }) => (
+    <a href={href} data-scroll={String(scroll)} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("@/components/admin-logs-filters", () => ({
   AdminLogsFilters: ({ usernames }: { usernames: string[] }) => (
     <div data-testid="filters">{usernames.join(",")}</div>
@@ -127,10 +147,11 @@ describe("Bloc 119: the audit log, grouped by day", () => {
         log(String(index), "2026-09-22T18:04:00Z"),
       ),
     );
-    expect(screen.getByRole("link", { name: "load-more" })).toHaveAttribute(
-      "href",
-      "/admin/logs?page=2",
-    );
+    const more = screen.getByRole("link", { name: "load-more" });
+    expect(more).toHaveAttribute("href", "/admin/logs?page=2");
+    // Bloc 126/A: without this, Next scrolls to the top of the page — which
+    // is the whole list — and the reader loses their place.
+    expect(more).toHaveAttribute("data-scroll", "false");
     cleanup();
     await renderPage([log("1", "2026-09-22T18:04:00Z")]);
     expect(screen.queryByRole("link", { name: "load-more" })).toBeNull();

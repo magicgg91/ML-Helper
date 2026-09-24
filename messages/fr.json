@@ -1427,7 +1427,7 @@
       "filter-message-placeholder": "Un mot du message…",
       "day-actions": "{count, plural, =1 {# action} other {# actions}}",
       "column-time": "Heure",
-      "load-more": "Charger les jours précédents",
+      "load-more": "Charger plus",
       "purge-title": "Purge du journal",
       "purge-description": "Supprime définitivement les entrées d’une période. Réservé au Super Admin.",
       "purge-open": "Purger la période…",
