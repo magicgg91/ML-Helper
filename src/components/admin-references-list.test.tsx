@@ -46,6 +46,7 @@ const rows: AdminReferenceRow[] = [
     active: true,
     editHref: "/admin/referentiels/reference-combat-equipment",
     usedBy: "Équipement de Combat",
+    description: { fr: "Toutes les pièces, par set." },
   },
   {
     id: "events",
@@ -53,6 +54,7 @@ const rows: AdminReferenceRow[] = [
     active: false,
     editHref: "/admin/referentiels/reference-events",
     usedBy: null,
+    description: {},
   },
 ];
 

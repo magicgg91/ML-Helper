@@ -9,6 +9,12 @@ import { SearchInput } from "./admin-filters";
 import { Pill } from "./admin-pill";
 import { VisibilitySwitch } from "./admin-visibility-switch";
 import { useServerRows } from "./use-server-rows";
+import { DescriptionCell } from "./admin-description-cell";
+import {
+  DescriptionPanel,
+  type DescriptionTarget,
+} from "./admin-description-panel";
+import type { ToolDescription } from "@/lib/tool-description";
 
 /**
  * Bloc 119: the Référentiels list — the Outils table's twin, with the
@@ -28,17 +34,25 @@ export type AdminReferenceRow = {
   editHref: string;
   /** The tool that reads it, already named, or null when nothing does. */
   usedBy: string | null;
+  /** Bloc 130: the one-line public description, per language. */
+  description: ToolDescription;
 };
 
 export function AdminReferencesList({
   rows,
   canWrite,
+  hiddenLocales,
+  languageNames,
 }: {
   rows: AdminReferenceRow[];
   canWrite: boolean;
+  /** Bloc 130: the launch languages switched off in Configuration. */
+  hiddenLocales?: readonly string[];
+  languageNames?: Partial<Record<string, string>>;
 }) {
   const t = useTranslations("admin.referentiels");
   const common = useTranslations("admin.common");
+  const descriptions = useTranslations("admin.descriptions");
   // Bloc 128: the rows follow what the server re-renders. Their labels
   // and their order are resolved server-side in the admin's own language,
   // so a language change has to reach them and not only the chrome.
@@ -46,6 +60,8 @@ export function AdminReferencesList({
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
+  // Bloc 130: which row's description is open, if any.
+  const [describing, setDescribing] = useState<DescriptionTarget>();
 
   const matches = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -104,6 +120,24 @@ export function AdminReferencesList({
         ),
     },
     {
+      key: "description",
+      header: descriptions("column"),
+      narrow: true,
+      cell: (row) => (
+        <DescriptionCell
+          row={{ label: row.title, description: row.description }}
+          canEdit={canWrite}
+          onOpen={() =>
+            setDescribing({
+              slug: row.id,
+              label: row.title,
+              description: row.description,
+            })
+          }
+        />
+      ),
+    },
+    {
       key: "visible",
       header: t("columns-visible"),
       narrow: true,
@@ -154,6 +188,21 @@ export function AdminReferencesList({
           {message}
         </p>
       )}
+
+      <DescriptionPanel
+        target={describing}
+        hiddenLocales={hiddenLocales}
+        languageNames={languageNames}
+        onClose={() => setDescribing(undefined)}
+        onSaved={(slug, description) => {
+          setReferences((current) =>
+            current.map((reference) =>
+              reference.id === slug ? { ...reference, description } : reference,
+            ),
+          );
+          setDescribing(undefined);
+        }}
+      />
     </div>
   );
 }

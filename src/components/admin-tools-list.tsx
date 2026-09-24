@@ -8,7 +8,13 @@ import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { FilterChips, SearchInput } from "./admin-filters";
 import { Pill } from "./admin-pill";
 import { VisibilitySwitch } from "./admin-visibility-switch";
+import type { ToolDescription } from "@/lib/tool-description";
 import { useServerRows } from "./use-server-rows";
+import { DescriptionCell } from "./admin-description-cell";
+import {
+  DescriptionPanel,
+  type DescriptionTarget,
+} from "./admin-description-panel";
 
 /**
  * Bloc 119: the Outils list.
@@ -37,6 +43,8 @@ export type AdminToolRow = {
   category: string;
   active: boolean;
   source: AdminToolSource;
+  /** Bloc 130: the one-line public description, per language. */
+  description: ToolDescription;
 };
 
 /** The order of the chips and of the groups, per the brief (§3). */
@@ -48,15 +56,21 @@ export function AdminToolsList({
   canEdit,
   canToggle,
   canOpenReferences,
+  hiddenLocales,
+  languageNames,
 }: {
   rows: AdminToolRow[];
   canEdit: boolean;
   canToggle: boolean;
   /** Whether this role may open a reference editor the row points at. */
   canOpenReferences: boolean;
+  /** Bloc 130: the launch languages switched off in Configuration. */
+  hiddenLocales?: readonly string[];
+  languageNames?: Partial<Record<string, string>>;
 }) {
   const t = useTranslations("admin.tools");
   const common = useTranslations("admin.common");
+  const descriptions = useTranslations("admin.descriptions");
   // Bloc 128: the rows follow what the server re-renders. Their labels
   // and their order are resolved server-side in the admin's own language,
   // so a language change has to reach them and not only the chrome.
@@ -65,6 +79,8 @@ export function AdminToolsList({
   const [category, setCategory] = useState<Category>("all");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
+  // Bloc 130: which row's description is open, if any.
+  const [describing, setDescribing] = useState<DescriptionTarget>();
 
   const matches = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -146,6 +162,24 @@ export function AdminToolsList({
       cell: (row) => <span className="font-semibold">{row.label}</span>,
     },
     { key: "source", header: t("columns-source"), cell: sourceCell },
+    {
+      key: "description",
+      header: descriptions("column"),
+      narrow: true,
+      cell: (row) => (
+        <DescriptionCell
+          row={row}
+          canEdit={canEdit}
+          onOpen={() =>
+            setDescribing({
+              slug: row.slug,
+              label: row.label,
+              description: row.description,
+            })
+          }
+        />
+      ),
+    },
     {
       key: "visible",
       header: t("columns-visible"),
@@ -235,6 +269,21 @@ export function AdminToolsList({
           {message}
         </p>
       )}
+
+      <DescriptionPanel
+        target={describing}
+        hiddenLocales={hiddenLocales}
+        languageNames={languageNames}
+        onClose={() => setDescribing(undefined)}
+        onSaved={(slug, description) => {
+          setTools((current) =>
+            current.map((tool) =>
+              tool.slug === slug ? { ...tool, description } : tool,
+            ),
+          );
+          setDescribing(undefined);
+        }}
+      />
     </div>
   );
 }

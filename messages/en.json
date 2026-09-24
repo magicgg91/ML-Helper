@@ -1385,7 +1385,8 @@
         },
         "reference": {
           "activate": "{actor} activated the {slug} reference",
-          "deactivate": "{actor} deactivated the {slug} reference"
+          "deactivate": "{actor} deactivated the {slug} reference",
+          "describe": "{actor} described the {slug} reference"
         },
         "setup": "{actor} created the first Super Admin account",
         "templars-reference": {
@@ -1397,7 +1398,8 @@
         },
         "tool": {
           "activate": "{actor} activated tool {slug}",
-          "deactivate": "{actor} deactivated tool {slug}"
+          "deactivate": "{actor} deactivated tool {slug}",
+          "describe": "{actor} described the {slug} tool"
         },
         "totp": {
           "activate": "{actor} enabled two-factor authentication on their account",
@@ -1518,6 +1520,18 @@
     "theme": {
       "to-dark": "Switch to the dark theme",
       "to-light": "Switch to the light theme"
+    },
+    "descriptions": {
+      "title": "Description of {name}",
+      "subtitle": "One line, shown under the title on the public site.",
+      "languages-label": "Text in",
+      "language-hidden": "{language}: hidden on the site",
+      "field": "Description ({language})",
+      "placeholder": "What this tool lets you work out, in one sentence.",
+      "counter": "{count} / {max} characters",
+      "open": "Describe {name}",
+      "written": "{count, plural, =0 {no language} one {# language} other {# languages}}",
+      "column": "Description"
     }
   },
   "roles": {

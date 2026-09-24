@@ -7,7 +7,12 @@ import { requireCapability } from "@/auth/require-session";
 
 vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { calculator: { findMany: vi.fn() } },
+  prisma: {
+    calculator: { findMany: vi.fn() },
+    // Bloc 130: the screen also asks which launch languages are switched
+    // off, so the description panel can say which the public cannot see.
+    localeSetting: { findMany: vi.fn(async () => []) },
+  },
 }));
 // Titles come from the Référentiels catalogue, tool names from the root one;
 // giving them different shapes keeps the two apart in the assertions.
@@ -19,8 +24,11 @@ const titles: Record<string, string> = {
   "references.combat-equipment": "Équipements de Combat",
 };
 vi.mock("next-intl/server", () => ({
-  getTranslations: async (namespace?: string) => (key: string) =>
-    namespace ? (titles[key] ?? key) : `outil ${key}`,
+  getTranslations: async (namespace?: string) =>
+    Object.assign(
+      (key: string) => (namespace ? (titles[key] ?? key) : `outil ${key}`),
+      { has: () => true },
+    ),
   getLocale: async () => "fr",
 }));
 vi.mock("@/components/admin-references-list", () => ({

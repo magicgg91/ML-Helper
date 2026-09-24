@@ -1385,7 +1385,8 @@
         },
         "reference": {
           "activate": "{actor} a activé le référentiel {slug}",
-          "deactivate": "{actor} a désactivé le référentiel {slug}"
+          "deactivate": "{actor} a désactivé le référentiel {slug}",
+          "describe": "{actor} a décrit le référentiel {slug}"
         },
         "setup": "{actor} a créé le premier compte Super Admin",
         "templars-reference": {
@@ -1397,7 +1398,8 @@
         },
         "tool": {
           "activate": "{actor} a activé l’outil {slug}",
-          "deactivate": "{actor} a désactivé l’outil {slug}"
+          "deactivate": "{actor} a désactivé l’outil {slug}",
+          "describe": "{actor} a décrit l’outil {slug}"
         },
         "totp": {
           "activate": "{actor} a activé l’authentification à deux facteurs de son compte",
@@ -1518,6 +1520,18 @@
     "theme": {
       "to-dark": "Passer en thème sombre",
       "to-light": "Passer en thème clair"
+    },
+    "descriptions": {
+      "title": "Description de {name}",
+      "subtitle": "Une ligne, affichée sous le titre sur le site public.",
+      "languages-label": "Texte en",
+      "language-hidden": "{language} : masquée sur le site",
+      "field": "Description ({language})",
+      "placeholder": "Ce que cet outil permet de faire, en une phrase.",
+      "counter": "{count} / {max} caractères",
+      "open": "Décrire {name}",
+      "written": "{count, plural, =0 {aucune langue} one {# langue} other {# langues}}",
+      "column": "Description"
     }
   },
   "roles": {

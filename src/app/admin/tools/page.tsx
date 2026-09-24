@@ -9,18 +9,26 @@ import {
 } from "@/components/admin-tools-list";
 import { toolParameterSource } from "@/lib/admin-tool-sources";
 import { referenceToolSlugs } from "@/lib/admin-tools";
+import { launchLocales } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
+import { hiddenPublicLocales } from "@/lib/locale-settings";
+import { parseToolDescription } from "@/lib/tool-description";
 
 export default async function ToolsAdminPage() {
   const session = await requireCapability("calculators.read");
-  const [t, references, messages, locale] = await Promise.all([
-    getTranslations("admin.tools"),
-    // The reference a tool reads is named where references are named, so the
-    // two screens call it the same thing.
-    getTranslations("admin.referentiels.references"),
-    getTranslations(),
-    getLocale(),
-  ]);
+  const [t, references, messages, locale, languages, hiddenLocales] =
+    await Promise.all([
+      getTranslations("admin.tools"),
+      // The reference a tool reads is named where references are named, so the
+      // two screens call it the same thing.
+      getTranslations("admin.referentiels.references"),
+      getTranslations(),
+      getLocale(),
+      // Named where the Configuration screen names them, like every other
+      // screen that offers the launch languages.
+      getTranslations("admin.config.languages"),
+      hiddenPublicLocales(),
+    ]);
   const tools = await prisma.calculator.findMany({
     where: { slug: { notIn: [...referenceToolSlugs] } },
   });
@@ -55,6 +63,10 @@ export default async function ToolsAdminPage() {
         category: tool.category,
         active: tool.active,
         source: resolved,
+        // Bloc 130: editorial content, stored per language on the row
+        // itself — not a key in messages/*.json. Nothing public reads it
+        // yet; Bloc 129 will.
+        description: parseToolDescription(tool.description),
       };
     })
     // Bloc 62/C: alphabetical by the label actually shown, in the admin's own
@@ -73,6 +85,13 @@ export default async function ToolsAdminPage() {
         canEdit={can(session.user.role, "calculators.write")}
         canToggle={can(session.user.role, "calculators.toggle")}
         canOpenReferences={canOpenReferences}
+        hiddenLocales={hiddenLocales}
+        languageNames={Object.fromEntries(
+          launchLocales.map((code) => [
+            code,
+            languages.has(code) ? languages(code) : code.toUpperCase(),
+          ]),
+        )}
       />
     </div>
   );

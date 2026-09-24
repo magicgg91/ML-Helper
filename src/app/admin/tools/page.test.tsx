@@ -7,7 +7,12 @@ import { requireCapability } from "@/auth/require-session";
 
 vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { calculator: { findMany: vi.fn() } },
+  prisma: {
+    calculator: { findMany: vi.fn() },
+    // Bloc 130: the screen also asks which launch languages are switched
+    // off, so the description panel can say which the public cannot see.
+    localeSetting: { findMany: vi.fn(async () => []) },
+  },
 }));
 // Namespaced keys come back as "namespace.key", the root translator as the
 // key itself — enough to tell which catalogue a label was read from, and to
@@ -19,8 +24,14 @@ const labels: Record<string, string> = {
   "stuff-simulator.name": "Équipement de Combat",
 };
 vi.mock("next-intl/server", () => ({
-  getTranslations: async (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : (labels[key] ?? key),
+  // `has` too: the screen asks the Configuration catalogue whether it names
+  // a language before falling back to its code (Bloc 130).
+  getTranslations: async (namespace?: string) =>
+    Object.assign(
+      (key: string) =>
+        namespace ? `${namespace}.${key}` : (labels[key] ?? key),
+      { has: () => true },
+    ),
   getLocale: async () => "fr",
 }));
 vi.mock("@/components/admin-tools-list", () => ({
