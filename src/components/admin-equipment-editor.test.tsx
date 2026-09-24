@@ -136,6 +136,55 @@ describe("Bloc 119: the equipment reference editor", () => {
     );
   });
 
+  // Codex review (PR #150): greying the field was not enough on its own.
+  // Measured in the browser before the fix, the save sent
+  // `{skill_4: "", value_4_pct: "10"}` — a percentage nobody could see or
+  // reach, which came back to life the day a skill was chosen for that slot
+  // and fed the public equipment calculations unentered.
+  it("takes the percentage with the skill when the skill is removed", async () => {
+    const request = renderCombat([
+      combatRow({
+        set_name: "Troué",
+        skill_4: "Charognard",
+        value_4_pct: "10",
+      }),
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: /^Troué/ }));
+    fireEvent.change(screen.getByLabelText("Ligne 1 Compétence 4"), {
+      target: { value: "" },
+    });
+    // Gone from the screen as the skill goes, not silently kept.
+    expect(screen.getByLabelText("Ligne 1 Valeur 4 (%)")).toHaveValue("");
+
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const main = request.mock.calls.find(([url]) =>
+      String(url).endsWith("/combat-equipment"),
+    );
+    const sent = JSON.parse(String((main?.[1] as RequestInit).body))[0];
+    expect(sent).toMatchObject({ skill_4: "", value_4_pct: "" });
+    // And the three slots that still have their skill keep their numbers.
+    expect(sent).toMatchObject({ skill_1: "Recycleur", value_1_pct: "5" });
+  });
+
+  it("cleans a stored row that already carries an orphaned percentage", async () => {
+    // The other half of the same fix: clearing on change cannot reach a row
+    // that arrived from the database already holding one — saved before the
+    // fix, or edited straight in the table. The save empties it on the way
+    // out, so the next reader never sees a percentage without its skill.
+    const request = renderCombat([
+      combatRow({ set_name: "Hérité", skill_4: "", value_4_pct: "10" }),
+    ]);
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const main = request.mock.calls.find(([url]) =>
+      String(url).endsWith("/combat-equipment"),
+    );
+    expect(
+      JSON.parse(String((main?.[1] as RequestInit).body))[0],
+    ).toMatchObject({ skill_4: "", value_4_pct: "" });
+  });
+
   it("greys out the percentage of a skill slot that has no skill", () => {
     renderCombat([
       combatRow({

@@ -4,8 +4,10 @@ import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
 import {
+  clearOrphanValues,
   countUnconfirmed,
   groupEquipmentSets,
+  namesSomething,
   type UnconfirmedFields,
 } from "@/lib/admin-equipment-sets";
 import {
@@ -72,12 +74,6 @@ const combatUnconfirmedFields: UnconfirmedFields = {
 const expeditionUnconfirmedFields: UnconfirmedFields = {
   own: ["type_stat_pct"],
   pairs: [["secondary_stat_name", "secondary_stat_pct"]],
-};
-
-/** Whether a skill or stat field names one, rather than standing for none. */
-const namesSomething = (value: string | undefined) => {
-  const trimmed = (value ?? "").trim();
-  return trimmed !== "" && trimmed !== "none";
 };
 
 /**
@@ -473,7 +469,11 @@ export function EquipmentReferenceEditor({
       }
       const main = await put(
         `/api/admin/guides/references/${variant}-equipment`,
-        form.rows,
+        // Codex review (PR #150): no percentage leaves here without a skill
+        // beside it. The skill selects clear theirs as they are emptied, so
+        // this is normally a no-op; it is what cleans a row that already
+        // carries an orphan from a save made before that.
+        form.rows.map((row) => clearOrphanValues(row, unconfirmedFields)),
       );
       if (!main.ok) {
         status.error(editor("error", { status: main.status }));
@@ -991,7 +991,17 @@ function EquipmentRowCells({
                 hideLabel
                 value={row[`skill_${n}`]}
                 options={skillOptions}
-                onChange={(value) => onChange({ [`skill_${n}`]: value })}
+                // Codex review (PR #150): taking the skill off takes its
+                // percentage with it. Left behind, it would sit in a field
+                // nobody can reach, be written back by the next save, and
+                // come alive again the day a skill is chosen here.
+                onChange={(value) =>
+                  onChange(
+                    namesSomething(value)
+                      ? { [`skill_${n}`]: value }
+                      : { [`skill_${n}`]: value, [`value_${n}_pct`]: "" },
+                  )
+                }
               />,
               `skill_${n}`,
             ),
@@ -1055,7 +1065,13 @@ function EquipmentRowCells({
               hideLabel
               value={row.secondary_stat_name}
               options={statOptions}
-              onChange={(value) => onChange({ secondary_stat_name: value })}
+              onChange={(value) =>
+                onChange(
+                  namesSomething(value)
+                    ? { secondary_stat_name: value }
+                    : { secondary_stat_name: value, secondary_stat_pct: "" },
+                )
+              }
             />,
             "secondary_stat_name",
           )}

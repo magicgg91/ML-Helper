@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  clearOrphanValues,
   countUnconfirmed,
   groupEquipmentSets,
   type EquipmentSetRow,
@@ -127,5 +128,54 @@ describe("Bloc 119: counting the values nobody has confirmed", () => {
   it("counts a missing field as missing, not as an error", () => {
     // A row that predates a column simply does not have the key.
     expect(countUnconfirmed({}, fields)).toBe(1);
+  });
+});
+
+// Codex review (PR #150): disabling the field was not enough on its own.
+describe("clearing a percentage that has lost its skill", () => {
+  const fields = {
+    own: ["slot_name"],
+    pairs: [
+      ["skill_1", "value_1_pct"],
+      ["skill_2", "value_2_pct"],
+    ],
+  } as const;
+
+  it("empties a percentage whose skill is blank or none", () => {
+    expect(
+      clearOrphanValues(
+        { skill_1: "", value_1_pct: "10", skill_2: "none", value_2_pct: "5" },
+        fields,
+      ),
+    ).toEqual({
+      skill_1: "",
+      value_1_pct: "",
+      skill_2: "none",
+      value_2_pct: "",
+    });
+  });
+
+  it("leaves a percentage that belongs to a skill alone", () => {
+    const row = { skill_1: "Attaque", value_1_pct: "10" };
+    expect(clearOrphanValues(row, fields)).toEqual(row);
+  });
+
+  it("returns the very same row when there is nothing to clear", () => {
+    // Identity, so a save of untouched rows changes no object at all.
+    const row = { skill_1: "Attaque", value_1_pct: "10", skill_2: "" };
+    expect(clearOrphanValues(row, fields)).toBe(row);
+  });
+
+  it("does not invent a percentage the row never had", () => {
+    expect(clearOrphanValues({ skill_1: "" }, fields)).toEqual({ skill_1: "" });
+  });
+
+  it("leaves the fields that stand on their own untouched", () => {
+    expect(
+      clearOrphanValues(
+        { slot_name: "Marteau", skill_1: "", value_1_pct: "10" },
+        fields,
+      ),
+    ).toMatchObject({ slot_name: "Marteau", value_1_pct: "" });
   });
 });

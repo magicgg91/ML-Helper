@@ -77,14 +77,16 @@ const blank = (row: Record<string, string>, field: string) =>
   (row[field] ?? "").trim() === "";
 
 /**
- * Whether a field names something rather than standing for its absence.
+ * Whether a value names something rather than standing for its absence.
  *
  * Bloc 37/G: "" is "nobody has said", "none" is "there is none here". The two
  * are written differently and mean different things, but neither of them is a
  * skill, so neither gives the percentage beside it anything to describe.
  */
-const namesSomething = (row: Record<string, string>, field: string) =>
-  !blank(row, field) && row[field].trim() !== "none";
+export const namesSomething = (value: string | undefined) => {
+  const trimmed = (value ?? "").trim();
+  return trimmed !== "" && trimmed !== "none";
+};
 
 /**
  * How many of a row's own fields nobody has confirmed yet.
@@ -100,7 +102,36 @@ export function countUnconfirmed(
     fields.own.filter((field) => blank(row, field)).length +
     fields.pairs.filter(
       ([owner, dependent]) =>
-        namesSomething(row, owner) && blank(row, dependent),
+        namesSomething(row[owner]) && blank(row, dependent),
     ).length
   );
+}
+
+/**
+ * The same row, with every percentage whose skill does not exist emptied.
+ *
+ * Codex review (PR #150): disabling the field was not enough. Taking a skill
+ * off a slot that had one left its percentage sitting in the form, out of
+ * sight and out of reach, and the save wrote it back — so a slot could carry
+ * `{skill_4: "", value_4_pct: "10"}`. Pick a skill for that slot later and
+ * the 10% is live again, feeding the public equipment calculations without
+ * anybody having typed it.
+ *
+ * Applied where the skill changes, so the admin sees the percentage go, and
+ * again over every row on the way to the server, so a row that already
+ * carries an orphan is cleaned rather than kept forever.
+ */
+export function clearOrphanValues<T extends Record<string, string>>(
+  row: T,
+  fields: UnconfirmedFields,
+): T {
+  const orphans = fields.pairs.filter(
+    ([owner, dependent]) =>
+      !namesSomething(row[owner]) && !blank(row, dependent),
+  );
+  if (orphans.length === 0) return row;
+  return {
+    ...row,
+    ...Object.fromEntries(orphans.map(([, dependent]) => [dependent, ""])),
+  };
 }
