@@ -45,6 +45,8 @@ const messages = {
       new: "Nouvel utilisateur",
       "new-panel-description": "Le compte est actif dès sa création.",
       generate: "Générer",
+      "show-password": "Afficher le mot de passe",
+      "hide-password": "Masquer le mot de passe",
       generated: "Mot de passe généré",
       "password-hint": "12 caractères au minimum.",
       "table-caption": "Comptes d’administration",
@@ -360,5 +362,40 @@ describe("Bloc 119: the password and the deletion", () => {
       }),
     );
     expect(await screen.findByText("Utilisateur supprimé")).toBeInTheDocument();
+  });
+});
+
+describe("Codex review (PR #148): administrator passwords are masked", () => {
+  it("hides the new account's password until it is asked for", () => {
+    renderList();
+    fireEvent.click(screen.getByRole("button", { name: "Nouvel utilisateur" }));
+    const field = screen.getByLabelText("Mot de passe");
+    expect(field).toHaveAttribute("type", "password");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Afficher le mot de passe" }),
+    );
+    expect(field).toHaveAttribute("type", "text");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Masquer le mot de passe" }),
+    );
+    expect(field).toHaveAttribute("type", "password");
+  });
+
+  it("hides a generated password too, so a screen share does not read it", () => {
+    renderList();
+    fireEvent.click(screen.getByRole("button", { name: "Nouvel utilisateur" }));
+    fireEvent.click(screen.getByRole("button", { name: "Générer" }));
+    const field = screen.getByLabelText("Mot de passe");
+    expect(field).toHaveAttribute("type", "password");
+    expect((field as HTMLInputElement).value.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it("hides the reset password field as well", () => {
+    renderList();
+    fireEvent.click(screen.getAllByRole("button", { name: "Mot de passe" })[0]);
+    expect(screen.getByLabelText("Mot de passe")).toHaveAttribute(
+      "type",
+      "password",
+    );
   });
 });

@@ -854,7 +854,9 @@
       "publish": "Publier",
       "unpublish": "Repasser en brouillon",
       "delete-confirm-title": "Supprimer ce guide ?",
-      "delete-confirm-body": "« {title} » sera supprimé définitivement, dans toutes ses langues. Cette action est irréversible."
+      "delete-confirm-body": "« {title} » sera supprimé définitivement, dans toutes ses langues. Cette action est irréversible.",
+      "translation-written": "{language} : version écrite",
+      "translation-missing": "{language} : pas encore traduit"
     },
     "referentiels": {
       "eyebrow": "Données de référence",
@@ -1295,7 +1297,9 @@
       "role-writes": "Peut modifier : {sections}.",
       "role-reads": "Consulte : {sections}.",
       "role-read-only": "Lecture seule : {sections}.",
-      "no-results": "Aucun utilisateur."
+      "no-results": "Aucun utilisateur.",
+      "show-password": "Afficher le mot de passe",
+      "hide-password": "Masquer le mot de passe"
     },
     "logs": {
       "title": "Historique des actions",

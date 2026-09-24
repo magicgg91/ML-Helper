@@ -40,6 +40,8 @@ const messages = {
       byline: "{author} · créé le {date}",
       "translation-edit": "Modifier la version {language} de {title}",
       "translation-create": "Créer la version {language} de {title}",
+      "translation-written": "{language} : version écrite",
+      "translation-missing": "{language} : pas encore traduit",
       legend: "Puce pleine : version rédigée.",
       modify: "Modifier",
       "more-actions": "Autres actions pour {title}",
@@ -354,5 +356,41 @@ describe("Bloc 119: filtering the guides", () => {
     cleanup();
     renderList({ rows: [] });
     expect(screen.getByText("Aucun guide créé.")).toBeInTheDocument();
+  });
+});
+
+describe("Codex review (PR #148): a read-only reader gets no editor links", () => {
+  it("shows the title as text, not a link to a page they cannot open", () => {
+    renderList({ canWrite: false });
+    expect(screen.getByText("Bien débuter")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Bien débuter" })).toBeNull();
+  });
+
+  it("keeps the translation chips, and says what they mean, without linking them", () => {
+    renderList({ canWrite: false });
+    // The column still answers which languages are written — the chip just
+    // stops being a way in.
+    expect(screen.getAllByText("fr").length).toBe(rows.length);
+    expect(
+      screen.queryByRole("link", {
+        name: "Créer la version Deutsch de Bien débuter",
+      }),
+    ).toBeNull();
+    expect(
+      screen.getByTitle("Deutsch : pas encore traduit"),
+    ).toBeInTheDocument();
+  });
+
+  it("still links both for somebody who may edit", () => {
+    renderList();
+    expect(screen.getByRole("link", { name: "Bien débuter" })).toHaveAttribute(
+      "href",
+      "/admin/guides/g1",
+    );
+    expect(
+      screen.getByRole("link", {
+        name: "Créer la version Deutsch de Bien débuter",
+      }),
+    ).toHaveAttribute("href", "/admin/guides/g1?lang=de");
   });
 });

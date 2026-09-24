@@ -854,7 +854,9 @@
       "publish": "Publish",
       "unpublish": "Move back to draft",
       "delete-confirm-title": "Delete this guide?",
-      "delete-confirm-body": "“{title}” will be permanently deleted, in every language. This cannot be undone."
+      "delete-confirm-body": "“{title}” will be permanently deleted, in every language. This cannot be undone.",
+      "translation-written": "{language}: version written",
+      "translation-missing": "{language}: not translated yet"
     },
     "referentiels": {
       "eyebrow": "Reference data",
@@ -1295,7 +1297,9 @@
       "role-writes": "Can edit: {sections}.",
       "role-reads": "Reads: {sections}.",
       "role-read-only": "Read-only: {sections}.",
-      "no-results": "No user."
+      "no-results": "No user.",
+      "show-password": "Show the password",
+      "hide-password": "Hide the password"
     },
     "logs": {
       "title": "Change history",

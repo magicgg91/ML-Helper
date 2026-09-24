@@ -128,12 +128,19 @@ export function AdminGuidesList({
       header: t("columns-guide"),
       cell: (guide) => (
         <span className="flex flex-col">
-          <Link
-            href={`/admin/guides/${guide.id}`}
-            className="admin-focus font-semibold hover:underline"
-          >
-            {guide.title}
-          </Link>
+          {/* Codex review (PR #148): the editor needs guides.write, so a
+              read_only reader following this link lands on "Accès interdit".
+              They read the table; they do not open what it points at. */}
+          {canWrite ? (
+            <Link
+              href={`/admin/guides/${guide.id}`}
+              className="admin-focus font-semibold hover:underline"
+            >
+              {guide.title}
+            </Link>
+          ) : (
+            <span className="font-semibold">{guide.title}</span>
+          )}
           <span className="text-xs text-admin-dim">
             {t("byline", {
               author: guide.author,
@@ -150,6 +157,30 @@ export function AdminGuidesList({
         <span className="flex flex-wrap gap-1">
           {launchLocales.map((code) => {
             const written = guide.translations[code];
+            const className = cn(
+              "inline-flex h-[var(--admin-pill-h)] items-center rounded-full px-2 font-admin-mono text-[11px] font-semibold uppercase",
+              written
+                ? "bg-admin-accent-soft text-admin-accent-soft-ink"
+                : "border border-dashed border-admin-card-border text-admin-dim",
+            );
+            // Same reason as the title above: no link for a reader who
+            // cannot open the editor. The chip still says which languages
+            // are written, which is what the column is for.
+            if (!canWrite)
+              return (
+                <span
+                  key={code}
+                  className={className}
+                  title={t(
+                    written ? "translation-written" : "translation-missing",
+                    {
+                      language: languageNames[code] ?? code,
+                    },
+                  )}
+                >
+                  {code}
+                </span>
+              );
             return (
               <Link
                 key={code}
@@ -161,12 +192,7 @@ export function AdminGuidesList({
                     title: guide.title,
                   },
                 )}
-                className={cn(
-                  "admin-focus inline-flex h-[var(--admin-pill-h)] items-center rounded-full px-2 font-admin-mono text-[11px] font-semibold uppercase",
-                  written
-                    ? "bg-admin-accent-soft text-admin-accent-soft-ink"
-                    : "border border-dashed border-admin-card-border text-admin-dim",
-                )}
+                className={cn("admin-focus", className)}
               >
                 {code}
               </Link>

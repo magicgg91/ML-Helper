@@ -71,12 +71,19 @@ export function GuideEditor({
   createdAt,
   updatedAt,
   publicHref,
+  initialLocale = "fr",
 }: {
   initial: GuideDraft;
   canPublish: boolean;
   languageNames: Record<string, string>;
   backHref: string;
   backLabel: string;
+  /**
+   * Which language to open on. The guides list links a missing translation
+   * as `?lang=de`, and that shortcut is only honest if the form opens there
+   * (Codex review, PR #148).
+   */
+  initialLocale?: LaunchLocale;
   /** What the Publication card states about the guide, from the server. */
   author?: string;
   createdAt?: string;
@@ -88,7 +95,8 @@ export function GuideEditor({
   const editor = useTranslations("admin.editor");
   const locale = useLocale();
   const [id, setId] = useState(initial.id);
-  const [contentLocale, setContentLocale] = useState<LaunchLocale>("fr");
+  const [contentLocale, setContentLocale] =
+    useState<LaunchLocale>(initialLocale);
   const [mode, setMode] = useState<MarkdownMode>("live");
   const [status, setStatus] = useState(initial.status);
   const [form, setForm] = useState({
@@ -279,7 +287,11 @@ export function GuideEditor({
                 </div>
               )}
             </dl>
-            {publicHref && (
+            {/* Codex review (PR #148): the public route serves published
+                guides only, so this link 404s on a draft or one in review.
+                It follows the live status, not the one the page loaded
+                with, so publishing from this very card reveals it. */}
+            {publicHref && status === "published" && (
               <AdminButton asChild size="sm">
                 <Link
                   href={publicHref}

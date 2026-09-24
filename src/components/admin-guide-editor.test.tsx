@@ -88,9 +88,30 @@ describe("Bloc 119: the guide editor", () => {
     expect(within(card).getByText("claire")).toBeInTheDocument();
     expect(within(card).getByText("01/09/2026")).toBeInTheDocument();
     expect(within(card).getByText("02/09/2026")).toBeInTheDocument();
+  });
+
+  it("only offers Voir sur le site once the guide is published", () => {
+    // Codex review (PR #148): the public page serves published guides only —
+    // on a draft the link led to a 404, which is worse than no link.
+    renderEditor({}, draft({ status: "draft" }));
     expect(
-      within(card).getByRole("link", { name: /Voir sur le site/ }),
+      within(publication()).queryByRole("link", { name: /Voir sur le site/ }),
+    ).toBeNull();
+    cleanup();
+    renderEditor({}, draft({ status: "published" }));
+    expect(
+      within(publication()).getByRole("link", { name: /Voir sur le site/ }),
     ).toHaveAttribute("href", "/fr/guides/premiers-pas");
+  });
+
+  it("opens on the language the list asked for", () => {
+    // Codex review (PR #148): the chips carry ?lang=de; the editor used to
+    // land on French anyway, so the chip did not do what it said.
+    renderEditor({ initialLocale: "de" });
+    expect(screen.getByLabelText("Titre (DE)")).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Deutsch à créer" }),
+    ).toHaveAttribute("aria-selected", "true");
   });
 
   it("offers Publier on a draft and Repasser en brouillon on a published one", async () => {

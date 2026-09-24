@@ -1,5 +1,6 @@
 "use client";
 
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
@@ -32,6 +33,59 @@ export type AdminUserRow = {
   role: string;
   active: boolean;
 };
+
+/**
+ * Codex review (PR #148): a password field is masked. Both of these used to
+ * be `type="password"` and lost it in the rewrite, which put a freshly
+ * generated administrator credential in plain sight of anyone looking at the
+ * screen — or of a screen share. Masked by default, with a reveal button,
+ * because the admin does have to read a generated password once to hand it
+ * over.
+ */
+function PasswordField({
+  id,
+  name,
+  value,
+  onChange,
+  revealLabel,
+  hideLabel,
+}: {
+  id: string;
+  name?: string;
+  value: string;
+  onChange: (value: string) => void;
+  revealLabel: string;
+  hideLabel: string;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <>
+      <input
+        id={id}
+        name={name}
+        type={revealed ? "text" : "password"}
+        autoComplete="new-password"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="admin-control admin-focus h-[var(--admin-control-h)] flex-1 rounded-admin-control border border-admin-card-border bg-admin-card px-3"
+      />
+      <AdminButton
+        type="button"
+        size="icon"
+        variant="ghost"
+        aria-pressed={revealed}
+        aria-label={revealed ? hideLabel : revealLabel}
+        onClick={() => setRevealed((current) => !current)}
+      >
+        {revealed ? (
+          <EyeOffIcon aria-hidden="true" />
+        ) : (
+          <EyeIcon aria-hidden="true" />
+        )}
+      </AdminButton>
+    </>
+  );
+}
 
 /** The password policy the server enforces (services/users.ts). */
 const passwordMinimumLength = 12;
@@ -378,12 +432,13 @@ export function AdminUsersList({
           <div className="flex flex-col gap-1 text-sm">
             <label htmlFor={passwordId}>{t("password")}</label>
             <div className="flex gap-2">
-              <input
+              <PasswordField
                 id={passwordId}
                 name="password"
                 value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
-                className="admin-control admin-focus h-[var(--admin-control-h)] flex-1 rounded-admin-control border border-admin-card-border bg-admin-card px-3"
+                onChange={setNewPassword}
+                revealLabel={t("show-password")}
+                hideLabel={t("hide-password")}
               />
               <AdminButton
                 type="button"
@@ -446,11 +501,12 @@ export function AdminUsersList({
         <div className="flex flex-col gap-1 text-sm">
           <label htmlFor={rowPasswordId}>{t("password")}</label>
           <div className="flex gap-2">
-            <input
+            <PasswordField
               id={rowPasswordId}
               value={newRowPassword}
-              onChange={(event) => setNewRowPassword(event.target.value)}
-              className="admin-control admin-focus h-[var(--admin-control-h)] flex-1 rounded-admin-control border border-admin-card-border bg-admin-card px-3"
+              onChange={setNewRowPassword}
+              revealLabel={t("show-password")}
+              hideLabel={t("hide-password")}
             />
             <AdminButton
               type="button"

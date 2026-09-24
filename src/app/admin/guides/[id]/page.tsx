@@ -8,11 +8,13 @@ import {
   launchLocales,
   launchRecord,
   translationRecord,
+  type LaunchLocale,
 } from "@/lib/translations";
 import { parseGuideCategories } from "@/lib/guide-categories";
 
 export default async function EditGuidePage({
   params,
+  searchParams,
 }: PageProps<"/admin/guides/[id]">) {
   const session = await requireCapability("guides.write");
   const [t, languages, locale] = await Promise.all([
@@ -22,7 +24,12 @@ export default async function EditGuidePage({
     getTranslations("admin.config.languages"),
     getLocale(),
   ]);
-  const { id } = await params;
+  const [{ id }, { lang }] = await Promise.all([params, searchParams]);
+  // The guides list links a translation as `?lang=de`; anything else opens on
+  // French, as it always did.
+  const initialLocale = launchLocales.includes(lang as LaunchLocale)
+    ? (lang as LaunchLocale)
+    : "fr";
   const guide = await prisma.guide.findUnique({ where: { id } });
   if (!guide) notFound();
   const title = translationRecord(guide.title),
@@ -43,6 +50,7 @@ export default async function EditGuidePage({
       createdAt={guide.createdAt.toISOString()}
       updatedAt={guide.updatedAt.toISOString()}
       publicHref={`/${locale}/guides/${guide.slug}`}
+      initialLocale={initialLocale}
       initial={{
         id: guide.id,
         slug: guide.slug,
