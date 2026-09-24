@@ -135,7 +135,9 @@
       "combat": "Kampf-Tools für Million Lords: XP-Gewinnrate, Demo-Angriffstruppen für Angreifer und Ziel sowie feindliche Truppen zur Planung jedes Angriffs.",
       "ranking": "Schätze deinen Ranglisten-Fortschritt in Million Lords: deinen aktuellen Rang und die Siegpunkte, die du für deinen Zielrang brauchst.",
       "skills": "Optimiere Ausrüstung und Fähigkeiten in Million Lords: Kampf- und Expeditionsausrüstung, Edelsteine und Templer, inklusive Fusionskosten."
-    }
+    },
+    "index-title": "Werkzeuge",
+    "index-intro": "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung."
   },
   "player-settings": {
     "title": "Spielereinstellungen",
@@ -489,7 +491,8 @@
       "guides": "Anleitungen und Referenztabellen für Million Lords: Kosten, Werte und Spielmechaniken, von der Community geprüft.",
       "legal": "Impressum der Website ML Helper."
     },
-    "report-error": "Fehler melden"
+    "report-error": "Fehler melden",
+    "image-placeholder": "Illustration"
   },
   "contact": {
     "eyebrow": "Kontakt",
@@ -511,17 +514,32 @@
     "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut."
   },
   "Home": {
-    "h1": "Million Lords: Tools und Guides",
-    "intro": "ML Helper vereint die Werkzeuge und Referenzen der Community, um dir zu helfen, jede Entscheidung in Million Lords zu planen.",
+    "h1": "Werkzeuge und Guides für Million Lords",
+    "intro": "Simulatoren, Referenztabellen und Guides der Community, um jede Entscheidung vorzubereiten — von der ersten Stadt bis zur Legende.",
     "toolsEyebrow": "Simulieren",
     "toolsTitle": "Entscheide mit den richtigen Zahlen",
-    "toolsDescription": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
+    "toolsDescription": "Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung: Simulatoren für jede Entscheidung.",
     "guidesEyebrow": "Lernen",
     "guidesTitle": "Schärfe deine Strategie",
-    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen.",
+    "guidesDescription": "Die Guides der Community, um die Spielmechaniken zu verstehen und ruhiger voranzukommen.",
     "referentielsEyebrow": "Nachschlagen",
     "referentielsTitle": "Finde die genauen Zahlen",
-    "referentielsDescription": "Durchstöbere die Referenztabellen der Community für die genauen Kosten, Werte und Stufen des Spiels."
+    "referentielsDescription": "Die genauen Kosten, Werte und Stufen des Spiels: Ausrüstung, Edelsteine, Templer, Shop…",
+    "eyebrow": "Community-Begleiter",
+    "explore-tools": "Werkzeuge entdecken",
+    "start-guide": "Erste Schritte",
+    "count-tools": "{count, plural, one {# Werkzeug} other {# Werkzeuge}}",
+    "count-references": "{count, plural, one {# Referenz} other {# Referenzen}}",
+    "count-guides": "{count, plural, one {# Guide} other {# Guides}}",
+    "most-used": "Am meisten genutzt",
+    "entry-tool": "Werkzeug · {category}",
+    "entry-reference": "Referenz",
+    "all-tools": "Alle Werkzeuge",
+    "all-references": "Alle Referenzen",
+    "all-guides": "Alle Guides",
+    "start-here": "Fang hier an",
+    "banner-title": "Hat sich ein Wert im Spiel geändert?",
+    "banner-text": "Die Daten ändern sich mit jedem Update. Melde eine Abweichung oder schlage eine Verbesserung vor: wir lesen alles."
   },
   "ToolsPage": {
     "eyebrow": "Werkzeuge",

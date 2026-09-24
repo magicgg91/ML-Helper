@@ -862,9 +862,16 @@ export function CityCalculators({
     rewards: true,
   },
   parameters = defaultCityParameters,
+  initialTool,
 }: {
   availability?: Record<Calculator, boolean>;
   parameters?: CityParameters;
+  /**
+   * Bloc 129 : l'onglet demandé par `?open=`, comme sur Combat et
+   * Compétences. Ignoré si l'outil visé est désactivé — on retombe alors
+   * sur le premier disponible, plutôt que d'ouvrir un onglet vide.
+   */
+  initialTool?: Calculator;
 }) {
   const tools = useTranslations("tools");
   const cost = useTranslations("city-cost");
@@ -874,7 +881,9 @@ export function CityCalculators({
   const firstAvailable = (
     ["cost", "max-level", "production", "rewards"] as Calculator[]
   ).find((key) => availability[key]);
-  const [active, setActive] = useState<Calculator | undefined>(firstAvailable);
+  const [active, setActive] = useState<Calculator | undefined>(
+    initialTool && availability[initialTool] ? initialTool : firstAvailable,
+  );
   const settings = usePlayerSettings();
   return (
     <div className="city-calculators">

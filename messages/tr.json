@@ -135,7 +135,9 @@
       "combat": "Million Lords için savaş araçları: XP kazanç oranı, saldıran ve hedef için demo saldırı birlikleri ve her saldırıyı planlamak için düşman birlikleri.",
       "ranking": "Million Lords sıralamasındaki ilerlemeni tahmin et: mevcut sıralaman ve hedeflediğin sıralamaya ulaşmak için gereken zafer puanları.",
       "skills": "Million Lords'ta ekipmanını ve yeteneklerini optimize et: savaş ve keşif ekipmanları, mücevherler ve tapınakçılar, birleştirme maliyetleriyle."
-    }
+    },
+    "index-title": "Araçlar",
+    "index-intro": "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet."
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
@@ -489,7 +491,8 @@
       "guides": "Million Lords için rehberler ve referans tabloları: toplulukça doğrulanmış maliyetler, istatistikler ve oyun mekanikleri.",
       "legal": "ML Helper web sitesinin yasal bildirimi."
     },
-    "report-error": "Hata bildir"
+    "report-error": "Hata bildir",
+    "image-placeholder": "Görsel"
   },
   "contact": {
     "eyebrow": "İletişim",
@@ -511,17 +514,32 @@
     "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene."
   },
   "Home": {
-    "h1": "Million Lords araçları ve rehberleri",
-    "intro": "ML Helper, Million Lords'ta her kararını planlamana yardımcı olmak için topluluğun araçlarını ve referanslarını bir araya getirir.",
+    "h1": "Million Lords için araçlar ve rehberler",
+    "intro": "İlk şehrinden Efsane'ye kadar her kararı hazırlamak için simülatörler, referans tabloları ve topluluk rehberleri.",
     "toolsEyebrow": "Simüle Et",
     "toolsTitle": "Doğru rakamlarla karar ver",
-    "toolsDescription": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
+    "toolsDescription": "Maliyetler, üretim, sıralama, yetenekler ve ekipman: her kararı hazırlamak için simülatörler.",
     "guidesEyebrow": "Öğren",
     "guidesTitle": "Stratejini geliştir",
-    "guidesDescription": "Oyun mekaniklerini anlamak ve güvenle ilerlemek için topluluk rehberlerine göz at.",
+    "guidesDescription": "Oyunun mekaniklerini anlamak ve daha rahat ilerlemek için topluluğun rehberleri.",
     "referentielsEyebrow": "Danış",
     "referentielsTitle": "Doğru rakamlara ulaş",
-    "referentielsDescription": "Oyunun tam maliyetlerini, istatistiklerini ve eşiklerini öğrenmek için topluluğun referans tablolarına göz at."
+    "referentielsDescription": "Oyunun kesin maliyetleri, istatistikleri ve kademeleri: ekipman, mücevherler, tapınakçılar, mağaza…",
+    "eyebrow": "Topluluk yardımcısı",
+    "explore-tools": "Araçları keşfet",
+    "start-guide": "Buradan başla",
+    "count-tools": "{count, plural, one {# araç} other {# araç}}",
+    "count-references": "{count, plural, one {# referans} other {# referans}}",
+    "count-guides": "{count, plural, one {# rehber} other {# rehber}}",
+    "most-used": "En çok kullanılanlar",
+    "entry-tool": "Araç · {category}",
+    "entry-reference": "Referans",
+    "all-tools": "Tüm araçlar",
+    "all-references": "Tüm referanslar",
+    "all-guides": "Tüm rehberler",
+    "start-here": "Buradan başla",
+    "banner-title": "Oyunda bir değer mi değişti?",
+    "banner-text": "Veriler her güncellemede değişir. Bir farkı bildir ya da bir iyileştirme öner: hepsini okuyoruz."
   },
   "ToolsPage": {
     "eyebrow": "Araçlar",

@@ -71,11 +71,16 @@ describe("ToolsPage", () => {
     expect(disabledCard).toHaveAttribute("data-disabled");
   });
 
-  it("Bloc38/K: shows the same intro sentence as the homepage's tools section, right under the title", async () => {
+  // Bloc 129 §3.2 : la page porte son propre titre et sa propre
+  // introduction. Le Bloc 38/K lui faisait reprendre celle de la section
+  // Outils de l'accueil ; ce qui compte ici n'a pas changé — une phrase
+  // d'introduction, juste sous le titre — mais c'est la sienne.
+  it("Bloc129/§3.2: porte sa propre introduction, juste sous le titre", async () => {
     render(await ToolsPage());
     const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toHaveTextContent("index-title");
     expect(heading.nextElementSibling?.tagName).toBe("P");
-    expect(heading.nextElementSibling).toHaveTextContent("subtitle");
+    expect(heading.nextElementSibling).toHaveTextContent("index-intro");
   });
 
   it("Bloc36/B: shows the real category illustration for every tile, on /tools too", async () => {

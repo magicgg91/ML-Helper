@@ -4322,85 +4322,420 @@ body > main h1 {
 /* Bloc 34/D: a short intro sentence replaces the carousel/hero — the tool
    category grid below is the actual point of the homepage and should stay
    visible without scrolling. */
-.home-intro {
-  max-width: 46rem;
-}
-/* Bloc 91/E5: the page's real <h1>. Kept at the intro sentence's own type
-   scale (a lead line, not a banner) so promoting the homepage to a proper
-   heading hierarchy doesn't change the visual weight of this block — only a
-   touch more emphasis and a small gap above the descriptive sentence. */
-.home-intro h1 {
-  margin: 0 0 0.4rem;
-  color: var(--text);
-  font-size: clamp(1.35rem, 1.6vw + 1rem, 1.75rem);
-  font-weight: 600;
-  line-height: 1.4;
-}
-.home-intro p {
-  margin: 0;
-  color: var(--text);
-  font-size: clamp(1.15rem, 1.4vw + 1rem, 1.5rem);
-  line-height: 1.6;
-}
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.1 — l'accueil.
 
-/* Bloc 33/A: the homepage's tool categories intro, directly above the
-   reused .tool-category-grid (1-click access, no /tools detour). Bloc
-   34/E: the guides/référentiels section below reuses the exact same
-   header treatment. */
-/* Bloc 38/I: .home-tools sits right below the intro sentence, which
-   already carries its own spacing — halved from .home-guides' unchanged
-   clamp so the gap above the tool grid isn't excessive. */
-.home-tools {
-  margin-top: clamp(1.5rem, 4vw, 3.5rem);
+   Le bloc qui précédait (.home-intro, .home-tools h2 en dégradé, la grille
+   de six cartes de guides) est remplacé : hero sur deux colonnes, sections
+   Simuler / Consulter / Apprendre avec leur lien « voir tout », et le
+   bandeau de signalement. Le dégradé violet des grands titres disparaît au
+   passage (§1.1) : ils sont en accent uni.
+   --------------------------------------------------------------------- */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 25rem;
+  gap: 3rem;
+  align-items: start;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 0;
 }
-/* Bloc 50 Group3: .home-references sits between Outils and Guides now that
-   the combined section is split in three — same larger gap .home-guides
-   already used above the (formerly combined) block. */
-.home-references,
-.home-guides {
-  margin-top: clamp(3rem, 8vw, 7rem);
+.home-hero-copy h1 {
+  margin: 0.5rem 0 1rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 54 px sur l'accueil, le plus grand titre du site. */
+  font-size: clamp(2.25rem, 5vw, 3.375rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
-/* Bloc 68/D: matches the violet gradient h1 these same title+phrase pairs
-   already render as on /tools, /referentiels and /guides (the "Prototype
-   visual language" h1 rule above, ~line 1471: a gradient clipped to the
-   text) — the homepage reuses the exact same title text but as an h2,
-   which never inherited that rule and hardcoded var(--text) instead. */
-.home-tools h2,
-.home-references h2,
-.home-guides h2 {
-  margin: 0.4rem 0 1rem;
-  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  font-size: clamp(1.8rem, 4vw, 3.2rem);
-  line-height: 1.08;
+.home-hero-intro {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--text2);
+  font-size: 1.125rem;
+  line-height: 1.65;
 }
-.home-tools > p:not(.eyebrow),
-.home-references > p:not(.eyebrow),
-.home-guides > p:not(.eyebrow) {
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.button-primary {
+  background: var(--accent-solid);
+  color: var(--on-accent);
+}
+.button-primary:hover {
+  background: var(--accent);
+}
+.button-secondary {
+  border-color: var(--strong);
+  background: var(--surface);
+  color: var(--text);
+}
+.button-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.home-hero-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+}
+.home-hero-counters li + li::before {
+  content: "·";
+  margin-right: 0.75rem;
+  color: var(--border);
+}
+.home-hero-panel {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.home-hero-panel h2 {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.home-hero-panel ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-hero-panel a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.home-hero-panel a:hover {
+  background: var(--sunk);
+}
+.home-hero-thumb {
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--ph);
+}
+.home-hero-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-hero-entry-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.home-hero-entry-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.home-hero-entry-type {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+@media (max-width: 62rem) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+.home-section {
+  margin-top: clamp(3rem, 7vw, 6rem);
+}
+.home-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+.home-section-head h2 {
+  margin: 0.35rem 0 0.75rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 34 px pour les H2 de section — sous le H1 de la page. */
+  font-size: clamp(1.6rem, 3vw, 2.125rem);
+  line-height: 1.1;
+}
+.home-section-lead {
   max-width: 46rem;
-  color: var(--text-dim);
+  margin: 0;
+  color: var(--text3);
   line-height: 1.7;
 }
-.home-guides .card-grid {
-  margin: 2rem 0;
+.home-section-all {
+  flex: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
-/* Bloc 50 Group3: the homepage guides teaser now shows up to 6 cards (was
-   3) — same auto-fit-with-computed-floor technique as .tool-category-grid
-   below, sized for 3 columns instead of 4 (2 gaps at .card-grid's own
-   0.65rem gap, not 1rem), so it caps at 3 cols/2 rows instead of growing
-   past 3 columns on a wide viewport. */
-.home-guides-grid {
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(max(18rem, calc((100% - 2 * 0.65rem) / 3)), 1fr)
-  );
+.home-section-all:hover {
+  text-decoration: underline;
 }
-@media (max-width: 42rem) {
-  .home-guides-grid {
+@media (max-width: 48rem) {
+  .home-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+/* §3.3 : les sept référentiels sur une seule rangée. */
+.home-reference-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-reference-row a {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.home-reference-image {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* §1.3 : toutes les illustrations de catégorie sont carrées. */
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--ph);
+}
+.home-reference-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-reference-row a:hover .home-reference-image {
+  border-color: var(--accent);
+}
+.home-reference-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+@media (max-width: 62rem) {
+  .home-reference-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 34rem) {
+  .home-reference-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+/* §3.1, section Apprendre : la carte « Commence ici » et la liste. */
+.home-learn {
+  display: grid;
+  grid-template-columns: 30rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.home-learn[data-featured="no"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* §1.2 : la seule carte qui garde ses couleurs dans les deux thèmes. */
+.start-here-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background: var(--start-here-bg);
+  color: var(--start-here-text);
+  text-decoration: none;
+}
+.start-here-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* Pas un carré : à 480 px de large, la carte deviendrait deux fois plus
+     haute que la liste qu'elle côtoie. Le carré du §1.3 vaut pour les
+     illustrations de catégorie, pas pour la couverture d'un guide. */
+  aspect-ratio: 4 / 3;
+  border-radius: 0.75rem;
+  background: var(--start-here-art);
+}
+.start-here-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.start-here-copy {
+  display: grid;
+  gap: 0.6rem;
+}
+.start-here-badge {
+  justify-self: start;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--start-here-badge);
+  color: var(--start-here-badge-ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.start-here-title {
+  color: var(--start-here-title);
+  font-family: var(--font-serif, serif);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+.start-here-excerpt {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.start-here-cta {
+  color: var(--start-here-badge);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.home-guide-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-guide-list a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.home-guide-list a:hover {
+  border-color: var(--accent);
+}
+.home-guide-thumb {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--ph);
+}
+.home-guide-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-guide-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.home-guide-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1rem;
+}
+.home-guide-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.home-guide-arrow {
+  margin-left: auto;
+  color: var(--accent);
+}
+@media (max-width: 62rem) {
+  .home-learn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* §1.3 : l'emplacement d'une illustration absente. */
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* §3.1 : le bandeau « Une valeur a changé en jeu ? ». */
+.report-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: clamp(3rem, 7vw, 6rem);
+  padding: 1.75rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 1rem;
+  background: var(--accent-soft);
+}
+.report-banner h2 {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.5rem;
+}
+.report-banner p {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.report-error-primary {
+  border-color: transparent;
+  background: var(--accent-solid);
+  color: var(--on-accent);
+}
+.report-error-primary:hover {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 /* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one

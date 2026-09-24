@@ -135,7 +135,9 @@
       "combat": "Combat tools for Million Lords: XP gain rate, demo attack troops for both attacker and target, and enemy troops to plan every assault.",
       "ranking": "Estimate your ranking progress in Million Lords: your current rank and the victory points you need to reach the rank you are aiming for.",
       "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
-    }
+    },
+    "index-title": "Tools",
+    "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision."
   },
   "player-settings": {
     "title": "Player settings",
@@ -489,7 +491,8 @@
     "meta": {
       "siteTitle": "ML-Helper — Million Lords tools and guides"
     },
-    "report-error": "Report an error"
+    "report-error": "Report an error",
+    "image-placeholder": "Illustration"
   },
   "contact": {
     "eyebrow": "Contact",
@@ -511,17 +514,32 @@
     "error-not-configured": "Email sending isn't configured right now, please try again later."
   },
   "Home": {
-    "h1": "Million Lords tools and guides",
-    "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
+    "h1": "Tools and guides for Million Lords",
+    "intro": "Simulators, reference tables and community guides to prepare every decision, from your first city to Legend.",
     "toolsEyebrow": "Simulate",
     "toolsTitle": "Make decisions with the right numbers",
-    "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
+    "toolsDescription": "Costs, production, ranking, skills and equipment: simulators to prepare every decision.",
     "guidesEyebrow": "Learn",
     "guidesTitle": "Sharpen your strategy",
-    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
+    "guidesDescription": "Community guides to understand the game's mechanics and progress more calmly.",
     "referentielsEyebrow": "Consult",
     "referentielsTitle": "Find the exact numbers",
-    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
+    "referentielsDescription": "The game's exact costs, stats and tiers: equipment, gems, templars, shop…",
+    "eyebrow": "Community companion",
+    "explore-tools": "Explore the tools",
+    "start-guide": "Start here",
+    "count-tools": "{count, plural, one {# tool} other {# tools}}",
+    "count-references": "{count, plural, one {# reference} other {# references}}",
+    "count-guides": "{count, plural, one {# guide} other {# guides}}",
+    "most-used": "Most used",
+    "entry-tool": "Tool · {category}",
+    "entry-reference": "Reference",
+    "all-tools": "All tools",
+    "all-references": "All references",
+    "all-guides": "All guides",
+    "start-here": "Start here",
+    "banner-title": "A value changed in game?",
+    "banner-text": "The data changes with every update. Report a discrepancy or suggest an improvement: we read everything."
   },
   "ToolsPage": {
     "eyebrow": "Tools",

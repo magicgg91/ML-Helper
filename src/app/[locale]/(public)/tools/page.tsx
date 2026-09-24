@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: "/tools",
     title: t("tools"),
-    description: tools("subtitle"),
+    description: tools("index-intro"),
   });
 }
 
@@ -28,11 +28,13 @@ export default async function ToolsPage() {
   ]);
   return (
     <main className="public-main">
-      <h1 className="tools-page-title">{t("title")}</h1>
-      {/* Bloc 38/K: same title and intro sentence as the homepage's tools
-          section, so /tools reads as the same entry point reached a
-          different way. */}
-      <p>{t("subtitle")}</p>
+      {/* Bloc 129 §3.2 : la page s'appelle « Outils » et porte sa propre
+          introduction. Le Bloc 38/K lui faisait reprendre mot pour mot le
+          titre de la section Outils de l'accueil ; le brief leur donne
+          chacun son rôle. Le reste de la page (cartes en 4 colonnes,
+          liste des outils par catégorie) arrive à l'étape suivante. */}
+      <h1 className="tools-page-title">{t("index-title")}</h1>
+      <p>{t("index-intro")}</p>
       <ToolCategoryGrid active={active} locale={locale} t={t} />
     </main>
   );

@@ -126,6 +126,7 @@ export default async function ToolPage({
           production: active["city-production"],
           rewards: active["city-rewards"],
         }}
+        initialTool={toolTab("villes", open)}
       />
     </main>
   );

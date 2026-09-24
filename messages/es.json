@@ -135,7 +135,9 @@
       "combat": "Herramientas de combate para Million Lords: tasa de XP, tropas de ataque demo para atacante y objetivo, y tropas enemigas para preparar cada asalto.",
       "ranking": "Estima tu progreso en la clasificación de Million Lords: tu rango actual y los puntos de victoria que necesitas para alcanzar el rango que buscas.",
       "skills": "Optimiza tu equipo y tus habilidades en Million Lords: equipo de combate y de expedición, gemas y templarios, con los costes de fusión."
-    }
+    },
+    "index-title": "Herramientas",
+    "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión."
   },
   "player-settings": {
     "title": "Ajustes del jugador",
@@ -489,7 +491,8 @@
       "guides": "Guías y tablas de referencia para Million Lords: costes, estadísticas y mecánicas de juego verificadas por la comunidad.",
       "legal": "Aviso legal del sitio web ML Helper."
     },
-    "report-error": "Informar de un error"
+    "report-error": "Informar de un error",
+    "image-placeholder": "Ilustración"
   },
   "contact": {
     "eyebrow": "Contacto",
@@ -511,17 +514,32 @@
     "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde."
   },
   "Home": {
-    "h1": "Herramientas y guías de Million Lords",
-    "intro": "ML Helper reúne las herramientas y referencias de la comunidad para ayudarte a planificar cada decisión en Million Lords.",
+    "h1": "Herramientas y guías para Million Lords",
+    "intro": "Simuladores, tablas de referencia y guías de la comunidad para preparar cada decisión, desde tu primera ciudad hasta Leyenda.",
     "toolsEyebrow": "Simular",
     "toolsTitle": "Decide con las cifras correctas",
-    "toolsDescription": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
+    "toolsDescription": "Costes, producción, clasificación, habilidades y equipo: simuladores para preparar cada decisión.",
     "guidesEyebrow": "Aprender",
     "guidesTitle": "Perfecciona tu estrategia",
-    "guidesDescription": "Consulta las guías de la comunidad para entender las mecánicas del juego y progresar con confianza.",
+    "guidesDescription": "Las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
     "referentielsEyebrow": "Consultar",
     "referentielsTitle": "Encuentra las cifras exactas",
-    "referentielsDescription": "Consulta las tablas de referencia de la comunidad para conocer los costes, estadísticas y umbrales exactos del juego."
+    "referentielsDescription": "Los costes, estadísticas y niveles exactos del juego: equipo, gemas, templarios, tienda…",
+    "eyebrow": "Compañero comunitario",
+    "explore-tools": "Explorar las herramientas",
+    "start-guide": "Empieza aquí",
+    "count-tools": "{count, plural, one {# herramienta} other {# herramientas}}",
+    "count-references": "{count, plural, one {# referencia} other {# referencias}}",
+    "count-guides": "{count, plural, one {# guía} other {# guías}}",
+    "most-used": "Las más usadas",
+    "entry-tool": "Herramienta · {category}",
+    "entry-reference": "Referencia",
+    "all-tools": "Todas las herramientas",
+    "all-references": "Todas las referencias",
+    "all-guides": "Todas las guías",
+    "start-here": "Empieza aquí",
+    "banner-title": "¿Ha cambiado un valor en el juego?",
+    "banner-text": "Los datos cambian con cada actualización. Señala una diferencia o propón una mejora: lo leemos todo."
   },
   "ToolsPage": {
     "eyebrow": "Herramientas",
