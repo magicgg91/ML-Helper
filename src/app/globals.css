@@ -3260,18 +3260,20 @@ body > main h1 {
 /* Bloc 35/10.4: every select and numeric-value field across admin editors
    (Templiers, Combat, Expedition, Gems, Ranking, …) gets its content
    centered — free-text fields (set names, …) are untouched. */
-main.admin-main select,
-main.admin-main input[type="number"] {
+/* Bloc 119: keyed on the class, not on `main` — the admin's <main> is the
+   shell's now, and each screen's container below it is a div. */
+.admin-main select,
+.admin-main input[type="number"] {
   text-align: center;
   text-align-last: center;
 }
 /* Bloc 38/P: no browser increment/decrement arrows on any admin numeric
    field (tools and references alike) — keyboard entry only. */
-main.admin-main input[type="number"] {
+.admin-main input[type="number"] {
   appearance: textfield;
 }
-main.admin-main input[type="number"]::-webkit-inner-spin-button,
-main.admin-main input[type="number"]::-webkit-outer-spin-button {
+.admin-main input[type="number"]::-webkit-inner-spin-button,
+.admin-main input[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
 }

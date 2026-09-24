@@ -21,7 +21,7 @@ export default async function PublicLayout({
     getActiveLocales(),
     getLocale(),
     prisma.guide.findMany({
-      where: { status: "published", active: true },
+      where: { status: "published" },
       orderBy: { publishedAt: "desc" },
     }),
     getCalculatorAvailability(),

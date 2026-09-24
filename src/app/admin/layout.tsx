@@ -1,17 +1,19 @@
 import "./admin.css";
 import type { Metadata } from "next";
-import { ExternalLinkIcon } from "lucide-react";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/options";
+import { can } from "@/auth/permissions";
 import { isAdminRole } from "@/auth/roles";
-import { AdminLocaleToggle } from "@/components/admin-locale-toggle";
-import { AdminNav } from "@/components/admin-nav";
-import { AdminAccountMenu } from "@/components/admin-account-menu";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { AdminShell } from "@/components/admin-shell";
+import { referenceToolSlugs } from "@/lib/admin-tools";
+import {
+  countLegalNoticePlaceholders,
+  defaultFrenchLegalNotice,
+  legalNoticeKey,
+} from "@/lib/legal-notice";
 import { prisma } from "@/lib/prisma";
+import { translationRecord } from "@/lib/translations";
 
 // Bloc 42/J: the admin section's own title/description (previously the
 // site-wide root default, applied to every public page too) plus noindex —
@@ -36,35 +38,60 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await getServerSession(authOptions);
-  const t = await getTranslations("admin");
   if (!session?.user || !isAdminRole(session.user.role)) return children;
-  const account = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { totpEnabled: true },
-  });
+  const role = session.user.role;
+  // Bloc 119: the counters of the side column. Each one is read only when the
+  // role may see the section it belongs to — a Gestion Guides account must
+  // not learn how many users exist from a badge on a link it cannot open.
+  const [account, tools, referentiels, guides, users, legalNotice] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { totpEnabled: true },
+      }),
+      can(role, "calculators.read")
+        ? prisma.calculator.count({
+            where: { slug: { notIn: [...referenceToolSlugs] } },
+          })
+        : Promise.resolve(undefined),
+      can(role, "references.read")
+        ? prisma.calculator.count({
+            where: { slug: { in: [...referenceToolSlugs] } },
+          })
+        : Promise.resolve(undefined),
+      can(role, "guides.read")
+        ? prisma.guide.count()
+        : Promise.resolve(undefined),
+      can(role, "users.read")
+        ? prisma.user.count()
+        : Promise.resolve(undefined),
+      can(role, "content.read")
+        ? prisma.staticContent.findUnique({ where: { key: legalNoticeKey } })
+        : Promise.resolve(null),
+    ]);
+
+  // The badge counts the French notice: it is the reference language the
+  // others are translated from, so a field left blank there is blank
+  // everywhere (Bloc 119 §3, "Pages légales incomplètes").
+  const french =
+    translationRecord(legalNotice?.content).fr || defaultFrenchLegalNotice;
+
   return (
-    <>
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <strong className="text-sm">{t("title")}</strong>
-          <AdminNav role={session.user.role} />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/" target="_blank" rel="noopener noreferrer">
-              {t("view-site")}
-              <ExternalLinkIcon aria-hidden="true" />
-            </Link>
-          </Button>
-          <AdminLocaleToggle />
-          <ThemeToggle />
-          <AdminAccountMenu
-            username={session.user.name ?? session.user.id}
-            totpEnabled={account?.totpEnabled ?? false}
-          />
-        </div>
-      </header>
+    <AdminShell
+      role={role}
+      username={session.user.name ?? session.user.id}
+      totpEnabled={account?.totpEnabled ?? false}
+      counts={{
+        tools,
+        referentiels,
+        guides,
+        users,
+        legalPlaceholders: can(role, "content.read")
+          ? countLegalNoticePlaceholders(french)
+          : undefined,
+      }}
+    >
       {children}
-    </>
+    </AdminShell>
   );
 }

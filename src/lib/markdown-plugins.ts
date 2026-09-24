@@ -1,8 +1,31 @@
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { legalNoticePlaceholderPattern } from "./legal-notice";
 
 export const markdownRemarkPlugins = [remarkGfm];
+
+/**
+ * Bloc 119: the same pipeline, plus single line breaks.
+ *
+ * Markdown, by the CommonMark rule every renderer here follows, folds a lone
+ * newline into a space. The legal notice is written with one idea per line —
+ * a name, then a contact, then an address — and read as one run-on paragraph,
+ * in the admin preview and on the public page alike. This adds the `<br>` a
+ * writer means by pressing Enter once.
+ *
+ * Bloc 119 §3 bis asks for "le même correctif de retours à la ligne" on the
+ * guide editor, so guides opt in too — the public page and the admin preview
+ * together, which is the point: a preview that renders differently from the
+ * page is not a preview. §3's caution was about not changing the guides
+ * *unintentionally*; this is intentional, and it does change how an already
+ * published guide reads if its author hard-wrapped their paragraphs. Dropping
+ * `breaks` from the guide page and the guide editor reverts it in two lines.
+ *
+ * Still not the default: a caller says which rendering it wants.
+ */
+export const markdownRemarkPluginsWithBreaks = [remarkGfm, remarkBreaks];
 // Bloc 56: rehypeRaw must run before rehypeSanitize — it parses raw HTML
 // text nodes (e.g. `<img width="48">`) into real hast element nodes so
 // rehypeSanitize's default schema (which already allows img/width/height,
@@ -73,4 +96,73 @@ export const markdownRehypePluginsShifted = [
   rehypeRaw,
   rehypeShiftHeadings,
   rehypeSanitize,
+];
+
+/** A hast text node, as the placeholder highlighter rewrites them. */
+type HastTextNode = HastNode & { value?: string; properties?: unknown };
+
+/**
+ * Bloc 119: wraps each unfinished field of the legal notice in a <mark>, so
+ * the preview shows at a glance what is still to write.
+ *
+ * It reuses the one regex the count comes from (lib/legal-notice.ts): the
+ * banner's number and the highlights can never disagree about what a field
+ * is.
+ *
+ * It runs AFTER sanitization, which is the opposite of what one would expect
+ * and the only order that works: rehype-sanitize follows GitHub's schema, and
+ * `mark` is not in it — marks inserted before it are stripped without a
+ * trace. Running after is safe here because these elements are this code's
+ * own: it wraps text that has already been sanitized, and adds no attribute
+ * but a class name of its own choosing.
+ */
+export function rehypeHighlightPlaceholders() {
+  return (tree: HastNode): void => {
+    const rewrite = (node: HastNode): void => {
+      if (!node.children) return;
+      const next: HastNode[] = [];
+      for (const child of node.children as HastTextNode[]) {
+        if (child.type !== "text" || typeof child.value !== "string") {
+          rewrite(child);
+          next.push(child);
+          continue;
+        }
+        const pattern = legalNoticePlaceholderPattern();
+        let index = 0;
+        let match: RegExpExecArray | null;
+        while ((match = pattern.exec(child.value))) {
+          if (match.index > index)
+            next.push({
+              type: "text",
+              value: child.value.slice(index, match.index),
+            } as HastTextNode);
+          next.push({
+            type: "element",
+            tagName: "mark",
+            properties: { className: ["legal-placeholder"] },
+            children: [{ type: "text", value: match[0] } as HastTextNode],
+          } as HastNode);
+          index = match.index + match[0].length;
+        }
+        if (index === 0) {
+          next.push(child);
+          continue;
+        }
+        if (index < child.value.length)
+          next.push({
+            type: "text",
+            value: child.value.slice(index),
+          } as HastTextNode);
+      }
+      node.children = next;
+    };
+    rewrite(tree);
+  };
+}
+
+/** The legal notice's own pipeline: raw HTML, sanitization, then highlights. */
+export const markdownRehypePluginsWithPlaceholders = [
+  rehypeRaw,
+  rehypeSanitize,
+  rehypeHighlightPlaceholders,
 ];

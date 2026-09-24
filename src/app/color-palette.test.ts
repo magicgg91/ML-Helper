@@ -325,3 +325,123 @@ describe("color palette — violet accent, gold reserved for legendary", () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Bloc 119 — la palette de l'administration, dans les deux thèmes.
+// ---------------------------------------------------------------------------
+describe("Bloc 119: admin tokens", () => {
+  const adminLight = adminCss.slice(
+    adminCss.indexOf(".admin-shell {"),
+    adminCss.indexOf(':root[data-theme="dark"] .admin-shell'),
+  );
+  const adminDark = adminCss.slice(
+    adminCss.indexOf(':root[data-theme="dark"] .admin-shell'),
+  );
+
+  /** Resolves `--admin-*`, following one `var(--x)` hop into globals.css. */
+  const token = (block: string, name: string, themeBlock: string): string => {
+    const match = new RegExp(`--admin-${name}:\\s*([^;]+);`).exec(block);
+    if (!match) throw new Error(`--admin-${name} introuvable`);
+    const value = match[1].trim();
+    if (value.startsWith("#")) return value;
+    const indirection = /^var\(--([a-z-]+)\)$/.exec(value);
+    if (!indirection) throw new Error(`--admin-${name} = ${value}, non résolu`);
+    return extractHex(themeBlock, indirection[1]);
+  };
+
+  const luminance = (hex: string) => {
+    const value = Number.parseInt(hex.slice(1), 16);
+    return [(value >> 16) & 255, (value >> 8) & 255, value & 255]
+      .map((channel) => channel / 255)
+      .map((channel) =>
+        channel <= 0.03928
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4,
+      )
+      .reduce(
+        (total, channel, index) =>
+          total + [0.2126, 0.7152, 0.0722][index] * channel,
+        0,
+      );
+  };
+  const contrast = (foreground: string, background: string) => {
+    const [lighter, darker] = [
+      luminance(foreground),
+      luminance(background),
+    ].sort((a, b) => b - a);
+    return (lighter + 0.05) / (darker + 0.05);
+  };
+
+  // Chaque couple encre/fond que l'admin met réellement à l'écran. Les deux
+  // thèmes passent par la même liste : une valeur sombre dérivée sans vérifier
+  // son contraste est exactement ce que ce test refuse.
+  const pairs: Array<[ink: string, background: string, label: string]> = [
+    ["text", "page", "texte sur la page"],
+    ["text", "card", "texte sur une carte"],
+    ["text", "head", "texte sur un en-tête de tableau"],
+    ["text-dim", "page", "texte secondaire sur la page"],
+    ["text-dim", "card", "texte secondaire sur une carte"],
+    ["text-dim", "head", "texte secondaire sur un en-tête"],
+    ["text", "sidebar", "texte du menu latéral"],
+    ["text-dim", "sidebar", "texte secondaire du menu latéral"],
+    ["accent-soft-ink", "card", "accent sur une carte"],
+    ["accent-soft-ink", "accent-soft", "pastille accent"],
+    ["ok-ink", "ok", "pastille OK"],
+    ["warn-ink", "warn", "pastille alerte"],
+    ["neutral-ink", "neutral", "pastille neutre"],
+    ["danger-ink", "card", "texte danger sur une carte"],
+    ["on-accent", "accent", "libellé d'un bouton principal"],
+    ["on-accent", "accent-deep", "pastille accent sombre"],
+  ];
+
+  for (const [theme, block] of [
+    ["clair", adminLight],
+    ["sombre", adminDark],
+  ] as const) {
+    const site = theme === "clair" ? lightBlock : darkBlock;
+    it(`garde chaque couple encre/fond au-dessus de 4.5:1 en thème ${theme}`, () => {
+      for (const [ink, background, label] of pairs)
+        expect(
+          contrast(token(block, ink, site), token(block, background, site)),
+          `${label} (${theme})`,
+        ).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+
+  // Le brief demande de décliner le sombre depuis les variables existantes,
+  // pas d'ouvrir une seconde palette à côté : les surfaces et le texte
+  // pointent sur globals.css, seules les teintes propres aux pastilles sont
+  // écrites en dur.
+  it("dérive ses surfaces sombres des variables du site plutôt que de les réinventer", () => {
+    for (const name of ["page", "sidebar", "card", "head", "text", "text-dim"])
+      expect(
+        adminDark,
+        `--admin-${name} devrait suivre le thème du site`,
+      ).toMatch(new RegExp(`--admin-${name}:\\s*var\\(--[a-z-]+\\);`));
+  });
+
+  // Les classes Tailwind de l'admin (bg-admin-card, text-admin-dim…) sont
+  // générées depuis le mapping `@theme inline` en haut du fichier. Une faute
+  // de frappe y produit une utilitaire qui pointe sur une variable
+  // inexistante : rien ne casse au build, la couleur disparaît simplement à
+  // l'écran. Ce test relie les deux bouts.
+  it("n'expose en utilitaires Tailwind que des tokens réellement définis", () => {
+    const mapped = [
+      ...adminCss.matchAll(
+        /--(?:color|radius)-admin-[a-z-]+:\s*var\((--admin-[a-z-]+)\);/g,
+      ),
+    ].map(([, referenced]) => referenced);
+    expect(mapped.length).toBeGreaterThan(20);
+    for (const referenced of mapped)
+      expect(
+        adminLight,
+        `${referenced} est exposé en utilitaire mais n'est pas défini dans .admin-shell`,
+      ).toContain(`${referenced}:`);
+  });
+
+  // Et le site public n'hérite de rien de tout ça.
+  it("ne touche pas aux tokens du site public", () => {
+    expect(adminLight.startsWith(".admin-shell {")).toBe(true);
+    expect(adminCss).not.toMatch(/^:root\s*\{[^}]*--admin-/m);
+  });
+});

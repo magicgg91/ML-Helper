@@ -89,8 +89,11 @@ describe("Bloc37/C: the increments field grid lays out exactly 2 rows, no overla
 
 describe("Bloc35 10.4: admin select/numeric-value fields are horizontally centered", () => {
   it("centers every <select> and numeric <input> under .admin-main", () => {
+    // Bloc 119: keyed on the class alone. The admin's <main> is the shell's
+    // now, and each screen's container below it is a div, so a selector
+    // starting with `main` no longer matches anything.
     const rule = css.match(
-      /main\.admin-main select,\s*\nmain\.admin-main input\[type="number"\]\s*{([\s\S]*?)\n}/,
+      /\.admin-main select,\s*\n\.admin-main input\[type="number"\]\s*{([\s\S]*?)\n}/,
     )?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/text-align: center;/);
@@ -100,6 +103,6 @@ describe("Bloc35 10.4: admin select/numeric-value fields are horizontally center
     // The centering rule is scoped to selects and type="number" inputs
     // specifically — it must not also match a bare `input` selector that
     // would sweep up text fields.
-    expect(css).not.toMatch(/main\.admin-main input\s*{\s*text-align: center/);
+    expect(css).not.toMatch(/\.admin-main input\s*{\s*text-align: center/);
   });
 });

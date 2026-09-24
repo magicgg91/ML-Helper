@@ -131,18 +131,18 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
 
   // Point 2: the Ranking tool must display as "Classement" in French.
   await expect(
-    page.locator("td.font-medium", { hasText: "Classement" }),
+    page.getByRole("cell", { name: "Classement", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.locator("td.font-medium", { hasText: "Ranking" }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("cell", { name: "Ranking" })).toHaveCount(0);
 
-  // Point 5: a Catégorie column sits next to the tool name.
+  // Point 5, revu au Bloc 119: la catégorie n'est plus une colonne mais un
+  // sous-en-tête de groupe, avec le nombre d'outils qu'il contient.
+  await expect(
+    page.getByRole("columnheader", { name: /^Villes/ }),
+  ).toBeVisible();
   await expect(
     page.getByRole("columnheader", { name: "Catégorie" }),
-  ).toBeVisible();
-  const cityCostRow = page.getByRole("row", { name: "Coût de Ville" });
-  await expect(cityCostRow.getByRole("cell", { name: "Villes" })).toBeVisible();
+  ).toHaveCount(0);
 
   // Point 4: the 3 Villes simulators share the same edit destination.
   for (const tool of [
@@ -163,7 +163,9 @@ test("the admin tools table shows categories, hides Edit for Stuff, and shares o
 
   // Bloc 31/A + C: Compétences tools show plain labels (no "Simulateur"),
   // in the confirmed Combat, Expedition, Gems, Templars order.
-  const toolLabels = await page.locator("td.font-medium").allTextContents();
+  const toolLabels = await page
+    .locator("tbody tr:has(td) td:first-child")
+    .allTextContents();
   const competencesLabels = [
     "Équipement de Combat",
     "Équipements d’Expédition",
@@ -943,18 +945,29 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     name: "Navigation administration",
   });
 
+  // Bloc 119: creation opens a side panel, and the role is a radio button
+  // carrying a description computed from the permission matrix.
   await adminNav.getByRole("link", { name: "Utilisateurs" }).click();
-  const createForm = page.locator('form:has(input[name="username"])');
-  await createForm.locator('input[name="username"]').fill("phase1admin");
-  await createForm.locator('input[name="password"]').fill("phase-one-password");
-  await createForm.locator('select[name="role"]').selectOption("admin");
-  await createForm
+  await page
+    .getByRole("button", { name: /New user|Nouvel utilisateur/ })
+    .click();
+  const createPanel = page.getByRole("dialog", {
+    name: /New user|Nouvel utilisateur/,
+  });
+  await createPanel.getByLabel(/Username|Identifiant/).fill("phase1admin");
+  await createPanel
+    .getByLabel(/Password|Mot de passe/)
+    .fill("phase-one-password");
+  await createPanel.getByRole("radio", { name: /^Admin/ }).check();
+  await createPanel
     .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
     .click();
   await expect(page.getByRole("status")).toHaveText(
     /User created|Utilisateur créé/,
   );
-  await expect(page.getByRole("cell", { name: "phase1admin" })).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "phase1admin", exact: true }),
+  ).toBeVisible();
 
   await adminNav.getByRole("link", { name: /Logs|Historique/ }).click();
   await expect(
@@ -962,8 +975,10 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
       name: "rootadmin a créé l’utilisateur phase1admin",
     }),
   ).toBeVisible();
+  // Bloc 119: the role at the time of the action is a pill carrying the
+  // translated label — the raw `super_admin` key is no longer on screen.
   await expect(
-    page.getByRole("cell", { name: "super_admin" }).first(),
+    page.getByRole("cell", { name: "Super Admin" }).first(),
   ).toBeVisible();
 
   // Bloc 50 (2): reference rows (Combat/Expedition/Level-up/Templiers/
@@ -972,54 +987,47 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements de Combat/ })
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
   await expect(
     page.getByRole("heading", {
       name: "Éditer les Équipements de Combat",
     }),
   ).toBeVisible({ timeout: 15_000 });
-  // Bloc 35/6.1: the page also renders the Pouciel/gem-slots-per-rarity
-  // editors alongside the main table — Bloc 41/D moved them ahead of it, so
-  // scope to the last table (the main one) rather than every tbody row on
-  // the page.
-  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
-    180,
-    { timeout: 15_000 },
-  );
-  await expect(page.getByLabel("Ligne 1 Nom du set")).not.toHaveValue("");
+  // Bloc 119: the 180 rows are grouped into the sets they belong to, folded
+  // by default — the whole point of the rewrite. Unfold one and its own rows
+  // are there, with the set's name on the header rather than repeated on
+  // every row.
+  const firstSet = page
+    .getByRole("button", { name: /emplacements$|emplacement$/ })
+    .first();
+  await expect(firstSet).toBeVisible({ timeout: 15_000 });
+  await expect(firstSet).toHaveAttribute("aria-expanded", "false");
+  await firstSet.click();
+  await expect(page.getByLabel("Ligne 1 Compétence 1")).toBeVisible();
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   await page
     .getByRole("row", { name: /Équipements d’Expédition/ })
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
-  // The page also renders the (single-row) star-increments editor above
-  // this table (Bloc 29/A), so scope to the last table on the page rather
-  // than every tbody row.
-  await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(
-    120,
-  );
+  // Same grouping on Expédition's 120 rows.
   await expect(
-    page.getByLabel("Expédition ligne 1 Nom du set"),
-  ).not.toHaveValue("");
-  // Regression check: Bloc 37/E replaced this page's per-table save
-  // buttons with a single top action bar that saves every table (star
-  // increments, merge-cost, dismantle, main reference) in one click — edit
-  // two of them and confirm one save persists both, not just the last one
-  // touched.
-  await page.getByLabel("Ligne 1 Or").fill("0.5");
-  const mergeCostSection = page.locator(".editable-reference").nth(1);
-  await mergeCostSection.getByLabel("Ligne 1 Commun").fill("700");
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
+    page.getByRole("button", { name: /emplacements$|emplacement$/ }).first(),
+  ).toBeVisible({ timeout: 15_000 });
+  // Regression check: Bloc 37/E replaced this page's per-table save buttons
+  // with a single action that saves every table (star increments,
+  // merge-cost, dismantle, main reference) in one click — edit two of them
+  // and confirm one save persists both, not just the last one touched.
+  await page.getByLabel("Or", { exact: true }).fill("0,5");
+  await page.getByLabel("Fusion Commun").fill("700");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   // Wait for the async save to actually complete before reloading, or the
   // reload can race ahead of the PUT requests and read back stale defaults.
-  await expect(page.getByText("Référentiel enregistré.")).toBeVisible();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Ligne 1 Or")).toHaveValue("0.5");
-  await expect(
-    page.locator(".editable-reference").nth(1).getByLabel("Ligne 1 Commun"),
-  ).toHaveValue("700");
+  await expect(page.getByLabel("Or", { exact: true })).toHaveValue("0,5");
+  await expect(page.getByLabel("Fusion Commun")).toHaveValue("700");
 
   await adminNav.getByRole("link", { name: "Référentiels" }).click();
   // Bloc 30: Templars has no lookup_table of its own — its reference row
@@ -1029,42 +1037,44 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // dedicated Calculator row, distinct from the Templars tool's own) —
   // toggling it here must not affect the public Templars tool at all.
   const templarsGuideRow = page.getByRole("row", { name: /Templiers/ });
-  await templarsGuideRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(templarsGuideRow).toContainText("Inactif");
+  // Bloc 119: the ⏻ pair became one switch, and the row says Visible /
+  // Masqué instead of Actif / Inactif.
+  await templarsGuideRow.getByRole("switch").click();
+  await expect(templarsGuideRow).toContainText("Masqué");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Templiers" })).toBeEnabled();
   await page.goto("/admin/referentiels");
   const templarsGuideRowAfterReload = page.getByRole("row", {
     name: /Templiers/,
   });
+  await templarsGuideRowAfterReload.getByRole("switch").click();
+  await expect(templarsGuideRowAfterReload).toContainText("Visible");
   await templarsGuideRowAfterReload
-    .getByRole("button", { name: "Activer" })
-    .click();
-  await expect(templarsGuideRowAfterReload).toContainText("Actif");
-  await templarsGuideRowAfterReload
-    .getByRole("link", { name: "Éditer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
   // Bloc 35/7.1, updated Bloc 50: opened from the Référentiels admin row, so
   // the URL carries ?from=referentiels — the editor's own "Retour" now goes
   // back to Référentiels, not Tools, for this exact same shared edit point.
   await expect(page).toHaveURL(/\/admin\/tools\/templars\?from=referentiels$/);
+  // Bloc 119: the back link is the breadcrumb's, and it names the list it
+  // returns to instead of saying "Retour".
   await expect(
-    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+    page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres de coût des Templiers" }),
   ).toBeVisible();
-  // Bloc 66/B: exact match — the presentation editor sharing this page now
-  // also carries 5 editable "Base Temple N" fields (Bloc 68/C), whose
-  // accessible names otherwise substring-match this same "Base" locator.
-  await page.getByRole("spinbutton", { name: "Base", exact: true }).fill("200");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  // Exact match: the presentation table on the same screen carries "Base
+  // temple de …" fields, which otherwise substring-match this locator.
+  await page.getByLabel("Base", { exact: true }).fill("200");
+  // Bloc 119 §3 bis: one save for the whole screen — the formula and the
+  // presentation catalog, in one transaction.
+  await expect(page.getByText("Modifications non enregistrées")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText("✓ Tout est enregistré")).toBeVisible();
   // Single shared data source (cdc section 6): the same edit reaches both
   // the public reference and the Templars calculator.
   await page.goto("/referentiels/templars");
@@ -1077,20 +1087,20 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // Templiers just above, for the new Gemmes reference.
   await page.goto("/admin/referentiels");
   const gemmesGuideRow = page.getByRole("row", { name: /Gemmes/ });
-  await gemmesGuideRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(gemmesGuideRow).toContainText("Inactif");
+  await gemmesGuideRow.getByRole("switch").click();
+  await expect(gemmesGuideRow).toContainText("Masqué");
   await page.goto("/tools/competences");
   await expect(page.getByRole("tab", { name: "Gemmes" })).toBeEnabled();
   await page.goto("/admin/referentiels");
   const gemmesGuideRowAfterReload = page.getByRole("row", { name: /Gemmes/ });
+  await gemmesGuideRowAfterReload.getByRole("switch").click();
+  await expect(gemmesGuideRowAfterReload).toContainText("Visible");
   await gemmesGuideRowAfterReload
-    .getByRole("button", { name: "Activer" })
+    .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(gemmesGuideRowAfterReload).toContainText("Actif");
-  await gemmesGuideRowAfterReload.getByRole("link", { name: "Éditer" }).click();
   await expect(page).toHaveURL(/\/admin\/tools\/gems\?from=referentiels$/);
   await expect(
-    page.locator(".editor-action-bar").getByRole("link", { name: "← Retour" }),
+    page.getByRole("link", { name: "← Référentiels" }),
   ).toHaveAttribute("href", "/admin/referentiels");
   await expect(
     page.getByRole("heading", { name: "Paramètres des Gemmes" }),
@@ -1106,82 +1116,52 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
   // same shared parameters, reached from either admin table. Exact match:
   // see the earlier comment on the same collision with the presentation
   // editor's editable "Base Temple N" fields.
-  await expect(
-    page.getByRole("spinbutton", { name: "Base", exact: true }),
-  ).toHaveValue("200");
-  await expect(page.getByRole("spinbutton", { name: "Ratio" })).toHaveValue(
-    "1.3",
-  );
-  const toolActionBar = page.locator(".editor-action-bar");
-  await expect(
-    toolActionBar.getByRole("link", { name: "← Retour" }),
-  ).toBeVisible();
-  await expect(
-    toolActionBar.getByRole("button", { name: "Enregistrer les paramètres" }),
-  ).toBeVisible();
-  await toolActionBar
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(toolActionBar.getByRole("status")).toHaveText(
-    "Paramètres enregistrés.",
-    { timeout: 15_000 },
-  );
+  await expect(page.getByLabel("Base", { exact: true })).toHaveValue("200");
+  // Bloc 119: written in the admin's own language, so the decimal separator
+  // is the French comma — and the field reads it back.
+  await expect(page.getByLabel("Ratio", { exact: true })).toHaveValue("1,3");
+  await expect(page.getByRole("link", { name: "← Outils" })).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Taux de gain d’XP/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Seuil haut du palier 1" }),
-  ).toHaveValue("40");
+  await expect(page.getByLabel("Seuil haut du palier 1")).toHaveValue("40");
   await expect(page.getByText("∞")).toBeVisible();
-  await page
-    .getByRole("spinbutton", { name: "Taux XP du palier 3" })
-    .fill("110");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await page.getByLabel("Taux XP du palier 3").fill("110");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Troupes en attaque démo/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Bronze X (% des remparts)" }),
-  ).toHaveValue("100");
-  await page
-    .getByRole("spinbutton", { name: "Or X (% des remparts)" })
-    .fill("45");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await expect(page.getByLabel("Bronze X (% des remparts)")).toHaveValue("100");
+  await page.getByLabel("Or X (% des remparts)", { exact: true }).fill("45");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
+    timeout: 15_000,
+  });
 
   await adminNav.getByRole("link", { name: "Outils" }).click();
   await page
     .getByRole("row", { name: /Gemmes/ })
     .getByRole("link", { name: "Modifier" })
     .click();
-  await expect(
-    page.getByRole("spinbutton", { name: "Vitesse · Légende" }),
-  ).toHaveValue("15");
-  await page.getByRole("spinbutton", { name: "Prix Légende" }).fill("5000");
-  await page
-    .locator(".editor-action-bar")
-    .getByRole("button", { name: "Enregistrer les paramètres" })
-    .click();
-  await expect(
-    page.locator(".editor-action-bar").getByRole("status"),
-  ).toHaveText("Paramètres enregistrés.", { timeout: 15_000 });
+  await expect(page.getByLabel("Vitesse · Légende")).toHaveValue("15");
+  await page.getByLabel("Prix Légende").fill("5000");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible({
+    timeout: 15_000,
+  });
 });
 
 test("deactivating a user blocks sign-in until reactivated", async ({
@@ -1208,8 +1188,9 @@ test("deactivating a user blocks sign-in until reactivated", async ({
 
   await root.goto("/admin/users");
   const row = root.getByRole("row", { name: /togglable-user/ });
+  // Bloc 119: one switch per row, which says which state it is in.
   await expect(row.getByText("Actif")).toBeVisible();
-  await row.getByRole("button", { name: "Désactiver" }).click();
+  await row.getByRole("switch").click();
   await expect(root.getByRole("status")).toHaveText("Utilisateur désactivé");
   await expect(row.getByText("Désactivé")).toBeVisible();
 
@@ -1228,7 +1209,7 @@ test("deactivating a user blocks sign-in until reactivated", async ({
   );
   await expect(disabledPage).toHaveURL(/\/login$/);
 
-  await row.getByRole("button", { name: "Activer" }).click();
+  await row.getByRole("switch").click();
   await expect(root.getByRole("status")).toHaveText("Utilisateur activé");
   await expect(row.getByText("Actif")).toBeVisible();
 
@@ -1250,6 +1231,15 @@ test("deactivating a user blocks sign-in until reactivated", async ({
     { data: { active: false } },
   );
   expect(selfDeactivate.status()).toBe(400);
+  // Bloc 119: and nobody demotes themselves either — only a Super Admin can
+  // hand the role back, so the account doing it would be taking away the
+  // last hand that could undo it.
+  const selfDemote = await root.request.patch(`/api/admin/users/${selfId}`, {
+    data: { role: "read_only" },
+  });
+  expect(selfDemote.status()).toBe(400);
+  const selfDelete = await root.request.delete(`/api/admin/users/${selfId}`);
+  expect(selfDelete.status()).toBe(400);
 });
 
 test("the audit log paginates by 20 entries", async ({ page }) => {
@@ -1277,19 +1267,21 @@ test("the audit log paginates by 20 entries", async ({ page }) => {
     expect(response.status()).toBe(200);
   }
 
+  // Bloc 119: the log is grouped by day (each group opens with a <th> row,
+  // so the data rows are the ones carrying a <td>) and loads more days on a
+  // button rather than paging back and forth.
   await page.goto("/admin/logs?q=pagination-user");
-  await expect(page.locator("tbody tr")).toHaveCount(20);
-  await expect(page.getByText("Page 1 / 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Précédent" })).toHaveCount(0);
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
 
-  await page.getByRole("link", { name: "Suivant" }).click();
+  await page
+    .getByRole("link", { name: "Charger les jours précédents" })
+    .click();
   await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
-  await expect(page.locator("tbody tr")).toHaveCount(6);
-  await expect(page.getByText("Page 2 / 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Suivant" })).toHaveCount(0);
-
-  await page.getByRole("link", { name: "Précédent" }).click();
-  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user$/);
+  // The window widens rather than moving: the 26 entries are all on screen.
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
+  await expect(
+    page.getByRole("link", { name: "Charger les jours précédents" }),
+  ).toHaveCount(0);
 });
 
 // Bloc 57: the Boutique reference screen has a single save button (Bloc 42)
@@ -1338,7 +1330,9 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   // still takes the words an admin can see — they are resolved to the keys
   // that carry them before the query runs.
   await page.goto("/admin/logs?q=référentiel Boutique");
-  await expect(page.locator("tbody tr")).toHaveCount(1);
+  // Bloc 119: each day opens with a sub-header row, so the data rows are
+  // the ones carrying a <td>.
+  await expect(page.locator("tbody tr:has(td)")).toHaveCount(1);
   await expect(
     page.getByRole("cell", {
       name: /rootadmin a (créé|modifié) le référentiel Boutique/,
@@ -1352,7 +1346,7 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
   ).toBeVisible();
 });
 
-test("the dashboard's published-guides counter ignores an inactive guide", async ({
+test("the dashboard's published-guides counter follows the guide's status", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -1404,19 +1398,22 @@ test("the dashboard's published-guides counter ignores an inactive guide", async
   );
   expect(afterPublish).toBe(before + 1);
 
+  // Bloc 119: a guide has one state. Taking it out of the public site is
+  // unpublishing it — the visibility flag that used to sit next to the
+  // status is gone (migration 20260923100000_guides_single_status).
   expect(
     (
-      await page.request.patch(`/api/admin/guides/${guideId}/active`, {
-        data: { active: false },
+      await page.request.patch(`/api/admin/guides/${guideId}/status`, {
+        data: { status: "draft" },
       })
     ).status(),
   ).toBe(200);
 
   await page.goto("/admin");
-  const afterDeactivate = publishedCount(
+  const afterUnpublish = publishedCount(
     (await page.getByText(/\d+ publiés \/ \d+ au total/).textContent()) ?? "",
   );
-  expect(afterDeactivate).toBe(before);
+  expect(afterUnpublish).toBe(before);
 });
 
 // Bloc 60: the 7th reference — "Événements" (per-league personal quests).
@@ -1457,28 +1454,27 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
 
   await page.goto("/admin/referentiels");
   const row = page.getByRole("row", { name: /Événements/ });
-  await expect(row.getByText("Inactif")).toBeVisible();
-  await row.getByRole("button", { name: "Activer" }).click();
-  // Exact match required: getByText's default substring match would treat
-  // "Inactif" itself as satisfying "Actif" (it contains that substring),
-  // so a plain `getByText("Actif")` here would resolve immediately without
-  // actually waiting for the toggle's fetch to land — then the next line's
-  // page.goto (a hard navigation) would cancel that still-in-flight PATCH.
-  await expect(row.getByText("Actif", { exact: true })).toBeVisible();
+  await expect(row.getByText("Masqué")).toBeVisible();
+  await row.getByRole("switch").click();
+  // The word only changes once the PATCH has landed, which is what makes
+  // this an actual wait: the next line is a hard navigation, and it would
+  // otherwise cancel a request still in flight.
+  await expect(row.getByText("Visible")).toBeVisible();
 
   // Bloc 60 review (Codex PR #81): now visible in public discovery too.
   await page.goto("/referentiels");
   await expect(page.getByRole("link", { name: /Événements/ })).toHaveCount(1);
 
   await page.goto("/admin/referentiels");
-  await row.getByRole("link", { name: "Éditer" }).click();
+  await row.getByRole("link", { name: "Modifier" }).click();
   await expect(page).toHaveURL(/\/admin\/referentiels\/reference-events$/);
 
   // Bloc 61 pattern: league buttons, not a select box — Bronze by default.
-  const leagueGroup = page.getByRole("group", { name: "Ligue" });
+  // Bloc 119: one league is chosen at a time, so they are a radiogroup.
+  const leagueGroup = page.getByRole("radiogroup", { name: "Ligue" });
   await expect(
-    leagueGroup.getByRole("button", { name: "Bronze" }),
-  ).toHaveAttribute("aria-pressed", "true");
+    leagueGroup.getByRole("radio", { name: "Bronze" }),
+  ).toHaveAttribute("aria-checked", "true");
 
   await page.getByTestId("add-event-bronze").click();
   await page.getByLabel("Nom de l’événement 1").fill("Recruteur");
@@ -1487,12 +1483,15 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .fill("Enrôle des troupes pour la ligue.");
   // Bloc 79/B: buttons instead of a <select> for the fixed 3-value enum.
   await page
-    .getByRole("group", { name: "Durée de l’événement 1" })
-    .getByRole("button", { name: "48h" })
+    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
+    .getByRole("radio", { name: "48h" })
     .click();
-  // The tier list is inside a collapsible <details>, closed by default —
-  // open it before its "+" add-tier button becomes clickable.
-  await page.getByText("Paliers (0)").click();
+  // Bloc 119: an event is one line, and its tiers appear under it only once
+  // it is unfolded — an event you have just added opens on its own, so there
+  // is nothing to click here.
+  await expect(
+    page.getByRole("button", { name: /^Recruteur/ }),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByTestId("add-tier-bronze-0").click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
@@ -1502,16 +1501,16 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .fill("100M or + 250 éclats");
   // Bloc 60 review (Codex PR #81): tier text is captured per fr/en field —
   // switch the editorial locale and fill the English pair too.
-  await page.getByLabel("Langue du texte").selectOption("en");
+  await page.getByRole("button", { name: /^EN — English/ }).click();
   await page
     .getByLabel("Objectif du palier 1 de Recruteur")
     .fill("1B troops enlisted");
   await page
     .getByLabel("Récompense du palier 1 de Recruteur")
     .fill("100M gold + 250 shards");
-  await page.getByLabel("Langue du texte").selectOption("fr");
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
-  await expect(page.getByRole("status")).toHaveText("Référentiel enregistré.");
+  await page.getByRole("button", { name: /^FR — Français/ }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   // Public: entirely independent per league — Légende stays empty while
   // Bronze has the event just saved; the event is closed by default.
@@ -1572,8 +1571,8 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   // tests (same server/db), so Bronze isn't the empty league it looks like
   // in isolation.
   await page
-    .getByRole("group", { name: "Ligue" })
-    .getByRole("button", { name: "Argent" })
+    .getByRole("radiogroup", { name: "Ligue" })
+    .getByRole("radio", { name: "Argent" })
     .click();
   // Argent's season shrunk to 1 day (24h) — a single 48h event then
   // overruns it, simpler to set up than piling up several events.
@@ -1581,17 +1580,22 @@ test("Bloc77 review (Codex PR #95): the admin editor blocks a save that overruns
   await page.getByTestId("add-event-silver").click();
   await page.getByLabel("Nom de l’événement 1").fill("Trop long");
   await page
-    .getByRole("group", { name: "Durée de l’événement 1" })
-    .getByRole("button", { name: "48h" })
+    .getByRole("radiogroup", { name: "Durée de l’événement 1" })
+    .getByRole("radio", { name: "48h" })
     .click();
-  await page.getByRole("button", { name: "Enregistrer toute la page" }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
-  await expect(page.getByRole("status")).toHaveText(
-    "Corrige les champs signalés avant l’enregistrement.",
-  );
+  // Bloc 119: the save's own message names the league it refused for — the
+  // screen shows one league at a time.
+  await expect(
+    page.getByText(
+      "Argent : la durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
+    ),
+  ).toBeVisible();
   await expect(
     page.getByText(
       "La durée cumulée des événements (48h) dépasse la durée de la saison (24h).",
+      { exact: true },
     ),
   ).toBeVisible();
 
@@ -1857,14 +1861,6 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
     ).toBe(canAuthor ? 200 : 403);
     expect(
       (
-        await page.request.patch(`/api/admin/guides/${guideId}/active`, {
-          data: { active: false },
-        })
-      ).status(),
-      `${roleCase.username} toggle`,
-    ).toBe(canAuthor ? 200 : 403);
-    expect(
-      (
         await page.request.patch(`/api/admin/guides/${guideId}/status`, {
           data: { status: "pending_review" },
         })
@@ -1958,11 +1954,15 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin/guides/new");
-  await page.getByText(/Catégories du guide \(\d+ sélectionnée/).click();
-  await page.getByText("Combat & conquête", { exact: true }).click();
-  await page.getByText("Clan & stratégie collective", { exact: true }).click();
+  // Bloc 119: the categories are chips in a card of their own, not a folded
+  // block, and the cover URL sits in its own card.
+  const categories = page.getByRole("region", { name: "Catégories du guide" });
+  await categories.getByRole("button", { name: "Combat & conquête" }).click();
+  await categories
+    .getByRole("button", { name: "Clan & stratégie collective" })
+    .click();
   await page
-    .getByLabel("Image représentative")
+    .getByLabel("URL de l’image")
     .fill("https://example.com/guide-cover.jpg");
   await page.getByLabel("Titre (FR)").fill("Guide cycle complet");
   await page.getByLabel("Résumé (FR)").fill("Résumé du cycle complet");
@@ -1977,19 +1977,21 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await expect(page.locator(".w-md-editor-preview del")).toHaveText(
     "ancienne règle",
   );
-  await page.getByRole("button", { name: "Soumettre en review" }).click();
+  // rootadmin may publish, so the hand-off to review is not on their card —
+  // save, then publish from the Publication card.
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/guides\/.+/);
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
     timeout: 15_000,
   });
   await page.getByLabel("Titre (FR)").fill("Guide édité et publié");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide enregistré.", {
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
     timeout: 15_000,
   });
   await page.goto("/admin/guides");
   const row = page.getByRole("row", { name: /Guide édité et publié/ });
-  await expect(row.getByRole("combobox")).toHaveValue("pending_review");
+  await expect(row.getByRole("combobox")).toHaveValue("draft");
   await row.getByRole("combobox").selectOption("published");
   await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
@@ -2006,24 +2008,37 @@ test("guide editor supports the complete editorial lifecycle", async ({
     await page.getByRole("button", { name: category }).click();
     await expect(page.getByText("Guide édité et publié")).toBeVisible();
   }
+  // Bloc 119: one control for the state — the ⏻ pair is gone, so taking a
+  // guide off the public site is moving it back to draft, from the row's own
+  // status control or from its ⋯ menu.
   await page.goto("/admin/guides");
-  const publishedRow = page.getByRole("row", { name: /Guide édité et publié/ });
-  await publishedRow.getByRole("button", { name: "Désactiver" }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide désactivé.");
+  await page
+    .getByLabel("Statut de Guide édité et publié")
+    .selectOption("draft");
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
   await page.goto("/admin/guides");
-  const disabledRow = page.getByRole("row", { name: /Guide édité et publié/ });
-  await disabledRow.getByRole("button", { name: "Activer" }).click();
-  await expect(page.getByRole("status")).toHaveText("Guide activé.");
+  await page
+    .getByRole("button", { name: "Autres actions pour Guide édité et publié" })
+    .click();
+  await page.getByRole("menuitem", { name: "Publier" }).click();
+  await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toBeVisible();
+
+  // Deleting goes through a dialog that names the guide, not a full-width
+  // red button in the row.
   await page.goto("/admin/guides");
-  page.once("dialog", (dialog) => dialog.accept());
   await page
-    .getByRole("row", { name: /Guide édité et publié/ })
-    .getByRole("button", { name: "Supprimer" })
+    .getByRole("button", { name: "Autres actions pour Guide édité et publié" })
     .click();
+  await page.getByRole("menuitem", { name: "Supprimer…" }).click();
+  const deleteDialog = page.getByRole("dialog", {
+    name: "Supprimer ce guide ?",
+  });
+  await expect(deleteDialog).toContainText("Guide édité et publié");
+  await deleteDialog.getByRole("button", { name: "Supprimer" }).click();
   await expect(page.getByRole("status")).toHaveText(
     "Guide supprimé définitivement.",
   );
@@ -2063,7 +2078,9 @@ test("calculator visibility and guide publication are reversible", async ({
   await page.goto("/guides");
   await expect(page.getByText("Guide visible")).toHaveCount(0);
   await page.goto("/admin/guides");
-  await expect(page.getByRole("cell", { name: "Guide visible" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Guide visible", exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel("Statut de Guide visible")).toHaveValue("draft");
 
   await page.getByLabel("Statut de Guide visible").selectOption("published");
@@ -2312,7 +2329,10 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   await expect(page).toHaveURL(/\/admin$/);
 
   await page.goto("/admin/tools/ranking");
-  const headings = page.locator(".ranking-admin-editor .admin-panel h2");
+  // Bloc 119: the ladder is a list on the left and one entry on the right,
+  // so the rungs are named once, in that list, instead of once per stacked
+  // form heading.
+  const headings = page.getByTestId("ranking-entry-name");
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2343,9 +2363,14 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   const active = page.getByLabel("Or 1 (rang 7) active publiquement");
   await expect(active).not.toBeChecked();
 
-  // Bloc 108/B: move it from the bottom to just after Or, three rungs up.
-  for (let move = 0; move < 3; move += 1)
-    await page.getByRole("button", { name: "Monter Or 1" }).click();
+  // Bloc 108/B: move it from the bottom to just after Or, three rungs up. The
+  // move lives in the ⋯ menu now, which closes after each choice.
+  for (let move = 0; move < 3; move += 1) {
+    await page
+      .getByRole("button", { name: "Autres actions pour Or 1" })
+      .click();
+    await page.getByRole("menuitem", { name: "Monter Or 1" }).click();
+  }
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2355,9 +2380,9 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
     "Diamant",
     "Légende",
   ]);
-  await page.getByLabel("Or 1 (rang 4) active publiquement").check();
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByLabel("Or 1 (rang 4) active publiquement").click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   // Public side: the new rung is there, ordered, with no data of its own yet.
   await page.goto("/tools/classement");
@@ -2393,10 +2418,14 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   // Put the ladder back, so the tests after this one see the six it shipped
   // with (this spec runs serially against one database).
   await page.goto("/admin/tools/ranking");
-  page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Supprimer Or 1" }).click();
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  // Bloc 119: the deletion asks in a dialog of the site's own, not the
+  // browser's, and it is reached from the entry's ⋯ menu.
+  await page.getByTestId("ranking-entry-name").getByText("Or 1").click();
+  await page.getByRole("button", { name: "Autres actions pour Or 1" }).click();
+  await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
+  await page.getByRole("button", { name: "Confirmer" }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 
 // Bloc 109: the picker's row split is computed from a width the browser alone
@@ -2427,10 +2456,10 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     await page.getByLabel(`${label} (rang ${rung}) division`).fill(division);
     await page
       .getByLabel(`${label} ${division} (rang ${rung}) active publiquement`)
-      .check();
+      .click();
   }
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   const group = page.locator(".ranking-calculator .family-buttons");
   const rowSizes = async () =>
@@ -2492,6 +2521,8 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   // absurd one and re-check the same no-overflow rule.
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/admin/tools/ranking");
+  // Bloc 119: one entry is edited at a time, so pick it in the list first.
+  await page.getByTestId("ranking-entry-name").getByText("Argent 2").click();
   await page
     .getByLabel("Argent 2 (rang 7) nom libre FR")
     .fill("Division Argent Deux Absolument Interminable");
@@ -2500,8 +2531,8 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
       "Division Argent Deux Absolument Interminable (rang 7) nom libre EN",
     )
     .fill("Absolutely Interminable Silver Division Two");
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
   for (const width of [390, 1000, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -2533,11 +2564,18 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     "Or 2",
     "Or 1",
   ]) {
-    page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: `Supprimer ${name}` }).click();
+    await page
+      .getByTestId("ranking-entry-name")
+      .getByText(name, { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: `Autres actions pour ${name}` })
+      .click();
+    await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
+    await page.getByRole("button", { name: "Confirmer" }).click();
   }
-  await page.getByRole("button", { name: "Enregistrer le classement" }).click();
-  await expect(page.getByText("Configuration enregistrée.")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 
 // Bloc 110: the Classement result zone, measured in a real browser — two
@@ -2788,7 +2826,12 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   await expect(root.getByRole("link", { name: "Configuration" })).toBeVisible();
   const configResponse = await root.goto("/admin/config");
   expect(configResponse?.status()).toBe(200);
-  await expect(root.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  // Bloc 119: the language cell now carries the code beside the name, and the
+  // visibility switch on the same row names the language too — hence the exact
+  // name rather than a substring that matches both cells.
+  await expect(
+    root.getByRole("cell", { name: "DE Deutsch", exact: true }),
+  ).toBeVisible();
 
   const created = await root.request.post("/api/admin/users", {
     data: {
@@ -2958,7 +3001,11 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   // And the field is not even shown to them on the Configuration tab.
   await adminPage.goto("/admin/config");
   await expect(adminPage.getByLabel("URL du script de suivi")).toHaveCount(0);
-  await expect(adminPage.getByRole("cell", { name: "Deutsch" })).toBeVisible();
+  // Bloc 119: exact — the visibility switch on the same row names the
+  // language too (see the Bloc 90/A test for the same reason).
+  await expect(
+    adminPage.getByRole("cell", { name: "DE Deutsch", exact: true }),
+  ).toBeVisible();
   await adminContext.close();
 
   expect(
@@ -2980,7 +3027,9 @@ test("Bloc 90/D: English and French cannot be deactivated", async ({
   await page.goto("/admin/config");
 
   for (const locale of ["en", "fr"]) {
-    await expect(page.getByTestId(`locale-locked-${locale}`)).toBeDisabled();
+    // Bloc 119: the base languages show a padlock and the words "Toujours
+    // active" instead of a control that is there but refuses to move.
+    await expect(page.getByTestId(`locale-locked-${locale}`)).toBeVisible();
     await expect(page.getByTestId(`locale-toggle-${locale}`)).toHaveCount(0);
   }
   for (const locale of ["de", "es", "tr"])
@@ -3064,9 +3113,9 @@ test("Bloc 90/F: admin can still edit content in a deactivated language", async 
   await b90SetLocaleActive(page, "es", false);
 
   await page.goto("/admin/guides/new");
-  const picker = page.getByLabel("Langue du guide");
-  await expect(picker.locator("option", { hasText: "ES" })).toHaveCount(1);
-  await picker.selectOption("es");
+  // Bloc 119: the languages are tabs, not a dropdown.
+  const picker = page.getByRole("tablist", { name: "Langue du guide" });
+  await picker.getByRole("tab", { name: /Español/ }).click();
   const title = page.getByLabel("Titre (ES)");
   await title.fill("Título en español");
   await expect(title).toHaveValue("Título en español");
@@ -3203,14 +3252,25 @@ test("Bloc116/C: the audit log reads in the admin's own language", async ({
 
   // 1. A user creation.
   await page.goto("/admin/users");
-  const createForm = page.locator('form:has(input[name="username"])');
-  await createForm.locator('input[name="username"]').fill("bilingual");
-  await createForm.locator('input[name="password"]').fill("bilingual-password");
-  await createForm.locator('select[name="role"]').selectOption("admin");
-  await createForm
+  // Bloc 119: creation happens in a side panel, and the role is a radio with
+  // a one-line description rather than a bare <select>.
+  await page
+    .getByRole("button", { name: /New user|Nouvel utilisateur/ })
+    .click();
+  const createPanel = page.getByRole("dialog", {
+    name: /New user|Nouvel utilisateur/,
+  });
+  await createPanel.getByLabel(/Username|Identifiant/).fill("bilingual");
+  await createPanel
+    .getByLabel(/Password|Mot de passe/)
+    .fill("bilingual-password");
+  await createPanel.getByRole("radio", { name: /^Admin/ }).check();
+  await createPanel
     .getByRole("button", { name: /Create user|Créer l’utilisateur/ })
     .click();
-  await expect(page.getByRole("cell", { name: "bilingual" })).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "bilingual", exact: true }),
+  ).toBeVisible();
 
   // 2. A tool switched off, and 3. a language switched off.
   const toolResponse = await page.request.patch(
@@ -3317,7 +3377,9 @@ test("every admin screen stays English for a reader browsing publicly in German"
     ["/admin/tools", "Functional content", "Contenu fonctionnel"],
     ["/admin/guides", "Editorial content", "Contenu éditorial"],
     ["/admin/referentiels", "Reference data", "Données de référence"],
-    ["/admin/users", "Create user", "Créer l’utilisateur"],
+    // Bloc 119: "Create user" now lives inside the creation panel, which is
+    // closed on arrival — the button that opens it is what the page shows.
+    ["/admin/users", "New user", "Nouvel utilisateur"],
     ["/admin/logs", "Word in message", "Mot dans le message"],
     ["/admin/content", "Institutional page", "Page institutionnelle"],
     ["/admin/config", "Site configuration", "Configuration du site"],
@@ -3333,10 +3395,14 @@ test("every admin screen stays English for a reader browsing publicly in German"
       `${href} still has French on it`,
     ).toHaveCount(0);
     // The chrome around it, present on every screen.
-    await expect(page.getByRole("link", { name: "View site" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Voir le site" })).toHaveCount(
-      0,
-    );
+    // Bloc 119 renamed this link "Voir le site public" / "View the public
+    // site" and moved it from the top bar into the side column.
+    await expect(
+      page.getByRole("link", { name: "View the public site" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Voir le site public" }),
+    ).toHaveCount(0);
     // And the two languages the admin does offer — no more, no fewer.
     const toggle = page.getByRole("group", { name: "Language" });
     await expect(toggle.getByRole("button")).toHaveText(["EN", "FR"]);
@@ -3350,21 +3416,35 @@ test("every admin screen stays English for a reader browsing publicly in German"
   // only one reached through a root translator — easy to forget, so it gets
   // its own assertion rather than riding on the page above.
   await page.goto("/admin/users");
-  const roleSelect = page.getByRole("combobox").first();
+  // Bloc 119: the role is chosen from radios in the creation panel, each with
+  // a line describing what it may do.
+  await page.getByRole("button", { name: "New user" }).click();
+  const createPanel = page.getByRole("dialog", { name: "New user" });
   await expect(
-    roleSelect.getByRole("option", { name: "Read Only" }),
+    createPanel.getByRole("radio", { name: /Read Only/ }),
   ).toHaveCount(1);
   await expect(
-    roleSelect.getByRole("option", { name: "Lecture Seule" }),
+    createPanel.getByRole("radio", { name: /Lecture Seule/ }),
   ).toHaveCount(0);
 
   // The border, seen from the other side: what the admin writes FOR the
   // public is still offered in all five languages. Narrowing the chrome must
   // never narrow this.
   await page.goto("/admin/content");
-  await expect(
-    page.locator(".editorial-locale-select select option"),
-  ).toHaveText(["FR", "EN", "DE", "ES", "TR"]);
+  const contentLanguages = page.getByRole("tablist", {
+    name: "Content language",
+  });
+  await expect(contentLanguages.getByRole("tab")).toHaveCount(5);
+  for (const language of [
+    "Français",
+    "English",
+    "Deutsch",
+    "Español",
+    "Türkçe",
+  ])
+    await expect(
+      contentLanguages.getByRole("tab", { name: new RegExp(language) }),
+    ).toHaveCount(1);
   await page.goto("/admin/config");
   for (const [locale, language] of [
     ["de", "Deutsch"],

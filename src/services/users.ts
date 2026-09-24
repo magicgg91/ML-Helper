@@ -70,6 +70,15 @@ export async function updateAdminUser(
   }
   const actor = await actorName(actorId);
   const before = await prisma.user.findUniqueOrThrow({ where: { id } });
+  // Bloc 119: nobody changes their own role. Locking yourself out is the
+  // obvious risk, but the sharper one is that only a Super Admin holds
+  // users.manage: the account demoting itself would be taking the last hand
+  // that can hand the role back — and it cannot delete itself either, so the
+  // site would be left with an administrator nobody can promote. Sending the
+  // role it already has is not a change and stays allowed, so a form that
+  // posts every field still works.
+  if (actorId === id && data.role !== undefined && data.role !== before.role)
+    throw new Error("cannot_change_own_role");
   const passwordHash = data.password
     ? await hash(data.password, 12)
     : undefined;

@@ -41,105 +41,101 @@ vi.mock("@/lib/reference-equipment-server", () => ({
   getExpeditionStarIncrements: async () => ({}),
   getExpeditionSecondaryBase: async () => ({}),
 }));
-vi.mock("@/components/named-parameters-editor", () => ({
-  LevelUpParametersEditor: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+// Bloc 119: Progression is the first reference screen on the refonte's
+// EditorHeader, whose back link is the breadcrumb's — so this mock stands in
+// for that shape, not for an EditorActionBar.
+vi.mock("@/components/admin-progression-editor", () => ({
+  ProgressionEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
   ),
 }));
-// Bloc 37/E: each screen now owns a single EditorActionBar internally
-// (real component tested in reference-admin-editors.test.tsx) — this mock
-// only stands in for it here, to keep this page-wiring test isolated.
-vi.mock("@/components/reference-admin-editors", () => {
-  const Screen = () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
-  );
-  return {
-    CombatReferenceScreen: Screen,
-    ExpeditionReferenceScreen: Screen,
-  };
-});
-vi.mock("@/components/consumables-admin-editor", () => ({
-  ConsumablesReferenceScreen: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+// Bloc 119: Combat and Expedition are one component, told apart by a
+// variant — this mock only stands in for it, to keep the page-wiring test
+// isolated (the real one is tested in admin-equipment-editor.test.tsx).
+vi.mock("@/components/admin-equipment-editor", () => ({
+  EquipmentReferenceEditor: ({
+    backHref,
+    variant,
+  }: {
+    backHref: string;
+    variant: string;
+  }) => (
+    <Link data-testid={`equipment-${variant}`} href={backHref}>
+      back
+    </Link>
   ),
 }));
-vi.mock("@/components/events-admin-editor", () => ({
-  EventsReferenceScreen: () => (
-    <div className="calculator-stack">
-      <div className="editor-action-bar">
-        <Link className="editor-back-action" href="/admin/referentiels">
-          back
-        </Link>
-      </div>
-    </div>
+// Bloc 119: the Boutique is on the refonte's EditorHeader too.
+vi.mock("@/components/admin-shop-editor", () => ({
+  ShopReferenceEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
+  ),
+}));
+vi.mock("@/components/admin-events-editor", () => ({
+  EventsReferenceEditor: ({ backHref }: { backHref: string }) => (
+    <Link href={backHref}>back</Link>
   ),
 }));
 
 afterEach(cleanup);
 
 describe("Bloc35 10.2/10.3: EditReferentielPage's back-link consistency", () => {
-  it("shows only one back link on the Progression reference page, owned by its EditorActionBar", async () => {
-    const { container } = render(
+  it("shows exactly one back link on the Progression reference page, the editor's own", async () => {
+    render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-level-up" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const backLinks = container.querySelectorAll(".editor-back-action");
-    expect(backLinks).toHaveLength(1);
+    const back = screen.getAllByRole("link", { name: /back/ });
+    expect(back).toHaveLength(1);
+    expect(back[0]).toHaveAttribute("href", "/admin/referentiels");
   });
 
-  it("styles the Combat/Expedition admin page's back link like every EditorActionBar back link", async () => {
+  it("routes Combat and Expedition to the same editor, told apart by its variant", async () => {
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-combat-equipment" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/referentiels");
+    expect(screen.getByTestId("equipment-combat")).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
+    cleanup();
+    render(
+      await EditReferentielPage({
+        params: Promise.resolve({ id: "reference-expedition-equipment" }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(screen.getByTestId("equipment-expedition")).toBeInTheDocument();
   });
 
-  it("Bloc43/44: routes 'reference-consommables' to ConsumablesReferenceScreen", async () => {
+  it("Bloc43/44: routes 'reference-consommables' to the Boutique editor", async () => {
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-consommables" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/referentiels");
+    expect(screen.getByRole("link", { name: /back/ })).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 
-  it("Bloc60: routes 'reference-events' to EventsReferenceScreen", async () => {
+  it("Bloc60: routes 'reference-events' to the Événements editor", async () => {
     render(
       await EditReferentielPage({
         params: Promise.resolve({ id: "reference-events" }),
         searchParams: Promise.resolve({}),
       }),
     );
-    const back = screen.getByRole("link", { name: /back/ });
-    expect(back).toHaveClass("editor-back-action");
-    expect(back).toHaveAttribute("href", "/admin/referentiels");
+    expect(screen.getByRole("link", { name: /back/ })).toHaveAttribute(
+      "href",
+      "/admin/referentiels",
+    );
   });
 });

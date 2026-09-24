@@ -1,6 +1,7 @@
 "use client";
 
 import MarkdownEditor from "@uiw/react-md-editor";
+import type { ComponentProps } from "react";
 import {
   markdownRehypePlugins,
   markdownRemarkPlugins,
@@ -17,14 +18,45 @@ import "@uiw/react-markdown-preview/markdown.css";
 
 const markdownEditorHeight = 640;
 
+/**
+ * The preview's plugin lists, typed from the editor's own props rather than
+ * from the default arrays: the legal notice passes different ones, and a type
+ * narrowed to the defaults would refuse them.
+ */
+type PreviewOptions = NonNullable<
+  ComponentProps<typeof MarkdownEditor>["previewOptions"]
+>;
+
 export function GuideMarkdownEditor({
   label,
   value,
   onChange,
+  mode = "live",
+  remarkPlugins = markdownRemarkPlugins,
+  rehypePlugins = markdownRehypePlugins,
+  textareaId,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /**
+   * Bloc 119: which of the three views is on screen — write, side by side,
+   * preview. "live" (side by side) is what every caller had before.
+   */
+  mode?: "edit" | "live" | "preview";
+  /**
+   * The preview's own pipeline. The legal notice renders its single line
+   * breaks and highlights its unfinished fields, exactly as the public page
+   * does; the guides keep the default.
+   */
+  remarkPlugins?: PreviewOptions["remarkPlugins"];
+  rehypePlugins?: PreviewOptions["rehypePlugins"];
+  /**
+   * Puts an id on the textarea, so a caller can place the caret in it — the
+   * legal screen's "Aller au premier" needs to reach the text itself, and the
+   * library exposes no handle of its own.
+   */
+  textareaId?: string;
 }) {
   return (
     <div className="guide-markdown-workspace" data-color-mode="light">
@@ -32,14 +64,15 @@ export function GuideMarkdownEditor({
       <MarkdownEditor
         value={value}
         onChange={(next) => onChange(next ?? "")}
-        preview="live"
-        previewOptions={{
-          remarkPlugins: markdownRemarkPlugins,
-          rehypePlugins: markdownRehypePlugins,
-        }}
+        preview={mode}
+        previewOptions={{ remarkPlugins, rehypePlugins }}
         height={markdownEditorHeight}
         visibleDragbar={false}
-        textareaProps={{ "aria-label": label, spellCheck: true }}
+        textareaProps={{
+          "aria-label": label,
+          spellCheck: true,
+          id: textareaId,
+        }}
       />
     </div>
   );

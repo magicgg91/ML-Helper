@@ -147,7 +147,6 @@ export async function createGuide(
           after: {
             slug: guide.slug,
             status: guide.status,
-            active: guide.active,
           },
         },
       },
