@@ -497,22 +497,38 @@
   },
   "contact": {
     "eyebrow": "Contact",
-    "title": "Contacter ML-Helper",
+    "title": "Contact",
     "lead": "Une erreur à signaler, une idée d’amélioration ou une question ? Écris-nous, on lit tout.",
-    "email": "Email",
+    "email": "Ton email",
     "subject": "Objet",
-    "choose-subject": "— Choisir —",
     "subjects": {
-      "data-error": "Signaler une erreur de donnée",
-      "improvement-suggestion": "Suggestion d’amélioration",
-      "technical-bug": "Problème technique / bug",
+      "data-error": "Erreur dans les données",
+      "improvement-suggestion": "Idée d'amélioration",
+      "question": "Question",
       "other": "Autre"
     },
     "message": "Message",
     "submit": "Envoyer",
     "success": "Message envoyé, merci !",
     "error-invalid": "Vérifie les champs du formulaire et réessaie.",
-    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard."
+    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard.",
+    "page-field": "Page concernée",
+    "page-placeholder": "Facultatif — ex. Villes › Coût de ville",
+    "privacy": "Ton email sert uniquement à te répondre. Il n'est ni publié ni partagé.",
+    "placeholders": {
+      "data-error": "Quelle valeur est affichée, et laquelle vois-tu en jeu ?",
+      "improvement-suggestion": "Décris ton idée en quelques lignes.",
+      "question": "Pose ta question.",
+      "other": "Ton message."
+    },
+    "reasons": {
+      "data-error-title": "Une donnée est fausse",
+      "data-error-text": "Indique la page, la valeur affichée et celle que tu vois en jeu : on corrige plus vite.",
+      "idea-title": "Une idée d'outil ou de guide",
+      "idea-text": "Dis-nous quelle décision de jeu tu aimerais mieux préparer.",
+      "question-title": "Une question",
+      "question-text": "Sur un outil, un calcul ou le site en général."
+    }
   },
   "Home": {
     "h1": "Outils et guides pour Million Lords",

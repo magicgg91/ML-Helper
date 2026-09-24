@@ -497,22 +497,38 @@
   },
   "contact": {
     "eyebrow": "Kontakt",
-    "title": "ML-Helper kontaktieren",
+    "title": "Kontakt",
     "lead": "Ein Datenfehler zu melden, eine Verbesserungsidee oder eine Frage? Schreib uns, wir lesen alles.",
-    "email": "E-Mail",
+    "email": "Deine E-Mail",
     "subject": "Betreff",
-    "choose-subject": "— Auswählen —",
     "subjects": {
-      "data-error": "Datenfehler melden",
-      "improvement-suggestion": "Verbesserungsvorschlag",
-      "technical-bug": "Technisches Problem / Fehler",
+      "data-error": "Fehler in den Daten",
+      "improvement-suggestion": "Verbesserungsidee",
+      "question": "Frage",
       "other": "Sonstiges"
     },
     "message": "Nachricht",
     "submit": "Senden",
     "success": "Nachricht gesendet, vielen Dank!",
     "error-invalid": "Überprüfe die Formularfelder und versuche es erneut.",
-    "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut."
+    "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut.",
+    "page-field": "Betroffene Seite",
+    "page-placeholder": "Optional — z. B. Städte › Stadtkosten",
+    "privacy": "Deine E-Mail dient nur der Antwort. Sie wird weder veröffentlicht noch weitergegeben.",
+    "placeholders": {
+      "data-error": "Welcher Wert wird angezeigt, und welchen siehst du im Spiel?",
+      "improvement-suggestion": "Beschreibe deine Idee in wenigen Zeilen.",
+      "question": "Stell deine Frage.",
+      "other": "Deine Nachricht."
+    },
+    "reasons": {
+      "data-error-title": "Ein Wert stimmt nicht",
+      "data-error-text": "Nenne die Seite, den angezeigten Wert und den aus dem Spiel: so geht die Korrektur schneller.",
+      "idea-title": "Eine Idee für ein Werkzeug oder einen Guide",
+      "idea-text": "Sag uns, welche Entscheidung du besser vorbereiten möchtest.",
+      "question-title": "Eine Frage",
+      "question-text": "Zu einem Werkzeug, einer Berechnung oder der Seite allgemein."
+    }
   },
   "Home": {
     "h1": "Werkzeuge und Guides für Million Lords",

@@ -1,9 +1,16 @@
 import { z } from "zod";
 
+// Bloc 129 §3.6 : les quatre objets du formulaire. « technical-bug »
+// (« Problème technique / bug ») devient « question » : le brief remplace ce
+// motif par « Question », et garder l'ancienne clé aurait fait arriver les
+// questions dans la boîte de l'équipe sous l'étiquette « Problème
+// technique », ce que personne ne relit correctement. Le changement ne
+// touche pas la route — elle valide contre cette liste — et rien ne
+// persiste un objet : il n'existe que le temps du courriel.
 export const contactSubjects = [
   "data-error",
   "improvement-suggestion",
-  "technical-bug",
+  "question",
   "other",
 ] as const;
 
@@ -21,8 +28,8 @@ export type ContactMessageInput = z.infer<typeof contactMessageSchema>;
 // (courrier interne, toujours en français, indépendant de la langue du
 // site vue par l'expéditeur).
 export const contactSubjectLabels: Record<ContactSubject, string> = {
-  "data-error": "Signaler une erreur de donnée",
-  "improvement-suggestion": "Suggestion d'amélioration",
-  "technical-bug": "Problème technique / bug",
+  "data-error": "Erreur dans les données",
+  "improvement-suggestion": "Idée d'amélioration",
+  question: "Question",
   other: "Autre",
 };

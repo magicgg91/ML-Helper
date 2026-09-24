@@ -497,22 +497,38 @@
   },
   "contact": {
     "eyebrow": "Contact",
-    "title": "Contact ML-Helper",
+    "title": "Contact",
     "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
-    "email": "Email",
+    "email": "Your email",
     "subject": "Subject",
-    "choose-subject": "— Choose —",
     "subjects": {
-      "data-error": "Report a data error",
-      "improvement-suggestion": "Improvement suggestion",
-      "technical-bug": "Technical issue / bug",
+      "data-error": "Data error",
+      "improvement-suggestion": "Improvement idea",
+      "question": "Question",
       "other": "Other"
     },
     "message": "Message",
     "submit": "Send",
     "success": "Message sent, thank you!",
     "error-invalid": "Check the form fields and try again.",
-    "error-not-configured": "Email sending isn't configured right now, please try again later."
+    "error-not-configured": "Email sending isn't configured right now, please try again later.",
+    "page-field": "Page concerned",
+    "page-placeholder": "Optional — e.g. Cities › City cost",
+    "privacy": "Your email is only used to reply to you. It is neither published nor shared.",
+    "placeholders": {
+      "data-error": "Which value is shown, and which do you see in game?",
+      "improvement-suggestion": "Describe your idea in a few lines.",
+      "question": "Ask your question.",
+      "other": "Your message."
+    },
+    "reasons": {
+      "data-error-title": "A value is wrong",
+      "data-error-text": "Give the page, the value shown and the one you see in game: we fix it faster.",
+      "idea-title": "An idea for a tool or a guide",
+      "idea-text": "Tell us which decision you would like to prepare better.",
+      "question-title": "A question",
+      "question-text": "About a tool, a calculation or the site in general."
+    }
   },
   "Home": {
     "h1": "Tools and guides for Million Lords",

@@ -497,22 +497,38 @@
   },
   "contact": {
     "eyebrow": "İletişim",
-    "title": "ML-Helper ile iletişime geç",
+    "title": "İletişim",
     "lead": "Bildirilecek bir veri hatası, bir iyileştirme fikri veya bir sorun mu var? Bize yaz, hepsini okuyoruz.",
-    "email": "E-posta",
+    "email": "E-postan",
     "subject": "Konu",
-    "choose-subject": "— Seç —",
     "subjects": {
-      "data-error": "Veri hatası bildir",
-      "improvement-suggestion": "İyileştirme önerisi",
-      "technical-bug": "Teknik sorun / hata",
+      "data-error": "Verilerde hata",
+      "improvement-suggestion": "İyileştirme fikri",
+      "question": "Soru",
       "other": "Diğer"
     },
     "message": "Mesaj",
     "submit": "Gönder",
     "success": "Mesaj gönderildi, teşekkürler!",
     "error-invalid": "Form alanlarını kontrol edip tekrar dene.",
-    "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene."
+    "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene.",
+    "page-field": "İlgili sayfa",
+    "page-placeholder": "İsteğe bağlı — örn. Şehirler › Şehir maliyeti",
+    "privacy": "E-postan yalnızca sana yanıt vermek için kullanılır. Yayımlanmaz, paylaşılmaz.",
+    "placeholders": {
+      "data-error": "Hangi değer görünüyor, oyunda hangisini görüyorsun?",
+      "improvement-suggestion": "Fikrini birkaç satırda anlat.",
+      "question": "Sorunu sor.",
+      "other": "Mesajın."
+    },
+    "reasons": {
+      "data-error-title": "Bir veri yanlış",
+      "data-error-text": "Sayfayı, görünen değeri ve oyunda gördüğünü yaz: daha hızlı düzeltiriz.",
+      "idea-title": "Bir araç ya da rehber fikri",
+      "idea-text": "Hangi kararı daha iyi hazırlamak istediğini söyle.",
+      "question-title": "Bir soru",
+      "question-text": "Bir araç, bir hesaplama ya da genel olarak site hakkında."
+    }
   },
   "Home": {
     "h1": "Million Lords için araçlar ve rehberler",

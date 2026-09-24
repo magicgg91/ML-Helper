@@ -497,22 +497,38 @@
   },
   "contact": {
     "eyebrow": "Contacto",
-    "title": "Contactar con ML-Helper",
+    "title": "Contacto",
     "lead": "¿Un error de datos que reportar, una idea de mejora o una pregunta? Escríbenos, lo leemos todo.",
-    "email": "Correo electrónico",
+    "email": "Tu correo",
     "subject": "Asunto",
-    "choose-subject": "— Elegir —",
     "subjects": {
-      "data-error": "Reportar un error de datos",
-      "improvement-suggestion": "Sugerencia de mejora",
-      "technical-bug": "Problema técnico / error",
+      "data-error": "Error en los datos",
+      "improvement-suggestion": "Idea de mejora",
+      "question": "Pregunta",
       "other": "Otro"
     },
     "message": "Mensaje",
     "submit": "Enviar",
     "success": "¡Mensaje enviado, gracias!",
     "error-invalid": "Revisa los campos del formulario e inténtalo de nuevo.",
-    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde."
+    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde.",
+    "page-field": "Página afectada",
+    "page-placeholder": "Opcional — ej. Ciudades › Coste de ciudad",
+    "privacy": "Tu correo solo sirve para responderte. No se publica ni se comparte.",
+    "placeholders": {
+      "data-error": "¿Qué valor se muestra y cuál ves en el juego?",
+      "improvement-suggestion": "Describe tu idea en unas líneas.",
+      "question": "Haz tu pregunta.",
+      "other": "Tu mensaje."
+    },
+    "reasons": {
+      "data-error-title": "Un dato es incorrecto",
+      "data-error-text": "Indica la página, el valor mostrado y el que ves en el juego: lo corregimos antes.",
+      "idea-title": "Una idea de herramienta o de guía",
+      "idea-text": "Dinos qué decisión te gustaría preparar mejor.",
+      "question-title": "Una pregunta",
+      "question-text": "Sobre una herramienta, un cálculo o el sitio en general."
+    }
   },
   "Home": {
     "h1": "Herramientas y guías para Million Lords",

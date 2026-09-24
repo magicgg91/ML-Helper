@@ -78,7 +78,8 @@ describe("sendContactMessage", () => {
         from: "no-reply@example.com",
         to: "editor@example.com",
         replyTo: "player@example.com",
-        subject: expect.stringContaining("Signaler une erreur de donnée"),
+        // Bloc 129 §3.6 : le libellé interne suit celui du formulaire.
+        subject: expect.stringContaining("Erreur dans les données"),
         text: expect.stringContaining("Le taux d'XP semble faux."),
       }),
     );
