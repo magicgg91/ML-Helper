@@ -55,9 +55,20 @@ export function AdminShell({
   );
 
   return (
-    <div className="admin-shell flex min-h-screen bg-admin-page text-[14px] text-admin-text">
-      <div className="hidden lg:flex">{sidebar}</div>
-      <div className="flex min-w-0 flex-1 flex-col">
+    // Bloc 125 §1: a grid of two tracks, not two flex children. The column
+    // has to be its own viewport-tall box that the page scrolls past, and a
+    // flex row gives it the height of the tallest sibling instead — which is
+    // why the bottom of the menu used to walk off the screen on a long page
+    // (Équipements de Combat). The grid row stretches to the content, the
+    // `aside` inside it stays 100dvh and sticks to the top.
+    <div className="admin-shell grid min-h-[100dvh] grid-cols-1 bg-admin-page text-[14px] text-admin-text lg:grid-cols-[248px_minmax(0,1fr)]">
+      {/* The landmark lives here and not in AdminSidebar, which is rendered a
+          second time inside the drawer: two <aside> elements would be two
+          complementary landmarks for one navigation. */}
+      <aside className="sticky top-0 hidden h-[100dvh] lg:block">
+        {sidebar}
+      </aside>
+      <div className="flex min-w-0 flex-col">
         <div className="flex items-center gap-3 border-b border-admin-sidebar-border bg-admin-sidebar px-4 py-3 lg:hidden">
           <AdminButton
             type="button"
@@ -71,6 +82,9 @@ export function AdminShell({
           </AdminButton>
           <span className="font-admin-display font-semibold">ML-Helper</span>
         </div>
+        {/* The page scrolls with the document — it is not its own scroll
+            container. A second scrollbar beside a fixed column is how the
+            browser's find-in-page and the keyboard both lose the page. */}
         <main className="flex-1 p-[var(--admin-page-pad)] xl:p-[var(--admin-page-pad-lg)]">
           {children}
         </main>

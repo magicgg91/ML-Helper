@@ -193,4 +193,25 @@ describe("Bloc 119: AdminSidebar — the block at the bottom", () => {
     expect(screen.getByRole("group")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Thème" })).toBeInTheDocument();
   });
+
+  it("scrolls its navigation, not its bottom block", () => {
+    // Bloc 125 §1: three parts in a column — the brand, a nav that takes the
+    // space left and scrolls inside it, and a bottom block `mt-auto` keeps
+    // against the bottom. `min-h-0` is the part that is easy to leave out
+    // and silently breaks the other two: without it the nav refuses to
+    // shrink under its content and pushes the bottom block off.
+    pathname = "/admin";
+    renderSidebar();
+    const nav = screen.getByRole("navigation", {
+      name: "Navigation administration",
+    });
+    expect(nav.className).toContain("flex-1");
+    expect(nav.className).toContain("min-h-0");
+    expect(nav.className).toContain("overflow-y-auto");
+    const bottom = screen
+      .getByRole("link", { name: "Voir le site public" })
+      .closest("div");
+    expect(bottom?.className).toContain("mt-auto");
+    expect(nav.closest("div.h-full")?.className).toContain("flex-col");
+  });
 });

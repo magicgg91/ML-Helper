@@ -3466,6 +3466,74 @@ test("every admin screen stays English for a reader browsing publicly in German"
   await context.close();
 });
 
+// Bloc 125 §1: the column has a viewport of its own.
+//
+// The refonte made it a flex sibling of the page, so it took the page's
+// height — and on Équipements de Combat, which is metres long, its bottom
+// (language, theme, the account block) sat kilometres below the fold. This
+// scrolls that exact page to the bottom and checks the column has not moved
+// and is still whole on screen.
+test("Bloc 125/1: the side menu stays whole while a long page scrolls", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  // 409 in the serial run, where the Super Admin already exists; 201 when
+  // this test is run on its own against a freshly reset database.
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/referentiels/reference-combat-equipment");
+  // The column itself, and with it the block at its bottom — the part that
+  // used to be metres below the fold.
+  const column = page.locator("aside").first();
+  const bottomLink = page.getByRole("link", { name: "Voir le site public" });
+  await expect(bottomLink).toBeInViewport();
+
+  const viewport = page.viewportSize()!;
+  const before = (await column.boundingBox())!;
+  expect(
+    Math.round(before.y + before.height),
+    "the column is taller than the viewport before anything is scrolled",
+  ).toBeLessThanOrEqual(viewport.height);
+
+  // The page really is long enough for this to mean something.
+  const scrollable = await page.evaluate(
+    () => document.documentElement.scrollHeight - window.innerHeight,
+  );
+  expect(
+    scrollable,
+    "the page is not long enough to prove anything",
+  ).toBeGreaterThan(600);
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect
+    .poll(async () => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(600);
+
+  const after = (await column.boundingBox())!;
+  expect(Math.round(after.y), "the column moved when the page scrolled").toBe(
+    Math.round(before.y),
+  );
+  expect(
+    Math.round(after.y + after.height),
+    "the bottom of the column left the viewport",
+  ).toBeLessThanOrEqual(viewport.height);
+  await expect(
+    bottomLink,
+    "the block at the bottom of the menu is no longer on screen",
+  ).toBeInViewport();
+
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //

@@ -99,7 +99,10 @@ export function AdminSidebar({
   const legalToDo = counts.legalPlaceholders ?? 0;
 
   return (
-    <div className="flex h-full w-[260px] shrink-0 flex-col border-r border-admin-sidebar-border bg-admin-sidebar">
+    // Bloc 125 §1: the same three-part column in the fixed sidebar and in
+    // the drawer — brand at the top, a nav that scrolls on its own when it
+    // is too tall, and a bottom block pinned to the bottom by `mt-auto`.
+    <div className="flex h-full w-[248px] shrink-0 flex-col border-r border-admin-sidebar-border bg-admin-sidebar">
       <div className="flex items-center gap-3 px-5 py-5">
         <span
           aria-hidden="true"
@@ -115,9 +118,12 @@ export function AdminSidebar({
         </div>
       </div>
 
+      {/* `min-h-0`: a flex child's default `min-height: auto` refuses to
+          shrink below its content, so without it `overflow-y: auto` never
+          has anything to scroll and the nav pushes the bottom block out. */}
       <nav
         aria-label={t("navigation-label")}
-        className="flex-1 overflow-y-auto px-3 pb-4"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pb-4"
       >
         {adminSectionGroups.map((group) => {
           const entries = adminSections.filter(
@@ -189,7 +195,7 @@ export function AdminSidebar({
         })}
       </nav>
 
-      <div className="flex flex-col gap-3 border-t border-admin-sidebar-border px-4 py-4">
+      <div className="mt-auto flex flex-col gap-3 border-t border-admin-sidebar-border px-4 py-4">
         <Link
           href="/"
           target="_blank"
