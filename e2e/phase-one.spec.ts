@@ -3600,6 +3600,70 @@ test("Bloc 125/2: the account block opens a menu, and Mon compte is its own scre
   await context.close();
 });
 
+// Bloc 125 §3: the Événements colour picker, which nobody could use.
+//
+// The swatch grid was an absolute box inside the event row, and the row
+// clipped it: all that ever appeared was the sliver of it that fitted under
+// the swatch. It is a portal on the popover layer now. This opens it, checks
+// the whole grid is really on screen and over the page, picks a colour,
+// and checks Escape gives the focus back.
+test("Bloc 125/3: the colour picker opens whole, over the page", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/referentiels/reference-events");
+  // The seeded database ships no events, so this makes one to open a picker
+  // on. It is never saved: the test closes the page on it.
+  await page.getByTestId("add-event-bronze").click();
+  const swatch = page.getByTestId("event-color-bronze-0");
+  await expect(swatch).toBeVisible();
+  await expect(swatch).toHaveAttribute("aria-expanded", "false");
+  await swatch.click();
+  await expect(swatch).toHaveAttribute("aria-expanded", "true");
+
+  // Out of the row and into the body: nothing above it can clip it now.
+  const grid = page
+    .locator('[role="group"]')
+    .filter({ has: page.getByTestId("event-color-bronze-0-violet") });
+  await expect(grid).toBeVisible();
+  expect(
+    await grid.evaluate((el) => el.closest(".events-color-picker") !== null),
+    "the swatch grid is still inside the row that was clipping it",
+  ).toBe(false);
+
+  // Every swatch of the grid is on screen, not just the first row of them.
+  const swatches = grid.getByRole("button");
+  const count = await swatches.count();
+  expect(count).toBeGreaterThan(5);
+  for (let index = 0; index < count; index += 1)
+    await expect(swatches.nth(index)).toBeInViewport();
+
+  // Picking one closes the grid and hands the focus back to the swatch.
+  await page.getByTestId("event-color-bronze-0-violet").click();
+  await expect(grid).toHaveCount(0);
+  await expect(swatch).toBeFocused();
+
+  // …and so does Escape.
+  await swatch.click();
+  await expect(grid).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(grid).toHaveCount(0);
+  await expect(swatch).toBeFocused();
+
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //

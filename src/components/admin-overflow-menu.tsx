@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/lib/utils";
+import { AdminPopover, type PopoverPlacement } from "./admin-popover";
 
 /**
  * Bloc 119: the ⋯ menu that collects a row's secondary actions.
@@ -58,11 +59,12 @@ export function OverflowMenu({
   /** Replaces the ⋯ button's own box when the trigger is not a glyph. */
   triggerClassName?: string;
   /**
-   * Where the menu opens. `top-start` is what the account block needs — it
-   * sits at the very bottom of the column, and a menu below it would open
-   * off-screen.
+   * Where the menu would like to open. `top-start` is what the account block
+   * asks for — it sits at the very bottom of the column. Bloc 125 §3: this is
+   * a preference, not an order; the popover flips to the other side when
+   * there is not enough room on this one.
    */
-  placement?: "bottom-end" | "top-start";
+  placement?: PopoverPlacement;
 }) {
   const triggerId = useId();
   const menuId = useId();
@@ -80,6 +82,12 @@ export function OverflowMenu({
     ) ?? []),
   ];
 
+  // The menu is in a portal now (Bloc 125 §3), so "inside" is no longer
+  // "inside this element in the DOM tree": both halves have to be asked.
+  const inside = (node: Node) =>
+    Boolean(container.current?.contains(node)) ||
+    Boolean(menu.current?.contains(node));
+
   useEffect(() => {
     if (!open) return;
     const focusable = entries();
@@ -95,7 +103,7 @@ export function OverflowMenu({
     // pointerdown rather than click, so the menu is gone before the other
     // trigger acts on its own event.
     function onPointerDown(event: PointerEvent) {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
+      if (!inside(event.target as Node)) setOpen(false);
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
@@ -181,21 +189,18 @@ export function OverflowMenu({
           <MoreHorizontalIcon aria-hidden="true" className="size-4" />
         )}
       </button>
-      {open && (
+      <AdminPopover
+        anchorRef={triggerRef}
+        open={open}
+        placement={placement}
+        className="min-w-48 rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg"
+      >
         <div
           id={menuId}
           ref={menu}
           role="menu"
           aria-labelledby={triggerId}
           onKeyDown={onMenuKeyDown}
-          className={cn(
-            "absolute z-20 min-w-48 rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg",
-            placement === "bottom-end" && "right-0 mt-1",
-            // Anchored to the top of the trigger and growing upwards, so a
-            // menu at the very bottom of the column opens into the page
-            // rather than under it.
-            placement === "top-start" && "bottom-full left-0 mb-1",
-          )}
         >
           {items.map((item) =>
             item.href !== undefined && !item.disabled ? (
@@ -229,7 +234,7 @@ export function OverflowMenu({
             ),
           )}
         </div>
-      )}
+      </AdminPopover>
     </div>
   );
 }

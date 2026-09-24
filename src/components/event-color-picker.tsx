@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { eventColors, eventColorVar, type EventColor } from "@/lib/events";
+import { AdminPopover } from "./admin-popover";
 
 /**
  * Bloc 80/F: a dedicated button per event, opening a fixed ~10-colour palette
@@ -16,6 +17,12 @@ import { eventColors, eventColorVar, type EventColor } from "@/lib/events";
  *
  * Bloc 119: lifted out of the Événements editor unchanged when that screen
  * was rewritten — the brief asks for the existing picker, not a new one.
+ *
+ * Bloc 125 §3: the swatch grid was an `absolute` box inside the event row,
+ * and the row clipped it — all that ever showed was the sliver of it that
+ * fitted under the swatch. It opens in a portal now, on the popover step of
+ * the z-index scale, and it gives the focus back to the swatch on the way
+ * out. Which colours it offers, and what picking one does, are untouched.
  */
 export function EventColorPicker({
   value,
@@ -32,20 +39,44 @@ export function EventColorPicker({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  /** Closes, and puts the focus back where it came from. */
+  function close({ restoreFocus }: { restoreFocus: boolean }) {
+    setOpen(false);
+    if (restoreFocus) toggleRef.current?.focus();
+  }
 
   useEffect(() => {
     if (!open) return;
     function handlePointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      // The grid is in a portal, so it is no longer a descendant of the
+      // container: a click in it would otherwise read as a click outside.
+      if (containerRef.current?.contains(target)) return;
+      if (optionsRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close({ restoreFocus: true });
+      }
     }
     document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open]);
 
   return (
     <div className="events-color-picker" ref={containerRef}>
       <button
         type="button"
+        ref={toggleRef}
         className="events-color-picker-toggle"
         style={{ background: eventColorVar(value) }}
         aria-haspopup="true"
@@ -54,8 +85,9 @@ export function EventColorPicker({
         data-testid={testId}
         onClick={() => setOpen((current) => !current)}
       />
-      {open && (
+      <AdminPopover anchorRef={toggleRef} open={open} placement="bottom-start">
         <div
+          ref={optionsRef}
           className="events-color-picker-options"
           role="group"
           aria-label={label}
@@ -71,12 +103,12 @@ export function EventColorPicker({
               data-testid={`${testId}-${color}`}
               onClick={() => {
                 onChange(color);
-                setOpen(false);
+                close({ restoreFocus: true });
               }}
             />
           ))}
         </div>
-      )}
+      </AdminPopover>
     </div>
   );
 }

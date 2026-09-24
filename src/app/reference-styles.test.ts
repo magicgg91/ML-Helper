@@ -1261,7 +1261,14 @@ describe("Bloc 80/F: the manual color picker's toggle + popup swatch grid", () =
       /\.events-color-picker-options\s*{([\s\S]*?)\n}/,
     )?.[0];
     expect(options).toBeDefined();
-    expect(options).toMatch(/position: absolute;/);
+    expect(options).toMatch(/display: grid;/);
+    // Bloc 125 §3: it used to place and stack itself here — `position:
+    // absolute` inside the event row, which the row then clipped, so the
+    // grid was never fully visible. It is carried by a portalled popover
+    // now, which owns where it goes; positioning it here again would put
+    // it back inside the box that was cutting it.
+    expect(options).not.toMatch(/position: absolute;/);
+    expect(options).not.toMatch(/z-index:/);
 
     const option = css.match(
       /\.events-color-picker-option\s*{([\s\S]*?)\n}/,

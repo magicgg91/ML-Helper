@@ -262,6 +262,19 @@
   --admin-segment: #e4e6ec;
   --admin-hover: #e9eaf0;
 
+  /* Bloc 125 §3 — une seule échelle de superposition pour toute l'admin.
+     Les valeurs en dur d'avant (z-20 sur un menu ⋯, z-50 sur les trois
+     surfaces modales, rien du tout ailleurs) ne se comparaient nulle part :
+     un menu et un tiroir portaient le même nombre sans que personne n'ait
+     décidé lequel devait passer devant. Les écarts sont volontairement
+     larges, pour qu'une couche intercalaire n'oblige pas à tout renuméroter. */
+  --z-sidebar: 30;
+  --z-sticky: 40;
+  --z-popover: 50;
+  --z-drawer: 60;
+  --z-dialog: 100;
+  --z-toast: 110;
+
   /* Dimensions — section 1 du brief, nommées pour ne pas être réécrites au
      cas par cas dans chaque page. */
   --admin-control-h: 40px;

@@ -87,6 +87,7 @@ export function AdminShell({
         onClose={closeDrawer}
         labelledBy={drawerTitleId}
         placement="left"
+        layer="drawer"
         className="h-full max-w-[85vw]"
       >
         <h2 id={drawerTitleId} className="sr-only">
