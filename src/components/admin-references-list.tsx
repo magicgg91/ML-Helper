@@ -8,6 +8,7 @@ import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { SearchInput } from "./admin-filters";
 import { Pill } from "./admin-pill";
 import { VisibilitySwitch } from "./admin-visibility-switch";
+import { useServerRows } from "./use-server-rows";
 
 /**
  * Bloc 119: the Référentiels list — the Outils table's twin, with the
@@ -38,7 +39,10 @@ export function AdminReferencesList({
 }) {
   const t = useTranslations("admin.referentiels");
   const common = useTranslations("admin.common");
-  const [references, setReferences] = useState(rows);
+  // Bloc 128: the rows follow what the server re-renders. Their labels
+  // and their order are resolved server-side in the admin's own language,
+  // so a language change has to reach them and not only the chrome.
+  const [references, setReferences] = useServerRows(rows);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();

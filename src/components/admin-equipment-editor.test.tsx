@@ -113,11 +113,102 @@ describe("Bloc 119: the equipment reference editor", () => {
 
   it("counts the values nobody has confirmed, per set", () => {
     renderCombat(rows);
-    // Row 1: skill_3, value_3, skill_4, value_4, value_2 empty = 5.
-    // Row 2: those 5 plus slot_name = 6. "none" is a decision, not a gap.
+    // Bloc 126/C: 1, where this used to report 11.
+    //
+    // Row 1 is complete as it stands: a first skill with its percentage, an
+    // explicit "none" for the second, and no third or fourth — which is a
+    // piece of equipment with one skill, not nine gaps in the data.
+    // Row 2 is that row with no slot name, and that field is the only thing
+    // on this set that anybody could go and look up.
     expect(
       screen.getByRole("button", { name: /^Spirit Fulgur/ }),
-    ).toHaveTextContent("11 valeurs à confirmer");
+    ).toHaveTextContent("1 valeur à confirmer");
+  });
+
+  // Bloc 126/C: the case the brief explicitly leaves alone. Here somebody
+  // really can open the game, read the number and type it in.
+  it("still counts a percentage missing beside a skill that exists", () => {
+    renderCombat([
+      combatRow({ set_name: "Troué", skill_3: "Attaque", value_3_pct: "" }),
+    ]);
+    expect(screen.getByRole("button", { name: /^Troué/ })).toHaveTextContent(
+      "1 valeur à confirmer",
+    );
+  });
+
+  // Codex review (PR #150): greying the field was not enough on its own.
+  // Measured in the browser before the fix, the save sent
+  // `{skill_4: "", value_4_pct: "10"}` — a percentage nobody could see or
+  // reach, which came back to life the day a skill was chosen for that slot
+  // and fed the public equipment calculations unentered.
+  it("takes the percentage with the skill when the skill is removed", async () => {
+    const request = renderCombat([
+      combatRow({
+        set_name: "Troué",
+        skill_4: "Charognard",
+        value_4_pct: "10",
+      }),
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: /^Troué/ }));
+    fireEvent.change(screen.getByLabelText("Ligne 1 Compétence 4"), {
+      target: { value: "" },
+    });
+    // Gone from the screen as the skill goes, not silently kept.
+    expect(screen.getByLabelText("Ligne 1 Valeur 4 (%)")).toHaveValue("");
+
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const main = request.mock.calls.find(([url]) =>
+      String(url).endsWith("/combat-equipment"),
+    );
+    const sent = JSON.parse(String((main?.[1] as RequestInit).body))[0];
+    expect(sent).toMatchObject({ skill_4: "", value_4_pct: "" });
+    // And the three slots that still have their skill keep their numbers.
+    expect(sent).toMatchObject({ skill_1: "Recycleur", value_1_pct: "5" });
+  });
+
+  it("cleans a stored row that already carries an orphaned percentage", async () => {
+    // The other half of the same fix: clearing on change cannot reach a row
+    // that arrived from the database already holding one — saved before the
+    // fix, or edited straight in the table. The save empties it on the way
+    // out, so the next reader never sees a percentage without its skill.
+    const request = renderCombat([
+      combatRow({ set_name: "Hérité", skill_4: "", value_4_pct: "10" }),
+    ]);
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const main = request.mock.calls.find(([url]) =>
+      String(url).endsWith("/combat-equipment"),
+    );
+    expect(
+      JSON.parse(String((main?.[1] as RequestInit).body))[0],
+    ).toMatchObject({ skill_4: "", value_4_pct: "" });
+  });
+
+  it("greys out the percentage of a skill slot that has no skill", () => {
+    renderCombat([
+      combatRow({
+        set_name: "Troué",
+        skill_1: "Attaque",
+        value_1_pct: "5",
+        skill_2: "none",
+        skill_3: "",
+      }),
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: /^Troué/ }));
+    // A percentage belongs to a skill: with no skill beside it there is
+    // nothing it could mean, so it cannot be typed into.
+    expect(screen.getByLabelText("Ligne 1 Valeur 1 (%)")).toBeEnabled();
+    expect(screen.getByLabelText("Ligne 1 Valeur 2 (%)")).toBeDisabled();
+    expect(screen.getByLabelText("Ligne 1 Valeur 3 (%)")).toBeDisabled();
+    // And it is not asking to be filled in either — that placeholder belongs
+    // to a field somebody could still fill.
+    expect(screen.getByLabelText("Ligne 1 Valeur 3 (%)")).not.toHaveAttribute(
+      "placeholder",
+    );
+    expect(screen.getByLabelText("Ligne 1 Valeur 1 (%)")).toHaveAttribute(
+      "placeholder",
+    );
   });
 
   it("names the tool this reference feeds", () => {
@@ -215,7 +306,14 @@ describe("Bloc 119: the equipment reference editor", () => {
         skill_4: "none",
         value_4_pct: "none",
       }),
-      combatRow({ set_name: "Incomplet" }),
+      // Bloc 126/C: incomplete now means a percentage missing beside a skill
+      // that exists. The bare fixture is no longer incomplete at all — its
+      // empty third and fourth slots are slots the piece does not have.
+      combatRow({
+        set_name: "Incomplet",
+        skill_3: "Attaque",
+        value_3_pct: "",
+      }),
     ]);
     fireEvent.click(
       screen.getByRole("button", { name: "Valeurs à confirmer" }),

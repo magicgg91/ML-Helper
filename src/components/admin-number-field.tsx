@@ -104,11 +104,18 @@ export function NumberField({
             // globals.css applies site-wide (see admin.css).
             "admin-control admin-focus h-9 rounded-admin-control border bg-admin-card px-2 text-right text-sm text-admin-text tabular-nums disabled:cursor-not-allowed disabled:opacity-50",
             widthClasses[width],
-            unreadable
-              ? "border-admin-danger-border text-admin-danger-ink"
-              : empty
-                ? "border-dashed border-admin-warn-ink/60"
-                : "border-admin-card-border",
+            // Bloc 126/C: a disabled field is never "to be filled in". It is
+            // empty because there is nothing for it to hold — the skill
+            // beside it does not exist — so it keeps the plain border and
+            // drops the amber dashes, which would be asking for a number
+            // nobody can type.
+            disabled
+              ? "border-admin-card-border"
+              : unreadable
+                ? "border-admin-danger-border text-admin-danger-ink"
+                : empty
+                  ? "border-dashed border-admin-warn-ink/60"
+                  : "border-admin-card-border",
           )}
           type="text"
           inputMode="decimal"
@@ -122,7 +129,7 @@ export function NumberField({
               .filter(Boolean)
               .join(" ") || undefined
           }
-          placeholder={t("to-fill-in")}
+          placeholder={disabled ? undefined : t("to-fill-in")}
           value={text}
           disabled={disabled}
           data-testid={testId}

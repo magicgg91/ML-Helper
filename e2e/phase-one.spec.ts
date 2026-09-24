@@ -1270,18 +1270,37 @@ test("the audit log paginates by 20 entries", async ({ page }) => {
   // Bloc 119: the log is grouped by day (each group opens with a <th> row,
   // so the data rows are the ones carrying a <td>) and loads more days on a
   // button rather than paging back and forth.
-  await page.goto("/admin/logs?q=pagination-user");
-  await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
+  // Bloc 126/A: the button reads "Charger plus" — it widens the window, and
+  // what arrives is older entries, not necessarily older *days*.
+  //
+  // Twice, at two different scroll positions: the button sits at the bottom
+  // of the list, so the position a reader clicks from is whatever the page
+  // height puts them at, and two viewport heights give two of them. Read
+  // after scrollIntoViewIfNeeded, because click() scrolls the target into
+  // view itself and would otherwise be measuring its own scrolling.
+  for (const height of [600, 400]) {
+    await page.setViewportSize({ width: 1280, height });
+    await page.goto("/admin/logs?q=pagination-user");
+    await expect(page.locator("tbody tr:has(td)")).toHaveCount(20);
 
-  await page
-    .getByRole("link", { name: "Charger les jours précédents" })
-    .click();
-  await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
-  // The window widens rather than moving: the 26 entries are all on screen.
-  await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
-  await expect(
-    page.getByRole("link", { name: "Charger les jours précédents" }),
-  ).toHaveCount(0);
+    const more = page.getByRole("link", { name: "Charger plus" });
+    await more.scrollIntoViewIfNeeded();
+    const scrollBefore = await page.evaluate(() => window.scrollY);
+    // The reader really is down the page: without this the assertion below
+    // would pass on a page that never scrolled at all.
+    expect(scrollBefore).toBeGreaterThan(0);
+
+    await more.click();
+    await expect(page).toHaveURL(/\/admin\/logs\?q=pagination-user&page=2$/);
+    // The window widens rather than moving: the 26 entries are all on screen.
+    await expect(page.locator("tbody tr:has(td)")).toHaveCount(26);
+    await expect(page.getByRole("link", { name: "Charger plus" })).toHaveCount(
+      0,
+    );
+    // Bloc 126/A: and the reader is still where they were. Before the fix
+    // this was 0 — the top of a list they had just scrolled through.
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+  }
 });
 
 // Bloc 57: the Boutique reference screen has a single save button (Bloc 42)
@@ -2047,6 +2066,79 @@ test("guide editor supports the complete editorial lifecycle", async ({
     "Guide supprimé définitivement.",
   );
   await expect(page.getByText("Guide édité et publié")).toHaveCount(0);
+});
+
+// Bloc 126/D: a guide typed in one language alone, read from the admin in the
+// other. The editor writes both fr and en whatever was filled in, so the
+// missing side is stored blank rather than left out — and a blank one used to
+// win the lookup, leaving the row's title empty.
+test("the guides list reads a guide in the admin's own language", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // One guide with both languages, one written in French alone.
+  await page.goto("/admin/guides/new");
+  await page.getByLabel("Titre (FR)").fill("Les deux langues");
+  await page.getByLabel("Contenu Markdown (FR)").fill("Contenu FR");
+  await page.getByRole("tab", { name: /English/ }).click();
+  await page.getByLabel("Titre (EN)").fill("Both languages");
+  await page.getByLabel("Contenu Markdown (EN)").fill("EN content");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.goto("/admin/guides/new");
+  await page.getByLabel("Titre (FR)").fill("Le français seulement");
+  await page.getByLabel("Contenu Markdown (FR)").fill("Contenu FR");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Guide enregistré.")).toBeVisible({
+    timeout: 15_000,
+  });
+  const frenchOnly = page.url();
+
+  await page.goto("/admin/guides");
+  // `exact`, because the translation chips beside the title are links too and
+  // their labels name the guide ("Modifier la version English de …").
+  await expect(
+    page.getByRole("link", { name: "Les deux langues", exact: true }),
+  ).toBeVisible();
+
+  // Switch the admin itself to English, from the control in the sidebar, and
+  // stay on the page: the toggle refreshes in place rather than reloading, so
+  // this is also what proves the table takes the rows that come back.
+  await page
+    .getByRole("group", { name: /Langue|Language/ })
+    .getByRole("button", { name: "EN" })
+    .click();
+  // The page around the table is the first thing the refresh repaints; wait
+  // for it, so the assertions below are about the table and not the request.
+  await expect(
+    page.getByText(
+      "The guides on the site, their translations and their status.",
+    ),
+  ).toBeVisible();
+
+  // The guide that has both reads English...
+  await expect(
+    page.getByRole("link", { name: "Both languages", exact: true }),
+  ).toBeVisible();
+  // ...and the one written in French alone still reads, rather than showing
+  // an empty cell where its title belongs.
+  await expect(
+    page.getByRole("link", { name: "Le français seulement", exact: true }),
+  ).toBeVisible();
+
+  // And the editor opens on the language the admin is working in.
+  await page.goto(frenchOnly);
+  await expect(page.getByRole("tab", { selected: true })).toHaveText(/English/);
 });
 
 test("calculator visibility and guide publication are reversible", async ({
@@ -3971,4 +4063,62 @@ test("Bloc 121 retry drill: the second attempt starts from a clean database", as
   // And the seeded content is back as it was, not as attempt 1 left it.
   await page.goto("/admin");
   await expect(page.getByText("Vue d’ensemble")).toBeVisible();
+});
+
+// Bloc 128: the language switch refreshes the admin in place rather than
+// reloading it, and every screen has to follow — not only the menu and the
+// page's own heading, but the rows of the tables themselves.
+//
+// Three screens were not following, for two different reasons: Outils and
+// Référentiels held their rows in state seeded once, and Utilisateurs held
+// its columns in a memo whose dependency list left the translators out. This
+// walks the admin in French, switches to English without leaving the page,
+// and checks that nothing French is left behind in the data.
+test("every admin list follows a language change made in place", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("rootadmin");
+  await page
+    .getByLabel(/Password|Mot de passe/)
+    .fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  const switchTo = async (code: "FR" | "EN") => {
+    await page
+      .getByRole("group", { name: /Langue|Language/ })
+      .getByRole("button", { name: code })
+      .click();
+  };
+
+  // Outils: the tool names are server-side translations, and so is the order
+  // they are sorted in.
+  await page.goto("/admin/tools");
+  await expect(page.getByText("Coût de Ville")).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByText("City Cost")).toBeVisible();
+  await expect(page.getByText("Coût de Ville")).toHaveCount(0);
+  await switchTo("FR");
+
+  // Référentiels: same, on its titles and on the tool each one feeds.
+  await page.goto("/admin/referentiels");
+  await expect(page.getByText("Équipements de Combat").first()).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByText("Combat Equipment").first()).toBeVisible();
+  await expect(page.getByText("Équipements de Combat")).toHaveCount(0);
+  await switchTo("FR");
+
+  // Utilisateurs: the rows are not translated, the table around them is —
+  // its headers, and the "(toi)" that marks the signed-in account.
+  await page.goto("/admin/users");
+  await expect(
+    page.getByRole("columnheader", { name: "Utilisateur" }),
+  ).toBeVisible();
+  await expect(page.getByText("(toi)")).toBeVisible();
+  await switchTo("EN");
+  await expect(page.getByRole("columnheader", { name: "User" })).toBeVisible();
+  await expect(page.getByText("(you)")).toBeVisible();
+  await expect(page.getByText("(toi)")).toHaveCount(0);
+  await switchTo("FR");
 });

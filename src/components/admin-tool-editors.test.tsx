@@ -244,14 +244,36 @@ describe("Bloc 119: Gemmes", () => {
     expect(screen.queryByText("saphirs", { exact: true })).toBeNull();
   });
 
-  it("says Bronze has no purchase price rather than showing an empty field", () => {
+  // Bloc 126/B reverses Bloc 125 §4 here: this used to assert that Bronze had
+  // no field at all, printing a dash instead. The game still sells no Bronze
+  // gems, so the field is still empty — but an empty field is something an
+  // admin can fill on the day that changes, and a dash is not.
+  it("offers Bronze an empty price field rather than a dash", async () => {
+    const request = mockSave();
     render(
       <GemParametersEditor initial={defaultGemParameters} {...screenProps} />,
     );
-    expect(screen.queryByLabelText("Prix Bronze")).toBeNull();
+    const bronze = screen.getByLabelText("Prix Bronze");
+    expect(bronze).toHaveValue("");
     expect(
-      screen.getByText("Le Bronze n’a pas de prix d’achat dans le jeu."),
+      screen.getByText(
+        "Le Bronze n’a pas de prix d’achat dans le jeu : laissez le champ vide tant que c’est le cas.",
+      ),
     ).toBeInTheDocument();
+
+    fireEvent.change(bronze, { target: { value: "2000" } });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const saved = body(request);
+    expect(saved.gemPrice.bronze).toBe(2000);
+    // The five leagues that always had a price are untouched by it.
+    expect(saved.gemPrice).toMatchObject({
+      silver: 3000,
+      gold: 4000,
+      platinum: 5000,
+      diamond: 6000,
+      legend: 7000,
+    });
   });
 
   it("shows the formula this screen's numbers feed", () => {

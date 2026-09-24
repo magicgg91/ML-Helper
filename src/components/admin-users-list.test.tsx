@@ -92,9 +92,13 @@ const rows: AdminUserRow[] = [
   { id: "u3", username: "marc", role: "read_only", active: false },
 ];
 
-function renderList(props: Partial<Parameters<typeof AdminUsersList>[0]> = {}) {
-  render(
-    <NextIntlClientProvider locale="fr" messages={messages}>
+function list(
+  props: Partial<Parameters<typeof AdminUsersList>[0]> = {},
+  bundle: typeof messages = messages,
+  locale = "fr",
+) {
+  return (
+    <NextIntlClientProvider locale={locale} messages={bundle}>
       <AdminUsersList
         rows={rows}
         currentUserId="self"
@@ -102,8 +106,12 @@ function renderList(props: Partial<Parameters<typeof AdminUsersList>[0]> = {}) {
         canManage
         {...props}
       />
-    </NextIntlClientProvider>,
+    </NextIntlClientProvider>
   );
+}
+
+function renderList(props: Partial<Parameters<typeof AdminUsersList>[0]> = {}) {
+  return render(list(props));
 }
 
 beforeEach(() => {
@@ -112,6 +120,41 @@ beforeEach(() => {
 });
 
 describe("Bloc 119: the Users table", () => {
+  // Bloc 128: the columns of this table used to be memoised on
+  // `[users, canManage, currentUserId]`, with the translators kept out of the
+  // dependency list behind an exhaustive-deps disable. The language switch
+  // refreshes the page without reloading it, so new messages arrived, the
+  // memo held, and the table kept its French headers and cells under an
+  // English page until somebody reloaded by hand.
+  it("re-reads its headers and cells when the messages change", () => {
+    const english = {
+      ...messages,
+      admin: {
+        ...messages.admin,
+        users: {
+          ...messages.admin.users,
+          "columns-user": "User",
+          "columns-role": "Role",
+          "columns-status": "Status",
+          you: "(you)",
+        },
+      },
+    };
+    const { rerender } = renderList();
+    expect(
+      screen.getByRole("columnheader", { name: "Utilisateur" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("(toi)")).toBeInTheDocument();
+
+    rerender(list({}, english, "en"));
+    for (const header of ["User", "Role", "Status"])
+      expect(
+        screen.getByRole("columnheader", { name: header }),
+      ).toBeInTheDocument();
+    expect(screen.getByText("(you)")).toBeInTheDocument();
+    expect(screen.queryByText("(toi)")).toBeNull();
+  });
+
   it("marks the signed-in account", () => {
     renderList();
     const own = screen.getByRole("row", { name: /rootadmin/ });

@@ -122,19 +122,28 @@ export function GemsReferenceTable({
                 ))}
               </tr>
               <tr>
-                {leagues.map((league) => (
-                  <td key={league} className="value">
-                    {league === "bronze"
-                      ? "—"
-                      : // Bloc 38/E: this reference shows the exact price,
-                        // never compacted to k/M like formatGameNumber does
-                        // elsewhere — values stay at most 4 digits, so
-                        // compaction only hurts readability here.
-                        // Bloc 93/F4: exact as before, now with the locale's
-                        // thousands separators like every other exact figure.
-                        formatExactNumber(parameters.gemPrice[league], locale)}
-                  </td>
-                ))}
+                {leagues.map((league) => {
+                  // Bloc 126/B: the dash now follows the data instead of
+                  // being hardcoded on Bronze. Bronze is still the only
+                  // league the game sells no gems in, so this still prints a
+                  // dash there — but it prints the price the day somebody
+                  // fills the admin field in, without a line of code.
+                  const price = parameters.gemPrice[league];
+                  return (
+                    <td key={league} className="value">
+                      {price === null
+                        ? "—"
+                        : // Bloc 38/E: this reference shows the exact price,
+                          // never compacted to k/M like formatGameNumber does
+                          // elsewhere — values stay at most 4 digits, so
+                          // compaction only hurts readability here.
+                          // Bloc 93/F4: exact as before, now with the
+                          // locale's thousands separators like every other
+                          // exact figure.
+                          formatExactNumber(price, locale)}
+                    </td>
+                  );
+                })}
               </tr>
             </tbody>
           </table>

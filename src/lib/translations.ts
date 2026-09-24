@@ -119,9 +119,30 @@ export function dropEmptyLocales(
 // (guideInputSchema) only require fr OR en, never both, so a fr-only
 // record must still render something rather than "" for every other
 // locale (AGENTS.md: a missing translation is never a blank).
+// Bloc 126/D: `??` fell back on an absent key but not on a blank one, and a
+// blank one is what the editor actually writes. Guides validate on "fr OR
+// en", and services/guides.ts stores BOTH of those columns whatever the
+// admin filled in (nonEmptyLocaleValues drops DE/ES/TR when blank, never the
+// required pair) — so a guide typed in French alone is `{fr: "…", en: ""}`,
+// not `{fr: "…"}`. Every English-reading surface then rendered an empty
+// string: a blank title in the admin's guides table, and the reason the
+// callers below carry `|| slug` crutches.
+//
+// An empty translation is a missing translation, which is what this
+// function's own contract says never renders blank. `trim()` because a
+// field cleared to a stray space means the same thing as one cleared to
+// nothing.
+const written = (value: string | undefined) =>
+  value !== undefined && value.trim() !== "" ? value : undefined;
+
 export function localizedText(value: unknown, locale: string) {
   const translations = translationRecord(value);
-  return translations[locale] ?? translations.en ?? translations.fr ?? "";
+  return (
+    written(translations[locale]) ??
+    written(translations.en) ??
+    written(translations.fr) ??
+    ""
+  );
 }
 
 // Bloc 42/F: unlike localizedText() above, no English fallback — checks

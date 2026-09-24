@@ -27,11 +27,15 @@ export default async function EditGuidePage({
     hiddenPublicLocales(),
   ]);
   const [{ id }, { lang }] = await Promise.all([params, searchParams]);
-  // The guides list links a translation as `?lang=de`; anything else opens on
-  // French, as it always did.
+  // The guides list links a translation as `?lang=de`, and that still wins.
+  //
+  // Bloc 126/D: everything else opens on the language the admin is reading in
+  // — it used to be French whatever that was, so "Modifier" put an English
+  // admin in front of the French text. `locale` is already clamped to EN/FR
+  // on /admin by src/proxy.ts, and it is a LaunchLocale either way.
   const initialLocale = launchLocales.includes(lang as LaunchLocale)
     ? (lang as LaunchLocale)
-    : "fr";
+    : (locale as LaunchLocale);
   const guide = await prisma.guide.findUnique({ where: { id } });
   if (!guide) notFound();
   const title = translationRecord(guide.title),

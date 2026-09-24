@@ -4,8 +4,11 @@ import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
 import {
+  clearOrphanValues,
   countUnconfirmed,
   groupEquipmentSets,
+  namesSomething,
+  type UnconfirmedFields,
 } from "@/lib/admin-equipment-sets";
 import {
   equipmentSkillLabels,
@@ -54,15 +57,24 @@ import { useSaveStatus } from "./use-save-status";
 type Variant = "combat" | "expedition";
 type EquipmentRow = Record<string, string>;
 
-const combatUnconfirmedFields = [
-  "slot_name",
-  ...[1, 2, 3, 4].flatMap((n) => [`skill_${n}`, `value_${n}_pct`]),
-];
-const expeditionUnconfirmedFields = [
-  "type_stat_pct",
-  "secondary_stat_name",
-  "secondary_stat_pct",
-];
+/**
+ * Bloc 126/C: the four skill slots are pairs, not eight independent fields.
+ * A percentage without a skill beside it is not a value waiting to be read
+ * off the game — it is a slot the piece of equipment simply does not have.
+ * The skills themselves are no longer counted either: a blank one says the
+ * slot stops there, which is the same statement.
+ */
+const combatUnconfirmedFields: UnconfirmedFields = {
+  own: ["slot_name"],
+  pairs: [1, 2, 3, 4].map(
+    (n) => [`skill_${n}`, `value_${n}_pct`] as [string, string],
+  ),
+};
+/** Expedition says the same thing with one pair instead of four. */
+const expeditionUnconfirmedFields: UnconfirmedFields = {
+  own: ["type_stat_pct"],
+  pairs: [["secondary_stat_name", "secondary_stat_pct"]],
+};
 
 /**
  * What each indicator row is called when the admin has not renamed it — the
@@ -457,7 +469,11 @@ export function EquipmentReferenceEditor({
       }
       const main = await put(
         `/api/admin/guides/references/${variant}-equipment`,
-        form.rows,
+        // Codex review (PR #150): no percentage leaves here without a skill
+        // beside it. The skill selects clear theirs as they are emptied, so
+        // this is normally a no-op; it is what cleans a row that already
+        // carries an orphan from a save made before that.
+        form.rows.map((row) => clearOrphanValues(row, unconfirmedFields)),
       );
       if (!main.ok) {
         status.error(editor("error", { status: main.status }));
@@ -965,22 +981,40 @@ function EquipmentRowCells({
           )}
           {[1, 2, 3, 4].flatMap((n) => [
             cell(
+              // Bloc 126/C: no `unconfirmed` marker here any more. A blank
+              // skill says this slot has no nth skill — 30 of the 180 rows
+              // have no third, 117 no fourth — and that is not a gap in the
+              // data. Marking it as one contradicted the count, which no
+              // longer treats it as one either.
               <Select
                 label={name(equipmentLabel("skill", { number: n }))}
                 hideLabel
-                unconfirmed
                 value={row[`skill_${n}`]}
                 options={skillOptions}
-                onChange={(value) => onChange({ [`skill_${n}`]: value })}
+                // Codex review (PR #150): taking the skill off takes its
+                // percentage with it. Left behind, it would sit in a field
+                // nobody can reach, be written back by the next save, and
+                // come alive again the day a skill is chosen here.
+                onChange={(value) =>
+                  onChange(
+                    namesSomething(value)
+                      ? { [`skill_${n}`]: value }
+                      : { [`skill_${n}`]: value, [`value_${n}_pct`]: "" },
+                  )
+                }
               />,
               `skill_${n}`,
             ),
             cell(
+              // ...and the percentage beside it has nothing to describe, so
+              // it is greyed out rather than left open for a number that
+              // would belong to no skill.
               <NumberField
                 label={name(columnLabel("columns.value", { number: n }))}
                 hideLabel
                 width="s"
                 unit="%"
+                disabled={!namesSomething(row[`skill_${n}`])}
                 value={
                   row[`value_${n}_pct`] === ""
                     ? null
@@ -1023,14 +1057,21 @@ function EquipmentRowCells({
             />,
             "type_stat_pct",
           )}
+          {/* Bloc 126/C: the same pair as Combat's four, said once — a piece
+              without a secondary stat has no secondary percentage either. */}
           {cell(
             <Select
               label={name(equipmentLabel("secondary-stat"))}
               hideLabel
-              unconfirmed
               value={row.secondary_stat_name}
               options={statOptions}
-              onChange={(value) => onChange({ secondary_stat_name: value })}
+              onChange={(value) =>
+                onChange(
+                  namesSomething(value)
+                    ? { secondary_stat_name: value }
+                    : { secondary_stat_name: value, secondary_stat_pct: "" },
+                )
+              }
             />,
             "secondary_stat_name",
           )}
@@ -1040,6 +1081,7 @@ function EquipmentRowCells({
               hideLabel
               width="s"
               unit="%"
+              disabled={!namesSomething(row.secondary_stat_name)}
               value={
                 row.secondary_stat_pct === ""
                   ? null

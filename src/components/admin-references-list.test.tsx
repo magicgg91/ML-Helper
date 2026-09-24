@@ -56,15 +56,37 @@ const rows: AdminReferenceRow[] = [
   },
 ];
 
-function renderList(canWrite = true) {
-  render(
+function list(canWrite = true, listRows = rows) {
+  return (
     <NextIntlClientProvider locale="fr" messages={messages}>
-      <AdminReferencesList rows={rows} canWrite={canWrite} />
-    </NextIntlClientProvider>,
+      <AdminReferencesList rows={listRows} canWrite={canWrite} />
+    </NextIntlClientProvider>
   );
 }
 
+function renderList(canWrite = true) {
+  return render(list(canWrite));
+}
+
 describe("Bloc 119: the Référentiels table", () => {
+  // Bloc 128: the titles and the order they are in are resolved on the
+  // server, in the admin's own language. The language switch refreshes the
+  // page without reloading it, so the table has to take what comes back.
+  it("takes the rows the server re-renders, so a language change lands", () => {
+    const { rerender } = renderList();
+    expect(screen.getByText("Événements")).toBeInTheDocument();
+    rerender(
+      list(
+        true,
+        rows.map((row) =>
+          row.id === "events" ? { ...row, title: "Events" } : row,
+        ),
+      ),
+    );
+    expect(screen.getByText("Events")).toBeInTheDocument();
+    expect(screen.queryByText("Événements")).toBeNull();
+  });
+
   it("links a reference to the tool that reads it", () => {
     renderList();
     expect(

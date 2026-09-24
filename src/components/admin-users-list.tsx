@@ -3,7 +3,7 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useId, useMemo, useState } from "react";
+import { useId, useState } from "react";
 import { roles } from "@/auth/roles";
 import { AdminButton } from "./admin-button";
 import { ConfirmDialog } from "./admin-confirm-dialog";
@@ -264,67 +264,72 @@ export function AdminUsersList({
     report(true, t("deleted"));
   }
 
-  const columns: AdminTableColumn<AdminUserRow>[] = useMemo(
-    () => [
-      {
-        key: "user",
-        header: t("columns-user"),
-        cell: (user) => (
-          <span className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-admin-accent-soft text-xs font-semibold text-admin-accent-soft-ink"
-            >
-              {user.username.charAt(0).toLocaleUpperCase()}
-            </span>
-            <span className="font-semibold">{user.username}</span>
-            {user.id === currentUserId && (
-              <span className="text-xs text-admin-dim">{t("you")}</span>
-            )}
+  // Bloc 128: a plain array, like the four other admin lists build theirs.
+  //
+  // This one was memoised on `[users, canManage, currentUserId]`, with the
+  // translators left out behind an exhaustive-deps disable — so when the
+  // admin switched language the memo held, and the table kept its French
+  // headers and cells ("UTILISATEUR / RÔLE / STATUT", "(toi)", "Actif")
+  // under an English page. Three columns over a handful of users cost
+  // nothing to rebuild, and nothing here can now go stale behind a
+  // dependency list.
+  const columns: AdminTableColumn<AdminUserRow>[] = [
+    {
+      key: "user",
+      header: t("columns-user"),
+      cell: (user) => (
+        <span className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="grid size-8 shrink-0 place-items-center rounded-full bg-admin-accent-soft text-xs font-semibold text-admin-accent-soft-ink"
+          >
+            {user.username.charAt(0).toLocaleUpperCase()}
           </span>
+          <span className="font-semibold">{user.username}</span>
+          {user.id === currentUserId && (
+            <span className="text-xs text-admin-dim">{t("you")}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      header: t("columns-role"),
+      cell: (user) =>
+        canManage && user.id !== currentUserId ? (
+          <select
+            aria-label={t("role")}
+            value={user.role}
+            onChange={(event) => setRole(user, event.target.value)}
+            className="admin-control admin-focus h-[var(--admin-control-h-sm)] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm"
+          >
+            {roles.map((role) => (
+              <option key={role} value={role}>
+                {roleLabels(role)}
+              </option>
+            ))}
+          </select>
+        ) : (
+          // Own row, or a role that may only look: the pill, never a
+          // control that would be refused by the server anyway.
+          <Pill tone={roleTone(user.role)}>{roleLabels(user.role)}</Pill>
         ),
-      },
-      {
-        key: "role",
-        header: t("columns-role"),
-        cell: (user) =>
-          canManage && user.id !== currentUserId ? (
-            <select
-              aria-label={t("role")}
-              value={user.role}
-              onChange={(event) => setRole(user, event.target.value)}
-              className="admin-control admin-focus h-[var(--admin-control-h-sm)] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm"
-            >
-              {roles.map((role) => (
-                <option key={role} value={role}>
-                  {roleLabels(role)}
-                </option>
-              ))}
-            </select>
-          ) : (
-            // Own row, or a role that may only look: the pill, never a
-            // control that would be refused by the server anyway.
-            <Pill tone={roleTone(user.role)}>{roleLabels(user.role)}</Pill>
-          ),
-      },
-      {
-        key: "status",
-        header: t("columns-status"),
-        narrow: true,
-        cell: (user) => (
-          <VisibilitySwitch
-            checked={user.active}
-            disabled={!canManage || user.id === currentUserId}
-            labels={{ on: t("active"), off: t("inactive") }}
-            label={t("visibility-of", { username: user.username })}
-            onChange={(next) => setActive(user, next)}
-          />
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [users, canManage, currentUserId],
-  );
+    },
+    {
+      key: "status",
+      header: t("columns-status"),
+      narrow: true,
+      cell: (user) => (
+        <VisibilitySwitch
+          checked={user.active}
+          disabled={!canManage || user.id === currentUserId}
+          labels={{ on: t("active"), off: t("inactive") }}
+          label={t("visibility-of", { username: user.username })}
+          onChange={(next) => setActive(user, next)}
+        />
+      ),
+    },
+  ];
 
   const menuItems = (user: AdminUserRow): OverflowMenuItem[] => [
     {

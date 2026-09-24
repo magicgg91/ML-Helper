@@ -8,6 +8,7 @@ import { ConfirmDialog } from "./admin-confirm-dialog";
 import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { FilterChips, SearchInput } from "./admin-filters";
 import { OverflowMenu, type OverflowMenuItem } from "./admin-overflow-menu";
+import { useServerRows } from "./use-server-rows";
 import { formatAdminDate, formatAdminShortDate } from "@/lib/admin-dates";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
@@ -73,7 +74,10 @@ export function AdminGuidesList({
   const t = useTranslations("admin.guides");
   const common = useTranslations("admin.common");
   const locale = useLocale();
-  const [guides, setGuides] = useState(rows);
+  // Bloc 126/D, généralisé au Bloc 128: the rows follow what the server
+  // re-renders, so a language change reaches the table and not only the
+  // chrome around it.
+  const [guides, setGuides] = useServerRows(rows);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [message, setMessage] = useState("");
