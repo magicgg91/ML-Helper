@@ -1249,9 +1249,8 @@
       "price-field": "{league} price",
       "subtitle": "A gem’s value per skill and per league, and the purchase price in sapphires.",
       "skill": "Skill",
-      "price-help": "Bronze has no purchase price in the game.",
+      "price-help": "Bronze has no purchase price in the game: leave the field empty for as long as that stays true.",
       "sapphires": "sapphires",
-      "no-price": "—",
       "price-row": "Price (sapphires)"
     },
     "users": {

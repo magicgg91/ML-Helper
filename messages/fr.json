@@ -1249,9 +1249,8 @@
       "price-field": "Prix {league}",
       "subtitle": "Valeur d’une gemme par compétence et par ligue, et prix d’achat en saphirs.",
       "skill": "Compétence",
-      "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu.",
+      "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu : laissez le champ vide tant que c’est le cas.",
       "sapphires": "saphirs",
-      "no-price": "—",
       "price-row": "Prix (saphirs)"
     },
     "users": {

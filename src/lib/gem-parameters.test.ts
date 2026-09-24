@@ -32,6 +32,33 @@ describe("gem parameters", () => {
     );
   });
 
+  // Bloc 126/B: Bronze is the one price allowed to be missing, so it is the
+  // one that has no default to fall back on. Everything else about the five
+  // priced leagues is unchanged — the tests above still hold.
+  describe("the Bronze price", () => {
+    it("is absent by default, because the game sells no Bronze gems", () => {
+      expect(defaultGemParameters.gemPrice.bronze).toBeNull();
+      expect(parseGemParameters(null).gemPrice.bronze).toBeNull();
+    });
+
+    it("comes back as typed once somebody has typed one", () => {
+      const parsed = parseGemParameters({ gemPrice: { bronze: 2000 } });
+      expect(parsed.gemPrice.bronze).toBe(2000);
+      // And the five that always had a price are untouched by it.
+      expect(parsed.gemPrice.silver).toBe(defaultGemParameters.gemPrice.silver);
+    });
+
+    it("reads back as absent for anything that is not a usable price", () => {
+      for (const bronze of [undefined, null, "", 0, -100, "not a number"]) {
+        expect(parseGemParameters({ gemPrice: { bronze } }).gemPrice.bronze)
+          // An unusable price is no price: the admin field shows blank and
+          // the public reference prints its dash, rather than the site
+          // quoting Bronze gems at zero sapphires.
+          .toBeNull();
+      }
+    });
+  });
+
   it("rejects non-positive values and prices to avoid division by zero", () => {
     const parsed = parseGemParameters({
       skillLeagueValue: { rusher: { legend: 0 } },

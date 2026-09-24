@@ -4,11 +4,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { cityLeagues, type CityParameters } from "@/lib/city-parameters";
 import type { XpTier } from "@/lib/combat-calculators";
-import {
-  gemLeagues,
-  type GemLeague,
-  type GemParameters,
-} from "@/lib/gem-parameters";
+import type { GemParameters } from "@/lib/gem-parameters";
 import {
   leagues as allLeagues,
   skillKeys,
@@ -337,38 +333,29 @@ export function GemParametersEditor({
               <span className="px-3 text-sm font-semibold text-admin-text">
                 {t("price-row")}
               </span>
-              {allLeagues.map((league) => {
-                // Bronze has no purchase price in the model (gemLeagues
-                // excludes it), so its cell says so instead of showing an
-                // empty field that would look like a value waiting to be
-                // typed.
-                const priced = (gemLeagues as League[]).includes(league);
-                return (
-                  <span key={league} className="flex justify-end px-3">
-                    {priced ? (
-                      <NumberField
-                        label={t("price-field", {
-                          league: game(`leagues.${league}`),
-                        })}
-                        hideLabel
-                        width="s"
-                        value={value.gemPrice[league as GemLeague]}
-                        onChange={(next) =>
-                          form.setValue((current) => ({
-                            ...current,
-                            gemPrice: {
-                              ...current.gemPrice,
-                              [league]: next as number,
-                            },
-                          }))
-                        }
-                      />
-                    ) : (
-                      <span className="text-admin-dim">{t("no-price")}</span>
-                    )}
-                  </span>
-                );
-              })}
+              {/* Bloc 126/B: six fields, Bronze included. It used to print a
+                  dash there, because the game sells no Bronze gems — true
+                  today, and a reason to leave the field empty rather than to
+                  withhold it. The day the studio opens a Bronze shop, the
+                  price is typed in here; nothing has to be built first. */}
+              {allLeagues.map((league) => (
+                <span key={league} className="flex justify-end px-3">
+                  <NumberField
+                    label={t("price-field", {
+                      league: game(`leagues.${league}`),
+                    })}
+                    hideLabel
+                    width="s"
+                    value={value.gemPrice[league]}
+                    onChange={(next) =>
+                      form.setValue((current) => ({
+                        ...current,
+                        gemPrice: { ...current.gemPrice, [league]: next },
+                      }))
+                    }
+                  />
+                </span>
+              ))}
             </div>
           </div>
         </div>
