@@ -762,9 +762,18 @@
         "disabled": "Two-factor authentication disabled.",
         "invalid": "The authentication code is invalid or expired.",
         "setup-error": "Unable to start two-factor authentication setup.",
-        "disable-error": "The password or authentication code is invalid."
+        "disable-error": "The password or authentication code is invalid.",
+        "status-on": "On",
+        "status-off": "Off",
+        "disable-confirm": "Two-factor authentication will be turned off on your account. You can turn it back on at any time.",
+        "your-password": "Your password"
       },
-      "title": "My account"
+      "title": "My account",
+      "menu": "{username}’s account",
+      "subtitle": "Your password and your two-factor authentication.",
+      "password-hint": "12 characters minimum.",
+      "confirm-password": "Confirm the new password",
+      "password-mismatch": "The new password and its confirmation do not match."
     },
     "dashboard": {
       "eyebrow": "Overview",
@@ -1513,7 +1522,11 @@
       "always-active": "Always active",
       "no-guides": "No guide"
     },
-    "open-menu": "Open the menu"
+    "open-menu": "Open the menu",
+    "theme": {
+      "to-dark": "Switch to the dark theme",
+      "to-light": "Switch to the light theme"
+    }
   },
   "roles": {
     "super_admin": "Super Admin",

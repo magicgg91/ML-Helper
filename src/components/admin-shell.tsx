@@ -24,13 +24,11 @@ import { AdminSidebar, type AdminSidebarCounts } from "./admin-sidebar";
 export function AdminShell({
   role,
   username,
-  totpEnabled,
   counts,
   children,
 }: {
   role: string;
   username: string;
-  totpEnabled: boolean;
   counts: AdminSidebarCounts;
   children: ReactNode;
 }) {
@@ -46,12 +44,7 @@ export function AdminShell({
   const closeDrawer = () => setOpenedFor(null);
 
   const sidebar = (
-    <AdminSidebar
-      role={role}
-      username={username}
-      totpEnabled={totpEnabled}
-      counts={counts}
-    />
+    <AdminSidebar role={role} username={username} counts={counts} />
   );
 
   return (

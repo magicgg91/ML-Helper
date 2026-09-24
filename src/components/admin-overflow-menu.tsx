@@ -2,7 +2,14 @@
 
 import { MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,21 +34,41 @@ export type OverflowMenuItem = {
   href?: string;
   tone?: "default" | "danger";
   disabled?: boolean;
+  /** Bloc 125 §2: the icon a menu entry carries, when its menu shows icons. */
+  icon?: ReactNode;
+  /** A rule above this entry — what separates "Mon compte" from the way out. */
+  separatorBefore?: boolean;
 };
 
 export function OverflowMenu({
   label,
   items,
+  trigger,
+  triggerClassName,
+  placement = "bottom-end",
 }: {
   /** Names the menu: "Autres actions pour Guide des ligues". */
   label: string;
   items: readonly OverflowMenuItem[];
+  /**
+   * Bloc 125 §2: what the button shows. The ⋯ glyph when left out, which is
+   * every row menu; the account block passes its own avatar-and-name.
+   */
+  trigger?: ReactNode;
+  /** Replaces the ⋯ button's own box when the trigger is not a glyph. */
+  triggerClassName?: string;
+  /**
+   * Where the menu opens. `top-start` is what the account block needs — it
+   * sits at the very bottom of the column, and a menu below it would open
+   * off-screen.
+   */
+  placement?: "bottom-end" | "top-start";
 }) {
   const triggerId = useId();
   const menuId = useId();
   const container = useRef<HTMLDivElement | null>(null);
   const menu = useRef<HTMLDivElement | null>(null);
-  const trigger = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   // Which end to land on once the menu is on screen: a click starts at the
   // top, ArrowUp on the trigger starts at the bottom.
@@ -76,7 +103,7 @@ export function OverflowMenu({
 
   function close({ restoreFocus }: { restoreFocus: boolean }) {
     setOpen(false);
-    if (restoreFocus) trigger.current?.focus();
+    if (restoreFocus) triggerRef.current?.focus();
   }
 
   function openAt(end: "first" | "last") {
@@ -125,7 +152,8 @@ export function OverflowMenu({
 
   const itemClasses = (item: OverflowMenuItem) =>
     cn(
-      "admin-focus flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm whitespace-nowrap",
+      "admin-focus flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm whitespace-nowrap [&_svg]:size-4 [&_svg]:shrink-0",
+      item.separatorBefore && "mt-1 border-t border-admin-rule-soft pt-2",
       item.tone === "danger" ? "text-admin-danger-ink" : "text-admin-text",
       item.disabled
         ? "cursor-not-allowed opacity-50"
@@ -136,7 +164,7 @@ export function OverflowMenu({
     <div className="relative inline-block" ref={container}>
       <button
         id={triggerId}
-        ref={trigger}
+        ref={triggerRef}
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -144,9 +172,14 @@ export function OverflowMenu({
         aria-label={label}
         onClick={() => (open ? close({ restoreFocus: true }) : openAt("first"))}
         onKeyDown={onTriggerKeyDown}
-        className="admin-focus inline-flex size-[var(--admin-control-h-sm)] cursor-pointer items-center justify-center rounded-admin-control border border-admin-card-border bg-admin-card text-admin-dim hover:text-admin-text"
+        className={
+          triggerClassName ??
+          "admin-focus inline-flex size-[var(--admin-control-h-sm)] cursor-pointer items-center justify-center rounded-admin-control border border-admin-card-border bg-admin-card text-admin-dim hover:text-admin-text"
+        }
       >
-        <MoreHorizontalIcon aria-hidden="true" className="size-4" />
+        {trigger ?? (
+          <MoreHorizontalIcon aria-hidden="true" className="size-4" />
+        )}
       </button>
       {open && (
         <div
@@ -155,7 +188,14 @@ export function OverflowMenu({
           role="menu"
           aria-labelledby={triggerId}
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 z-20 mt-1 min-w-48 overflow-hidden rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg"
+          className={cn(
+            "absolute z-20 min-w-48 rounded-admin-control border border-admin-card-border bg-admin-card py-1 shadow-lg",
+            placement === "bottom-end" && "right-0 mt-1",
+            // Anchored to the top of the trigger and growing upwards, so a
+            // menu at the very bottom of the column opens into the page
+            // rather than under it.
+            placement === "top-start" && "bottom-full left-0 mb-1",
+          )}
         >
           {items.map((item) =>
             item.href !== undefined && !item.disabled ? (
@@ -167,6 +207,7 @@ export function OverflowMenu({
                 onClick={() => close({ restoreFocus: false })}
                 className={itemClasses(item)}
               >
+                {item.icon}
                 {item.label}
               </Link>
             ) : (
@@ -182,6 +223,7 @@ export function OverflowMenu({
                 }}
                 className={itemClasses(item)}
               >
+                {item.icon}
                 {item.label}
               </button>
             ),

@@ -43,32 +43,25 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   // Bloc 119: the counters of the side column. Each one is read only when the
   // role may see the section it belongs to — a Gestion Guides account must
   // not learn how many users exist from a badge on a link it cannot open.
-  const [account, tools, referentiels, guides, users, legalNotice] =
-    await Promise.all([
-      prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { totpEnabled: true },
-      }),
-      can(role, "calculators.read")
-        ? prisma.calculator.count({
-            where: { slug: { notIn: [...referenceToolSlugs] } },
-          })
-        : Promise.resolve(undefined),
-      can(role, "references.read")
-        ? prisma.calculator.count({
-            where: { slug: { in: [...referenceToolSlugs] } },
-          })
-        : Promise.resolve(undefined),
-      can(role, "guides.read")
-        ? prisma.guide.count()
-        : Promise.resolve(undefined),
-      can(role, "users.read")
-        ? prisma.user.count()
-        : Promise.resolve(undefined),
-      can(role, "content.read")
-        ? prisma.staticContent.findUnique({ where: { key: legalNoticeKey } })
-        : Promise.resolve(null),
-    ]);
+  const [tools, referentiels, guides, users, legalNotice] = await Promise.all([
+    can(role, "calculators.read")
+      ? prisma.calculator.count({
+          where: { slug: { notIn: [...referenceToolSlugs] } },
+        })
+      : Promise.resolve(undefined),
+    can(role, "references.read")
+      ? prisma.calculator.count({
+          where: { slug: { in: [...referenceToolSlugs] } },
+        })
+      : Promise.resolve(undefined),
+    can(role, "guides.read")
+      ? prisma.guide.count()
+      : Promise.resolve(undefined),
+    can(role, "users.read") ? prisma.user.count() : Promise.resolve(undefined),
+    can(role, "content.read")
+      ? prisma.staticContent.findUnique({ where: { key: legalNoticeKey } })
+      : Promise.resolve(null),
+  ]);
 
   // The badge counts the French notice: it is the reference language the
   // others are translated from, so a field left blank there is blank
@@ -80,7 +73,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     <AdminShell
       role={role}
       username={session.user.name ?? session.user.id}
-      totpEnabled={account?.totpEnabled ?? false}
       counts={{
         tools,
         referentiels,

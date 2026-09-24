@@ -3534,6 +3534,72 @@ test("Bloc 125/1: the side menu stays whole while a long page scrolls", async ({
   await context.close();
 });
 
+// Bloc 125 §2: the account menu, and the screen behind it.
+//
+// "Mon compte" used to be a <details> at the bottom of the side column: it
+// unfolded the password form and the whole two-factor enrolment — QR code
+// included — downwards inside a 248 px column, over the navigation. It is a
+// menu and a screen now, and every role has one.
+test("Bloc 125/2: the account block opens a menu, and Mon compte is its own screen", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // Nothing of the account settings is on the page until the menu is opened.
+  await expect(page.getByLabel("Mot de passe actuel")).toHaveCount(0);
+  const account = page.getByRole("button", { name: "Compte de rootadmin" });
+  await expect(account).toHaveAttribute("aria-expanded", "false");
+  await account.click();
+  await expect(account).toHaveAttribute("aria-expanded", "true");
+
+  // The menu opens upwards: it sits at the very bottom of a 100dvh column,
+  // and a menu below it would open off-screen.
+  const menu = page.getByRole("menu");
+  const menuBox = (await menu.boundingBox())!;
+  const triggerBox = (await account.boundingBox())!;
+  expect(
+    menuBox.y + menuBox.height,
+    "the account menu opens downwards, off the bottom of the column",
+  ).toBeLessThanOrEqual(triggerBox.y + 1);
+
+  // Escape closes it and hands the focus back, as every popover here does.
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(account).toBeFocused();
+
+  await account.click();
+  await page.getByRole("menuitem", { name: "Mon compte" }).click();
+  await expect(page).toHaveURL(/\/admin\/account$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Mon compte",
+  );
+  await expect(page.getByLabel("Mot de passe actuel")).toBeVisible();
+  await expect(
+    page.getByLabel("Confirmation du nouveau mot de passe"),
+  ).toBeVisible();
+  await expect(page.getByText("Désactivée")).toBeVisible();
+
+  // Bloc 86 unchanged: the screen is behind the same door as the rest of the
+  // admin — signed out, it sends you to the login page, not to the form.
+  const anonymous = await browser.newContext();
+  const visitor = await anonymous.newPage();
+  await visitor.goto("/admin/account");
+  await expect(visitor).toHaveURL(/\/login/);
+  await anonymous.close();
+
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //

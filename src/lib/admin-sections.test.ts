@@ -14,17 +14,26 @@ const keysOf = (role: string): AdminSectionKey[] =>
   roleSections(role).map(({ section }) => section.key);
 
 describe("Bloc 119: the sections of the admin", () => {
+  // The screens that are deliberately not sections, and where each one is
+  // reached from instead. A page added under /admin that is in neither the
+  // navigation nor this list is reachable by URL and invisible everywhere
+  // else, which is what the test below catches.
+  const reachedElsewhere: Record<string, string> = {
+    // Reached before any account exists, so it belongs to no role's menu.
+    setup: "the one-time Super Admin creation flow",
+    // Bloc 125 §2: every role has one, so it is not a section any role does
+    // or does not get — it hangs off the account block at the bottom of the
+    // column (asserted in admin-sidebar.test.tsx).
+    account: "the account menu at the bottom of the side column",
+  };
+
   it("covers every screen the admin actually has", () => {
-    // A page added under /admin without an entry here would be reachable by
-    // URL and invisible in the navigation — this is what catches that.
     const directories = readdirSync(path.join(process.cwd(), "src/app/admin"), {
       withFileTypes: true,
     })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
-      // The one-time Super Admin creation screen is reached before any
-      // account exists, so it belongs to no role's navigation.
-      .filter((name) => name !== "setup");
+      .filter((name) => !(name in reachedElsewhere));
     const hrefs = new Set(adminSections.map((section) => section.href));
     for (const directory of directories)
       expect(hrefs, `/admin/${directory} n'a pas d'entrée`).toContain(

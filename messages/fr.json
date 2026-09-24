@@ -762,9 +762,18 @@
         "disabled": "Authentification à deux facteurs désactivée.",
         "invalid": "Le code d’authentification est invalide ou expiré.",
         "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
-        "disable-error": "Le mot de passe ou le code d’authentification est invalide."
+        "disable-error": "Le mot de passe ou le code d’authentification est invalide.",
+        "status-on": "Activée",
+        "status-off": "Désactivée",
+        "disable-confirm": "L’authentification à deux facteurs sera désactivée sur ton compte. Tu pourras la réactiver à tout moment.",
+        "your-password": "Ton mot de passe"
       },
-      "title": "Mon compte"
+      "title": "Mon compte",
+      "menu": "Compte de {username}",
+      "subtitle": "Ton mot de passe et ton authentification à deux facteurs.",
+      "password-hint": "12 caractères au minimum.",
+      "confirm-password": "Confirmation du nouveau mot de passe",
+      "password-mismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas."
     },
     "dashboard": {
       "eyebrow": "Vue d’ensemble",
@@ -1513,7 +1522,11 @@
       "always-active": "Toujours active",
       "no-guides": "Aucun guide"
     },
-    "open-menu": "Ouvrir le menu"
+    "open-menu": "Ouvrir le menu",
+    "theme": {
+      "to-dark": "Passer en thème sombre",
+      "to-light": "Passer en thème clair"
+    }
   },
   "roles": {
     "super_admin": "Super Admin",

@@ -1,4 +1,10 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdminSidebar, type AdminSidebarCounts } from "./admin-sidebar";
@@ -7,8 +13,9 @@ let pathname = "/admin";
 vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
 // The three controls at the bottom are existing components with their own
 // tests; this file is about the navigation itself.
-vi.mock("./admin-account-menu", () => ({
-  AdminAccountMenu: ({ label }: { label?: string }) => <div>{label}</div>,
+const signOut = vi.fn();
+vi.mock("next-auth/react", () => ({
+  signOut: (...args: unknown[]) => signOut(...args),
 }));
 vi.mock("./admin-locale-toggle", () => ({
   AdminLocaleToggle: () => <div role="group">EN/FR</div>,
@@ -17,14 +24,25 @@ vi.mock("./theme-toggle", () => ({
   ThemeToggle: () => <button type="button">Thème</button>,
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  signOut.mockReset();
+});
 
 const messages = {
   admin: {
     title: "Administration",
     "view-site": "Voir le site public",
     "navigation-label": "Navigation administration",
-    account: { title: "Mon compte" },
+    account: {
+      title: "Mon compte",
+      menu: "Compte de {username}",
+      logout: "Se déconnecter",
+    },
+    theme: {
+      "to-dark": "Passer en thème sombre",
+      "to-light": "Passer en thème clair",
+    },
     navigation: {
       dashboard: "Tableau de bord",
       tools: "Outils",
@@ -62,7 +80,7 @@ function renderSidebar({
       <AdminSidebar
         role={role}
         username={username}
-        totpEnabled={false}
+
         counts={counts}
       />
     </NextIntlClientProvider>,
@@ -175,7 +193,31 @@ describe("Bloc 119: AdminSidebar — the block at the bottom", () => {
     // The translated role, never the raw `super_admin` key.
     expect(screen.getByText("Super Admin")).toBeInTheDocument();
     expect(screen.queryByText("super_admin")).toBeNull();
-    expect(screen.getByText("Mon compte")).toBeInTheDocument();
+    // Bloc 125 §2: the whole block is one button, and what it opens is a
+    // menu — not a panel that unfolds the account settings downwards inside
+    // a 248 px column.
+    const account = screen.getByRole("button", {
+      name: "Compte de rootadmin",
+    });
+    expect(account).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("menu")).toBeNull();
+    fireEvent.click(account);
+    expect(account).toHaveAttribute("aria-expanded", "true");
+    const menu = screen.getByRole("menu");
+    expect(
+      within(menu).getByRole("menuitem", { name: "Mon compte" }),
+    ).toHaveAttribute("href", "/admin/account");
+    expect(
+      within(menu).getByRole("menuitem", { name: "Se déconnecter" }),
+    ).toBeInTheDocument();
+  });
+
+  it("signs out from the icon beside the account, without opening the menu", () => {
+    pathname = "/admin";
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "Se déconnecter" }));
+    expect(signOut).toHaveBeenCalledWith({ callbackUrl: "/login" });
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("opens the public site in a new tab", () => {

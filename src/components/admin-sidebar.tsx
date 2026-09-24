@@ -4,14 +4,17 @@ import {
   BookOpenIcon,
   ExternalLinkIcon,
   HistoryIcon,
+  KeyRoundIcon,
   LayoutDashboardIcon,
   LibraryIcon,
+  LogOutIcon,
   ScaleIcon,
   SettingsIcon,
   UsersIcon,
   WrenchIcon,
   type LucideIcon,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -23,8 +26,8 @@ import {
   type AdminSectionKey,
 } from "@/lib/admin-sections";
 import { cn } from "@/lib/utils";
-import { AdminAccountMenu } from "./admin-account-menu";
 import { AdminLocaleToggle } from "./admin-locale-toggle";
+import { OverflowMenu } from "./admin-overflow-menu";
 import { Pill } from "./admin-pill";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -84,12 +87,10 @@ function entryCount(
 export function AdminSidebar({
   role,
   username,
-  totpEnabled,
   counts,
 }: {
   role: string;
   username: string;
-  totpEnabled: boolean;
   counts: AdminSidebarCounts;
 }) {
   const pathname = usePathname();
@@ -195,41 +196,84 @@ export function AdminSidebar({
         })}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-3 border-t border-admin-sidebar-border px-4 py-4">
+      {/* Bloc 125 §2 — le bas du menu, dans l'ordre de la maquette : le lien
+          vers le site public au style des entrées de nav, la ligne langue +
+          thème, puis le bloc utilisateur qui ouvre son menu vers le haut. */}
+      <div className="mt-auto flex flex-col gap-3 border-t border-admin-sidebar-border px-4 pt-3 pb-4">
+        {/* Same shape as a nav entry, because it is one: it goes somewhere.
+            It used to be a bare line of dim text, which read as a caption. */}
         <Link
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="admin-focus inline-flex items-center gap-2 text-sm text-admin-dim hover:text-admin-text"
+          className="admin-focus flex h-[var(--admin-control-h)] items-center gap-3 rounded-admin-control px-3 text-sm text-admin-dim hover:bg-admin-hover hover:text-admin-text"
         >
-          {t("view-site")}
-          <ExternalLinkIcon aria-hidden="true" className="size-4" />
+          <ExternalLinkIcon aria-hidden="true" className="size-4 shrink-0" />
+          <span className="flex-1 truncate">{t("view-site")}</span>
         </Link>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 px-1">
           <AdminLocaleToggle />
-          <ThemeToggle />
+          <ThemeToggle
+            className="admin-focus ml-auto inline-flex size-[var(--admin-control-h-sm)] cursor-pointer items-center justify-center rounded-admin-control text-admin-dim hover:bg-admin-hover hover:text-admin-text"
+            labels={{
+              toDark: t("theme.to-dark"),
+              toLight: t("theme.to-light"),
+            }}
+          />
         </div>
-        <div className="flex items-center gap-3 border-t border-admin-rule-soft pt-3">
-          <span
-            aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-full bg-admin-accent-soft text-sm font-semibold text-admin-accent-soft-ink"
+
+        <div className="flex items-center gap-2 border-t border-admin-card-border pt-[14px]">
+          {/* One button for the whole block — the avatar, the username and
+              the role are what you click; only signing out is separate, so a
+              mis-aimed click on the account never logs anyone out. */}
+          <OverflowMenu
+            label={t("account.menu", { username })}
+            placement="top-start"
+            triggerClassName="admin-focus flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-admin-control p-1 text-left hover:bg-admin-hover"
+            trigger={
+              <>
+                <span
+                  aria-hidden="true"
+                  className="grid size-8 shrink-0 place-items-center rounded-full bg-admin-accent-deep text-sm font-semibold text-white"
+                >
+                  {username.charAt(0).toLocaleUpperCase()}
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold text-admin-text">
+                    {username}
+                  </span>
+                  <span className="truncate text-xs text-admin-dim">
+                    {roles(role)}
+                  </span>
+                </span>
+              </>
+            }
+            items={[
+              {
+                key: "account",
+                label: t("account.title"),
+                href: "/admin/account",
+                icon: <KeyRoundIcon aria-hidden="true" />,
+              },
+              {
+                key: "logout",
+                label: t("account.logout"),
+                separatorBefore: true,
+                onSelect: () => signOut({ callbackUrl: "/login" }),
+                icon: <LogOutIcon aria-hidden="true" />,
+              },
+            ]}
+          />
+          <button
+            type="button"
+            aria-label={t("account.logout")}
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="admin-focus inline-flex size-[var(--admin-control-h-sm)] shrink-0 cursor-pointer items-center justify-center rounded-admin-control text-admin-dim hover:bg-admin-hover hover:text-admin-text"
           >
-            {username.charAt(0).toLocaleUpperCase()}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-admin-text">
-              {username}
-            </p>
-            <p className="truncate text-xs text-admin-dim">{roles(role)}</p>
-          </div>
+            <LogOutIcon aria-hidden="true" className="size-4" />
+          </button>
         </div>
-        {/* Password and two-factor settings, and the way out. Its own markup
-            is unchanged by this bloc — only its place is. */}
-        <AdminAccountMenu
-          username={username}
-          label={t("account.title")}
-          totpEnabled={totpEnabled}
-        />
       </div>
     </div>
   );

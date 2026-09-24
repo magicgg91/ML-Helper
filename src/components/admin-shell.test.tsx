@@ -38,7 +38,7 @@ const shell = () => (
     <AdminShell
       role="super_admin"
       username="rootadmin"
-      totpEnabled={false}
+
       counts={{}}
     >
       <p>contenu de la page</p>

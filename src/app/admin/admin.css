@@ -66,6 +66,8 @@
   --color-admin-neutral-ink: var(--admin-neutral-ink);
   --color-admin-danger-ink: var(--admin-danger-ink);
   --color-admin-danger-border: var(--admin-danger-border);
+  --color-admin-segment: var(--admin-segment);
+  --color-admin-hover: var(--admin-hover);
   --color-admin-formula: var(--admin-formula);
   --color-admin-formula-border: var(--admin-formula-border);
   --radius-admin-card: var(--admin-card-radius);
@@ -145,6 +147,18 @@
 .admin-shell .admin-control {
   min-height: 0;
   font-family: var(--font-sans);
+}
+
+/* Bloc 125 §2 — ce que globals.css ne dit plus pour l'admin (voir le
+   commentaire qui y est resté) : un contrôle hérite bien de la police de la
+   page, mais depuis la couche `base`, que la couche `utilities` domine. Sans
+   cette règle les boutons repartiraient sur la police par défaut du
+   navigateur ; sans la couche, ils écraseraient à nouveau chaque
+   `text-xs`/`font-semibold` de la refonte. */
+@layer base {
+  .admin-shell :is(button, input, select, textarea) {
+    font: inherit;
+  }
 }
 
 /* Bloc 119 — l'échelle typographique de l'admin, en utilitaires Tailwind
@@ -236,6 +250,17 @@
      9.61 (surtitre), 5.62 (note) ; sombre 12.80, 7.96, 6.49. */
   --admin-formula: #f4f1fc;
   --admin-formula-border: #e1d8f6;
+  /* Bloc 125 §2 — deux surfaces que la maquette nomme au pixel : la piste
+     d'un contrôle segmenté, et le survol d'une entrée de menu ou d'un bouton
+     icône sans fond. Elles étaient écrites en dur dans le menu latéral.
+     Contrastes mesurés (texte, WCAG AA ≥ 4.5) :
+       clair  option active 10.71  option inactive 5.02  survol 13.83
+       sombre option active  7.25  option inactive 6.98  survol 10.02
+     L'état actif se lit à la couleur du texte (violet contre gris) autant
+     qu'à la plaque : entre deux surfaces sombres voisines, aucun couple ne
+     peut atteindre 3:1, et la couleur du texte ne dépend pas du thème. */
+  --admin-segment: #e4e6ec;
+  --admin-hover: #e9eaf0;
 
   /* Dimensions — section 1 du brief, nommées pour ne pas être réécrites au
      cas par cas dans chaque page. */
@@ -282,4 +307,10 @@
   --admin-danger-border: #6b3a2e;
   --admin-formula: #241b3a;
   --admin-formula-border: #3a2d5c;
+  /* Sombre : la piste est franchement plus foncée que la carte pour que
+     l'option active, qui est la carte elle-même, ressorte — l'inverse du
+     thème clair. Mesuré : la première valeur essayée (#232a34) ne se
+     distinguait pas de la carte (#222833), l'option active était invisible. */
+  --admin-segment: #151a22;
+  --admin-hover: #2c333f;
 }
