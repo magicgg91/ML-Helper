@@ -13,7 +13,7 @@ import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
 } from "@/lib/templars-presentation";
-import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { EditorHeader } from "./admin-editor-header";
@@ -45,10 +45,6 @@ type TemplarsScreen = {
 };
 
 /** The two editorial languages this catalog stores (as every reference does). */
-function fieldLocale(locale: LaunchLocale): "fr" | "en" {
-  return locale === "fr" ? "fr" : "en";
-}
-
 const previewLevels = [1, 2, 3, 4, 5];
 
 export function TemplarsEditor({
@@ -64,7 +60,7 @@ export function TemplarsEditor({
   const t = useTranslations("admin.templar-parameters");
   const names = useTranslations("game.templars");
   const languageNames = useTranslations("admin.config.languages");
-  const [locale, setLocale] = useState<LaunchLocale>("fr");
+  const [locale, setLocale] = useState<ContentPairLocale>("fr");
   const form = useEditorForm<TemplarsScreen>({
     initial: {
       parameters: initialParameters,
@@ -74,7 +70,7 @@ export function TemplarsEditor({
   });
   const { parameters, presentation } = form.value;
 
-  const lang = fieldLocale(locale);
+  const lang = locale;
   const nameKey = `name_${lang}` as const;
   const descriptionKey = `description_${lang}` as const;
 
@@ -183,15 +179,16 @@ export function TemplarsEditor({
         description={t("presentation-help")}
         actions={
           <LangTabs
+            locales={contentPairLocales}
             locale={locale}
             onChange={setLocale}
             label={t("texts-in")}
             filled={(code) => {
-              const field = `name_${fieldLocale(code)}` as const;
+              const field = `name_${code}` as const;
               return templarKeys.some((key) => presentation[key][field].trim());
             }}
             languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
+              contentPairLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)

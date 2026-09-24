@@ -10,7 +10,7 @@ import {
   type ConsumableCategory,
   type ConsumableRow,
 } from "@/lib/consumables";
-import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { CollapsibleGroup } from "./admin-collapsible-group";
@@ -40,10 +40,6 @@ import { useEditorForm } from "./use-editor-form";
 type ShopSection = "intro" | ConsumableCategory;
 const shopSections: readonly ShopSection[] = ["intro", ...consumableCategories];
 
-function fieldLocale(locale: LaunchLocale): "fr" | "en" {
-  return locale === "fr" ? "fr" : "en";
-}
-
 /** One line of a Markdown description, as text — for the list, not the page. */
 export function descriptionExcerpt(markdown: string): string {
   const firstLine = markdown
@@ -72,7 +68,7 @@ export function ShopReferenceEditor({
   const t = useTranslations("admin.references");
   const categoryLabel = useTranslations("references.consommables.categories");
   const languageNames = useTranslations("admin.config.languages");
-  const [locale, setLocale] = useState<LaunchLocale>("fr");
+  const [locale, setLocale] = useState<ContentPairLocale>("fr");
   const [open, setOpen] = useState<Set<ShopSection>>(new Set(shopSections));
   const [selected, setSelected] = useState<{
     section: ShopSection;
@@ -98,7 +94,7 @@ export function ShopReferenceEditor({
       // one save button instead of per field.
       for (const section of shopSections)
         for (const row of catalog[section]) {
-          const lang = fieldLocale(locale);
+          const lang = locale;
           if (!row[`name_${lang}`].trim() || !row[`description_${lang}`].trim())
             return t("required");
           if (row.cost !== "" && !(Number(row.cost) >= 0))
@@ -112,7 +108,7 @@ export function ShopReferenceEditor({
   const sectionName = (section: ShopSection) =>
     section === "intro" ? t("consumables-intro-title") : categoryLabel(section);
 
-  const lang = fieldLocale(locale);
+  const lang = locale;
   const nameKey = `name_${lang}` as const;
   const descriptionKey = `description_${lang}` as const;
 
@@ -156,18 +152,17 @@ export function ShopReferenceEditor({
         description={t("consumables-subtitle")}
         pills={
           <LangTabs
+            locales={contentPairLocales}
             locale={locale}
             onChange={setLocale}
             label={t("texts-in")}
             filled={(code) =>
               shopSections.some((section) =>
-                catalog[section].some((row) =>
-                  row[`name_${fieldLocale(code)}`].trim(),
-                ),
+                catalog[section].some((row) => row[`name_${code}`].trim()),
               )
             }
             languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
+              contentPairLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)

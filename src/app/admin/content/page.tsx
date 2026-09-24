@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { hiddenPublicLocales } from "@/lib/locale-settings";
 import { requireCapability } from "@/auth/require-session";
 import { AdminLegalEditor } from "@/components/admin-legal-editor";
 import { PageHeader } from "@/components/admin-page-header";
@@ -12,11 +13,12 @@ import {
 
 export default async function StaticContentAdminPage() {
   await requireCapability("content.read");
-  const [t, languages] = await Promise.all([
+  const [t, languages, hiddenLocales] = await Promise.all([
     getTranslations("admin.content"),
     // Named where the Configuration screen names them (Bloc 119): one list of
     // language names for the whole admin.
     getTranslations("admin.config.languages"),
+    hiddenPublicLocales(),
   ]);
   const legalNotice = await prisma.staticContent.findUnique({
     where: { key: legalNoticeKey },
@@ -30,6 +32,7 @@ export default async function StaticContentAdminPage() {
         description={t("subtitle")}
       />
       <AdminLegalEditor
+        hiddenLocales={hiddenLocales}
         publicHref="/legal"
         languageNames={Object.fromEntries(
           launchLocales.map((code) => [

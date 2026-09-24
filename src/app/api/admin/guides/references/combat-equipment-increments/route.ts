@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { referenceKeys } from "@/lib/reference-equipment-server";
@@ -28,5 +29,6 @@ export async function PUT(request: Request) {
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
   });
+  await revalidateContent("references", "combat-equipment");
   return NextResponse.json(increments);
 }

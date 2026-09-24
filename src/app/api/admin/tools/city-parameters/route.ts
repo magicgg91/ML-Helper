@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { parseCityParameters } from "@/lib/city-parameters";
@@ -21,5 +22,6 @@ export async function PUT(request: Request) {
     actorName: session.user.name ?? session.user.id,
     target: "city-parameters",
   });
+  await revalidateContent("tools");
   return NextResponse.json(parameters);
 }

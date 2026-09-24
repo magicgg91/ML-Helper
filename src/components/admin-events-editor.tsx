@@ -15,7 +15,7 @@ import {
   type EventTierRow,
 } from "@/lib/events";
 import { leagues, type League } from "@/lib/player-settings";
-import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { EditorHeader } from "./admin-editor-header";
@@ -42,10 +42,6 @@ import { useEditorForm } from "./use-editor-form";
  * own fallback.
  */
 
-function fieldLocale(locale: LaunchLocale): "fr" | "en" {
-  return locale === "fr" ? "fr" : "en";
-}
-
 export function EventsReferenceEditor({
   initialCatalog,
   backHref,
@@ -57,14 +53,14 @@ export function EventsReferenceEditor({
   const gameLeagues = useTranslations("game.leagues");
   const languageNames = useTranslations("admin.config.languages");
   const [league, setLeague] = useState<League>("bronze");
-  const [locale, setLocale] = useState<LaunchLocale>("fr");
+  const [locale, setLocale] = useState<ContentPairLocale>("fr");
   const [open, setOpen] = useState<Set<number>>(new Set());
 
   const form = useEditorForm<EventsCatalog>({
     initial: initialCatalog,
     endpoint: "/api/admin/guides/references/events",
     validate: (catalog) => {
-      const lang = fieldLocale(locale);
+      const lang = locale;
       for (const key of leagues) {
         const data = catalog[key];
         for (const event of data.events) {
@@ -99,7 +95,7 @@ export function EventsReferenceEditor({
   const data = catalog[league];
   const events = data.events;
 
-  const lang = fieldLocale(locale);
+  const lang = locale;
   const descriptionKey = `description_${lang}` as const;
   const objectiveKey = `objective_${lang}` as const;
   const rewardKey = `reward_${lang}` as const;
@@ -155,18 +151,19 @@ export function EventsReferenceEditor({
         title={t("events-season-title")}
         actions={
           <LangTabs
+            locales={contentPairLocales}
             locale={locale}
             onChange={setLocale}
             label={t("texts-in")}
             filled={(code) =>
               leagues.some((key) =>
                 catalog[key].events.some((event) =>
-                  event[`description_${fieldLocale(code)}`].trim(),
+                  event[`description_${code}`].trim(),
                 ),
               )
             }
             languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
+              contentPairLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)

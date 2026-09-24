@@ -20,7 +20,7 @@ import {
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "@/lib/reference-equipment";
-import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { CollapsibleGroup } from "./admin-collapsible-group";
@@ -254,7 +254,7 @@ export function EquipmentReferenceEditor({
       : "expedition-equipment.columns",
   );
   const status = useSaveStatus();
-  const [labelLocale, setLabelLocale] = useState<LaunchLocale>("fr");
+  const [labelLocale, setLabelLocale] = useState<ContentPairLocale>("fr");
 
   const incrementKeys =
     variant === "combat"
@@ -470,8 +470,7 @@ export function EquipmentReferenceEditor({
     }
   }
 
-  const labelKey =
-    `metric_label_${labelLocale === "fr" ? "fr" : "en"}` as const;
+  const labelKey = `metric_label_${labelLocale}` as const;
   /** The row's own name: what the admin typed, or the canonical default. */
   const secondaryName = (index: number) =>
     form.secondary[index][labelKey] ||
@@ -509,18 +508,17 @@ export function EquipmentReferenceEditor({
         title={t("global-parameters")}
         actions={
           <LangTabs
+            locales={contentPairLocales}
             locale={labelLocale}
             onChange={setLabelLocale}
             label={t("labels-in")}
             filled={(code) =>
               form.secondary.some((row) =>
-                (
-                  row[`metric_label_${code === "fr" ? "fr" : "en"}`] ?? ""
-                ).trim(),
+                (row[`metric_label_${code}`] ?? "").trim(),
               )
             }
             languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
+              contentPairLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)

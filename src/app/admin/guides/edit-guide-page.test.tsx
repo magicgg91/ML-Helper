@@ -19,6 +19,9 @@ vi.mock("@/auth/require-session", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     guide: { findUnique: vi.fn() },
+    // Bloc 125 §9: the page also asks which launch languages are switched
+    // off, so the tabs can say which translations the public cannot see.
+    localeSetting: { findMany: vi.fn(async () => []) },
   },
 }));
 

@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { isSavableRankingLadder, parseRankingLadder } from "@/lib/ranking";
@@ -50,6 +51,7 @@ export async function PUT(request: Request) {
         },
       });
     });
+    await revalidateContent("tools");
     return NextResponse.json(ladder);
   } catch {
     return NextResponse.json({ error: "invalid_ranking" }, { status: 400 });

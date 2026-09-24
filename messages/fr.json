@@ -944,7 +944,8 @@
         "draft": "Brouillon",
         "pending_review": "En relecture",
         "published": "Publié"
-      }
+      },
+      "language-hidden": "masquée sur le site"
     },
     "tools": {
       "eyebrow": "Contenu fonctionnel",
@@ -1457,7 +1458,8 @@
       "mode-split": "Côte à côte",
       "mode-preview": "Aperçu",
       "mode-label": "Affichage de l’éditeur",
-      "todo-list-label": "Champs à compléter"
+      "todo-list-label": "Champs à compléter",
+      "language-hidden": "masquée sur le site"
     },
     "forbidden": {
       "eyebrow": "Erreur 403",

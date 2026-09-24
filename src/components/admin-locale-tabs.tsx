@@ -19,6 +19,8 @@ export function AdminLocaleTabs({
   label,
   languageNames,
   toCreateLabel,
+  hiddenLocales,
+  hiddenLabel,
 }: {
   locale: LaunchLocale;
   onChange: (locale: LaunchLocale) => void;
@@ -28,11 +30,21 @@ export function AdminLocaleTabs({
   languageNames: Record<string, string>;
   /** The words beside a language nobody has written in yet. */
   toCreateLabel: string;
+  /**
+   * Bloc 125 §9: the languages switched off in Configuration, and so absent
+   * from the public site. Written but invisible is a normal state here — it
+   * is what a language waiting to be launched looks like — so the tab says
+   * so, quietly, rather than leaving it to be mistaken for a bug.
+   */
+  hiddenLocales?: readonly string[];
+  /** "masquée sur le site" — the chip's words. */
+  hiddenLabel?: string;
 }) {
   return (
     <div role="tablist" aria-label={label} className="flex flex-wrap gap-1">
       {launchLocales.map((code) => {
         const empty = !filled(code);
+        const hidden = hiddenLocales?.includes(code) ?? false;
         return (
           <button
             key={code}
@@ -52,6 +64,14 @@ export function AdminLocaleTabs({
             {languageNames[code] ?? code.toUpperCase()}
             {empty && (
               <span className="text-xs opacity-80">{toCreateLabel}</span>
+            )}
+            {hidden && hiddenLabel && (
+              <span
+                title={hiddenLabel}
+                className="inline-flex h-[var(--admin-pill-h)] items-center rounded-full bg-admin-neutral px-2 text-[11px] font-semibold text-admin-neutral-ink"
+              >
+                {hiddenLabel}
+              </span>
             )}
           </button>
         );

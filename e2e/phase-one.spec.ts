@@ -3729,6 +3729,98 @@ test("Bloc 125/8: each edit screen is named after what it edits, in French", asy
   await context.close();
 });
 
+// Bloc 125 §9: the language tabs tell the truth about what is stored.
+//
+// Reproduced in a browser before anything was changed: on the Boutique's DE
+// tab, typing a German name saved it into the *English* column, showed it
+// back on the DE tab — which reads that same column — and destroyed the
+// English text with nothing said anywhere. Four screens did this, because
+// they offered five languages over a model that holds two.
+test("Bloc 125/9: fr/en content offers fr and en, and five-language content says which are hidden", async ({
+  browser,
+}) => {
+  test.setTimeout(120_000);
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const setup = await page.request.post("/api/admin/setup", {
+    data: { username: "rootadmin", password: "correct-horse-battery-staple" },
+  });
+  expect([201, 409]).toContain(setup.status());
+  await page.goto("/login");
+  await page.getByLabel("Identifiant").fill("rootadmin");
+  await page.getByLabel("Mot de passe").fill("correct-horse-battery-staple");
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // The four screens whose rows hold one French field and one for everybody
+  // else. None of them may offer a tab for a column it does not have.
+  for (const url of [
+    "/admin/referentiels/reference-consommables",
+    "/admin/referentiels/reference-events",
+    "/admin/tools/templars",
+    "/admin/referentiels/reference-combat-equipment",
+  ]) {
+    await page.goto(url);
+    await expect(
+      page.getByRole("button", { name: /^FR — Français/ }),
+      `${url}: the French tab`,
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^EN — English/ }),
+      `${url}: the English tab`,
+    ).toBeVisible();
+    for (const absent of [/^DE — /, /^ES — /, /^TR — /])
+      await expect(
+        page.getByRole("button", { name: absent }),
+        `${url}: ${absent} has no column to write to`,
+      ).toHaveCount(0);
+  }
+
+  // Editing the English text leaves the French alone, end to end.
+  await page.goto("/admin/referentiels/reference-consommables");
+  const name = () => page.getByLabel(/^Nom/).first();
+  await expect(name()).toBeVisible();
+  const french = await name().inputValue();
+  await page.getByRole("button", { name: /^EN — English/ }).click();
+  await name().fill("Bloc125 English name");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await page.reload();
+  await expect(name()).toBeVisible();
+  expect(await name().inputValue(), "the French text was overwritten").toBe(
+    french,
+  );
+  await page.getByRole("button", { name: /^EN — English/ }).click();
+  expect(await name().inputValue()).toBe("Bloc125 English name");
+
+  // And the public site reads each language from its own column.
+  await page.goto("/en/referentiels/shop");
+  await expect(page.getByText("Bloc125 English name")).toBeVisible();
+  await page.goto("/fr/referentiels/shop");
+  await expect(page.getByText(french)).toBeVisible();
+  await expect(page.getByText("Bloc125 English name")).toHaveCount(0);
+
+  // A guide really is stored in all five, so its tabs keep all five — and say
+  // which of them the public cannot see, so a translation that is written and
+  // invisible does not read as a save that failed.
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "de", active: false },
+  });
+  await page.goto("/admin/guides/new");
+  const german = page.getByRole("tab", { name: /Deutsch/ });
+  await expect(german).toBeVisible();
+  await expect(german).toContainText("masquée sur le site");
+  await expect(
+    page.getByRole("tab", { name: /Français/ }),
+    "an always-active language is never marked hidden",
+  ).not.toContainText("masquée sur le site");
+
+  await page.request.patch("/api/admin/config/locales", {
+    data: { locale: "de", active: true },
+  });
+  await context.close();
+});
+
 // ---------------------------------------------------------------------------
 // Bloc 121 — the retry drill.
 //

@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canPerformGuideAction } from "@/auth/guide-actions";
@@ -24,6 +25,7 @@ export async function PATCH(
       id,
       await request.json(),
     );
+    await revalidateContent("guides", guide.slug);
     return NextResponse.json({ id: guide.id });
   } catch (error) {
     return NextResponse.json(
@@ -72,5 +74,6 @@ export async function DELETE(
       },
     });
   });
+  await revalidateContent("guides", before.slug);
   return NextResponse.json({ deleted: true });
 }

@@ -65,6 +65,7 @@ export function GuideEditor({
   initial,
   canPublish,
   languageNames,
+  hiddenLocales,
   backHref,
   backLabel,
   author,
@@ -76,6 +77,12 @@ export function GuideEditor({
   initial: GuideDraft;
   canPublish: boolean;
   languageNames: Record<string, string>;
+  /**
+   * Bloc 125 §9: the launch languages switched off in Configuration, so a
+   * translation that is written but nowhere to be seen reads as a language
+   * waiting to be launched rather than as a bug.
+   */
+  hiddenLocales?: readonly string[];
   backHref: string;
   backLabel: string;
   /**
@@ -200,6 +207,8 @@ export function GuideEditor({
               label={t("language-label")}
               languageNames={languageNames}
               toCreateLabel={t("to-create")}
+              hiddenLocales={hiddenLocales}
+              hiddenLabel={t("language-hidden")}
             />
             <MarkdownModeSwitch
               mode={mode}

@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
@@ -110,5 +111,6 @@ export async function PUT(request: Request) {
       ...actor,
     });
   });
+  await revalidateContent("references", "templars");
   return NextResponse.json({ parameters, presentation });
 }

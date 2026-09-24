@@ -944,7 +944,8 @@
         "draft": "Draft",
         "pending_review": "In review",
         "published": "Published"
-      }
+      },
+      "language-hidden": "hidden on the site"
     },
     "tools": {
       "eyebrow": "Functional content",
@@ -1457,7 +1458,8 @@
       "mode-split": "Side by side",
       "mode-preview": "Preview",
       "mode-label": "Editor display",
-      "todo-list-label": "Fields to fill in"
+      "todo-list-label": "Fields to fill in",
+      "language-hidden": "hidden on the site"
     },
     "forbidden": {
       "eyebrow": "Error 403",

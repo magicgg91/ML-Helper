@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
@@ -77,6 +78,8 @@ export async function PATCH(request: Request) {
     });
     return item;
   });
+
+  await revalidateContent("legal");
 
   return NextResponse.json(updated);
 }

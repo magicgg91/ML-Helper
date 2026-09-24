@@ -22,20 +22,38 @@ import { cn } from "@/lib/utils";
  * describes (the Pages légales screen, whose whole content is one document
  * per language, does use real tabs).
  */
-export function LangTabs({
+export function LangTabs<T extends LaunchLocale = LaunchLocale>({
   locale,
   onChange,
   filled,
   label,
   languageNames,
+  locales = launchLocales as unknown as readonly T[],
+  hiddenLocales,
+  hiddenLabel,
 }: {
-  locale: LaunchLocale;
-  onChange: (locale: LaunchLocale) => void;
+  locale: T;
+  onChange: (locale: T) => void;
   /** Which languages already have text — the others are shown dashed. */
-  filled: (locale: LaunchLocale) => boolean;
+  filled: (locale: T) => boolean;
   /** "Textes en", "Libellés en" — says what these tabs scope. */
   label: string;
   languageNames?: Partial<Record<string, string>>;
+  /**
+   * Bloc 125 §9: the languages this particular content is stored in. Most
+   * screens keep all five; the four reference editors whose model holds one
+   * French field and one other-language field pass that pair, because a tab
+   * for a language the row has no column for can only overwrite another.
+   */
+  locales?: readonly T[];
+  /**
+   * The languages that are switched off in Configuration, and therefore
+   * absent from the public site. Shown as a quiet chip so a translation that
+   * is written but nowhere to be seen does not read as a bug.
+   */
+  hiddenLocales?: readonly string[];
+  /** "masquée sur le site" — the chip's words and its tooltip. */
+  hiddenLabel?: (language: string) => string;
 }) {
   const t = useTranslations("admin.editor");
   // Several sections of one screen can carry their own tabs (a set of labels
@@ -51,8 +69,10 @@ export function LangTabs({
         className="flex flex-wrap gap-1"
         role="group"
       >
-        {launchLocales.map((code) => {
+        {locales.map((code) => {
           const empty = !filled(code);
+          const hidden = hiddenLocales?.includes(code) ?? false;
+          const language = languageNames?.[code] ?? code.toUpperCase();
           return (
             <button
               key={code}
@@ -61,11 +81,15 @@ export function LangTabs({
               // The button shows the code and is named by the language: a
               // two-letter code is an abbreviation, not a name, and the
               // label carries both so speech input still finds it.
-              aria-label={t(empty ? "language-to-create" : "language-tab", {
-                language: `${code.toUpperCase()} — ${
-                  languageNames?.[code] ?? code.toUpperCase()
-                }`,
-              })}
+              aria-label={[
+                t(empty ? "language-to-create" : "language-tab", {
+                  language: `${code.toUpperCase()} — ${language}`,
+                }),
+                hidden ? hiddenLabel?.(language) : undefined,
+              ]
+                .filter(Boolean)
+                .join(" — ")}
+              title={hidden ? hiddenLabel?.(language) : undefined}
               className={cn(
                 "admin-focus inline-flex h-[var(--admin-control-h-sm)] items-center rounded-admin-control border px-3 font-admin-mono text-xs font-semibold uppercase",
                 code === locale
@@ -76,6 +100,12 @@ export function LangTabs({
               onClick={() => onChange(code)}
             >
               {code}
+              {hidden && (
+                <span
+                  aria-hidden="true"
+                  className="ml-1 inline-block size-1.5 rounded-full bg-admin-neutral-ink/60"
+                />
+              )}
             </button>
           );
         })}
