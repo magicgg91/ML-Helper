@@ -65,7 +65,15 @@ export function PublicHeader({
         <span className="brand-name">{brand}</span>
       </Link>
       <div className="public-header-panel" id="public-header-panel">
-        <SiteSearch guides={guides} active={active} inputRef={searchInputRef} />
+        {/* Les deux enfants du panneau ferment sur navigation : suivre un
+            résultat de recherche mène ailleurs tout autant qu'un lien de
+            navigation, et le gabarit public survit à la navigation. */}
+        <SiteSearch
+          guides={guides}
+          active={active}
+          inputRef={searchInputRef}
+          onNavigate={() => setOpen(false)}
+        />
         <PublicNav
           links={links}
           navLabel={labels.nav}

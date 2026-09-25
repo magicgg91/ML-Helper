@@ -132,10 +132,9 @@ export default async function ConfigAdminPage() {
           </span>
         }
       >
-        <AdminHighlightsPanel
-          candidates={candidates}
-          initial={highlights ?? []}
-        />
+        {/* `undefined` (rien d'enregistré) et `[]` (panneau masqué exprès)
+            arrivent distincts : le panneau les affiche différemment. */}
+        <AdminHighlightsPanel candidates={candidates} initial={highlights} />
       </AdminSettingsSection>
       <AdminSettingsSection
         title={t("languages-section")}

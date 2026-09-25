@@ -14,6 +14,7 @@ export function SiteSearch({
   guides,
   active,
   inputRef: externalInputRef,
+  onNavigate,
 }: {
   guides: SiteSearchGuide[];
   active?: Partial<CalculatorAvailability>;
@@ -23,6 +24,13 @@ export function SiteSearch({
    * ailleurs — d'où la référence prêtée par l'appelant.
    */
   inputRef?: RefObject<HTMLInputElement | null>;
+  /**
+   * Bloc 132, retour de revue : suivre un résultat ferme la liste locale,
+   * mais pas ce qui contient ce champ. Sur mobile c'est le panneau de
+   * l'en-tête, et le gabarit public survit à la navigation : la page
+   * d'arrivée s'affichait sous un panneau resté ouvert.
+   */
+  onNavigate?: () => void;
 }) {
   const locale = useLocale();
   const t = useTranslations("search");
@@ -120,6 +128,7 @@ export function SiteSearch({
                   onClick={() => {
                     setQuery("");
                     setOpen(false);
+                    onNavigate?.();
                   }}
                 >
                   <span className="site-search-result-type">

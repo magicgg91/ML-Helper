@@ -34,11 +34,23 @@ export function AdminHighlightsPanel({
   initial,
 }: {
   candidates: HighlightCandidate[];
-  /** La sélection enregistrée, ou la liste vide si personne n'a choisi. */
-  initial: HomeHighlight[];
+  /**
+   * La sélection enregistrée, ou `undefined` si personne n'a encore choisi.
+   *
+   * Retour de revue : les deux ne veulent pas dire la même chose et ne
+   * doivent pas arriver ici confondus. Rien d'enregistré, c'est l'accueil
+   * sur sa liste de repli ; une liste vide enregistrée, c'est le panneau
+   * masqué exprès. Écrasés en `[]`, une installation neuve et un panneau
+   * volontairement masqué s'affichaient pareil, et le message d'état
+   * annonçait le repli alors qu'il ne s'appliquait plus.
+   */
+  initial: HomeHighlight[] | undefined;
 }) {
   const t = useTranslations("admin.config.highlights");
-  const [selected, setSelected] = useState<HomeHighlight[]>(initial);
+  const [selected, setSelected] = useState<HomeHighlight[]>(initial ?? []);
+  // Vrai dès qu'une sélection est enregistrée — au chargement, ou après un
+  // enregistrement réussi dans cet écran.
+  const [configured, setConfigured] = useState(initial !== undefined);
   const [query, setQuery] = useState("");
   const status = useSaveStatus();
 
@@ -73,6 +85,7 @@ export function AdminHighlightsPanel({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ highlights: selected }),
       });
+      if (response.ok) setConfigured(true);
       status.settle(response.ok, {
         success: t("saved"),
         error: t("save-error", { status: response.status }),
@@ -92,7 +105,9 @@ export function AdminHighlightsPanel({
       </div>
 
       {selected.length === 0 ? (
-        <p className="text-sm text-admin-dim">{t("empty")}</p>
+        <p className="text-sm text-admin-dim">
+          {t(configured ? "empty-hidden" : "empty")}
+        </p>
       ) : (
         <ol className="flex flex-col gap-2" data-testid="highlights-selected">
           {selected.map((entry, index) => {

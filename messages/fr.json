@@ -1580,6 +1580,7 @@
         "add-label": "Ajouter {name} à la sélection",
         "search": "Chercher un guide, un outil ou un référentiel",
         "empty": "Aucune entrée sélectionnée. L’accueil affiche sa liste par défaut.",
+        "empty-hidden": "Sélection vide enregistrée : le panneau est masqué sur l’accueil.",
         "full": "Cinq entrées au maximum. Retire-en une pour en ajouter une autre.",
         "no-match": "Rien ne correspond.",
         "count": "{count} / {max} sélectionnés",

@@ -26,6 +26,15 @@ function renderPanel(initial: HomeHighlight[] = []) {
   render(<AdminHighlightsPanel candidates={candidates} initial={initial} />);
 }
 
+/**
+ * Le cas « rien d'enregistré » se rend à part : `renderPanel(undefined)`
+ * retomberait sur la valeur par défaut du paramètre, c'est-à-dire sur la
+ * liste vide — exactement les deux états que ce fichier sépare.
+ */
+function renderUnset() {
+  render(<AdminHighlightsPanel candidates={candidates} initial={undefined} />);
+}
+
 /** Les noms de la sélection, dans l'ordre affiché. */
 const selectedNames = () =>
   within(screen.getByTestId("highlights-selected"))
@@ -158,6 +167,43 @@ describe("AdminHighlightsPanel", () => {
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
     const [, init] = vi.mocked(globalThis.fetch).mock.calls[0];
     expect(JSON.parse(String(init?.body))).toEqual({ highlights: [] });
+  });
+
+  /**
+   * Retour de revue : rien d'enregistré et une liste vide enregistrée ne
+   * veulent pas dire la même chose. `undefined`, c'est l'accueil sur sa
+   * liste de repli ; `[]`, c'est le panneau masqué exprès. Confondus, une
+   * installation neuve s'affichait comme un panneau volontairement masqué,
+   * et le message annonçait le repli alors qu'il ne s'appliquait plus.
+   */
+  it("distingue « rien d'enregistré » d'une sélection vide enregistrée", () => {
+    renderUnset();
+    expect(
+      screen.getByText(
+        "Aucune entrée sélectionnée. L’accueil affiche sa liste par défaut.",
+      ),
+    ).toBeInTheDocument();
+    cleanup();
+    renderPanel([]);
+    expect(
+      screen.getByText(
+        "Sélection vide enregistrée : le panneau est masqué sur l’accueil.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  // Et une fois la sélection vidée puis enregistrée, le message suit : le
+  // repli ne s'applique plus, la page ne doit plus l'annoncer.
+  it("passe au message « panneau masqué » après un enregistrement à vide", async () => {
+    renderUnset();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer la sélection" }),
+    );
+    expect(
+      await screen.findByText(
+        "Sélection vide enregistrée : le panneau est masqué sur l’accueil.",
+      ),
+    ).toBeInTheDocument();
   });
 
   /**

@@ -1580,6 +1580,7 @@
         "add-label": "Add {name} to the selection",
         "search": "Search a guide, a tool or a reference table",
         "empty": "Nothing selected. The homepage shows its default list.",
+        "empty-hidden": "An empty selection is saved: the homepage panel is hidden.",
         "full": "Five entries at most. Remove one to add another.",
         "no-match": "No match.",
         "count": "{count} / {max} selected",

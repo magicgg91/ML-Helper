@@ -176,8 +176,16 @@ describe("Bloc 132 §4 : la sélection « Mis en avant »", () => {
     ).toBe(false);
   });
 
-  it("part de la sélection enregistrée, ou de rien du tout", async () => {
-    expect((await renderHighlights()).initial).toEqual([]);
+  /**
+   * Retour de revue : la page passait `highlights ?? []`, ce qui écrasait
+   * « rien d'enregistré » et « liste vide enregistrée » en un seul état.
+   * L'un laisse l'accueil sur sa liste de repli, l'autre masque le panneau
+   * exprès : le panneau d'édition doit pouvoir les distinguer.
+   */
+  it("passe les trois états tels quels au panneau", async () => {
+    expect((await renderHighlights()).initial).toBeUndefined();
+    cleanup();
+    expect((await renderHighlights([])).initial).toEqual([]);
     cleanup();
     expect(
       (await renderHighlights([{ kind: "tool", slug: "city-cost" }])).initial,

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import messages from "../../messages/fr.json";
 import { PublicHeader } from "./public-header";
 import { defaultCalculatorAvailability } from "@/lib/calculator-catalog";
+import type { SiteSearchGuide } from "@/lib/site-search";
 
 vi.mock("@/i18n/navigation", async () => {
   const { createElement } = await import("react");
@@ -36,12 +37,12 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-function renderHeader() {
+function renderHeader(guides: SiteSearchGuide[] = []) {
   render(
     <NextIntlClientProvider locale="fr" messages={messages}>
       <PublicHeader
         brand="ML-Helper"
-        guides={[]}
+        guides={guides}
         active={defaultCalculatorAvailability}
         locales={["fr", "en"]}
         links={links}
@@ -102,6 +103,32 @@ describe("PublicHeader", () => {
     fireEvent.click(menu);
     fireEvent.click(screen.getByRole("link", { name: "Guides" }));
     expect(menu).toHaveAttribute("aria-expanded", "false");
+  });
+
+  /**
+   * Retour de revue : suivre un résultat de recherche mène ailleurs tout
+   * autant qu'un lien de navigation. Le gabarit public survit à la
+   * navigation, donc un panneau laissé ouvert recouvrait la page d'arrivée
+   * — reproduit au navigateur en 393 px avant correction.
+   */
+  it("referme le panneau quand on suit un résultat de recherche", async () => {
+    renderHeader([
+      {
+        id: "g1",
+        slug: "bien-debuter",
+        title: "Bien débuter",
+        excerpt: "Les bases du jeu.",
+      },
+    ]);
+    const search = screen.getByRole("button", {
+      name: "Rechercher sur le site",
+    });
+    fireEvent.click(search);
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "bien" },
+    });
+    fireEvent.click(await screen.findByRole("link", { name: /Bien débuter/ }));
+    expect(search).toHaveAttribute("aria-expanded", "false");
   });
 
   // La loupe ouvre pour écrire : sans le focus, il faudrait viser le champ
