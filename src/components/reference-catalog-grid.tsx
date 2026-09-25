@@ -34,6 +34,7 @@ export type ReferenceSuggestionCard = {
 export function ReferenceCatalogGrid({
   t,
   limit,
+  only,
   locale,
   active,
   descriptions,
@@ -41,6 +42,13 @@ export function ReferenceCatalogGrid({
 }: {
   t: (key: string) => string;
   limit?: number;
+  /**
+   * Bloc 132 §5 : restreint la grille à ces slugs publics. L'accueil n'en
+   * montre que quatre (`homeReferenceSlugs`) ; l'index les montre tous et
+   * omet ce paramètre. Le tri alphabétique et le filtre d'activation
+   * s'appliquent ensuite, dans les deux cas.
+   */
+  only?: readonly string[];
   // Bloc 64/A: tiles ordered by the label actually shown, in the visitor's
   // locale — the catalog's declaration order means nothing to them. Sorted
   // before `limit` applies, so the homepage teaser shows the first N
@@ -58,7 +66,11 @@ export function ReferenceCatalogGrid({
   suggestion?: ReferenceSuggestionCard;
 }) {
   const available = sortByLabel(
-    referenceCatalog.filter((reference) => active[reference.calculatorSlug]),
+    referenceCatalog.filter(
+      (reference) =>
+        active[reference.calculatorSlug] &&
+        (!only || only.includes(reference.slug)),
+    ),
     (reference) => t(`catalog.${reference.slug}`),
     locale,
   );

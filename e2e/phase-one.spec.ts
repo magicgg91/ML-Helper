@@ -218,9 +218,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.locator(".home-guides").getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
+  // Bloc 132 §5 : la section ne montre plus les sept référentiels mais les
+  // quatre que la recette nomme — Templiers n'en fait pas partie, Gemmes si.
+  await expect(
+    page.locator(".home-references").getByRole("link", { name: /Gemmes/ }),
+  ).toHaveAttribute("href", new RegExp("/referentiels/gems$"));
   await expect(
     page.locator(".home-references").getByRole("link", { name: /Templiers/ }),
-  ).toHaveAttribute("href", new RegExp("/referentiels/templars$"));
+  ).toHaveCount(0);
   const publicThemeToggle = page.getByRole("button", {
     name: "Passer en thème clair",
   });
@@ -257,7 +262,9 @@ test("tool routes alone expose persistent player settings", async ({
 
   await page.goto("/tools");
   await expect(page).toHaveTitle("Outils | ML-Helper · Million Lords");
-  await expect(page.locator(".tool-category-card")).toHaveCount(4);
+  // Bloc 132 §6 : l'index empile une carte par catégorie (.tool-section) au
+  // lieu de la grille de vignettes qu'il partageait avec l'accueil.
+  await expect(page.locator(".tool-section")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(
     page
@@ -274,10 +281,10 @@ test("tool routes alone expose persistent player settings", async ({
   // Bloc 33/E: the whole tile is the link now — no more redundant "Ouvrir
   // la catégorie" text to click on.
   // Bloc 129 §3.2 : la carte liste aussi ses outils, et le pied de page
-  // nomme la catégorie — c'est le lien de la carte qu'on suit ici.
+  // nomme la catégorie — c'est le lien de l'en-tête de carte qu'on suit ici.
   await page
-    .locator(".tool-category-card")
-    .getByRole("link", { name: /^Villes/ })
+    .locator(".tool-section .tool-section-head")
+    .filter({ hasText: /^Villes/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
@@ -525,7 +532,7 @@ test("the Cities category exposes its three working calculators", async ({
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation ;
   // le pied de page mène lui aussi à Villes, sans être l'onglet courant.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Villes/ }),
+    page.locator(".selection-banner").getByRole("link", { name: /Villes/ }),
   ).toHaveAttribute("aria-current", "page");
   // Bloc 68/K: the league <select> is replaced by single-select buttons.
   const cityLeagueGroup = page
@@ -736,7 +743,7 @@ test("Ranking converts position and percentage into league ranges", async ({
   await page.goto("/tools/classement");
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Classement/ }),
+    page.locator(".selection-banner").getByRole("link", { name: /Classement/ }),
   ).toHaveAttribute("aria-current", "page");
   // Bloc 61/B: the league <select> is replaced by single-select buttons.
   const rankingLeagueGroup = page
@@ -796,7 +803,9 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.goto("/tools/competences");
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Compétences/ }),
+    page
+      .locator(".selection-banner")
+      .getByRole("link", { name: /Compétences/ }),
   ).toHaveAttribute("aria-current", "page");
 
   await page

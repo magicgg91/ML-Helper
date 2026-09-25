@@ -161,32 +161,33 @@ export default async function ToolDetailLayout({
       {/* Bloc 108/E: the ladder reaches the panel so its division field can
           offer the divisions an admin has actually configured. */}
       <PlayerSettingsPanel ladder={await getRankingLadder()} />
-      {/* §3.8 : la navigation entre outils vit dans une carte — la rangée
-          des catégories, puis celle des outils de la catégorie, que le
-          contenu de l'outil rend lui-même. */}
-      <section className="tool-nav-card">
-        <ToolCategoryNav
-          availability={availability}
-          counts={{
-            villes: [
-              "city-cost",
-              "city-max-level",
-              "city-production",
-              "city-rewards",
-            ].filter((slug) => active[slug as keyof typeof active]).length,
-            combat: ["xp-gain-rate", "demo-attack-troops"].filter(
-              (slug) => active[slug as keyof typeof active],
-            ).length,
-            classement: active.ranking ? 1 : 0,
-            competences: [
-              "stuff-simulator",
-              "expedition-equipment-simulator",
-              "gems",
-              "templars",
-            ].filter((slug) => active[slug as keyof typeof active]).length,
-          }}
-        />
-      </section>
+      {/* §3.8 : la navigation entre outils tient en deux rangées — les
+          catégories, puis les outils de la catégorie, que le contenu de
+          l'outil rend lui-même.
+          Bloc 132 §8 : chacune a maintenant sa propre carte. La première
+          est le bandeau partagé avec les référentiels, qui apporte la
+          sienne — d'où la <section> disparue d'ici. */}
+      <ToolCategoryNav
+        availability={availability}
+        counts={{
+          villes: [
+            "city-cost",
+            "city-max-level",
+            "city-production",
+            "city-rewards",
+          ].filter((slug) => active[slug as keyof typeof active]).length,
+          combat: ["xp-gain-rate", "demo-attack-troops"].filter(
+            (slug) => active[slug as keyof typeof active],
+          ).length,
+          classement: active.ranking ? 1 : 0,
+          competences: [
+            "stuff-simulator",
+            "expedition-equipment-simulator",
+            "gems",
+            "templars",
+          ].filter((slug) => active[slug as keyof typeof active]).length,
+        }}
+      />
       {children}
       <FurtherReading title={tools("further-reading")} cards={cards} />
     </>

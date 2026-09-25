@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { Button } from "./button";
 import { GameImage } from "./game-image";
 
 /**
@@ -24,8 +25,7 @@ export function HomeHero({
   eyebrow,
   title,
   intro,
-  primary,
-  secondary,
+  actions,
   counters,
   panelTitle,
   entries,
@@ -33,9 +33,14 @@ export function HomeHero({
   eyebrow: string;
   title: string;
   intro: string;
-  primary: HeroLink;
-  /** Absent tant qu'aucun guide n'est désigné comme point de départ. */
-  secondary?: HeroLink;
+  /**
+   * Bloc 132 §5 : trois actions au lieu de deux — « Explorer les outils »,
+   * « Consulter les référentiels », « Bien débuter ». La première est
+   * principale, les suivantes secondaires ; la liste est ouverte plutôt que
+   * nommée une par une, parce que la dernière disparaît tant qu'aucun guide
+   * n'est désigné comme point de départ.
+   */
+  actions: HeroLink[];
   /** « 11 outils », « 7 référentiels », « 5 guides » — déjà accordés. */
   counters: string[];
   panelTitle: string;
@@ -48,14 +53,15 @@ export function HomeHero({
         <h1>{title}</h1>
         <p className="home-hero-intro">{intro}</p>
         <div className="home-hero-actions">
-          <Link className="button-primary" href={primary.href}>
-            {primary.label}
-          </Link>
-          {secondary ? (
-            <Link className="button-secondary" href={secondary.href}>
-              {secondary.label}
-            </Link>
-          ) : null}
+          {actions.map((action, index) => (
+            <Button
+              key={action.href}
+              variant={index === 0 ? "primary" : "secondary"}
+              href={action.href}
+            >
+              {action.label}
+            </Button>
+          ))}
         </div>
         {/* Les séparateurs sont de la ponctuation entre trois nombres, pas
             du texte à annoncer : la liste porte le sens, eux la mise en
@@ -67,20 +73,25 @@ export function HomeHero({
         </ul>
       </div>
       {entries.length > 0 ? (
-        <aside className="home-hero-panel" aria-labelledby="home-most-used">
-          <h2 id="home-most-used">{panelTitle}</h2>
+        <aside className="home-hero-panel" aria-labelledby="home-highlights">
+          <h2 id="home-highlights">{panelTitle}</h2>
           <ul>
             {entries.map((entry) => (
               <li key={entry.href}>
                 <Link href={entry.href} prefetch={false}>
+                  {/* Bloc 132 §4 : un guide sans illustration de couverture
+                      garde son emplacement — la vignette vide aligne les
+                      libellés — mais pas d'<img> sans source pour autant. */}
                   <span className="home-hero-thumb">
-                    <GameImage
-                      src={entry.image}
-                      alt=""
-                      width={80}
-                      height={80}
-                      fallback={null}
-                    />
+                    {entry.image ? (
+                      <GameImage
+                        src={entry.image}
+                        alt=""
+                        width={80}
+                        height={80}
+                        fallback={null}
+                      />
+                    ) : null}
                   </span>
                   <span className="home-hero-entry-copy">
                     <span className="home-hero-entry-label">{entry.label}</span>

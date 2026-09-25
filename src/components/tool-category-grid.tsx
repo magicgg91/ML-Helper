@@ -75,8 +75,6 @@ export function ToolCategoryGrid({
   active,
   locale,
   t,
-  toolLinks,
-  order,
 }: {
   active: CalculatorAvailability;
   // Bloc 64/A: the tiles are ordered by the label actually shown, so the
@@ -84,24 +82,12 @@ export function ToolCategoryGrid({
   // admin lists got at Bloc 62/C.
   locale: string;
   t: Awaited<ReturnType<typeof getTranslations<"tools">>>;
-  /**
-   * Bloc 129 §3.2 : sur l'index Outils, la carte d'une catégorie liste ses
-   * outils, un lien par outil. L'accueil (§3.1) montre les mêmes cartes
-   * sans cette liste — d'où un paramètre, plutôt qu'une seconde grille qui
-   * dupliquerait la mise en page.
-   */
-  toolLinks?: Record<string, CategoryToolLink[]>;
-  /**
-   * L'ordre imposé par le §3.2 (Villes, Compétences, Combat, Classement).
-   * Sans lui, les cartes restent triées par libellé traduit (Bloc 64/A).
-   */
-  order?: readonly string[];
 }) {
-  const ordered = order
-    ? [...toolCategories].sort(
-        (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
-      )
-    : sortByLabel(toolCategories, (item) => t(item.label), locale);
+  // Bloc 132 §6 : la liste des outils et l'ordre imposé sont partis avec
+  // l'index, qui a sa propre mise en page (ToolCategorySections). Ici
+  // l'accueil annonce les quatre catégories, triées par libellé traduit
+  // (Bloc 64/A).
+  const ordered = sortByLabel(toolCategories, (item) => t(item.label), locale);
   return (
     <div className="tool-category-grid">
       {ordered.map((category, index) => {
@@ -140,40 +126,6 @@ export function ToolCategoryGrid({
             </div>
           </>
         );
-        const links = toolLinks?.[category.slug] ?? [];
-        // Une carte qui liste ses outils ne peut pas être elle-même un
-        // lien : on n'imbrique pas un lien dans un lien. Le lien de
-        // catégorie couvre alors l'image et le titre, et chaque outil
-        // porte le sien.
-        if (available && links.length > 0)
-          return (
-            <article className="tool-category-card" key={category.slug}>
-              <Link
-                className="tool-category-head"
-                href={`/tools/${category.slug}`}
-                prefetch={false}
-              >
-                {content}
-              </Link>
-              <ul className="tool-category-tools">
-                {links.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} prefetch={false}>
-                      <span className="tool-link-copy">
-                        <span className="tool-link-label">{link.label}</span>
-                        {link.description ? (
-                          <span className="tool-link-description">
-                            {link.description}
-                          </span>
-                        ) : null}
-                      </span>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          );
         return available ? (
           <Link
             className="tool-category-card"

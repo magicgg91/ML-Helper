@@ -112,12 +112,14 @@ describe("ReferenceSwitcherNav", () => {
       "href",
       "/referentiels/expedition-equipment",
     );
-    // Bloc 129 §3.9 : la rangée n'emprunte plus les classes de la bannière
-    // de catégories des outils (Bloc 40/A) — les deux navigations ne se
-    // ressemblent plus : celle-ci porte une vignette par onglet.
-    expect(nav).toHaveClass("reference-switcher");
-    expect(nav).not.toHaveClass("category-nav");
-    expect(currentLink).toHaveClass("reference-tab");
+    // Bloc 132 §8 : l'inverse de ce que ce test gardait jusqu'ici. Le
+    // Bloc 40/A avait donné aux deux rangées les mêmes classes, le Bloc 129
+    // §3.9 les avait séparées parce que leurs formes avaient divergé, et le
+    // §8 les ramène à une seule — via un composant partagé cette fois, pas
+    // une simple classe commune, donc sans la divergence qui avait motivé
+    // la séparation.
+    expect(nav).toHaveClass("selection-banner-band");
+    expect(currentLink).toHaveClass("selection-tab");
     expect(otherLink).not.toHaveAttribute("aria-current");
   });
 

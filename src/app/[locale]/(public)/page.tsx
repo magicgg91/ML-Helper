@@ -11,17 +11,20 @@ import {
 } from "@/components/tool-category-grid";
 import { HomeHero, type HeroEntry } from "@/components/home-hero";
 import { HomeGuides, type GuideEntry } from "@/components/home-guides";
-import { HomeReferenceRow } from "@/components/home-reference-row";
+import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { ReportBanner } from "@/components/report-banner";
 import { ReportErrorLink } from "@/components/report-error-link";
-import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
+import { referenceCatalog } from "@/lib/reference-catalog";
 import { plainText } from "@/lib/plain-text";
-import { mostUsedEntries, resolveFeaturedGuide } from "@/lib/site-highlights";
 import {
-  toolCategoryLabelKeys,
-  toolCategoryOf,
-  toolEntryHref,
-} from "@/lib/tool-links";
+  fallbackHighlights,
+  homeReferenceSlugs,
+  resolveFeaturedGuide,
+  resolveHomeHighlights,
+} from "@/lib/site-highlights";
+import { getPublicDescriptions } from "@/lib/tool-descriptions-server";
+import { getHomeHighlights } from "@/lib/home-highlights-server";
+import { toolCategoryLabelKeys } from "@/lib/tool-links";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { canonicalUrl, languageAlternates } from "@/lib/site-url";
@@ -93,34 +96,54 @@ export default async function HomePage() {
   const categoryImage = new Map(
     toolCategories.map((category) => [category.slug, category.image]),
   );
-  const entries: HeroEntry[] = mostUsedEntries.flatMap((entry) => {
-    if (entry.kind === "tool") {
-      const href = toolEntryHref(entry.slug);
-      const category = toolCategoryOf(entry.slug);
-      if (!href || !category || !active[entry.slug]) return [];
-      return [
-        {
-          href,
-          label: rootT(`${entry.slug}.name`),
-          type: t("entry-tool", {
-            category: tools(toolCategoryLabelKeys[category]),
-          }),
-          image: categoryImage.get(category) ?? "",
-        },
-      ];
-    }
-    const reference = activeReferences.find(
-      (candidate) => candidate.calculatorSlug === entry.slug,
-    );
-    if (!reference) return [];
-    return [
-      {
-        href: referenceHref(reference.slug),
-        label: references(`catalog.${reference.slug}`),
+  // Bloc 132 §4 : la sélection « Mis en avant » vient de l'administration.
+  // Pas de ligne enregistrée, c'est « personne n'a encore choisi » et la
+  // liste de repli prend le relais ; une ligne vide, c'est « ne montre
+  // rien », et le panneau disparaît.
+  // §5 : les cartes de référentiels portent leur description, lue en base
+  // comme sur l'index (Bloc 130). La grille les attend par slug public.
+  const storedDescriptions = await getPublicDescriptions(locale);
+  const referenceDescriptions = Object.fromEntries(
+    referenceCatalog.map((reference) => [
+      reference.slug,
+      storedDescriptions[reference.calculatorSlug] ?? "",
+    ]),
+  );
+  const selection = await getHomeHighlights();
+  const entries: HeroEntry[] = resolveHomeHighlights(
+    selection ?? fallbackHighlights,
+    {
+      active,
+      guides: guides.map((guide) => ({
+        slug: guide.slug,
+        title: localizedText(guide.title, locale),
+        coverImage: guide.coverImage,
+      })),
+      categoryImage: (category) => categoryImage.get(category),
+    },
+  ).map((entry) => {
+    if (entry.kind === "tool")
+      return {
+        href: entry.href,
+        label: rootT(`${entry.slug}.name`),
+        type: t("entry-tool", {
+          category: tools(toolCategoryLabelKeys[entry.category]),
+        }),
+        image: entry.image,
+      };
+    if (entry.kind === "reference")
+      return {
+        href: entry.href,
+        label: references(`catalog.${entry.slug}`),
         type: t("entry-reference"),
-        image: reference.image,
-      },
-    ];
+        image: entry.image,
+      };
+    return {
+      href: entry.href,
+      label: entry.title,
+      type: t("entry-guide"),
+      image: entry.image ?? "",
+    };
   });
 
   const featured = resolveFeaturedGuide(guides);
@@ -141,18 +164,19 @@ export default async function HomePage() {
         eyebrow={t("eyebrow")}
         title={t("h1")}
         intro={t("intro")}
-        primary={{ href: "/tools", label: t("explore-tools") }}
-        secondary={
-          featured
-            ? { href: `/guides/${featured.slug}`, label: t("start-guide") }
-            : undefined
-        }
+        actions={[
+          { href: "/tools", label: t("explore-tools") },
+          { href: "/referentiels", label: t("explore-references") },
+          ...(featured
+            ? [{ href: `/guides/${featured.slug}`, label: t("start-guide") }]
+            : []),
+        ]}
         counters={[
           t("count-tools", { count: activeTools.length }),
           t("count-references", { count: activeReferences.length }),
           t("count-guides", { count: guides.length }),
         ]}
-        panelTitle={t("most-used")}
+        panelTitle={t("highlights")}
         entries={entries}
       />
       <section className="home-section home-tools">
@@ -162,7 +186,7 @@ export default async function HomePage() {
             <h2>{t("toolsTitle")}</h2>
             <p className="home-section-lead">{t("toolsDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/tools">
+          <Link className="button-secondary home-section-all" href="/tools">
             {t("all-tools")} →
           </Link>
         </div>
@@ -178,16 +202,23 @@ export default async function HomePage() {
             <h2>{t("referentielsTitle")}</h2>
             <p className="home-section-lead">{t("referentielsDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/referentiels">
+          <Link
+            className="button-secondary home-section-all"
+            href="/referentiels"
+          >
             {t("all-references")} →
           </Link>
         </div>
-        <HomeReferenceRow
-          entries={activeReferences.map((reference) => ({
-            href: referenceHref(reference.slug),
-            label: references(`catalog.${reference.slug}`),
-            image: reference.image,
-          }))}
+        {/* §5 : la même carte que la section outils — image carrée, nom,
+            description — et seulement les quatre référentiels que la recette
+            nomme. Montrer les sept faisait de cette section un doublon de
+            l'index, que le lien ci-dessus atteint en un clic. */}
+        <ReferenceCatalogGrid
+          t={references}
+          locale={locale}
+          active={active}
+          only={homeReferenceSlugs}
+          descriptions={referenceDescriptions}
         />
       </section>
       <section className="home-section home-guides">
@@ -197,7 +228,7 @@ export default async function HomePage() {
             <h2>{t("guidesTitle")}</h2>
             <p className="home-section-lead">{t("guidesDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/guides">
+          <Link className="button-secondary home-section-all" href="/guides">
             {t("all-guides")} →
           </Link>
         </div>
@@ -222,10 +253,7 @@ export default async function HomePage() {
         title={t("banner-title")}
         text={t("banner-text")}
         action={
-          <ReportErrorLink
-            label={publicT("report-error")}
-            className="report-error-primary"
-          />
+          <ReportErrorLink label={publicT("report-error")} variant="primary" />
         }
       />
     </main>

@@ -1,6 +1,15 @@
-import type { CalculatorSlug } from "./calculator-catalog";
+import type {
+  CalculatorAvailability,
+  CalculatorSlug,
+} from "./calculator-catalog";
 import { parseGuideCategories, type GuideCategory } from "./guide-categories";
-import type { ToolCategorySlug } from "./tool-links";
+import type { HomeHighlight } from "./home-highlights";
+import { referenceCatalog, referenceHref } from "./reference-catalog";
+import {
+  toolCategoryOf,
+  toolEntryHref,
+  type ToolCategorySlug,
+} from "./tool-links";
 
 /**
  * Bloc 129 : les listes que le brief demande de rendre configurables plutôt
@@ -34,25 +43,120 @@ export const featuredGuide: {
 } = { slug: "", category: "debuter" };
 
 /**
- * Ce que le panneau « Les plus utilisés » de l'accueil met en avant (§3.1).
+ * Le panneau « Mis en avant » de l'accueil quand personne n'a encore choisi.
  *
- * Les deux variantes se désignent par un slug de calculateur, jamais par le
- * slug public : celui d'un référentiel en diffère parfois (« shop » côté
- * URL, `consommables` côté données, Bloc 48/F), et c'est la clé technique
- * que le catalogue expose. Typé `CalculatorSlug` pour qu'une coquille soit
- * une erreur de compilation, pas une entrée silencieusement absente.
+ * Bloc 132 §4 : la sélection est éditoriale et vit en base désormais (voir
+ * `home-highlights.ts`). Cette liste n'est plus que le repli, pour que le
+ * panneau ne soit jamais vide à la livraison — c'est ce que le §4 demande
+ * explicitement.
+ *
+ * Les slugs sont ceux de l'URL publique, comme dans la sélection stockée :
+ * « shop » et non `consommables`, « gems » et non `gemmes` (Bloc 48/F les a
+ * séparés). Une seule convention des deux côtés, sinon il faudrait traduire
+ * dans les deux sens selon la provenance.
  */
-export type HighlightEntry =
-  | { kind: "tool"; slug: CalculatorSlug }
-  | { kind: "reference"; slug: CalculatorSlug };
-
-export const mostUsedEntries: HighlightEntry[] = [
+export const fallbackHighlights: HomeHighlight[] = [
   { kind: "tool", slug: "city-cost" },
   { kind: "tool", slug: "city-production" },
   { kind: "tool", slug: "city-max-level" },
-  { kind: "reference", slug: "consommables" },
-  { kind: "reference", slug: "gemmes" },
+  { kind: "reference", slug: "shop" },
+  { kind: "reference", slug: "gems" },
 ];
+
+/**
+ * Bloc 132 §5 : les quatre référentiels de la section « Retrouve les données
+ * clés » de l'accueil.
+ *
+ * Le Bloc 129 y montrait les sept, ce qui faisait de la section un doublon
+ * de l'index. Quatre suffisent à dire ce qu'on trouve là, et la recette les
+ * nomme : Boutique, Événements, Gemmes, Progression. Ce sont des slugs
+ * publics, comme partout ailleurs dans ce fichier. L'ordre d'affichage est
+ * alphabétique sur le libellé traduit, pas sur cette liste — « Événements »
+ * ne se classe pas au même endroit selon la langue.
+ */
+export const homeReferenceSlugs = ["shop", "events", "gems", "level-up"];
+
+/**
+ * Une entrée de la sélection, retrouvée dans les catalogues et en base.
+ *
+ * La page en fait des cartes : c'est elle qui traduit les libellés d'outils
+ * et de référentiels, et ce qui se traduit reste hors d'ici — cette
+ * fonction est pure, donc testable sans base ni traducteur.
+ */
+export type ResolvedHighlight =
+  | {
+      kind: "tool";
+      slug: CalculatorSlug;
+      href: string;
+      category: ToolCategorySlug;
+      image: string;
+    }
+  | { kind: "reference"; slug: string; href: string; image: string }
+  | {
+      kind: "guide";
+      slug: string;
+      href: string;
+      title: string;
+      image: string | null;
+    };
+
+/**
+ * Résout la sélection, en laissant tomber ce qui n'est plus visible.
+ *
+ * Un outil désactivé en administration, un référentiel pas encore ouvert,
+ * un guide dépublié : chacun disparaît de l'accueil sans qu'on retouche la
+ * sélection. C'est la contrepartie assumée d'une liste stockée en JSON
+ * plutôt qu'en table liée — la base ne garantit pas que la cible existe,
+ * donc c'est ici qu'on vérifie.
+ */
+export function resolveHomeHighlights(
+  entries: HomeHighlight[],
+  context: {
+    active: CalculatorAvailability;
+    /** Les guides publiés, déjà localisés par la page. */
+    guides: { slug: string; title: string; coverImage: string | null }[];
+    /** L'illustration d'une catégorie d'outils. */
+    categoryImage: (category: ToolCategorySlug) => string | undefined;
+  },
+): ResolvedHighlight[] {
+  return entries.flatMap((entry): ResolvedHighlight[] => {
+    if (entry.kind === "tool") {
+      const slug = entry.slug as CalculatorSlug;
+      const href = toolEntryHref(slug);
+      const category = toolCategoryOf(slug);
+      const image = category ? context.categoryImage(category) : undefined;
+      if (!href || !category || !image || !context.active[slug]) return [];
+      return [{ kind: "tool", slug, href, category, image }];
+    }
+    if (entry.kind === "reference") {
+      const reference = referenceCatalog.find(
+        (candidate) => candidate.slug === entry.slug,
+      );
+      if (!reference || !context.active[reference.calculatorSlug]) return [];
+      return [
+        {
+          kind: "reference",
+          slug: reference.slug,
+          href: referenceHref(reference.slug),
+          image: reference.image,
+        },
+      ];
+    }
+    const guide = context.guides.find(
+      (candidate) => candidate.slug === entry.slug,
+    );
+    if (!guide) return [];
+    return [
+      {
+        kind: "guide",
+        slug: guide.slug,
+        href: `/guides/${guide.slug}`,
+        title: guide.title,
+        image: guide.coverImage,
+      },
+    ];
+  });
+}
 
 /**
  * L'outil associé à un guide, pour la pastille « Outil : … » de l'index des

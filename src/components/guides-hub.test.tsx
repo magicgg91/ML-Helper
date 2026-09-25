@@ -130,9 +130,7 @@ describe("GuidesHub", () => {
       // Le libellé apparaît deux fois — comme filtre et comme badge de la
       // carte : c'est bien le badge qu'on cherche ici.
       const card = document.querySelector<HTMLElement>(".guide-card")!;
-      expect(
-        within(card).getByText("Débuter & progresser"),
-      ).toBeVisible();
+      expect(within(card).getByText("Débuter & progresser")).toBeVisible();
     });
   });
 
@@ -155,6 +153,49 @@ describe("GuidesHub", () => {
     const grid = document.querySelector<HTMLElement>(".guide-grid")!;
     expect(within(grid).queryByText("Bien débuter")).toBeNull();
     expect(within(grid).getByText("Un autre guide")).toBeVisible();
+  });
+
+  /**
+   * Bloc 132 §9 : la carte « Commence ici » est cliquable en entier, et son
+   * bouton « Lire le guide » a disparu. Le lien du titre est le seul de la
+   * carte — c'est lui que la feuille de style étire par-dessus (voir
+   * `.guide-featured` et son `::after`), et un second lien vers la même
+   * page rendrait ce recouvrement ambigu.
+   */
+  it("ne garde qu'un lien sur la carte mise en avant, celui du titre", () => {
+    renderHub(
+      [guide({ id: "start", slug: "bien-debuter", title: "Bien débuter" })],
+      "start",
+    );
+    const card = document.querySelector<HTMLElement>(".guide-featured")!;
+    expect(within(card).getAllByRole("link")).toHaveLength(1);
+    expect(within(card).getByRole("link")).toHaveAccessibleName("Bien débuter");
+    expect(within(card).queryByText("Lire le guide")).toBeNull();
+    // Pas de bouton non plus : le §9 le retire des deux affichages.
+    expect(within(card).queryByRole("button")).toBeNull();
+  });
+
+  /**
+   * Bloc 132 §9 : la pastille « Outil » reste un lien à part, jamais
+   * imbriqué dans celui de la carte. C'est toute la raison du recouvrement
+   * étiré plutôt que d'un <a> englobant : deux destinations, une seule
+   * carte.
+   */
+  it("garde la pastille Outil hors du lien de la carte", () => {
+    renderHub([
+      guide({
+        id: "one",
+        slug: "production",
+        title: "Comprendre la production",
+        tool: { href: "/tools/villes?open=production", label: "Production" },
+      }),
+    ]);
+    const pill = screen.getByRole("link", { name: "Outil : Production" });
+    const title = screen.getByRole("link", {
+      name: "Comprendre la production",
+    });
+    expect(title.contains(pill)).toBe(false);
+    expect(pill.closest("a")).toBe(pill);
   });
 
   it("n'invente pas de carte mise en avant quand rien n'est désigné", () => {

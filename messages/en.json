@@ -464,7 +464,6 @@
     "main": "Main navigation",
     "footer": "Footer",
     "home": "Home",
-    "tagline": "Million Lords companion",
     "breadcrumb": "Breadcrumb"
   },
   "search": {
@@ -545,13 +544,15 @@
     "referentielsDescription": "The game's exact costs, stats and tiers: equipment, gems, templars, shop…",
     "eyebrow": "Community companion",
     "explore-tools": "Explore the tools",
+    "explore-references": "Browse the reference tables",
     "start-guide": "Start here",
     "count-tools": "{count, plural, one {# tool} other {# tools}}",
     "count-references": "{count, plural, one {# reference} other {# references}}",
     "count-guides": "{count, plural, one {# guide} other {# guides}}",
-    "most-used": "Most used",
+    "highlights": "Highlights",
     "entry-tool": "Tool · {category}",
     "entry-reference": "Reference",
+    "entry-guide": "Guide",
     "all-tools": "All tools",
     "all-references": "All references",
     "all-guides": "All guides",
@@ -1473,6 +1474,9 @@
         },
         "xp-gain-rate": {
           "update": "{actor} updated the XP gain rate tiers"
+        },
+        "highlights": {
+          "update": "{actor} changed the homepage highlights"
         }
       },
       "eyebrow": "Access",
@@ -1568,7 +1572,29 @@
       "columns-public": "On the public site",
       "visibility-of": "Visibility of {language} on the public site",
       "always-active": "Always active",
-      "no-guides": "No guide"
+      "no-guides": "No guide",
+      "highlights": {
+        "section": "Homepage highlights",
+        "intro": "Pick up to five guides, tools or reference tables to feature on the homepage, in the order they will appear. With no selection the homepage keeps its default list; an empty selection hides the panel.",
+        "add": "Add",
+        "add-label": "Add {name} to the selection",
+        "search": "Search a guide, a tool or a reference table",
+        "empty": "Nothing selected. The homepage shows its default list.",
+        "empty-hidden": "An empty selection is saved: the homepage panel is hidden.",
+        "full": "Five entries at most. Remove one to add another.",
+        "no-match": "No match.",
+        "count": "{count} / {max} selected",
+        "save": "Save the selection",
+        "saved": "Selection saved.",
+        "kinds": {
+          "tool": "Tool",
+          "reference": "Reference table",
+          "guide": "Guide"
+        },
+        "saving": "Saving…",
+        "save-error": "Save failed (HTTP {status}).",
+        "server-error": "Could not reach the server. Try again later."
+      }
     },
     "open-menu": "Open the menu",
     "theme": {

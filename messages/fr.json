@@ -464,7 +464,6 @@
     "main": "Navigation principale",
     "footer": "Pied de page",
     "home": "Accueil",
-    "tagline": "Compagnon Million Lords",
     "breadcrumb": "Fil d'Ariane"
   },
   "search": {
@@ -545,13 +544,15 @@
     "referentielsDescription": "Les coûts, statistiques et paliers exacts du jeu : équipements, gemmes, templiers, boutique…",
     "eyebrow": "Compagnon communautaire",
     "explore-tools": "Explorer les outils",
+    "explore-references": "Consulter les référentiels",
     "start-guide": "Bien débuter",
     "count-tools": "{count, plural, one {# outil} other {# outils}}",
     "count-references": "{count, plural, one {# référentiel} other {# référentiels}}",
     "count-guides": "{count, plural, one {# guide} other {# guides}}",
-    "most-used": "Les plus utilisés",
+    "highlights": "Mis en avant",
     "entry-tool": "Outil · {category}",
     "entry-reference": "Référentiel",
+    "entry-guide": "Guide",
     "all-tools": "Tous les outils",
     "all-references": "Tous les référentiels",
     "all-guides": "Tous les guides",
@@ -1473,6 +1474,9 @@
         },
         "xp-gain-rate": {
           "update": "{actor} a modifié les paliers du taux de gain d’XP"
+        },
+        "highlights": {
+          "update": "{actor} a modifié la sélection « Mis en avant » de l’accueil"
         }
       },
       "eyebrow": "Accès",
@@ -1568,7 +1572,29 @@
       "columns-public": "Sur le site public",
       "visibility-of": "Visibilité de {language} sur le site public",
       "always-active": "Toujours active",
-      "no-guides": "Aucun guide"
+      "no-guides": "Aucun guide",
+      "highlights": {
+        "section": "Mis en avant sur l’accueil",
+        "intro": "Choisis jusqu’à cinq guides, outils ou référentiels à mettre en avant sur l’accueil, dans l’ordre où ils s’afficheront. Sans sélection, l’accueil garde sa liste par défaut ; une sélection vide masque le panneau.",
+        "add": "Ajouter",
+        "add-label": "Ajouter {name} à la sélection",
+        "search": "Chercher un guide, un outil ou un référentiel",
+        "empty": "Aucune entrée sélectionnée. L’accueil affiche sa liste par défaut.",
+        "empty-hidden": "Sélection vide enregistrée : le panneau est masqué sur l’accueil.",
+        "full": "Cinq entrées au maximum. Retire-en une pour en ajouter une autre.",
+        "no-match": "Rien ne correspond.",
+        "count": "{count} / {max} sélectionnés",
+        "save": "Enregistrer la sélection",
+        "saved": "Sélection enregistrée.",
+        "kinds": {
+          "tool": "Outil",
+          "reference": "Référentiel",
+          "guide": "Guide"
+        },
+        "saving": "Enregistrement…",
+        "save-error": "Échec de l’enregistrement (HTTP {status}).",
+        "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+      }
     },
     "open-menu": "Ouvrir le menu",
     "theme": {

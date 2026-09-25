@@ -1,9 +1,5 @@
-import { Link } from "@/i18n/navigation";
-import { ThemeToggle } from "../../../components/theme-toggle";
-import { LocaleToggle } from "../../../components/locale-toggle";
-import { PublicNav } from "../../../components/public-nav";
 import { PublicFooter } from "../../../components/public-footer";
-import { SiteSearch } from "../../../components/site-search";
+import { PublicHeader } from "../../../components/public-header";
 import { getActiveLocales } from "@/lib/locale-settings";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
@@ -23,6 +19,7 @@ export default async function PublicLayout({
     t,
     navigation,
     footer,
+    search,
     tools,
     references,
     locales,
@@ -33,6 +30,7 @@ export default async function PublicLayout({
     getTranslations("Public"),
     getTranslations("Navigation"),
     getTranslations("footer"),
+    getTranslations("search"),
     getTranslations("tools"),
     getTranslations("references"),
     getActiveLocales(),
@@ -56,29 +54,26 @@ export default async function PublicLayout({
   const startHere = resolveFeaturedGuide(guides);
   return (
     <div className="public-shell">
-      <header className="public-header">
-        <Link className="brand" href="/">
-          <span className="brand-name">ML-Helper</span>
-          <span className="brand-tagline">{navigation("tagline")}</span>
-        </Link>
-        <SiteSearch guides={searchGuides} active={active} />
-        <div className="public-header-actions">
-          <PublicNav
-            navLabel={navigation("main")}
-            menuLabel={navigation("menu")}
-            links={[
-              { href: "/tools", label: navigation("tools") },
-              { href: "/referentiels", label: navigation("referentiels") },
-              { href: "/guides", label: navigation("guides") },
-              // §2.1 : Contact est là, mais un cran en retrait des trois
-              // sections du site.
-              { href: "/contact", label: t("contact"), subdued: true },
-            ]}
-          />
-          <LocaleToggle locales={locales} />
-          <ThemeToggle />
-        </div>
-      </header>
+      {/* Bloc 132 §1 et §3 : la barre entière passe dans un composant, qui
+          tient l'état du panneau mobile (la loupe et le menu l'ouvrent tous
+          les deux). Le gabarit lui donne les données déjà traduites. */}
+      <PublicHeader
+        brand="ML-Helper"
+        guides={searchGuides}
+        active={active}
+        locales={locales}
+        labels={{
+          nav: navigation("main"),
+          menu: navigation("menu"),
+          search: search("label"),
+        }}
+        links={[
+          { href: "/tools", label: navigation("tools") },
+          { href: "/referentiels", label: navigation("referentiels") },
+          { href: "/guides", label: navigation("guides") },
+          { href: "/contact", label: t("contact") },
+        ]}
+      />
       {children}
       <PublicFooter
         brand="ML-Helper"

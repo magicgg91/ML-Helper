@@ -248,20 +248,26 @@ describe("public responsive styles", () => {
     expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
   });
 
-  it("also uniformly splits the Outils category nav 2-per-row on mobile", () => {
-    // Point 6: Villes/Combat/Classement/Compétences must wrap 2-per-line as
-    // a real grid, not organically via flex-wrap (which left the longer
-    // "Compétences" label alone, stretched, on its own line). The override
-    // must come AFTER the unconditional `.category-nav { display: flex }`
-    // base rule in source order, or the base rule wins the cascade at equal
-    // specificity regardless of the media query matching.
-    const baseRuleIndex = css.indexOf(".category-nav {\n  display: flex;");
-    const overrideRuleIndex = css.indexOf(
-      ".category-nav {\n    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));",
+  /**
+   * Bloc 132 §8 : les catégories ne se replient plus en 2×2 sur mobile —
+   * elles défilent horizontalement dans la bande, qui garde sa forme. Ce
+   * sont les onglets des outils de la catégorie qui passent en 2×2.
+   */
+  it("fait défiler les catégories dans la bande sur mobile, sans replier le bandeau", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
-    expect(baseRuleIndex).toBeGreaterThan(-1);
-    expect(overrideRuleIndex).toBeGreaterThan(-1);
-    expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+    );
+    // Des colonnes de largeur fixe, sinon sept onglets se partagent la
+    // largeur de l'écran et il n'y a plus rien à faire défiler.
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?grid-auto-columns: 7\.5rem;/,
+    );
+    expect(narrow).toMatch(
+      /\.calculator-tabs {\n\s*grid-auto-flow: row;\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
   });
 
   it("offsets the expanded mobile navigation below the header", () => {
@@ -398,5 +404,78 @@ describe("public responsive styles", () => {
         ).toBeGreaterThanOrEqual(4.5);
       }
     }
+  });
+});
+
+/**
+ * Bloc 132 §6 : l'index Outils.
+ *
+ * Le §6 ne change que le desktop — « Mobile : disposition inchangée » — et
+ * c'est la moitié fragile : la carte mobile d'avant n'existe plus qu'en
+ * repli, dans une media query, sous une disposition desktop qui ne lui
+ * ressemble pas. Les deux moitiés sont donc tenues ici, ensemble.
+ */
+describe("Bloc 132 §6 — la page Outils", () => {
+  const section = css.match(/\n\.tool-sections {([\s\S]*?)\n}/)?.[1];
+  const tools = css.match(/\n\.tool-section-tools {([\s\S]*?)\n}/)?.[1];
+  const tile = css.match(/\n\.tool-section-tools a {([\s\S]*?)\n}/)?.[1];
+  // Le repli mobile, à partir de son ouverture — les règles qui suivent
+  // dans le fichier appartiennent à d'autres sections.
+  const narrow = css
+    .slice(css.indexOf("@media (max-width: 48rem) {\n  .tool-section-head {"))
+    .slice(0, 1400);
+
+  it("empile les catégories, 20 px entre elles", () => {
+    expect(section).toMatch(/display: grid;/);
+    expect(section).toMatch(/gap: 1\.25rem;/);
+    // Pas de grid-template-columns : une carte par rangée, sur toute la
+    // largeur. C'est ce qui distingue cette page de l'accueil.
+    expect(section).not.toMatch(/grid-template-columns/);
+  });
+
+  it("range les outils en quatre colonnes de tuiles larges et basses", () => {
+    expect(tools).toMatch(
+      /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/,
+    );
+    expect(tile).toMatch(/min-height: 5\.625rem/);
+    expect(tile).toMatch(/border-radius: var\(--header-control-radius\)/);
+    expect(tile).toMatch(/background: var\(--field\)/);
+    expect(tile).toMatch(/border: 1px solid var\(--border\)/);
+  });
+
+  it("donne à la vignette d'en-tête un carré de 64 px", () => {
+    const thumb = css.match(/\n\.tool-section-thumb {([\s\S]*?)\n}/)?.[1];
+    expect(thumb).toMatch(/width: 4rem;/);
+    expect(thumb).toMatch(/height: 4rem;/);
+  });
+
+  // Une description longue grandirait toute la rangée pour une seule tuile.
+  it("coupe la description à deux lignes", () => {
+    const description = css.match(
+      /\n\.tool-entry-description {([\s\S]*?)\n}/,
+    )?.[1];
+    expect(description).toMatch(/-webkit-line-clamp: 2/);
+    expect(description).toMatch(/color: var\(--muted\)/);
+  });
+
+  it("rend à mobile la carte d'avant : image pleine largeur, lignes de 48 px, sans description", () => {
+    // Pleine largeur, rembourrage de la carte compris — d'où la marge
+    // négative qui accompagne la base de 100 %.
+    expect(narrow).toMatch(
+      /\.tool-section-thumb {[\s\S]*?flex-basis: 100%;[\s\S]*?margin: 0 -1rem;/,
+    );
+    expect(narrow).toMatch(
+      /\.tool-section-tools {[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/,
+    );
+    expect(narrow).toMatch(/\.tool-section-tools a {[\s\S]*?min-height: 3rem;/);
+    expect(narrow).toMatch(/\.tool-entry-description {\s*\n\s*display: none;/);
+  });
+
+  // La grille de l'accueil et les cartes de l'index sont deux mises en page,
+  // pas un composant à deux modes : les classes de l'ancienne liste glissée
+  // dans la carte d'accueil ne doivent pas survivre sans rendu.
+  it("ne garde pas les classes de la liste d'avant", () => {
+    expect(css).not.toMatch(/\.tool-category-tools/);
+    expect(css).not.toMatch(/\.tool-link-description/);
   });
 });

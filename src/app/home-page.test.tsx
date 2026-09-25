@@ -75,8 +75,26 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
 vi.mock("@/lib/prisma", () => ({
   prisma: { guide: { findMany: findManyMock } },
 }));
+// Bloc 132 §4 : la sélection « Mis en avant » vient de l'administration.
+// `undefined` = aucune ligne enregistrée, donc le repli — c'est l'état de
+// tous les tests qui ne s'en occupent pas.
+const highlights = vi.hoisted(() => ({
+  value: undefined as
+    { kind: "tool" | "reference" | "guide"; slug: string }[] | undefined,
+}));
+// Bloc 132 §5 : les cartes de référentiels de l'accueil portent leur
+// description, lue en base comme sur l'index.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({ gemmes: "Le coût de chaque fusion." }),
+}));
+vi.mock("@/lib/home-highlights-server", () => ({
+  getHomeHighlights: async () => highlights.value,
+}));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  highlights.value = undefined;
+});
 
 // Bloc 42/J: every public page's metadata must carry a real (never empty)
 // description, plus hreflang alternates for the 5 launched locales — this
@@ -175,11 +193,13 @@ describe("HomePage", () => {
     expect(within(list).queryByRole("link", { name: /Guide 2/ })).toBeNull();
   });
 
-  it("propose le panneau « Les plus utilisés » et le bandeau de signalement", async () => {
+  // Bloc 132 §4 : sans sélection enregistrée, le panneau garde la liste de
+  // repli — le §4 demande qu'il ne soit jamais vide à la livraison.
+  it("propose le panneau « Mis en avant » de repli et le bandeau de signalement", async () => {
     const { container } = render(await HomePage());
     const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
     expect(panel).not.toBeNull();
-    // Les trois outils de Villes de la configuration, plus deux référentiels.
+    // Les trois outils de Villes du repli, plus deux référentiels.
     expect(within(panel).getAllByRole("link")).toHaveLength(5);
     expect(
       within(panel).getByRole("link", { name: /city-cost.name/ }),
@@ -190,25 +210,76 @@ describe("HomePage", () => {
     ).toHaveAttribute("href", "/contact?subject=data-error");
   });
 
-  it("shows the built references, each directly clickable, in their own section", async () => {
+  it("suit la sélection enregistrée, dans son ordre, guides compris", async () => {
+    highlights.value = [
+      { kind: "guide", slug: "guide-2" },
+      { kind: "reference", slug: "gems" },
+      { kind: "tool", slug: "city-cost" },
+    ];
     const { container } = render(await HomePage());
-    const referencesSection =
-      container.querySelector<HTMLElement>(".home-references")!;
-    expect(referencesSection).not.toBeNull();
-    for (const slug of [
-      "combat-equipment",
-      "expedition-equipment",
-      "level-up",
-      "templars",
-    ]) {
-      const link = within(referencesSection).getByRole("link", {
-        name: new RegExp(`catalog.${slug}`),
-      });
-      expect(link).toHaveAttribute("href", `/referentiels/${slug}`);
-    }
-    // Même remarque que pour les guides : la section porte maintenant son
-    // lien « Tous les référentiels » (§3.1), et chaque référentiel reste
-    // joignable directement.
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(
+      within(panel)
+        .getAllByRole("link")
+        .map((link) => link.getAttribute("href")),
+    ).toEqual([
+      "/guides/guide-2",
+      "/referentiels/gems",
+      "/tools/villes?open=cost",
+    ]);
+  });
+
+  /**
+   * La sélection vit en JSON, pas en table liée : la base ne garantit pas
+   * que la cible existe encore. Une entrée qui ne mène nulle part se retire
+   * d'elle-même, sans qu'on ait à retoucher la sélection.
+   */
+  it("laisse tomber une entrée devenue invisible", async () => {
+    highlights.value = [
+      { kind: "tool", slug: "city-cost" },
+      { kind: "guide", slug: "guide-jamais-publie" },
+      { kind: "reference", slug: "referentiel-inconnu" },
+    ];
+    const { container } = render(await HomePage());
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(within(panel).getAllByRole("link")).toHaveLength(1);
+  });
+
+  // Une sélection vidée est un choix, pas une absence de choix : le panneau
+  // disparaît au lieu de ressusciter le repli.
+  it("masque le panneau quand la sélection est vide", async () => {
+    highlights.value = [];
+    const { container } = render(await HomePage());
+    expect(container.querySelector(".home-hero-panel")).toBeNull();
+  });
+
+  /**
+   * Bloc 132 §5 : la section montrait les sept référentiels, ce qui en
+   * faisait un doublon de l'index que son propre lien atteint en un clic.
+   * Elle en montre quatre, nommés par la recette.
+   */
+  it("ne montre que les quatre référentiels retenus, chacun cliquable", async () => {
+    const { container } = render(await HomePage());
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    const links = within(section)
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+      // Le lien « Tous les référentiels » de l'en-tête de section reste.
+      .filter((href) => href !== "/referentiels");
+    expect(links).toEqual([
+      "/referentiels/events",
+      "/referentiels/gems",
+      "/referentiels/level-up",
+      "/referentiels/shop",
+    ]);
+  });
+
+  it("porte la description d'un référentiel, lue en base", async () => {
+    const { container } = render(await HomePage());
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    expect(
+      within(section).getByText("Le coût de chaque fusion."),
+    ).toBeInTheDocument();
   });
 
   it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {
