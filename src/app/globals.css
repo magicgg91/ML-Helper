@@ -4288,6 +4288,12 @@ body > main h1 {
   color: var(--text);
   font-family: var(--font-serif, serif);
   font-size: 1.05rem;
+  /* La case est étroite et le titre centré : sans équilibrage, la coupure
+     tombe sur la dernière ponctuation et laisse le « ? » seul sur sa
+     ligne. Les messages FR s'écrivent avec une espace ordinaire avant la
+     ponctuation double partout dans le projet — on répartit le titre ici
+     plutôt que d'introduire une espace insécable dans cette seule chaîne. */
+  text-wrap: balance;
 }
 .reference-suggestion-text {
   font-size: 0.85rem;

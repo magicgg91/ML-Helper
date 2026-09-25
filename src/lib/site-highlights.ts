@@ -33,9 +33,18 @@ export const featuredGuide: {
   category: GuideCategory;
 } = { slug: "", category: "debuter" };
 
-/** Ce que le panneau « Les plus utilisés » de l'accueil met en avant (§3.1). */
+/**
+ * Ce que le panneau « Les plus utilisés » de l'accueil met en avant (§3.1).
+ *
+ * Les deux variantes se désignent par un slug de calculateur, jamais par le
+ * slug public : celui d'un référentiel en diffère parfois (« shop » côté
+ * URL, `consommables` côté données, Bloc 48/F), et c'est la clé technique
+ * que le catalogue expose. Typé `CalculatorSlug` pour qu'une coquille soit
+ * une erreur de compilation, pas une entrée silencieusement absente.
+ */
 export type HighlightEntry =
-  { kind: "tool"; slug: CalculatorSlug } | { kind: "reference"; slug: string };
+  | { kind: "tool"; slug: CalculatorSlug }
+  | { kind: "reference"; slug: CalculatorSlug };
 
 export const mostUsedEntries: HighlightEntry[] = [
   { kind: "tool", slug: "city-cost" },
