@@ -4780,7 +4780,9 @@ body > main h1 {
   grid-template-columns: minmax(0, 1fr) 25rem;
   gap: 3rem;
   align-items: start;
-  padding: clamp(1.5rem, 4vw, 3.5rem) 0;
+  /* Bloc 134 : plus de rembourrage vertical ici. Il s'ajoutait à la marge
+     de la première section — deux mécanismes pour un seul écart — et la
+     hauteur du hero suit désormais son contenu, sans plancher. */
 }
 .home-hero-copy h1 {
   margin: 0.5rem 0 1rem;
@@ -4955,15 +4957,71 @@ body > main h1 {
     gap: 2rem;
   }
 }
+/* ------------------------------------------------------------------------
+   Bloc 134 — le rythme vertical de l'accueil.
+
+   Chaque bloc portait sa propre marge haute, et le hero un rembourrage de
+   51 px en plus : entre le hero et la première section, deux mécanismes
+   s'ajoutaient pour 141 px de vide. Un seul les remplace — le `gap` de la
+   colonne — et les marges qu'il doublait sont retirées de leurs règles
+   plutôt que neutralisées ici : deux mécanismes dont l'un est annulé
+   restent deux mécanismes, et c'est comme ça que l'écart avait dérivé.
+
+   Les quatre écarts de la page sont nommés ici et nulle part ailleurs : on
+   les règle sur ces quatre lignes, pas sur cinq sélecteurs.
+   --------------------------------------------------------------------- */
+:root {
+  --space-section: 3.5rem;
+  --space-page-top: 2.5rem;
+  --space-page-bottom: 4rem;
+  --space-section-head: 1.5rem;
+}
+@media (max-width: 48rem) {
+  :root {
+    --space-section: 2.25rem;
+    --space-page-top: 1.5rem;
+    --space-page-bottom: 2.5rem;
+    --space-section-head: 1.25rem;
+  }
+}
+/* La colonne de la page : le `gap` est le seul espace entre ses blocs.
+   Les deux classes plutôt qu'une — `.public-main` pose la marge de toutes
+   les pages, et à spécificité égale ce serait l'ordre du fichier qui
+   trancherait (Bloc 25). */
+.public-main.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section);
+  margin-top: var(--space-page-top);
+  margin-bottom: var(--space-page-bottom);
+}
+/* Les grilles de cartes portent leur propre marge haute, qui s'ajouterait
+   au `gap` de la section. Elles servent aussi ailleurs, avec leur rythme à
+   elles : on la retire donc ici, et avec deux classes pour passer devant
+   `.tool-category-grid`, écrite plus loin dans le fichier. */
+.home-page .home-section > * {
+  margin-top: 0;
+}
+/* Le pied de page apporte 64 px de marge haute sur tout le site. Adjacente
+   à celle de la page, les deux fusionnent au plus grand des deux : l'écart
+   valait 64 px quelle que soit la largeur, y compris là où l'accueil en
+   demande 40. Après l'accueil, `--space-page-bottom` décide seul ; les
+   autres pages gardent la marge du pied. */
+.home-page + .public-footer {
+  margin-top: 0;
+}
+/* La section suit la même règle que la page : une colonne, un seul écart
+   entre le titre et son contenu. */
 .home-section {
-  margin-top: clamp(3rem, 7vw, 6rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section-head);
 }
 .home-section-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 2rem;
-  margin-bottom: 1.5rem;
 }
 .home-section-head h2 {
   margin: 0.35rem 0 0.75rem;
@@ -5177,7 +5235,6 @@ body > main h1 {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-top: clamp(3rem, 7vw, 6rem);
   padding: 1.75rem;
   border: 1px solid var(--accent-border);
   border-radius: 1rem;
