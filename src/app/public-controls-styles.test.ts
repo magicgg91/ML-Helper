@@ -286,3 +286,94 @@ describe("Bloc 132 §8 — le bandeau de sélection", () => {
     );
   });
 });
+
+/**
+ * Bloc 132 §9 : les cartes de l'index des guides, cliquables en entier.
+ *
+ * Le recouvrement étiré n'est pas un détail de style : il remplace le
+ * bouton retiré et la carte-lien qu'on ne peut pas écrire (la pastille
+ * « Outil » est un second lien, et on n'en imbrique pas deux). Il tient à
+ * deux règles qui doivent rester ensemble — le parent positionné et le
+ * `::after` qui le remplit.
+ */
+describe("Bloc 132 §9 — les cartes de guide", () => {
+  it.each([
+    ["mise en avant", ".guide-featured", ".guide-featured-copy h3 a::after"],
+    ["simple", ".guide-card", ".guide-card-copy h3 a::after"],
+  ])(
+    "étire le lien du titre sur toute la carte %s",
+    (_label, card, overlay) => {
+      expect(rule(card), card).toMatch(/position: relative/);
+      const after = rule(overlay);
+      expect(after, overlay).toBeDefined();
+      expect(after).toMatch(/position: absolute/);
+      expect(after).toMatch(/inset: 0/);
+    },
+  );
+
+  // La pastille passe au-dessus du recouvrement, sinon elle ouvrirait le
+  // guide au lieu de l'outil.
+  it("laisse la pastille Outil au-dessus du recouvrement", () => {
+    const pill = rule(".guide-card-tool");
+    expect(pill).toMatch(/position: relative/);
+    expect(pill).toMatch(/z-index: 1/);
+  });
+});
+
+/**
+ * Bloc 132 §10 : la carte d'un référentiel sur mobile — image carrée, nom
+ * en 15 px, description sur une seule ligne.
+ */
+describe("Bloc 132 §10 — l'index Référentiels sur mobile", () => {
+  const narrow = css.slice(
+    css.indexOf(
+      "@media (max-width: 42rem) {\n  .reference-category-card .tool-category-copy h2 {",
+    ),
+  );
+
+  // Écrit après la base qu'il remplace : à spécificité égale c'est la
+  // dernière règle du fichier qui gagne, media query ou pas.
+  it("rapetisse le nom à 15 px, après sa règle de base", () => {
+    const base = css.indexOf(".tool-category-copy h2 {");
+    expect(base).toBeGreaterThan(-1);
+    expect(css.indexOf(narrow.slice(0, 60))).toBeGreaterThan(base);
+    expect(narrow.slice(0, 200)).toMatch(/font-size: 0\.9375rem/);
+  });
+
+  it("coupe la description à une ligne", () => {
+    expect(narrow).toMatch(
+      /\.reference-category-card \.reference-card-description {[\s\S]*?white-space: nowrap;/,
+    );
+    expect(narrow).toMatch(
+      /\.reference-category-card \.reference-card-description {[\s\S]*?text-overflow: ellipsis;/,
+    );
+  });
+});
+
+/**
+ * Bloc 132 §10 : Contact sur mobile — le titre, l'intro, les trois
+ * explications, puis le formulaire.
+ *
+ * Cet ordre est déjà celui du balisage : sur une colonne, la grille suit
+ * le document. Ce qui le romprait, c'est un `order` ou un sens de
+ * remplissage inversé glissé dans la règle mobile — c'est donc ça que ce
+ * test refuse, et pas seulement la présence des blocs.
+ */
+describe("Bloc 132 §10 — Contact sur mobile", () => {
+  it("empile la page dans l'ordre du document, formulaire en dernier", () => {
+    const narrow = css.slice(
+      css.indexOf(
+        "  .contact-layout {\n    grid-template-columns: minmax(0, 1fr);",
+      ),
+    );
+    const stacked = narrow.slice(0, narrow.indexOf("\n  }") + 4);
+    expect(stacked).toMatch(/grid-template-columns: minmax\(0, 1fr\)/);
+    expect(stacked).not.toMatch(/dense|column-reverse|row-reverse/);
+    // `order` en début de déclaration seulement : `border:` contient la
+    // même suite de lettres, et le chercher tel quel trouve tout le fichier.
+    for (const [selector, body] of css.matchAll(
+      /(?<=\n)(\.contact-[^{]*){([\s\S]*?)\n}/g,
+    ))
+      expect(body, selector).not.toMatch(/(?:^|[;{]\s*)order:/m);
+  });
+});

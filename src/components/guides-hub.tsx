@@ -1,7 +1,6 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { Button } from "./button";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -88,6 +87,10 @@ export function GuidesHub({
       {visibleGuides.length ? (
         <>
           {featured && (
+            // Bloc 132 §9 : la carte entière est cliquable — le titre
+            // porte le lien et le recouvre (voir .guide-featured dans la
+            // feuille de style). Le bouton « Lire le guide » qui doublait
+            // ce lien a disparu : il n'ouvrait rien de plus.
             <article className="guide-featured">
               {media(featured, "guide-featured-media")}
               <div className="guide-featured-copy">
@@ -98,9 +101,6 @@ export function GuidesHub({
                   </Link>
                 </h3>
                 <p>{featured.excerpt}</p>
-                <Button href={`/guides/${featured.slug}`} prefetch={false}>
-                  {t("read-guide")}
-                </Button>
               </div>
             </article>
           )}

@@ -4372,8 +4372,12 @@ body > main h1 {
   font-size: 0.875rem;
   font-weight: 600;
 }
-/* §3.4 : la carte mise en avant, pleine largeur. */
+/* §3.4 : la carte mise en avant, pleine largeur.
+   Bloc 132 §9 : cliquable en entier, comme les autres cartes de la page —
+   le titre porte le lien et le recouvre. Elle n'a pas de second lien à
+   protéger (pas de pastille « Outil »), donc pas de z-index à poser. */
 .guide-featured {
+  position: relative;
   display: grid;
   grid-template-columns: 18.75rem minmax(0, 1fr);
   gap: 1.75rem;
@@ -4422,10 +4426,19 @@ body > main h1 {
   font-size: 1.75rem;
   line-height: 1.15;
 }
+.guide-featured:hover {
+  border-color: var(--accent);
+}
 .guide-featured-copy h3 a,
 .guide-card-copy h3 a {
   color: var(--text);
   text-decoration: none;
+}
+/* Bloc 132 §9 : le même recouvrement que sur .guide-card plus bas. */
+.guide-featured-copy h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 .guide-featured-copy h3 a:hover,
 .guide-card-copy h3 a:hover {
@@ -5209,6 +5222,28 @@ body > main h1 {
   color: var(--accent-strong);
   font-family: var(--font-mono, monospace);
   font-size: 0.78rem;
+}
+/* Bloc 132 §10 : sur mobile, la carte d'un référentiel se resserre — image
+   carrée, nom en 15 px, description sur une seule ligne. Deux cartes par
+   rangée à cette largeur : le nom en 19 px y prenait deux lignes sur la
+   moitié du catalogue, et la carte grandissait pour rien.
+
+   Écrit APRÈS `.tool-category-copy h2` juste au-dessus, et non dans la
+   media query des grilles plus haut dans le fichier : à spécificité égale
+   c'est la dernière règle qui gagne, media query ou pas. Ici le sélecteur
+   est de toute façon plus spécifique, mais la place reste celle qui se
+   relit sans avoir à le vérifier. */
+@media (max-width: 42rem) {
+  .reference-category-card .tool-category-copy h2 {
+    font-size: 0.9375rem;
+  }
+  .reference-category-card .reference-card-description {
+    overflow: hidden;
+    /* Une ligne, coupée net : sur deux colonnes de téléphone, une
+       description de deux lignes double la hauteur d'une carte sur deux. */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 /* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same
    treatment as .tab-coming-soon, which Bloc 132 §8 made the single badge of
