@@ -29,40 +29,67 @@ import { e2eDatabaseUrl } from "./e2e-database";
 export async function resetE2eDatabase(databaseUrl = e2eDatabaseUrl) {
   const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
   try {
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "reference_tables"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "formulas"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "calculators"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "guides"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "static_content"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "audit_logs"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "users"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "login_throttles"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "locale_settings"');
-    await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "site_settings"');
-    // Bloc 131 (correctif CI) : et les index, nommément.
-    //
-    // En SQLite un index part avec sa table, donc ces lignes ne devraient
-    // rien avoir à faire. Elles existent parce que la CI a montré le
-    // contraire : `CREATE INDEX "audit_logs_created_at_idx"` a échoué sur
-    // « index already exists » au troisième appel de cette fonction, dans
-    // une suite complète où une vingtaine de fichiers tournent en parallèle.
-    // Reproduit trois fois sous charge, jamais en isolation — vingt remises
-    // à zéro d'affilée passent —, et je n'ai pas établi le mécanisme.
-    //
-    // Ce que ces lignes rétablissent, c'est le contrat que cette fonction
-    // s'était donné et que l'échec contredit : rien d'un état antérieur ne
-    // survit à la remise à zéro. Un index orphelin en fait partie, et
-    // `DROP INDEX IF EXISTS` l'emporte qu'il ait ou non gardé sa table.
-    for (const index of [
-      "users_username_key",
-      "audit_logs_created_at_idx",
-      "calculators_slug_key",
-      "formulas_calculator_id_key_key",
-      "guides_slug_key",
-      "static_content_key_key",
-      "reference_tables_key_key",
-    ])
-      await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "${index}"`);
+    /**
+     * Bloc 121 / correctif CI : on balaie ce que la base contient, au lieu
+     * d'énumérer ce qu'on croit qu'elle contient.
+     *
+     * Les deux listes écrites à la main — dix tables, puis sept index ajoutés
+     * au Bloc 131 — ont chacune fini par laisser passer quelque chose. La CI
+     * a échoué deux fois, sur deux noms différents (`audit_logs_created_at_idx`
+     * puis `users_username_key`), toujours sur un « already exists » à la
+     * création, et la seconde fois alors même que le nom en question était
+     * dans la liste des `DROP INDEX IF EXISTS` exécutés juste avant. Le
+     * mécanisme n'est toujours pas établi ; ce qui l'est, c'est qu'une liste
+     * figée ne peut pas décrire un état qu'on ne sait pas expliquer.
+     *
+     * `sqlite_master` le décrit, lui. On retire tout ce qu'il annonce, on
+     * recommence tant qu'il reste quelque chose (une table emporte ses index,
+     * donc un passage suffit presque toujours), et on refuse de continuer si
+     * quoi que ce soit survit — une erreur qui nomme le survivant vaut mieux
+     * qu'un « already exists » vingt lignes plus bas.
+     *
+     * Effet de bord utile : les tables inconnues partent aussi, là où
+     * l'ancienne liste les laissait derrière elle indéfiniment.
+     */
+    const survivants = async () =>
+      prisma.$queryRawUnsafe<{ type: string; name: string }[]>(
+        "SELECT type, name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND type IN ('table', 'index', 'view', 'trigger') ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END",
+      );
+    let refus: string[] = [];
+    for (let passage = 0; passage < 4; passage += 1) {
+      const objets = await survivants();
+      if (objets.length === 0) break;
+      refus = [];
+      let retires = 0;
+      for (const { type, name } of objets)
+        try {
+          await prisma.$executeRawUnsafe(
+            `DROP ${type.toUpperCase()} IF EXISTS "${name}"`,
+          );
+          retires += 1;
+        } catch (erreur) {
+          // Une table encore référencée par une autre : `sqlite_master` liste
+          // dans l'ordre de création, pas dans celui des dépendances, et
+          // retirer `users` avant `audit_logs` viole la clé étrangère. On la
+          // reprend au passage suivant, une fois ses enfants partis — d'où
+          // les passages plutôt qu'un ordre écrit à la main, qui serait la
+          // liste figée qu'on vient de supprimer.
+          refus.push(
+            `${type} ${name} → ${erreur instanceof Error ? erreur.message.replace(/\s+/g, " ").trim() : String(erreur)}`,
+          );
+        }
+      // Plus rien ne part : insister ne ferait que répéter les mêmes refus.
+      if (retires === 0) break;
+    }
+    const restants = await survivants();
+    if (restants.length > 0)
+      throw new Error(
+        `Remise à zéro incomplète, ces objets ont survécu : ${restants
+          .map((objet) => `${objet.type} ${objet.name}`)
+          .join(
+            ", ",
+          )}${refus.length > 0 ? ` — refus : ${refus.join(" ; ")}` : ""}`,
+      );
     await prisma.$executeRawUnsafe(
       'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
     );
