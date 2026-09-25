@@ -16,12 +16,13 @@ import { ReportBanner } from "@/components/report-banner";
 import { ReportErrorLink } from "@/components/report-error-link";
 import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 import { plainText } from "@/lib/plain-text";
-import { mostUsedEntries, resolveFeaturedGuide } from "@/lib/site-highlights";
 import {
-  toolCategoryLabelKeys,
-  toolCategoryOf,
-  toolEntryHref,
-} from "@/lib/tool-links";
+  fallbackHighlights,
+  resolveFeaturedGuide,
+  resolveHomeHighlights,
+} from "@/lib/site-highlights";
+import { getHomeHighlights } from "@/lib/home-highlights-server";
+import { toolCategoryLabelKeys } from "@/lib/tool-links";
 import { localizedText } from "@/lib/translations";
 import { prisma } from "@/lib/prisma";
 import { canonicalUrl, languageAlternates } from "@/lib/site-url";
@@ -93,34 +94,45 @@ export default async function HomePage() {
   const categoryImage = new Map(
     toolCategories.map((category) => [category.slug, category.image]),
   );
-  const entries: HeroEntry[] = mostUsedEntries.flatMap((entry) => {
-    if (entry.kind === "tool") {
-      const href = toolEntryHref(entry.slug);
-      const category = toolCategoryOf(entry.slug);
-      if (!href || !category || !active[entry.slug]) return [];
-      return [
-        {
-          href,
-          label: rootT(`${entry.slug}.name`),
-          type: t("entry-tool", {
-            category: tools(toolCategoryLabelKeys[category]),
-          }),
-          image: categoryImage.get(category) ?? "",
-        },
-      ];
-    }
-    const reference = activeReferences.find(
-      (candidate) => candidate.calculatorSlug === entry.slug,
-    );
-    if (!reference) return [];
-    return [
-      {
-        href: referenceHref(reference.slug),
-        label: references(`catalog.${reference.slug}`),
+  // Bloc 132 §4 : la sélection « Mis en avant » vient de l'administration.
+  // Pas de ligne enregistrée, c'est « personne n'a encore choisi » et la
+  // liste de repli prend le relais ; une ligne vide, c'est « ne montre
+  // rien », et le panneau disparaît.
+  const selection = await getHomeHighlights();
+  const entries: HeroEntry[] = resolveHomeHighlights(
+    selection ?? fallbackHighlights,
+    {
+      active,
+      guides: guides.map((guide) => ({
+        slug: guide.slug,
+        title: localizedText(guide.title, locale),
+        coverImage: guide.coverImage,
+      })),
+      categoryImage: (category) => categoryImage.get(category),
+    },
+  ).map((entry) => {
+    if (entry.kind === "tool")
+      return {
+        href: entry.href,
+        label: rootT(`${entry.slug}.name`),
+        type: t("entry-tool", {
+          category: tools(toolCategoryLabelKeys[entry.category]),
+        }),
+        image: entry.image,
+      };
+    if (entry.kind === "reference")
+      return {
+        href: entry.href,
+        label: references(`catalog.${entry.slug}`),
         type: t("entry-reference"),
-        image: reference.image,
-      },
-    ];
+        image: entry.image,
+      };
+    return {
+      href: entry.href,
+      label: entry.title,
+      type: t("entry-guide"),
+      image: entry.image ?? "",
+    };
   });
 
   const featured = resolveFeaturedGuide(guides);
@@ -152,7 +164,7 @@ export default async function HomePage() {
           t("count-references", { count: activeReferences.length }),
           t("count-guides", { count: guides.length }),
         ]}
-        panelTitle={t("most-used")}
+        panelTitle={t("highlights")}
         entries={entries}
       />
       <section className="home-section home-tools">

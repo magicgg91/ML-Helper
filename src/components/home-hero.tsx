@@ -66,20 +66,25 @@ export function HomeHero({
         </ul>
       </div>
       {entries.length > 0 ? (
-        <aside className="home-hero-panel" aria-labelledby="home-most-used">
-          <h2 id="home-most-used">{panelTitle}</h2>
+        <aside className="home-hero-panel" aria-labelledby="home-highlights">
+          <h2 id="home-highlights">{panelTitle}</h2>
           <ul>
             {entries.map((entry) => (
               <li key={entry.href}>
                 <Link href={entry.href} prefetch={false}>
+                  {/* Bloc 132 §4 : un guide sans illustration de couverture
+                      garde son emplacement — la vignette vide aligne les
+                      libellés — mais pas d'<img> sans source pour autant. */}
                   <span className="home-hero-thumb">
-                    <GameImage
-                      src={entry.image}
-                      alt=""
-                      width={80}
-                      height={80}
-                      fallback={null}
-                    />
+                    {entry.image ? (
+                      <GameImage
+                        src={entry.image}
+                        alt=""
+                        width={80}
+                        height={80}
+                        fallback={null}
+                      />
+                    ) : null}
                   </span>
                   <span className="home-hero-entry-copy">
                     <span className="home-hero-entry-label">{entry.label}</span>

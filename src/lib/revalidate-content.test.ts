@@ -50,6 +50,13 @@ describe("Bloc 125 §9: a save drops every language of what it changed", () => {
     expect(await contentPathsToRevalidate("legal")).toEqual(["/fr/legal"]);
   });
 
+  // Bloc 132 §4 : l'accueil n'a pas d'index au-dessus de lui, donc un seul
+  // chemin par langue — et surtout pas « /fr/ » avec une barre de trop.
+  it("vise la racine de chaque langue pour l'accueil", async () => {
+    activeLocales.mockResolvedValue(["fr", "en"]);
+    expect(await contentPathsToRevalidate("home")).toEqual(["/fr", "/en"]);
+  });
+
   it("never fails the request it is called from", async () => {
     // The write has already succeeded and been logged by this point: telling
     // the admin their change was lost because a cache hint failed would be a

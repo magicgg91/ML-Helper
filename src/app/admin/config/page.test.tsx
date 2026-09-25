@@ -16,6 +16,27 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/site-settings", () => ({ getTrackingSettings: vi.fn() }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
+  getLocale: async () => "fr",
+}));
+// Bloc 132 §4 : l'écran calcule aussi ce qu'on peut mettre en avant. Ces
+// deux-là n'ont rien à voir avec les langues, d'où des doublures fixes.
+vi.mock("@/lib/calculators-server", () => ({
+  getCalculatorAvailability: async () => ({
+    "city-cost": true,
+    gemmes: true,
+  }),
+}));
+vi.mock("@/lib/home-highlights-server", () => ({
+  getHomeHighlights: async () => highlights.value,
+}));
+const highlights = vi.hoisted(() => ({
+  value: undefined as { kind: string; slug: string }[] | undefined,
+}));
+vi.mock("@/components/admin-highlights-panel", () => ({
+  AdminHighlightsPanel: (props: {
+    candidates: { kind: string; slug: string; name: string }[];
+    initial: { kind: string; slug: string }[];
+  }) => <pre data-testid="highlights">{JSON.stringify(props)}</pre>,
 }));
 vi.mock("@/components/admin-languages-panel", () => ({
   AdminLanguagesPanel: (props: { rows: LanguageRow[] }) => (
@@ -34,6 +55,7 @@ const mockedTracking = vi.mocked(getTrackingSettings);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  highlights.value = undefined;
 });
 
 async function renderPage({
@@ -44,8 +66,18 @@ async function renderPage({
     user: { id: "admin", role, name: "Admin" },
   } as Awaited<ReturnType<typeof requireCapability>>);
   mockedGuideFindMany.mockResolvedValue([
-    { content: { fr: "a", en: "a", de: "a" } },
-    { content: { fr: "b", en: "b" } },
+    {
+      content: { fr: "a", en: "a", de: "a" },
+      slug: "bien-debuter",
+      title: { fr: "Bien débuter" },
+      status: "published",
+    },
+    {
+      content: { fr: "b", en: "b" },
+      slug: "brouillon",
+      title: { fr: "Brouillon" },
+      status: "draft",
+    },
   ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
   mockedLocaleFindMany.mockResolvedValue([
     { locale: "es", active: false },
@@ -95,5 +127,60 @@ describe("Bloc 119: the Configuration screen", () => {
     cleanup();
     await renderPage({ url: "" });
     expect(screen.getByText("tracking.script-inactive")).toBeInTheDocument();
+  });
+});
+
+/**
+ * Bloc 132 §4 : l'écran Configuration reçoit aussi la sélection « Mis en
+ * avant ». Ce qu'il calcule, c'est la liste de ce qu'on peut choisir — et
+ * un brouillon n'en fait pas partie : on ne met pas en avant une page que
+ * personne ne peut ouvrir.
+ */
+describe("Bloc 132 §4 : la sélection « Mis en avant »", () => {
+  async function renderHighlights(
+    selection?: { kind: string; slug: string }[],
+  ) {
+    highlights.value = selection;
+    await renderPage();
+    return JSON.parse(screen.getByTestId("highlights").textContent ?? "{}") as {
+      candidates: { kind: string; slug: string; name: string }[];
+      initial: { kind: string; slug: string }[];
+    };
+  }
+
+  it("propose les outils, les référentiels et les guides publiés", async () => {
+    const { candidates } = await renderHighlights();
+    expect(
+      candidates.map((candidate) => `${candidate.kind}:${candidate.slug}`),
+    ).toEqual(
+      expect.arrayContaining([
+        "tool:city-cost",
+        "reference:gems",
+        "guide:bien-debuter",
+      ]),
+    );
+  });
+
+  it("écarte un guide qui n'est pas publié", async () => {
+    const { candidates } = await renderHighlights();
+    expect(candidates.some((candidate) => candidate.slug === "brouillon")).toBe(
+      false,
+    );
+  });
+
+  // Un outil désactivé en administration n'est pas ouvrable non plus.
+  it("écarte un outil désactivé", async () => {
+    const { candidates } = await renderHighlights();
+    expect(
+      candidates.some((candidate) => candidate.slug === "city-production"),
+    ).toBe(false);
+  });
+
+  it("part de la sélection enregistrée, ou de rien du tout", async () => {
+    expect((await renderHighlights()).initial).toEqual([]);
+    cleanup();
+    expect(
+      (await renderHighlights([{ kind: "tool", slug: "city-cost" }])).initial,
+    ).toEqual([{ kind: "tool", slug: "city-cost" }]);
   });
 });

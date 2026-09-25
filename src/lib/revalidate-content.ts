@@ -28,6 +28,10 @@ export const contentResources = {
     slug ? `/referentiels/${slug}` : "/referentiels",
   tools: (slug?: string) => (slug ? `/tools/${slug}` : "/tools"),
   legal: () => "/legal",
+  // Bloc 132 §4 : la sélection « Mis en avant » ne change que l'accueil,
+  // qui n'a pas d'index au-dessus de lui — d'où le chemin vide, qui donne
+  // « /fr », « /en »…
+  home: () => "",
 } as const;
 
 export type ContentResource = keyof typeof contentResources;
