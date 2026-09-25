@@ -118,14 +118,16 @@ describe("ToolsPage", () => {
   it("publie la description que l'administration a écrite pour un outil", async () => {
     render(await ToolsPage());
     const link = screen.getByRole("link", { name: /city-cost\.name/ });
-    expect(link).toHaveTextContent("Le prix d'une ville, niveau par niveau.");
+    expect(link.querySelector(".tool-entry-description")).toHaveTextContent(
+      "Le prix d'une ville, niveau par niveau.",
+    );
   });
 
   it("ne rend aucune ligne de description quand l'enregistrement est vide", async () => {
     render(await ToolsPage());
     const link = screen.getByRole("link", { name: /city-max-level\.name/ });
     expect(
-      link.querySelector(".tool-link-description"),
+      link.querySelector(".tool-entry-description"),
     ).not.toBeInTheDocument();
   });
 });

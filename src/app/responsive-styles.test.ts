@@ -400,3 +400,72 @@ describe("public responsive styles", () => {
     }
   });
 });
+
+/**
+ * Bloc 132 §6 : l'index Outils.
+ *
+ * Le §6 ne change que le desktop — « Mobile : disposition inchangée » — et
+ * c'est la moitié fragile : la carte mobile d'avant n'existe plus qu'en
+ * repli, dans une media query, sous une disposition desktop qui ne lui
+ * ressemble pas. Les deux moitiés sont donc tenues ici, ensemble.
+ */
+describe("Bloc 132 §6 — la page Outils", () => {
+  const section = css.match(/\n\.tool-sections {([\s\S]*?)\n}/)?.[1];
+  const tools = css.match(/\n\.tool-section-tools {([\s\S]*?)\n}/)?.[1];
+  const tile = css.match(/\n\.tool-section-tools a {([\s\S]*?)\n}/)?.[1];
+  // Le repli mobile, à partir de son ouverture — les règles qui suivent
+  // dans le fichier appartiennent à d'autres sections.
+  const narrow = css
+    .slice(css.indexOf("@media (max-width: 48rem) {\n  .tool-section-head {"))
+    .slice(0, 1400);
+
+  it("empile les catégories, 20 px entre elles", () => {
+    expect(section).toMatch(/display: grid;/);
+    expect(section).toMatch(/gap: 1\.25rem;/);
+    // Pas de grid-template-columns : une carte par rangée, sur toute la
+    // largeur. C'est ce qui distingue cette page de l'accueil.
+    expect(section).not.toMatch(/grid-template-columns/);
+  });
+
+  it("range les outils en quatre colonnes de tuiles larges et basses", () => {
+    expect(tools).toMatch(
+      /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/,
+    );
+    expect(tile).toMatch(/min-height: 5\.625rem/);
+    expect(tile).toMatch(/border-radius: var\(--header-control-radius\)/);
+    expect(tile).toMatch(/background: var\(--field\)/);
+    expect(tile).toMatch(/border: 1px solid var\(--border\)/);
+  });
+
+  it("donne à la vignette d'en-tête un carré de 64 px", () => {
+    const thumb = css.match(/\n\.tool-section-thumb {([\s\S]*?)\n}/)?.[1];
+    expect(thumb).toMatch(/width: 4rem;/);
+    expect(thumb).toMatch(/height: 4rem;/);
+  });
+
+  // Une description longue grandirait toute la rangée pour une seule tuile.
+  it("coupe la description à deux lignes", () => {
+    const description = css.match(
+      /\n\.tool-entry-description {([\s\S]*?)\n}/,
+    )?.[1];
+    expect(description).toMatch(/-webkit-line-clamp: 2/);
+    expect(description).toMatch(/color: var\(--muted\)/);
+  });
+
+  it("rend à mobile la carte d'avant : image pleine largeur, lignes de 48 px, sans description", () => {
+    expect(narrow).toMatch(/\.tool-section-thumb {\s*\n\s*width: 100%;/);
+    expect(narrow).toMatch(
+      /\.tool-section-tools {[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/,
+    );
+    expect(narrow).toMatch(/\.tool-section-tools a {[\s\S]*?min-height: 3rem;/);
+    expect(narrow).toMatch(/\.tool-entry-description {\s*\n\s*display: none;/);
+  });
+
+  // La grille de l'accueil et les cartes de l'index sont deux mises en page,
+  // pas un composant à deux modes : les classes de l'ancienne liste glissée
+  // dans la carte d'accueil ne doivent pas survivre sans rendu.
+  it("ne garde pas les classes de la liste d'avant", () => {
+    expect(css).not.toMatch(/\.tool-category-tools/);
+    expect(css).not.toMatch(/\.tool-link-description/);
+  });
+});

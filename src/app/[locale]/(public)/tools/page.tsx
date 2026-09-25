@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { getCalculatorAvailability } from "@/lib/calculators-server";
-import {
-  ToolCategoryGrid,
-  toolCategories,
-} from "@/components/tool-category-grid";
+import { toolCategories } from "@/components/tool-category-grid";
+import { ToolCategorySections } from "@/components/tool-category-sections";
 import { Breadcrumb } from "@/components/public-breadcrumb";
 import { PageHeader } from "@/components/public-page-header";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -77,9 +75,10 @@ export default async function ToolsPage() {
             hors périmètre (§0) et n'est pas touché. */}
         <aside className="index-note">{t("settings-note")}</aside>
       </div>
-      <ToolCategoryGrid
+      {/* Bloc 132 §6 : une carte par catégorie, l'une sous l'autre, les
+          outils en tuiles. L'accueil garde la grille de cartes. */}
+      <ToolCategorySections
         active={active}
-        locale={locale}
         t={t}
         toolLinks={toolLinks}
         order={toolCategoryOrder}

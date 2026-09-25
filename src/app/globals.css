@@ -4259,45 +4259,164 @@ body > main h1 {
   color: inherit;
   text-decoration: none;
 }
-.tool-category-tools {
+/* ------------------------------------------------------------------------
+   Bloc 132 §6 — l'index Outils : une carte par catégorie, empilées.
+
+   Le Bloc 129 y mettait la grille de quatre cartes de l'accueil avec la
+   liste des outils glissée dedans. Quatre colonnes étroites pour des listes
+   de longueurs très différentes, et les outils — ce qu'on vient chercher —
+   réduits à des lignes de texte. Ici chaque catégorie prend la largeur, et
+   ses outils deviennent des tuiles.
+   --------------------------------------------------------------------- */
+.tool-sections {
   display: grid;
-  margin: 0;
-  padding: 0 1rem 0.75rem;
-  list-style: none;
+  gap: 1.25rem;
+  margin-top: 2rem;
 }
-.tool-category-tools li + li {
-  border-top: 1px solid var(--divider);
+.tool-section {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
 }
-.tool-category-tools a {
+.tool-section[data-disabled] {
+  opacity: 0.48;
+  filter: grayscale(0.8);
+}
+.tool-section-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.55rem 0;
-  color: var(--text3);
-  font-size: 0.875rem;
+  gap: 1rem;
+  padding: 1rem;
+  color: inherit;
   text-decoration: none;
 }
-.tool-category-tools a:hover {
+.tool-section-head:hover .tool-section-name {
   color: var(--accent);
 }
-.tool-category-tools a span[aria-hidden] {
-  color: var(--accent);
+/* Vignette carrée de 64 px sur desktop ; elle reprend toute la largeur de
+   la carte sur mobile, comme avant. */
+.tool-section-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  background: var(--ph);
 }
-/* §3.2 : le nom de l'outil, et sous lui sa description éditée en
-   administration quand elle existe. La flèche reste alignée sur le nom,
-   pas au milieu du bloc, d'où l'alignement en tête de ligne. */
-.tool-category-tools a:has(.tool-link-description) {
-  align-items: flex-start;
+.tool-section-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.tool-link-copy {
+.tool-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.tool-section-name {
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.025em;
+}
+/* Les tuiles : larges et basses, quatre par rangée. */
+.tool-section-tools {
   display: grid;
-  gap: 0.15rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0 1rem 1rem;
+  list-style: none;
 }
-.tool-link-description {
+.tool-section-tools a {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  height: 100%;
+  min-height: 5.625rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.tool-section-tools a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Préfixe `tool-entry-` et non `tool-tile-` : cette dernière famille est
+   déjà prise plus bas par les tuiles de résultat des calculateurs, qui
+   n'ont rien à voir avec ces raccourcis de navigation. */
+.tool-entry-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.tool-entry-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+/* Deux lignes au plus : au-delà, une description longue ferait grandir
+   toute la rangée pour une seule tuile. */
+.tool-entry-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.45;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.tool-entry-arrow {
+  flex: none;
+  color: var(--accent);
+}
+/* §6 : sur mobile, la carte reprend son allure d'avant — grande image
+   carrée, nom, puis les outils en lignes de 48 px, sans description. */
+@media (max-width: 48rem) {
+  .tool-section-head {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0 0 0.75rem;
+  }
+  .tool-section-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tool-section-title {
+    padding: 0 1rem;
+  }
+  .tool-section-tools {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .tool-section-tools li + li {
+    border-top: 1px solid var(--divider);
+  }
+  .tool-section-tools a {
+    align-items: center;
+    min-height: 3rem;
+    padding: 0.5rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text3);
+  }
+  .tool-entry-description {
+    display: none;
+  }
 }
 /* §3.3 : la description d'une ligne sous le nom d'un référentiel. */
 .reference-card-description {
