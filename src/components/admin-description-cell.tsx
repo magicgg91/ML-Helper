@@ -35,7 +35,17 @@ export function DescriptionCell({
 }) {
   const t = useTranslations("admin.descriptions");
   const chips = (
-    <span className="flex flex-wrap gap-1">
+    // `min-w-max` : la rangée ne descend jamais sous sa largeur d'une ligne.
+    //
+    // Sans elle, la colonne — déclarée `narrow`, donc dimensionnée au
+    // contenu — prenait la largeur *minimale* du contenu, et cette largeur
+    // était celle d'une seule puce : mesuré, 31 px de groupe dans une
+    // cellule de 172 px, les cinq puces empilées l'une sous l'autre. La
+    // rangée pèse maintenant son vrai poids dans ce calcul, et la colonne
+    // s'ouvre à 313 px en reprenant la place aux deux colonnes de texte,
+    // qui en ont à céder (mesuré de 1024 à 1440 px : une seule ligne
+    // partout, et le tableau ne déborde jamais de sa carte).
+    <span className="flex min-w-max gap-1">
       {launchLocales.map((code) => {
         const written = Boolean((row.description[code] ?? "").trim());
         return (

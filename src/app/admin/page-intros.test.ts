@@ -52,6 +52,7 @@ const removed = [
   "Les comptes qui peuvent ouvrir l’administration.",
   "Toutes les actions enregistrées dans l’administration.",
   "Les réglages du site public.",
+  "Ton mot de passe et ton authentification à deux facteurs.",
   "The state of the site, and what is left to handle.",
   "The guides on the site, their translations and their status.",
   "Solid chip: version written. Dotted chip: translation to create.",
@@ -61,9 +62,16 @@ const removed = [
   "The accounts that can open the administration.",
   "Every action recorded in the administration.",
   "The public site's settings.",
+  "Your password and your two-factor authentication.",
 ];
 
-/** Les huit pages de liste, et les écrans d'édition qui les prolongent. */
+/**
+ * Les huit pages de liste, et les écrans d'édition qui les prolongent.
+ *
+ * Mon compte s'y ajoute après coup : le §D l'avait laissé de côté parce
+ * qu'il n'est ni une page de liste ni un écran d'édition, et c'est
+ * exactement pour ça qu'il fallait le nommer.
+ */
 const listPages = [
   "src/app/admin/page.tsx",
   "src/app/admin/guides/page.tsx",
@@ -73,6 +81,7 @@ const listPages = [
   "src/app/admin/users/page.tsx",
   "src/app/admin/logs/page.tsx",
   "src/app/admin/config/page.tsx",
+  "src/app/admin/account/page.tsx",
 ];
 
 const editors = [
@@ -114,7 +123,7 @@ describe("Bloc 131/D — les textes d'introduction de l'admin", () => {
     }
   });
 
-  it("ne laisse aucune description sur les huit pages de liste", () => {
+  it("ne laisse aucune description sur les écrans d'administration", () => {
     for (const path of listPages) {
       const headers = callsTo(source(path), "PageHeader");
       expect(headers, path).toHaveLength(1);
@@ -134,17 +143,19 @@ describe("Bloc 131/D — les textes d'introduction de l'admin", () => {
    * Le prop est retiré du composant, pas seulement de ses appelants : un
    * prop que plus personne ne passe revient tôt ou tard.
    */
-  it("a retiré le prop de EditorHeader", () => {
+  it("a retiré le prop des deux en-têtes", () => {
     // Sans ses commentaires : celui qui explique le retrait contient le mot.
     const header = source("src/components/admin-editor-header.tsx").replace(
       /\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,
       "",
     );
     expect(header).not.toMatch(/description/);
-    // PageHeader le garde : Mon compte, hors des huit pages, s'en sert.
-    expect(source("src/components/admin-page-header.tsx")).toMatch(
-      /description\?: ReactNode;/,
+    // PageHeader aussi : Mon compte était son dernier appelant.
+    const page = source("src/components/admin-page-header.tsx").replace(
+      /\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,
+      "",
     );
+    expect(page).not.toMatch(/description/);
   });
 
   /**

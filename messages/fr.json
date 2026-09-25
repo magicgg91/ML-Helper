@@ -826,7 +826,6 @@
       },
       "title": "Mon compte",
       "menu": "Compte de {username}",
-      "subtitle": "Ton mot de passe et ton authentification à deux facteurs.",
       "password-hint": "12 caractères au minimum.",
       "confirm-password": "Confirmation du nouveau mot de passe",
       "password-mismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas."

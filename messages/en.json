@@ -826,7 +826,6 @@
       },
       "title": "My account",
       "menu": "{username}’s account",
-      "subtitle": "Your password and your two-factor authentication.",
       "password-hint": "12 characters minimum.",
       "confirm-password": "Confirm the new password",
       "password-mismatch": "The new password and its confirmation do not match."

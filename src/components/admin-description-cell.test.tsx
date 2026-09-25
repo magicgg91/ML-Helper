@@ -100,4 +100,29 @@ describe("Bloc 131/A — les puces de langue d'une description", () => {
       screen.getByRole("button", { name: "Décrire Coût de Ville" }),
     ).toBeInTheDocument();
   });
+
+  /**
+   * Relevé sur les captures de la PR #155 : les cinq puces s'empilaient
+   * l'une sous l'autre, une par ligne.
+   *
+   * La colonne est déclarée `narrow`, donc dimensionnée au contenu — et le
+   * navigateur prend pour ça la largeur *minimale* du contenu. Une rangée
+   * qui a le droit de passer à la ligne a pour largeur minimale celle de son
+   * plus large enfant : une puce. Mesuré avant le correctif, 31 px de
+   * rangée dans une cellule de 172 px ; après, 170 px de rangée dans une
+   * cellule de 313 px, sur une seule ligne de 1024 à 1440 px.
+   *
+   * jsdom ne met rien en page : ce test tient la classe qui l'obtient, et
+   * l'absence de celle qui l'empêchait. La mesure, elle, est au navigateur.
+   */
+  it("garde les cinq puces sur une seule ligne", () => {
+    renderCell({ fr: "Le prix d’une ville." });
+    const group = screen.getByTitle("Français : description écrite")
+      .parentElement as HTMLElement;
+    expect(group).toHaveClass("min-w-max");
+    // `flex-wrap` est ce qui autorisait la colonne à se refermer sur une
+    // puce : la rangée ne l'a plus.
+    expect(group).not.toHaveClass("flex-wrap");
+    expect(group.querySelectorAll("[title]")).toHaveLength(5);
+  });
 });
