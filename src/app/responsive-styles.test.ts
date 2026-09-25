@@ -447,60 +447,82 @@ describe("public responsive styles", () => {
  * repli, dans une media query, sous une disposition desktop qui ne lui
  * ressemble pas. Les deux moitiés sont donc tenues ici, ensemble.
  */
-describe("Bloc 132 §6 — la page Outils", () => {
+describe("Bloc 133 §A — la page Outils", () => {
   const section = css.match(/\n\.tool-sections {([\s\S]*?)\n}/)?.[1];
-  const tools = css.match(/\n\.tool-section-tools {([\s\S]*?)\n}/)?.[1];
-  const tile = css.match(/\n\.tool-section-tools a {([\s\S]*?)\n}/)?.[1];
+  const card = css.match(/\n\.tool-section {([\s\S]*?)\n}/)?.[1];
+  const thumb = css.match(/\n\.tool-section-thumb {([\s\S]*?)\n}/)?.[1];
+  const rows = css.match(/\n\.tool-section-tools {([\s\S]*?)\n}/)?.[1];
+  const row = css.match(/\n\.tool-section-tools a {([\s\S]*?)\n}/)?.[1];
   // Le repli mobile, à partir de son ouverture — les règles qui suivent
   // dans le fichier appartiennent à d'autres sections.
   const narrow = css
-    .slice(css.indexOf("@media (max-width: 48rem) {\n  .tool-section-head {"))
-    .slice(0, 1400);
+    .slice(css.indexOf("@media (max-width: 48rem) {\n  .tool-section {"))
+    .slice(0, 1600);
 
-  it("empile les catégories, 20 px entre elles", () => {
-    expect(section).toMatch(/display: grid;/);
-    expect(section).toMatch(/gap: 1\.25rem;/);
-    // Pas de grid-template-columns : une carte par rangée, sur toute la
-    // largeur. C'est ce qui distingue cette page de l'accueil.
-    expect(section).not.toMatch(/grid-template-columns/);
-  });
-
-  it("range les outils en quatre colonnes de tuiles larges et basses", () => {
-    expect(tools).toMatch(
-      /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/,
+  /**
+   * Le Bloc 132 §6 les empilait sur toute la largeur. À l'usage les cartes
+   * étaient trop hautes et leurs images trop petites pour la place qu'elles
+   * prenaient : deux colonnes de deux.
+   */
+  it("range les quatre catégories en 2×2, 24 px entre elles", () => {
+    expect(section).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
     );
-    expect(tile).toMatch(/min-height: 5\.625rem/);
-    expect(tile).toMatch(/border-radius: var\(--header-control-radius\)/);
-    expect(tile).toMatch(/background: var\(--field\)/);
-    expect(tile).toMatch(/border: 1px solid var\(--border\)/);
+    expect(section).toMatch(/gap: 1\.5rem;/);
   });
 
-  it("donne à la vignette d'en-tête un carré de 64 px", () => {
-    const thumb = css.match(/\n\.tool-section-thumb {([\s\S]*?)\n}/)?.[1];
-    expect(thumb).toMatch(/width: 4rem;/);
-    expect(thumb).toMatch(/height: 4rem;/);
+  it("pose l'image à 240 px, centrée sur la hauteur de la carte", () => {
+    expect(card).toMatch(/display: flex;/);
+    expect(card).toMatch(/padding: 1rem;/);
+    expect(thumb).toMatch(/width: 15rem;/);
+    expect(thumb).toMatch(/height: 15rem;/);
+    expect(thumb).toMatch(/border-radius: 0\.75rem;/);
+    // Centrée sur la carte, pas calée en haut : une catégorie à un seul
+    // outil y laissait l'image flotter.
+    expect(
+      css.match(
+        /\n\.tool-section-thumb-link,\n\.tool-section > \.tool-section-thumb {([\s\S]*?)\n}/,
+      )?.[1],
+    ).toMatch(/align-self: center/);
   });
 
-  // Une description longue grandirait toute la rangée pour une seule tuile.
-  it("coupe la description à deux lignes", () => {
+  it("aligne les outils en rangées de 50 px sur toute la colonne", () => {
+    // Une colonne, pas quatre : chaque outil prend la largeur.
+    expect(rows).not.toMatch(/grid-template-columns/);
+    expect(row).toMatch(/min-height: 3\.125rem/);
+    expect(row).toMatch(/padding: 0\.5rem 0\.75rem/);
+    expect(row).toMatch(/border-radius: var\(--header-control-radius\)/);
+    expect(row).toMatch(/background: var\(--field\)/);
+    expect(row).toMatch(/border: 1px solid var\(--border\)/);
+  });
+
+  // Une seule ligne : deux lignes feraient grandir la rangée pour la seule
+  // carte qui a une description longue.
+  it("coupe la description à une ligne", () => {
     const description = css.match(
       /\n\.tool-entry-description {([\s\S]*?)\n}/,
     )?.[1];
-    expect(description).toMatch(/-webkit-line-clamp: 2/);
+    expect(description).toMatch(/white-space: nowrap/);
+    expect(description).toMatch(/text-overflow: ellipsis/);
     expect(description).toMatch(/color: var\(--muted\)/);
+    expect(description).not.toMatch(/line-clamp/);
   });
 
   it("rend à mobile la carte d'avant : image pleine largeur, lignes de 48 px, sans description", () => {
     // Pleine largeur, rembourrage de la carte compris — d'où la marge
     // négative qui accompagne la base de 100 %.
     expect(narrow).toMatch(
-      /\.tool-section-thumb {[\s\S]*?flex-basis: 100%;[\s\S]*?margin: 0 -1rem;/,
-    );
-    expect(narrow).toMatch(
-      /\.tool-section-tools {[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/,
+      /\.tool-section-thumb-link,\n\s*\.tool-section > \.tool-section-thumb {[\s\S]*?flex-basis: 100%;[\s\S]*?margin: 0 -1rem;/,
     );
     expect(narrow).toMatch(/\.tool-section-tools a {[\s\S]*?min-height: 3rem;/);
     expect(narrow).toMatch(/\.tool-entry-description {\s*\n\s*display: none;/);
+  });
+
+  // Deux cartes côte à côte demandent plus que la largeur d'une tablette.
+  it("repasse à une colonne en dessous de la tablette", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 62rem\) {[\s\S]*?\.tool-sections {\n\s*grid-template-columns: minmax\(0, 1fr\);/,
+    );
   });
 
   // La grille de l'accueil et les cartes de l'index sont deux mises en page,

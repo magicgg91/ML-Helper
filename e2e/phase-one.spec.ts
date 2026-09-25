@@ -266,12 +266,13 @@ test("tool routes alone expose persistent player settings", async ({
   // lieu de la grille de vignettes qu'il partageait avec l'accueil.
   await expect(page.locator(".tool-section")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
+  // Bloc 133 §C : le décompte est une pastille contre le nom.
   await expect(
     page
       .getByRole("heading", { name: "Combat" })
       .locator("..")
-      .getByText("2 outils disponibles"),
-  ).toBeVisible();
+      .locator(".tool-count-badge"),
+  ).toHaveText("22 outils");
   await expect(
     page.getByText("Paramètres du joueur", { exact: true }),
   ).toHaveCount(0);
