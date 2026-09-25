@@ -235,6 +235,35 @@ describe("Bloc 136 — l'ancre ouvre la section visée", () => {
     expect(header()).toHaveAttribute("aria-expanded", "false");
   });
 
+  /**
+   * Revue Codex (PR #156) : l'ancre mémorisée ne doit pas survivre au départ
+   * de l'écran. Une navigation App Router n'émet pas `hashchange`, donc rien
+   * d'autre ne remettrait cette mémoire à zéro, et un retour sur
+   * /admin/config sans fragment rouvrait la section de la fois d'avant.
+   */
+  it("oublie l'ancre quand on quitte l'écran", async () => {
+    renderSection();
+    window.location.hash = "#langues";
+    fireEvent(
+      window,
+      new HashChangeEvent("hashchange", {
+        oldURL: "http://localhost/",
+        newURL: "http://localhost/#langues",
+      }),
+    );
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+
+    // On quitte : toutes les sections sont démontées, et cette fois rien ne
+    // remonte derrière (l'attente laisse passer le tour de boucle où
+    // l'oubli se décide).
+    cleanup();
+    window.location.hash = "";
+    await Promise.resolve();
+
+    renderSection();
+    expect(header()).toHaveAttribute("aria-expanded", "false");
+  });
+
   // Passer d'une ancre à l'autre sans quitter la page : le lien ne recharge
   // rien, seul `hashchange` le dit.
   it("suit un changement d'ancre sur la page déjà ouverte", () => {

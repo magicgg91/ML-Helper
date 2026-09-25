@@ -46,6 +46,11 @@ const add = (name: string) =>
     screen.getByRole("button", { name: `Ajouter ${name} à la sélection` }),
   );
 
+// Bloc 136 : le panneau redemande l'écran après un enregistrement, pour
+// que le résumé de la section — calculé sur le serveur — suive.
+const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -152,6 +157,9 @@ describe("AdminHighlightsPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Sélection enregistrée.",
     );
+    // Bloc 136, revue Codex (PR #156) : « n / 5 sélectionnés » vient du
+    // serveur, et resterait sur l'ancien compte sans cette demande.
+    expect(refresh).toHaveBeenCalled();
   });
 
   // Une sélection vidée est un choix — « ne montre rien » — et doit pouvoir

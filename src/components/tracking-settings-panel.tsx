@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminButton } from "./admin-button";
@@ -22,6 +23,7 @@ export function TrackingSettingsPanel({
 }) {
   const t = useTranslations("admin.config.tracking");
   const editor = useTranslations("admin.editor");
+  const router = useRouter();
   const [value, setValue] = useState(url);
   const [id, setId] = useState(websiteId);
   const [message, setMessage] = useState("");
@@ -78,6 +80,10 @@ export function TrackingSettingsPanel({
       setId(stored.websiteId);
       setSaved(stored);
       setMessage(stored.url ? t("saved") : t("cleared"));
+      // Revue Codex (PR #156), même raison que pour les langues : la pastille
+      // « Script actif » / « Aucun script » est calculée sur le serveur, et
+      // resterait sur son ancienne valeur une fois la section repliée.
+      router.refresh();
     } catch {
       setMessage(t("server-error"));
     } finally {

@@ -52,6 +52,14 @@ import { cn } from "@/lib/utils";
  *
  * `null` veut dire « rien de mémorisé, va voir l'URL » ; la chaîne vide veut
  * dire « plus d'ancre », ce que pose un repli fait à la main.
+ *
+ * Revue Codex (PR #156) : cette mémoire s'efface quand l'écran est quitté.
+ * Une navigation App Router n'émet pas `hashchange`, donc rien d'autre ne la
+ * remettrait à zéro : revenir sur /admin/config sans fragment rouvrait la
+ * section visée la fois d'avant. Le compte des sections montées dit quand
+ * l'écran part ; l'effacement est différé d'un tour de boucle parce qu'un
+ * remontage immédiat — React rejoue les effets deux fois en développement —
+ * passe lui aussi par zéro, et celui-là ne doit rien perdre.
  */
 let requestedAnchor: string | null =
   typeof window === "undefined" ? null : window.location.hash || null;
@@ -70,6 +78,20 @@ function anchorRequested() {
 
 function forgetAnchor(id: string) {
   if (anchorRequested() === `#${id}`) requestedAnchor = "";
+}
+
+let mountedSections = 0;
+
+function watchAnchor(openIfTargeted: () => void) {
+  mountedSections += 1;
+  anchorWatchers.add(openIfTargeted);
+  return () => {
+    mountedSections -= 1;
+    anchorWatchers.delete(openIfTargeted);
+    queueMicrotask(() => {
+      if (mountedSections === 0) requestedAnchor = null;
+    });
+  };
 }
 
 /** Par où un panneau fait savoir qu'il a une saisie non enregistrée. */
@@ -139,10 +161,7 @@ export function CollapsibleSection({
       document.getElementById(id)?.scrollIntoView();
     };
     openIfTargeted();
-    anchorWatchers.add(openIfTargeted);
-    return () => {
-      anchorWatchers.delete(openIfTargeted);
-    };
+    return watchAnchor(openIfTargeted);
   }, [id]);
 
   return (

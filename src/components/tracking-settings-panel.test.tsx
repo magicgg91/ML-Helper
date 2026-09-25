@@ -3,6 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import { TrackingSettingsPanel } from "./tracking-settings-panel";
 
+// Bloc 136 : le panneau redemande l'écran après un enregistrement, pour
+// que le résumé de la section — calculé sur le serveur — suive.
+const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -40,6 +45,9 @@ describe("TrackingSettingsPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "URL de suivi enregistrée.",
     );
+    // Bloc 136, revue Codex (PR #156) : la pastille « Script actif » de la
+    // section vient du serveur, et mentirait sans cette demande.
+    expect(refresh).toHaveBeenCalled();
   });
 
   it("names a refused URL as a typo, not as a server failure", async () => {

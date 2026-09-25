@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { AdminButton } from "./admin-button";
@@ -48,6 +49,7 @@ export function AdminHighlightsPanel({
   initial: HomeHighlight[] | undefined;
 }) {
   const t = useTranslations("admin.config.highlights");
+  const router = useRouter();
   const [selected, setSelected] = useState<HomeHighlight[]>(initial ?? []);
   /**
    * Bloc 136 : la sélection telle qu'elle est enregistrée, pour savoir si
@@ -96,6 +98,9 @@ export function AdminHighlightsPanel({
       if (response.ok) {
         setConfigured(true);
         setSaved(selected);
+        // Revue Codex (PR #156), même raison que pour les langues : « n / 5
+        // sélectionnés » vient du serveur.
+        router.refresh();
       }
       status.settle(response.ok, {
         success: t("saved"),
