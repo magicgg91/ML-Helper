@@ -1611,7 +1611,8 @@
       "placeholder": "Ce que cet outil permet de faire, en une phrase.",
       "counter": "{count} / {max} caractères",
       "open": "Décrire {name}",
-      "written": "{count, plural, =0 {aucune langue} one {# langue} other {# langues}}",
+      "locale-written": "{language} : description écrite",
+      "locale-missing": "{language} : description à écrire",
       "column": "Description"
     }
   },

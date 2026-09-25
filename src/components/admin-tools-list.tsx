@@ -170,6 +170,7 @@ export function AdminToolsList({
         <DescriptionCell
           row={row}
           canEdit={canEdit}
+          languageNames={languageNames}
           onOpen={() =>
             setDescribing({
               slug: row.slug,

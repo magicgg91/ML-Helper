@@ -7,11 +7,11 @@ import { AdminButton } from "./admin-button";
 import { ConfirmDialog } from "./admin-confirm-dialog";
 import { DataTable, type AdminTableColumn } from "./admin-data-table";
 import { FilterChips, SearchInput } from "./admin-filters";
+import { LocaleChip } from "./admin-locale-chip";
 import { OverflowMenu, type OverflowMenuItem } from "./admin-overflow-menu";
 import { useServerRows } from "./use-server-rows";
 import { formatAdminDate, formatAdminShortDate } from "@/lib/admin-dates";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
-import { cn } from "@/lib/utils";
 
 /**
  * Bloc 119: the Guides list.
@@ -161,45 +161,32 @@ export function AdminGuidesList({
         <span className="flex flex-wrap gap-1">
           {launchLocales.map((code) => {
             const written = guide.translations[code];
-            const className = cn(
-              "inline-flex h-[var(--admin-pill-h)] items-center rounded-full px-2 font-admin-mono text-[11px] font-semibold uppercase",
-              written
-                ? "bg-admin-accent-soft text-admin-accent-soft-ink"
-                : "border border-dashed border-admin-card-border text-admin-dim",
-            );
+            const language = languageNames[code] ?? code;
             // Same reason as the title above: no link for a reader who
             // cannot open the editor. The chip still says which languages
             // are written, which is what the column is for.
-            if (!canWrite)
-              return (
-                <span
-                  key={code}
-                  className={className}
-                  title={t(
-                    written ? "translation-written" : "translation-missing",
-                    {
-                      language: languageNames[code] ?? code,
-                    },
-                  )}
-                >
-                  {code}
-                </span>
-              );
             return (
-              <Link
+              <LocaleChip
                 key={code}
-                href={`/admin/guides/${guide.id}?lang=${code}`}
-                aria-label={t(
-                  written ? "translation-edit" : "translation-create",
-                  {
-                    language: languageNames[code] ?? code,
-                    title: guide.title,
-                  },
-                )}
-                className={cn("admin-focus", className)}
-              >
-                {code}
-              </Link>
+                code={code}
+                written={written}
+                href={
+                  canWrite
+                    ? `/admin/guides/${guide.id}?lang=${code}`
+                    : undefined
+                }
+                label={
+                  canWrite
+                    ? t(written ? "translation-edit" : "translation-create", {
+                        language,
+                        title: guide.title,
+                      })
+                    : t(
+                        written ? "translation-written" : "translation-missing",
+                        { language },
+                      )
+                }
+              />
             );
           })}
         </span>

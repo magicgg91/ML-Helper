@@ -127,6 +127,7 @@ export function AdminReferencesList({
         <DescriptionCell
           row={{ label: row.title, description: row.description }}
           canEdit={canWrite}
+          languageNames={languageNames}
           onOpen={() =>
             setDescribing({
               slug: row.id,
