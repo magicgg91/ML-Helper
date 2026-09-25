@@ -518,7 +518,10 @@ select:where(:not(.admin-shell select)) {
   /* De la place pour la loupe à gauche et pour la touche à droite. */
   padding: 0 2.6rem 0 2.5rem;
   border: 1px solid var(--strong);
-  border-radius: 999px;
+  /* Bloc 133 §D : le même rayon que les commandes de l'en-tête. La pilule
+     était le dernier point resté ouvert des Blocs 129 et 132 — le champ
+     était la seule chose ronde d'une rangée de rectangles. */
+  border-radius: var(--header-control-radius);
   background: var(--field);
   color: var(--text);
   /* §1.1 : la recherche quitte la police à chasse fixe. */

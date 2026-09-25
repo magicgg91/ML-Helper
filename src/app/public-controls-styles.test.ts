@@ -67,10 +67,19 @@ describe("Bloc 132 §1 — l'en-tête public", () => {
     expect(active).toMatch(/color: var\(--accent\)/);
   });
 
-  // « Ne traite pas la forme du champ de recherche » — point ouvert non
-  // validé, donc la pilule reste, seule de son espèce.
-  it("laisse le champ de recherche en pilule", () => {
-    expect(rule(".site-search-label input")).toMatch(/border-radius: 999px/);
+  /**
+   * Bloc 133 §D : l'inverse de ce que ce test gardait. Le Bloc 132 avait mis
+   * la forme du champ de côté — point ouvert, non validé — et la pilule
+   * restait seule de son espèce dans une rangée de rectangles. Le §D la
+   * referme : le champ prend le rayon des commandes, celui du jeton, pas une
+   * valeur recopiée.
+   */
+  it("donne au champ de recherche le rayon des commandes", () => {
+    expect(rule(".site-search-label input")).toMatch(
+      /border-radius: var\(--header-control-radius\)/,
+    );
+    // La pilule ne survit pas ailleurs dans la même règle.
+    expect(rule(".site-search-label input")).not.toMatch(/999px/);
   });
 
   it("n'a plus de sous-titre de marque", () => {
