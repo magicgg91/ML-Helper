@@ -4,7 +4,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { e2eDatabaseFile, e2eDatabaseUrl } from "../prisma/e2e-database";
+import {
+  e2eDatabaseFile,
+  e2eDatabaseUrl,
+  singleConnection,
+} from "../prisma/e2e-database";
 import { resetE2eDatabase } from "../prisma/e2e-seed";
 
 /**
@@ -20,7 +24,9 @@ const scratch = mkdtempSync(path.join(tmpdir(), "ml-helper-reset-"));
 const url = `file:${path.join(scratch, "reset.db")}`;
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
-const client = () => new PrismaClient({ datasourceUrl: url });
+// Les clients de ce fichier enchaînent eux aussi du DDL brut pour monter
+// leurs états de départ : même raison, même remède.
+const client = () => new PrismaClient({ datasourceUrl: singleConnection(url) });
 
 describe("Bloc 121: the per-attempt database reset", () => {
   it("builds the seeded state from an empty file", async () => {
