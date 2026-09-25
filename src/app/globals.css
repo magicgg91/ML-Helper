@@ -4257,6 +4257,21 @@ body > main h1 {
 .tool-category-tools a span[aria-hidden] {
   color: var(--accent);
 }
+/* §3.2 : le nom de l'outil, et sous lui sa description éditée en
+   administration quand elle existe. La flèche reste alignée sur le nom,
+   pas au milieu du bloc, d'où l'alignement en tête de ligne. */
+.tool-category-tools a:has(.tool-link-description) {
+  align-items: flex-start;
+}
+.tool-link-copy {
+  display: grid;
+  gap: 0.15rem;
+}
+.tool-link-description {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
 /* §3.3 : la description d'une ligne sous le nom d'un référentiel. */
 .reference-card-description {
   margin: 0.35rem 0 0;

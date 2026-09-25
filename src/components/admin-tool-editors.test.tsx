@@ -37,10 +37,17 @@ const body = (request: ReturnType<typeof mockSave>) =>
   JSON.parse(String(request.mock.calls[0][1]?.body));
 
 describe("Bloc 119: Paramètres Villes partagés", () => {
+  // Les trois outils Villes partagent cet éditeur, donc la même href : c'est
+  // exactement le cas que le rendu doit tenir (voir le test de clés
+  // ci-dessous).
   const sharedTools = [
-    { label: "Coût de Ville", href: "/admin/tools" },
-    { label: "Niveau Max Atteignable", href: "/admin/tools" },
-    { label: "Production", href: "/admin/tools" },
+    { slug: "city-cost", label: "Coût de Ville", href: "/admin/tools" },
+    {
+      slug: "city-max-level",
+      label: "Niveau Max Atteignable",
+      href: "/admin/tools",
+    },
+    { slug: "city-production", label: "Production", href: "/admin/tools" },
   ];
 
   it("saves the same payload the screen it replaces sent", async () => {
@@ -79,6 +86,26 @@ describe("Bloc 119: Paramètres Villes partagés", () => {
       "href",
       "/admin/tools",
     );
+  });
+
+  // Les pastilles étaient keyées sur la href, que les trois outils Villes
+  // partagent : React signalait « Encountered two children with the same
+  // key » et s'autorisait à en omettre ou en dupliquer. Le slug est ce qui
+  // distingue un outil d'un autre.
+  it("rend une pastille par outil, même quand tous pointent vers la même page", () => {
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(
+      <CityParametersEditor
+        initial={defaultCityParameters}
+        sharedTools={sharedTools}
+        {...screenProps}
+      />,
+    );
+    for (const { label } of sharedTools)
+      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
+    expect(
+      warn.mock.calls.filter(([first]) => String(first).includes("same key")),
+    ).toHaveLength(0);
   });
 
   it("says nothing is saved until it is, and takes Annuler back", async () => {

@@ -51,11 +51,20 @@ export async function generateMetadata({
   // (references.descriptions.<slug>) instead of the single templated
   // "{name} reference…" phrase that made all 7 indistinguishable; Bloc 91/E3
   // adds the OG/Twitter card.
+  //
+  // Bloc 129 : la même description que la page affiche. Elle vient de la
+  // base (Bloc 130) et change sans livraison ; la laisser en clé i18n ici
+  // faisait diverger la page de sa propre fiche dès la première édition.
+  // La clé statique reste le repli tant que l'enregistrement est vide —
+  // une fiche sans description se référence mal.
+  const stored = (await getPublicDescriptions(locale))[
+    reference.calculatorSlug
+  ];
   const meta = pageMetadata({
     locale,
     path: `/referentiels/${slug}`,
     title: t(`catalog.${reference.slug}`),
-    description: t(`descriptions.${reference.slug}`),
+    description: stored || t(`descriptions.${reference.slug}`),
   });
   // Bloc 91/F2: an inactive reference (e.g. Events, off by default) still
   // renders a 200 "unavailable" page, and it's already kept out of the sitemap

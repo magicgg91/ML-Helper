@@ -3,7 +3,12 @@
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
-import { contactSubjects, type ContactSubject } from "@/lib/contact";
+import {
+  contactMessageMaxLength,
+  contactPageMaxLength,
+  contactSubjects,
+  type ContactSubject,
+} from "@/lib/contact";
 import { contactPrefillKeys } from "@/lib/contact-link";
 
 const isSubject = (value: string | null): value is ContactSubject =>
@@ -24,7 +29,19 @@ export function ContactForm() {
   const [subject, setSubject] = useState<ContactSubject | undefined>(
     isSubject(prefilled) ? prefilled : undefined,
   );
-  const page = params.get(contactPrefillKeys.page) ?? "";
+  // Contrôlé, et pas seulement prérempli : la page concernée voyage en tête
+  // du message, donc ce qu'elle occupe se retire du message. Le plafond du
+  // <textarea> ci-dessous suit sa valeur courante.
+  const [page, setPage] = useState(params.get(contactPrefillKeys.page) ?? "");
+  const pagePrefix = page.trim()
+    ? `${t("page-field")} : ${page.trim()}\n\n`
+    : "";
+  // Jamais 0 : le champ resterait impossible à remplir si un libellé
+  // traduit venait à mordre tout le budget.
+  const messageMaxLength = Math.max(
+    1,
+    contactMessageMaxLength - pagePrefix.length,
+  );
   const emailId = useId();
   const pageId = useId();
   const messageId = useId();
@@ -33,7 +50,6 @@ export function ContactForm() {
     setPending(true);
     setStatus("idle");
     try {
-      const concerned = String(formData.get("page") ?? "").trim();
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -43,15 +59,18 @@ export function ContactForm() {
           // La page concernée voyage en tête du message : l'API n'a pas de
           // champ pour elle, et le §3.6 demande de ne pas la modifier sans
           // nécessité. C'est de toute façon là que ça se lit le mieux.
-          message: concerned
-            ? `${t("page-field")} : ${concerned}\n\n${formData.get("message")}`
-            : formData.get("message"),
+          // Le préfixe est celui qui a servi à calculer le plafond du
+          // message, donc l'ensemble tient dans ce que l'API accepte.
+          message: `${pagePrefix}${formData.get("message")}`,
         }),
       });
       if (response.ok) {
         setStatus("success");
         (document.getElementById("contact-form") as HTMLFormElement)?.reset();
         setSubject(undefined);
+        // `reset()` ne touche pas un champ contrôlé : il garderait sa valeur
+        // alors que le formulaire affiche « message envoyé ».
+        setPage("");
       } else {
         const body = (await response.json().catch(() => null)) as {
           error?: string;
@@ -108,7 +127,9 @@ export function ContactForm() {
             id={pageId}
             name="page"
             type="text"
-            defaultValue={page}
+            value={page}
+            onChange={(event) => setPage(event.target.value)}
+            maxLength={contactPageMaxLength}
             placeholder={t("page-placeholder")}
           />
         </label>
@@ -120,6 +141,7 @@ export function ContactForm() {
           name="message"
           required
           rows={7}
+          maxLength={messageMaxLength}
           // §3.6 : le placeholder suit l'objet — il demande ce qu'on a
           // besoin de lire pour cet objet-là.
           placeholder={t(`placeholders.${subject ?? "other"}`)}

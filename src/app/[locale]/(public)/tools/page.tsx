@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/public-page-header";
 import { getLocale, getTranslations } from "next-intl/server";
 import { pageMetadata } from "@/lib/page-metadata";
 import { toolCategoryOrder, toolEntryHref } from "@/lib/tool-links";
+import { getPublicDescriptions } from "@/lib/tool-descriptions-server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, tools, locale] = await Promise.all([
@@ -34,6 +35,11 @@ export default async function ToolsPage() {
     getTranslations(),
     getLocale(),
   ]);
+  // Les descriptions d'outils éditées en administration (Bloc 130) se lisent
+  // ici : une page de catégorie héberge plusieurs outils derrière des
+  // onglets et ne peut nommer qu'elle-même (§3.8), donc cet index est le
+  // seul endroit public où chacune a sa place. Vide, elle n'est pas rendue.
+  const descriptions = await getPublicDescriptions(locale);
   // Bloc 129 §3.2 : chaque carte liste ses outils. Un outil désactivé en
   // administration n'apparaît pas — la carte ne promet que ce qui existe.
   const toolLinks = Object.fromEntries(
@@ -43,7 +49,15 @@ export default async function ToolsPage() {
         .filter((slug) => active[slug])
         .flatMap((slug) => {
           const href = toolEntryHref(slug);
-          return href ? [{ href, label: rootT(`${slug}.name`) }] : [];
+          return href
+            ? [
+                {
+                  href,
+                  label: rootT(`${slug}.name`),
+                  description: descriptions[slug] || undefined,
+                },
+              ]
+            : [];
         }),
     ]),
   );

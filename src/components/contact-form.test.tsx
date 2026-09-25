@@ -3,6 +3,11 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import messages from "../../messages/fr.json";
 import { ContactForm } from "./contact-form";
+import {
+  contactMessageMaxLength,
+  contactMessageSchema,
+  contactPageMaxLength,
+} from "@/lib/contact";
 
 // Bloc 129 §2.4 : le formulaire lit l'objet et la page dans l'URL. Hors du
 // routeur, useSearchParams renvoie null — d'où ce mock, réglable par test.
@@ -181,6 +186,70 @@ describe("ContactForm", () => {
     expect(body.message).toBe(
       "Page concernée : Villes\n\nLe taux d'XP semble faux.",
     );
+  });
+
+  // Bloc 129, relevé en revue : la page concernée voyage en tête du message
+  // et l'API valide la chaîne complète contre son plafond. Sans plafond
+  // correspondant sur le champ, un message valide à lui seul repartait en
+  // « message invalide » à cause du seul préfixe, sans rien qui l'explique.
+  describe("le plafond du message tient compte de la page concernée", () => {
+    it("réduit le plafond du message de ce que prend le préfixe", () => {
+      renderForm("?page=Villes");
+      const prefix = "Page concernée : Villes\n\n";
+      expect(screen.getByLabelText("Message")).toHaveAttribute(
+        "maxlength",
+        String(contactMessageMaxLength - prefix.length),
+      );
+    });
+
+    it("laisse le plafond entier quand aucune page n'est renseignée", () => {
+      renderForm();
+      expect(screen.getByLabelText("Message")).toHaveAttribute(
+        "maxlength",
+        String(contactMessageMaxLength),
+      );
+    });
+
+    it("suit la page que le visiteur saisit lui-même", () => {
+      renderForm();
+      fireEvent.change(screen.getByLabelText("Page concernée"), {
+        target: { value: "Gemmes" },
+      });
+      const prefix = "Page concernée : Gemmes\n\n";
+      expect(screen.getByLabelText("Message")).toHaveAttribute(
+        "maxlength",
+        String(contactMessageMaxLength - prefix.length),
+      );
+    });
+
+    it("borne aussi le champ « Page concernée »", () => {
+      renderForm();
+      expect(screen.getByLabelText("Page concernée")).toHaveAttribute(
+        "maxlength",
+        String(contactPageMaxLength),
+      );
+    });
+
+    it("n'envoie jamais plus que ce que l'API accepte", () => {
+      vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 204 }));
+      renderForm("?page=Villes");
+      fireEvent.change(screen.getByLabelText("Ton email"), {
+        target: { value: "player@example.com" },
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Erreur dans les données" }),
+      );
+      const field = screen.getByLabelText("Message") as HTMLTextAreaElement;
+      fireEvent.change(field, {
+        target: { value: "a".repeat(Number(field.maxLength)) },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
+      const body = JSON.parse(
+        String(vi.mocked(fetch).mock.calls[0]?.[1]?.body),
+      ) as { message: string };
+      expect(body.message.length).toBe(contactMessageMaxLength);
+      expect(() => contactMessageSchema.parse(body)).not.toThrow();
+    });
   });
 
   it("shows a not-configured message when SMTP isn't set up", async () => {

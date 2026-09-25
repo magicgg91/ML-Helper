@@ -93,7 +93,13 @@ export function CityParametersEditor({
 }: EditorScreenProps & {
   initial: CityParameters;
   /** The tools whose "Modifier" opens this very screen (admin-tool-sources). */
-  sharedTools: { label: string; href: string }[];
+  /**
+   * `slug` porte la clé React, pas `href` : les trois outils Villes
+   * partagent cet éditeur et pointent donc tous vers la même page
+   * (/admin/tools). Keyer sur la href donnait trois clés identiques, ce que
+   * React signale et qui l'autorise à en omettre ou en dupliquer.
+   */
+  sharedTools: { slug: string; label: string; href: string }[];
 }) {
   const t = useTranslations("admin.city-parameters");
   const leagues = useTranslations("game.leagues");
@@ -126,7 +132,7 @@ export function CityParametersEditor({
               {t("used-by", { count: sharedTools.length })}
             </Pill>
             {sharedTools.map((tool) => (
-              <Pill key={tool.href} tone="accent" href={tool.href}>
+              <Pill key={tool.slug} tone="accent" href={tool.href}>
                 {tool.label}
               </Pill>
             ))}

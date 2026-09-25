@@ -6,6 +6,16 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
   getLocale: async () => "fr",
 }));
+// Bloc 129 : l'index Outils publie la description que l'administration a
+// écrite pour chaque outil (`calculators.description`, Bloc 130). Deux
+// renseignées, une vide, pour couvrir les deux cas d'un même rendu.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({
+    "city-cost": "Le prix d'une ville, niveau par niveau.",
+    gems: "Le coût de chaque fusion.",
+    "city-max-level": "",
+  }),
+}));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: async () => ({
     "city-cost": true,
@@ -97,5 +107,25 @@ describe("ToolsPage", () => {
       "/tools/skills.webp",
     ])
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
+  });
+
+  // Bloc 129, relevé en revue : les descriptions d'outils sont éditables en
+  // administration depuis le Bloc 130, mais une page de catégorie ne peut
+  // nommer qu'elle-même (elle héberge plusieurs outils derrière des
+  // onglets) — cet index est donc le seul endroit public où chacune
+  // s'affiche. Sans lui, une description enregistrée ne se voyait nulle
+  // part et l'administration annonçait pourtant l'avoir enregistrée.
+  it("publie la description que l'administration a écrite pour un outil", async () => {
+    render(await ToolsPage());
+    const link = screen.getByRole("link", { name: /city-cost\.name/ });
+    expect(link).toHaveTextContent("Le prix d'une ville, niveau par niveau.");
+  });
+
+  it("ne rend aucune ligne de description quand l'enregistrement est vide", async () => {
+    render(await ToolsPage());
+    const link = screen.getByRole("link", { name: /city-max-level\.name/ });
+    expect(
+      link.querySelector(".tool-link-description"),
+    ).not.toBeInTheDocument();
   });
 });

@@ -16,10 +16,29 @@ export const contactSubjects = [
 
 export type ContactSubject = (typeof contactSubjects)[number];
 
+/**
+ * La longueur maximale du message, telle que l'API la valide.
+ *
+ * Le formulaire la lit aussi : il compose le message en préfixant la page
+ * concernée, et sans ce plafond partagé un message valide à lui seul
+ * partait en dépassant la limite, pour revenir en « message invalide »
+ * sans que rien n'explique pourquoi.
+ */
+export const contactMessageMaxLength = 5000;
+
+/**
+ * La longueur maximale du champ « Page concernée ».
+ *
+ * Il n'a pas de champ à lui dans l'API (§3.6 : pas de modification d'API
+ * sans nécessité) et voyage en tête du message. Le borner borne le préfixe,
+ * donc la part du message qu'il peut consommer.
+ */
+export const contactPageMaxLength = 200;
+
 export const contactMessageSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   subject: z.enum(contactSubjects),
-  message: z.string().trim().min(1).max(5000),
+  message: z.string().trim().min(1).max(contactMessageMaxLength),
 });
 
 export type ContactMessageInput = z.infer<typeof contactMessageSchema>;

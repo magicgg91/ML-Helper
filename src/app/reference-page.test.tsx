@@ -24,10 +24,12 @@ vi.mock("next-intl/server", () => ({
 }));
 vi.mock("next/server", () => ({ connection: async () => undefined }));
 // Bloc 129 §3.9 : la page lit la description du référentiel en base
-// (Bloc 130). Aucune n'est écrite ici — ni en production à la livraison —
-// et la ligne de description n'est alors pas rendue.
+// (Bloc 130). Aucune n'est écrite par défaut ici — ni en production à la
+// livraison — et la ligne de description n'est alors pas rendue. Mutable
+// pour que les tests de métadonnées couvrent aussi le cas renseigné.
+const stored = vi.hoisted(() => ({ value: {} as Record<string, string> }));
 vi.mock("@/lib/tool-descriptions-server", () => ({
-  getPublicDescriptions: async () => ({}),
+  getPublicDescriptions: async () => stored.value,
 }));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: vi.fn(async () => ({
@@ -94,7 +96,10 @@ vi.mock("@/lib/templars-presentation-server", () => ({
   getTemplarPresentation: async () => ({}),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  stored.value = {};
+});
 
 // Bloc 42/J: same requirement as every other public page — real
 // description, hreflang alternates for the 5 launched locales.
@@ -117,6 +122,29 @@ describe("ReferencePage metadata (Bloc 42/J)", () => {
     expect(metadata.alternates?.canonical).toBe(
       "https://ml-helper.com/fr/referentiels/combat-equipment",
     );
+  });
+
+  // Bloc 129, relevé en revue : la page affiche la description éditée en
+  // base, la fiche doit dire la même chose. Une clé i18n figée ici faisait
+  // diverger la page de son extrait de recherche et de sa carte Open Graph
+  // dès la première édition.
+  it("décrit la fiche avec la description enregistrée en base", async () => {
+    stored.value = { "combat-equipment": "Toutes les pièces, par set." };
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ locale: "fr", slug: "combat-equipment" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).toBe("Toutes les pièces, par set.");
+    expect(metadata.openGraph?.description).toBe("Toutes les pièces, par set.");
+  });
+
+  it("retombe sur la description statique quand l'enregistrement est vide", async () => {
+    stored.value = { "combat-equipment": "" };
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ locale: "fr", slug: "combat-equipment" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).toBe("descriptions.combat-equipment");
   });
 });
 

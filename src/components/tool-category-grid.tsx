@@ -57,7 +57,19 @@ export const toolCategories: Array<{
   },
 ];
 
-export type CategoryToolLink = { href: string; label: string };
+/**
+ * Un outil dans la carte de sa catégorie, sur l'index Outils.
+ *
+ * `description` vient de `calculators.description` (Bloc 130), dans la
+ * langue du visiteur. Absente, la ligne n'est pas rendue — c'est l'index
+ * Outils qui donne à ces descriptions leur seule place publique, la page
+ * d'une catégorie ne pouvant nommer qu'elle-même (voir le §3.8).
+ */
+export type CategoryToolLink = {
+  href: string;
+  label: string;
+  description?: string;
+};
 
 export function ToolCategoryGrid({
   active,
@@ -147,7 +159,14 @@ export function ToolCategoryGrid({
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} prefetch={false}>
-                      <span>{link.label}</span>
+                      <span className="tool-link-copy">
+                        <span className="tool-link-label">{link.label}</span>
+                        {link.description ? (
+                          <span className="tool-link-description">
+                            {link.description}
+                          </span>
+                        ) : null}
+                      </span>
                       <span aria-hidden="true">→</span>
                     </Link>
                   </li>
