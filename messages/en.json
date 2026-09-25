@@ -1350,6 +1350,7 @@
       "date": "Date",
       "start": "Start date",
       "end": "End date",
+      "entries-summary": "{count} entries",
       "error": "Unable to purge history",
       "filter-user": "User",
       "filter-message": "Word in message",

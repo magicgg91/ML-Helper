@@ -140,6 +140,22 @@ describe("Bloc 136 — une section repliable de Configuration", () => {
     expect(screen.getByText("Langues")).toHaveClass("admin-section-title");
   });
 
+  /**
+   * Une section dont l'action détruit garde le rouge que sa carte portait
+   * seule avant le Bloc 136 : c'est le seul écart de couleur prévu, et il
+   * doit rester lisible dans l'en-tête replié, là où l'on décide d'ouvrir.
+   */
+  it("passe au rouge quand la section est destructrice", () => {
+    renderSection({ tone: "danger", title: "Purge du journal" });
+    const section = screen
+      .getByRole("button", { name: "Purge du journal" })
+      .closest("section");
+    expect(section).toHaveClass("border-admin-danger-border");
+    expect(screen.getByText("Purge du journal")).toHaveClass(
+      "text-admin-danger-ink",
+    );
+  });
+
   it("garde le contenu monté quand on replie", () => {
     renderSection({
       children: <input aria-label="Saisie" defaultValue="" />,

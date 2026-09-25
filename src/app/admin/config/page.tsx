@@ -42,9 +42,14 @@ export default async function ConfigAdminPage() {
   // `admin` keeps the rest of the tab; showing them a field whose save is
   // refused would only be a trap.
   const canConfigureScripts = can(session.user.role, "configuration.scripts");
-  const [t, state, tracking, guides, active, highlights, adminLocale] =
+  // Bloc 136 : demandé avant le reste, parce que le compte du journal ne se
+  // lit que pour qui a le droit de le purger — et que la section n'existe
+  // pas sans ce droit.
+  const canPurge = can(session.user.role, "logs.purge");
+  const [t, logs, state, tracking, guides, active, highlights, adminLocale] =
     await Promise.all([
       getTranslations("admin.config"),
+      getTranslations("admin.logs"),
       getLocaleActiveState(),
       getTrackingSettings(),
       // Bloc 119: how many guides are written in each language — the column
@@ -60,6 +65,8 @@ export default async function ConfigAdminPage() {
       getHomeHighlights(),
       getLocale(),
     ]);
+  // Le journal n'est compté que si la carte s'affiche.
+  const loggedEntries = canPurge ? await prisma.auditLog.count() : 0;
   // Bloc 90/B+D: every launched language, the always-active EN/FR base first,
   // each with its public visibility and whether it is locked.
   //
@@ -175,8 +182,26 @@ export default async function ConfigAdminPage() {
           y était la seule action destructive au bas d'une page qu'on ouvre
           pour *chercher* une entrée, et rien ne sépare mal comme la
           proximité. Elle finit ici, en dernier, avec la même garde
-          `logs.purge` et le même composant : seul l'endroit change. */}
-      {can(session.user.role, "logs.purge") && <AdminLogsPurge />}
+          `logs.purge`.
+
+          Bloc 136 : repliable comme les autres, en ton `danger`, et résumée
+          par la taille du journal — ce qu'on veut savoir avant d'en
+          supprimer une tranche. */}
+      {canPurge && (
+        <CollapsibleSection
+          id="purge-journal"
+          title={logs("purge-title")}
+          description={logs("purge-description")}
+          tone="danger"
+          summary={
+            <Pill tone="neutral">
+              {logs("entries-summary", { count: loggedEntries })}
+            </Pill>
+          }
+        >
+          <AdminLogsPurge />
+        </CollapsibleSection>
+      )}
     </div>
   );
 }

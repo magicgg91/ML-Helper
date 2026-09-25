@@ -11,6 +11,12 @@ import { ConfirmDialog } from "./admin-confirm-dialog";
  * card of its own with a danger border — it used to sit above the log, the
  * first thing an administrator met.
  *
+ * Bloc 136 : la carte, le titre et la ligne de description sont désormais
+ * ceux de CollapsibleSection (en ton `danger`, qui reprend le trait rouge),
+ * et ce composant n'est plus que le contenu du panneau. Une action qui
+ * détruit se replie comme le reste, et demande donc un geste de plus avant
+ * d'atteindre le bouton — ce qui n'est pas un mal ici.
+ *
  * The dialog announces the exact number of entries the period holds, asked
  * of the server before anything is deleted: the screen only ever holds one
  * page of the log, so it cannot count them itself.
@@ -58,12 +64,8 @@ export function AdminLogsPurge() {
   }
 
   return (
-    <section className="rounded-admin-card border border-admin-danger-border p-5">
-      <h2 className="admin-section-title text-admin-danger-ink">
-        {t("purge-title")}
-      </h2>
-      <p className="mt-1 text-sm text-admin-dim">{t("purge-description")}</p>
-      <div className="mt-4 flex flex-wrap items-end gap-3">
+    <>
+      <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-xs text-admin-dim">
           {t("start")}
           <input
@@ -102,6 +104,6 @@ export function AdminLogsPurge() {
         onCancel={() => setPending(undefined)}
         onConfirm={purge}
       />
-    </section>
+    </>
   );
 }

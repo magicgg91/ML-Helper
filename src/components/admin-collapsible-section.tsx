@@ -98,6 +98,7 @@ export function CollapsibleSection({
   title,
   description,
   summary,
+  tone = "default",
   children,
 }: {
   /**
@@ -109,6 +110,13 @@ export function CollapsibleSection({
   description?: string;
   /** L'état de la section en une pastille, lisible sans l'ouvrir. */
   summary?: ReactNode;
+  /**
+   * `danger` pour une section dont l'action détruit quelque chose : trait et
+   * titre passent au rouge, comme la carte de purge le faisait déjà seule
+   * (Bloc 119). C'est le seul écart de couleur prévu — une section n'a pas
+   * de thème à elle.
+   */
+  tone?: "default" | "danger";
   children: ReactNode;
 }) {
   const t = useTranslations("admin.common");
@@ -146,7 +154,12 @@ export function CollapsibleSection({
     // trait et le rayon de la carte dessinent ses coins.
     <section
       id={id}
-      className="rounded-admin-card border border-admin-card-border bg-admin-card"
+      className={cn(
+        "rounded-admin-card border bg-admin-card",
+        tone === "danger"
+          ? "border-admin-danger-border"
+          : "border-admin-card-border",
+      )}
     >
       {/* Le titre reste un titre : ces cartes découpent la page sous son
           <h1>, et le plan de l'écran en dépend. Le bouton est dedans plutôt
@@ -184,7 +197,10 @@ export function CollapsibleSection({
                 il retombe sur les 0.425px de la carte d'avant. */}
             <span
               id={titleId}
-              className="admin-section-title tracking-[0.025em] text-admin-text"
+              className={cn(
+                "admin-section-title tracking-[0.025em]",
+                tone === "danger" ? "text-admin-danger-ink" : "text-admin-text",
+              )}
             >
               {title}
             </span>

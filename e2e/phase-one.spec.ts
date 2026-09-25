@@ -2948,6 +2948,7 @@ async function b90Login(page: Page, username: string, password: string) {
  */
 const B136_LANGUAGES = /^(Langues|Languages)$/;
 const B136_TRACKING = /^(Suivi des visites|Visit tracking)$/;
+const B136_PURGE = /^(Purge du journal|Purge the log)$/;
 
 async function b136OpenSection(page: Page, title: RegExp) {
   const header = page.getByRole("button", { name: title });
@@ -4304,12 +4305,21 @@ test("Bloc 136: Configuration opens folded, and an anchor opens one section", as
     /^(Mis en avant|Homepage highlights)/,
     B136_LANGUAGES,
     B136_TRACKING,
+    B136_PURGE,
   ])
     await expect(page.getByRole("button", { name: title })).toHaveAttribute(
       "aria-expanded",
       "false",
     );
   await expect(page.getByTestId("locale-toggle-de")).toBeHidden();
+  // Y compris l'action destructive : le bouton de purge n'est pas atteignable
+  // tant qu'on n'a pas ouvert sa section.
+  const purge = page.getByRole("button", {
+    name: /^(Purger la période|Purge the period)/,
+  });
+  await expect(purge).toHaveCount(0);
+  await b136OpenSection(page, B136_PURGE);
+  await expect(purge).toBeVisible();
   // Ce qui remplace le contenu : l'état de la section, lisible sans ouvrir.
   await expect(page.getByText(/actives? sur 5|active out of 5/)).toBeVisible();
 
