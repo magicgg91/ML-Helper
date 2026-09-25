@@ -5,6 +5,7 @@ import {
   AdminLanguagesPanel,
   type LanguageRow,
 } from "@/components/admin-languages-panel";
+import { AdminLogsPurge } from "@/components/admin-logs-purge";
 import { PageHeader } from "@/components/admin-page-header";
 import { Pill } from "@/components/admin-pill";
 import { AdminSettingsSection } from "@/components/admin-settings-section";
@@ -160,6 +161,12 @@ export default async function ConfigAdminPage() {
           />
         </AdminSettingsSection>
       )}
+      {/* Bloc 131/E : la purge du journal, venue de la page Historique. Elle
+          y était la seule action destructive au bas d'une page qu'on ouvre
+          pour *chercher* une entrée, et rien ne sépare mal comme la
+          proximité. Elle finit ici, en dernier, avec la même garde
+          `logs.purge` et le même composant : seul l'endroit change. */}
+      {can(session.user.role, "logs.purge") && <AdminLogsPurge />}
     </div>
   );
 }

@@ -46,6 +46,11 @@ vi.mock("@/components/admin-languages-panel", () => ({
 vi.mock("@/components/tracking-settings-panel", () => ({
   TrackingSettingsPanel: () => <div data-testid="tracking" />,
 }));
+// Bloc 131/E : la carte de purge arrive de la page Historique. Doublée comme
+// les autres panneaux — ce que cet écran décide, c'est de la montrer ou non.
+vi.mock("@/components/admin-logs-purge", () => ({
+  AdminLogsPurge: () => <div data-testid="purge" />,
+}));
 
 const mockedRequireCapability = vi.mocked(requireCapability);
 const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
@@ -190,5 +195,34 @@ describe("Bloc 132 §4 : la sélection « Mis en avant »", () => {
     expect(
       (await renderHighlights([{ kind: "tool", slug: "city-cost" }])).initial,
     ).toEqual([{ kind: "tool", slug: "city-cost" }]);
+  });
+});
+
+/**
+ * Bloc 131/E : la purge du journal vit maintenant ici.
+ *
+ * Le rôle qui y a droit n'a pas bougé — `logs.purge`, donc Super Admin — et
+ * c'est bien le point : seul l'endroit change. Un `admin` garde l'accès à
+ * Configuration et n'y voit pas la carte, exactement comme il gardait
+ * l'accès à Historique sans la voir.
+ */
+describe("Bloc 131/E — la purge du journal, en Configuration", () => {
+  it("montre la carte à un Super Admin", async () => {
+    await renderPage();
+    expect(screen.getByTestId("purge")).toBeInTheDocument();
+  });
+
+  it("la cache à un Admin, qui peut lire le journal sans le vider", async () => {
+    await renderPage({ role: "admin" });
+    expect(screen.queryByTestId("purge")).toBeNull();
+  });
+
+  // Une action destructive se met en bout de page, pas au milieu des
+  // réglages qu'on vient modifier tous les jours.
+  it("la pose en dernier, après les réglages", async () => {
+    await renderPage();
+    const card = screen.getByTestId("purge");
+    // Dernier enfant de la colonne de la page, après les trois réglages.
+    expect(card.parentElement?.lastElementChild).toBe(card);
   });
 });
