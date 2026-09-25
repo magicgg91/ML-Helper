@@ -63,14 +63,14 @@ export function ToolCategorySections({
                 fallback={null}
               />
             </span>
-            <span className="tool-section-title">
-              <span className="tool-section-name">{t(category.label)}</span>
-              {available ? (
-                <span className="tool-count">{t("count", { count })}</span>
-              ) : (
-                <span className="tool-unavailable">{t("comingSoon")}</span>
-              )}
-            </span>
+            {/* Le nom reste un titre : ces cartes découpent la page sous
+                son <h1>, et l'index en tire son plan. */}
+            <h2 className="tool-section-name">{t(category.label)}</h2>
+            {available ? (
+              <span className="tool-count">{t("count", { count })}</span>
+            ) : (
+              <span className="tool-unavailable">{t("comingSoon")}</span>
+            )}
           </>
         );
         return (

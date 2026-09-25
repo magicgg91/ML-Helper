@@ -262,7 +262,9 @@ test("tool routes alone expose persistent player settings", async ({
 
   await page.goto("/tools");
   await expect(page).toHaveTitle("Outils | ML-Helper · Million Lords");
-  await expect(page.locator(".tool-category-card")).toHaveCount(4);
+  // Bloc 132 §6 : l'index empile une carte par catégorie (.tool-section) au
+  // lieu de la grille de vignettes qu'il partageait avec l'accueil.
+  await expect(page.locator(".tool-section")).toHaveCount(4);
   await expect(page.getByRole("heading", { name: "Combat" })).toBeVisible();
   await expect(
     page
@@ -279,10 +281,10 @@ test("tool routes alone expose persistent player settings", async ({
   // Bloc 33/E: the whole tile is the link now — no more redundant "Ouvrir
   // la catégorie" text to click on.
   // Bloc 129 §3.2 : la carte liste aussi ses outils, et le pied de page
-  // nomme la catégorie — c'est le lien de la carte qu'on suit ici.
+  // nomme la catégorie — c'est le lien de l'en-tête de carte qu'on suit ici.
   await page
-    .locator(".tool-category-card")
-    .getByRole("link", { name: /^Villes/ })
+    .locator(".tool-section .tool-section-head")
+    .filter({ hasText: /^Villes/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
@@ -801,7 +803,9 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.goto("/tools/competences");
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
   await expect(
-    page.locator(".selection-banner").getByRole("link", { name: /Compétences/ }),
+    page
+      .locator(".selection-banner")
+      .getByRole("link", { name: /Compétences/ }),
   ).toHaveAttribute("aria-current", "page");
 
   await page

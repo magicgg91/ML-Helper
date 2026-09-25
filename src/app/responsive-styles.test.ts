@@ -459,7 +459,11 @@ describe("Bloc 132 §6 — la page Outils", () => {
   });
 
   it("rend à mobile la carte d'avant : image pleine largeur, lignes de 48 px, sans description", () => {
-    expect(narrow).toMatch(/\.tool-section-thumb {\s*\n\s*width: 100%;/);
+    // Pleine largeur, rembourrage de la carte compris — d'où la marge
+    // négative qui accompagne la base de 100 %.
+    expect(narrow).toMatch(
+      /\.tool-section-thumb {[\s\S]*?flex-basis: 100%;[\s\S]*?margin: 0 -1rem;/,
+    );
     expect(narrow).toMatch(
       /\.tool-section-tools {[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/,
     );

@@ -13,7 +13,17 @@ import { expect, test } from "@playwright/test";
 // renders both grids but redirects to the one-time setup until a Super Admin
 // exists — the same reason seo-metadata.spec.ts avoids it. These two pages
 // cover one grid each, which is where the paths actually live.
-for (const path of ["/fr/tools", "/fr/referentiels"]) {
+// Bloc 132 §6: /fr/tools no longer draws the same tile grid as
+// /fr/referentiels — it stacks one card per category, each listing its
+// tools. Only the locator that waits for the images changes; what the test
+// watches (404s, unused preloads) is the same on both pages.
+for (const { path, tile } of [
+  { path: "/fr/tools", tile: ".tool-sections .tool-section-thumb img" },
+  {
+    path: "/fr/referentiels",
+    tile: ".tool-category-grid .tool-category-card img",
+  },
+]) {
   test(`Bloc 104: ${path} asks for nothing the site does not serve`, async ({
     page,
   }) => {
@@ -33,9 +43,7 @@ for (const path of ["/fr/tools", "/fr/referentiels"]) {
 
     await page.goto(path, { waitUntil: "networkidle" });
     // The tiles are what this is about, so wait until they are really there.
-    await expect(
-      page.locator(".tool-category-grid .tool-category-card").first(),
-    ).toBeVisible();
+    await expect(page.locator(tile).first()).toBeVisible();
     // The warning lands a few seconds after load, not with the response.
     await page.waitForTimeout(3000);
 
