@@ -1,3 +1,6 @@
+// Avant tout schéma : coupe la compilation JIT de Zod dans le navigateur,
+// qui violerait la CSP (voir le module pour le détail).
+import "./zod-config";
 import { z } from "zod";
 
 // Bloc 129 §3.6 : les quatre objets du formulaire. « technical-bug »

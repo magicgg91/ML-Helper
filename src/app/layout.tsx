@@ -60,6 +60,23 @@ const fontMono = localFont({
   // pixels of reflow.
   adjustFontFallback: false,
   fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+  /**
+   * La seule famille qu'on ne précharge pas.
+   *
+   * `preload` vaut `true` par défaut et porte sur toute la famille : les huit
+   * fichiers des trois familles (176 Ko) étaient donc téléchargés sur chaque
+   * page. Mesuré au navigateur sur un build de production : les quatre écrans
+   * d'outils n'utilisent que deux fontes (sans 400, serif 700), Configuration
+   * trois, et la chasse fixe n'apparaît que sur six pages sur douze — et
+   * jamais dans le premier texte lu : elle est réservée aux heures, aux
+   * identifiants, aux codes de langue et aux nombres en tuiles (Bloc 119 §1).
+   * Elle arrive donc par la feuille de style quand une page en a besoin, un
+   * aller-retour plus tard, ce que `display: swap` couvre déjà.
+   *
+   * Les deux autres familles restent préchargées : sans et serif servent le
+   * texte courant et les titres de toutes les pages mesurées.
+   */
+  preload: false,
 });
 
 // Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
