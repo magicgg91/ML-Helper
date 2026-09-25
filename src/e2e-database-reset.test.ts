@@ -39,6 +39,49 @@ describe("Bloc 121: the per-attempt database reset", () => {
     }
   });
 
+  /**
+   * Bloc 131 (correctif CI) : un index orphelin ne bloque pas la remise à
+   * zéro.
+   *
+   * La CI a fait échouer `CREATE INDEX "audit_logs_created_at_idx"` sur
+   * « index already exists », au troisième appel de la fonction, dans une
+   * suite complète. En SQLite un index part avec sa table : l'état que ce
+   * test met en place ne devrait donc pas exister, et c'est précisément
+   * pourquoi il est écrit — la remise à zéro doit survivre à un état qu'on
+   * ne sait pas expliquer, pas seulement à celui qu'on attend.
+   *
+   * L'index est posé ici sur une autre table, faute de pouvoir fabriquer
+   * l'orphelin directement : SQLite emporte l'index quand on retire la
+   * sienne. Le nom est ce qui compte — c'est lui qui entre en collision.
+   */
+  it("passe outre un index resté d'un état antérieur", async () => {
+    await resetE2eDatabase(url);
+    const stale = client();
+    try {
+      await stale.$executeRawUnsafe(
+        'CREATE TABLE "leftover" ("created_at" DATETIME)',
+      );
+      await stale.$executeRawUnsafe('DROP INDEX "audit_logs_created_at_idx"');
+      await stale.$executeRawUnsafe(
+        'CREATE INDEX "audit_logs_created_at_idx" ON "leftover"("created_at")',
+      );
+    } finally {
+      await stale.$disconnect();
+    }
+
+    // Sans le retrait nommé des index, cette ligne lève
+    // « index audit_logs_created_at_idx already exists ».
+    await expect(resetE2eDatabase(url)).resolves.toBeUndefined();
+
+    const prisma = client();
+    try {
+      expect(await prisma.calculator.count()).toBeGreaterThan(0);
+      expect(await prisma.auditLog.count()).toBe(0);
+    } finally {
+      await prisma.$disconnect();
+    }
+  });
+
   it("leaves nothing of a previous attempt behind", async () => {
     await resetE2eDatabase(url);
     const dirty = client();

@@ -39,6 +39,30 @@ export async function resetE2eDatabase(databaseUrl = e2eDatabaseUrl) {
     await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "login_throttles"');
     await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "locale_settings"');
     await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS "site_settings"');
+    // Bloc 131 (correctif CI) : et les index, nommément.
+    //
+    // En SQLite un index part avec sa table, donc ces lignes ne devraient
+    // rien avoir à faire. Elles existent parce que la CI a montré le
+    // contraire : `CREATE INDEX "audit_logs_created_at_idx"` a échoué sur
+    // « index already exists » au troisième appel de cette fonction, dans
+    // une suite complète où une vingtaine de fichiers tournent en parallèle.
+    // Reproduit trois fois sous charge, jamais en isolation — vingt remises
+    // à zéro d'affilée passent —, et je n'ai pas établi le mécanisme.
+    //
+    // Ce que ces lignes rétablissent, c'est le contrat que cette fonction
+    // s'était donné et que l'échec contredit : rien d'un état antérieur ne
+    // survit à la remise à zéro. Un index orphelin en fait partie, et
+    // `DROP INDEX IF EXISTS` l'emporte qu'il ait ou non gardé sa table.
+    for (const index of [
+      "users_username_key",
+      "audit_logs_created_at_idx",
+      "calculators_slug_key",
+      "formulas_calculator_id_key_key",
+      "guides_slug_key",
+      "static_content_key_key",
+      "reference_tables_key_key",
+    ])
+      await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "${index}"`);
     await prisma.$executeRawUnsafe(
       'CREATE TABLE "users" ("id" TEXT NOT NULL PRIMARY KEY, "username" TEXT NOT NULL, "password_hash" TEXT NOT NULL, "role" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "last_login_at" DATETIME, "totp_secret_encrypted" TEXT, "totp_enabled" BOOLEAN NOT NULL DEFAULT false)',
     );
