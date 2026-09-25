@@ -119,6 +119,7 @@
     "ranking": "Rangliste",
     "skills": "Fähigkeiten",
     "count": "{count, plural, =0 {Kein Werkzeug verfügbar} one {# Werkzeug verfügbar} other {# Werkzeuge verfügbar}}",
+    "count-short": "{count, plural, =0 {Kein Werkzeug} one {# Werkzeug} other {# Werkzeuge}}",
     "comingSoon": "Demnächst verfügbar",
     "comingSoonShort": "Bald",
     "unavailable": "Derzeit nicht verfügbar",

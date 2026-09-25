@@ -119,6 +119,7 @@
     "ranking": "Clasificación",
     "skills": "Habilidades",
     "count": "{count, plural, =0 {Ninguna herramienta disponible} one {# herramienta disponible} other {# herramientas disponibles}}",
+    "count-short": "{count, plural, =0 {Ninguna herramienta} one {# herramienta} other {# herramientas}}",
     "comingSoon": "Próximamente",
     "comingSoonShort": "Pronto",
     "unavailable": "No disponible actualmente",

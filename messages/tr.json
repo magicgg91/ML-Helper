@@ -119,6 +119,7 @@
     "ranking": "Sıralama",
     "skills": "Yetenekler",
     "count": "{count, plural, =0 {Kullanılabilir araç yok} other {# araç kullanılabilir}}",
+    "count-short": "{count, plural, =0 {Araç yok} other {# araç}}",
     "comingSoon": "Yakında",
     "comingSoonShort": "Yakında",
     "unavailable": "Şu anda kullanılamıyor",

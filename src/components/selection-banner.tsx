@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { GameImage } from "./game-image";
 import { TabLabel } from "./tab-label";
+import { ToolCountBadge } from "./tool-count-badge";
 
 /**
  * Bloc 132 §8 : le bandeau de sélection, commun aux catégories d'outils et
@@ -50,10 +51,14 @@ type SelectionTabBase = {
   label: string;
   current?: boolean;
   /**
-   * Ce que l'appelant ajoute après le libellé — le nombre d'outils, côté
-   * Outils.
+   * Ce que l'appelant ajoute après le libellé.
    */
   children?: ReactNode;
+  /**
+   * Bloc 133 §C : le nombre d'outils de la catégorie, en pastille contre le
+   * nom. Côté Référentiels il n'y a rien à compter, donc rien à passer.
+   */
+  count?: { value: number; label: string };
   /**
    * La mention d'une entrée pas encore ouverte, sous le libellé. Toujours
    * affichée, jamais seulement au survol : sur tactile, une infobulle ne
@@ -80,6 +85,7 @@ export function SelectionTab({
   label,
   current,
   badge,
+  count,
   children,
   ...rest
 }: SelectionTabProps) {
@@ -94,24 +100,29 @@ export function SelectionTab({
           fallback={null}
         />
       </span>
-      <span className="selection-tab-label">
-        {/* Le même repère que sur les onglets d'un outil : l'astérisque
-            ambré de TabLabel, la seule façon dont ce site dit « pas
-            encore ». */}
-        <TabLabel label={label} badge={badge} />
+      {/* Bloc 133 §C : nom et pastille forment un groupe, pour que la
+          pastille se pose contre le nom au lieu d'être un troisième enfant
+          de l'onglet, poussé à l'autre bout. */}
+      <span className="selection-tab-title">
+        <span className="selection-tab-label">
+          {/* Le même repère que sur les onglets d'un outil : l'astérisque
+              ambré de TabLabel, la seule façon dont ce site dit « pas
+              encore ». */}
+          <TabLabel label={label} badge={badge} />
+        </span>
+        {count && <ToolCountBadge count={count.value} label={count.label} />}
       </span>
       {children}
     </>
   );
   const ariaCurrent = current ? ("page" as const) : undefined;
+  // Le décompte resserre l'onglet sur mobile (§C) : la classe le dit, plutôt
+  // qu'un `:has()` qui ferait dépendre la mise en page d'un descendant.
+  const className = `selection-tab${count ? " selection-tab-counted" : ""}`;
 
   if (rest.href !== undefined)
     return (
-      <Link
-        className="selection-tab"
-        href={rest.href}
-        aria-current={ariaCurrent}
-      >
+      <Link className={className} href={rest.href} aria-current={ariaCurrent}>
         {content}
       </Link>
     );
@@ -122,7 +133,7 @@ export function SelectionTab({
   if (rest.element === "button")
     return (
       <button
-        className="selection-tab"
+        className={className}
         type="button"
         disabled
         aria-current={ariaCurrent}
@@ -134,7 +145,7 @@ export function SelectionTab({
 
   return (
     <span
-      className="selection-tab"
+      className={className}
       aria-disabled="true"
       aria-current={ariaCurrent}
       title={rest.title}

@@ -67,10 +67,19 @@ describe("Bloc 132 §1 — l'en-tête public", () => {
     expect(active).toMatch(/color: var\(--accent\)/);
   });
 
-  // « Ne traite pas la forme du champ de recherche » — point ouvert non
-  // validé, donc la pilule reste, seule de son espèce.
-  it("laisse le champ de recherche en pilule", () => {
-    expect(rule(".site-search-label input")).toMatch(/border-radius: 999px/);
+  /**
+   * Bloc 133 §D : l'inverse de ce que ce test gardait. Le Bloc 132 avait mis
+   * la forme du champ de côté — point ouvert, non validé — et la pilule
+   * restait seule de son espèce dans une rangée de rectangles. Le §D la
+   * referme : le champ prend le rayon des commandes, celui du jeton, pas une
+   * valeur recopiée.
+   */
+  it("donne au champ de recherche le rayon des commandes", () => {
+    expect(rule(".site-search-label input")).toMatch(
+      /border-radius: var\(--header-control-radius\)/,
+    );
+    // La pilule ne survit pas ailleurs dans la même règle.
+    expect(rule(".site-search-label input")).not.toMatch(/999px/);
   });
 
   it("n'a plus de sous-titre de marque", () => {
@@ -242,12 +251,12 @@ describe("Bloc 132 §8 — le bandeau de sélection", () => {
   });
 
   /**
-   * Sur mobile le cadre et la bande ne disparaissent pas : ce sont les
-   * onglets qui défilent à l'intérieur. Les trois rayons rétrécissent
-   * ensemble — 14, 10 et 8 px — pour que l'emboîtement reste lisible à
-   * cette taille.
+   * Sur mobile le cadre et la bande ne disparaissent pas : les trois rayons
+   * rétrécissent ensemble — 14, 10 et 8 px — pour que l'emboîtement reste
+   * lisible à cette taille. Bloc 133 §B : les onglets s'y rangent en deux
+   * colonnes au lieu d'y défiler.
    */
-  it("resserre les trois rayons et fait défiler la bande sur mobile", () => {
+  it("resserre les trois rayons sur mobile", () => {
     const narrow = css.slice(
       css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
@@ -257,10 +266,43 @@ describe("Bloc 132 §8 — le bandeau de sélection", () => {
     expect(narrow).toMatch(
       /\.selection-banner-band {[\s\S]*?border-radius: 0\.625rem;/,
     );
-    expect(narrow).toMatch(/\.selection-tab {\n\s*border-radius: 0\.5rem;/);
+    expect(narrow).toMatch(/\.selection-tab {[\s\S]*?border-radius: 0\.5rem;/);
+  });
+
+  /**
+   * Bloc 133 §B/§C : l'onglet qui porte une pastille se resserre encore
+   * sous 375 px, où « Compétences » et son chiffre ne tiennent plus dans
+   * une demi-largeur. Mesuré au navigateur : 82 px voulus contre 81 à
+   * 375 px et 77 à 360 px, d'où deux paliers plutôt qu'un.
+   */
+  it("resserre l'onglet compté sur les écrans les plus étroits", () => {
+    const narrow = css.slice(css.indexOf("@media (max-width: 23.4375rem) {"));
     expect(narrow).toMatch(
-      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+      /\.selection-tab-counted {\n\s*padding: 0\.375rem 0\.375rem;/,
     );
+    expect(narrow).toMatch(
+      /\.selection-tab-counted \.selection-tab-title {\n\s*gap: 0\.25rem;/,
+    );
+    const tiny = css.slice(css.indexOf("@media (max-width: 22.5rem) {"));
+    expect(tiny).toMatch(
+      /\.selection-tab-counted \.selection-tab-thumb {\n\s*width: 1\.25rem;/,
+    );
+    // Les deux paliers viennent après le bloc de 48 rem qu'ils corrigent.
+    expect(css.indexOf("@media (max-width: 23.4375rem) {")).toBeGreaterThan(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+  });
+
+  // Le chiffre ne se coupe jamais : c'est le nom qui cède, un nom abrégé se
+  // devine, un chiffre tronqué ne veut rien dire.
+  it("garde la pastille entière et abrège le nom", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+    expect(narrow).toMatch(
+      /\.selection-tab-counted \.selection-tab-label {[\s\S]*?text-overflow: ellipsis;/,
+    );
+    expect(rule(".tool-count-badge")).toMatch(/flex: none/);
   });
 
   /**
@@ -375,5 +417,48 @@ describe("Bloc 132 §10 — Contact sur mobile", () => {
       /(?<=\n)(\.contact-[^{]*){([\s\S]*?)\n}/g,
     ))
       expect(body, selector).not.toMatch(/(?:^|[;{]\s*)order:/m);
+  });
+});
+
+/**
+ * Bloc 133 §C : le nombre d'outils, en pastille contre le nom.
+ *
+ * C'était une phrase grise à chasse fixe posée à côté du nom, assez longue
+ * pour le repousser. Les valeurs ci-dessous sont celles de la maquette, et
+ * elles ne varient pas avec l'état de l'onglet : un décompte n'est pas un
+ * état, et le faire changer ferait croire à une seconde information.
+ */
+describe("Bloc 133 §C — la pastille du nombre d'outils", () => {
+  it("dessine une pastille de 20 px, en accent sur accent doux", () => {
+    const badge = rule(".tool-count-badge");
+    expect(badge).toBeDefined();
+    expect(badge).toMatch(/height: 1\.25rem/);
+    expect(badge).toMatch(/min-width: 1\.25rem/);
+    expect(badge).toMatch(/padding: 0 0\.375rem/);
+    expect(badge).toMatch(/border-radius: 0\.375rem/);
+    expect(badge).toMatch(/background: var\(--accent-soft\)/);
+    expect(badge).toMatch(/color: var\(--accent\)/);
+    expect(badge).toMatch(/font-family: var\(--font-mono, monospace\)/);
+    expect(badge).toMatch(/font-size: 0\.75rem/);
+    expect(badge).toMatch(/font-weight: 500/);
+    // Le chiffre est centré dans la pastille, pas posé sur sa ligne de base.
+    expect(badge).toMatch(/line-height: 1;/);
+  });
+
+  it("ne change pas de couleur selon l'état de l'onglet", () => {
+    expect(css).not.toMatch(
+      /\.selection-tab\[aria-current="page"\][^{]*\.tool-count-badge/,
+    );
+  });
+
+  // Elle se pose contre le nom : les deux vivent dans un groupe, et c'est ce
+  // groupe que le `gap` de l'onglet éloigne de la vignette, pas la pastille
+  // du nom qu'elle compte.
+  it("groupe le nom et la pastille, à 8 px l'un de l'autre", () => {
+    const title = rule(".selection-tab-title");
+    expect(title).toMatch(/display: inline-flex/);
+    expect(title).toMatch(/align-items: center/);
+    expect(title).toMatch(/gap: 0\.5rem/);
+    expect(title).toMatch(/min-width: 0/);
   });
 });

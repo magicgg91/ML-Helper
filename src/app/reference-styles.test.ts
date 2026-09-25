@@ -50,13 +50,22 @@ describe("Bloc 38 public reference/homepage styles", () => {
   // Bloc 129 §3.1 : les trois sections de l'accueil ne règlent plus leur
   // marge chacune de leur côté (le Bloc 38/I avait dû diviser par deux
   // celle d'Outils parce qu'elle suivait un bloc d'intro, les deux autres
-  // gardant la leur). Elles partagent maintenant .home-section, sous un
-  // hero qui porte son propre espacement.
-  it("Bloc129/§3.1: une seule règle d'espacement pour les trois sections", () => {
+  // gardant la leur). Elles partagent un seul espacement.
+  //
+  // Bloc 134 : ce n'est plus une marge sur .home-section mais le `gap` de
+  // la colonne. La marge s'ajoutait au rembourrage du hero — deux
+  // mécanismes pour un seul écart, 141 px de vide entre les deux. Ce que ce
+  // test tient reste l'intention du §3.1 : aucune section ne reprend un
+  // espacement pour elle seule. Le mécanisme, lui, est tenu en détail par
+  // home-spacing-styles.test.ts.
+  it("Bloc129/§3.1, Bloc134: une seule règle d'espacement pour les trois sections", () => {
     expect(css).toMatch(
-      /\.home-section\s*{\s*margin-top: clamp\(3rem, 7vw, 6rem\);\s*}/,
+      /\.public-main\.home-page\s*{[^}]*gap: var\(--space-section\);/,
     );
-    expect(css).not.toMatch(/\.home-tools\s*{\s*margin-top:/);
+    for (const section of ["home-tools", "home-references", "home-guides"])
+      expect(css, section).not.toMatch(
+        new RegExp(`\\.${section}\\s*{[^}]*margin`),
+      );
   });
 
   // Bloc 129 : les deux tests qui vivaient ici vérifiaient que la règle
