@@ -581,26 +581,37 @@ select:where(:not(.admin-shell select)) {
   /* Bloc 132 §1 : 8 px entre les boutons, ici comme dans la navigation. */
   gap: 0.5rem;
 }
-.public-nav {
-  display: flex;
-  align-items: center;
+/* Bloc 132 §3 : la recherche et la navigation vivent dans le même parent.
+   Sur desktop il s'efface (`display: contents`) et ses deux enfants
+   retrouvent leur place dans la rangée ; sur mobile il devient le panneau
+   déroulant qui les contient. Un seul balisage pour les deux tailles, donc
+   un seul champ de recherche dans la page — dupliquer le champ aurait
+   dupliqué son état et ses résultats. */
+.public-header-panel {
+  display: contents;
 }
-.public-nav-toggle {
+/* Les deux boutons à icône propres au mobile : loupe et menu. */
+.public-header-icon {
   display: none;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: var(--tap-target);
+  height: var(--tap-target);
   place-items: center;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
-  color: var(--text-dim);
+  border: 1px solid var(--strong);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text2);
   cursor: pointer;
-  font-size: 1rem;
 }
-.public-nav-toggle:hover {
+.public-header-icon:hover {
   border-color: var(--accent);
-  color: var(--accent-strong);
+  color: var(--accent);
+}
+/* Menu ouvert : le bouton porte l'état actif, comme une entrée courante. */
+.public-header[data-open="true"] .public-header-menu {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .public-header-nav {
   display: flex;
@@ -2475,33 +2486,53 @@ select {
     align-items: flex-start;
     flex-direction: column;
   }
-  .public-nav-toggle {
+  /* ----------------------------------------------------------------------
+     Bloc 132 §3 — l'en-tête mobile : une seule ligne de 64 px.
+     Avant, la marque et son sous-titre prenaient la première ligne, les
+     boutons la deuxième et la recherche la troisième.
+     -------------------------------------------------------------------- */
+  .public-header {
+    flex-wrap: nowrap;
+    min-height: 4rem;
+    gap: 0.5rem;
+  }
+  .brand-name {
+    font-size: 1.375rem;
+  }
+  .public-header-icon {
     display: inline-grid;
   }
-  .site-search {
-    order: 3;
-    flex-basis: 100%;
-    max-width: none;
-  }
-  .public-header-nav {
+  /* Le panneau : la recherche et la navigation, déroulées sous la barre. */
+  .public-header-panel {
     display: none;
     position: absolute;
     top: 100%;
     right: 0;
     left: 0;
     flex-direction: column;
-    align-items: stretch;
     gap: 0.5rem;
-    margin-top: 0.3rem;
     padding: 0.9rem 1rem;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
+    background: var(--surface);
+    box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
   }
-  .public-header-nav[data-open="true"] {
+  .public-header[data-open="true"] .public-header-panel {
     display: flex;
   }
-  .public-header-nav a {
-    text-align: center;
+  .public-header-panel .site-search {
+    flex: none;
+    max-width: none;
+  }
+  /* §3 : le champ passe à 48 px, et à 16 px de texte — en dessous, iOS
+     zoome sur le champ au focus et décale toute la page. */
+  .public-header-panel .site-search-label input {
+    height: 3rem;
+    font-size: 1rem;
+  }
+  .public-header-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
   }
   .player-settings summary small {
     padding-left: 1.1rem;
@@ -2558,6 +2589,9 @@ select,
   --header-control-h: 2.5rem;
   --header-control-radius: 0.625rem;
   --header-control-pad: 1rem;
+  /* Bloc 132 §3 : 44 px, le minimum tactile que le prompt impose sur
+     mobile (et la recommandation WCAG 2.5.5 niveau AAA). */
+  --tap-target: 2.75rem;
 }
 .public-header-nav a {
   display: inline-flex;
@@ -4004,6 +4038,31 @@ body > main h1 {
 .locale-listbox-option-active,
 .locale-listbox-option[aria-selected="true"] {
   color: var(--accent-strong);
+}
+/* Bloc 132 §3, suite du bloc mobile plus haut : ces trois règles doivent
+   venir APRÈS les bases qu'elles remplacent. Les bases de
+   `.public-header-nav a`, `.theme-toggle` et `.locale-select` sont écrites
+   plus bas dans le fichier que la media query de l'en-tête, et à
+   spécificité égale c'est la dernière qui gagne — media query ou pas. Même
+   piège que le Bloc 25 sur `.category-nav`, signalé dans ce fichier. */
+@media (max-width: 42rem) {
+  .public-header-nav a {
+    /* §3 : 52 px, style actif/inactif identique au desktop. */
+    height: 3.25rem;
+    justify-content: center;
+  }
+  /* La langue et le thème rejoignent la cible tactile des deux icônes. */
+  .locale-select {
+    height: var(--tap-target);
+  }
+  .locale-select-trigger {
+    gap: 0.15rem;
+    padding: 0 0.6rem;
+  }
+  .theme-toggle {
+    width: var(--tap-target);
+    height: var(--tap-target);
+  }
 }
 .login-shell {
   display: grid;

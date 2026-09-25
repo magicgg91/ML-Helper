@@ -50,14 +50,12 @@ describe("PublicNav", () => {
     pathname = "/tools";
   });
 
-  it("exposes the nav links and the menu toggle, no dropdown", () => {
-    render(
-      <PublicNav
-        links={links}
-        navLabel="Navigation principale"
-        menuLabel="Menu"
-      />,
-    );
+  // Bloc 132 §3 : le bouton ☰ et l'ouverture du panneau ont déménagé dans
+  // PublicHeader, qui les partage avec la loupe — leurs tests aussi. Ce qui
+  // reste ici est ce que cette nav décide encore : quelles entrées, et
+  // laquelle est celle de la page.
+  it("expose les entrées de navigation, sans liste déroulante", () => {
+    render(<PublicNav links={links} navLabel="Navigation principale" />);
     const nav = screen.getByRole("navigation", {
       name: "Navigation principale",
     });
@@ -70,55 +68,22 @@ describe("PublicNav", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
-  it("toggles the menu open state on click, closed by default", () => {
+  it("prévient l'appelant quand on part sur une page", () => {
+    const onNavigate = vi.fn();
     render(
       <PublicNav
         links={links}
         navLabel="Navigation principale"
-        menuLabel="Menu"
+        onNavigate={onNavigate}
       />,
     );
-    const toggle = screen.getByRole("button", { name: "Menu" });
-    const nav = screen.getByRole("navigation", {
-      name: "Navigation principale",
-    });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(nav).toHaveAttribute("data-open", "false");
-
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(nav).toHaveAttribute("data-open", "true");
-
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(nav).toHaveAttribute("data-open", "false");
-  });
-
-  it("closes the menu after a link is clicked", () => {
-    render(
-      <PublicNav
-        links={links}
-        navLabel="Navigation principale"
-        menuLabel="Menu"
-      />,
-    );
-    const toggle = screen.getByRole("button", { name: "Menu" });
-    fireEvent.click(toggle);
-    expect(toggle).toHaveAttribute("aria-expanded", "true");
-
     fireEvent.click(screen.getByRole("link", { name: "Outils" }));
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(onNavigate).toHaveBeenCalledOnce();
   });
 
   it("marks only the link for the current page as active", () => {
     pathname = "/guides";
-    render(
-      <PublicNav
-        links={links}
-        navLabel="Navigation principale"
-        menuLabel="Menu"
-      />,
-    );
+    render(<PublicNav links={links} navLabel="Navigation principale" />);
     expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -133,13 +98,7 @@ describe("PublicNav", () => {
 
   it("keeps a section link active on its nested sub-pages", () => {
     pathname = "/tools/villes";
-    render(
-      <PublicNav
-        links={links}
-        navLabel="Navigation principale"
-        menuLabel="Menu"
-      />,
-    );
+    render(<PublicNav links={links} navLabel="Navigation principale" />);
     expect(screen.getByRole("link", { name: "Outils" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -151,13 +110,7 @@ describe("PublicNav", () => {
 
   it("marks no link active when the current page isn't in the nav", () => {
     pathname = "/legal";
-    render(
-      <PublicNav
-        links={links}
-        navLabel="Navigation principale"
-        menuLabel="Menu"
-      />,
-    );
+    render(<PublicNav links={links} navLabel="Navigation principale" />);
     for (const link of links) {
       expect(
         screen.getByRole("link", { name: link.label }),

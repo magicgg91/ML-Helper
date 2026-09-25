@@ -3,7 +3,7 @@
 import { SearchIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { CalculatorAvailability } from "@/lib/calculator-catalog";
 import {
   buildSiteSearchResults,
@@ -13,9 +13,16 @@ import {
 export function SiteSearch({
   guides,
   active,
+  inputRef: externalInputRef,
 }: {
   guides: SiteSearchGuide[];
   active?: Partial<CalculatorAvailability>;
+  /**
+   * Bloc 132 §3 : sur mobile, le bouton loupe de l'en-tête ouvre le panneau
+   * puis place le focus ici. Le champ vit dans ce composant, la commande
+   * ailleurs — d'où la référence prêtée par l'appelant.
+   */
+  inputRef?: RefObject<HTMLInputElement | null>;
 }) {
   const locale = useLocale();
   const t = useTranslations("search");
@@ -23,7 +30,8 @@ export function SiteSearch({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const ownInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef ?? ownInputRef;
 
   const results = useMemo(
     () =>
@@ -74,7 +82,10 @@ export function SiteSearch({
     }
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
-  }, []);
+    // `inputRef` peut être celle de l'appelant (Bloc 132 §3) : sa référence
+    // entre dans les dépendances pour que l'écouteur suive un changement de
+    // propriétaire, même si en pratique elle est stable.
+  }, [inputRef]);
 
   return (
     <div className="site-search" ref={containerRef}>

@@ -127,3 +127,68 @@ describe("Bloc 132 §2 — le bouton partagé", () => {
     expect(css).not.toMatch(/\.report-error-primary/);
   });
 });
+
+describe("Bloc 132 §3 — l'en-tête mobile", () => {
+  const mobile = css.match(/@media \(max-width: 42rem\) {([\s\S]*?)\n}\n/)?.[1];
+
+  it("tient sur une seule ligne de 64 px", () => {
+    expect(mobile).toMatch(/\.public-header {[\s\S]*?flex-wrap: nowrap;/);
+    expect(mobile).toMatch(/\.public-header {[\s\S]*?min-height: 4rem;/);
+  });
+
+  it("nomme la cible tactile une fois, à 44 px", () => {
+    expect(rule(":root")).toMatch(/--tap-target: 2\.75rem;/);
+    expect(rule(".public-header-icon")).toMatch(
+      /width: var\(--tap-target\);\n\s*height: var\(--tap-target\);/,
+    );
+  });
+
+  /**
+   * Le champ de recherche et la navigation partagent un parent, effacé sur
+   * desktop. C'est ce qui permet un seul champ dans la page : deux champs,
+   * ce serait deux états de saisie et deux listes de résultats.
+   */
+  it("efface le panneau sur desktop et le déroule sur mobile", () => {
+    expect(rule(".public-header-panel")).toMatch(/display: contents/);
+    expect(mobile).toMatch(
+      /\.public-header-panel {[\s\S]*?position: absolute;/,
+    );
+    expect(mobile).toMatch(
+      /\.public-header\[data-open="true"\] \.public-header-panel {\n\s*display: flex;/,
+    );
+  });
+
+  // 16 px de texte : en dessous, iOS zoome sur le champ au focus et décale
+  // la page entière.
+  it("donne au champ du panneau 48 px et 16 px de texte", () => {
+    expect(mobile).toMatch(
+      /\.public-header-panel \.site-search-label input {[\s\S]*?height: 3rem;[\s\S]*?font-size: 1rem;/,
+    );
+  });
+
+  /**
+   * Ces trois-là vivent dans une media query à part, écrite après leurs
+   * règles de base : à spécificité égale c'est la dernière du fichier qui
+   * gagne, media query ou pas. Le test garde l'ordre autant que les valeurs.
+   */
+  it("passe la nav à 52 px et les commandes à la cible tactile, après leurs bases", () => {
+    const navBase = css.indexOf(".public-header-nav a {");
+    const localeBase = css.indexOf(".locale-select {");
+    const override = css.indexOf(
+      "@media (max-width: 42rem) {\n  .public-header-nav a {",
+    );
+    expect(override).toBeGreaterThan(navBase);
+    expect(override).toBeGreaterThan(localeBase);
+    const late = css.slice(override);
+    expect(late).toMatch(
+      /\.public-header-nav a {\n\s*\/\*[\s\S]*?height: 3\.25rem;/,
+    );
+    expect(late).toMatch(/\.theme-toggle {\n\s*width: var\(--tap-target\);/);
+  });
+
+  it("allume le bouton menu quand le panneau est ouvert", () => {
+    const open = rule('.public-header[data-open="true"] .public-header-menu');
+    expect(open).toMatch(/background: var\(--accent-soft\)/);
+    expect(open).toMatch(/color: var\(--accent\)/);
+  });
+});
