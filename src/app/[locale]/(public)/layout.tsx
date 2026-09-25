@@ -57,9 +57,9 @@ export default async function PublicLayout({
   return (
     <div className="public-shell">
       <header className="public-header">
+        {/* Bloc 132 §1 : le nom seul, sans le sous-titre du Bloc 129. */}
         <Link className="brand" href="/">
           <span className="brand-name">ML-Helper</span>
-          <span className="brand-tagline">{navigation("tagline")}</span>
         </Link>
         <SiteSearch guides={searchGuides} active={active} />
         <div className="public-header-actions">
@@ -70,9 +70,7 @@ export default async function PublicLayout({
               { href: "/tools", label: navigation("tools") },
               { href: "/referentiels", label: navigation("referentiels") },
               { href: "/guides", label: navigation("guides") },
-              // §2.1 : Contact est là, mais un cran en retrait des trois
-              // sections du site.
-              { href: "/contact", label: t("contact"), subdued: true },
+              { href: "/contact", label: t("contact") },
             ]}
           />
           <LocaleToggle locales={locales} />

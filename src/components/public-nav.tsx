@@ -3,15 +3,15 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useState } from "react";
 
+/**
+ * Bloc 132 §1 : les quatre entrées portent la même forme. Contact n'est plus
+ * « un cran en retrait » (Bloc 129 §2.1) : la maquette de recette range les
+ * quatre boutons sur un pied d'égalité, et le `subdued` qui les distinguait
+ * n'a plus de rendu — il disparaît plutôt que de rester sans effet.
+ */
 export type PublicNavLink = {
   href: string;
   label: string;
-  /**
-   * Bloc 129 §2.1 : Contact est dans la navigation, mais moins mis en avant
-   * que les trois sections du site. C'est une nuance visuelle, pas un
-   * second rang d'importance — donc une classe, pas un autre balisage.
-   */
-  subdued?: boolean;
 };
 
 export function PublicNav({
@@ -51,7 +51,6 @@ export function PublicNav({
             <Link
               key={link.href}
               href={link.href}
-              className={link.subdued ? "public-nav-subdued" : undefined}
               aria-current={isActive ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
