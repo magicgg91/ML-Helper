@@ -7,13 +7,14 @@ import type { MetadataRoute } from "next";
 // src/app/[locale]/manifest.webmanifest/route.ts (the per-locale one every
 // public page actually links to).
 //
-// Colours are the site's own tokens, not new values: --bg (#1b2029) is the
+// Colours are the site's own tokens, not new values: --bg (#14131a) is the
 // dark theme's page background, so the splash screen matches what renders
-// right after it; --accent (#8b6bb8, the violet) tints the browser UI. Both
+// right after it; --accent (#b8a0f5, the violet) tints the browser UI. Both
 // are asserted against globals.css by manifest.test.ts, so a palette change
-// can't silently leave this file behind.
-const themeColor = "#8b6bb8";
-const backgroundColor = "#1b2029";
+// can't silently leave this file behind — c'est ce test qui a rattrapé ces
+// deux valeurs quand le Bloc 129 §1.2 a remplacé la palette.
+const themeColor = "#b8a0f5";
+const backgroundColor = "#14131a";
 
 export function buildWebManifest(name: string): MetadataRoute.Manifest {
   return {

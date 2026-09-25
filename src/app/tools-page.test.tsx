@@ -6,6 +6,16 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
   getLocale: async () => "fr",
 }));
+// Bloc 129 : l'index Outils publie la description que l'administration a
+// écrite pour chaque outil (`calculators.description`, Bloc 130). Deux
+// renseignées, une vide, pour couvrir les deux cas d'un même rendu.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({
+    "city-cost": "Le prix d'une ville, niveau par niveau.",
+    gems: "Le coût de chaque fusion.",
+    "city-max-level": "",
+  }),
+}));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: async () => ({
     "city-cost": true,
@@ -54,12 +64,17 @@ describe("ToolsPage", () => {
     expect(screen.queryByText("open")).not.toBeInTheDocument();
   });
 
-  it("removes the page title and shows only the one-line subtitle (Bloc 33/F)", async () => {
+  // Bloc 129 §3.2 : le titre passe dans l'en-tête de page commun (§2), donc
+  // il perd la classe .tools-page-title qui existait pour rétrécir une
+  // phrase longue sur une ligne (Bloc 33/F). Ce que ce test protège reste
+  // le même : un seul H1, et pas de surtitre au-dessus.
+  it("Bloc129/§3.2: un seul H1 dans l'en-tête de page, sans surtitre", async () => {
     render(await ToolsPage());
     expect(screen.queryByText("eyebrow")).not.toBeInTheDocument();
-    const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading).toHaveTextContent("title");
-    expect(heading).toHaveClass("tools-page-title");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(
+      screen.getByRole("heading", { level: 1 }).closest(".page-header"),
+    ).not.toBeNull();
   });
 
   it("keeps an unavailable category as a non-interactive card", async () => {
@@ -71,11 +86,16 @@ describe("ToolsPage", () => {
     expect(disabledCard).toHaveAttribute("data-disabled");
   });
 
-  it("Bloc38/K: shows the same intro sentence as the homepage's tools section, right under the title", async () => {
+  // Bloc 129 §3.2 : la page porte son propre titre et sa propre
+  // introduction. Le Bloc 38/K lui faisait reprendre celle de la section
+  // Outils de l'accueil ; ce qui compte ici n'a pas changé — une phrase
+  // d'introduction, juste sous le titre — mais c'est la sienne.
+  it("Bloc129/§3.2: porte sa propre introduction, juste sous le titre", async () => {
     render(await ToolsPage());
     const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toHaveTextContent("index-title");
     expect(heading.nextElementSibling?.tagName).toBe("P");
-    expect(heading.nextElementSibling).toHaveTextContent("subtitle");
+    expect(heading.nextElementSibling).toHaveTextContent("index-intro");
   });
 
   it("Bloc36/B: shows the real category illustration for every tile, on /tools too", async () => {
@@ -87,5 +107,25 @@ describe("ToolsPage", () => {
       "/tools/skills.webp",
     ])
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
+  });
+
+  // Bloc 129, relevé en revue : les descriptions d'outils sont éditables en
+  // administration depuis le Bloc 130, mais une page de catégorie ne peut
+  // nommer qu'elle-même (elle héberge plusieurs outils derrière des
+  // onglets) — cet index est donc le seul endroit public où chacune
+  // s'affiche. Sans lui, une description enregistrée ne se voyait nulle
+  // part et l'administration annonçait pourtant l'avoir enregistrée.
+  it("publie la description que l'administration a écrite pour un outil", async () => {
+    render(await ToolsPage());
+    const link = screen.getByRole("link", { name: /city-cost\.name/ });
+    expect(link).toHaveTextContent("Le prix d'une ville, niveau par niveau.");
+  });
+
+  it("ne rend aucune ligne de description quand l'enregistrement est vide", async () => {
+    render(await ToolsPage());
+    const link = screen.getByRole("link", { name: /city-max-level\.name/ });
+    expect(
+      link.querySelector(".tool-link-description"),
+    ).not.toBeInTheDocument();
   });
 });

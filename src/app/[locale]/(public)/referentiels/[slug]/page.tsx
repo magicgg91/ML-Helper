@@ -29,6 +29,11 @@ import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { pageMetadata } from "@/lib/page-metadata";
+import { Breadcrumb } from "@/components/public-breadcrumb";
+import { PageHeader } from "@/components/public-page-header";
+import { ReportErrorLink } from "@/components/report-error-link";
+import { contactPageLabel } from "@/lib/contact-link";
+import { getPublicDescriptions } from "@/lib/tool-descriptions-server";
 import { BreadcrumbJsonLd } from "@/components/breadcrumb-json-ld";
 
 export async function generateMetadata({
@@ -46,11 +51,20 @@ export async function generateMetadata({
   // (references.descriptions.<slug>) instead of the single templated
   // "{name} reference…" phrase that made all 7 indistinguishable; Bloc 91/E3
   // adds the OG/Twitter card.
+  //
+  // Bloc 129 : la même description que la page affiche. Elle vient de la
+  // base (Bloc 130) et change sans livraison ; la laisser en clé i18n ici
+  // faisait diverger la page de sa propre fiche dès la première édition.
+  // La clé statique reste le repli tant que l'enregistrement est vide —
+  // une fiche sans description se référence mal.
+  const stored = (await getPublicDescriptions(locale))[
+    reference.calculatorSlug
+  ];
   const meta = pageMetadata({
     locale,
     path: `/referentiels/${slug}`,
     title: t(`catalog.${reference.slug}`),
-    description: t(`descriptions.${reference.slug}`),
+    description: stored || t(`descriptions.${reference.slug}`),
   });
   // Bloc 91/F2: an inactive reference (e.g. Events, off by default) still
   // renders a 200 "unavailable" page, and it's already kept out of the sitemap
@@ -74,12 +88,14 @@ export default async function ReferencePage({
   const { slug } = await params;
   const reference = referenceCatalog.find((item) => item.slug === slug);
   if (!reference) notFound();
-  const [active, t, nav, locale] = await Promise.all([
+  const [active, t, nav, publicT, locale] = await Promise.all([
     getCalculatorAvailability(),
     getTranslations("references"),
     getTranslations("Navigation"),
+    getTranslations("Public"),
     getLocale(),
   ]);
+  const descriptions = await getPublicDescriptions(locale);
   const name = t(`catalog.${reference.slug}`);
 
   return (
@@ -95,8 +111,28 @@ export default async function ReferencePage({
           { path: `/referentiels/${slug}`, label: name },
         ]}
       />
-      <p className="eyebrow">{t("eyebrow")}</p>
-      <h1 className="reference-page-title">{name}</h1>
+      {/* Bloc 129 §2.3 et §3.9 : fil d'Ariane visible et en-tête de page
+          standard. Le surtitre disparaît (§3.9 n'en prévoit pas) et la
+          description d'une ligne vient de la base (Bloc 130), pas d'une clé
+          i18n — absente, la ligne n'est pas rendue. */}
+      <Breadcrumb
+        label={nav("breadcrumb")}
+        items={[
+          { label: nav("home"), href: "/" },
+          { label: nav("referentiels"), href: "/referentiels" },
+          { label: name },
+        ]}
+      />
+      <PageHeader
+        title={name}
+        description={descriptions[reference.calculatorSlug] || undefined}
+        action={
+          <ReportErrorLink
+            label={publicT("report-error")}
+            page={contactPageLabel(nav("referentiels"), name)}
+          />
+        }
+      />
       {active[reference.calculatorSlug] ? (
         slug === "combat-equipment" ? (
           <CombatReferenceTable

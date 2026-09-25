@@ -149,9 +149,11 @@ describe("public layouts", () => {
     );
 
     expect(screen.getByText("Référentiels")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("navigation", { name: "Référentiels" }),
-    ).not.toBeInTheDocument();
+    // Bloc 129 §2.2 : la nav de bascule porte maintenant son propre nom
+    // (« Navigation entre référentiels »), distinct de la colonne
+    // « Référentiels » du pied de page. Chercher l'absence de nav tout
+    // court, plutôt qu'un nom qui ne la désigne plus.
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
   // Bloc 50/E, moved in Bloc 52/B: the reference-switcher banner is the
@@ -174,7 +176,7 @@ describe("public layouts", () => {
     );
 
     expect(
-      screen.getByRole("navigation", { name: "Référentiels" }),
+      screen.getByRole("navigation", { name: "Navigation entre référentiels" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Contenu de la page")).toBeInTheDocument();
   });

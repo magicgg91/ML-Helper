@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import {
+  guideRehypePlugins,
   markdownRehypePlugins,
   markdownRehypePluginsShifted,
   markdownRehypePluginsWithPlaceholders,
@@ -25,6 +26,13 @@ type MarkdownRendererProps = {
    * notice has any, and only its two screens ask for this.
    */
   highlightPlaceholders?: boolean;
+  /**
+   * Bloc 129 §3.5 : le rendu d'un corps de guide — ancres sur les titres,
+   * encadré « À retenir », figures et légendes. Les deux libellés arrivent
+   * traduits : un plugin rehype n'a pas accès aux traductions.
+   * Implique la renumérotation des titres, que ce rendu fait de toute façon.
+   */
+  guideBlocks?: { callout: string; illustration: string };
 };
 
 export function MarkdownRenderer({
@@ -33,6 +41,7 @@ export function MarkdownRenderer({
   shiftHeadings,
   breaks,
   highlightPlaceholders,
+  guideBlocks,
 }: MarkdownRendererProps) {
   const classes = ["markdown-content", className].filter(Boolean).join(" ");
 
@@ -43,11 +52,13 @@ export function MarkdownRenderer({
           breaks ? markdownRemarkPluginsWithBreaks : markdownRemarkPlugins
         }
         rehypePlugins={
-          highlightPlaceholders
-            ? markdownRehypePluginsWithPlaceholders
-            : shiftHeadings
-              ? markdownRehypePluginsShifted
-              : markdownRehypePlugins
+          guideBlocks
+            ? guideRehypePlugins(guideBlocks)
+            : highlightPlaceholders
+              ? markdownRehypePluginsWithPlaceholders
+              : shiftHeadings
+                ? markdownRehypePluginsShifted
+                : markdownRehypePlugins
         }
       >
         {markdown}

@@ -10,7 +10,15 @@ let guide: Record<string, unknown> | null = null;
 
 vi.mock("next/server", () => ({ connection: async () => undefined }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { guide: { findFirst: async () => guide } },
+  prisma: {
+    guide: {
+      findFirst: async () => guide,
+      // Bloc 129 §3.5 : la page lit aussi la liste des guides publiés pour
+      // composer « Continuer avec ». Vide ici : la section ne s'affiche
+      // alors pas, ce que ces tests ne regardent pas.
+      findMany: async () => [],
+    },
+  },
 }));
 vi.mock("next-intl/server", () => ({
   getLocale: async () => "fr",

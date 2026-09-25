@@ -18,19 +18,28 @@ function translate(messages: Record<string, unknown>, path: string) {
 // must come back in English. The public half is deliberately untouched — it
 // is this bloc's non-regression guard that narrowing the admin narrowed
 // nothing else.
+//
+// Bloc 129 §3.2 : la clé lue pour /tools change de nom. « tools.title »
+// portait le titre de la section Outils de l'accueil, que la page reprenait
+// mot pour mot (Bloc 38/K) ; la page a maintenant son propre titre et son
+// propre chapô, et c'est le chapô qui a hérité de la phrase. On la garde :
+// une phrase entière prouve mieux qu'un mot qu'on lit bien la locale.
 describe("Bloc 44: DE/ES/TR static text on the public screens", () => {
   const expectations = {
     de: {
       "Navigation.tools": "Werkzeuge",
-      "tools.title": "Entscheide mit den richtigen Zahlen",
+      "tools.index-intro":
+        "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung.",
     },
     es: {
       "Navigation.tools": "Herramientas",
-      "tools.title": "Decide con las cifras correctas",
+      "tools.index-intro":
+        "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión.",
     },
     tr: {
       "Navigation.tools": "Araçlar",
-      "tools.title": "Doğru rakamlarla karar ver",
+      "tools.index-intro":
+        "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet.",
     },
   } as const;
 

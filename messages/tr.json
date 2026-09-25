@@ -6,8 +6,8 @@
     "increase": "{label} artır",
     "select-league": "Hesaplamak için bir lig seç.",
     "language": "Dil",
-    "theme-light": "Açık modu etkinleştir",
-    "theme-dark": "Koyu modu etkinleştir",
+    "theme-light": "Açık temaya geç",
+    "theme-dark": "Koyu temaya geç",
     "star-count": "{level} yıldız",
     "duration-hours": "{hours} sa"
   },
@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Doğru rakamlarla karar ver",
-    "subtitle": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
     "cities": "Şehirler",
     "combat": "Savaş",
     "combat-simulator": "Savaş",
@@ -135,7 +133,13 @@
       "combat": "Million Lords için savaş araçları: XP kazanç oranı, saldıran ve hedef için demo saldırı birlikleri ve her saldırıyı planlamak için düşman birlikleri.",
       "ranking": "Million Lords sıralamasındaki ilerlemeni tahmin et: mevcut sıralaman ve hedeflediğin sıralamaya ulaşmak için gereken zafer puanları.",
       "skills": "Million Lords'ta ekipmanını ve yeteneklerini optimize et: savaş ve keşif ekipmanları, mücevherler ve tapınakçılar, birleştirme maliyetleriyle."
-    }
+    },
+    "index-title": "Araçlar",
+    "index-intro": "Doğru rakamlarla karar ver: maliyetleri, üretimi, sıralamayı ve yetenekleri her kararı hazırlamak için tasarlanmış simülatörlerle keşfet.",
+    "settings-note": "Oyuncu ayarlarını bir kez gir: bütün araçlar onları kullanır.",
+    "further-reading": "Daha ileri git",
+    "kind": "Araç",
+    "kind-guide": "Rehber"
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
@@ -459,11 +463,13 @@
     "menu": "Menü",
     "main": "Ana gezinme",
     "footer": "Alt bilgi",
-    "home": "Ana sayfa"
+    "home": "Ana sayfa",
+    "tagline": "Million Lords yardımcısı",
+    "breadcrumb": "Gezinme yolu"
   },
   "search": {
     "label": "Sitede ara",
-    "placeholder": "Ara",
+    "placeholder": "Bir araç, bir referans, bir rehber ara…",
     "results-label": "Arama sonuçları",
     "no-results": "Sonuç yok.",
     "types": {
@@ -486,39 +492,72 @@
       "guide-fallback": "ML Helper'da bir Million Lords rehberi.",
       "guides": "Million Lords için rehberler ve referans tabloları: toplulukça doğrulanmış maliyetler, istatistikler ve oyun mekanikleri.",
       "legal": "ML Helper web sitesinin yasal bildirimi."
-    }
+    },
+    "report-error": "Hata bildir",
+    "image-placeholder": "Görsel",
+    "legal-updated": "Son güncelleme: {date}"
   },
   "contact": {
-    "eyebrow": "İletişim",
-    "title": "ML-Helper ile iletişime geç",
+    "title": "İletişim",
     "lead": "Bildirilecek bir veri hatası, bir iyileştirme fikri veya bir sorun mu var? Bize yaz, hepsini okuyoruz.",
-    "email": "E-posta",
+    "email": "E-postan",
     "subject": "Konu",
-    "choose-subject": "— Seç —",
     "subjects": {
-      "data-error": "Veri hatası bildir",
-      "improvement-suggestion": "İyileştirme önerisi",
-      "technical-bug": "Teknik sorun / hata",
+      "data-error": "Verilerde hata",
+      "improvement-suggestion": "İyileştirme fikri",
+      "question": "Soru",
       "other": "Diğer"
     },
     "message": "Mesaj",
     "submit": "Gönder",
     "success": "Mesaj gönderildi, teşekkürler!",
     "error-invalid": "Form alanlarını kontrol edip tekrar dene.",
-    "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene."
+    "error-not-configured": "E-posta gönderimi şu anda yapılandırılmamış, lütfen daha sonra tekrar dene.",
+    "page-field": "İlgili sayfa",
+    "page-placeholder": "İsteğe bağlı — örn. Şehirler › Şehir maliyeti",
+    "privacy": "E-postan yalnızca sana yanıt vermek için kullanılır. Yayımlanmaz, paylaşılmaz.",
+    "placeholders": {
+      "data-error": "Hangi değer görünüyor, oyunda hangisini görüyorsun?",
+      "improvement-suggestion": "Fikrini birkaç satırda anlat.",
+      "question": "Sorunu sor.",
+      "other": "Mesajın."
+    },
+    "reasons": {
+      "data-error-title": "Bir veri yanlış",
+      "data-error-text": "Sayfayı, görünen değeri ve oyunda gördüğünü yaz: daha hızlı düzeltiriz.",
+      "idea-title": "Bir araç ya da rehber fikri",
+      "idea-text": "Hangi kararı daha iyi hazırlamak istediğini söyle.",
+      "question-title": "Bir soru",
+      "question-text": "Bir araç, bir hesaplama ya da genel olarak site hakkında."
+    }
   },
   "Home": {
-    "h1": "Million Lords araçları ve rehberleri",
-    "intro": "ML Helper, Million Lords'ta her kararını planlamana yardımcı olmak için topluluğun araçlarını ve referanslarını bir araya getirir.",
+    "h1": "Million Lords için araçlar ve rehberler",
+    "intro": "İlk şehrinden Efsane'ye kadar her kararı hazırlamak için simülatörler, referans tabloları ve topluluk rehberleri.",
     "toolsEyebrow": "Simüle Et",
     "toolsTitle": "Doğru rakamlarla karar ver",
-    "toolsDescription": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
+    "toolsDescription": "Maliyetler, üretim, sıralama, yetenekler ve ekipman: her kararı hazırlamak için simülatörler.",
     "guidesEyebrow": "Öğren",
     "guidesTitle": "Stratejini geliştir",
-    "guidesDescription": "Oyun mekaniklerini anlamak ve güvenle ilerlemek için topluluk rehberlerine göz at.",
+    "guidesDescription": "Oyunun mekaniklerini anlamak ve daha rahat ilerlemek için topluluğun rehberleri.",
     "referentielsEyebrow": "Danış",
     "referentielsTitle": "Doğru rakamlara ulaş",
-    "referentielsDescription": "Oyunun tam maliyetlerini, istatistiklerini ve eşiklerini öğrenmek için topluluğun referans tablolarına göz at."
+    "referentielsDescription": "Oyunun kesin maliyetleri, istatistikleri ve kademeleri: ekipman, mücevherler, tapınakçılar, mağaza…",
+    "eyebrow": "Topluluk yardımcısı",
+    "explore-tools": "Araçları keşfet",
+    "start-guide": "Buradan başla",
+    "count-tools": "{count, plural, one {# araç} other {# araç}}",
+    "count-references": "{count, plural, one {# referans} other {# referans}}",
+    "count-guides": "{count, plural, one {# rehber} other {# rehber}}",
+    "most-used": "En çok kullanılanlar",
+    "entry-tool": "Araç · {category}",
+    "entry-reference": "Referans",
+    "all-tools": "Tüm araçlar",
+    "all-references": "Tüm referanslar",
+    "all-guides": "Tüm rehberler",
+    "start-here": "Buradan başla",
+    "banner-title": "Oyunda bir değer mi değişti?",
+    "banner-text": "Veriler her güncellemede değişir. Bir farkı bildir ya da bir iyileştirme öner: hepsini okuyoruz."
   },
   "ToolsPage": {
     "eyebrow": "Araçlar",
@@ -540,11 +579,9 @@
     "references": "Referans tabloları"
   },
   "guides": {
-    "eyebrow": "Rehberler ve veriler",
     "title": "Rehberler",
     "sections": {
-      "guides": "Rehberler",
-      "references": "Referans tabloları"
+      "guides": "Rehberler"
     },
     "filters": {
       "guides-label": "Rehberleri kategoriye göre filtrele",
@@ -565,11 +602,19 @@
     "no-results": "Bu filtrelere uyan rehber yok.",
     "detail": {
       "eyebrow": "{category} kategorisinde rehber",
-      "not-translated": "Bu rehber henüz bu dile çevrilmedi."
-    }
+      "not-translated": "Bu rehber henüz bu dile çevrilmedi.",
+      "toc": "İçindekiler",
+      "intro": "Giriş",
+      "reading-time": "Okuma: ~{minutes} dk",
+      "callout": "Aklında kalsın",
+      "continue": "Şununla devam et",
+      "kind": "Rehber"
+    },
+    "index-intro": "Stratejini keskinleştir: oyunun mekaniklerini anlamak ve daha rahat ilerlemek için topluluğun rehberleri.",
+    "tool-pill": "Araç: {name}",
+    "start-here": "Buradan başla"
   },
   "references": {
-    "eyebrow": "Referans tabloları",
     "title": "Referans tabloları",
     "filters": {
       "label": "Referans tablosu filtreleri",
@@ -637,7 +682,16 @@
       "gems": "Million Lords'taki tüm mücevherler: yetenek ve lig başına bonus, yuvalar ve safir cinsinden birleştirme maliyeti, çoklu yetenek optimizasyonuyla.",
       "shop": "Million Lords mağaza referansı: sarf malzemeleri ve doğru anda harcama yapman için toplulukça doğrulanmış veriler.",
       "events": "Million Lords etkinlik referansı: her etkinliğe hazırlanman için toplulukça doğrulanmış veriler ve ödüller."
-    }
+    },
+    "index-intro": "Temel verileri bul: ekipmandan mücevherlere ve tapınakçılara, mağaza sarf malzemelerine kadar oyunun kesin maliyetleri, istatistikleri ve kademeleri.",
+    "missing-title": "Bir referans mı eksik?",
+    "missing-text": "Burada hangi verileri görmek istediğini bize söyle.",
+    "missing-cta": "Öner",
+    "catalog-short": {
+      "combat-equipment": "Savaş ekipmanı",
+      "expedition-equipment": "Sefer ekipmanı"
+    },
+    "nav-label": "Referanslar arası gezinme"
   },
   "combat-equipment": {
     "name": "Savaş Ekipmanı",
@@ -696,5 +750,14 @@
     "title": "Sayfa bulunamadı",
     "description": "Bu sayfa mevcut değil veya taşındı. Buradan devam edebilirsin:",
     "home": "Ana sayfa"
+  },
+  "footer": {
+    "lead": "Million Lords'ta her kararı hazırlamak için topluluğun araçları, referansları ve rehberleri.",
+    "note": "Resmî olmayan topluluk sitesi, oyunun yayıncısıyla bağlantısı yoktur.",
+    "help": "Yardım",
+    "start-here": "Buradan başla",
+    "all-guides": "Tüm rehberler",
+    "all-references": "Tüm referanslar",
+    "copyright": "© {year} ML-Helper"
   }
 }

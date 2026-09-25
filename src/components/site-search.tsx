@@ -1,5 +1,6 @@
 "use client";
 
+import { SearchIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +23,7 @@ export function SiteSearch({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const results = useMemo(
     () =>
@@ -51,11 +53,36 @@ export function SiteSearch({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [open]);
 
+  // Bloc 129 §2.1 : « / » place le focus dans la recherche — sauf si on est
+  // déjà en train de saisir quelque chose. Sans cette réserve, le raccourci
+  // volerait la touche à qui écrit une barre oblique dans le formulaire de
+  // contact ou dans un champ d'un outil. Un champ en lecture seule ou
+  // désactivé ne saisit rien, donc il ne retient pas la touche.
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey)
+        return;
+      const target = event.target as HTMLElement | null;
+      const editable =
+        target?.isContentEditable ||
+        (target instanceof HTMLInputElement && !target.readOnly) ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement;
+      if (editable) return;
+      event.preventDefault();
+      inputRef.current?.focus();
+    }
+    document.addEventListener("keydown", handleShortcut);
+    return () => document.removeEventListener("keydown", handleShortcut);
+  }, []);
+
   return (
     <div className="site-search" ref={containerRef}>
       <label className="site-search-label">
         <span className="sr-only">{t("label")}</span>
+        <SearchIcon className="site-search-icon" aria-hidden="true" size={18} />
         <input
+          ref={inputRef}
           type="search"
           value={query}
           onChange={(event) => {
@@ -65,6 +92,12 @@ export function SiteSearch({
           onFocus={() => setOpen(true)}
           placeholder={t("placeholder")}
         />
+        {/* L'indication du raccourci est décorative : elle rappelle la touche
+            à qui la voit, et le champ est déjà nommé par son <span sr-only>.
+            Annoncée, elle ferait lire « barre oblique » au milieu du nom. */}
+        <kbd className="site-search-shortcut" aria-hidden="true">
+          /
+        </kbd>
       </label>
       {open && trimmed ? (
         results.length ? (

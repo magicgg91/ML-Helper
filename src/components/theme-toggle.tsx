@@ -1,5 +1,6 @@
 "use client";
 
+import { MoonIcon, SunIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { applyThemeColor, type Theme } from "@/lib/theme-color";
@@ -59,7 +60,15 @@ export function ThemeToggle({
       aria-label={label}
       aria-pressed={theme === "light"}
     >
-      <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+      {/* Bloc 129 §2.1 : l'icône annonce ce vers quoi on va — soleil quand
+          on est en sombre, lune quand on est en clair — et c'est aussi ce
+          que dit l'aria-label ci-dessus. Deux vraies icônes plutôt que les
+          glyphes ☀/☾, que les polices rendaient de façon très inégale. */}
+      {theme === "dark" ? (
+        <SunIcon aria-hidden="true" size={18} />
+      ) : (
+        <MoonIcon aria-hidden="true" size={18} />
+      )}
     </button>
   );
 }

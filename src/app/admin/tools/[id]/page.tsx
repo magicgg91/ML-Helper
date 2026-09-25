@@ -71,6 +71,7 @@ export default async function EditToolPage({
         // the same mapping the Outils table reads (lib/admin-tool-sources).
         sharedTools={toolsSharingEditor("/admin/tools/city-parameters").map(
           (slug) => ({
+            slug,
             label: names(`${slug}.name`),
             href: "/admin/tools",
           }),

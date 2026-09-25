@@ -45,7 +45,12 @@ const catalog: Record<string, string> = {
   "catalog.gems": "Gemmes",
   "catalog.shop": "Boutique",
   "catalog.events": "Événements",
+  // Bloc 129 §3.9 : sept onglets sur une rangée, donc un libellé court pour
+  // les deux équipements, dont le nom complet ne tient pas.
+  "catalog-short.combat-equipment": "Équip. de combat",
+  "catalog-short.expedition-equipment": "Équip. d’expédition",
   "tabs-label": "tabs-label",
+  "nav-label": "nav-label",
   comingSoon: "Bientôt disponible",
   unavailable: "Indisponible actuellement",
 };
@@ -55,7 +60,12 @@ const catalog: Record<string, string> = {
 // Component, which crashed this exact page at runtime (RTL doesn't enforce
 // that boundary, so this bug only surfaced in a real browser).
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => catalog[key] ?? key,
+  // `has` aussi : le composant demande si un libellé court existe avant de
+  // se rabattre sur le nom complet.
+  useTranslations: () =>
+    Object.assign((key: string) => catalog[key] ?? key, {
+      has: (key: string) => key in catalog,
+    }),
   useLocale: () => "fr",
 }));
 
@@ -81,10 +91,12 @@ describe("ReferenceSwitcherNav", () => {
   it("Bloc35 1.2: offers a cross-nav to switch directly to another reference", () => {
     pathname = "/referentiels/combat-equipment";
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
+    // Bloc 129 §3.9 : les sept tiennent sur une rangée, donc les deux
+    // équipements y portent leur libellé court.
     for (const label of [
-      "Équipements de Combat",
-      "Équipements d’Expédition",
+      "Équip. de combat",
+      "Équip. d’expédition",
       "Progression",
       "Templiers",
       "Gemmes",
@@ -93,30 +105,26 @@ describe("ReferenceSwitcherNav", () => {
     ]) {
       expect(within(nav).getByText(label)).toBeInTheDocument();
     }
-    const currentLink = within(nav).getByText("Équipements de Combat");
+    const currentLink = within(nav).getByText("Équip. de combat").closest("a");
     expect(currentLink).toHaveAttribute("aria-current", "page");
-    const otherLink = within(nav).getByText("Équipements d’Expédition");
+    const otherLink = within(nav).getByText("Équip. d’expédition").closest("a");
     expect(otherLink).toHaveAttribute(
       "href",
       "/referentiels/expedition-equipment",
     );
-    // Bloc 40/A: reuses the /tools category banner's own container/button
-    // classes (full width, grows to fill the row) instead of the
-    // family-buttons pill row (content width).
-    expect(nav).toHaveClass("category-nav");
-    expect(nav).not.toHaveClass("family-buttons");
-    expect(currentLink).toHaveClass("category-btn");
-    expect(otherLink).not.toHaveAttribute("aria-current");
-    // Bloc 41/C: keeps its own "reference-switcher" class alongside
-    // "category-nav" — the spacing-below fix is scoped to it specifically,
-    // so it doesn't add space under the /tools banner too.
+    // Bloc 129 §3.9 : la rangée n'emprunte plus les classes de la bannière
+    // de catégories des outils (Bloc 40/A) — les deux navigations ne se
+    // ressemblent plus : celle-ci porte une vignette par onglet.
     expect(nav).toHaveClass("reference-switcher");
+    expect(nav).not.toHaveClass("category-nav");
+    expect(currentLink).toHaveClass("reference-tab");
+    expect(otherLink).not.toHaveAttribute("aria-current");
   });
 
   it("sets no aria-current on the /referentiels index, where no single reference is current", () => {
     pathname = "/referentiels";
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     for (const link of within(nav).getAllByRole("link")) {
       expect(link).not.toHaveAttribute("aria-current");
     }
@@ -127,11 +135,22 @@ describe("ReferenceSwitcherNav", () => {
   // level-up, templars, gems, shop, events).
   it("Bloc62/I: lists every reference alphabetically by its displayed label", () => {
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     const labels = within(nav)
       .getAllByRole("link")
       .map((link) => link.textContent);
+    // Le tri reste celui du nom complet — c'est lui qui nomme la chose ;
+    // le libellé court n'est qu'un raccourci d'affichage.
     const expected = [
+      "Boutique",
+      "Templiers",
+      "Équip. de combat",
+      "Équip. d’expédition",
+      "Événements",
+      "Gemmes",
+      "Progression",
+    ];
+    const order = [
       "Boutique",
       "Templiers",
       "Équipements de Combat",
@@ -140,9 +159,11 @@ describe("ReferenceSwitcherNav", () => {
       "Gemmes",
       "Progression",
     ];
-    expect(labels).toEqual(
-      [...expected].sort((a, b) => a.localeCompare(b, "fr")),
-    );
+    const sorted = order
+      .map((full, index) => ({ full, short: expected[index]! }))
+      .sort((a, b) => a.full.localeCompare(b.full, "fr"))
+      .map((entry) => entry.short);
+    expect(labels).toEqual(sorted);
   });
 
   // Bloc 62/I: an inactive reference (e.g. Events before an admin activates
@@ -151,7 +172,7 @@ describe("ReferenceSwitcherNav", () => {
   // same colored "Bientôt disponible" treatment as disabled tools (Bloc 62/J).
   it("Bloc62/I: shows an inactive reference as a non-clickable teaser, not hidden", () => {
     render(<ReferenceSwitcherNav active={{ ...active, events: false }} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     expect(within(nav).queryByRole("link", { name: /Événements/ })).toBeNull();
     const teaser = within(nav)
       .getByText("Événements")

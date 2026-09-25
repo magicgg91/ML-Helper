@@ -83,9 +83,16 @@ export function referenceHref(slug: ReferenceSlug) {
 // would have silently degraded each link to "whichever tab is first".
 // Listing the tabs here makes toolHref("combat", "gems") a type error, and
 // gives the tool page one source of truth to validate `?open=` against.
+// Bloc 129 : Villes rejoint le contrat. Le §3.2 demande que la carte d'une
+// catégorie liste des liens vers chacun de ses outils, et le §3.1 met trois
+// outils de Villes dans « Les plus utilisés » — sans ?open=, ces liens
+// tombaient tous sur le premier onglet de la page. Les clés sont celles que
+// la page utilise déjà côté client (city-calculators.tsx), donc c'est la même
+// contrainte qu'ailleurs : renommer un onglet devient une erreur de type.
 export const toolTabs = {
   combat: ["xp", "demo"],
   competences: ["simulator", "expedition", "gems", "templars"],
+  villes: ["cost", "max-level", "production", "rewards"],
 } as const;
 
 export type TabbedToolSlug = keyof typeof toolTabs;

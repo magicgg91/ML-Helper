@@ -7,22 +7,27 @@ import ReferentielsPage, {
 // Bloc 52/A: the index page's title was "Tous les référentiels" — shortened
 // to just "Référentiels" for the <title> metadata, matching /guides's own
 // short "Guides" title.
-// Bloc 53/D: the on-screen h1 now reuses the homepage's référentiels intro
-// title/phrase (Home.referentielsTitle/referentielsDescription) instead of
-// that short title — same treatment /tools got in Bloc 38/K. The <title>
-// metadata itself is untouched (still the short "references.title").
+// Bloc 129 §3.3: the on-screen h1 goes back to the short title, with the
+// index's own intro sentence beside it. Bloc 53/D had made it borrow the
+// homepage's section title ("Retrouve les données clés") so the page read as
+// the same entry point reached another way; the brief gives each its own
+// role. The <title> metadata never moved — still the short one.
 vi.mock("next-intl/server", () => ({
-  getTranslations: async (namespace: string) => {
-    if (namespace === "Home")
-      return (key: string) =>
-        ({
-          referentielsTitle: "Retrouve les données clés",
-          referentielsDescription: "Phrase d'intro référentiels.",
-        })[key] ?? key;
-    return (key: string) =>
-      ({ eyebrow: "Référentiels", title: "Référentiels" })[key] ?? key;
-  },
+  getTranslations: async () => (key: string) =>
+    ({
+      title: "Référentiels",
+      "index-intro": "Phrase d'intro référentiels.",
+      home: "Accueil",
+      referentiels: "Référentiels",
+      breadcrumb: "Fil d'Ariane",
+    })[key] ?? key,
   getLocale: async () => "fr",
+}));
+// Bloc 129 §3.3 : la page lit les descriptions en base (Bloc 130) ; ici
+// aucune n'est écrite, ce qui est aussi l'état de production au moment de
+// la livraison — la ligne de description est alors simplement absente.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({}),
 }));
 vi.mock("@/components/reference-catalog-grid", () => ({
   ReferenceCatalogGrid: () => <div data-testid="reference-catalog-grid" />,
@@ -47,17 +52,20 @@ vi.mock("next/server", () => ({ connection: async () => undefined }));
 afterEach(cleanup);
 
 describe("ReferentielsPage", () => {
-  it("Bloc53/D: shows the homepage's référentiels title and intro sentence, not the short index title", async () => {
+  it("Bloc129/§3.3: porte le titre court et sa propre introduction", async () => {
     render(await ReferentielsPage());
     expect(
-      screen.getByRole("heading", {
-        name: "Retrouve les données clés",
-        level: 1,
-      }),
+      screen.getByRole("heading", { name: "Référentiels", level: 1 }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Phrase d'intro référentiels."),
     ).toBeInTheDocument();
+  });
+
+  it("Bloc129/§2.3: ouvre sur un fil d'Ariane qui remonte à l'accueil", async () => {
+    render(await ReferentielsPage());
+    const nav = screen.getByRole("navigation", { name: "Fil d'Ariane" });
+    expect(nav).toBeInTheDocument();
   });
 
   it("Bloc52/A: still uses the short title for the page's <title> metadata", async () => {

@@ -55,11 +55,15 @@ describe("contactMessageSchema", () => {
     ).toThrow();
   });
 
+  // Bloc 129 §3.6 : « technical-bug » laisse la place à « question ». Le
+  // brief remplace le motif « Problème technique / bug » par « Question », et
+  // garder l'ancienne clé aurait fait arriver les questions sous une
+  // étiquette qui ne les décrit pas.
   it("has a label for every confirmed subject", () => {
     expect(Object.keys(contactSubjectLabels)).toEqual([
       "data-error",
       "improvement-suggestion",
-      "technical-bug",
+      "question",
       "other",
     ]);
   });

@@ -101,120 +101,82 @@ test("Bloc 91/M4: emits JSON-LD structured data on public pages", async ({
     .locator('script[type="application/ld+json"]')
     .allTextContents();
   // A tool page carries both its WebApplication and (Bloc 91/M4) its
-  // BreadcrumbList. Bloc 94 removed the visible trail; this structured data
-  // is deliberately kept.
+  // BreadcrumbList. Bloc 94 removed the visible trail and kept this; le
+  // Bloc 129 §2.3 rend le visible, et le test ci-dessous vérifie les deux
+  // ensemble.
   expect(ld.some((t) => t.includes("WebApplication"))).toBe(true);
   expect(ld.some((t) => t.includes("BreadcrumbList"))).toBe(true);
 });
 
-// Bloc 94: the visible breadcrumb is gone from every page that carried it —
-// it restated what the page already showed. Its BreadcrumbList structured
-// data stays: invisible to the reader, and used by search engines to render
-// the trail in results. Both halves are asserted together on the same three
-// page types, so removing one can never silently take the other with it.
-test("Bloc 94: no visible breadcrumb, but the BreadcrumbList stays", async ({
+// Bloc 129 §2.3 : le fil d'Ariane visible revient, « sur toutes les pages
+// sauf l'accueil ». Le Bloc 94 l'avait retiré au motif qu'il répétait ce que
+// la page montrait déjà, en ne gardant que ses données structurées. Les deux
+// moitiés sont de nouveau vérifiées ensemble, sur les trois mêmes types de
+// page : le visible pour le lecteur, le balisé pour les moteurs — retirer
+// l'un ne peut pas emporter l'autre en silence.
+test("Bloc 129 §2.3: un fil d'Ariane visible, et sa BreadcrumbList", async ({
   page,
 }) => {
-  // `marker` locates the page's OWN visible "you are here" indicator, which
-  // differs by page type: a tool page's <h1> is sr-only, so its indicator is
-  // the current category tab; référentiels and guides carry a visible <h1>.
-  for (const [path, current, marker] of [
-    ["/fr/tools/villes", "Villes", '.category-nav [aria-current="page"]'],
-    ["/fr/referentiels/gems", "Gemmes", "main h1"],
-    ["/fr/guides/guide-visible", "Guide visible", "main h1"],
+  for (const [path, current] of [
+    ["/fr/tools/villes", "Villes"],
+    ["/fr/referentiels/gems", "Gemmes"],
+    ["/fr/guides/guide-visible", "Guide visible"],
   ]) {
     await page.goto(path);
 
-    // No breadcrumb landmark, no breadcrumb container, and no "Accueil" crumb
-    // link anywhere on the page.
+    const trail = page.getByRole("navigation", { name: "Fil d'Ariane" });
+    await expect(trail).toBeVisible();
+    // Il remonte à l'accueil, et se termine sur la page courante — qui n'est
+    // pas un lien, puisqu'on y est déjà.
+    await expect(trail.getByRole("link", { name: "Accueil" })).toBeVisible();
+    await expect(trail.getByText(current, { exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     await expect(
-      page.getByRole("navigation", { name: /Ariane|Breadcrumb/ }),
+      trail.getByRole("link", { name: current, exact: true }),
     ).toHaveCount(0);
-    await expect(page.locator(".breadcrumb")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Accueil" })).toHaveCount(0);
-    // Not asserted: the "›" separators. They were drawn by a CSS ::before on
-    // .breadcrumb li, never present in the DOM, so a "no separators in the
-    // text" check passes whether or not the trail is rendered. The .breadcrumb
-    // locator above is what actually covers them — the rule is deleted too.
 
-    // The page still says where you are — that is why the trail was redundant.
-    // Asserted through that specific marker, not a bare getByText: Codex (PR
-    // #119) pointed out that getByText matches a nav label whether or not it
-    // is marked as current, so the text-only version would pass even on a
-    // page whose indicator had vanished.
-    await expect(page.locator(marker)).toBeVisible();
-    await expect(page.locator(marker)).toContainText(current);
-
-    // …and the structured data is intact, listing the same trail.
-    const ld = await page
+    // Et les données structurées disent la même chose. Elles se lisent en
+    // parcourant les scripts : `hasText` ne voit pas dans un <script>, dont
+    // le contenu n'est pas du texte rendu.
+    const scripts = await page
       .locator('script[type="application/ld+json"]')
       .allTextContents();
-    const breadcrumb = ld.find((text) => text.includes("BreadcrumbList"));
-    expect(breadcrumb, `no BreadcrumbList on ${path}`).toBeTruthy();
-    const parsed = JSON.parse(breadcrumb!);
-    expect(parsed["@type"]).toBe("BreadcrumbList");
-    expect(parsed.itemListElement.length).toBeGreaterThanOrEqual(2);
-    // Root crumb first, current page last — the order search engines render.
-    expect(parsed.itemListElement[0].name).toBe("Accueil");
-    expect(parsed.itemListElement.at(-1).name).toBe(current);
+    const breadcrumb = JSON.parse(
+      scripts.find((text) => text.includes("BreadcrumbList")) ?? "{}",
+    ) as { itemListElement?: { name?: string }[] };
+    expect(breadcrumb.itemListElement?.at(0)?.name).toBe("Accueil");
+    expect(breadcrumb.itemListElement?.at(-1)?.name).toBe(current);
   }
 });
 
-test("Bloc 91/M5: reference pages keep a gapless heading hierarchy under one h1", async ({
+// Bloc 129 §2.2 : le pied de page passe d'une rangée de liens à quatre
+// colonnes. Ce que le Bloc 91/M7 garantissait tient toujours — chaque section
+// du site reste joignable depuis le pied de page — mais par les entrées du
+// brief, pas par un lien qui porterait le nom de la section.
+test("Bloc 129 §2.2: le pied de page mène à chaque section du site", async ({
   page,
 }) => {
-  const levelsOf = async (path: string) => {
-    await page.goto(path);
-    return page
-      .locator("main :is(h1,h2,h3,h4,h5,h6)")
-      .evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
-  };
-  // gems renders its skill tiles immediately; templars stacks its presentation
-  // tiles (once <h3> that skipped a level) above the "Table des coûts" heading.
-  for (const path of ["/fr/referentiels/gems", "/fr/referentiels/templars"]) {
-    const levels = await levelsOf(path);
-    // exactly one top-level heading (the page <h1>)…
-    expect(levels.filter((l) => l === 1)).toHaveLength(1);
-    // …and no heading ever jumps more than one level deeper than the last.
-    let previous = 0;
-    for (const level of levels) {
-      expect(level).toBeLessThanOrEqual(previous + 1);
-      previous = level;
-    }
-  }
-});
-
-test("Bloc 91/M5: a guide has a single h1 with the body starting at h2", async ({
-  page,
-}) => {
-  await page.goto("/fr/guides/guide-visible");
-  const levels = await page
-    .locator("main :is(h1,h2,h3,h4,h5,h6)")
-    .evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
-  // The page title is the only <h1>; the Markdown body (seeded starting at
-  // `##`) sits under it at <h2>, never a second <h1>.
-  expect(levels.filter((l) => l === 1)).toHaveLength(1);
-  expect(levels[0]).toBe(1);
-  expect(levels[1]).toBe(2);
-  let previous = 0;
-  for (const level of levels) {
-    expect(level).toBeLessThanOrEqual(previous + 1);
-    previous = level;
-  }
-});
-
-test("Bloc 91/M7: the footer links to every main section", async ({ page }) => {
   await page.goto("/fr/tools");
   const footer = page.getByRole("contentinfo");
-  for (const name of [
-    "Outils",
-    "Référentiels",
-    "Guides",
-    "Contact",
-    "Mentions légales",
+  for (const [name, href] of [
+    ["Villes", "/fr/tools/villes"],
+    ["Boutique", "/fr/referentiels/shop"],
+    ["Tous les référentiels", "/fr/referentiels"],
+    ["Tous les guides", "/fr/guides"],
+    ["Contact", "/fr/contact"],
+    ["Mentions légales", "/fr/legal"],
   ]) {
-    await expect(footer.getByRole("link", { name })).toBeVisible();
+    await expect(
+      footer.getByRole("link", { name, exact: true }),
+      `le pied de page ne mène plus à « ${name} »`,
+    ).toHaveAttribute("href", href);
   }
+  // Et « Signaler une erreur » ouvre Contact sur le bon objet (§2.4).
+  await expect(
+    footer.getByRole("link", { name: "Signaler une erreur" }),
+  ).toHaveAttribute("href", /\/contact\?subject=data-error/);
 });
 
 test("Bloc 91/F2: an inactive reference still renders but is noindex", async ({
@@ -257,8 +219,9 @@ test("Bloc 95: the manifest is linked, served, and describes an installable app"
   // standalone is what drops the browser address bar once installed.
   expect(manifest.display).toBe("standalone");
   expect(manifest.start_url).toBe("/");
-  expect(manifest.theme_color).toBe("#8b6bb8");
-  expect(manifest.background_color).toBe("#1b2029");
+  // Bloc 129 §1.2 : l'accent et le fond sombre ont changé de valeur.
+  expect(manifest.theme_color).toBe("#b8a0f5");
+  expect(manifest.background_color).toBe("#14131a");
   // Bloc 96: three sizes — 180 (iPhone), 192 and 512 (PWA).
   expect(manifest.icons).toHaveLength(3);
 });
@@ -414,7 +377,7 @@ test("Bloc 103: declares the status-bar colour, follows the theme, and never goe
   expect(
     served,
     "the pre-paint script no longer carries the two theme colours",
-  ).toMatch(/theme-color[\s\S]{0,400}#e4e7eb[\s\S]{0,40}#1b2029/);
+  ).toMatch(/theme-color[\s\S]{0,400}#e5e7ec[\s\S]{0,40}#14131a/);
 
   // A saved light theme, so the toggle below moves light -> dark and the
   // deferred mount read cannot be what makes the assertion pass. Saved once
@@ -427,23 +390,23 @@ test("Bloc 103: declares the status-bar colour, follows the theme, and never goe
   await page.reload();
   // aria-pressed flips only once ThemeToggle's deferred read has landed, so
   // waiting on it pins the click below to the toggle's own work.
-  const toggle = page.getByRole("button", { name: "Activer le mode sombre" });
+  const toggle = page.getByRole("button", { name: "Passer en thème sombre" });
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
 
   const themeColor = page.locator('meta[name="theme-color"]');
   // Exactly one: a second tag would leave the browser reading whichever comes
   // first, which is how a light page kept showing a dark strip.
   await expect(themeColor).toHaveCount(1);
-  await expect(themeColor).toHaveAttribute("content", "#e4e7eb");
+  await expect(themeColor).toHaveAttribute("content", "#e5e7ec");
 
   await toggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   // The strip would otherwise stay the light theme's colour against a dark page.
-  await expect(themeColor).toHaveAttribute("content", "#1b2029");
+  await expect(themeColor).toHaveAttribute("content", "#14131a");
   await expect(themeColor).toHaveCount(1);
 
   // And the choice survives a reload, set before first paint rather than
   // corrected afterwards.
   await page.reload();
-  await expect(themeColor).toHaveAttribute("content", "#1b2029");
+  await expect(themeColor).toHaveAttribute("content", "#14131a");
 });

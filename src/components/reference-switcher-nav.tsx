@@ -3,6 +3,7 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
+import { GameImage } from "./game-image";
 
 // Bloc 50/E: promoted from an inline nav inside the [slug] detail page to
 // the section-level header nav of the whole /referentiels route (rendered
@@ -37,33 +38,56 @@ export function ReferenceSwitcherNav({
   const sorted = [...referenceCatalog].sort((a, b) =>
     t(`catalog.${a.slug}`).localeCompare(t(`catalog.${b.slug}`), locale),
   );
+  // Bloc 129 §3.9 : sept onglets sur une seule rangée, donc des libellés
+  // courts là où le nom complet ne tient pas. Seuls les deux équipements en
+  // ont un ; les autres gardent leur nom, sans clé à écrire pour rien.
+  const label = (slug: string) =>
+    t.has(`catalog-short.${slug}`)
+      ? t(`catalog-short.${slug}`)
+      : t(`catalog.${slug}`);
   return (
-    <nav
-      className="reference-switcher category-nav"
-      aria-label={t("tabs-label")}
-    >
+    // Bloc 129 §2.2 : son propre nom, distinct de « Référentiels » — le
+    // pied de page nomme ainsi une de ses colonnes, et deux repères de
+    // navigation portant le même nom ne se distinguent plus à l'oreille.
+    <nav className="reference-switcher" aria-label={t("nav-label")}>
       {sorted.map((item) =>
         active[item.calculatorSlug] ? (
           <Link
-            className="category-btn"
+            className="reference-tab"
             key={item.slug}
             href={referenceHref(item.slug)}
             aria-current={
               pathname === `/referentiels/${item.slug}` ? "page" : undefined
             }
           >
-            {t(`catalog.${item.slug}`)}
+            <span className="reference-tab-thumb">
+              <GameImage
+                src={item.image}
+                alt=""
+                width={120}
+                height={120}
+                fallback={null}
+              />
+            </span>
+            <span className="reference-tab-label">{label(item.slug)}</span>
           </Link>
         ) : (
           <span
-            className="category-btn category-btn-unavailable"
+            className="reference-tab reference-tab-unavailable"
             key={item.slug}
             aria-disabled="true"
             title={tools("unavailable")}
           >
-            <span className="category-btn-label">
-              {t(`catalog.${item.slug}`)}
+            <span className="reference-tab-thumb">
+              <GameImage
+                src={item.image}
+                alt=""
+                width={120}
+                height={120}
+                fallback={null}
+              />
             </span>
+            <span className="reference-tab-label">{label(item.slug)}</span>
             <span className="tool-unavailable">{tools("comingSoon")}</span>
           </span>
         ),

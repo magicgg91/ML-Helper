@@ -6,8 +6,8 @@
     "increase": "{label} erhöhen",
     "select-league": "Wähle eine Liga zur Berechnung.",
     "language": "Sprache",
-    "theme-light": "Hellen Modus aktivieren",
-    "theme-dark": "Dunklen Modus aktivieren",
+    "theme-light": "Zum hellen Design wechseln",
+    "theme-dark": "Zum dunklen Design wechseln",
     "star-count": "{level} Sterne",
     "duration-hours": "{hours} Std."
   },
@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Entscheide mit den richtigen Zahlen",
-    "subtitle": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
     "cities": "Städte",
     "combat": "Kampf",
     "combat-simulator": "Kampf",
@@ -135,7 +133,13 @@
       "combat": "Kampf-Tools für Million Lords: XP-Gewinnrate, Demo-Angriffstruppen für Angreifer und Ziel sowie feindliche Truppen zur Planung jedes Angriffs.",
       "ranking": "Schätze deinen Ranglisten-Fortschritt in Million Lords: deinen aktuellen Rang und die Siegpunkte, die du für deinen Zielrang brauchst.",
       "skills": "Optimiere Ausrüstung und Fähigkeiten in Million Lords: Kampf- und Expeditionsausrüstung, Edelsteine und Templer, inklusive Fusionskosten."
-    }
+    },
+    "index-title": "Werkzeuge",
+    "index-intro": "Entscheide mit den richtigen Zahlen: Kosten, Produktion, Rangliste und Fähigkeiten, mit Simulatoren für jede Entscheidung.",
+    "settings-note": "Trage deine Spielereinstellungen einmal ein: alle Werkzeuge übernehmen sie.",
+    "further-reading": "Mehr dazu",
+    "kind": "Werkzeug",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Spielereinstellungen",
@@ -459,11 +463,13 @@
     "menu": "Menü",
     "main": "Hauptnavigation",
     "footer": "Fußzeile",
-    "home": "Startseite"
+    "home": "Startseite",
+    "tagline": "Million-Lords-Begleiter",
+    "breadcrumb": "Navigationspfad"
   },
   "search": {
     "label": "Website durchsuchen",
-    "placeholder": "Suche",
+    "placeholder": "Ein Werkzeug, eine Referenz, einen Guide suchen…",
     "results-label": "Suchergebnisse",
     "no-results": "Keine Ergebnisse.",
     "types": {
@@ -486,39 +492,72 @@
       "guide-fallback": "Eine Million-Lords-Anleitung auf ML Helper.",
       "guides": "Anleitungen und Referenztabellen für Million Lords: Kosten, Werte und Spielmechaniken, von der Community geprüft.",
       "legal": "Impressum der Website ML Helper."
-    }
+    },
+    "report-error": "Fehler melden",
+    "image-placeholder": "Illustration",
+    "legal-updated": "Zuletzt aktualisiert: {date}"
   },
   "contact": {
-    "eyebrow": "Kontakt",
-    "title": "ML-Helper kontaktieren",
+    "title": "Kontakt",
     "lead": "Ein Datenfehler zu melden, eine Verbesserungsidee oder eine Frage? Schreib uns, wir lesen alles.",
-    "email": "E-Mail",
+    "email": "Deine E-Mail",
     "subject": "Betreff",
-    "choose-subject": "— Auswählen —",
     "subjects": {
-      "data-error": "Datenfehler melden",
-      "improvement-suggestion": "Verbesserungsvorschlag",
-      "technical-bug": "Technisches Problem / Fehler",
+      "data-error": "Fehler in den Daten",
+      "improvement-suggestion": "Verbesserungsidee",
+      "question": "Frage",
       "other": "Sonstiges"
     },
     "message": "Nachricht",
     "submit": "Senden",
     "success": "Nachricht gesendet, vielen Dank!",
     "error-invalid": "Überprüfe die Formularfelder und versuche es erneut.",
-    "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut."
+    "error-not-configured": "Der E-Mail-Versand ist derzeit nicht konfiguriert, bitte versuche es später erneut.",
+    "page-field": "Betroffene Seite",
+    "page-placeholder": "Optional — z. B. Städte › Stadtkosten",
+    "privacy": "Deine E-Mail dient nur der Antwort. Sie wird weder veröffentlicht noch weitergegeben.",
+    "placeholders": {
+      "data-error": "Welcher Wert wird angezeigt, und welchen siehst du im Spiel?",
+      "improvement-suggestion": "Beschreibe deine Idee in wenigen Zeilen.",
+      "question": "Stell deine Frage.",
+      "other": "Deine Nachricht."
+    },
+    "reasons": {
+      "data-error-title": "Ein Wert stimmt nicht",
+      "data-error-text": "Nenne die Seite, den angezeigten Wert und den aus dem Spiel: so geht die Korrektur schneller.",
+      "idea-title": "Eine Idee für ein Werkzeug oder einen Guide",
+      "idea-text": "Sag uns, welche Entscheidung du besser vorbereiten möchtest.",
+      "question-title": "Eine Frage",
+      "question-text": "Zu einem Werkzeug, einer Berechnung oder der Seite allgemein."
+    }
   },
   "Home": {
-    "h1": "Million Lords: Tools und Guides",
-    "intro": "ML Helper vereint die Werkzeuge und Referenzen der Community, um dir zu helfen, jede Entscheidung in Million Lords zu planen.",
+    "h1": "Werkzeuge und Guides für Million Lords",
+    "intro": "Simulatoren, Referenztabellen und Guides der Community, um jede Entscheidung vorzubereiten — von der ersten Stadt bis zur Legende.",
     "toolsEyebrow": "Simulieren",
     "toolsTitle": "Entscheide mit den richtigen Zahlen",
-    "toolsDescription": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
+    "toolsDescription": "Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung: Simulatoren für jede Entscheidung.",
     "guidesEyebrow": "Lernen",
     "guidesTitle": "Schärfe deine Strategie",
-    "guidesDescription": "Durchstöbere die Anleitungen der Community, um Spielmechaniken zu verstehen und sicher voranzukommen.",
+    "guidesDescription": "Die Guides der Community, um die Spielmechaniken zu verstehen und ruhiger voranzukommen.",
     "referentielsEyebrow": "Nachschlagen",
     "referentielsTitle": "Finde die genauen Zahlen",
-    "referentielsDescription": "Durchstöbere die Referenztabellen der Community für die genauen Kosten, Werte und Stufen des Spiels."
+    "referentielsDescription": "Die genauen Kosten, Werte und Stufen des Spiels: Ausrüstung, Edelsteine, Templer, Shop…",
+    "eyebrow": "Community-Begleiter",
+    "explore-tools": "Werkzeuge entdecken",
+    "start-guide": "Erste Schritte",
+    "count-tools": "{count, plural, one {# Werkzeug} other {# Werkzeuge}}",
+    "count-references": "{count, plural, one {# Referenz} other {# Referenzen}}",
+    "count-guides": "{count, plural, one {# Guide} other {# Guides}}",
+    "most-used": "Am meisten genutzt",
+    "entry-tool": "Werkzeug · {category}",
+    "entry-reference": "Referenz",
+    "all-tools": "Alle Werkzeuge",
+    "all-references": "Alle Referenzen",
+    "all-guides": "Alle Guides",
+    "start-here": "Fang hier an",
+    "banner-title": "Hat sich ein Wert im Spiel geändert?",
+    "banner-text": "Die Daten ändern sich mit jedem Update. Melde eine Abweichung oder schlage eine Verbesserung vor: wir lesen alles."
   },
   "ToolsPage": {
     "eyebrow": "Werkzeuge",
@@ -540,11 +579,9 @@
     "references": "Referenztabellen"
   },
   "guides": {
-    "eyebrow": "Anleitungen und Daten",
     "title": "Anleitungen",
     "sections": {
-      "guides": "Anleitungen",
-      "references": "Referenztabellen"
+      "guides": "Anleitungen"
     },
     "filters": {
       "guides-label": "Anleitungen nach Kategorie filtern",
@@ -565,11 +602,19 @@
     "no-results": "Keine Anleitung entspricht diesen Filtern.",
     "detail": {
       "eyebrow": "Anleitung in {category}",
-      "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt."
-    }
+      "not-translated": "Diese Anleitung wurde noch nicht in diese Sprache übersetzt.",
+      "toc": "Inhalt",
+      "intro": "Einleitung",
+      "reading-time": "Lesezeit: ~{minutes} Min.",
+      "callout": "Zum Merken",
+      "continue": "Weiter mit",
+      "kind": "Guide"
+    },
+    "index-intro": "Schärfe deine Strategie: die Guides der Community, um die Spielmechaniken zu verstehen und ruhiger voranzukommen.",
+    "tool-pill": "Werkzeug: {name}",
+    "start-here": "Fang hier an"
   },
   "references": {
-    "eyebrow": "Referenztabellen",
     "title": "Referenztabellen",
     "filters": {
       "label": "Referenztabellen-Filter",
@@ -637,7 +682,16 @@
       "gems": "Alle Edelsteine in Million Lords: Bonus pro Fähigkeit und pro Liga, Slots und Fusionskosten in Saphiren, mit Multi-Fähigkeiten-Optimierung.",
       "shop": "Million-Lords-Shop-Referenz: Verbrauchsgüter und von der Community geprüfte Daten, um im richtigen Moment auszugeben.",
       "events": "Million-Lords-Event-Referenz: von der Community geprüfte Daten und Belohnungen, um dich auf jedes Event vorzubereiten."
-    }
+    },
+    "index-intro": "Finde die wichtigsten Daten: genaue Kosten, Werte und Stufen des Spiels, von der Ausrüstung über Edelsteine und Templer bis zu den Verbrauchsgütern des Shops.",
+    "missing-title": "Fehlt eine Referenz?",
+    "missing-text": "Sag uns, welche Daten du hier finden möchtest.",
+    "missing-cta": "Vorschlagen",
+    "catalog-short": {
+      "combat-equipment": "Kampfausrüstung",
+      "expedition-equipment": "Expeditionsausr."
+    },
+    "nav-label": "Navigation zwischen Referenzen"
   },
   "combat-equipment": {
     "name": "Kampfausrüstung",
@@ -696,5 +750,14 @@
     "title": "Seite nicht gefunden",
     "description": "Diese Seite existiert nicht oder wurde verschoben. Hier geht es weiter:",
     "home": "Startseite"
+  },
+  "footer": {
+    "lead": "Werkzeuge, Referenzen und Guides der Community, um jede Entscheidung in Million Lords vorzubereiten.",
+    "note": "Inoffizielle Community-Seite, ohne Verbindung zum Herausgeber des Spiels.",
+    "help": "Hilfe",
+    "start-here": "Erste Schritte",
+    "all-guides": "Alle Guides",
+    "all-references": "Alle Referenzen",
+    "copyright": "© {year} ML-Helper"
   }
 }

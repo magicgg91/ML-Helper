@@ -41,9 +41,12 @@
 // ---------------------------------------------------------------------------
 export type Theme = "dark" | "light";
 
+// Bloc 129 §1.2 : les deux valeurs de --bg. Elles sont écrites ici en dur
+// parce qu'un <meta> ne lit pas une variable CSS ; manifest.test.ts les
+// compare à globals.css, donc elles ne peuvent pas rester en arrière.
 export const themeBackground: Record<Theme, string> = {
-  dark: "#1b2029",
-  light: "#e4e7eb",
+  dark: "#14131a",
+  light: "#e5e7ec",
 };
 
 /**

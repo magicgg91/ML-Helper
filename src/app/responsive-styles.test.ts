@@ -29,8 +29,17 @@ const contrast = (foreground: string, background: string) => {
   );
   return (lighter! + 0.05) / (darker! + 0.05);
 };
-const variable = (block: string, name: string) =>
-  block.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
+// Bloc 129 : --bg-panel & co sont devenus des alias des jetons du §1.2, donc
+// la lecture suit une indirection var(--x) avant de rendre les bras.
+const variable = (block: string, name: string): string | undefined => {
+  const value = block
+    .match(new RegExp(`${name}:\\s*([^;]+);`, "i"))?.[1]
+    ?.trim();
+  if (!value) return undefined;
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value;
+  const alias = /^var\((--[a-z0-9-]+)\)$/i.exec(value);
+  return alias ? variable(block, alias[1]!) : undefined;
+};
 
 describe("public responsive styles", () => {
   // Bloc 63/A+C: the reference tables' breakpoint is written twice — once in
@@ -291,21 +300,11 @@ describe("public responsive styles", () => {
     expect(mobileOverride).toMatch(/flex-wrap: wrap;/);
   });
 
-  it("wraps the /tools and /referentiels page titles on mobile instead of truncating them (Bloc 84)", () => {
-    // Both titles keep their desktop nowrap+shrink-to-fit clamp() outside
-    // any media query...
-    const toolsRule = css.match(/(?:^|\n)\.tools-page-title\s*{([\s\S]*?)\n}/)?.[1];
-    expect(toolsRule).toBeDefined();
-    expect(toolsRule).toMatch(/white-space: nowrap;/);
-    // ...but on mobile that nowrap is undone so a title too wide for the
-    // viewport at the clamp()'s font-size floor wraps onto extra lines
-    // instead of being visually cut off.
-    const mobileOverride = css.match(
-      /@media \(max-width: 900px\)\s*{\s*\.tools-page-title,\s*\n\s*\.referentiels-page-title\s*{([\s\S]*?)\n\s*}/,
-    )?.[1];
-    expect(mobileOverride).toBeDefined();
-    expect(mobileOverride).toMatch(/white-space: normal;/);
-  });
+  // Bloc 129 : ce test protégeait le repli sur mobile des titres de /tools
+  // et /referentiels (Bloc 84) — leur classe forçait nowrap, et la media
+  // query le relâchait sous 900 px. Les deux classes ont disparu avec les
+  // titres qu'elles habillaient : l'en-tête de page commun (§2) ne force
+  // jamais nowrap, donc il n'y a plus rien à relâcher.
 
   // Bloc 112: the three result colors of the Classement range tiles carry
   // running text (the target league) on a tile whose background is a band

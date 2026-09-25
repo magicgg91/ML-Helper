@@ -6,8 +6,8 @@
     "increase": "Increase {label}",
     "select-league": "Choose a league to calculate.",
     "language": "Language",
-    "theme-light": "Enable light mode",
-    "theme-dark": "Enable dark mode",
+    "theme-light": "Switch to light theme",
+    "theme-dark": "Switch to dark theme",
     "star-count": "{level} stars",
     "duration-hours": "{hours}h"
   },
@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Make decisions with the right numbers",
-    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "cities": "Cities",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -135,7 +133,13 @@
       "combat": "Combat tools for Million Lords: XP gain rate, demo attack troops for both attacker and target, and enemy troops to plan every assault.",
       "ranking": "Estimate your ranking progress in Million Lords: your current rank and the victory points you need to reach the rank you are aiming for.",
       "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
-    }
+    },
+    "index-title": "Tools",
+    "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision.",
+    "settings-note": "Fill in your player settings once: every tool picks them up.",
+    "further-reading": "Go further",
+    "kind": "Tool",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Player settings",
@@ -459,11 +463,13 @@
     "menu": "Menu",
     "main": "Main navigation",
     "footer": "Footer",
-    "home": "Home"
+    "home": "Home",
+    "tagline": "Million Lords companion",
+    "breadcrumb": "Breadcrumb"
   },
   "search": {
     "label": "Search the site",
-    "placeholder": "Search",
+    "placeholder": "Search for a tool, a reference, a guide…",
     "results-label": "Search results",
     "no-results": "No results.",
     "types": {
@@ -486,39 +492,72 @@
     },
     "meta": {
       "siteTitle": "ML-Helper — Million Lords tools and guides"
-    }
+    },
+    "report-error": "Report an error",
+    "image-placeholder": "Illustration",
+    "legal-updated": "Last updated: {date}"
   },
   "contact": {
-    "eyebrow": "Contact",
-    "title": "Contact ML-Helper",
+    "title": "Contact",
     "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
-    "email": "Email",
+    "email": "Your email",
     "subject": "Subject",
-    "choose-subject": "— Choose —",
     "subjects": {
-      "data-error": "Report a data error",
-      "improvement-suggestion": "Improvement suggestion",
-      "technical-bug": "Technical issue / bug",
+      "data-error": "Data error",
+      "improvement-suggestion": "Improvement idea",
+      "question": "Question",
       "other": "Other"
     },
     "message": "Message",
     "submit": "Send",
     "success": "Message sent, thank you!",
     "error-invalid": "Check the form fields and try again.",
-    "error-not-configured": "Email sending isn't configured right now, please try again later."
+    "error-not-configured": "Email sending isn't configured right now, please try again later.",
+    "page-field": "Page concerned",
+    "page-placeholder": "Optional — e.g. Cities › City cost",
+    "privacy": "Your email is only used to reply to you. It is neither published nor shared.",
+    "placeholders": {
+      "data-error": "Which value is shown, and which do you see in game?",
+      "improvement-suggestion": "Describe your idea in a few lines.",
+      "question": "Ask your question.",
+      "other": "Your message."
+    },
+    "reasons": {
+      "data-error-title": "A value is wrong",
+      "data-error-text": "Give the page, the value shown and the one you see in game: we fix it faster.",
+      "idea-title": "An idea for a tool or a guide",
+      "idea-text": "Tell us which decision you would like to prepare better.",
+      "question-title": "A question",
+      "question-text": "About a tool, a calculation or the site in general."
+    }
   },
   "Home": {
-    "h1": "Million Lords tools and guides",
-    "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
+    "h1": "Tools and guides for Million Lords",
+    "intro": "Simulators, reference tables and community guides to prepare every decision, from your first city to Legend.",
     "toolsEyebrow": "Simulate",
     "toolsTitle": "Make decisions with the right numbers",
-    "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
+    "toolsDescription": "Costs, production, ranking, skills and equipment: simulators to prepare every decision.",
     "guidesEyebrow": "Learn",
     "guidesTitle": "Sharpen your strategy",
-    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
+    "guidesDescription": "Community guides to understand the game's mechanics and progress more calmly.",
     "referentielsEyebrow": "Consult",
     "referentielsTitle": "Find the exact numbers",
-    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
+    "referentielsDescription": "The game's exact costs, stats and tiers: equipment, gems, templars, shop…",
+    "eyebrow": "Community companion",
+    "explore-tools": "Explore the tools",
+    "start-guide": "Start here",
+    "count-tools": "{count, plural, one {# tool} other {# tools}}",
+    "count-references": "{count, plural, one {# reference} other {# references}}",
+    "count-guides": "{count, plural, one {# guide} other {# guides}}",
+    "most-used": "Most used",
+    "entry-tool": "Tool · {category}",
+    "entry-reference": "Reference",
+    "all-tools": "All tools",
+    "all-references": "All references",
+    "all-guides": "All guides",
+    "start-here": "Start here",
+    "banner-title": "A value changed in game?",
+    "banner-text": "The data changes with every update. Report a discrepancy or suggest an improvement: we read everything."
   },
   "ToolsPage": {
     "eyebrow": "Tools",
@@ -540,11 +579,9 @@
     "references": "Reference tables"
   },
   "guides": {
-    "eyebrow": "Guides and data",
     "title": "Guides",
     "sections": {
-      "guides": "Guides",
-      "references": "Reference tables"
+      "guides": "Guides"
     },
     "filters": {
       "guides-label": "Filter guides by category",
@@ -565,11 +602,19 @@
     "no-results": "No guide matches these filters.",
     "detail": {
       "eyebrow": "Guide in {category}",
-      "not-translated": "This guide has not been translated into this language yet."
-    }
+      "not-translated": "This guide has not been translated into this language yet.",
+      "toc": "Contents",
+      "intro": "Introduction",
+      "reading-time": "Read: ~{minutes} min",
+      "callout": "Key point",
+      "continue": "Continue with",
+      "kind": "Guide"
+    },
+    "index-intro": "Sharpen your strategy: community guides to understand the game's mechanics and progress more calmly.",
+    "tool-pill": "Tool: {name}",
+    "start-here": "Start here"
   },
   "references": {
-    "eyebrow": "Reference tables",
     "title": "Reference tables",
     "filters": {
       "label": "Reference table filters",
@@ -637,7 +682,16 @@
       "gems": "Every gem in Million Lords: bonus per skill and per league, slots and the merge cost in sapphires, with multi-skill optimisation.",
       "shop": "Million Lords shop reference: consumables and community-verified data to help you spend at the right moment.",
       "events": "Million Lords events reference: community-verified data and rewards to help you prepare for every event."
-    }
+    },
+    "index-intro": "Find the key data: the game's exact costs, stats and tiers, from equipment to gems and templars, all the way to the shop's consumables.",
+    "missing-title": "A reference missing?",
+    "missing-text": "Tell us which data you would like to find here.",
+    "missing-cta": "Suggest",
+    "catalog-short": {
+      "combat-equipment": "Combat equip.",
+      "expedition-equipment": "Expedition equip."
+    },
+    "nav-label": "Reference navigation"
   },
   "combat-equipment": {
     "name": "Combat Equipment",
@@ -1546,5 +1600,14 @@
     "title": "Page not found",
     "description": "This page doesn’t exist or has moved. Here is where to go next:",
     "home": "Home"
+  },
+  "footer": {
+    "lead": "Community tools, references and guides to prepare every decision in Million Lords.",
+    "note": "Unofficial community site, unaffiliated with the game's publisher.",
+    "help": "Help",
+    "start-here": "Start here",
+    "all-guides": "All guides",
+    "all-references": "All references",
+    "copyright": "© {year} ML-Helper"
   }
 }

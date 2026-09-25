@@ -47,33 +47,38 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("I: halves .home-tools' own top margin, leaving .home-guides' untouched", () => {
+  // Bloc 129 §3.1 : les trois sections de l'accueil ne règlent plus leur
+  // marge chacune de leur côté (le Bloc 38/I avait dû diviser par deux
+  // celle d'Outils parce qu'elle suivait un bloc d'intro, les deux autres
+  // gardant la leur). Elles partagent maintenant .home-section, sous un
+  // hero qui porte son propre espacement.
+  it("Bloc129/§3.1: une seule règle d'espacement pour les trois sections", () => {
     expect(css).toMatch(
-      /\.home-tools\s*{\s*margin-top: clamp\(1\.5rem, 4vw, 3\.5rem\);\s*}/,
+      /\.home-section\s*{\s*margin-top: clamp\(3rem, 7vw, 6rem\);\s*}/,
     );
-    expect(css).toMatch(
-      /\.home-guides\s*{\s*margin-top: clamp\(3rem, 8vw, 7rem\);\s*}/,
-    );
+    expect(css).not.toMatch(/\.home-tools\s*{\s*margin-top:/);
   });
 
-  it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
-    const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.tools-page-title)");
-    expect(match![1]).toContain(":not(.reference-page-title)");
-  });
-
-  // Bloc 53/D: /guides and /referentiels get the same smaller-title
-  // treatment, added to the same exclusion list above.
-  it("Bloc53/D: also excludes .guides-page-title/.referentiels-page-title from the generic hero-title rule", () => {
-    const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.guides-page-title)");
-    expect(match![1]).toContain(":not(.referentiels-page-title)");
+  // Bloc 129 : les deux tests qui vivaient ici vérifiaient que la règle
+  // générique du titre de hero excluait .tools-page-title,
+  // .reference-page-title, .guides-page-title et .referentiels-page-title —
+  // quatre classes posées par les Blocs 33/35/53 pour donner à ces titres
+  // une taille plus petite que le clamp géant du hero. Aucune n'existe plus :
+  // les quatre pages d'index et les pages référentiel passent par l'en-tête
+  // de page commun (§2), qui a sa propre taille (§1.1). Ce qui reste à
+  // vérifier, c'est qu'on n'a pas laissé les exclusions derrière les classes.
+  it("Bloc129: ni les classes de titre d'index, ni les exclusions qui les visaient", () => {
+    // Sur les sélecteurs, pas sur le texte : les commentaires ont le droit
+    // de raconter d'où l'on vient.
+    for (const name of [
+      "tools-page-title",
+      "reference-page-title",
+      "guides-page-title",
+      "referentiels-page-title",
+    ]) {
+      expect(css).not.toMatch(new RegExp(`\\.${name}[,\\s]*{`));
+      expect(css).not.toContain(`:not(.${name})`);
+    }
   });
 
   it("M: gives Level Up/Templiers/Gemmes' shared table class alternating row colors", () => {
@@ -88,32 +93,41 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("Bloc 50 Group3: caps the homepage guides teaser grid at 3 columns per row, same computed-floor technique as .tool-category-grid", () => {
+  // Bloc 129 §3.1 : la grille de six cartes de guides laisse la place à la
+  // carte « Commence ici » et à une liste à côté d'elle — donc deux
+  // colonnes, pas une grille de cartes, et la liste prend toute la largeur
+  // quand aucun guide n'est mis en avant.
+  it("Bloc129/§3.1: section Apprendre en deux colonnes, carte puis liste", () => {
     expect(css).toMatch(
-      /\.home-guides-grid\s*{\s*grid-template-columns: repeat\(\s*auto-fit,\s*minmax\(max\(18rem, calc\(\(100% - 2 \* 0\.65rem\) \/ 3\)\), 1fr\)\s*\);/,
+      /\.home-learn\s*{\s*display: grid;\s*grid-template-columns: 30rem minmax\(0, 1fr\);/,
     );
     expect(css).toMatch(
-      /@media \(max-width: 42rem\)\s*{\s*\.home-guides-grid\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+      /\.home-learn\[data-featured="no"\]\s*{\s*grid-template-columns: minmax\(0, 1fr\);\s*}/,
     );
+    expect(css).not.toMatch(/\.home-guides-grid/);
   });
 
-  // Bloc 68/D: the homepage reuses the Outils/Référentiels/Guides section
-  // titles verbatim from /tools, /referentiels and /guides — but those 3
-  // pages render theirs as a real <h1>, which picks up the gradient
-  // clipped-text violet from the "Prototype visual language" h1 rule
-  // (~line 1471), while the homepage rendered the same text as a plain
-  // var(--text) <h2> that never inherited it.
-  it("Bloc68/D: gives the homepage's Outils/Référentiels/Guides section titles the same gradient violet clip as their h1 counterparts", () => {
-    const rule = css.match(
-      /\.home-tools h2,\n\.home-references h2,\n\.home-guides h2\s*{([\s\S]*?)\n}/,
-    )?.[1];
-    expect(rule).toBeDefined();
-    expect(rule).toMatch(
-      /background: linear-gradient\(110deg, var\(--accent-strong\), var\(--accent\)\);/,
+  // §3.3 : les sept référentiels tiennent sur une seule rangée.
+  it("Bloc129/§3.3: sept colonnes pour la rangée de référentiels de l'accueil", () => {
+    expect(css).toMatch(
+      /\.home-reference-row\s*{\s*display: grid;\s*grid-template-columns: repeat\(7, minmax\(0, 1fr\)\);/,
     );
-    expect(rule).toMatch(/color: transparent;/);
-    expect(rule).toMatch(/background-clip: text;/);
-    expect(rule).not.toMatch(/color: var\(--text\);/);
+    // Et l'illustration reste carrée, comme partout ailleurs (§1.3).
+    expect(css).toMatch(/\.home-reference-image\s*{[\s\S]*?aspect-ratio: 1;/);
+  });
+
+  // Bloc 129 §1.1 : « Le dégradé violet sur les grands titres est supprimé :
+  // les titres sont en couleur accent unie. » Le Bloc 68/D avait fait
+  // l'inverse — donner aux H2 de l'accueil le dégradé des H1 des trois
+  // pages d'index. Ce que ce test protégeait reste vrai, mais à l'envers :
+  // ce sont toujours les mêmes titres, et ils ont toujours le même
+  // traitement — désormais un accent uni des deux côtés.
+  it("Bloc129/§1.1: les titres de section de l'accueil sont en accent uni, sans dégradé", () => {
+    const rule = css.match(/\.home-section-head h2\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/color: var\(--accent\);/);
+    expect(rule).not.toMatch(/linear-gradient/);
+    expect(rule).not.toMatch(/background-clip: text;/);
   });
 
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
@@ -127,10 +141,19 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("K: /tools' title and intro sentence are word-for-word the homepage's tools section", () => {
+  // Bloc 129 §3.2 : /tools ne reprend plus mot pour mot la section Outils de
+  // l'accueil. Le Bloc 38/K les avait alignés pour que la page se lise comme
+  // le même point d'entrée atteint autrement ; le brief leur donne chacun son
+  // rôle — « Décide avec les bons chiffres » reste le titre de la section sur
+  // l'accueil, et /tools s'appelle « Outils » avec sa propre introduction.
+  it("Bloc129/§3.2: /tools a son propre titre et sa propre introduction", () => {
     for (const messages of [frMessages, enMessages]) {
-      expect(messages.tools.title).toBe(messages.Home.toolsTitle);
-      expect(messages.tools.subtitle).toBe(messages.Home.toolsDescription);
+      expect(messages.tools["index-title"]).toBeTruthy();
+      expect(messages.tools["index-intro"]).toBeTruthy();
+      expect(messages.tools["index-title"]).not.toBe(messages.Home.toolsTitle);
+      expect(messages.tools["index-intro"]).not.toBe(
+        messages.Home.toolsDescription,
+      );
     }
   });
 
@@ -286,11 +309,12 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
     expect(rule).toMatch(/min-width: 0;/);
   });
 
-  it("D: /guides and /referentiels get their own smaller title class, excluded from the generic hero-title rule", () => {
-    expect(css).toMatch(
-      /\.guides-page-title,\s*\n\.referentiels-page-title\s*{/,
-    );
-  });
+  // Bloc 129 : /guides et /referentiels n'ont plus de classe de titre à eux.
+  // Le Bloc 53/D la leur avait donnée pour qu'ils reprennent les titres des
+  // sections de l'accueil, plus petits que le clamp du hero ; le brief leur
+  // rend leur propre titre, rendu par l'en-tête de page commun (§2), qui a
+  // sa taille à lui. Le test qui gardait cette classe est remplacé, plus
+  // haut, par celui qui vérifie qu'elle n'a pas survécu à son usage.
 
   it("E: the cross-reference banner/mini-card CSS replaces the old plain-text .reference-cross-link rule", () => {
     expect(css).not.toMatch(/\.reference-cross-link\s*{/);

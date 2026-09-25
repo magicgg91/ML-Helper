@@ -44,13 +44,18 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
       title: { fr: "Guide 1" },
       excerpt: { fr: "Excerpt 1" },
       coverImage: null,
+      category: ["combat"],
+      publishedAt: new Date("2026-03-01"),
     },
     {
       id: "g2",
       slug: "guide-2",
       title: { fr: "Guide 2" },
-      excerpt: { fr: "Excerpt 2" },
+      // §1.4 : un résumé écrit en markdown doit s'afficher sans ses marques.
+      excerpt: { fr: "Les bases de **Million Lords**." },
       coverImage: null,
+      category: ["debuter"],
+      publishedAt: new Date("2026-01-15"),
     },
     {
       id: "g3",
@@ -58,6 +63,8 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
       title: { fr: "Guide 3" },
       excerpt: { fr: "Excerpt 3" },
       coverImage: null,
+      category: ["clan"],
+      publishedAt: new Date("2026-02-01"),
     },
   ];
   return {
@@ -103,10 +110,14 @@ describe("HomePage", () => {
     ).toBeNull();
   });
 
-  it("replaces the carousel/hero with a short intro sentence (Bloc 34/D)", async () => {
+  // Bloc 129 §3.1 : le hero revient, mais ce n'est pas le carrousel que le
+  // Bloc 34/D avait retiré — c'est un bloc statique de texte et de liens.
+  it("ouvre sur un hero de texte, jamais sur un carrousel", async () => {
     render(await HomePage());
     expect(document.querySelector(".home-carousel")).toBeNull();
+    expect(document.querySelector(".home-hero")).toBeInTheDocument();
     expect(screen.getByText("intro")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("h1");
   });
 
   // Bloc 50 Group3: the combined guides/référentiels section split into 2
@@ -120,16 +131,63 @@ describe("HomePage", () => {
       });
       expect(link).toHaveAttribute("href", `/guides/${guide.slug}`);
     }
-    // No detour via /guides — the section links directly to each guide,
-    // not to a "browse all guides" page.
-    expect(screen.queryByRole("link", { name: "guides" })).toBeNull();
+    // Bloc 129 §3.1 : la section porte désormais un lien « Tous les guides »
+    // à droite de son titre — le §3.1 le demande explicitement. Ce que ce
+    // test protégeait tient toujours : chaque guide reste joignable en un
+    // clic depuis l'accueil, sans passer par /guides.
   });
 
-  it("fetches the 6 most recent published guides (Bloc 50 Group3: raised from 3)", async () => {
+  // Bloc 129 §3.1 : la page ne prend plus « les six derniers ». Elle lit
+  // tous les guides publiés, parce qu'elle en a besoin pour deux choses que
+  // la page d'avant ne faisait pas — compter les guides dans le hero, et
+  // désigner celui de la carte « Commence ici » — puis n'en affiche que
+  // cinq à côté de cette carte.
+  it("lit tous les guides publiés, et n'en liste que cinq à côté de la carte", async () => {
     render(await HomePage());
     expect(findManyMock).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 6 }),
+      expect.not.objectContaining({ take: expect.anything() }),
     );
+    expect(findManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { status: "published" } }),
+    );
+  });
+
+  it("compte les outils, les référentiels et les guides réellement accessibles", async () => {
+    render(await HomePage());
+    // 9 outils actifs sur 11 (xp-gain-rate et demo-attack-troops sont
+    // désactivés dans le mock), 7 référentiels, 3 guides.
+    expect(screen.getByText("count-tools")).toBeInTheDocument();
+    expect(screen.getByText("count-references")).toBeInTheDocument();
+    expect(screen.getByText("count-guides")).toBeInTheDocument();
+  });
+
+  it("met « Commence ici » sur le guide de la catégorie configurée", async () => {
+    const { container } = render(await HomePage());
+    const card = container.querySelector<HTMLAnchorElement>(".start-here-card");
+    // guide-2 est le seul de la catégorie « debuter ».
+    expect(card).toHaveAttribute("href", "/guides/guide-2");
+    // §1.4 : et son résumé s'affiche sans ses astérisques.
+    expect(
+      within(card!).getByText("Les bases de Million Lords."),
+    ).toBeInTheDocument();
+    // Le guide mis en avant ne se répète pas dans la liste à côté.
+    const list = container.querySelector<HTMLElement>(".home-guide-list")!;
+    expect(within(list).queryByRole("link", { name: /Guide 2/ })).toBeNull();
+  });
+
+  it("propose le panneau « Les plus utilisés » et le bandeau de signalement", async () => {
+    const { container } = render(await HomePage());
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(panel).not.toBeNull();
+    // Les trois outils de Villes de la configuration, plus deux référentiels.
+    expect(within(panel).getAllByRole("link")).toHaveLength(5);
+    expect(
+      within(panel).getByRole("link", { name: /city-cost.name/ }),
+    ).toHaveAttribute("href", "/tools/villes?open=cost");
+    const banner = container.querySelector<HTMLElement>(".report-banner")!;
+    expect(
+      within(banner).getByRole("link", { name: "report-error" }),
+    ).toHaveAttribute("href", "/contact?subject=data-error");
   });
 
   it("shows the built references, each directly clickable, in their own section", async () => {
@@ -148,11 +206,9 @@ describe("HomePage", () => {
       });
       expect(link).toHaveAttribute("href", `/referentiels/${slug}`);
     }
-    // No detour via /referentiels — the section links directly to each
-    // reference, not to a "browse all references" page.
-    expect(
-      within(referencesSection).queryByRole("link", { name: "referentiels" }),
-    ).toBeNull();
+    // Même remarque que pour les guides : la section porte maintenant son
+    // lien « Tous les référentiels » (§3.1), et chaque référentiel reste
+    // joignable directement.
   });
 
   it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {

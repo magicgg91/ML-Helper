@@ -6,8 +6,8 @@
     "increase": "Aumentar {label}",
     "select-league": "Elige una liga para calcular.",
     "language": "Idioma",
-    "theme-light": "Activar modo claro",
-    "theme-dark": "Activar modo oscuro",
+    "theme-light": "Cambiar al tema claro",
+    "theme-dark": "Cambiar al tema oscuro",
     "star-count": "{level} estrellas",
     "duration-hours": "{hours} h"
   },
@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Decide con las cifras correctas",
-    "subtitle": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
     "cities": "Ciudades",
     "combat": "Combate",
     "combat-simulator": "Combate",
@@ -135,7 +133,13 @@
       "combat": "Herramientas de combate para Million Lords: tasa de XP, tropas de ataque demo para atacante y objetivo, y tropas enemigas para preparar cada asalto.",
       "ranking": "Estima tu progreso en la clasificación de Million Lords: tu rango actual y los puntos de victoria que necesitas para alcanzar el rango que buscas.",
       "skills": "Optimiza tu equipo y tus habilidades en Million Lords: equipo de combate y de expedición, gemas y templarios, con los costes de fusión."
-    }
+    },
+    "index-title": "Herramientas",
+    "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión.",
+    "settings-note": "Rellena tus parámetros de jugador una sola vez: todas las herramientas los reutilizan.",
+    "further-reading": "Ir más lejos",
+    "kind": "Herramienta",
+    "kind-guide": "Guía"
   },
   "player-settings": {
     "title": "Ajustes del jugador",
@@ -459,11 +463,13 @@
     "menu": "Menú",
     "main": "Navegación principal",
     "footer": "Pie de página",
-    "home": "Inicio"
+    "home": "Inicio",
+    "tagline": "Compañero de Million Lords",
+    "breadcrumb": "Ruta de navegación"
   },
   "search": {
     "label": "Buscar en el sitio",
-    "placeholder": "Buscar",
+    "placeholder": "Busca una herramienta, una referencia, una guía…",
     "results-label": "Resultados de búsqueda",
     "no-results": "Sin resultados.",
     "types": {
@@ -486,39 +492,72 @@
       "guide-fallback": "Una guía de Million Lords en ML Helper.",
       "guides": "Guías y tablas de referencia para Million Lords: costes, estadísticas y mecánicas de juego verificadas por la comunidad.",
       "legal": "Aviso legal del sitio web ML Helper."
-    }
+    },
+    "report-error": "Informar de un error",
+    "image-placeholder": "Ilustración",
+    "legal-updated": "Última actualización: {date}"
   },
   "contact": {
-    "eyebrow": "Contacto",
-    "title": "Contactar con ML-Helper",
+    "title": "Contacto",
     "lead": "¿Un error de datos que reportar, una idea de mejora o una pregunta? Escríbenos, lo leemos todo.",
-    "email": "Correo electrónico",
+    "email": "Tu correo",
     "subject": "Asunto",
-    "choose-subject": "— Elegir —",
     "subjects": {
-      "data-error": "Reportar un error de datos",
-      "improvement-suggestion": "Sugerencia de mejora",
-      "technical-bug": "Problema técnico / error",
+      "data-error": "Error en los datos",
+      "improvement-suggestion": "Idea de mejora",
+      "question": "Pregunta",
       "other": "Otro"
     },
     "message": "Mensaje",
     "submit": "Enviar",
     "success": "¡Mensaje enviado, gracias!",
     "error-invalid": "Revisa los campos del formulario e inténtalo de nuevo.",
-    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde."
+    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde.",
+    "page-field": "Página afectada",
+    "page-placeholder": "Opcional — ej. Ciudades › Coste de ciudad",
+    "privacy": "Tu correo solo sirve para responderte. No se publica ni se comparte.",
+    "placeholders": {
+      "data-error": "¿Qué valor se muestra y cuál ves en el juego?",
+      "improvement-suggestion": "Describe tu idea en unas líneas.",
+      "question": "Haz tu pregunta.",
+      "other": "Tu mensaje."
+    },
+    "reasons": {
+      "data-error-title": "Un dato es incorrecto",
+      "data-error-text": "Indica la página, el valor mostrado y el que ves en el juego: lo corregimos antes.",
+      "idea-title": "Una idea de herramienta o de guía",
+      "idea-text": "Dinos qué decisión te gustaría preparar mejor.",
+      "question-title": "Una pregunta",
+      "question-text": "Sobre una herramienta, un cálculo o el sitio en general."
+    }
   },
   "Home": {
-    "h1": "Herramientas y guías de Million Lords",
-    "intro": "ML Helper reúne las herramientas y referencias de la comunidad para ayudarte a planificar cada decisión en Million Lords.",
+    "h1": "Herramientas y guías para Million Lords",
+    "intro": "Simuladores, tablas de referencia y guías de la comunidad para preparar cada decisión, desde tu primera ciudad hasta Leyenda.",
     "toolsEyebrow": "Simular",
     "toolsTitle": "Decide con las cifras correctas",
-    "toolsDescription": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
+    "toolsDescription": "Costes, producción, clasificación, habilidades y equipo: simuladores para preparar cada decisión.",
     "guidesEyebrow": "Aprender",
     "guidesTitle": "Perfecciona tu estrategia",
-    "guidesDescription": "Consulta las guías de la comunidad para entender las mecánicas del juego y progresar con confianza.",
+    "guidesDescription": "Las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
     "referentielsEyebrow": "Consultar",
     "referentielsTitle": "Encuentra las cifras exactas",
-    "referentielsDescription": "Consulta las tablas de referencia de la comunidad para conocer los costes, estadísticas y umbrales exactos del juego."
+    "referentielsDescription": "Los costes, estadísticas y niveles exactos del juego: equipo, gemas, templarios, tienda…",
+    "eyebrow": "Compañero comunitario",
+    "explore-tools": "Explorar las herramientas",
+    "start-guide": "Empieza aquí",
+    "count-tools": "{count, plural, one {# herramienta} other {# herramientas}}",
+    "count-references": "{count, plural, one {# referencia} other {# referencias}}",
+    "count-guides": "{count, plural, one {# guía} other {# guías}}",
+    "most-used": "Las más usadas",
+    "entry-tool": "Herramienta · {category}",
+    "entry-reference": "Referencia",
+    "all-tools": "Todas las herramientas",
+    "all-references": "Todas las referencias",
+    "all-guides": "Todas las guías",
+    "start-here": "Empieza aquí",
+    "banner-title": "¿Ha cambiado un valor en el juego?",
+    "banner-text": "Los datos cambian con cada actualización. Señala una diferencia o propón una mejora: lo leemos todo."
   },
   "ToolsPage": {
     "eyebrow": "Herramientas",
@@ -540,11 +579,9 @@
     "references": "Tablas de referencia"
   },
   "guides": {
-    "eyebrow": "Guías y datos",
     "title": "Guías",
     "sections": {
-      "guides": "Guías",
-      "references": "Tablas de referencia"
+      "guides": "Guías"
     },
     "filters": {
       "guides-label": "Filtrar guías por categoría",
@@ -565,11 +602,19 @@
     "no-results": "Ninguna guía coincide con estos filtros.",
     "detail": {
       "eyebrow": "Guía en {category}",
-      "not-translated": "Esta guía aún no se ha traducido a este idioma."
-    }
+      "not-translated": "Esta guía aún no se ha traducido a este idioma.",
+      "toc": "Índice",
+      "intro": "Introducción",
+      "reading-time": "Lectura: ~{minutes} min",
+      "callout": "Para recordar",
+      "continue": "Continúa con",
+      "kind": "Guía"
+    },
+    "index-intro": "Afina tu estrategia: las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
+    "tool-pill": "Herramienta: {name}",
+    "start-here": "Empieza aquí"
   },
   "references": {
-    "eyebrow": "Tablas de referencia",
     "title": "Tablas de referencia",
     "filters": {
       "label": "Filtros de tabla de referencia",
@@ -637,7 +682,16 @@
       "gems": "Todas las gemas de Million Lords: bonificación por habilidad y por liga, ranuras y coste de fusión en zafiros, con optimización multihabilidad.",
       "shop": "Referencia de la tienda de Million Lords: consumibles y datos verificados por la comunidad para gastar en el momento adecuado.",
       "events": "Referencia de los eventos de Million Lords: datos y recompensas verificados por la comunidad para preparar cada evento."
-    }
+    },
+    "index-intro": "Encuentra los datos clave: costes, estadísticas y niveles exactos del juego, del equipo a las gemas y templarios, hasta los consumibles de la tienda.",
+    "missing-title": "¿Falta una referencia?",
+    "missing-text": "Dinos qué datos te gustaría encontrar aquí.",
+    "missing-cta": "Proponer",
+    "catalog-short": {
+      "combat-equipment": "Equipo de combate",
+      "expedition-equipment": "Equipo de exped."
+    },
+    "nav-label": "Navegación entre referencias"
   },
   "combat-equipment": {
     "name": "Equipo de Combate",
@@ -696,5 +750,14 @@
     "title": "Página no encontrada",
     "description": "Esta página no existe o se ha movido. Aquí puedes continuar:",
     "home": "Inicio"
+  },
+  "footer": {
+    "lead": "Herramientas, referencias y guías de la comunidad para preparar cada decisión en Million Lords.",
+    "note": "Sitio comunitario no oficial, sin vínculo con la editora del juego.",
+    "help": "Ayuda",
+    "start-here": "Empieza aquí",
+    "all-guides": "Todas las guías",
+    "all-references": "Todas las referencias",
+    "copyright": "© {year} ML-Helper"
   }
 }

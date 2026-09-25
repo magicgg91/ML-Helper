@@ -50,6 +50,10 @@ export async function generateMetadata({
   });
 }
 
+// Bloc 129 §3.8 : les quatre branches rendaient chacune un <h1 class="sr-only">
+// avec le nom de la catégorie — le Bloc 94 les avait posés là parce que la
+// page n'avait aucun titre visible. Le gabarit en rend un maintenant, dans
+// l'en-tête de page ; les garder ferait deux H1 par page.
 export default async function ToolPage({
   params,
   searchParams,
@@ -67,7 +71,6 @@ export default async function ToolPage({
     const combat = await getCombatParameters();
     return (
       <main className="public-main">
-        <h1 className="sr-only">{tools("combat")}</h1>
         <CombatCalculators
           cityParameters={await getCityParameters()}
           {...combat}
@@ -84,7 +87,6 @@ export default async function ToolPage({
   if (slug === "competences")
     return (
       <main className="public-main">
-        <h1 className="sr-only">{tools("skills")}</h1>
         <SkillsCalculators
           templarParameters={await getTemplarParameters()}
           combatRows={await getCombatReferenceRows()}
@@ -106,7 +108,6 @@ export default async function ToolPage({
     const ladder = await getRankingLadder();
     return (
       <main className="public-main">
-        <h1 className="sr-only">{tools("ranking")}</h1>
         {active.ranking ? (
           <RankingCalculator ladder={ladder} />
         ) : (
@@ -117,7 +118,6 @@ export default async function ToolPage({
   }
   return (
     <main className="public-main">
-      <h1 className="sr-only">{tools("cities")}</h1>
       <CityCalculators
         parameters={await getCityParameters()}
         availability={{
@@ -126,6 +126,7 @@ export default async function ToolPage({
           production: active["city-production"],
           rewards: active["city-rewards"],
         }}
+        initialTool={toolTab("villes", open)}
       />
     </main>
   );

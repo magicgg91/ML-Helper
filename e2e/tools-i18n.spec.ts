@@ -50,9 +50,14 @@ test("renders every tool category in French and English", async ({ page }) => {
   await expect(page.getByText("Paramètres du joueur")).toBeVisible();
 
   await page.goto("/tools/classement");
-  await expect(page.getByText("Ton rang actuel")).toBeVisible();
+  // Bloc 129 §3.8 : la page porte maintenant un en-tête dont la description
+  // reprend les mots de l'outil — la recherche est donc limitée au contenu,
+  // sous l'en-tête, sinon elle trouve les deux.
+  await expect(page.locator("main").getByText("Ton rang actuel")).toBeVisible();
   await selectLanguage(page, "en");
-  await expect(page.getByText("Your current rank")).toBeVisible();
+  await expect(
+    page.locator("main").getByText("Your current rank"),
+  ).toBeVisible();
 
   await page.goto("/tools/competences");
   await expect(
