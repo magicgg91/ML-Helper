@@ -1,4 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import fr from "../../../../messages/fr.json";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ConfigAdminPage from "./page";
 import type { LanguageRow } from "@/components/admin-languages-panel";
@@ -11,11 +13,20 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     guide: { findMany: vi.fn() },
     localeSetting: { findMany: vi.fn() },
+    // Bloc 136 : la taille du journal, résumée dans l'en-tête de la section
+    // de purge.
+    auditLog: { count: vi.fn() },
   },
 }));
 vi.mock("@/lib/site-settings", () => ({ getTrackingSettings: vi.fn() }));
 vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => key,
+  // Bloc 136 : les valeurs interpolées sont rendues à côté de la clé. Le
+  // résumé d'une section repliée est fait de ces valeurs — sans elles,
+  // « 4 actives sur 5 » se lirait « languages-summary », et un compte faux
+  // passerait.
+  getTranslations:
+    async () => (key: string, values?: Record<string, unknown>) =>
+      values ? `${key} ${JSON.stringify(values)}` : key,
   getLocale: async () => "fr",
 }));
 // Bloc 132 §4 : l'écran calcule aussi ce qu'on peut mettre en avant. Ces
@@ -56,6 +67,7 @@ const mockedRequireCapability = vi.mocked(requireCapability);
 const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
 const mockedLocaleFindMany = vi.mocked(prisma.localeSetting.findMany);
 const mockedTracking = vi.mocked(getTrackingSettings);
+const mockedLogCount = vi.mocked(prisma.auditLog.count);
 
 afterEach(() => {
   cleanup();
@@ -88,7 +100,15 @@ async function renderPage({
     { locale: "es", active: false },
   ] as unknown as Awaited<ReturnType<typeof prisma.localeSetting.findMany>>);
   mockedTracking.mockResolvedValue({ url, websiteId: "" });
-  render(await ConfigAdminPage());
+  mockedLogCount.mockResolvedValue(1234);
+  // Bloc 136 : l'en-tête des sections est un composant client — ses propres
+  // libellés (la pastille « Modifié ») passent par le fournisseur, là où le
+  // corps de la page lit `getTranslations`, doublé plus haut.
+  render(
+    <NextIntlClientProvider locale="fr" messages={fr}>
+      {await ConfigAdminPage()}
+    </NextIntlClientProvider>,
+  );
   return JSON.parse(
     screen.getByTestId("languages").textContent ?? "[]",
   ) as LanguageRow[];
@@ -221,8 +241,80 @@ describe("Bloc 131/E — la purge du journal, en Configuration", () => {
   // réglages qu'on vient modifier tous les jours.
   it("la pose en dernier, après les réglages", async () => {
     await renderPage();
-    const card = screen.getByTestId("purge");
-    // Dernier enfant de la colonne de la page, après les trois réglages.
-    expect(card.parentElement?.lastElementChild).toBe(card);
+    // Bloc 136 : la carte est désormais le contenu d'une section repliable,
+    // et c'est cette section qui doit fermer la colonne.
+    const section = screen.getByTestId("purge").closest("section");
+    expect(section?.parentElement?.lastElementChild).toBe(section);
+  });
+
+  /**
+   * Bloc 136 : repliée comme les autres, et résumée par ce qu'on veut savoir
+   * avant d'en supprimer une tranche — combien le journal contient.
+   */
+  it("dit la taille du journal sans qu'on ouvre la section", async () => {
+    await renderPage();
+    const summary = screen.getByText(/^entries-summary/).textContent ?? "";
+    expect(JSON.parse(summary.replace("entries-summary ", ""))).toEqual({
+      count: 1234,
+    });
+    expect(screen.getByRole("button", { name: "purge-title" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
+
+  // Le compte n'est demandé qu'à qui peut purger : un admin ne déclenche pas
+  // une requête dont il ne verra jamais le résultat.
+  it("ne compte le journal que pour qui peut le purger", async () => {
+    await renderPage({ role: "admin" });
+    expect(mockedLogCount).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Bloc 136 : l'écran s'ouvre replié.
+ *
+ * Le Bloc 119 avait déplié ces sections pour de bon ; l'écran a grossi depuis
+ * (les mises en avant du Bloc 132 §4, la purge du Bloc 131/E) et la décision
+ * s'inverse. Ce que cette page doit garantir en plus du composant lui-même,
+ * c'est que chaque section dit juste ce qu'elle contient sans qu'on l'ouvre,
+ * et qu'elle porte l'ancre qui permet d'y envoyer quelqu'un.
+ */
+describe("Bloc 136 — Configuration repliée par défaut", () => {
+  it("ouvre les quatre sections repliées", async () => {
+    await renderPage();
+    // Chacune nommée par son seul titre : c'est l'en-tête d'une section, pas
+    // la phrase « titre + description + résumé » mise bout à bout.
+    const headers = [
+      "highlights.section",
+      "languages-section",
+      "tracking.section",
+      "purge-title",
+    ].map((title) => screen.getByRole("button", { name: title }));
+    expect(
+      headers.every(
+        (header) => header.getAttribute("aria-expanded") === "false",
+      ),
+    ).toBe(true);
+  });
+
+  it("compte les langues actives sans qu'on ouvre la section", async () => {
+    await renderPage();
+    // La doublure de `localeSetting` ne désactive que l'espagnol : quatre
+    // actives sur les cinq lancées.
+    const summary = screen.getByText(/^languages-summary/).textContent ?? "";
+    expect(JSON.parse(summary.replace("languages-summary ", ""))).toEqual({
+      count: 4,
+      total: 5,
+    });
+  });
+
+  it("porte l'ancre de chaque section", async () => {
+    await renderPage();
+    expect(
+      ["mis-en-avant", "langues", "suivi-visites", "purge-journal"].map(
+        (id) => document.getElementById(id)?.tagName,
+      ),
+    ).toEqual(["SECTION", "SECTION", "SECTION", "SECTION"]);
   });
 });

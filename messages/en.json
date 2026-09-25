@@ -1191,6 +1191,7 @@
       "close": "Close",
       "confirm": "Confirm",
       "hidden": "Hidden",
+      "modified": "Modified",
       "more-actions": "More actions",
       "visible": "Visible",
       "read-only": "Read-only"
@@ -1349,6 +1350,7 @@
       "date": "Date",
       "start": "Start date",
       "end": "End date",
+      "entries-summary": "{count} entries",
       "error": "Unable to purge history",
       "filter-user": "User",
       "filter-message": "Word in message",
@@ -1530,6 +1532,7 @@
         "tr": "Türkçe"
       },
       "languages-section": "Languages",
+      "languages-summary": "{count} active out of {total}",
       "tracking": {
         "section": "Visit tracking",
         "intro": "Loads an analytics script on every page, public and admin alike. Leave the field empty to load nothing at all.",

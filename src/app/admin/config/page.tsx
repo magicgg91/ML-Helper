@@ -8,7 +8,7 @@ import {
 import { AdminLogsPurge } from "@/components/admin-logs-purge";
 import { PageHeader } from "@/components/admin-page-header";
 import { Pill } from "@/components/admin-pill";
-import { AdminSettingsSection } from "@/components/admin-settings-section";
+import { CollapsibleSection } from "@/components/admin-collapsible-section";
 import {
   AdminHighlightsPanel,
   type HighlightCandidate,
@@ -42,9 +42,14 @@ export default async function ConfigAdminPage() {
   // `admin` keeps the rest of the tab; showing them a field whose save is
   // refused would only be a trap.
   const canConfigureScripts = can(session.user.role, "configuration.scripts");
-  const [t, state, tracking, guides, active, highlights, adminLocale] =
+  // Bloc 136 : demandé avant le reste, parce que le compte du journal ne se
+  // lit que pour qui a le droit de le purger — et que la section n'existe
+  // pas sans ce droit.
+  const canPurge = can(session.user.role, "logs.purge");
+  const [t, logs, state, tracking, guides, active, highlights, adminLocale] =
     await Promise.all([
       getTranslations("admin.config"),
+      getTranslations("admin.logs"),
       getLocaleActiveState(),
       getTrackingSettings(),
       // Bloc 119: how many guides are written in each language — the column
@@ -60,6 +65,8 @@ export default async function ConfigAdminPage() {
       getHomeHighlights(),
       getLocale(),
     ]);
+  // Le journal n'est compté que si la carte s'affiche.
+  const loggedEntries = canPurge ? await prisma.auditLog.count() : 0;
   // Bloc 90/B+D: every launched language, the always-active EN/FR base first,
   // each with its public visibility and whether it is locked.
   //
@@ -115,58 +122,86 @@ export default async function ConfigAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
-      <AdminSettingsSection
+      {/* Bloc 136 : les trois sections se replient, et l'identifiant de
+          chacune est son ancre — /admin/config#langues ouvre les langues et
+          les amène à l'écran. */}
+      <CollapsibleSection
+        id="mis-en-avant"
         title={t("highlights.section")}
         description={t("highlights.intro")}
-        actions={
-          <span>
-            <Pill tone={highlights?.length ? "ok" : "neutral"}>
-              {t("highlights.count", {
-                count: highlights?.length ?? 0,
-                max: maxHomeHighlights,
-              })}
-            </Pill>
-          </span>
+        summary={
+          <Pill tone={highlights?.length ? "ok" : "neutral"}>
+            {t("highlights.count", {
+              count: highlights?.length ?? 0,
+              max: maxHomeHighlights,
+            })}
+          </Pill>
         }
       >
         {/* `undefined` (rien d'enregistré) et `[]` (panneau masqué exprès)
             arrivent distincts : le panneau les affiche différemment. */}
         <AdminHighlightsPanel candidates={candidates} initial={highlights} />
-      </AdminSettingsSection>
-      <AdminSettingsSection
+      </CollapsibleSection>
+      <CollapsibleSection
+        id="langues"
         title={t("languages-section")}
         description={t("intro")}
+        summary={
+          <Pill tone="neutral">
+            {t("languages-summary", {
+              count: rows.filter((row) => row.active).length,
+              total: rows.length,
+            })}
+          </Pill>
+        }
       >
         <AdminLanguagesPanel rows={rows} />
-      </AdminSettingsSection>
+      </CollapsibleSection>
       {canConfigureScripts && (
-        <AdminSettingsSection
+        <CollapsibleSection
+          id="suivi-visites"
           title={t("tracking.section")}
           description={t("tracking.intro")}
-          actions={
-            <span>
-              <Pill tone={tracking.url ? "ok" : "neutral"}>
-                {t(
-                  tracking.url
-                    ? "tracking.script-active"
-                    : "tracking.script-inactive",
-                )}
-              </Pill>
-            </span>
+          summary={
+            <Pill tone={tracking.url ? "ok" : "neutral"}>
+              {t(
+                tracking.url
+                  ? "tracking.script-active"
+                  : "tracking.script-inactive",
+              )}
+            </Pill>
           }
         >
           <TrackingSettingsPanel
             url={tracking.url ?? ""}
             websiteId={tracking.websiteId ?? ""}
           />
-        </AdminSettingsSection>
+        </CollapsibleSection>
       )}
       {/* Bloc 131/E : la purge du journal, venue de la page Historique. Elle
           y était la seule action destructive au bas d'une page qu'on ouvre
           pour *chercher* une entrée, et rien ne sépare mal comme la
           proximité. Elle finit ici, en dernier, avec la même garde
-          `logs.purge` et le même composant : seul l'endroit change. */}
-      {can(session.user.role, "logs.purge") && <AdminLogsPurge />}
+          `logs.purge`.
+
+          Bloc 136 : repliable comme les autres, en ton `danger`, et résumée
+          par la taille du journal — ce qu'on veut savoir avant d'en
+          supprimer une tranche. */}
+      {canPurge && (
+        <CollapsibleSection
+          id="purge-journal"
+          title={logs("purge-title")}
+          description={logs("purge-description")}
+          tone="danger"
+          summary={
+            <Pill tone="neutral">
+              {logs("entries-summary", { count: loggedEntries })}
+            </Pill>
+          }
+        >
+          <AdminLogsPurge />
+        </CollapsibleSection>
+      )}
     </div>
   );
 }

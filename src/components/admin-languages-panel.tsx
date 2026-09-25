@@ -1,6 +1,7 @@
 "use client";
 
 import { LockIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { DataTable, type AdminTableColumn } from "./admin-data-table";
@@ -37,6 +38,7 @@ export function AdminLanguagesPanel({ rows }: { rows: LanguageRow[] }) {
     t.has(`languages.${locale}`)
       ? t(`languages.${locale}`)
       : locale.toUpperCase();
+  const router = useRouter();
   const [languages, setLanguages] = useState(rows);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState<string>();
@@ -65,6 +67,14 @@ export function AdminLanguagesPanel({ rows }: { rows: LanguageRow[] }) {
           state: t(next ? "active" : "inactive").toLocaleLowerCase(),
         }),
       );
+      /**
+       * Revue Codex (PR #156) : le tableau se met à jour tout seul, mais le
+       * résumé de la section — « n actives sur 5 » — est calculé sur le
+       * serveur, et resterait sur son ancien compte jusqu'au prochain
+       * chargement. On redemande donc l'écran, comme la purge du journal le
+       * fait déjà après coup.
+       */
+      router.refresh();
     } catch {
       setMessage(t("server-error"));
     } finally {

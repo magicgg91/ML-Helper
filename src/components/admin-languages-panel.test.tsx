@@ -10,6 +10,11 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminLanguagesPanel, type LanguageRow } from "./admin-languages-panel";
 
+// Bloc 136 : le panneau redemande l'écran après un changement, pour que le
+// résumé de la section — calculé sur le serveur — suive.
+const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+
 afterEach(cleanup);
 
 const messages = {
@@ -119,5 +124,32 @@ describe("Bloc 119: the language table", () => {
       await screen.findByText("Échec de l’enregistrement (HTTP 403)."),
     ).toBeInTheDocument();
     expect(control).toHaveAttribute("aria-checked", "true");
+  });
+
+  /**
+   * Bloc 136, revue Codex (PR #156) : le résumé « n actives sur 5 » de la
+   * section repliable est calculé sur le serveur. Sans cette demande, il
+   * restait sur son ancien compte jusqu'au prochain chargement complet —
+   * c'est-à-dire qu'une section repliée mentait sur son état.
+   */
+  it("redemande l'écran après un changement accepté", async () => {
+    refresh.mockClear();
+    renderPanel();
+    fireEvent.click(screen.getByTestId("locale-toggle-de"));
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+  });
+
+  it("ne le redemande pas quand le serveur refuse", async () => {
+    refresh.mockClear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 403 }),
+    );
+    renderPanel();
+    fireEvent.click(screen.getByTestId("locale-toggle-de"));
+    expect(
+      await screen.findByText("Échec de l’enregistrement (HTTP 403)."),
+    ).toBeInTheDocument();
+    expect(refresh).not.toHaveBeenCalled();
   });
 });

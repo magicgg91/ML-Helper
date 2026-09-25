@@ -2937,6 +2937,26 @@ async function b90Login(page: Page, username: string, password: string) {
   await expect(page).toHaveURL(/\/admin$/);
 }
 
+/**
+ * Bloc 136 : les sections de l'écran Configuration s'ouvrent repliées, et
+ * leur contenu est masqué tant qu'elles le restent. Toute sonde qui lit une
+ * langue, un interrupteur ou le champ de suivi passe donc par ici — sans
+ * quoi elle cherche un élément retiré de l'arbre d'accessibilité.
+ *
+ * Les titres sont donnés dans les deux langues de l'administration : une
+ * partie de ce fichier bascule l'interface en anglais.
+ */
+const B136_LANGUAGES = /^(Langues|Languages)$/;
+const B136_TRACKING = /^(Suivi des visites|Visit tracking)$/;
+const B136_PURGE = /^(Purge du journal|Purge the log)$/;
+
+async function b136OpenSection(page: Page, title: RegExp) {
+  const header = page.getByRole("button", { name: title });
+  if ((await header.getAttribute("aria-expanded")) === "false")
+    await header.click();
+  await expect(header).toHaveAttribute("aria-expanded", "true");
+}
+
 async function b90SetLocaleActive(page: Page, locale: string, active: boolean) {
   const response = await page.request.patch("/api/admin/config/locales", {
     data: { locale, active },
@@ -2958,6 +2978,7 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   await expect(root.getByRole("link", { name: "Configuration" })).toBeVisible();
   const configResponse = await root.goto("/admin/config");
   expect(configResponse?.status()).toBe(200);
+  await b136OpenSection(root, B136_LANGUAGES);
   // Bloc 119: the language cell now carries the code beside the name, and the
   // visibility switch on the same row names the language too — hence the exact
   // name rather than a substring that matches both cells.
@@ -3100,6 +3121,7 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   // The admin fields show what was stored, and clearing the URL stops the
   // loading.
   await page.goto("/admin/config");
+  await b136OpenSection(page, B136_TRACKING);
   await expect(page.getByLabel("URL du script de suivi")).toHaveValue(
     trackingUrl,
   );
@@ -3133,6 +3155,7 @@ test("Bloc 100/A+B: a tracking URL set in the admin loads everywhere, under the 
   // And the field is not even shown to them on the Configuration tab.
   await adminPage.goto("/admin/config");
   await expect(adminPage.getByLabel("URL du script de suivi")).toHaveCount(0);
+  await b136OpenSection(adminPage, B136_LANGUAGES);
   // Bloc 119: exact — the visibility switch on the same row names the
   // language too (see the Bloc 90/A test for the same reason).
   await expect(
@@ -3157,6 +3180,7 @@ test("Bloc 90/D: English and French cannot be deactivated", async ({
   await b90EnsureRoot(page);
   await b90Login(page, B90_ROOT.username, B90_ROOT.password);
   await page.goto("/admin/config");
+  await b136OpenSection(page, B136_LANGUAGES);
 
   for (const locale of ["en", "fr"]) {
     // Bloc 119: the base languages show a padlock and the words "Toujours
@@ -3193,6 +3217,7 @@ test("Bloc 90/B+C+E: deactivating DE hides it publicly and redirects to EN", asy
 
   // Bloc 90/B: persisted — a reload of the tab shows DE inactive.
   await admin.goto("/admin/config");
+  await b136OpenSection(admin, B136_LANGUAGES);
   const deRow = admin.getByRole("row").filter({ hasText: "Deutsch" });
   await expect(deRow).toContainText(/Inactive|Disabled/);
 
@@ -3583,6 +3608,7 @@ test("every admin screen stays English for a reader browsing publicly in German"
       contentLanguages.getByRole("tab", { name: new RegExp(language) }),
     ).toHaveCount(1);
   await page.goto("/admin/config");
+  await b136OpenSection(page, B136_LANGUAGES);
   for (const [locale, language] of [
     ["de", "Deutsch"],
     ["es", "Español"],
@@ -4255,4 +4281,67 @@ test("a tool and a reference carry a description in several languages", async ({
   // none written — the state the count used to call "aucune langue".
   const eventsRow = page.getByRole("row", { name: /Événements/ });
   await expect(eventsRow.getByTitle(/ : description à écrire$/)).toHaveCount(5);
+});
+
+/**
+ * Bloc 136 : l'écran Configuration s'ouvre replié.
+ *
+ * Les tests de composant tiennent déjà la mécanique ; ce qui se vérifie ici
+ * et nulle part ailleurs, c'est que l'écran réel s'ouvre bien ainsi, et que
+ * les contrôles des trois panneaux sont atteignables sans souris une fois la
+ * section ouverte — ce que les sondes de ce fichier, écrites du temps où
+ * tout était déplié, ne disaient plus.
+ */
+test("Bloc 136: Configuration opens folded, and an anchor opens one section", async ({
+  browser,
+}) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await b90EnsureRoot(page);
+  await b90Login(page, B90_ROOT.username, B90_ROOT.password);
+  await page.goto("/admin/config");
+
+  for (const title of [
+    /^(Mis en avant|Homepage highlights)/,
+    B136_LANGUAGES,
+    B136_TRACKING,
+    B136_PURGE,
+  ])
+    await expect(page.getByRole("button", { name: title })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  await expect(page.getByTestId("locale-toggle-de")).toBeHidden();
+  // Y compris l'action destructive : le bouton de purge n'est pas atteignable
+  // tant qu'on n'a pas ouvert sa section.
+  const purge = page.getByRole("button", {
+    name: /^(Purger la période|Purge the period)/,
+  });
+  await expect(purge).toHaveCount(0);
+  await b136OpenSection(page, B136_PURGE);
+  await expect(purge).toBeVisible();
+  // Ce qui remplace le contenu : l'état de la section, lisible sans ouvrir.
+  await expect(page.getByText(/actives? sur 5|active out of 5/)).toBeVisible();
+
+  // L'ancre ouvre celle qu'elle vise, et elle seule.
+  await page.goto("/admin/config#suivi-visites");
+  await expect(
+    page.getByRole("button", { name: B136_TRACKING }),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    page.getByLabel(/URL du script de suivi|Tracking script URL/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: B136_LANGUAGES }),
+  ).toHaveAttribute("aria-expanded", "false");
+
+  // Le clavier seul suffit : l'en-tête est un bouton, donc Entrée et Espace
+  // sont ceux du navigateur.
+  await page.getByRole("button", { name: B136_LANGUAGES }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("locale-toggle-de")).toBeVisible();
+  await page.keyboard.press(" ");
+  await expect(page.getByTestId("locale-toggle-de")).toBeHidden();
+
+  await context.close();
 });
