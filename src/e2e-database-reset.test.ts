@@ -82,6 +82,91 @@ describe("Bloc 121: the per-attempt database reset", () => {
     }
   });
 
+  /**
+   * Ce que le balayage apporte en plus des listes qu'il remplace : une table
+   * qu'aucune liste ne connaît s'en va aussi. L'ancienne remise à zéro
+   * retirait dix tables nommées et laissait tout le reste en place, pour
+   * toujours.
+   */
+  it("emporte aussi ce qu'aucune liste ne connaissait", async () => {
+    await resetE2eDatabase(url);
+    const intrus = client();
+    try {
+      await intrus.$executeRawUnsafe(
+        'CREATE TABLE "table_d_un_autre_temps" ("id" TEXT)',
+      );
+      await intrus.$executeRawUnsafe(
+        'CREATE INDEX "index_d_un_autre_temps" ON "table_d_un_autre_temps"("id")',
+      );
+    } finally {
+      await intrus.$disconnect();
+    }
+
+    await resetE2eDatabase(url);
+
+    const apres = client();
+    try {
+      const restants = await apres.$queryRawUnsafe<{ name: string }[]>(
+        "SELECT name FROM sqlite_master WHERE name LIKE '%d_un_autre_temps'",
+      );
+      expect(restants).toEqual([]);
+    } finally {
+      await apres.$disconnect();
+    }
+  });
+
+  /**
+   * Et quand le balayage ne suffit pas, il le dit.
+   *
+   * Deux tables qui se référencent l'une l'autre, chacune avec une ligne :
+   * SQLite refuse de retirer l'une tant que l'autre est là, dans les deux
+   * sens. La remise à zéro s'arrête alors plutôt que de repartir sur une
+   * base à moitié détruite — et nomme ce qui a survécu, ce qui vaut mieux
+   * qu'un « already exists » vingt lignes plus loin, le message qui a coûté
+   * deux échecs de CI inexpliqués.
+   */
+  it("refuse de continuer, en nommant ce qui a survécu", async () => {
+    await resetE2eDatabase(url);
+    const noeud = client();
+    try {
+      await noeud.$executeRawUnsafe(
+        'CREATE TABLE "poule" ("id" TEXT PRIMARY KEY, "oeuf_id" TEXT REFERENCES "oeuf"("id"))',
+      );
+      await noeud.$executeRawUnsafe(
+        'CREATE TABLE "oeuf" ("id" TEXT PRIMARY KEY, "poule_id" TEXT REFERENCES "poule"("id"))',
+      );
+      // Les clés étrangères de SQLite sont vérifiées à l'insertion : on pose
+      // les deux lignes sans lien, puis on les relie.
+      await noeud.$executeRawUnsafe(
+        'INSERT INTO "poule" ("id", "oeuf_id") VALUES (\'p\', NULL)',
+      );
+      await noeud.$executeRawUnsafe(
+        'INSERT INTO "oeuf" ("id", "poule_id") VALUES (\'o\', \'p\')',
+      );
+      await noeud.$executeRawUnsafe(
+        'UPDATE "poule" SET "oeuf_id" = \'o\' WHERE "id" = \'p\'',
+      );
+    } finally {
+      await noeud.$disconnect();
+    }
+
+    await expect(resetE2eDatabase(url)).rejects.toThrow(/poule|oeuf/);
+
+    // On dénoue, sinon la base reste inutilisable pour les tests suivants —
+    // ce que la remise à zéro vient justement de refuser de masquer. Sans
+    // les lignes, les deux tables redeviennent retirables.
+    const denoue = client();
+    try {
+      // Couper les deux liens suffit : ce sont les lignes qui référencent qui
+      // empêchent de retirer les tables, pas les tables elles-mêmes.
+      await denoue.$executeRawUnsafe('UPDATE "poule" SET "oeuf_id" = NULL');
+      await denoue.$executeRawUnsafe('UPDATE "oeuf" SET "poule_id" = NULL');
+    } finally {
+      await denoue.$disconnect();
+    }
+    await expect(resetE2eDatabase(url)).resolves.toBeUndefined();
+  });
+
   it("leaves nothing of a previous attempt behind", async () => {
     await resetE2eDatabase(url);
     const dirty = client();
