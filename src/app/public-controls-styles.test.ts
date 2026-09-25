@@ -251,12 +251,12 @@ describe("Bloc 132 §8 — le bandeau de sélection", () => {
   });
 
   /**
-   * Sur mobile le cadre et la bande ne disparaissent pas : ce sont les
-   * onglets qui défilent à l'intérieur. Les trois rayons rétrécissent
-   * ensemble — 14, 10 et 8 px — pour que l'emboîtement reste lisible à
-   * cette taille.
+   * Sur mobile le cadre et la bande ne disparaissent pas : les trois rayons
+   * rétrécissent ensemble — 14, 10 et 8 px — pour que l'emboîtement reste
+   * lisible à cette taille. Bloc 133 §B : les onglets s'y rangent en deux
+   * colonnes au lieu d'y défiler.
    */
-  it("resserre les trois rayons et fait défiler la bande sur mobile", () => {
+  it("resserre les trois rayons sur mobile", () => {
     const narrow = css.slice(
       css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
@@ -266,10 +266,43 @@ describe("Bloc 132 §8 — le bandeau de sélection", () => {
     expect(narrow).toMatch(
       /\.selection-banner-band {[\s\S]*?border-radius: 0\.625rem;/,
     );
-    expect(narrow).toMatch(/\.selection-tab {\n\s*border-radius: 0\.5rem;/);
+    expect(narrow).toMatch(/\.selection-tab {[\s\S]*?border-radius: 0\.5rem;/);
+  });
+
+  /**
+   * Bloc 133 §B/§C : l'onglet qui porte une pastille se resserre encore
+   * sous 375 px, où « Compétences » et son chiffre ne tiennent plus dans
+   * une demi-largeur. Mesuré au navigateur : 82 px voulus contre 81 à
+   * 375 px et 77 à 360 px, d'où deux paliers plutôt qu'un.
+   */
+  it("resserre l'onglet compté sur les écrans les plus étroits", () => {
+    const narrow = css.slice(css.indexOf("@media (max-width: 23.4375rem) {"));
     expect(narrow).toMatch(
-      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+      /\.selection-tab-counted {\n\s*padding: 0\.375rem 0\.375rem;/,
     );
+    expect(narrow).toMatch(
+      /\.selection-tab-counted \.selection-tab-title {\n\s*gap: 0\.25rem;/,
+    );
+    const tiny = css.slice(css.indexOf("@media (max-width: 22.5rem) {"));
+    expect(tiny).toMatch(
+      /\.selection-tab-counted \.selection-tab-thumb {\n\s*width: 1\.25rem;/,
+    );
+    // Les deux paliers viennent après le bloc de 48 rem qu'ils corrigent.
+    expect(css.indexOf("@media (max-width: 23.4375rem) {")).toBeGreaterThan(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+  });
+
+  // Le chiffre ne se coupe jamais : c'est le nom qui cède, un nom abrégé se
+  // devine, un chiffre tronqué ne veut rien dire.
+  it("garde la pastille entière et abrège le nom", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+    expect(narrow).toMatch(
+      /\.selection-tab-counted \.selection-tab-label {[\s\S]*?text-overflow: ellipsis;/,
+    );
+    expect(rule(".tool-count-badge")).toMatch(/flex: none/);
   });
 
   /**

@@ -6837,33 +6837,94 @@ span.tool-share-dot.tool-share-stuff {
   background: transparent;
   color: var(--accent);
 }
-/* §8 : sur mobile, le cadre et la bande ne changent pas — ce sont les
-   onglets qui défilent à l'intérieur de la bande, plutôt que de se replier
-   sur plusieurs rangées ou de rétrécir jusqu'à l'illisible. La rangée des
-   outils, elle, passe en 2×2 : quatre onglets de texte tiennent, quatre
-   colonnes de texte non. */
+/* Bloc 133 §B : sur mobile, les deux bandeaux passent en grille de deux
+   colonnes.
+
+   Le §8 les faisait défiler horizontalement dans la bande. À l'usage, une
+   partie des choix reste simplement hors de l'écran : rien ne dit qu'il y
+   en a d'autres à droite, et sur la page d'un référentiel, quatre des sept
+   entrées ne se voyaient pas. Deux colonnes montrent tout d'un coup —
+   quatre catégories en 2×2, sept référentiels sur quatre rangées, la
+   dernière case vide.
+
+   La rangée des outils de la catégorie suit la même règle. */
 @media (max-width: 48rem) {
   .selection-banner {
     padding: 0.5rem;
     border-radius: 0.875rem;
   }
   .selection-banner-band {
-    grid-auto-columns: 7.5rem;
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    overflow-x: auto;
+    /* Deux colonnes quel que soit --selection-columns : le nombre du
+       desktop (4 ou 7) n'a plus cours ici. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Toutes les rangées à la hauteur de la plus haute : un libellé sur
+       deux lignes ne doit pas faire un onglet plus grand que ses voisins.
+       Les onglets s'étirent ensuite dans leur case (`stretch` par défaut),
+       donc ils ont tous exactement la même taille. */
+    grid-auto-rows: 1fr;
+    gap: 0.375rem;
+    padding: 0.3125rem;
     border-radius: 0.625rem;
-    /* Le défilement s'arrête sur un onglet entier, jamais sur une moitié. */
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
   }
   .selection-tab {
+    min-height: 2.75rem;
+    padding: 0.375rem 0.625rem;
     border-radius: 0.5rem;
-    scroll-snap-align: start;
+  }
+  .selection-tab-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .selection-tab-label {
+    font-size: 0.875rem;
   }
   .selection-banner ~ main .calculator-tabs {
     grid-auto-flow: row;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Bloc 133 §C : l'onglet qui porte une pastille se resserre, pour que le
+     nom et son chiffre tiennent sur une ligne dans une demi-largeur
+     d'écran. Le plus long, « Compétences », est ce qui fixe ces valeurs. */
+  .selection-tab-counted {
+    gap: 0.375rem;
+    padding: 0.375rem 0.5rem;
+  }
+  .selection-tab-counted .selection-tab-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .selection-tab-counted .selection-tab-title {
+    gap: 0.375rem;
+  }
+  .selection-tab-counted .selection-tab-label {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    /* La pastille garde sa place, c'est le nom qui cède — un chiffre coupé
+       ne veut rien dire, un nom abrégé se devine. */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+/* Bloc 133 §C : sous 375 px, « Compétences » et sa pastille ne tiennent
+   plus dans une demi-largeur. Mesuré : le nom veut 82 px, il en avait 81 à
+   375 px et 77 à 360 px. Le rembourrage et l'écart au nom rendent 6 px, la
+   vignette réduite 4 de plus — le §C prévoyait la seconde, elle ne
+   suffisait pas seule.
+
+   Ces deux blocs sont écrits après celui de 48 rem : à spécificité égale
+   c'est la dernière règle du fichier qui gagne, media query ou pas. */
+@media (max-width: 23.4375rem) {
+  .selection-tab-counted {
+    padding: 0.375rem 0.375rem;
+  }
+  .selection-tab-counted .selection-tab-title {
+    gap: 0.25rem;
+  }
+}
+@media (max-width: 22.5rem) {
+  .selection-tab-counted .selection-tab-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }
 /* §3.8 : « Aller plus loin ». */

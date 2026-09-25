@@ -249,25 +249,57 @@ describe("public responsive styles", () => {
   });
 
   /**
-   * Bloc 132 §8 : les catégories ne se replient plus en 2×2 sur mobile —
-   * elles défilent horizontalement dans la bande, qui garde sa forme. Ce
-   * sont les onglets des outils de la catégorie qui passent en 2×2.
+   * Bloc 133 §B : l'inverse de ce que le Bloc 132 §8 avait posé. Les
+   * onglets défilaient horizontalement dans la bande ; à l'usage, une
+   * partie des choix restait hors de l'écran, sans rien pour le dire — sur
+   * la page d'un référentiel, quatre entrées sur sept. Deux colonnes les
+   * montrent toutes.
    */
-  it("fait défiler les catégories dans la bande sur mobile, sans replier le bandeau", () => {
+  it("range les deux bandeaux en deux colonnes sur mobile, sans défilement", () => {
     const narrow = css.slice(
       css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
     expect(narrow).toMatch(
-      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+      /\.selection-banner-band {[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
     );
-    // Des colonnes de largeur fixe, sinon sept onglets se partagent la
-    // largeur de l'écran et il n'y a plus rien à faire défiler.
-    expect(narrow).toMatch(
-      /\.selection-banner-band {[\s\S]*?grid-auto-columns: 7\.5rem;/,
+    // Ce qui faisait défiler : plus rien n'en reste.
+    const band = narrow.slice(
+      narrow.indexOf(".selection-banner-band {"),
+      narrow.indexOf("}", narrow.indexOf(".selection-banner-band {")),
     );
+    for (const dead of [
+      "overflow-x",
+      "grid-auto-columns",
+      "grid-auto-flow",
+      "scroll-snap-type",
+    ])
+      expect(band, dead).not.toContain(dead);
+    // La rangée des outils de la catégorie suit la même règle.
     expect(narrow).toMatch(
       /\.calculator-tabs {\n\s*grid-auto-flow: row;\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
     );
+  });
+
+  /**
+   * Tous les onglets d'un bandeau ont la même taille, contenu centré. Sans
+   * `grid-auto-rows: 1fr`, une rangée dont le libellé passe sur deux lignes
+   * est plus haute que les autres — le bandeau des référentiels en a une,
+   * et ses sept onglets n'étaient pas de la même taille.
+   */
+  it("donne la même taille à tous les onglets, contenu centré", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?grid-auto-rows: 1fr;/,
+    );
+    // Le centrage de la règle de base survit : rien ne le remplace ici.
+    const tab = narrow.slice(
+      narrow.indexOf("  .selection-tab {"),
+      narrow.indexOf("}", narrow.indexOf("  .selection-tab {")),
+    );
+    expect(tab).not.toContain("justify-content");
+    expect(tab).not.toContain("text-align");
   });
 
   it("offsets the expanded mobile navigation below the header", () => {
