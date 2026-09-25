@@ -6910,9 +6910,14 @@ span.tool-share-dot.tool-share-stuff {
     border-radius: 0.625rem;
   }
   .selection-tab {
+    /* Contenu calé à gauche : centré, chaque onglet plaçait son libellé à
+       un endroit différent selon sa longueur, et la colonne n'avait plus de
+       bord commun à suivre. Les onglets, eux, gardent la même taille. */
+    justify-content: flex-start;
     min-height: 2.75rem;
     padding: 0.375rem 0.625rem;
     border-radius: 0.5rem;
+    text-align: left;
   }
   .selection-tab-thumb {
     width: 1.75rem;

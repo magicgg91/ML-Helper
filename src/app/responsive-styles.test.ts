@@ -281,25 +281,30 @@ describe("public responsive styles", () => {
   });
 
   /**
-   * Tous les onglets d'un bandeau ont la même taille, contenu centré. Sans
-   * `grid-auto-rows: 1fr`, une rangée dont le libellé passe sur deux lignes
-   * est plus haute que les autres — le bandeau des référentiels en a une,
-   * et ses sept onglets n'étaient pas de la même taille.
+   * Tous les onglets d'un bandeau ont la même taille, contenu calé à
+   * gauche.
+   *
+   * Sans `grid-auto-rows: 1fr`, une rangée dont le libellé passe sur deux
+   * lignes est plus haute que les autres — le bandeau des référentiels en a
+   * une, et ses sept onglets n'étaient pas de la même taille. Et centré,
+   * chaque onglet plaçait son libellé à un endroit différent selon sa
+   * longueur : la colonne n'avait plus de bord commun à suivre. Le desktop,
+   * lui, garde ses onglets centrés — il n'a qu'une rangée.
    */
-  it("donne la même taille à tous les onglets, contenu centré", () => {
+  it("donne la même taille à tous les onglets, contenu à gauche", () => {
     const narrow = css.slice(
       css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
     expect(narrow).toMatch(
       /\.selection-banner-band {[\s\S]*?grid-auto-rows: 1fr;/,
     );
-    // Le centrage de la règle de base survit : rien ne le remplace ici.
-    const tab = narrow.slice(
-      narrow.indexOf("  .selection-tab {"),
-      narrow.indexOf("}", narrow.indexOf("  .selection-tab {")),
+    expect(narrow).toMatch(
+      /\.selection-tab {[\s\S]*?justify-content: flex-start;[\s\S]*?text-align: left;/,
     );
-    expect(tab).not.toContain("justify-content");
-    expect(tab).not.toContain("text-align");
+    // Le desktop reste centré : il n'a qu'une rangée.
+    expect(css.match(/\n\.selection-tab {([\s\S]*?)\n}/)?.[1]).toMatch(
+      /justify-content: center/,
+    );
   });
 
   it("offsets the expanded mobile navigation below the header", () => {
