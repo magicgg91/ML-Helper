@@ -8,7 +8,7 @@ import {
 import { AdminLogsPurge } from "@/components/admin-logs-purge";
 import { PageHeader } from "@/components/admin-page-header";
 import { Pill } from "@/components/admin-pill";
-import { AdminSettingsSection } from "@/components/admin-settings-section";
+import { CollapsibleSection } from "@/components/admin-collapsible-section";
 import {
   AdminHighlightsPanel,
   type HighlightCandidate,
@@ -115,51 +115,61 @@ export default async function ConfigAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
-      <AdminSettingsSection
+      {/* Bloc 136 : les trois sections se replient, et l'identifiant de
+          chacune est son ancre — /admin/config#langues ouvre les langues et
+          les amène à l'écran. */}
+      <CollapsibleSection
+        id="mis-en-avant"
         title={t("highlights.section")}
         description={t("highlights.intro")}
-        actions={
-          <span>
-            <Pill tone={highlights?.length ? "ok" : "neutral"}>
-              {t("highlights.count", {
-                count: highlights?.length ?? 0,
-                max: maxHomeHighlights,
-              })}
-            </Pill>
-          </span>
+        summary={
+          <Pill tone={highlights?.length ? "ok" : "neutral"}>
+            {t("highlights.count", {
+              count: highlights?.length ?? 0,
+              max: maxHomeHighlights,
+            })}
+          </Pill>
         }
       >
         {/* `undefined` (rien d'enregistré) et `[]` (panneau masqué exprès)
             arrivent distincts : le panneau les affiche différemment. */}
         <AdminHighlightsPanel candidates={candidates} initial={highlights} />
-      </AdminSettingsSection>
-      <AdminSettingsSection
+      </CollapsibleSection>
+      <CollapsibleSection
+        id="langues"
         title={t("languages-section")}
         description={t("intro")}
+        summary={
+          <Pill tone="neutral">
+            {t("languages-summary", {
+              count: rows.filter((row) => row.active).length,
+              total: rows.length,
+            })}
+          </Pill>
+        }
       >
         <AdminLanguagesPanel rows={rows} />
-      </AdminSettingsSection>
+      </CollapsibleSection>
       {canConfigureScripts && (
-        <AdminSettingsSection
+        <CollapsibleSection
+          id="suivi-visites"
           title={t("tracking.section")}
           description={t("tracking.intro")}
-          actions={
-            <span>
-              <Pill tone={tracking.url ? "ok" : "neutral"}>
-                {t(
-                  tracking.url
-                    ? "tracking.script-active"
-                    : "tracking.script-inactive",
-                )}
-              </Pill>
-            </span>
+          summary={
+            <Pill tone={tracking.url ? "ok" : "neutral"}>
+              {t(
+                tracking.url
+                  ? "tracking.script-active"
+                  : "tracking.script-inactive",
+              )}
+            </Pill>
           }
         >
           <TrackingSettingsPanel
             url={tracking.url ?? ""}
             websiteId={tracking.websiteId ?? ""}
           />
-        </AdminSettingsSection>
+        </CollapsibleSection>
       )}
       {/* Bloc 131/E : la purge du journal, venue de la page Historique. Elle
           y était la seule action destructive au bas d'une page qu'on ouvre

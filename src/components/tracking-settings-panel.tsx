@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminButton } from "./admin-button";
+import { useSectionDirty } from "./admin-collapsible-section";
+import { useUnsavedWarning } from "./use-unsaved-warning";
 
 // Bloc 100/A: the visit-tracking script URL. Deliberately generic — the field
 // takes any script URL, and nothing in the site knows which analytics tool is
@@ -19,10 +21,27 @@ export function TrackingSettingsPanel({
   websiteId: string;
 }) {
   const t = useTranslations("admin.config.tracking");
+  const editor = useTranslations("admin.editor");
   const [value, setValue] = useState(url);
   const [id, setId] = useState(websiteId);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+
+  /**
+   * Bloc 136 : ce que ce panneau tient et que le serveur n'a pas encore.
+   *
+   * Comparé à ce qui est enregistré, et non aux valeurs reçues au chargement
+   * : la route normalise ce qu'elle stocke (Bloc 100/A), et le panneau adopte
+   * sa réponse. Sans cette copie, une URL réécrite à l'enregistrement
+   * laisserait le panneau « modifié » pour toujours.
+   *
+   * Deux usages, la même mesure — la pastille quand la section est repliée,
+   * et la question posée en quittant la page.
+   */
+  const [saved, setSaved] = useState({ url, websiteId });
+  const dirty = value !== saved.url || id !== saved.websiteId;
+  useSectionDirty(dirty);
+  useUnsavedWarning(dirty, editor("leave-warning"));
 
   async function save() {
     setSaving(true);
@@ -51,13 +70,14 @@ export function TrackingSettingsPanel({
         setMessage(t("save-error", { status: response.status }));
         return;
       }
-      const saved = (await response.json()) as {
+      const stored = (await response.json()) as {
         url: string;
         websiteId: string;
       };
-      setValue(saved.url);
-      setId(saved.websiteId);
-      setMessage(saved.url ? t("saved") : t("cleared"));
+      setValue(stored.url);
+      setId(stored.websiteId);
+      setSaved(stored);
+      setMessage(stored.url ? t("saved") : t("cleared"));
     } catch {
       setMessage(t("server-error"));
     } finally {

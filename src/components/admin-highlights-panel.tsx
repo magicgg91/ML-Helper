@@ -4,6 +4,7 @@ import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { AdminButton } from "./admin-button";
+import { useSectionDirty } from "./admin-collapsible-section";
 import { Pill } from "./admin-pill";
 import { RowActions } from "./admin-row-actions";
 import { useSaveStatus } from "./use-save-status";
@@ -48,6 +49,13 @@ export function AdminHighlightsPanel({
 }) {
   const t = useTranslations("admin.config.highlights");
   const [selected, setSelected] = useState<HomeHighlight[]>(initial ?? []);
+  /**
+   * Bloc 136 : la sélection telle qu'elle est enregistrée, pour savoir si
+   * celle affichée s'en écarte. Comparée en JSON parce que l'ordre compte
+   * autant que le contenu — remonter une entrée est une modification.
+   */
+  const [saved, setSaved] = useState<HomeHighlight[]>(initial ?? []);
+  useSectionDirty(JSON.stringify(selected) !== JSON.stringify(saved));
   // Vrai dès qu'une sélection est enregistrée — au chargement, ou après un
   // enregistrement réussi dans cet écran.
   const [configured, setConfigured] = useState(initial !== undefined);
@@ -85,7 +93,10 @@ export function AdminHighlightsPanel({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ highlights: selected }),
       });
-      if (response.ok) setConfigured(true);
+      if (response.ok) {
+        setConfigured(true);
+        setSaved(selected);
+      }
       status.settle(response.ok, {
         success: t("saved"),
         error: t("save-error", { status: response.status }),

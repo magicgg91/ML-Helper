@@ -1191,6 +1191,7 @@
       "close": "Fermer",
       "confirm": "Confirmer",
       "hidden": "Masqué",
+      "modified": "Modifié",
       "more-actions": "Autres actions",
       "visible": "Visible",
       "read-only": "Lecture seule"
@@ -1530,6 +1531,7 @@
         "tr": "Türkçe"
       },
       "languages-section": "Langues",
+      "languages-summary": "{count} actives sur {total}",
       "tracking": {
         "section": "Suivi des visites",
         "intro": "Charge un script de mesure d'audience sur toutes les pages, publiques comme admin. Laisse le champ vide pour ne rien charger du tout.",

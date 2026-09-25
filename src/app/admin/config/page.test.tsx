@@ -1,4 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import fr from "../../../../messages/fr.json";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ConfigAdminPage from "./page";
 import type { LanguageRow } from "@/components/admin-languages-panel";
@@ -15,7 +17,13 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/site-settings", () => ({ getTrackingSettings: vi.fn() }));
 vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => key,
+  // Bloc 136 : les valeurs interpolées sont rendues à côté de la clé. Le
+  // résumé d'une section repliée est fait de ces valeurs — sans elles,
+  // « 4 actives sur 5 » se lirait « languages-summary », et un compte faux
+  // passerait.
+  getTranslations:
+    async () => (key: string, values?: Record<string, unknown>) =>
+      values ? `${key} ${JSON.stringify(values)}` : key,
   getLocale: async () => "fr",
 }));
 // Bloc 132 §4 : l'écran calcule aussi ce qu'on peut mettre en avant. Ces
@@ -88,7 +96,14 @@ async function renderPage({
     { locale: "es", active: false },
   ] as unknown as Awaited<ReturnType<typeof prisma.localeSetting.findMany>>);
   mockedTracking.mockResolvedValue({ url, websiteId: "" });
-  render(await ConfigAdminPage());
+  // Bloc 136 : l'en-tête des sections est un composant client — ses propres
+  // libellés (la pastille « Modifié ») passent par le fournisseur, là où le
+  // corps de la page lit `getTranslations`, doublé plus haut.
+  render(
+    <NextIntlClientProvider locale="fr" messages={fr}>
+      {await ConfigAdminPage()}
+    </NextIntlClientProvider>,
+  );
   return JSON.parse(
     screen.getByTestId("languages").textContent ?? "[]",
   ) as LanguageRow[];
@@ -224,5 +239,52 @@ describe("Bloc 131/E — la purge du journal, en Configuration", () => {
     const card = screen.getByTestId("purge");
     // Dernier enfant de la colonne de la page, après les trois réglages.
     expect(card.parentElement?.lastElementChild).toBe(card);
+  });
+});
+
+/**
+ * Bloc 136 : l'écran s'ouvre replié.
+ *
+ * Le Bloc 119 avait déplié ces sections pour de bon ; l'écran a grossi depuis
+ * (les mises en avant du Bloc 132 §4, la purge du Bloc 131/E) et la décision
+ * s'inverse. Ce que cette page doit garantir en plus du composant lui-même,
+ * c'est que chaque section dit juste ce qu'elle contient sans qu'on l'ouvre,
+ * et qu'elle porte l'ancre qui permet d'y envoyer quelqu'un.
+ */
+describe("Bloc 136 — Configuration repliée par défaut", () => {
+  it("ouvre les trois sections repliées", async () => {
+    await renderPage();
+    // Chacune nommée par son seul titre : c'est l'en-tête d'une section, pas
+    // la phrase « titre + description + résumé » mise bout à bout.
+    const headers = [
+      "highlights.section",
+      "languages-section",
+      "tracking.section",
+    ].map((title) => screen.getByRole("button", { name: title }));
+    expect(
+      headers.every(
+        (header) => header.getAttribute("aria-expanded") === "false",
+      ),
+    ).toBe(true);
+  });
+
+  it("compte les langues actives sans qu'on ouvre la section", async () => {
+    await renderPage();
+    // La doublure de `localeSetting` ne désactive que l'espagnol : quatre
+    // actives sur les cinq lancées.
+    const summary = screen.getByText(/^languages-summary/).textContent ?? "";
+    expect(JSON.parse(summary.replace("languages-summary ", ""))).toEqual({
+      count: 4,
+      total: 5,
+    });
+  });
+
+  it("porte l'ancre de chaque section", async () => {
+    await renderPage();
+    expect(
+      ["mis-en-avant", "langues", "suivi-visites"].map(
+        (id) => document.getElementById(id)?.tagName,
+      ),
+    ).toEqual(["SECTION", "SECTION", "SECTION"]);
   });
 });
