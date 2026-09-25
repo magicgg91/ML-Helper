@@ -826,7 +826,6 @@
       },
       "title": "My account",
       "menu": "{username}’s account",
-      "subtitle": "Your password and your two-factor authentication.",
       "password-hint": "12 characters minimum.",
       "confirm-password": "Confirm the new password",
       "password-mismatch": "The new password and its confirmation do not match."
@@ -845,7 +844,6 @@
       "users-summary": "{active} active / {total} total",
       "recent-actions": "Latest actions",
       "empty": "No action recorded.",
-      "subtitle": "The state of the site, and what is left to handle.",
       "all-visible": "All visible",
       "hidden-count": "{count, plural, =1 {# hidden} other {# hidden}}",
       "all-published": "All published",
@@ -897,7 +895,6 @@
       "status-saved": "Status saved.",
       "delete-forbidden": "Your role does not allow deleting this guide.",
       "deleted": "Guide permanently deleted.",
-      "subtitle": "The guides on the site, their translations and their status.",
       "search-label": "Search for a guide",
       "search-placeholder": "Guide title…",
       "filter-label": "Status",
@@ -912,7 +909,6 @@
       "byline": "{author} · created on {date}",
       "translation-edit": "Edit the {language} version of {title}",
       "translation-create": "Create the {language} version of {title}",
-      "legend": "Solid chip: version written. Dotted chip: translation to create.",
       "modify": "Edit",
       "more-actions": "More actions for {title}",
       "view-on-site": "View on the site",
@@ -943,7 +939,6 @@
       "enabled": "Reference table enabled.",
       "disabled": "Reference table disabled.",
       "no-results": "No reference table found.",
-      "subtitle": "The game's data tables, and the tool that reads each one.",
       "search-label": "Search for a reference table",
       "search-placeholder": "Reference table name…",
       "table-caption": "Site reference tables",
@@ -1024,7 +1019,6 @@
       "server-error": "Unable to reach the server. Try again later.",
       "edit": "Edit",
       "city-parameters": "Shared City parameters",
-      "subtitle": "The public tools, where their parameters come from, and their visibility.",
       "search-label": "Search for a tool",
       "search-placeholder": "Tool name…",
       "filter-label": "Category",
@@ -1042,7 +1036,6 @@
       "no-results": "No tool matches this search."
     },
     "ranking": {
-      "description": "Add, rename, reorder and activate leagues and divisions, then edit each one's bands. An entry may stay without bands until its data is confirmed.",
       "add": "Add range",
       "threshold": "Threshold (%)",
       "target": "Target league",
@@ -1065,6 +1058,8 @@
       "integer-error": "A whole number is required.",
       "empty": "No confirmed range.",
       "validation": "Fix the highlighted fields before saving.",
+      "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
+      "duplicate-error": "Two entries share the same identifier.",
       "entry-league": "Base league",
       "entry-no-league": "None",
       "entry-division": "Division",
@@ -1094,8 +1089,6 @@
       "band-name": "Band {row} of {entry}"
     },
     "references": {
-      "combat-description": "All 180 rows and every value are editable individually.",
-      "expedition-description": "Expedition equipment detail",
       "columns": {
         "set-name": "Set name",
         "family": "Family",
@@ -1161,7 +1154,6 @@
       "tier-row-label": "{field} of tier {row} of {event}",
       "secondary-row": "Metric",
       "row-destruction": "Dismantle",
-      "consumables-subtitle": "The shop's items, their description and their cost in sapphires.",
       "texts-in": "Text in",
       "item-count": "{count, plural, =0 {no item} one {# item} other {# items}}",
       "item-unnamed": "Unnamed item",
@@ -1169,7 +1161,6 @@
       "description-to-write": "Description to write",
       "sapphires": "sapphires",
       "cost-unconfirmed": "Cost to confirm",
-      "events-subtitle": "Each league’s events, in the order they chain, and their tiers.",
       "events-season-title": "Season",
       "events-of-league": "Events — {league}",
       "event-unnamed": "Unnamed event",
@@ -1212,7 +1203,6 @@
       "xp-base": "XP base",
       "xp-ratio": "XP ratio",
       "unconfirmed": "Troop formula not confirmed",
-      "subtitle": "The XP curve and each league’s troop formula.",
       "xp-section": "XP",
       "troops-section": "Troops per league",
       "troops-formula": "troops(level) = coefficient × ratio^level",
@@ -1242,7 +1232,6 @@
         "ratio": "Cost ratio",
         "title": "Cost"
       },
-      "subtitle": "Base and ratio of the three city curves, and each league’s multipliers.",
       "used-by": "Used by {count} tools",
       "progression-help": "Each curve follows value(level) = base × ratio^(level − 1)."
     },
@@ -1250,7 +1239,6 @@
       "formula": "Cost(n) = round(base × ratio^(n-1))",
       "base": "Base",
       "ratio": "Ratio",
-      "subtitle": "The cost of each Templar level, and how the five Templars are presented on the site.",
       "shared-with-reference": "Templars reference",
       "cost-section": "Cost",
       "preview": "Preview of the first five levels",
@@ -1281,7 +1269,6 @@
       "upper-bound-field": "Tier {tier} upper bound",
       "rate": "XP rate (%)",
       "rate-field": "Tier {tier} XP rate",
-      "subtitle": "The five XP gain rate tiers, from the lowest to the highest.",
       "tiers": "Tiers",
       "from": "From (%)",
       "up-to": "Up to (%)",
@@ -1292,7 +1279,6 @@
     "demo-attack-troops": {
       "formula": "MaxTroops = (X% / 100) × Walls(target city level)",
       "percentage": "X (% of walls)",
-      "subtitle": "The share of the walls a demo attack fields, league by league.",
       "per-league": "Percentage per league",
       "league": "League",
       "preview": "Preview"
@@ -1303,7 +1289,6 @@
       "value-field": "{skill} · {league}",
       "price": "Gem purchase price per league (in sapphires)",
       "price-field": "{league} price",
-      "subtitle": "A gem’s value per skill and per league, and the purchase price in sapphires.",
       "skill": "Skill",
       "price-help": "Bronze has no purchase price in the game: leave the field empty for as long as that stays true.",
       "sapphires": "sapphires",
@@ -1329,7 +1314,6 @@
       "activated": "User enabled",
       "deactivated": "User disabled",
       "eyebrow": "Access",
-      "subtitle": "The accounts that can open the administration.",
       "new": "New user",
       "new-panel-description": "The account is active as soon as it is created.",
       "generate": "Generate",
@@ -1481,7 +1465,6 @@
         }
       },
       "eyebrow": "Access",
-      "subtitle": "Every action recorded in the administration.",
       "filters-label": "History filters",
       "filter-user-all": "All users",
       "filter-message-placeholder": "A word from the message…",
@@ -1506,7 +1489,6 @@
       "saved": "Legal notice saved.",
       "error": "Unable to save the legal notice.",
       "page-title": "Legal pages",
-      "subtitle": "The public site's institutional pages.",
       "unsaved": "Unsaved changes",
       "all-saved": "Everything is saved",
       "view-on-site": "View on the site",
@@ -1568,7 +1550,6 @@
         "script-active": "Script active",
         "script-inactive": "No script"
       },
-      "subtitle": "The public site's settings.",
       "columns-translated": "Translated guides",
       "columns-public": "On the public site",
       "visibility-of": "Visibility of {language} on the public site",
@@ -1610,8 +1591,12 @@
       "field": "Description ({language})",
       "placeholder": "What this tool lets you work out, in one sentence.",
       "counter": "{count} / {max} characters",
+      "leave-title": "Leave without saving?",
+      "leave-body": "Are you sure you want to leave without saving your changes?",
+      "leave-confirm": "Leave without saving",
       "open": "Describe {name}",
-      "written": "{count, plural, =0 {no language} one {# language} other {# languages}}",
+      "locale-written": "{language}: description written",
+      "locale-missing": "{language}: description to write",
       "column": "Description"
     }
   },

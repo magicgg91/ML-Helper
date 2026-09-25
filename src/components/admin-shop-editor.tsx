@@ -149,7 +149,6 @@ export function ShopReferenceEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("consumables-subtitle")}
         pills={
           <LangTabs
             locales={contentPairLocales}

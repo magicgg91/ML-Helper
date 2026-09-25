@@ -250,11 +250,7 @@ export default async function AdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow={t("eyebrow")}
-        title={t("title")}
-        description={t("subtitle")}
-      />
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
 
       {cards.length > 0 && (
         <section

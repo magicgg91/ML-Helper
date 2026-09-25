@@ -26,7 +26,6 @@ export default async function AdminAccountPage() {
       <PageHeader
         eyebrow={t("navigation.group-access")}
         title={t("account.title")}
-        description={t("account.subtitle")}
       />
       <AdminAccountScreen totpEnabled={account?.totpEnabled ?? false} />
     </div>

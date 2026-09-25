@@ -42,7 +42,6 @@ const messages = {
       "translation-create": "Créer la version {language} de {title}",
       "translation-written": "{language} : version écrite",
       "translation-missing": "{language} : pas encore traduit",
-      legend: "Puce pleine : version rédigée.",
       modify: "Modifier",
       "more-actions": "Autres actions pour {title}",
       "view-on-site": "Voir sur le site",
@@ -166,10 +165,19 @@ describe("Bloc 119: the Guides table", () => {
     ).toHaveAttribute("href", "/admin/guides/g1?lang=de");
   });
 
-  it("carries the legend the chips need", () => {
+  /**
+   * Bloc 131/D : la légende sous le tableau disparaît avec les autres
+   * textes d'introduction de l'admin. Ce qu'elle expliquait ne se perd pas
+   * pour autant : depuis le Bloc 131/A, chaque puce porte sa phrase
+   * entière — c'est ce que ce test tient à sa place.
+   */
+  it("n'a plus de légende : chaque puce dit elle-même ce qu'elle est", () => {
     renderList();
+    expect(screen.queryByText(/Puce pleine/)).toBeNull();
     expect(
-      screen.getByText("Puce pleine : version rédigée."),
+      screen.getByRole("link", {
+        name: "Créer la version Deutsch de Bien débuter",
+      }),
     ).toBeInTheDocument();
   });
 });

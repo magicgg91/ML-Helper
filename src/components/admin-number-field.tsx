@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type Ref } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatAdminNumber, parseAdminNumber } from "@/lib/admin-number";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,9 @@ export function NumberField({
   unit,
   hideLabel = false,
   disabled = false,
+  invalid,
+  invalidMessage,
+  fieldRef,
   testId,
 }: {
   /** The accessible name. `hideLabel` keeps it off screen, never unset. */
@@ -55,6 +58,18 @@ export function NumberField({
   unit?: string;
   hideLabel?: boolean;
   disabled?: boolean;
+  /**
+   * Bloc 131/C : refusé par la validation de l'écran, alors que le champ
+   * lui-même sait lire ce qu'il contient — un seuil à 150 est un nombre
+   * parfaitement lisible, et hors de la plage permise. Le champ portait déjà
+   * l'état « illisible » ; celui-ci le rejoint et prend la même apparence,
+   * plutôt qu'une seconde façon de dire qu'un champ ne va pas.
+   */
+  invalid?: boolean;
+  /** Ce que la validation reproche au champ, sous lui. */
+  invalidMessage?: string;
+  /** Pour que l'écran puisse y amener le curseur après un refus. */
+  fieldRef?: Ref<HTMLInputElement>;
   testId?: string;
 }) {
   const t = useTranslations("admin.editor");
@@ -76,6 +91,11 @@ export function NumberField({
   const parsed = parseAdminNumber(text);
   const unreadable = !parsed.ok;
   const empty = parsed.ok && parsed.value === null;
+  // Illisible ici, refusé par l'écran : deux raisons, un seul état visible.
+  // Ce que le champ constate lui-même passe devant ce qu'on lui reproche —
+  // un texte qui n'est pas un nombre n'a pas de valeur à juger.
+  const wrong = unreadable || Boolean(invalid);
+  const problem = unreadable ? t("not-a-number") : invalidMessage;
 
   function change(next: string) {
     setText(next);
@@ -111,21 +131,29 @@ export function NumberField({
             // nobody can type.
             disabled
               ? "border-admin-card-border"
-              : unreadable
-                ? "border-admin-danger-border text-admin-danger-ink"
+              : // Bloc 131/C : le contour d'un champ refusé prend l'encre du
+                // message, pas la bordure des cartes danger. Mesuré sur fond
+                // blanc : `--admin-danger-border` (#e6bfb5) donne 1,7:1 avec
+                // le fond, sous le plancher de 3:1 du WCAG 1.4.11 pour ce
+                // qui identifie l'état d'un composant ; `--admin-danger-ink`
+                // (#9a2f1c) donne 7,5:1. Un contour qu'on doit chercher
+                // n'est pas un contour.
+                wrong
+                ? "border-admin-danger-ink text-admin-danger-ink"
                 : empty
                   ? "border-dashed border-admin-warn-ink/60"
                   : "border-admin-card-border",
           )}
+          ref={fieldRef}
           type="text"
           inputMode="decimal"
           autoComplete="off"
-          aria-invalid={unreadable || undefined}
+          aria-invalid={wrong || undefined}
           // The unit is described, not named: "Coût 92 saphirs" would read as
           // part of the value, while a description says what the number is
           // counted in.
           aria-describedby={
-            [unreadable ? `${id}-error` : "", unit ? `${id}-unit` : ""]
+            [problem ? `${id}-error` : "", unit ? `${id}-unit` : ""]
               .filter(Boolean)
               .join(" ") || undefined
           }
@@ -141,9 +169,9 @@ export function NumberField({
           </span>
         )}
       </span>
-      {unreadable && (
+      {problem && (
         <span className="text-xs text-admin-danger-ink" id={`${id}-error`}>
-          {t("not-a-number")}
+          {problem}
         </span>
       )}
     </div>

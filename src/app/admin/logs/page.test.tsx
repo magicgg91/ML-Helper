@@ -170,14 +170,26 @@ describe("Bloc 119: the audit log, grouped by day", () => {
   });
 });
 
-describe("Bloc 119: who may purge", () => {
-  it("shows the purge card to a Super Admin", async () => {
+/**
+ * Bloc 131/E : la purge a quitté cette page pour Configuration. Elle y était
+ * la seule action destructive au bas d'un écran qu'on ouvre pour *chercher*
+ * une entrée — et rien ne sépare mal comme la proximité.
+ *
+ * Ce qui reste ici, c'est son absence, et le fait que la page n'a rien perdu
+ * d'autre : filtres, regroupement par jour et pagination sont intacts. Les
+ * deux tests de rôle qui vivaient ici ont suivi la carte
+ * (src/app/admin/config/page.test.tsx), et la garde serveur a maintenant les
+ * siens (src/app/api/admin/logs/route.test.ts).
+ */
+describe("Bloc 131/E: the purge has left the history", () => {
+  it("shows no purge card, not even to a Super Admin", async () => {
     await renderPage([log("1", "2026-09-22T18:04:00Z")]);
-    expect(screen.getByTestId("purge")).toBeInTheDocument();
+    expect(screen.queryByTestId("purge")).toBeNull();
   });
 
-  it("hides it from an Admin, who may read the log but not empty it", async () => {
-    await renderPage([log("1", "2026-09-22T18:04:00Z")], { role: "admin" });
-    expect(screen.queryByTestId("purge")).toBeNull();
+  it("keeps everything else the page is for", async () => {
+    await renderPage([log("1", "2026-09-22T18:04:00Z")]);
+    expect(screen.getByTestId("filters")).toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
   });
 });

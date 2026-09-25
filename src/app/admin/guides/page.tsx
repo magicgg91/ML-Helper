@@ -55,7 +55,6 @@ export default async function GuidesAdminPage() {
       <PageHeader
         eyebrow={t("eyebrow")}
         title={t("title")}
-        description={t("subtitle")}
         actions={
           canWrite ? (
             <AdminButton asChild variant="primary">

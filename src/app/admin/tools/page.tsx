@@ -75,11 +75,7 @@ export default async function ToolsAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow={t("eyebrow")}
-        title={t("title")}
-        description={t("subtitle")}
-      />
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
       <AdminToolsList
         rows={rows}
         canEdit={can(session.user.role, "calculators.write")}

@@ -498,11 +498,6 @@ export function EquipmentReferenceEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t(
-          variant === "combat"
-            ? "combat-description"
-            : "expedition-description",
-        )}
         pills={
           usedByTool && (
             <Pill tone="accent" href={usedByTool.href}>

@@ -8,9 +8,12 @@ import {
 } from "@/lib/tool-description";
 import { launchLocales, type LaunchLocale } from "@/lib/translations";
 import { AdminButton } from "./admin-button";
+import { ConfirmDialog } from "./admin-confirm-dialog";
 import { LangTabs } from "./admin-lang-tabs";
+import { Pill } from "./admin-pill";
 import { SidePanel } from "./admin-side-panel";
 import { useSaveStatus } from "./use-save-status";
+import { useUnsavedWarning } from "./use-unsaved-warning";
 
 /**
  * Bloc 130: the one-line description of a tool or a reference, edited from
@@ -70,6 +73,7 @@ export function DescriptionPanel({
   const [editing, setEditing] = useState<string>();
   const status = useSaveStatus();
   const fieldId = useId();
+  const [leaving, setLeaving] = useState(false);
 
   // Re-seeded on every open cycle, not once per row: `editing` is cleared
   // when the panel closes, so reopening the same row starts from what is
@@ -87,6 +91,42 @@ export function DescriptionPanel({
       setLocale("fr");
       status.reset();
     }
+  }
+
+  /**
+   * Bloc 131/B : ce que le panneau tient et que le serveur n'a pas encore.
+   *
+   * Comparé langue par langue à ce qui est stocké, et non à ce que le champ
+   * contenait à l'ouverture : retaper le texte d'origine ramène le panneau à
+   * l'état propre, et fermer alors n'a rien à faire perdre.
+   */
+  const dirty = Boolean(
+    target &&
+    launchLocales.some(
+      (code) => (draft[code] ?? "") !== (target.description[code] ?? ""),
+    ),
+  );
+
+  // La moitié que le Bloc 119 pose sur les écrans d'édition : l'onglet fermé
+  // ou un lien suivi pendant que le panneau est ouvert demandent aussi.
+  useUnsavedWarning(dirty, editor("leave-warning"));
+
+  /**
+   * Toute sortie qui perdrait le travail passe par une question — le fond,
+   * Échap, la croix et Annuler. Les quatre veulent dire la même chose,
+   * « ferme sans enregistrer », et distinguer celle qui demande de celles
+   * qui ne demandent pas ferait dépendre la sécurité du geste employé. Sans
+   * modification, aucune des quatre ne demande quoi que ce soit.
+   */
+  function requestClose() {
+    // La question est déjà posée. Les deux surfaces écoutent Échap sur le
+    // document : sans cette ligne, l'ordre où les écouteurs ont été posés
+    // déciderait du résultat — inversé, la question se refermerait puis se
+    // rouvrirait dans le même lot d'états, et Échap ne pourrait plus jamais
+    // la fermer.
+    if (leaving) return;
+    if (dirty) return setLeaving(true);
+    onClose();
   }
 
   async function save() {
@@ -114,64 +154,81 @@ export function DescriptionPanel({
   const value = draft[locale] ?? "";
 
   return (
-    <SidePanel
-      open={Boolean(target)}
-      title={t("title", { name: target?.label ?? "" })}
-      description={t("subtitle")}
-      onClose={onClose}
-      footer={
-        <>
-          <AdminButton type="button" onClick={onClose}>
-            {editor("cancel")}
-          </AdminButton>
-          <AdminButton type="button" variant="primary" onClick={save}>
-            {editor("save")}
-          </AdminButton>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-4">
-        <LangTabs
-          locale={locale}
-          onChange={setLocale}
-          // Dashed until something is written in it, so an admin sees at a
-          // glance which languages the description is still missing.
-          filled={(code) => Boolean((draft[code] ?? "").trim())}
-          label={t("languages-label")}
-          languageNames={languageNames}
-          hiddenLocales={hiddenLocales}
-          hiddenLabel={(language) => t("language-hidden", { language })}
-        />
-        <label className="flex flex-col gap-1" htmlFor={fieldId}>
-          <span className="text-xs font-medium text-admin-dim">
-            {t("field", { language: locale.toUpperCase() })}
-          </span>
-          <textarea
-            id={fieldId}
-            className="admin-control admin-focus min-h-[76px] resize-y rounded-admin-control border border-admin-card-border bg-admin-card px-2 py-1.5 font-admin-body text-[13px] leading-[1.6] text-admin-text"
-            maxLength={toolDescriptionMaxLength}
-            value={value}
-            placeholder={t("placeholder")}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                [locale]: event.target.value,
-              }))
-            }
+    <>
+      <SidePanel
+        open={Boolean(target)}
+        title={t("title", { name: target?.label ?? "" })}
+        description={t("subtitle")}
+        onClose={requestClose}
+        footer={
+          <>
+            {dirty && <Pill tone="warn">{editor("unsaved")}</Pill>}
+            <AdminButton type="button" onClick={requestClose}>
+              {editor("cancel")}
+            </AdminButton>
+            <AdminButton type="button" variant="primary" onClick={save}>
+              {editor("save")}
+            </AdminButton>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <LangTabs
+            locale={locale}
+            onChange={setLocale}
+            // Dashed until something is written in it, so an admin sees at a
+            // glance which languages the description is still missing.
+            filled={(code) => Boolean((draft[code] ?? "").trim())}
+            label={t("languages-label")}
+            languageNames={languageNames}
+            hiddenLocales={hiddenLocales}
+            hiddenLabel={(language) => t("language-hidden", { language })}
           />
-          <span className="text-xs text-admin-dim">
-            {t("counter", {
-              count: value.length,
-              max: toolDescriptionMaxLength,
-            })}
-          </span>
-        </label>
-        {status.message && (
-          <p className="text-sm text-admin-dim" role="status">
-            {status.message}
-          </p>
-        )}
-      </div>
-    </SidePanel>
+          <label className="flex flex-col gap-1" htmlFor={fieldId}>
+            <span className="text-xs font-medium text-admin-dim">
+              {t("field", { language: locale.toUpperCase() })}
+            </span>
+            <textarea
+              id={fieldId}
+              className="admin-control admin-focus min-h-[76px] resize-y rounded-admin-control border border-admin-card-border bg-admin-card px-2 py-1.5 font-admin-body text-[13px] leading-[1.6] text-admin-text"
+              maxLength={toolDescriptionMaxLength}
+              value={value}
+              placeholder={t("placeholder")}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  [locale]: event.target.value,
+                }))
+              }
+            />
+            <span className="text-xs text-admin-dim">
+              {t("counter", {
+                count: value.length,
+                max: toolDescriptionMaxLength,
+              })}
+            </span>
+          </label>
+          {status.message && (
+            <p className="text-sm text-admin-dim" role="status">
+              {status.message}
+            </p>
+          )}
+        </div>
+      </SidePanel>
+      {/* Sœur du panneau, pas son enfant : une question *sur* le travail en
+          cours passe devant l'endroit où il se fait (Bloc 125 §3), et une
+          boîte de dialogue n'a rien à faire dans la zone qui défile. */}
+      <ConfirmDialog
+        open={leaving}
+        title={t("leave-title")}
+        description={t("leave-body")}
+        confirmLabel={t("leave-confirm")}
+        onCancel={() => setLeaving(false)}
+        onConfirm={() => {
+          setLeaving(false);
+          onClose();
+        }}
+      />
+    </>
   );
 }

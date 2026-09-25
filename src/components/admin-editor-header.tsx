@@ -20,12 +20,17 @@ import { useUnsavedWarning } from "./use-unsaved-warning";
  *
  * `onCancel` is what returns the form to what the server holds; the header
  * does not own the form's state, only the question of whether it differs.
+ *
+ * Bloc 131/D : plus de ligne de description sous le titre. Elle redisait ce
+ * que l'écran montre déjà — « Ajoute, renomme, réordonne et active les
+ * ligues et divisions » au-dessus d'une liste de ligues et de divisions — et
+ * repoussait d'autant le travail lui-même. Le prop est retiré, pas seulement
+ * laissé vide : un prop que plus personne ne passe revient tôt ou tard.
  */
 export function EditorHeader({
   backHref,
   backLabel,
   title,
-  description,
   pills,
   dirty,
   saving = false,
@@ -37,7 +42,6 @@ export function EditorHeader({
   /** The list this screen hangs off — "Outils", "Référentiels", "Guides". */
   backLabel: string;
   title: string;
-  description?: ReactNode;
   /** Cross-links and counters: "Utilisé par l'outil X". */
   pills?: ReactNode;
   dirty: boolean;
@@ -69,11 +73,6 @@ export function EditorHeader({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="admin-title text-admin-text">{title}</h1>
-          {description && (
-            <p className="mt-2 max-w-2xl text-sm text-admin-dim">
-              {description}
-            </p>
-          )}
           {pills && <div className="mt-3 flex flex-wrap gap-2">{pills}</div>}
         </div>
         <div className="flex flex-wrap items-center gap-2">

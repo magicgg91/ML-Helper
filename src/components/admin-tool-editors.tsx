@@ -125,7 +125,6 @@ export function CityParametersEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         pills={
           <>
             <Pill tone="neutral">
@@ -257,7 +256,6 @@ export function GemParametersEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={form.save}
@@ -420,7 +418,6 @@ export function XpGainRateEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={form.save}
@@ -524,7 +521,6 @@ export function DemoAttackTroopsEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={form.save}

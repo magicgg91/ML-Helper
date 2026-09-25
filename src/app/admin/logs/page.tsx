@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
-import { can } from "@/auth/permissions";
 import { requireCapability } from "@/auth/require-session";
 import { AdminButton } from "@/components/admin-button";
 import {
@@ -8,7 +7,6 @@ import {
   type AdminTableColumn,
 } from "@/components/admin-data-table";
 import { AdminLogsFilters } from "@/components/admin-logs-filters";
-import { AdminLogsPurge } from "@/components/admin-logs-purge";
 import { PageHeader } from "@/components/admin-page-header";
 import { Pill, type PillTone } from "@/components/admin-pill";
 import {
@@ -48,7 +46,9 @@ const roleTone = (role: string): PillTone =>
 export default async function LogsPage({
   searchParams,
 }: PageProps<"/admin/logs">) {
-  const session = await requireCapability("logs.view");
+  // La garde reste : c'est elle qui rend la page. Son résultat ne sert plus
+  // à rien d'autre depuis que la purge a déménagé en Configuration (§E).
+  await requireCapability("logs.view");
   const [t, messages, roleLabels, locale] = await Promise.all([
     getTranslations("admin.logs"),
     // Bloc 116/C: the sentence is resolved here, in the admin's own language,
@@ -141,11 +141,7 @@ export default async function LogsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow={t("eyebrow")}
-        title={t("title")}
-        description={t("subtitle")}
-      />
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
 
       <AdminLogsFilters
         usernames={usernames.map((user) => user.username)}
@@ -194,8 +190,6 @@ export default async function LogsPage({
           </AdminButton>
         </div>
       )}
-
-      {can(session.user.role, "logs.purge") && <AdminLogsPurge />}
     </div>
   );
 }

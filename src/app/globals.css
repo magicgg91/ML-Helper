@@ -1250,15 +1250,28 @@ select:where(:not(.admin-shell select)) {
 .settings-grid output.stat-highlight {
   color: var(--accent-strong);
 }
-select,
-input {
+/* Bloc 131/C : l'administration est exclue ici comme elle l'est déjà plus
+   haut (Bloc 125 §2, même motif `:where(:not(.admin-shell …))`). Cette
+   déclaration-ci n'avait pas reçu l'exclusion, et elle n'est dans aucune
+   couche : elle battait donc toutes les classes utilitaires de la refonte,
+   qui vivent dans `@layer utilities`. Mesuré au navigateur avant le
+   correctif, sur Classement, Utilisateurs et Configuration — chaque champ
+   de l'admin sortait en `1px solid #d3d6dd`, rayon 8,8 px, fond blanc,
+   quelles que soient ses classes : `rounded-admin-control`,
+   `border-admin-card-border`, `bg-admin-card` et surtout les trois états du
+   champ numérique (vide en pointillés ambre, illisible en rouge, refusé en
+   rouge) se lisaient juste et ne rendaient rien.
+
+   `:where()` ne pèse rien : la règle reste à 0-0-1, exactement comme avant. */
+select:where(:not(.admin-shell select)),
+input:where(:not(.admin-shell input)) {
   min-height: 2.55rem;
   border: 1px solid var(--border);
   border-radius: 0.55rem;
   background: var(--surface-raised);
   color: var(--foreground);
 }
-select {
+select:where(:not(.admin-shell select)) {
   padding: 0 0.7rem;
 }
 .number-stepper {
@@ -2570,8 +2583,13 @@ h1 {
   -webkit-background-clip: text;
   background-clip: text;
 }
-input,
-select,
+/* Bloc 131/C : les deux sélecteurs d'élément nu excluent l'admin, comme les
+   deux règles plus haut. L'admin réserve la chasse fixe aux heures, aux
+   identifiants et aux codes de langue (Bloc 119 §1) ; admin.css le disait
+   déjà pour `.admin-control`, cette exclusion le dit pour tous les autres.
+   Les cinq sélecteurs de classe qui suivent ne concernent que le public. */
+input:where(:not(.admin-shell input)),
+select:where(:not(.admin-shell select)),
 .total-box .value,
 .result-highlight strong,
 .budget-result-main strong,
