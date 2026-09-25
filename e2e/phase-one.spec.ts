@@ -530,7 +530,7 @@ test("the Cities category exposes its three working calculators", async ({
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation ;
   // le pied de page mène lui aussi à Villes, sans être l'onglet courant.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Villes/ }),
+    page.locator(".selection-banner").getByRole("link", { name: /Villes/ }),
   ).toHaveAttribute("aria-current", "page");
   // Bloc 68/K: the league <select> is replaced by single-select buttons.
   const cityLeagueGroup = page
@@ -741,7 +741,7 @@ test("Ranking converts position and percentage into league ranges", async ({
   await page.goto("/tools/classement");
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Classement/ }),
+    page.locator(".selection-banner").getByRole("link", { name: /Classement/ }),
   ).toHaveAttribute("aria-current", "page");
   // Bloc 61/B: the league <select> is replaced by single-select buttons.
   const rankingLeagueGroup = page
@@ -801,7 +801,7 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   await page.goto("/tools/competences");
   // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
   await expect(
-    page.locator(".tool-nav-card").getByRole("link", { name: /Compétences/ }),
+    page.locator(".selection-banner").getByRole("link", { name: /Compétences/ }),
   ).toHaveAttribute("aria-current", "page");
 
   await page

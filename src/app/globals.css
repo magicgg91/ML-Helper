@@ -1348,7 +1348,7 @@ select {
    where a title tooltip never shows at all.
    Bloc 62/J: colored instead of muted grey, plus a colored asterisk (::before)
    — shared treatment with .tool-unavailable below and the référentiels
-   switcher's inactive teaser (.reference-switcher .tool-unavailable). */
+   switcher's inactive teaser (.selection-tab .tool-unavailable). */
 .tab-coming-soon {
   color: var(--amber-bright);
   font-weight: 600;
@@ -2972,100 +2972,6 @@ button:disabled,
   color: var(--text-faint);
 }
 
-.category-nav {
-  display: flex;
-  width: min(74rem, calc(100% - 2rem));
-  margin: 1rem auto 0;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-/* Bloc 41/C: the référentiels switcher (same category-nav/category-btn
-   structure as the /tools banner, Bloc 40/A) sat right against the tables/
-   tiles below it with no breathing room — scoped to .reference-switcher
-   only, not .category-nav generally, so the /tools banner is untouched. */
-.reference-switcher {
-  margin-bottom: 1.5rem;
-}
-.category-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-width: 100px;
-  padding: 9px 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-panel);
-  color: var(--text-faint);
-  cursor: pointer;
-  font-family: var(--font-sans, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  text-align: center;
-}
-.category-btn:hover {
-  color: var(--text);
-}
-.category-btn[aria-current="page"] {
-  border-color: var(--accent);
-  background: var(--bg-panel-raised);
-  color: var(--accent-strong);
-}
-.category-btn:disabled,
-.category-btn[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-/* Bloc 94 (Codex PR #119): a category with every calculator disabled still has
-   a routable page. It must stay recognisable as the current one — at 0.5 the
-   accent border above is too faint to serve as the page's only visible marker,
-   now that the tool <h1> is sr-only and the breadcrumb is gone. Still dimmer
-   than an enabled tab, so it continues to read as unavailable. */
-.category-btn:disabled[aria-current="page"] {
-  opacity: 0.85;
-  border-color: var(--accent);
-  color: var(--accent-strong);
-}
-/* Bloc 62/I: caps the référentiels switcher at 4 per row on desktop — 7
-   references (Events made it the first to exceed 4) wrapped unevenly
-   under the shared .category-nav flex-wrap; scoped to .reference-switcher
-   only, so the /tools banner (Bloc 40/A, still exactly 4 categories) keeps
-   its flex-wrap unchanged. Comes textually before the mobile override
-   below, which still wins there at equal specificity — untouched, already
-   correct. */
-.reference-switcher {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-/* Bloc 62/I: an inactive reference still gets a slot in the switcher (an
-   internal teaser for visitors already on the site — unlike Bloc 60's
-   search/sitemap discovery hiding, unrelated and unchanged) but isn't a
-   real link: .category-btn-unavailable overrides the plain opacity-dimmed
-   [aria-disabled] look above with the same colored asterisk + colored
-   label treatment as .tool-unavailable/.tab-coming-soon. */
-.category-btn-unavailable {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  opacity: 1;
-}
-.category-btn-unavailable .category-btn-label {
-  color: var(--text-faint);
-}
-@media (max-width: 42rem) {
-  /* A real 2-per-row grid instead of flex-wrap, which packed the 3 short
-     labels (Villes/Combat/Classement) onto row 1 and left the longer
-     "Compétences" stretched alone on row 2. */
-  .category-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .category-btn {
-    min-width: 0;
-  }
-}
-
 .guide-filter-nav {
   display: flex;
   flex-wrap: wrap;
@@ -4044,7 +3950,8 @@ body > main h1 {
    `.public-header-nav a`, `.theme-toggle` et `.locale-select` sont écrites
    plus bas dans le fichier que la media query de l'en-tête, et à
    spécificité égale c'est la dernière qui gagne — media query ou pas. Même
-   piège que le Bloc 25 sur `.category-nav`, signalé dans ce fichier. */
+   piège que le Bloc 25 avait relevé sur la navigation des catégories,
+   signalé dans ce fichier. */
 @media (max-width: 42rem) {
   .public-header-nav a {
     /* §3 : 52 px, style actif/inactif identique au desktop. */
@@ -5251,8 +5158,8 @@ body > main h1 {
   margin-top: 2rem;
 }
 @media (max-width: 42rem) {
-  /* Bloc 25 found and fixed this exact cascade-order bug for
-     .category-nav: the responsive override must come textually AFTER the
+  /* Bloc 25 found and fixed this exact cascade-order bug for the category
+     nav: the responsive override must come textually AFTER the
      unconditional base rule above, or the base rule wins the cascade at
      equal specificity regardless of whether the media query matches. The
      old override lived earlier in the file (before the base rule) and was
@@ -5304,8 +5211,8 @@ body > main h1 {
   font-size: 0.78rem;
 }
 /* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same
-   treatment as .tab-coming-soon above and the référentiels switcher's
-   inactive teaser below (.reference-switcher .category-btn-unavailable). */
+   treatment as .tab-coming-soon, which Bloc 132 §8 made the single badge of
+   both selection banners (.selection-tab .tab-coming-soon). */
 .tool-unavailable {
   color: var(--amber-bright);
   font-size: 0.85rem;
@@ -6733,7 +6640,6 @@ span.tool-share-dot.tool-share-stuff {
    Bloc 129 §3.8 et §3.9 — les gabarits outil et référentiel.
    --------------------------------------------------------------------- */
 .tool-page-head,
-.tool-nav-card,
 .further-reading {
   width: min(75rem, calc(100% - 2rem));
   margin: 0 auto;
@@ -6741,186 +6647,168 @@ span.tool-share-dot.tool-share-stuff {
 .tool-page-head {
   margin-top: 2rem;
 }
-/* §3.8 : la navigation entre outils, dans une carte. */
-.tool-nav-card {
-  margin-top: 1.5rem;
-  padding: 0.75rem;
+/* ------------------------------------------------------------------------
+   Bloc 132 §8 — le bandeau de sélection.
+
+   Une seule forme pour les deux rangées qui disent dans quelle section on
+   se trouve : les catégories d'outils et les référentiels. Elles faisaient
+   la même chose avec deux mises en forme écrites séparément — l'une dans
+   une carte, l'autre sans, des rayons et des espacements proches mais
+   jamais égaux. Le composant est partagé (selection-banner.tsx), le style
+   l'est donc aussi, et il n'y a plus qu'un endroit à retoucher.
+
+   Le nombre de colonnes vient du composant (--selection-columns) : c'est
+   la seule chose qui distingue les deux bandeaux, 4 catégories contre 7
+   référentiels.
+   --------------------------------------------------------------------- */
+.selection-banner {
+  width: min(75rem, calc(100% - 2rem));
+  margin: 1.5rem auto 0;
+  padding: 0.625rem;
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--surface);
 }
-/* La rangée des catégories : quatre colonnes égales sur fond creux. */
-.tool-nav-card .category-nav {
+/* La bande creuse, dans laquelle les onglets flottent. */
+.selection-banner-band {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: 100%;
-  gap: 0.25rem;
-  margin: 0;
-  padding: 0.25rem;
+  grid-template-columns: repeat(var(--selection-columns), minmax(0, 1fr));
+  gap: 0.375rem;
+  padding: 0.375rem;
   border-radius: 0.75rem;
   background: var(--sunk);
 }
-.tool-nav-card .category-btn {
+.selection-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   min-width: 0;
+  min-height: 3.25rem;
   padding: 0.5rem 0.6rem;
-  border-color: transparent;
-  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.625rem;
   background: transparent;
-  color: var(--text3);
-  font-size: 0.85rem;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
 }
-/* §3.8 : vignette carrée de 32 px, nom, nombre d'outils en chasse fixe. */
-.category-btn-thumb {
+.selection-tab:hover:not([aria-disabled]):not(:disabled) {
+  color: var(--accent);
+}
+/* L'onglet ouvert : la surface surélevée du §1.2, contour et texte accent. */
+.selection-tab[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--raised);
+  color: var(--accent);
+}
+/* Une entrée sans page reste lisible — elle porte déjà sa mention ambrée,
+   et l'estomper la rendrait illisible par-dessus. */
+.selection-tab:disabled,
+.selection-tab[aria-disabled="true"] {
+  color: var(--text3);
+  cursor: not-allowed;
+}
+.selection-tab-thumb {
   position: relative;
   flex: none;
   display: block;
   width: 2rem;
   height: 2rem;
   overflow: hidden;
-  border-radius: 0.4rem;
+  border-radius: 0.375rem;
   background: var(--ph);
 }
-.category-btn-thumb img {
+.selection-tab-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.category-btn-name {
+.selection-tab-label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.category-btn-count {
+/* §3.8 : le nombre d'outils de la catégorie, en chasse fixe. */
+.selection-tab-count {
+  flex: none;
   color: var(--muted);
   font-family: var(--font-mono, monospace);
   font-size: 0.75rem;
 }
-.tool-nav-card .category-btn[aria-current="page"] .category-btn-count {
+.selection-tab[aria-current="page"] .selection-tab-count {
   color: var(--accent);
 }
-.tool-nav-card .category-btn:hover {
-  color: var(--accent);
+/* La mention « Bientôt » passe sous le libellé plutôt que de pousser
+   l'onglet voisin (Bloc 62/J : toujours visible, pas seulement au survol —
+   sur tactile, une infobulle ne s'affiche jamais). */
+.selection-tab .tab-coming-soon {
+  display: block;
+  font-size: 0.65rem;
+  line-height: 1.2;
 }
-/* L'onglet actif : la surface surélevée du §1.2, contour et texte accent. */
-.tool-nav-card .category-btn[aria-current="page"] {
-  border-color: var(--accent);
-  background: var(--raised);
-  color: var(--accent);
-}
-/* §3.8 : « la rangée des outils de la catégorie, sur toute la largeur,
-   onglets répartis à parts égales », soulignée sous l'onglet actif. */
-.tool-nav-card + main .calculator-tabs,
-.tool-nav-card ~ main .calculator-tabs {
+/* §8 : la rangée des outils de la catégorie devient sa propre carte, sous
+   le bandeau — onglets à parts égales sur toute la largeur, l'actif
+   souligné d'un filet de 3 px. */
+.selection-banner + main .calculator-tabs,
+.selection-banner ~ main .calculator-tabs {
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 0;
   width: 100%;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.25rem 0.625rem 0;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
 }
-.tool-nav-card ~ main .calculator-tabs button {
+.selection-banner ~ main .calculator-tabs button {
   border: 0;
   border-bottom: 3px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: var(--text3);
+  color: var(--text2);
   font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
 }
-.tool-nav-card ~ main .calculator-tabs button:hover:not(:disabled) {
+.selection-banner ~ main .calculator-tabs button:hover:not(:disabled) {
   color: var(--accent);
 }
-.tool-nav-card ~ main .calculator-tabs button[aria-selected="true"] {
+.selection-banner ~ main .calculator-tabs button[aria-selected="true"] {
   border-bottom-color: var(--accent);
   background: transparent;
   color: var(--accent);
 }
+/* §8 : sur mobile, le cadre et la bande ne changent pas — ce sont les
+   onglets qui défilent à l'intérieur de la bande, plutôt que de se replier
+   sur plusieurs rangées ou de rétrécir jusqu'à l'illisible. La rangée des
+   outils, elle, passe en 2×2 : quatre onglets de texte tiennent, quatre
+   colonnes de texte non. */
 @media (max-width: 48rem) {
-  .tool-nav-card .category-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .selection-banner {
+    padding: 0.5rem;
+    border-radius: 0.875rem;
   }
-  .tool-nav-card ~ main .calculator-tabs {
+  .selection-banner-band {
+    grid-auto-columns: 7.5rem;
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    overflow-x: auto;
+    border-radius: 0.625rem;
+    /* Le défilement s'arrête sur un onglet entier, jamais sur une moitié. */
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .selection-tab {
+    border-radius: 0.5rem;
+    scroll-snap-align: start;
+  }
+  .selection-banner ~ main .calculator-tabs {
     grid-auto-flow: row;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-/* §3.9 : les sept référentiels sur une seule rangée d'onglets. */
-.reference-switcher {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  width: min(75rem, calc(100% - 2rem));
-  gap: 0.25rem;
-  margin: 1.5rem auto 0;
-  padding: 0.35rem;
-  border-radius: 0.9rem;
-  background: var(--sunk);
-}
-.reference-tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.4rem;
-  border: 1px solid transparent;
-  border-radius: 0.6rem;
-  color: var(--text3);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-}
-.reference-tab:hover {
-  color: var(--accent);
-}
-.reference-tab[aria-current="page"] {
-  border-color: var(--accent);
-  background: var(--raised);
-  color: var(--accent);
-}
-.reference-tab-thumb {
-  position: relative;
-  flex: none;
-  display: block;
-  width: 1.75rem;
-  height: 1.75rem;
-  overflow: hidden;
-  border-radius: 0.35rem;
-  background: var(--ph);
-}
-.reference-tab-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-/* Un référentiel pas encore ouvert garde sa place et son avertissement
-   (Bloc 62/J : toujours visible, pas seulement au survol — sur tactile, une
-   infobulle ne s'affiche jamais). Dans une rangée serrée, l'avertissement
-   passe sous le libellé au lieu de déborder sur l'onglet voisin. */
-.reference-tab-unavailable {
-  flex-wrap: wrap;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.reference-tab-unavailable .tool-unavailable {
-  flex-basis: 100%;
-  font-size: 0.65rem;
-  line-height: 1.2;
-}
-@media (max-width: 62rem) {
-  .reference-switcher {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-@media (max-width: 34rem) {
-  .reference-switcher {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .reference-tab-label {
-    display: none;
   }
 }
 /* §3.8 : « Aller plus loin ». */

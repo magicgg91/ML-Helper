@@ -192,3 +192,97 @@ describe("Bloc 132 §3 — l'en-tête mobile", () => {
     expect(open).toMatch(/color: var\(--accent\)/);
   });
 });
+
+/**
+ * Bloc 132 §8 : le bandeau de sélection, une seule forme pour les deux
+ * rangées — catégories d'outils et référentiels.
+ *
+ * Le §8 donne des valeurs précises (16/12/10 px de rayon, 10/6 px de
+ * remplissage, 52 px de haut) parce que les deux bandeaux avaient dérivé
+ * l'un de l'autre sur exactement ces valeurs-là. Elles sont donc tenues
+ * une par une, sur l'unique jeu de règles que les deux partagent
+ * désormais.
+ */
+describe("Bloc 132 §8 — le bandeau de sélection", () => {
+  it("emboîte un cadre de 16 px et une bande creuse de 12 px", () => {
+    const frame = rule(".selection-banner");
+    expect(frame).toMatch(/border: 1px solid var\(--border\)/);
+    expect(frame).toMatch(/border-radius: 1rem/);
+    expect(frame).toMatch(/background: var\(--surface\)/);
+    expect(frame).toMatch(/padding: 0\.625rem/);
+
+    const band = rule(".selection-banner-band");
+    expect(band).toMatch(/background: var\(--sunk\)/);
+    expect(band).toMatch(/border-radius: 0\.75rem/);
+    expect(band).toMatch(/padding: 0\.375rem/);
+    expect(band).toMatch(/gap: 0\.375rem/);
+  });
+
+  // Quatre catégories, sept référentiels : le composant passe le nombre,
+  // la feuille de style ne le connaît pas.
+  it("prend son nombre de colonnes du composant", () => {
+    expect(rule(".selection-banner-band")).toMatch(
+      /grid-template-columns: repeat\(var\(--selection-columns\), minmax\(0, 1fr\)\)/,
+    );
+  });
+
+  it("dessine un onglet de 52 px, inactif en texte secondaire", () => {
+    const tab = rule(".selection-tab");
+    expect(tab).toMatch(/min-height: 3\.25rem/);
+    expect(tab).toMatch(/border-radius: 0\.625rem/);
+    expect(tab).toMatch(/background: transparent/);
+    expect(tab).toMatch(/color: var\(--text2\)/);
+  });
+
+  it("allume l'onglet ouvert comme une entrée active de l'en-tête", () => {
+    const current = rule('.selection-tab[aria-current="page"]');
+    expect(current).toMatch(/border-color: var\(--accent\)/);
+    expect(current).toMatch(/background: var\(--raised\)/);
+    expect(current).toMatch(/color: var\(--accent\)/);
+  });
+
+  /**
+   * Sur mobile le cadre et la bande ne disparaissent pas : ce sont les
+   * onglets qui défilent à l'intérieur. Les trois rayons rétrécissent
+   * ensemble — 14, 10 et 8 px — pour que l'emboîtement reste lisible à
+   * cette taille.
+   */
+  it("resserre les trois rayons et fait défiler la bande sur mobile", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
+    );
+    expect(narrow).toMatch(
+      /\.selection-banner {[\s\S]*?border-radius: 0\.875rem;/,
+    );
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?border-radius: 0\.625rem;/,
+    );
+    expect(narrow).toMatch(/\.selection-tab {\n\s*border-radius: 0\.5rem;/);
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+    );
+  });
+
+  /**
+   * La rangée des outils de la catégorie est devenue une carte à part,
+   * sous le bandeau — même surface et même rayon que lui, mais son onglet
+   * actif est souligné plutôt qu'encadré : deux états actifs identiques
+   * l'un au-dessus de l'autre ne se distingueraient plus.
+   */
+  it("fait de la rangée des outils une carte, soulignée sous l'onglet actif", () => {
+    const card = rule(
+      ".selection-banner + main .calculator-tabs,\n.selection-banner ~ main .calculator-tabs",
+    );
+    expect(card).toMatch(/border: 1px solid var\(--border\)/);
+    expect(card).toMatch(/border-radius: 1rem/);
+    expect(card).toMatch(/background: var\(--surface\)/);
+    expect(
+      rule(
+        '.selection-banner ~ main .calculator-tabs button[aria-selected="true"]',
+      ),
+    ).toMatch(/border-bottom-color: var\(--accent\)/);
+    expect(rule(".selection-banner ~ main .calculator-tabs button")).toMatch(
+      /border-bottom: 3px solid transparent/,
+    );
+  });
+});

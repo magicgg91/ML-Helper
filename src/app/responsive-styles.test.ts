@@ -248,20 +248,26 @@ describe("public responsive styles", () => {
     expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
   });
 
-  it("also uniformly splits the Outils category nav 2-per-row on mobile", () => {
-    // Point 6: Villes/Combat/Classement/Compétences must wrap 2-per-line as
-    // a real grid, not organically via flex-wrap (which left the longer
-    // "Compétences" label alone, stretched, on its own line). The override
-    // must come AFTER the unconditional `.category-nav { display: flex }`
-    // base rule in source order, or the base rule wins the cascade at equal
-    // specificity regardless of the media query matching.
-    const baseRuleIndex = css.indexOf(".category-nav {\n  display: flex;");
-    const overrideRuleIndex = css.indexOf(
-      ".category-nav {\n    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));",
+  /**
+   * Bloc 132 §8 : les catégories ne se replient plus en 2×2 sur mobile —
+   * elles défilent horizontalement dans la bande, qui garde sa forme. Ce
+   * sont les onglets des outils de la catégorie qui passent en 2×2.
+   */
+  it("fait défiler les catégories dans la bande sur mobile, sans replier le bandeau", () => {
+    const narrow = css.slice(
+      css.indexOf("@media (max-width: 48rem) {\n  .selection-banner {"),
     );
-    expect(baseRuleIndex).toBeGreaterThan(-1);
-    expect(overrideRuleIndex).toBeGreaterThan(-1);
-    expect(overrideRuleIndex).toBeGreaterThan(baseRuleIndex);
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?overflow-x: auto;/,
+    );
+    // Des colonnes de largeur fixe, sinon sept onglets se partagent la
+    // largeur de l'écran et il n'y a plus rien à faire défiler.
+    expect(narrow).toMatch(
+      /\.selection-banner-band {[\s\S]*?grid-auto-columns: 7\.5rem;/,
+    );
+    expect(narrow).toMatch(
+      /\.calculator-tabs {\n\s*grid-auto-flow: row;\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
   });
 
   it("offsets the expanded mobile navigation below the header", () => {

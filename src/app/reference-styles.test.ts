@@ -262,9 +262,11 @@ describe("Bloc 41: referentiel fixes", () => {
     expect(css).not.toMatch(/\.reference-tile-block\s*{\s*flex:/);
   });
 
-  it("C: adds breathing room under the référentiels switcher specifically, not the shared category-nav (so /tools' banner is untouched)", () => {
+  // Bloc 132 §8 : l'écart sous le bandeau ne lui est plus propre — il n'y
+  // a qu'un bandeau, et il l'emporte avec lui des deux côtés.
+  it("C, Bloc132 §8: détache le bandeau de ce qui le suit", () => {
     expect(css).toMatch(
-      /\.reference-switcher\s*{\s*margin-bottom: 1\.5rem;\s*}/,
+      /\.selection-banner\s*{[\s\S]*?margin: 1\.5rem auto 0;/,
     );
   });
 
@@ -701,8 +703,11 @@ describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
 // (.category-nav on /tools, .reference-switcher on /referentiels), so a
 // flex + align-items:center fix here covers both at once.
 describe("Bloc 69/A: banner buttons center their content vertically", () => {
-  it("makes .category-btn a flex container centered on both axes, shared by the /tools and /referentiels banners", () => {
-    const rule = css.match(/\.category-btn\s*{([\s\S]*?)\n}/)?.[1];
+  // Bloc 132 §8 : l'onglet du bandeau partagé a pris la place de
+  // .category-btn et de .reference-tab, mais le centrage reste le même
+  // besoin — un libellé sur deux lignes ne doit pas décaler ses voisins.
+  it("makes the shared banner tab a flex container centered on both axes", () => {
+    const rule = css.match(/\.selection-tab\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/display: flex;/);
     expect(rule).toMatch(/align-items: center;/);
