@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
  * and whatever the section needs on its right (language tabs, an "Ajouter"
  * button).
  *
- * Distinct from AdminSettingsSection, which is the Configuration screen's
- * two-column "what it is / what it does" card: here the content is the
- * screen, and the heading sits above it rather than beside it.
+ * Distinct from CollapsibleSection (Bloc 136), the Configuration screen's
+ * card: that one folds, carries a state summary and opens on a URL anchor,
+ * because that screen is a list of settings one comes to change one at a
+ * time. Here the content *is* the screen, and it is always open.
  */
 export function EditorSection({
   title,
