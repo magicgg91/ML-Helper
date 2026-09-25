@@ -32,6 +32,46 @@ import { cn } from "@/lib/utils";
  * rien ici ne connaît les langues, le script de suivi ni les mises en avant.
  */
 
+/**
+ * L'ancre demandée, gardée hors de React et lue dès l'import.
+ *
+ * Sur cet écran, une arrivée par ancre ne laisse rien à lire au moment où
+ * l'on regarde. Tracé au navigateur : le module est importé alors que l'URL
+ * porte encore `#suivi-visites`, puis le routeur de Next appelle
+ * `replaceState /admin/config` (pile : `next/dist/client`, dans un rendu de
+ * React), et quand les effets des sections tournent, `location.hash` est
+ * vide. Un `useState` initialisé dans un effet et une relecture de l'URL
+ * échouent donc tous les deux — c'est l'e2e qui l'a montré, pas le test de
+ * composant.
+ *
+ * D'où : la valeur est prise à l'import, là où le fragment existe encore ;
+ * l'écouteur `hashchange` est posé une fois pour toutes, et non attaché puis
+ * détaché au rythme des montages, pour couvrir le passage d'une ancre à
+ * l'autre sans rechargement ; et chaque section vient lire cette mémoire en
+ * montant, ce qui la fait survivre à un remontage de l'arbre.
+ *
+ * `null` veut dire « rien de mémorisé, va voir l'URL » ; la chaîne vide veut
+ * dire « plus d'ancre », ce que pose un repli fait à la main.
+ */
+let requestedAnchor: string | null =
+  typeof window === "undefined" ? null : window.location.hash || null;
+const anchorWatchers = new Set<() => void>();
+
+if (typeof window !== "undefined")
+  window.addEventListener("hashchange", (event) => {
+    requestedAnchor = new URL(event.newURL).hash || null;
+    for (const watcher of anchorWatchers) watcher();
+  });
+
+function anchorRequested() {
+  if (requestedAnchor !== null) return requestedAnchor;
+  return typeof window === "undefined" ? "" : window.location.hash;
+}
+
+function forgetAnchor(id: string) {
+  if (anchorRequested() === `#${id}`) requestedAnchor = "";
+}
+
 /** Par où un panneau fait savoir qu'il a une saisie non enregistrée. */
 const ReportDirty = createContext<((dirty: boolean) => void) | undefined>(
   undefined,
@@ -80,19 +120,21 @@ export function CollapsibleSection({
 
   /**
    * Repliée par défaut, y compris dans le HTML rendu côté serveur : l'ancre
-   * n'existe que dans le navigateur (elle n'est pas envoyée au serveur), donc
-   * c'est ici qu'on la lit, après le premier rendu. `hashchange` couvre le
-   * cas où l'on passe d'une ancre à l'autre sans quitter la page.
+   * n'est pas envoyée au serveur, donc elle se lit ici, après le premier
+   * rendu — et à chaque fois qu'elle change, y compris après un remontage
+   * (voir `anchorRequested` plus haut).
    */
   useEffect(() => {
     const openIfTargeted = () => {
-      if (window.location.hash !== `#${id}`) return;
+      if (anchorRequested() !== `#${id}`) return;
       setOpen(true);
       document.getElementById(id)?.scrollIntoView();
     };
     openIfTargeted();
-    window.addEventListener("hashchange", openIfTargeted);
-    return () => window.removeEventListener("hashchange", openIfTargeted);
+    anchorWatchers.add(openIfTargeted);
+    return () => {
+      anchorWatchers.delete(openIfTargeted);
+    };
   }, [id]);
 
   return (
@@ -121,7 +163,12 @@ export function CollapsibleSection({
           aria-labelledby={titleId}
           aria-describedby={description ? descriptionId : undefined}
           className="admin-focus flex w-full items-center gap-3 p-6 text-left"
-          onClick={() => setOpen((current) => !current)}
+          onClick={() => {
+            // Un repli fait à la main l'emporte sur l'ancre qui avait ouvert
+            // la section : sans ça, le prochain remontage la rouvrirait.
+            forgetAnchor(id);
+            setOpen((current) => !current);
+          }}
         >
           <ChevronRightIcon
             aria-hidden="true"

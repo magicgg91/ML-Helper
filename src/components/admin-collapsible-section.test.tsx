@@ -10,7 +10,17 @@ import { Pill } from "./admin-pill";
 
 afterEach(cleanup);
 beforeEach(() => {
+  // L'ancre demandée vit hors de React (voir le composant), donc elle
+  // traverserait les tests : une navigation sans fragment la remet à zéro,
+  // exactement comme un retour sur /admin/config le ferait.
   window.location.hash = "";
+  fireEvent(
+    window,
+    new HashChangeEvent("hashchange", {
+      oldURL: "http://localhost/#langues",
+      newURL: "http://localhost/",
+    }),
+  );
   // jsdom ne met rien en page et n'implémente pas scrollIntoView : la
   // doublure permet d'affirmer qu'on l'appelle, ce qui est la moitié de
   // « l'ancre amène la section à l'écran ».
@@ -161,13 +171,71 @@ describe("Bloc 136 — l'ancre ouvre la section visée", () => {
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
+  /**
+   * Le cas qui a coûté le plus cher, trouvé en e2e et pas en composant : sur
+   * cet écran, une navigation d'ancre est suivie d'un remontage de l'arbre
+   * par le routeur de Next, l'URL étant au passage réécrite sans le
+   * fragment. La section doit se rouvrir en remontant — sans quoi l'ancre
+   * n'ouvre rien du tout.
+   */
+  it("reste ouverte quand l'arbre remonte après la navigation", () => {
+    renderSection();
+    window.location.hash = "#langues";
+    fireEvent(
+      window,
+      new HashChangeEvent("hashchange", {
+        oldURL: "http://localhost/",
+        newURL: "http://localhost/#langues",
+      }),
+    );
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+
+    // Le remontage, et la barre d'adresse muette qui va avec.
+    cleanup();
+    window.location.hash = "";
+    renderSection();
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+  });
+
+  /**
+   * Mais un repli fait à la main l'emporte : sinon le moindre remontage —
+   * un enregistrement dans un autre panneau suffit — rouvrirait la section
+   * que l'on vient de fermer.
+   */
+  it("ne se rouvre pas après un repli fait à la main", () => {
+    renderSection();
+    window.location.hash = "#langues";
+    fireEvent(
+      window,
+      new HashChangeEvent("hashchange", {
+        oldURL: "http://localhost/",
+        newURL: "http://localhost/#langues",
+      }),
+    );
+    fireEvent.click(header());
+    expect(header()).toHaveAttribute("aria-expanded", "false");
+    cleanup();
+    renderSection();
+    expect(header()).toHaveAttribute("aria-expanded", "false");
+  });
+
   // Passer d'une ancre à l'autre sans quitter la page : le lien ne recharge
   // rien, seul `hashchange` le dit.
   it("suit un changement d'ancre sur la page déjà ouverte", () => {
     renderSection();
     expect(header()).toHaveAttribute("aria-expanded", "false");
+    // L'évènement tel que le navigateur l'émet : c'est `newURL` qui porte la
+    // cible, et le composant la lit là plutôt que dans la barre d'adresse
+    // (voir le commentaire du composant : Next la réécrit sans le fragment).
+    const before = window.location.href;
     window.location.hash = "#langues";
-    fireEvent(window, new HashChangeEvent("hashchange"));
+    fireEvent(
+      window,
+      new HashChangeEvent("hashchange", {
+        oldURL: before,
+        newURL: window.location.href,
+      }),
+    );
     expect(header()).toHaveAttribute("aria-expanded", "true");
   });
 });
