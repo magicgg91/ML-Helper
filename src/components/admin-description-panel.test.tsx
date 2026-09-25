@@ -23,26 +23,49 @@ const target = {
   description: { fr: "Le prix d’une ville." },
 };
 
+/**
+ * Les deux appels rendus : `onSaved` a toujours été utile aux tests du Bloc
+ * 130, `onClose` l'est devenu au Bloc 131/B — c'est lui qui dit si le
+ * panneau s'est fermé, ou s'il a posé une question avant.
+ */
 function renderPanel(
   props: Partial<Parameters<typeof DescriptionPanel>[0]> = {},
   bundle: typeof fr | typeof en = fr,
   locale = "fr",
 ) {
   const onSaved = vi.fn();
+  const onClose = vi.fn();
   render(
     <NextIntlClientProvider locale={locale} messages={bundle}>
       <DescriptionPanel
         target={target}
-        onClose={vi.fn()}
+        onClose={onClose}
         onSaved={onSaved}
         {...props}
       />
     </NextIntlClientProvider>,
   );
-  return onSaved;
+  return { onSaved, onClose };
 }
 
-const panel = () => screen.getByRole("dialog");
+/**
+ * Le tiroir, et lui seul : dès qu'une question est posée par-dessus, deux
+ * surfaces portent `role="dialog"`. C'est le champ qui les départage, et non
+ * le titre — celui du tiroir change de langue avec l'interface.
+ */
+const panel = () =>
+  screen
+    .getAllByRole("dialog")
+    .find((surface) => within(surface).queryByRole("textbox")) as HTMLElement;
+
+/** La question posée avant de perdre une saisie, quand elle est à l'écran. */
+const question = () =>
+  screen
+    .getAllByRole("dialog")
+    .find((surface) => !within(surface).queryByRole("textbox"));
+
+/** Le fond cliquable du tiroir : le geste par lequel le Bloc 131/B arrive. */
+const backdrop = () => panel().parentElement as HTMLElement;
 const field = () => within(panel()).getByRole("textbox");
 const save = () =>
   fireEvent.click(within(panel()).getByRole("button", { name: "Enregistrer" }));
@@ -71,7 +94,7 @@ describe("Bloc 130: describing a tool or a reference", () => {
         status: 200,
       }),
     );
-    const onSaved = renderPanel();
+    const { onSaved } = renderPanel();
 
     fireEvent.change(field(), { target: { value: "Le prix d’une ville." } });
     fireEvent.click(within(panel()).getByRole("button", { name: /^DE/ }));
@@ -190,5 +213,134 @@ describe("Bloc 130: describing a tool or a reference", () => {
           name: new RegExp(`^${code.toUpperCase()}`),
         }),
       ).toBeInTheDocument();
+  });
+});
+
+/**
+ * Bloc 131/B : une saisie en cours ne part pas sans un mot.
+ *
+ * Reproduit au navigateur avant d'être corrigé : le panneau ouvert sur Coût
+ * de Ville, un texte tapé, un clic sur le fond — le panneau disparaissait,
+ * la saisie avec, et rien à l'écran n'avait rien demandé.
+ *
+ * La question ne se pose que s'il y a quelque chose à perdre : c'est la
+ * moitié qu'il est facile de rater, et les tests la tiennent dans les deux
+ * sens — fermeture immédiate sans modification, question avec.
+ */
+describe("Bloc 131/B — quitter le panneau sans enregistrer", () => {
+  const type = (text: string) =>
+    fireEvent.change(field(), { target: { value: text } });
+  const leave = () =>
+    fireEvent.click(
+      within(question() as HTMLElement).getByRole("button", {
+        name: "Quitter sans enregistrer",
+      }),
+    );
+
+  it("ferme sans rien demander quand rien n’a changé", () => {
+    const { onClose } = renderPanel();
+    fireEvent.mouseDown(backdrop());
+    expect(onClose).toHaveBeenCalled();
+    expect(question()).toBeUndefined();
+  });
+
+  it.each([
+    ["le fond", () => fireEvent.mouseDown(backdrop())],
+    [
+      "la croix",
+      () =>
+        fireEvent.click(
+          within(panel()).getByRole("button", { name: "Fermer" }),
+        ),
+    ],
+    [
+      "Annuler",
+      () =>
+        fireEvent.click(
+          within(panel()).getByRole("button", { name: "Annuler" }),
+        ),
+    ],
+  ])("demande avant de perdre une saisie — %s", (_gesture, close) => {
+    const { onClose } = renderPanel();
+    type("Un texte jamais enregistré.");
+    close();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        "Es-tu sûr de vouloir quitter sans enregistrer les modifications ?",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("garde la saisie quand la question est déclinée", () => {
+    const { onClose } = renderPanel();
+    type("Un texte jamais enregistré.");
+    fireEvent.mouseDown(backdrop());
+    fireEvent.click(
+      within(question() as HTMLElement).getByRole("button", {
+        name: "Annuler",
+      }),
+    );
+    expect(onClose).not.toHaveBeenCalled();
+    expect(question()).toBeUndefined();
+    expect(field()).toHaveValue("Un texte jamais enregistré.");
+  });
+
+  it("ferme pour de bon quand la question est confirmée", () => {
+    const { onClose } = renderPanel();
+    type("Un texte jamais enregistré.");
+    fireEvent.mouseDown(backdrop());
+    leave();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  /**
+   * L’état est comparé à ce qui est stocké, pas à ce que le champ contenait
+   * à l’ouverture : retaper le texte d’origine n’a plus rien à faire perdre.
+   */
+  it("redevient propre quand le texte d’origine est retapé", () => {
+    const { onClose } = renderPanel();
+    type("Le prix d’une ville, ou presque.");
+    expect(
+      within(panel()).getByText("Modifications non enregistrées"),
+    ).toBeInTheDocument();
+    type("Le prix d’une ville.");
+    expect(
+      within(panel()).queryByText("Modifications non enregistrées"),
+    ).toBeNull();
+    fireEvent.mouseDown(backdrop());
+    expect(onClose).toHaveBeenCalled();
+    expect(question()).toBeUndefined();
+  });
+
+  // Une langue vide et une langue jamais renseignée sont le même état :
+  // ouvrir un onglet sans y écrire ne doit pas salir le panneau.
+  it("ne se salit pas en visitant une langue vide", () => {
+    const { onClose } = renderPanel();
+    fireEvent.click(within(panel()).getByRole("button", { name: /^DE/ }));
+    fireEvent.mouseDown(backdrop());
+    expect(onClose).toHaveBeenCalled();
+    expect(question()).toBeUndefined();
+  });
+
+  /**
+   * Les deux surfaces écoutent Échap sur le document, et la touche atteint
+   * donc les deux. Ce que ce test tient, c'est le résultat : la question
+   * part, le panneau et sa saisie restent.
+   *
+   * Il ne prouve pas la garde `if (leaving) return` du panneau : dans
+   * l'ordre où les écouteurs sont posés aujourd'hui, le résultat serait le
+   * même sans elle. Elle est là pour que cet ordre cesse de décider —
+   * inversé, la question se refermerait puis se rouvrirait dans le même
+   * lot d'états, et Échap ne pourrait plus jamais la fermer.
+   */
+  it("une seule touche Échap ferme la question, pas le panneau", () => {
+    const { onClose } = renderPanel();
+    type("Un texte jamais enregistré.");
+    fireEvent.mouseDown(backdrop());
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(question()).toBeUndefined();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(field()).toHaveValue("Un texte jamais enregistré.");
   });
 });
