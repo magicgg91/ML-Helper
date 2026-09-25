@@ -1065,6 +1065,8 @@
       "integer-error": "Nombre entier requis.",
       "empty": "Aucune plage confirmée.",
       "validation": "Corrige les champs signalés avant l’enregistrement.",
+      "save-blocked": "{count, plural, one {Enregistrement impossible : un champ à corriger.} other {Enregistrement impossible : # champs à corriger.}} {where} : {message}",
+      "duplicate-error": "Deux entrées portent le même identifiant.",
       "entry-league": "Ligue de base",
       "entry-no-league": "Aucune",
       "entry-division": "Division",

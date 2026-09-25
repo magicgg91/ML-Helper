@@ -1065,6 +1065,8 @@
       "integer-error": "A whole number is required.",
       "empty": "No confirmed range.",
       "validation": "Fix the highlighted fields before saving.",
+      "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
+      "duplicate-error": "Two entries share the same identifier.",
       "entry-league": "Base league",
       "entry-no-league": "None",
       "entry-division": "Division",
