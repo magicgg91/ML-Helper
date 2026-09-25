@@ -78,6 +78,10 @@ function makeNonce(): string {
 function contentSecurityPolicy(nonce: string): string {
   const dev = process.env.NODE_ENV !== "production";
   const scriptSrc = [
+    // Gardé exprès, bien que `strict-dynamic` le neutralise — Firefox le dit
+    // dans la console (« 'self' ignoré à l'intérieur de script-src »). C'est
+    // le repli des navigateurs qui n'implémentent pas `strict-dynamic` : sans
+    // lui, eux ne chargeraient plus aucun script du site.
     "'self'",
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
