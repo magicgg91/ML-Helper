@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { e2eDatabaseUrl } from "./e2e-database";
+import { e2eDatabaseUrl, singleConnection } from "./e2e-database";
 
 /**
  * Bloc 121: the e2e database, created from scratch and seeded, as a function
@@ -27,7 +27,12 @@ import { e2eDatabaseUrl } from "./e2e-database";
  * database from a previous attempt cannot survive as a stale column.
  */
 export async function resetE2eDatabase(databaseUrl = e2eDatabaseUrl) {
-  const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
+  // Une seule connexion : voir `singleConnection`. Cette fonction n'est
+  // qu'une suite de DDL, exactement le cas où le pool fait perdre de vue à
+  // une instruction ce que la précédente vient de faire.
+  const prisma = new PrismaClient({
+    datasourceUrl: singleConnection(databaseUrl),
+  });
   try {
     /**
      * Bloc 121 / correctif CI : on balaie ce que la base contient, au lieu
