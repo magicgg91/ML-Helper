@@ -6167,14 +6167,46 @@ body > main h1 {
 .tool-row-total td {
   font-weight: 700;
 }
-/* Bloc 113/A.7: the N-city row, the one violet line of the table. */
-.tool-row-grand th,
-.tool-row-grand td {
-  background: var(--tool-highlight-bg);
-  font-weight: 700;
+/* Bloc 113/A.7 : la ligne des N villes, la seule ligne violette du tableau.
+
+   Bloc 132 §7 : elle ne l'était plus. Le Bloc 129 a donné un fond à toutes
+   les cellules du corps et du pied (`.tool-table tfoot th`, deux types et
+   une classe), plus spécifique que le `.tool-row-grand th` d'ici : la teinte
+   de la ligne ne sortait tout simplement pas, pas plus que sa graisse. D'où
+   le `.tool-table` en tête de chaque sélecteur ci-dessous — il ne décore
+   rien, il remet ces règles au-dessus de celles du pied.
+
+   Elle reprend au passage les jetons d'accent du Bloc 129, ceux qui portent
+   déjà l'état actif partout ailleurs, au lieu des --tool-highlight-*.
+
+   Contour et filet sont peints en ombre intérieure et non en bordure : une
+   bordure élargirait les cellules et décalerait le libellé vers la droite
+   par rapport aux lignes du dessus, alors que la largeur des colonnes reste
+   commune à tout le tableau.
+
+   La ligne entière passe en accent, tons compris : le « + » de la colonne
+   d'écart porte déjà le sens que son vert redisait. */
+.tool-table .tool-row-grand th,
+.tool-table .tool-row-grand td {
+  background: var(--accent-soft);
+  box-shadow:
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
 }
-.tool-row-grand th {
-  box-shadow: inset 1px 0 0 var(--tool-highlight-border);
+/* Le filet de 4 px ferme la ligne à gauche, le contour à droite. */
+.tool-table .tool-row-grand th {
+  box-shadow:
+    inset 4px 0 0 var(--accent),
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
+}
+.tool-table .tool-row-grand td:last-child {
+  box-shadow:
+    inset -1px 0 0 var(--accent-border),
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
 }
 
 /* Where a production comes from. Decorative: the table above says the same. */
@@ -6263,6 +6295,10 @@ span.tool-share-dot.tool-share-stuff {
   gap: 0.5rem;
 }
 .tool-reward-fields {
+  /* Bloc 132 §7 : 16 px entre la ligne de saisie et le résultat. La carte
+     est un bloc simple, ses deux moitiés se touchaient — on lisait le
+     bonus comme la suite du formulaire plutôt que comme sa réponse. */
+  margin-bottom: 1rem;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
