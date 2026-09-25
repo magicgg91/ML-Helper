@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Doğru rakamlarla karar ver",
-    "subtitle": "Her kararı hazırlamak için tasarlanmış araçlarla maliyetleri, üretimi, sıralamayı, yetenekleri ve ekipmanları keşfet.",
     "cities": "Şehirler",
     "combat": "Savaş",
     "combat-simulator": "Savaş",
@@ -500,7 +498,6 @@
     "legal-updated": "Son güncelleme: {date}"
   },
   "contact": {
-    "eyebrow": "İletişim",
     "title": "İletişim",
     "lead": "Bildirilecek bir veri hatası, bir iyileştirme fikri veya bir sorun mu var? Bize yaz, hepsini okuyoruz.",
     "email": "E-postan",
@@ -582,11 +579,9 @@
     "references": "Referans tabloları"
   },
   "guides": {
-    "eyebrow": "Rehberler ve veriler",
     "title": "Rehberler",
     "sections": {
-      "guides": "Rehberler",
-      "references": "Referans tabloları"
+      "guides": "Rehberler"
     },
     "filters": {
       "guides-label": "Rehberleri kategoriye göre filtrele",
@@ -620,7 +615,6 @@
     "start-here": "Buradan başla"
   },
   "references": {
-    "eyebrow": "Referans tabloları",
     "title": "Referans tabloları",
     "filters": {
       "label": "Referans tablosu filtreleri",
@@ -696,7 +690,8 @@
     "catalog-short": {
       "combat-equipment": "Savaş ekipmanı",
       "expedition-equipment": "Sefer ekipmanı"
-    }
+    },
+    "nav-label": "Referanslar arası gezinme"
   },
   "combat-equipment": {
     "name": "Savaş Ekipmanı",

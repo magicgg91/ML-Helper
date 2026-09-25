@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Entscheide mit den richtigen Zahlen",
-    "subtitle": "Erkunde Kosten, Produktion, Rangliste, Fähigkeiten und Ausrüstung mit Werkzeugen, die jede Entscheidung vorbereiten.",
     "cities": "Städte",
     "combat": "Kampf",
     "combat-simulator": "Kampf",
@@ -500,7 +498,6 @@
     "legal-updated": "Zuletzt aktualisiert: {date}"
   },
   "contact": {
-    "eyebrow": "Kontakt",
     "title": "Kontakt",
     "lead": "Ein Datenfehler zu melden, eine Verbesserungsidee oder eine Frage? Schreib uns, wir lesen alles.",
     "email": "Deine E-Mail",
@@ -582,11 +579,9 @@
     "references": "Referenztabellen"
   },
   "guides": {
-    "eyebrow": "Anleitungen und Daten",
     "title": "Anleitungen",
     "sections": {
-      "guides": "Anleitungen",
-      "references": "Referenztabellen"
+      "guides": "Anleitungen"
     },
     "filters": {
       "guides-label": "Anleitungen nach Kategorie filtern",
@@ -620,7 +615,6 @@
     "start-here": "Fang hier an"
   },
   "references": {
-    "eyebrow": "Referenztabellen",
     "title": "Referenztabellen",
     "filters": {
       "label": "Referenztabellen-Filter",
@@ -696,7 +690,8 @@
     "catalog-short": {
       "combat-equipment": "Kampfausrüstung",
       "expedition-equipment": "Expeditionsausr."
-    }
+    },
+    "nav-label": "Navigation zwischen Referenzen"
   },
   "combat-equipment": {
     "name": "Kampfausrüstung",

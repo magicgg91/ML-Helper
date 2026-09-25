@@ -46,7 +46,10 @@ export function ReferenceSwitcherNav({
       ? t(`catalog-short.${slug}`)
       : t(`catalog.${slug}`);
   return (
-    <nav className="reference-switcher" aria-label={t("tabs-label")}>
+    // Bloc 129 §2.2 : son propre nom, distinct de « Référentiels » — le
+    // pied de page nomme ainsi une de ses colonnes, et deux repères de
+    // navigation portant le même nom ne se distinguent plus à l'oreille.
+    <nav className="reference-switcher" aria-label={t("nav-label")}>
       {sorted.map((item) =>
         active[item.calculatorSlug] ? (
           <Link

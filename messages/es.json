@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Decide con las cifras correctas",
-    "subtitle": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
     "cities": "Ciudades",
     "combat": "Combate",
     "combat-simulator": "Combate",
@@ -500,7 +498,6 @@
     "legal-updated": "Última actualización: {date}"
   },
   "contact": {
-    "eyebrow": "Contacto",
     "title": "Contacto",
     "lead": "¿Un error de datos que reportar, una idea de mejora o una pregunta? Escríbenos, lo leemos todo.",
     "email": "Tu correo",
@@ -582,11 +579,9 @@
     "references": "Tablas de referencia"
   },
   "guides": {
-    "eyebrow": "Guías y datos",
     "title": "Guías",
     "sections": {
-      "guides": "Guías",
-      "references": "Tablas de referencia"
+      "guides": "Guías"
     },
     "filters": {
       "guides-label": "Filtrar guías por categoría",
@@ -620,7 +615,6 @@
     "start-here": "Empieza aquí"
   },
   "references": {
-    "eyebrow": "Tablas de referencia",
     "title": "Tablas de referencia",
     "filters": {
       "label": "Filtros de tabla de referencia",
@@ -696,7 +690,8 @@
     "catalog-short": {
       "combat-equipment": "Equipo de combate",
       "expedition-equipment": "Equipo de exped."
-    }
+    },
+    "nav-label": "Navegación entre referencias"
   },
   "combat-equipment": {
     "name": "Equipo de Combate",

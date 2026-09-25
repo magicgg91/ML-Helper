@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Décide avec les bons chiffres",
-    "subtitle": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "cities": "Villes",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -500,7 +498,6 @@
     "legal-updated": "Dernière mise à jour : {date}"
   },
   "contact": {
-    "eyebrow": "Contact",
     "title": "Contact",
     "lead": "Une erreur à signaler, une idée d’amélioration ou une question ? Écris-nous, on lit tout.",
     "email": "Ton email",
@@ -582,11 +579,9 @@
     "references": "Référentiels"
   },
   "guides": {
-    "eyebrow": "Guides et données",
     "title": "Guides",
     "sections": {
-      "guides": "Guides",
-      "references": "Référentiels"
+      "guides": "Guides"
     },
     "filters": {
       "guides-label": "Filtrer les guides par catégorie",
@@ -620,7 +615,6 @@
     "start-here": "Commence ici"
   },
   "references": {
-    "eyebrow": "Référentiels",
     "title": "Référentiels",
     "filters": {
       "label": "Filtres du référentiel",
@@ -696,7 +690,8 @@
     "catalog-short": {
       "combat-equipment": "Équip. de combat",
       "expedition-equipment": "Équip. d'expédition"
-    }
+    },
+    "nav-label": "Navigation entre référentiels"
   },
   "combat-equipment": {
     "name": "Équipements de Combat",

@@ -8,10 +8,13 @@ import { expect, test, type Browser } from "@playwright/test";
 // The logged-in walk through every admin screen lives at the end of
 // phase-one.spec.ts, which is where the Super Admin exists.
 
+// Bloc 129 §3.2 : /tools ne reprend plus le titre de la section Outils de
+// l'accueil (Bloc 38/K) — il porte le sien. Ce que ces tests gardent est
+// inchangé : chaque langue sert son propre texte sur une page publique.
 const publicHeadings = {
-  de: "Entscheide mit den richtigen Zahlen",
-  es: "Decide con las cifras correctas",
-  tr: "Doğru rakamlarla karar ver",
+  de: "Werkzeuge",
+  es: "Herramientas",
+  tr: "Araçlar",
 } as const;
 
 async function contextFor(browser: Browser, locale: string) {
@@ -32,7 +35,11 @@ test("the sign-in page answers in English to a DE/ES/TR reader", async ({
     // what follows exercises the cookie branch of the clamp and not merely a
     // missing Accept-Language.
     await page.goto(`/${locale}/tools`);
-    await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+    // Le niveau compte : le pied de page titre aussi une colonne « Outils »
+    // (§2.2), dans la même langue.
+    await expect(
+      page.getByRole("heading", { name: heading, level: 1 }),
+    ).toBeVisible();
     expect(
       (await context.cookies()).find((item) => item.name === "NEXT_LOCALE")
         ?.value,
@@ -75,15 +82,15 @@ test("the public site is untouched in all five languages", async ({
   // nothing else: every launched locale still serves its own URL and its own
   // text.
   const expected = {
-    fr: "Décide avec les bons chiffres",
-    en: "Make decisions with the right numbers",
+    fr: "Outils",
+    en: "Tools",
     ...publicHeadings,
   };
   const { context, page } = await contextFor(browser, "en-US");
   for (const [locale, heading] of Object.entries(expected)) {
     await page.goto(`/${locale}/tools`);
     await expect(
-      page.getByRole("heading", { name: heading }),
+      page.getByRole("heading", { name: heading, level: 1 }),
       `/${locale}/tools lost its own language`,
     ).toBeVisible();
   }

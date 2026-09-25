@@ -50,6 +50,7 @@ const catalog: Record<string, string> = {
   "catalog-short.combat-equipment": "Équip. de combat",
   "catalog-short.expedition-equipment": "Équip. d’expédition",
   "tabs-label": "tabs-label",
+  "nav-label": "nav-label",
   comingSoon: "Bientôt disponible",
   unavailable: "Indisponible actuellement",
 };
@@ -90,7 +91,7 @@ describe("ReferenceSwitcherNav", () => {
   it("Bloc35 1.2: offers a cross-nav to switch directly to another reference", () => {
     pathname = "/referentiels/combat-equipment";
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     // Bloc 129 §3.9 : les sept tiennent sur une rangée, donc les deux
     // équipements y portent leur libellé court.
     for (const label of [
@@ -123,7 +124,7 @@ describe("ReferenceSwitcherNav", () => {
   it("sets no aria-current on the /referentiels index, where no single reference is current", () => {
     pathname = "/referentiels";
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     for (const link of within(nav).getAllByRole("link")) {
       expect(link).not.toHaveAttribute("aria-current");
     }
@@ -134,7 +135,7 @@ describe("ReferenceSwitcherNav", () => {
   // level-up, templars, gems, shop, events).
   it("Bloc62/I: lists every reference alphabetically by its displayed label", () => {
     render(<ReferenceSwitcherNav active={active} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     const labels = within(nav)
       .getAllByRole("link")
       .map((link) => link.textContent);
@@ -171,7 +172,7 @@ describe("ReferenceSwitcherNav", () => {
   // same colored "Bientôt disponible" treatment as disabled tools (Bloc 62/J).
   it("Bloc62/I: shows an inactive reference as a non-clickable teaser, not hidden", () => {
     render(<ReferenceSwitcherNav active={{ ...active, events: false }} />);
-    const nav = screen.getByRole("navigation", { name: "tabs-label" });
+    const nav = screen.getByRole("navigation", { name: "nav-label" });
     expect(within(nav).queryByRole("link", { name: /Événements/ })).toBeNull();
     const teaser = within(nav)
       .getByText("Événements")

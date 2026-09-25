@@ -112,8 +112,6 @@
     }
   },
   "tools": {
-    "title": "Make decisions with the right numbers",
-    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "cities": "Cities",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -500,7 +498,6 @@
     "legal-updated": "Last updated: {date}"
   },
   "contact": {
-    "eyebrow": "Contact",
     "title": "Contact",
     "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
     "email": "Your email",
@@ -582,11 +579,9 @@
     "references": "Reference tables"
   },
   "guides": {
-    "eyebrow": "Guides and data",
     "title": "Guides",
     "sections": {
-      "guides": "Guides",
-      "references": "Reference tables"
+      "guides": "Guides"
     },
     "filters": {
       "guides-label": "Filter guides by category",
@@ -620,7 +615,6 @@
     "start-here": "Start here"
   },
   "references": {
-    "eyebrow": "Reference tables",
     "title": "Reference tables",
     "filters": {
       "label": "Reference table filters",
@@ -696,7 +690,8 @@
     "catalog-short": {
       "combat-equipment": "Combat equip.",
       "expedition-equipment": "Expedition equip."
-    }
+    },
+    "nav-label": "Reference navigation"
   },
   "combat-equipment": {
     "name": "Combat Equipment",

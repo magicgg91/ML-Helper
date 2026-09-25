@@ -189,40 +189,43 @@ test("tool routes alone expose persistent player settings", async ({
   // Bloc 91/E2: the homepage inherits the brand default title; every other
   // page gets "<title> | ML-Helper · Million Lords" via the root template.
   await expect(page).toHaveTitle("ML-Helper — Outils et guides Million Lords");
-  await expect(page.getByPlaceholder("Rechercher")).toBeVisible();
-  // Bloc 34/D: the carousel/hero is gone — a short intro sentence in its
-  // place, the tool category grid as the actual homepage content.
+  await expect(
+    page.getByPlaceholder("Rechercher un outil, un référentiel, un guide…"),
+  ).toBeVisible();
+  // Bloc 129 §3.1 : le hero revient, mais ce n'est pas le carrousel que le
+  // Bloc 34/D avait retiré — c'est un bloc statique de texte et de liens.
   await expect(page.locator(".home-carousel")).toHaveCount(0);
-  await expect(page.locator(".home-intro p")).toHaveText(
-    "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
+  await expect(page.locator(".home-hero-intro")).toHaveText(
+    "Simulateurs, tableaux de référence et guides de la communauté pour préparer chaque décision de jeu, de ta première ville jusqu'en Légende.",
   );
-  // Bloc 91/E5: the homepage now opens on a real <h1> (it previously had
-  // none — the intro was a bare <p>, breaking the heading hierarchy).
+  // Bloc 91/E5: the homepage opens on a real <h1>.
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Outils et guides Million Lords",
+      name: "Outils et guides pour Million Lords",
     }),
   ).toBeVisible();
   // Bloc 33/A: the homepage gives 1-click access to a tool category
   // directly (the same ToolCategoryGrid as /tools).
-  await expect(page.getByRole("link", { name: /Villes/ })).toHaveAttribute(
-    "href",
-    new RegExp("/tools/villes$"),
-  );
+  // Bloc 129 §3.1 : les mêmes mots se retrouvent ailleurs sur la page — dans
+  // « Les plus utilisés » et dans le pied de page — donc chaque lien se
+  // cherche dans sa section.
+  await expect(
+    page.locator(".home-tools").getByRole("link", { name: /Villes/ }),
+  ).toHaveAttribute("href", new RegExp("/tools/villes$"));
   // Bloc 34/E: the most recent guides + the built references are directly
   // clickable from the homepage, no detour via /guides.
   await expect(
-    page.getByRole("link", { name: /Guide visible/ }),
+    page.locator(".home-guides").getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
-  await expect(page.getByRole("link", { name: /Templiers/ })).toHaveAttribute(
-    "href",
-    new RegExp("/referentiels/templars$"),
-  );
+  await expect(
+    page.locator(".home-references").getByRole("link", { name: /Templiers/ }),
+  ).toHaveAttribute("href", new RegExp("/referentiels/templars$"));
   const publicThemeToggle = page.getByRole("button", {
     name: "Passer en thème clair",
   });
-  await expect(publicThemeToggle).toHaveText("☀");
+  // Bloc 129 §2.1 : une icône a remplacé le glyphe ☀.
+  await expect(publicThemeToggle.locator("svg.lucide-sun")).toBeVisible();
   await publicThemeToggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   // Bloc 48/C: the public switcher is now a custom ARIA listbox (button
@@ -232,8 +235,8 @@ test("tool routes alone expose persistent player settings", async ({
     .getByRole("listbox", { name: /Language|Langue/ })
     .getByRole("option", { name: "EN" })
     .click();
-  await expect(page.locator(".home-intro p")).toHaveText(
-    "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
+  await expect(page.locator(".home-hero-intro")).toHaveText(
+    "Simulators, reference tables and community guides to prepare every decision, from your first city to Legend.",
   );
   await page.goto("/guides");
   await expect(page).toHaveTitle("Guides | ML-Helper · Million Lords");
@@ -270,7 +273,13 @@ test("tool routes alone expose persistent player settings", async ({
   ).toHaveCount(0);
   // Bloc 33/E: the whole tile is the link now — no more redundant "Ouvrir
   // la catégorie" text to click on.
-  await page.getByRole("link", { name: /^Villes/ }).click();
+  // Bloc 129 §3.2 : la carte liste aussi ses outils, et le pied de page
+  // nomme la catégorie — c'est le lien de la carte qu'on suit ici.
+  await page
+    .locator(".tool-category-card")
+    .getByRole("link", { name: /^Villes/ })
+    .first()
+    .click();
   await expect(page).toHaveURL(/\/tools\/villes$/);
   await expect(page).toHaveTitle("Villes | ML-Helper · Million Lords");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
@@ -513,10 +522,11 @@ test("the Cities category exposes its three working calculators", async ({
   page,
 }) => {
   await page.goto("/tools/villes");
-  await expect(page.getByRole("link", { name: "Villes" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation ;
+  // le pied de page mène lui aussi à Villes, sans être l'onglet courant.
+  await expect(
+    page.locator(".tool-nav-card").getByRole("link", { name: /Villes/ }),
+  ).toHaveAttribute("aria-current", "page");
   // Bloc 68/K: the league <select> is replaced by single-select buttons.
   const cityLeagueGroup = page
     .locator(".city-calculators")
@@ -724,10 +734,10 @@ test("Ranking converts position and percentage into league ranges", async ({
   page,
 }) => {
   await page.goto("/tools/classement");
-  await expect(page.getByRole("link", { name: "Classement" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
+  await expect(
+    page.locator(".tool-nav-card").getByRole("link", { name: /Classement/ }),
+  ).toHaveAttribute("aria-current", "page");
   // Bloc 61/B: the league <select> is replaced by single-select buttons.
   const rankingLeagueGroup = page
     .locator(".ranking-calculator")
@@ -784,10 +794,10 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   page,
 }) => {
   await page.goto("/tools/competences");
-  await expect(page.getByRole("link", { name: "Compétences" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  // Bloc 129 §3.8 : l'onglet de catégorie vit dans la carte de navigation.
+  await expect(
+    page.locator(".tool-nav-card").getByRole("link", { name: /Compétences/ }),
+  ).toHaveAttribute("aria-current", "page");
 
   await page
     .getByRole("button", { name: /Amulette Vide/ })
@@ -805,7 +815,8 @@ test("Skills exposes gem distributions and exact templar costs", async ({
   // Bloc 53/E: the link's accessible name is now the destination
   // reference's own title, not a generic "Voir le référentiel complet".
   await expect(
-    page.getByRole("link", { name: "Équipements de Combat" }),
+    // Bloc 129 §2.2 : le pied de page mène lui aussi aux référentiels.
+    page.getByRole("main").getByRole("link", { name: "Équipements de Combat" }),
   ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
 
   await page.getByRole("tab", { name: "Gemmes" }).click();
@@ -856,15 +867,11 @@ test("Reference tables filter combat and expedition equipment", async ({
   // Bloc 50/1b: /referentiels is now an independent root, split off from
   // /guides — the reference catalog no longer renders on the guides hub at
   // all (only the guides list does), so this checks each root separately.
-  // Bloc 53/D: /guides' h1 now reuses the homepage's own guides intro
-  // title ("Affûte ta stratégie"), not the short "Guides" index title.
+  // Bloc 129 §3.4 : /guides reprend le titre court « Guides ». Le Bloc 53/D
+  // lui faisait reprendre celui de la section Guides de l'accueil.
   await page.goto("/guides");
   await expect(
-    page.getByRole("heading", {
-      name: "Affûte ta stratégie",
-      exact: true,
-      level: 1,
-    }),
+    page.getByRole("heading", { name: "Guides", exact: true, level: 1 }),
   ).toBeVisible();
 
   await page.goto("/referentiels");
@@ -925,12 +932,16 @@ test("a super admin signs in, creates an admin, and sees the audit log", async (
     .fill("correct-horse-battery-staple");
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
-  // Bloc 125 §2: the admin names this button in its own words ("Passer en
-  // thème sombre / clair"), which the public header does not — it keeps the
-  // wording it had. Same button, same glyph, same behaviour.
+  // Bloc 125 §2: the admin names this button through its own keys
+  // (admin.theme.to-dark / to-light) rather than the public header's, even
+  // though both currently read the same. Same button, same behaviour.
+  // Bloc 129 §2.1 : une icône a remplacé le glyphe ☀, ici comme sur le
+  // header public — c'est le même composant.
   await expect(
-    page.getByRole("button", { name: "Passer en thème clair" }),
-  ).toHaveText("☀");
+    page
+      .getByRole("button", { name: "Passer en thème clair" })
+      .locator("svg.lucide-sun"),
+  ).toBeVisible();
   await expect(page.getByText(/\d+ activés \/ \d+ au total/)).toHaveCount(2);
   await expect(page.getByText(/\d+ publiés \/ \d+ au total/)).toBeVisible();
   await expect(page.getByText(/\d+ actifs \/ \d+ au total/)).toBeVisible();
@@ -2019,13 +2030,15 @@ test("guide editor supports the complete editorial lifecycle", async ({
   await expect(page.getByRole("status")).toHaveText("Statut enregistré.");
   await page.goto("/guides");
   await expect(page.getByText("Guide édité et publié")).toBeVisible();
+  // Bloc 129 §3.4 : la carte de guide a changé de balisage — .guide-card, et
+  // la couverture rendue dans .guide-card-media. Même carte, même image.
   await expect(
     page
-      .locator(".guide-list-card")
+      .locator(".guide-card")
       .filter({
         hasText: "Guide édité et publié",
       })
-      .locator(".guide-list-cover"),
+      .locator(".guide-card-media img"),
   ).toHaveAttribute("src", "https://example.com/guide-cover.jpg");
   for (const category of ["Combat & conquête", "Clan & stratégie collective"]) {
     await page.getByRole("button", { name: category }).click();
@@ -3456,8 +3469,11 @@ test("every admin screen stays English for a reader browsing publicly in German"
   // The public half, which is also what records NEXT_LOCALE=de: the clamp is
   // then exercised against a real German preference, not a missing one.
   await page.goto("/de/tools");
+  // Bloc 129 §3.2 : l'index Outils porte désormais son propre titre de page
+  // (tools.index-title) au lieu du titre de section emprunté à l'accueil.
+  // Même page, même langue vérifiée.
   await expect(
-    page.getByRole("heading", { name: "Entscheide mit den richtigen Zahlen" }),
+    page.getByRole("heading", { name: "Werkzeuge", level: 1 }),
   ).toBeVisible();
 
   await page.goto("/login");
