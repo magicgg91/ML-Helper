@@ -544,6 +544,7 @@
     "referentielsDescription": "The game's exact costs, stats and tiers: equipment, gems, templars, shop…",
     "eyebrow": "Community companion",
     "explore-tools": "Explore the tools",
+    "explore-references": "Browse the reference tables",
     "start-guide": "Start here",
     "count-tools": "{count, plural, one {# tool} other {# tools}}",
     "count-references": "{count, plural, one {# reference} other {# references}}",

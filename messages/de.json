@@ -544,6 +544,7 @@
     "referentielsDescription": "Die genauen Kosten, Werte und Stufen des Spiels: Ausrüstung, Edelsteine, Templer, Shop…",
     "eyebrow": "Community-Begleiter",
     "explore-tools": "Werkzeuge entdecken",
+    "explore-references": "Referenztabellen ansehen",
     "start-guide": "Erste Schritte",
     "count-tools": "{count, plural, one {# Werkzeug} other {# Werkzeuge}}",
     "count-references": "{count, plural, one {# Referenz} other {# Referenzen}}",

@@ -544,6 +544,7 @@
     "referentielsDescription": "Oyunun kesin maliyetleri, istatistikleri ve kademeleri: ekipman, mücevherler, tapınakçılar, mağaza…",
     "eyebrow": "Topluluk yardımcısı",
     "explore-tools": "Araçları keşfet",
+    "explore-references": "Referans tablolarını incele",
     "start-guide": "Buradan başla",
     "count-tools": "{count, plural, one {# araç} other {# araç}}",
     "count-references": "{count, plural, one {# referans} other {# referans}}",

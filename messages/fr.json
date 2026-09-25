@@ -544,6 +544,7 @@
     "referentielsDescription": "Les coûts, statistiques et paliers exacts du jeu : équipements, gemmes, templiers, boutique…",
     "eyebrow": "Compagnon communautaire",
     "explore-tools": "Explorer les outils",
+    "explore-references": "Consulter les référentiels",
     "start-guide": "Bien débuter",
     "count-tools": "{count, plural, one {# outil} other {# outils}}",
     "count-references": "{count, plural, one {# référentiel} other {# référentiels}}",

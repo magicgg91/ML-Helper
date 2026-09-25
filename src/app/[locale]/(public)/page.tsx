@@ -11,16 +11,18 @@ import {
 } from "@/components/tool-category-grid";
 import { HomeHero, type HeroEntry } from "@/components/home-hero";
 import { HomeGuides, type GuideEntry } from "@/components/home-guides";
-import { HomeReferenceRow } from "@/components/home-reference-row";
+import { ReferenceCatalogGrid } from "@/components/reference-catalog-grid";
 import { ReportBanner } from "@/components/report-banner";
 import { ReportErrorLink } from "@/components/report-error-link";
-import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
+import { referenceCatalog } from "@/lib/reference-catalog";
 import { plainText } from "@/lib/plain-text";
 import {
   fallbackHighlights,
+  homeReferenceSlugs,
   resolveFeaturedGuide,
   resolveHomeHighlights,
 } from "@/lib/site-highlights";
+import { getPublicDescriptions } from "@/lib/tool-descriptions-server";
 import { getHomeHighlights } from "@/lib/home-highlights-server";
 import { toolCategoryLabelKeys } from "@/lib/tool-links";
 import { localizedText } from "@/lib/translations";
@@ -98,6 +100,15 @@ export default async function HomePage() {
   // Pas de ligne enregistrée, c'est « personne n'a encore choisi » et la
   // liste de repli prend le relais ; une ligne vide, c'est « ne montre
   // rien », et le panneau disparaît.
+  // §5 : les cartes de référentiels portent leur description, lue en base
+  // comme sur l'index (Bloc 130). La grille les attend par slug public.
+  const storedDescriptions = await getPublicDescriptions(locale);
+  const referenceDescriptions = Object.fromEntries(
+    referenceCatalog.map((reference) => [
+      reference.slug,
+      storedDescriptions[reference.calculatorSlug] ?? "",
+    ]),
+  );
   const selection = await getHomeHighlights();
   const entries: HeroEntry[] = resolveHomeHighlights(
     selection ?? fallbackHighlights,
@@ -153,12 +164,13 @@ export default async function HomePage() {
         eyebrow={t("eyebrow")}
         title={t("h1")}
         intro={t("intro")}
-        primary={{ href: "/tools", label: t("explore-tools") }}
-        secondary={
-          featured
-            ? { href: `/guides/${featured.slug}`, label: t("start-guide") }
-            : undefined
-        }
+        actions={[
+          { href: "/tools", label: t("explore-tools") },
+          { href: "/referentiels", label: t("explore-references") },
+          ...(featured
+            ? [{ href: `/guides/${featured.slug}`, label: t("start-guide") }]
+            : []),
+        ]}
         counters={[
           t("count-tools", { count: activeTools.length }),
           t("count-references", { count: activeReferences.length }),
@@ -197,12 +209,16 @@ export default async function HomePage() {
             {t("all-references")} →
           </Link>
         </div>
-        <HomeReferenceRow
-          entries={activeReferences.map((reference) => ({
-            href: referenceHref(reference.slug),
-            label: references(`catalog.${reference.slug}`),
-            image: reference.image,
-          }))}
+        {/* §5 : la même carte que la section outils — image carrée, nom,
+            description — et seulement les quatre référentiels que la recette
+            nomme. Montrer les sept faisait de cette section un doublon de
+            l'index, que le lien ci-dessus atteint en un clic. */}
+        <ReferenceCatalogGrid
+          t={references}
+          locale={locale}
+          active={active}
+          only={homeReferenceSlugs}
+          descriptions={referenceDescriptions}
         />
       </section>
       <section className="home-section home-guides">

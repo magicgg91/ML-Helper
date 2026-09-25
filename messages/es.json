@@ -544,6 +544,7 @@
     "referentielsDescription": "Los costes, estadísticas y niveles exactos del juego: equipo, gemas, templarios, tienda…",
     "eyebrow": "Compañero comunitario",
     "explore-tools": "Explorar las herramientas",
+    "explore-references": "Consultar las tablas de referencia",
     "start-guide": "Empieza aquí",
     "count-tools": "{count, plural, one {# herramienta} other {# herramientas}}",
     "count-references": "{count, plural, one {# referencia} other {# referencias}}",

@@ -218,9 +218,14 @@ test("tool routes alone expose persistent player settings", async ({
   await expect(
     page.locator(".home-guides").getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
+  // Bloc 132 §5 : la section ne montre plus les sept référentiels mais les
+  // quatre que la recette nomme — Templiers n'en fait pas partie, Gemmes si.
+  await expect(
+    page.locator(".home-references").getByRole("link", { name: /Gemmes/ }),
+  ).toHaveAttribute("href", new RegExp("/referentiels/gems$"));
   await expect(
     page.locator(".home-references").getByRole("link", { name: /Templiers/ }),
-  ).toHaveAttribute("href", new RegExp("/referentiels/templars$"));
+  ).toHaveCount(0);
   const publicThemeToggle = page.getByRole("button", {
     name: "Passer en thème clair",
   });

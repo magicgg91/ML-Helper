@@ -108,20 +108,43 @@ describe("Bloc 38 public reference/homepage styles", () => {
   });
 
   // §3.3 : les sept référentiels tiennent sur une seule rangée.
-  it("Bloc129/§3.3: sept colonnes pour la rangée de référentiels de l'accueil", () => {
-    expect(css).toMatch(
-      /\.home-reference-row\s*{\s*display: grid;\s*grid-template-columns: repeat\(7, minmax\(0, 1fr\)\);/,
-    );
-    // Et l'illustration reste carrée, comme partout ailleurs (§1.3).
-    expect(css).toMatch(/\.home-reference-image\s*{[\s\S]*?aspect-ratio: 1;/);
+  // Bloc 132 §5 : la rangée de sept référentiels de l'accueil (Bloc 129
+  // §3.3) a disparu avec son composant. La section montre quatre cartes,
+  // celles de la grille partagée — d'où le test de la grille, pas d'une
+  // rangée qui lui était propre.
+  it("Bloc132/§5: n'a plus de rangée de référentiels propre à l'accueil", () => {
+    expect(css).not.toMatch(/\.home-reference-row/);
+    expect(css).not.toMatch(/\.home-reference-image/);
+    expect(css).not.toMatch(/\.home-reference-label/);
   });
 
-  // Bloc 129 §1.1 : « Le dégradé violet sur les grands titres est supprimé :
-  // les titres sont en couleur accent unie. » Le Bloc 68/D avait fait
-  // l'inverse — donner aux H2 de l'accueil le dégradé des H1 des trois
-  // pages d'index. Ce que ce test protégeait reste vrai, mais à l'envers :
-  // ce sont toujours les mêmes titres, et ils ont toujours le même
-  // traitement — désormais un accent uni des deux côtés.
+  /**
+   * Bloc 132 §5 : sur mobile, « Explorer les outils » prend toute la
+   * largeur et les deux actions secondaires se partagent la ligne suivante.
+   * Une grille le garantit ; un flex-wrap ne garantissait ni la coupure ni
+   * l'égalité des deux.
+   */
+  it("Bloc132/§5: range les trois actions du hero 1 + 2 sur mobile", () => {
+    const mobile = css.match(
+      /@media \(max-width: 34rem\) {\n  \.home-hero-actions {([\s\S]*?)\n  }/,
+    )?.[1];
+    expect(mobile).toMatch(/display: grid;/);
+    expect(mobile).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+    expect(css).toMatch(
+      /\.home-hero-actions > :first-child {\n\s*grid-column: 1 \/ -1;/,
+    );
+  });
+
+  // §5 : sur l'accueil la carte se réduit à son image et son nom ; la
+  // description reste sur l'index, où elle aide à choisir.
+  it("Bloc132/§5: retire la description des cartes de l'accueil sur mobile", () => {
+    expect(css).toMatch(
+      /\.home-references \.reference-card-description {\n\s*display: none;/,
+    );
+  });
+
   it("Bloc129/§1.1: les titres de section de l'accueil sont en accent uni, sans dégradé", () => {
     const rule = css.match(/\.home-section-head h2\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();

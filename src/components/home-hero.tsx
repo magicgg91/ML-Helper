@@ -25,8 +25,7 @@ export function HomeHero({
   eyebrow,
   title,
   intro,
-  primary,
-  secondary,
+  actions,
   counters,
   panelTitle,
   entries,
@@ -34,9 +33,14 @@ export function HomeHero({
   eyebrow: string;
   title: string;
   intro: string;
-  primary: HeroLink;
-  /** Absent tant qu'aucun guide n'est désigné comme point de départ. */
-  secondary?: HeroLink;
+  /**
+   * Bloc 132 §5 : trois actions au lieu de deux — « Explorer les outils »,
+   * « Consulter les référentiels », « Bien débuter ». La première est
+   * principale, les suivantes secondaires ; la liste est ouverte plutôt que
+   * nommée une par une, parce que la dernière disparaît tant qu'aucun guide
+   * n'est désigné comme point de départ.
+   */
+  actions: HeroLink[];
   /** « 11 outils », « 7 référentiels », « 5 guides » — déjà accordés. */
   counters: string[];
   panelTitle: string;
@@ -49,12 +53,15 @@ export function HomeHero({
         <h1>{title}</h1>
         <p className="home-hero-intro">{intro}</p>
         <div className="home-hero-actions">
-          <Button href={primary.href}>{primary.label}</Button>
-          {secondary ? (
-            <Button variant="secondary" href={secondary.href}>
-              {secondary.label}
+          {actions.map((action, index) => (
+            <Button
+              key={action.href}
+              variant={index === 0 ? "primary" : "secondary"}
+              href={action.href}
+            >
+              {action.label}
             </Button>
-          ) : null}
+          ))}
         </div>
         {/* Les séparateurs sont de la ponctuation entre trois nombres, pas
             du texte à annoncer : la liste porte le sens, eux la mise en

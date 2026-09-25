@@ -82,6 +82,11 @@ const highlights = vi.hoisted(() => ({
   value: undefined as
     { kind: "tool" | "reference" | "guide"; slug: string }[] | undefined,
 }));
+// Bloc 132 §5 : les cartes de référentiels de l'accueil portent leur
+// description, lue en base comme sur l'index.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({ gemmes: "Le coût de chaque fusion." }),
+}));
 vi.mock("@/lib/home-highlights-server", () => ({
   getHomeHighlights: async () => highlights.value,
 }));
@@ -248,25 +253,33 @@ describe("HomePage", () => {
     expect(container.querySelector(".home-hero-panel")).toBeNull();
   });
 
-  it("shows the built references, each directly clickable, in their own section", async () => {
+  /**
+   * Bloc 132 §5 : la section montrait les sept référentiels, ce qui en
+   * faisait un doublon de l'index que son propre lien atteint en un clic.
+   * Elle en montre quatre, nommés par la recette.
+   */
+  it("ne montre que les quatre référentiels retenus, chacun cliquable", async () => {
     const { container } = render(await HomePage());
-    const referencesSection =
-      container.querySelector<HTMLElement>(".home-references")!;
-    expect(referencesSection).not.toBeNull();
-    for (const slug of [
-      "combat-equipment",
-      "expedition-equipment",
-      "level-up",
-      "templars",
-    ]) {
-      const link = within(referencesSection).getByRole("link", {
-        name: new RegExp(`catalog.${slug}`),
-      });
-      expect(link).toHaveAttribute("href", `/referentiels/${slug}`);
-    }
-    // Même remarque que pour les guides : la section porte maintenant son
-    // lien « Tous les référentiels » (§3.1), et chaque référentiel reste
-    // joignable directement.
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    const links = within(section)
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+      // Le lien « Tous les référentiels » de l'en-tête de section reste.
+      .filter((href) => href !== "/referentiels");
+    expect(links).toEqual([
+      "/referentiels/events",
+      "/referentiels/gems",
+      "/referentiels/level-up",
+      "/referentiels/shop",
+    ]);
+  });
+
+  it("porte la description d'un référentiel, lue en base", async () => {
+    const { container } = render(await HomePage());
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    expect(
+      within(section).getByText("Le coût de chaque fusion."),
+    ).toBeInTheDocument();
   });
 
   it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {

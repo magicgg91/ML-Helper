@@ -64,6 +64,19 @@ export const fallbackHighlights: HomeHighlight[] = [
 ];
 
 /**
+ * Bloc 132 §5 : les quatre référentiels de la section « Retrouve les données
+ * clés » de l'accueil.
+ *
+ * Le Bloc 129 y montrait les sept, ce qui faisait de la section un doublon
+ * de l'index. Quatre suffisent à dire ce qu'on trouve là, et la recette les
+ * nomme : Boutique, Événements, Gemmes, Progression. Ce sont des slugs
+ * publics, comme partout ailleurs dans ce fichier. L'ordre d'affichage est
+ * alphabétique sur le libellé traduit, pas sur cette liste — « Événements »
+ * ne se classe pas au même endroit selon la langue.
+ */
+export const homeReferenceSlugs = ["shop", "events", "gems", "level-up"];
+
+/**
  * Une entrée de la sélection, retrouvée dans les catalogues et en base.
  *
  * La page en fait des cartes : c'est elle qui traduit les libellés d'outils
