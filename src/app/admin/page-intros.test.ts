@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import fr from "../../../messages/fr.json";
 import en from "../../../messages/en.json";
@@ -31,7 +31,17 @@ function callsTo(code: string, component: string) {
   ].map(([call]) => call);
 }
 
-/** Les huit phrases du brief, telles qu'elles étaient stockées. */
+/**
+ * Les huit phrases du brief, telles qu'elles étaient stockées — et leurs
+ * versions anglaises, que l'admin affiche aussi (Bloc 118).
+ *
+ * Les anglaises sont là parce qu'elles ont manqué : la première version de ce
+ * fichier ne tenait que les françaises, et la CI a trouvé ce qu'elle laissait
+ * passer — une assertion Playwright qui attendait « The guides on the site,
+ * their translations and their status. » comme preuve que l'interface avait
+ * basculé en anglais. Une phrase retirée se cherche dans les deux langues et
+ * dans tout le dépôt, pas seulement là où on l'a écrite.
+ */
 const removed = [
   "L’état du site, et ce qui reste à traiter.",
   "Les guides publiés sur le site, leurs traductions et leur statut.",
@@ -42,6 +52,15 @@ const removed = [
   "Les comptes qui peuvent ouvrir l’administration.",
   "Toutes les actions enregistrées dans l’administration.",
   "Les réglages du site public.",
+  "The state of the site, and what is left to handle.",
+  "The guides on the site, their translations and their status.",
+  "Solid chip: version written. Dotted chip: translation to create.",
+  "The game's data tables, and the tool that reads each one.",
+  "The public tools, where their parameters come from, and their visibility.",
+  "The public site's institutional pages.",
+  "The accounts that can open the administration.",
+  "Every action recorded in the administration.",
+  "The public site's settings.",
 ];
 
 /** Les huit pages de liste, et les écrans d'édition qui les prolongent. */
@@ -71,6 +90,28 @@ describe("Bloc 131/D — les textes d'introduction de l'admin", () => {
   it.each(removed)("a retiré « %s » des deux paquets", (sentence) => {
     for (const [locale, bundle] of Object.entries(bundles))
       expect(JSON.stringify(bundle), locale).not.toContain(sentence);
+  });
+
+  /**
+   * Et de tout le dépôt, y compris des tests de bout en bout : c'est là
+   * qu'une des phrases servait de repère, et c'est la CI qui l'a trouvée.
+   */
+  it("ne laisse aucune de ces phrases dans le code ni dans les tests e2e", () => {
+    const here = "src/app/admin/page-intros.test.ts";
+    const under = (root: string) =>
+      readdirSync(root, { recursive: true, encoding: "utf8" })
+        .filter((name) => /\.tsx?$/.test(name))
+        .map((name) => `${root}/${name}`);
+    const files = [...under("src"), ...under("e2e")].filter(
+      (file) => file !== here,
+    );
+    for (const file of files) {
+      const body = source(file);
+      for (const sentence of removed)
+        expect(body.includes(sentence), `${file} : « ${sentence} »`).toBe(
+          false,
+        );
+    }
   });
 
   it("ne laisse aucune description sur les huit pages de liste", () => {

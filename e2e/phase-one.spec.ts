@@ -1827,9 +1827,19 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
       // Bloc59/A: admin keeps read access to the audit log (asserted above,
       // /admin/logs is 200) but must never be able to purge it — neither
       // the button nor a direct call to the API endpoint.
-      await expect(
-        page.getByRole("button", { name: "Purger la plage" }),
-      ).toHaveCount(0);
+      //
+      // Bloc 131/E: the card moved to Configuration, so that is where an
+      // admin must not find it; and the name is the button's real one —
+      // "Purger la plage" stopped existing at Bloc 119, which made this
+      // assertion pass on a button that was never going to be there.
+      const purgeButton = /^Purger la période/;
+      await expect(page.getByRole("button", { name: purgeButton })).toHaveCount(
+        0,
+      );
+      await page.goto("/admin/config");
+      await expect(page.getByRole("button", { name: purgeButton })).toHaveCount(
+        0,
+      );
       const purgeAttempt = await page.request.delete("/api/admin/logs", {
         data: { start: "2020-01-01T00:00", end: "2020-01-02T00:00" },
       });
@@ -2143,10 +2153,13 @@ test("the guides list reads a guide in the admin's own language", async ({
     .click();
   // The page around the table is the first thing the refresh repaints; wait
   // for it, so the assertions below are about the table and not the request.
+  //
+  // Bloc 131/D: this used to wait on the screen's intro line, which the
+  // admin no longer carries. The column header is the closest thing that
+  // survives and still proves the same point — chrome, not content, and on
+  // the very table the assertions below read.
   await expect(
-    page.getByText(
-      "The guides on the site, their translations and their status.",
-    ),
+    page.getByRole("columnheader", { name: "Translations" }),
   ).toBeVisible();
 
   // The guide that has both reads English...
@@ -4198,9 +4211,22 @@ test("a tool and a reference carry a description in several languages", async ({
   });
 
   // Read back from the database, not from the page that wrote it.
+  //
+  // Bloc 131/A: the column said how many languages were written ("2
+  // langues"); it now says which, one chip per language. So the read-back
+  // checks the two that were filled and one that was not, which the count
+  // could never distinguish.
   await page.goto("/admin/tools");
   const cityRow = page.getByRole("row", { name: /Coût de Ville/ });
-  await expect(cityRow.getByText("2 langues")).toBeVisible();
+  await expect(
+    cityRow.getByTitle("Français : description écrite"),
+  ).toBeVisible();
+  await expect(
+    cityRow.getByTitle("Deutsch : description écrite"),
+  ).toBeVisible();
+  await expect(
+    cityRow.getByTitle("English : description à écrire"),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Décrire Coût de Ville" }).click();
   const panel = page.getByRole("dialog");
   await expect(panel.getByRole("textbox")).toHaveValue(
@@ -4216,15 +4242,17 @@ test("a tool and a reference carry a description in several languages", async ({
   await panel.getByRole("button", { name: "Annuler" }).click();
 
   await page.goto("/admin/referentiels");
+  const combatRow = page.getByRole("row", { name: /Équipements de Combat/ });
   await expect(
-    page
-      .getByRole("row", { name: /Équipements de Combat/ })
-      .getByText("2 langues"),
+    combatRow.getByTitle("Français : description écrite"),
+  ).toBeVisible();
+  await expect(
+    combatRow.getByTitle("Español : description écrite"),
   ).toBeVisible();
 
   // Every other record is still undescribed: the field is empty by default,
-  // and describing one does not touch its neighbours.
-  await expect(
-    page.getByRole("row", { name: /Événements/ }).getByText("aucune langue"),
-  ).toBeVisible();
+  // and describing one does not touch its neighbours. Five chips to write,
+  // none written — the state the count used to call "aucune langue".
+  const eventsRow = page.getByRole("row", { name: /Événements/ });
+  await expect(eventsRow.getByTitle(/ : description à écrire$/)).toHaveCount(5);
 });
