@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { Button } from "./button";
 import { GameImage } from "./game-image";
 
 /**
@@ -48,13 +49,11 @@ export function HomeHero({
         <h1>{title}</h1>
         <p className="home-hero-intro">{intro}</p>
         <div className="home-hero-actions">
-          <Link className="button-primary" href={primary.href}>
-            {primary.label}
-          </Link>
+          <Button href={primary.href}>{primary.label}</Button>
           {secondary ? (
-            <Link className="button-secondary" href={secondary.href}>
+            <Button variant="secondary" href={secondary.href}>
               {secondary.label}
-            </Link>
+            </Button>
           ) : null}
         </div>
         {/* Les séparateurs sont de la ponctuation entre trois nombres, pas

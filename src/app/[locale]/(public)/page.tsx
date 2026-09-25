@@ -162,7 +162,7 @@ export default async function HomePage() {
             <h2>{t("toolsTitle")}</h2>
             <p className="home-section-lead">{t("toolsDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/tools">
+          <Link className="button-secondary home-section-all" href="/tools">
             {t("all-tools")} →
           </Link>
         </div>
@@ -178,7 +178,10 @@ export default async function HomePage() {
             <h2>{t("referentielsTitle")}</h2>
             <p className="home-section-lead">{t("referentielsDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/referentiels">
+          <Link
+            className="button-secondary home-section-all"
+            href="/referentiels"
+          >
             {t("all-references")} →
           </Link>
         </div>
@@ -197,7 +200,7 @@ export default async function HomePage() {
             <h2>{t("guidesTitle")}</h2>
             <p className="home-section-lead">{t("guidesDescription")}</p>
           </div>
-          <Link className="home-section-all" href="/guides">
+          <Link className="button-secondary home-section-all" href="/guides">
             {t("all-guides")} →
           </Link>
         </div>
@@ -222,10 +225,7 @@ export default async function HomePage() {
         title={t("banner-title")}
         text={t("banner-text")}
         action={
-          <ReportErrorLink
-            label={publicT("report-error")}
-            className="report-error-primary"
-          />
+          <ReportErrorLink label={publicT("report-error")} variant="primary" />
         }
       />
     </main>

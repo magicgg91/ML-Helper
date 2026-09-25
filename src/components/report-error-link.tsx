@@ -1,5 +1,5 @@
 import { TriangleAlertIcon } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { Button, type ButtonVariant } from "./button";
 import { contactHref } from "@/lib/contact-link";
 
 /**
@@ -15,20 +15,26 @@ import { contactHref } from "@/lib/contact-link";
 export function ReportErrorLink({
   label,
   page,
-  className,
+  variant = "secondary",
 }: {
   label: string;
   /** Le chemin lisible de la page concernée, ex. « Villes › Coût de ville ». */
   page?: string;
-  className?: string;
+  /**
+   * Bloc 132 §2 : secondaire sur une page d'outil, de référentiel ou de
+   * guide ; principal dans le bandeau de l'accueil, où c'est l'action que
+   * la section demande.
+   */
+  variant?: Extract<ButtonVariant, "primary" | "secondary">;
 }) {
   return (
-    <Link
-      className={`report-error-link${className ? ` ${className}` : ""}`}
+    <Button
+      variant={variant}
+      className="report-error-link"
       href={contactHref("data-error", page)}
     >
       <TriangleAlertIcon aria-hidden="true" size={16} />
       {label}
-    </Link>
+    </Button>
   );
 }

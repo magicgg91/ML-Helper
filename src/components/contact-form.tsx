@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Button } from "./button";
 import { useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import {
@@ -98,15 +99,14 @@ export function ContactForm() {
         <legend>{t("subject")}</legend>
         <div className="contact-subject-pills">
           {contactSubjects.map((option) => (
-            <button
+            <Button
               key={option}
-              type="button"
-              className="contact-subject-pill"
+              variant="toggle"
               aria-pressed={subject === option}
               onClick={() => setSubject(option)}
             >
               {t(`subjects.${option}`)}
-            </button>
+            </Button>
           ))}
         </div>
       </fieldset>
@@ -148,13 +148,9 @@ export function ContactForm() {
         />
       </label>
       <p className="contact-privacy">{t("privacy")}</p>
-      <button
-        type="submit"
-        className="button-primary"
-        disabled={pending || subject === undefined}
-      >
+      <Button type="submit" disabled={pending || subject === undefined}>
         {t("submit")}
-      </button>
+      </Button>
       {status === "success" && <p role="status">{t("success")}</p>}
       {status === "error" && (
         <p role="alert">

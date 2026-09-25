@@ -3,10 +3,19 @@ import { describe, expect, it } from "vitest";
 
 const css = readFileSync("src/app/globals.css", "utf8");
 
-/** La règle CSS d'un sélecteur, corps seul. */
+/**
+ * Le corps de la règle CSS dont la liste de sélecteurs est exactement
+ * `selector`.
+ *
+ * Le lookbehind compte : « .button-secondary » apparaît aussi au milieu de
+ * « .button-primary,\n.button-secondary { … } », et sans lui on lirait le
+ * corps du groupe en croyant lire celui de la variante.
+ */
 function rule(selector: string) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return css.match(new RegExp(`\\n${escaped}\\s*{([\\s\\S]*?)\\n}`))?.[1];
+  return css.match(
+    new RegExp(`(?<=\\n)(?<!,\\n)${escaped}\\s*{([\\s\\S]*?)\\n}`),
+  )?.[1];
 }
 
 /**
@@ -74,5 +83,47 @@ describe("Bloc 132 §1 — l'en-tête public", () => {
   // sans rendu.
   it("ne garde aucune entrée de navigation en retrait", () => {
     expect(css).not.toMatch(/\.public-nav-subdued/);
+  });
+});
+
+describe("Bloc 132 §2 — le bouton partagé", () => {
+  it("donne aux trois variantes le rayon de l'en-tête", () => {
+    const shared = rule(".button-primary,\n.button-secondary,\n.button-toggle");
+    expect(shared).toBeDefined();
+    expect(shared).toMatch(/border-radius: var\(--header-control-radius\)/);
+  });
+
+  it("dessine le secondaire comme une entrée inactive de l'en-tête", () => {
+    const secondary = rule(".button-secondary");
+    expect(secondary).toMatch(/border-color: var\(--strong\)/);
+    expect(secondary).toMatch(/background: var\(--field\)/);
+    expect(secondary).toMatch(/color: var\(--text2\)/);
+    // Le contour violet du Bloc 129 laisse la place au contour gris.
+    expect(secondary).not.toMatch(/var\(--accent\)/);
+  });
+
+  it("allume un bouton de sélection comme une entrée active", () => {
+    const pressed = rule('.button-toggle[aria-pressed="true"]');
+    expect(pressed).toMatch(/border-color: var\(--accent\)/);
+    expect(pressed).toMatch(/background: var\(--accent-soft\)/);
+    expect(pressed).toMatch(/color: var\(--accent\)/);
+  });
+
+  // Cibles tactiles : 48 px pour une action de page, 44 px pour un choix
+  // dans un groupe — le plancher WCAG 2.5.8 est à 24 px, la consigne du
+  // prompt à 44.
+  it("garde des hauteurs cliquables au doigt", () => {
+    expect(rule(".button-primary,\n.button-secondary")).toMatch(
+      /min-height: 3rem/,
+    );
+    expect(rule(".button-toggle")).toMatch(/min-height: 2\.75rem/);
+  });
+
+  // Les styles propres que chaque bouton portait avant le composant partagé
+  // n'ont pas à survivre : deux sources pour une même forme, c'est la
+  // divergence garantie.
+  it("ne garde plus les styles de bouton d'avant", () => {
+    expect(css).not.toMatch(/\.contact-subject-pill\s*{/);
+    expect(css).not.toMatch(/\.report-error-primary/);
   });
 });

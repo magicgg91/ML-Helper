@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
+import { Button } from "./button";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -97,13 +98,9 @@ export function GuidesHub({
                   </Link>
                 </h3>
                 <p>{featured.excerpt}</p>
-                <Link
-                  className="button-primary"
-                  href={`/guides/${featured.slug}`}
-                  prefetch={false}
-                >
+                <Button href={`/guides/${featured.slug}`} prefetch={false}>
                   {t("read-guide")}
-                </Link>
+                </Button>
               </div>
             </article>
           )}

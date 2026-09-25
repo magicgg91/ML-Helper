@@ -781,26 +781,11 @@ select:where(:not(.admin-shell select)) {
     gap: 1rem;
   }
 }
-/* Bloc 129 §2.4 : « Signaler une erreur », bouton secondaire. */
+/* Bloc 132 §2 : « Signaler une erreur » passe par le bouton partagé — cette
+   classe ne porte plus que l'icône et la taille propres au lien. */
 .report-error-link {
-  display: inline-flex;
-  align-items: center;
   gap: 0.45rem;
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--strong);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text3);
   font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition:
-    border-color 150ms ease,
-    color 150ms ease;
-}
-.report-error-link:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 /* Bloc 132 §1 : la marque seule. Le sous-titre « Compagnon Million Lords »
    du Bloc 129 §2.1 disparaît — il répétait ce que dit le chapô de
@@ -1003,26 +988,7 @@ select:where(:not(.admin-shell select)) {
   gap: 0.5rem;
   margin-top: 0.6rem;
 }
-.contact-subject-pill {
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--strong);
-  border-radius: 999px;
-  background: var(--field);
-  color: var(--text3);
-  font-family: var(--font-sans, sans-serif);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.contact-subject-pill:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.contact-subject-pill[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
+
 .contact-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4696,16 +4662,34 @@ body > main h1 {
   gap: 0.75rem;
   margin-top: 1.75rem;
 }
+/* Bloc 132 §2 : un seul style de bouton pour tout le site public — le
+   composant Button (src/components/button.tsx) n'émet que ces classes.
+   Le rayon de 10 px est celui de l'en-tête (§1) : la même forme partout,
+   sauf le champ de recherche, laissé en pilule. */
 .button-primary,
-.button-secondary {
+.button-secondary,
+.button-toggle {
   display: inline-flex;
   align-items: center;
-  padding: 0.8rem 1.4rem;
+  justify-content: center;
+  gap: 0.45rem;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--header-control-radius);
+  font-family: var(--font-sans, sans-serif);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+}
+/* Principal et secondaire : 48 px de haut, la hauteur d'une action de page. */
+.button-primary,
+.button-secondary {
+  min-height: 3rem;
+  padding: 0 1.4rem;
   font-size: 0.95rem;
   font-weight: 700;
-  text-decoration: none;
 }
 .button-primary {
   background: var(--accent-solid);
@@ -4714,13 +4698,36 @@ body > main h1 {
 .button-primary:hover {
   background: var(--accent);
 }
+/* Secondaire : exactement une entrée inactive de l'en-tête, en plus grand.
+   Le contour violet du Bloc 129 laisse la place au contour gris. */
 .button-secondary {
   border-color: var(--strong);
-  background: var(--surface);
-  color: var(--text);
+  background: var(--field);
+  color: var(--text2);
+  font-weight: 600;
 }
 .button-secondary:hover {
   border-color: var(--accent);
+  color: var(--accent);
+}
+/* Sélection : un choix dans un groupe. Plus bas (44 px) que les deux
+   au-dessus, parce qu'il en tient plusieurs sur une ligne. */
+.button-toggle {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border-color: var(--strong);
+  background: var(--field);
+  color: var(--text2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.button-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.button-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 .home-hero-counters {
@@ -4830,16 +4837,30 @@ body > main h1 {
   color: var(--text3);
   line-height: 1.7;
 }
+/* Bloc 132 §2 : « Tous les … » est un bouton secondaire sur mobile et un
+   lien texte sur desktop. Le balisage porte donc `button-secondary`, et
+   c'est le desktop qui le déshabille — une seule définition du bouton,
+   celle du §2, plutôt qu'une copie de ses couleurs dans une media query.
+   D'où l'unique `min-width` du fichier : la règle décrit ce que le desktop
+   retire, pas ce que le mobile ajoute. */
 .home-section-all {
   flex: none;
-  color: var(--accent);
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
   white-space: nowrap;
 }
-.home-section-all:hover {
-  text-decoration: underline;
+@media (min-width: 48.0625rem) {
+  .home-section-all {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .home-section-all:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
 }
 @media (max-width: 48rem) {
   .home-section-head {
@@ -5063,16 +5084,7 @@ body > main h1 {
   color: var(--text2);
   line-height: 1.6;
 }
-.report-error-primary {
-  border-color: transparent;
-  background: var(--accent-solid);
-  color: var(--on-accent);
-}
-.report-error-primary:hover {
-  border-color: transparent;
-  background: var(--accent);
-  color: var(--on-accent);
-}
+
 
 /* Bloc 129 §3.2/§3.9 : .tools-page-title et .reference-page-title ont
    disparu avec les titres qu'elles habillaient — les quatre pages d'index
