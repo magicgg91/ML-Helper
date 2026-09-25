@@ -37,13 +37,16 @@ export function ToolCategoryNav({
             image={category.image}
             label={t(category.label)}
             current={current}
-          >
-            {counts?.[category.slug] !== undefined && (
-              <span className="selection-tab-count">
-                {counts[category.slug]}
-              </span>
-            )}
-          </SelectionTab>
+            // Bloc 133 §C : le décompte devient une pastille contre le nom.
+            count={
+              counts?.[category.slug] === undefined
+                ? undefined
+                : {
+                    value: counts[category.slug],
+                    label: t("count-short", { count: counts[category.slug] }),
+                  }
+            }
+          />
         ) : (
           // Bloc 94 (Codex PR #119) : une catégorie dont tous les outils sont
           // désactivés garde une page. Son <h1> est réservé aux lecteurs

@@ -134,14 +134,36 @@ describe("SelectionTab", () => {
     expect(screen.getByRole("link").textContent).toBe("Villes");
   });
 
-  it("affiche le nombre d'outils que l'appelant lui passe", () => {
+  /**
+   * Bloc 133 §C : le décompte est une pastille contre le nom, pas un
+   * troisième enfant de l'onglet que le `gap` éloignerait de ce qu'il
+   * compte. Le chiffre seul ne se lit pas — « 4 » après « Villes » ne dit
+   * pas de quoi on compte quatre — d'où la phrase en texte masqué.
+   */
+  it("pose le nombre d'outils en pastille, contre le nom", () => {
     render(
-      <SelectionTab {...base} href="/tools/villes">
-        <span className="selection-tab-count">4</span>
-      </SelectionTab>,
+      <SelectionTab
+        {...base}
+        href="/tools/villes"
+        count={{ value: 4, label: "4 outils" }}
+      />,
     );
-    expect(
-      screen.getByRole("link").querySelector(".selection-tab-count"),
-    ).toHaveTextContent("4");
+    const link = screen.getByRole("link");
+    const badge = link.querySelector(".tool-count-badge");
+    expect(badge).toHaveTextContent("4");
+    // Dans le groupe [nom + pastille], pas ailleurs dans l'onglet.
+    expect(link.querySelector(".selection-tab-title")).toContainElement(
+      badge as HTMLElement,
+    );
+    expect(link).toHaveAccessibleName("Villes 4 outils");
+    // La classe qui resserre l'onglet sur mobile suit la pastille.
+    expect(link).toHaveClass("selection-tab-counted");
+  });
+
+  it("n'ajoute ni pastille ni classe quand il n'y a rien à compter", () => {
+    render(<SelectionTab {...base} href="/tools/villes" />);
+    const link = screen.getByRole("link");
+    expect(link.querySelector(".tool-count-badge")).toBeNull();
+    expect(link).not.toHaveClass("selection-tab-counted");
   });
 });

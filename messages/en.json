@@ -119,6 +119,7 @@
     "ranking": "Ranking",
     "skills": "Skills",
     "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
+    "count-short": "{count, plural, =0 {No tool} one {# tool} other {# tools}}",
     "comingSoon": "Coming soon",
     "comingSoonShort": "Soon",
     "unavailable": "Currently unavailable",

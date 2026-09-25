@@ -386,3 +386,46 @@ describe("Bloc 132 §10 — Contact sur mobile", () => {
       expect(body, selector).not.toMatch(/(?:^|[;{]\s*)order:/m);
   });
 });
+
+/**
+ * Bloc 133 §C : le nombre d'outils, en pastille contre le nom.
+ *
+ * C'était une phrase grise à chasse fixe posée à côté du nom, assez longue
+ * pour le repousser. Les valeurs ci-dessous sont celles de la maquette, et
+ * elles ne varient pas avec l'état de l'onglet : un décompte n'est pas un
+ * état, et le faire changer ferait croire à une seconde information.
+ */
+describe("Bloc 133 §C — la pastille du nombre d'outils", () => {
+  it("dessine une pastille de 20 px, en accent sur accent doux", () => {
+    const badge = rule(".tool-count-badge");
+    expect(badge).toBeDefined();
+    expect(badge).toMatch(/height: 1\.25rem/);
+    expect(badge).toMatch(/min-width: 1\.25rem/);
+    expect(badge).toMatch(/padding: 0 0\.375rem/);
+    expect(badge).toMatch(/border-radius: 0\.375rem/);
+    expect(badge).toMatch(/background: var\(--accent-soft\)/);
+    expect(badge).toMatch(/color: var\(--accent\)/);
+    expect(badge).toMatch(/font-family: var\(--font-mono, monospace\)/);
+    expect(badge).toMatch(/font-size: 0\.75rem/);
+    expect(badge).toMatch(/font-weight: 500/);
+    // Le chiffre est centré dans la pastille, pas posé sur sa ligne de base.
+    expect(badge).toMatch(/line-height: 1;/);
+  });
+
+  it("ne change pas de couleur selon l'état de l'onglet", () => {
+    expect(css).not.toMatch(
+      /\.selection-tab\[aria-current="page"\][^{]*\.tool-count-badge/,
+    );
+  });
+
+  // Elle se pose contre le nom : les deux vivent dans un groupe, et c'est ce
+  // groupe que le `gap` de l'onglet éloigne de la vignette, pas la pastille
+  // du nom qu'elle compte.
+  it("groupe le nom et la pastille, à 8 px l'un de l'autre", () => {
+    const title = rule(".selection-tab-title");
+    expect(title).toMatch(/display: inline-flex/);
+    expect(title).toMatch(/align-items: center/);
+    expect(title).toMatch(/gap: 0\.5rem/);
+    expect(title).toMatch(/min-width: 0/);
+  });
+});

@@ -6763,18 +6763,37 @@ span.tool-share-dot.tool-share-stuff {
   height: 100%;
   object-fit: cover;
 }
+/* Bloc 133 §C : nom et pastille forment un groupe, collés l'un à l'autre.
+   Avant, la pastille était un troisième enfant de l'onglet et le `gap` de
+   l'onglet l'éloignait du nom qu'elle compte. */
+.selection-tab-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
 .selection-tab-label {
   min-width: 0;
 }
-/* §3.8 : le nombre d'outils de la catégorie, en chasse fixe. */
-.selection-tab-count {
+/* Bloc 133 §C : le nombre d'outils, en pastille. Elle ne change pas avec
+   l'état de l'onglet — c'est un décompte, pas un état, et le faire varier
+   ferait croire à une seconde information. */
+.tool-count-badge {
   flex: none;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  padding: 0 0.375rem;
+  border-radius: 0.375rem;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-family: var(--font-mono, monospace);
   font-size: 0.75rem;
-}
-.selection-tab[aria-current="page"] .selection-tab-count {
-  color: var(--accent);
+  font-weight: 500;
+  /* Le chiffre est centré dans la pastille, pas posé sur sa ligne de base. */
+  line-height: 1;
 }
 /* La mention « Bientôt » passe sous le libellé plutôt que de pousser
    l'onglet voisin (Bloc 62/J : toujours visible, pas seulement au survol —
