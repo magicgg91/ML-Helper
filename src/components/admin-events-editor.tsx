@@ -139,7 +139,6 @@ export function EventsReferenceEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("events-subtitle")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={form.save}

@@ -42,11 +42,7 @@ export default async function UsersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow={t("eyebrow")}
-        title={t("title")}
-        description={t("subtitle")}
-      />
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} />
       <AdminUsersList
         rows={users}
         currentUserId={session.user.id}

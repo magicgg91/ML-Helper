@@ -96,7 +96,6 @@ export function ProgressionEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={form.save}

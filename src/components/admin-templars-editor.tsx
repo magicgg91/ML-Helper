@@ -99,7 +99,6 @@ export function TemplarsEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("subtitle")}
         pills={<Pill tone="accent">{t("shared-with-reference")}</Pill>}
         dirty={form.dirty}
         saving={form.saving}

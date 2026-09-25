@@ -457,7 +457,6 @@ export function RankingAdminEditor({
         backHref={backHref}
         backLabel={backLabel}
         title={title}
-        description={t("description")}
         dirty={form.dirty}
         saving={form.saving}
         onSave={saveOrShowProblems}

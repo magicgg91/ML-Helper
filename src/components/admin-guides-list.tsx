@@ -325,8 +325,6 @@ export function AdminGuidesList({
         />
       </div>
 
-      <p className="text-xs text-admin-dim">{t("legend")}</p>
-
       {message && (
         <p className="text-sm text-admin-dim" role="status">
           {message}

@@ -26,11 +26,7 @@ export default async function StaticContentAdminPage() {
   const content = translationRecord(legalNotice?.content);
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow={t("eyebrow")}
-        title={t("page-title")}
-        description={t("subtitle")}
-      />
+      <PageHeader eyebrow={t("eyebrow")} title={t("page-title")} />
       <AdminLegalEditor
         hiddenLocales={hiddenLocales}
         publicHref="/legal"

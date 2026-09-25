@@ -388,3 +388,19 @@ describe("Bloc 131/C — dire où l'enregistrement coince", () => {
     );
   });
 });
+
+/**
+ * Bloc 131/D : un écran d'édition n'a plus de ligne d'introduction sous son
+ * titre. Vérifié ici sur un écran rendu pour de vrai, et non seulement sur
+ * le paquet de traductions : une phrase écrite en dur passerait sous le nez
+ * d'un test qui ne regarde que les clés.
+ */
+describe("Bloc 131/D — l'écran Classement sans texte d'introduction", () => {
+  it("passe du titre au travail, sans phrase entre les deux", () => {
+    renderEditor();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Seuils du classement" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Ajoute, renomme, réordonne/)).toBeNull();
+  });
+});

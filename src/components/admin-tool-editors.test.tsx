@@ -315,3 +315,12 @@ describe("Bloc 119: Gemmes", () => {
     ).toBeInTheDocument();
   });
 });
+
+/** Bloc 131/D : le même contrôle sur un second écran d'édition. */
+describe("Bloc 131/D — Taux de gain d'XP sans texte d'introduction", () => {
+  it("passe du titre au travail, sans phrase entre les deux", () => {
+    render(<XpGainRateEditor initial={defaultXpTiers} {...screenProps} />);
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(screen.queryByText(/Les cinq paliers du taux de gain/)).toBeNull();
+  });
+});

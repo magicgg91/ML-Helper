@@ -845,7 +845,6 @@
       "users-summary": "{active} actifs / {total} au total",
       "recent-actions": "Dernières actions",
       "empty": "Aucune action enregistrée.",
-      "subtitle": "L’état du site, et ce qui reste à traiter.",
       "all-visible": "Tous visibles",
       "hidden-count": "{count, plural, =1 {# masqué} other {# masqués}}",
       "all-published": "Tous publiés",
@@ -897,7 +896,6 @@
       "status-saved": "Statut enregistré.",
       "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
       "deleted": "Guide supprimé définitivement.",
-      "subtitle": "Les guides publiés sur le site, leurs traductions et leur statut.",
       "search-label": "Rechercher un guide",
       "search-placeholder": "Titre du guide…",
       "filter-label": "Statut",
@@ -912,7 +910,6 @@
       "byline": "{author} · créé le {date}",
       "translation-edit": "Modifier la version {language} de {title}",
       "translation-create": "Créer la version {language} de {title}",
-      "legend": "Puce pleine : version rédigée. Puce en pointillés : traduction à créer.",
       "modify": "Modifier",
       "more-actions": "Autres actions pour {title}",
       "view-on-site": "Voir sur le site",
@@ -943,7 +940,6 @@
       "enabled": "Référentiel activé.",
       "disabled": "Référentiel désactivé.",
       "no-results": "Aucun référentiel.",
-      "subtitle": "Les tables de données du jeu, et l’outil qui s’en sert.",
       "search-label": "Rechercher un référentiel",
       "search-placeholder": "Nom du référentiel…",
       "table-caption": "Référentiels du site",
@@ -1024,7 +1020,6 @@
       "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
       "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
-      "subtitle": "Les outils publics, leur source de paramètres et leur visibilité.",
       "search-label": "Rechercher un outil",
       "search-placeholder": "Nom de l’outil…",
       "filter-label": "Catégorie",
@@ -1042,7 +1037,6 @@
       "no-results": "Aucun outil ne correspond à cette recherche."
     },
     "ranking": {
-      "description": "Ajoute, renomme, réordonne et active les ligues et divisions, puis édite les plages de chacune. Une entrée peut rester sans plage tant que ses données ne sont pas confirmées.",
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
@@ -1096,8 +1090,6 @@
       "band-name": "Plage {row} de {entry}"
     },
     "references": {
-      "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement.",
-      "expedition-description": "Détail des équipements d’expédition",
       "columns": {
         "set-name": "Nom du set",
         "family": "Famille",
@@ -1163,7 +1155,6 @@
       "tier-row-label": "{field} du palier {row} de {event}",
       "secondary-row": "Indicateur",
       "row-destruction": "Destruction",
-      "consumables-subtitle": "Les objets de la boutique, leur description et leur coût en saphirs.",
       "texts-in": "Textes en",
       "item-count": "{count, plural, =0 {aucun objet} one {# objet} other {# objets}}",
       "item-unnamed": "Objet sans nom",
@@ -1171,7 +1162,6 @@
       "description-to-write": "Description à rédiger",
       "sapphires": "saphirs",
       "cost-unconfirmed": "Coût à confirmer",
-      "events-subtitle": "Les événements de chaque ligue, dans l’ordre où ils s’enchaînent, et leurs paliers.",
       "events-season-title": "Saison",
       "events-of-league": "Événements — {league}",
       "event-unnamed": "Événement sans nom",
@@ -1214,7 +1204,6 @@
       "xp-base": "Base XP",
       "xp-ratio": "Ratio XP",
       "unconfirmed": "Formule de troupes non confirmée",
-      "subtitle": "La courbe d’XP et la formule de troupes de chaque ligue.",
       "xp-section": "XP",
       "troops-section": "Troupes par ligue",
       "troops-formula": "troupes(niveau) = coefficient × ratio^niveau",
@@ -1244,7 +1233,6 @@
         "ratio": "Ratio Coût",
         "title": "Coût"
       },
-      "subtitle": "Base et ratio des trois courbes de ville, et les multiplicateurs de chaque ligue.",
       "used-by": "Utilisé par {count} outils",
       "progression-help": "Chaque courbe suit la forme valeur(niveau) = base × ratio^(niveau − 1)."
     },
@@ -1252,7 +1240,6 @@
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
       "base": "Base",
       "ratio": "Ratio",
-      "subtitle": "Le coût de chaque niveau de Templier, et la présentation des cinq Templiers sur le site.",
       "shared-with-reference": "Référentiel Templiers",
       "cost-section": "Coût",
       "preview": "Aperçu des cinq premiers niveaux",
@@ -1283,7 +1270,6 @@
       "upper-bound-field": "Seuil haut du palier {tier}",
       "rate": "Taux XP (%)",
       "rate-field": "Taux XP du palier {tier}",
-      "subtitle": "Les cinq paliers du taux de gain d’XP, du plus bas au plus haut.",
       "tiers": "Paliers",
       "from": "À partir de (%)",
       "up-to": "Jusqu’à (%)",
@@ -1294,7 +1280,6 @@
     "demo-attack-troops": {
       "formula": "TroupesMax = (X % / 100) × Remparts(niveau de la ville visée)",
       "percentage": "X (% des remparts)",
-      "subtitle": "Part des remparts engagée en attaque démo, ligue par ligue.",
       "per-league": "Pourcentage par ligue",
       "league": "Ligue",
       "preview": "Aperçu"
@@ -1305,7 +1290,6 @@
       "value-field": "{skill} · {league}",
       "price": "Prix d’achat des gemmes par ligue (en saphirs)",
       "price-field": "Prix {league}",
-      "subtitle": "Valeur d’une gemme par compétence et par ligue, et prix d’achat en saphirs.",
       "skill": "Compétence",
       "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu : laissez le champ vide tant que c’est le cas.",
       "sapphires": "saphirs",
@@ -1331,7 +1315,6 @@
       "activated": "Utilisateur activé",
       "deactivated": "Utilisateur désactivé",
       "eyebrow": "Accès",
-      "subtitle": "Les comptes qui peuvent ouvrir l’administration.",
       "new": "Nouvel utilisateur",
       "new-panel-description": "Le compte est actif dès sa création.",
       "generate": "Générer",
@@ -1483,7 +1466,6 @@
         }
       },
       "eyebrow": "Accès",
-      "subtitle": "Toutes les actions enregistrées dans l’administration.",
       "filters-label": "Filtres de l’historique",
       "filter-user-all": "Tous les utilisateurs",
       "filter-message-placeholder": "Un mot du message…",
@@ -1508,7 +1490,6 @@
       "saved": "Mentions légales enregistrées.",
       "error": "Impossible d’enregistrer les mentions légales.",
       "page-title": "Pages légales",
-      "subtitle": "Les pages institutionnelles du site public.",
       "unsaved": "Modifications non enregistrées",
       "all-saved": "Tout est enregistré",
       "view-on-site": "Voir sur le site",
@@ -1570,7 +1551,6 @@
         "script-active": "Script actif",
         "script-inactive": "Aucun script"
       },
-      "subtitle": "Les réglages du site public.",
       "columns-translated": "Guides traduits",
       "columns-public": "Sur le site public",
       "visibility-of": "Visibilité de {language} sur le site public",
