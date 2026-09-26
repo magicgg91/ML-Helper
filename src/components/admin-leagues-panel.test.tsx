@@ -78,6 +78,26 @@ describe("Bloc 119: the Classement editor", () => {
     expect(entries[1]).toHaveTextContent("aucune plage");
   });
 
+  /**
+   * Bloc 138/B : cette section s'en tient à la liste. L'encadré « Plages de fin
+   * de saison » que le Bloc 137 y avait laissé — un compteur et un lien vers
+   * l'écran de l'outil — n'a plus lieu d'être ici, et **rien ne le remplace** :
+   * pas de renvoi croisé vers des données qui vivent maintenant ailleurs.
+   *
+   * Le décompte par entrée dans la liste reste : il décrit l'entrée, comme son
+   * état publié, et il est là depuis le Bloc 119 — le cas ci-dessus le tient.
+   */
+  it("carries no end-of-season section, and points at no other screen", () => {
+    renderEditor();
+    expect(
+      screen.queryByRole("heading", { name: /Plages de fin de saison/ }),
+    ).toBeNull();
+    expect(screen.queryByText(/plages? de fin de saison réglée/)).toBeNull();
+    for (const link of screen.queryAllByRole("link"))
+      expect(link).not.toHaveAttribute("href", "/admin/tools/ranking");
+    expect(screen.queryByText(/Outils . Classement/)).toBeNull();
+  });
+
   it("opens on the first rung and shows only that one", () => {
     renderEditor();
     expect(screen.getByText("Entrée 1 sur 2")).toBeInTheDocument();

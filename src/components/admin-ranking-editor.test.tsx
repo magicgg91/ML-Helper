@@ -8,6 +8,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
 import type { LeagueLadder } from "../lib/leagues";
+import { adminLeagueChipClass } from "./admin-league-chip";
 import { AdminRankingEditor } from "./admin-ranking-editor";
 
 const replace = vi.fn();
@@ -72,10 +73,7 @@ const ladder: LeagueLadder = [
   },
 ];
 
-function renderEditor(
-  initial: LeagueLadder = ladder,
-  { canOpenLeagues = true, answer = "{}" } = {},
-) {
+function renderEditor(initial: LeagueLadder = ladder, { answer = "{}" } = {}) {
   const request = vi
     .spyOn(globalThis, "fetch")
     .mockResolvedValue(new Response(answer, { status: 200 }));
@@ -85,7 +83,6 @@ function renderEditor(
       backHref="/admin/tools"
       backLabel="Outils"
       title="Classement"
-      canOpenLeagues={canOpenLeagues}
     />,
   );
   return request;
@@ -129,27 +126,21 @@ describe("Bloc 137: the Classement tool's own screen", () => {
     expect(screen.queryByLabelText(/active publiquement/i)).toBeNull();
   });
 
-  it("says where creating or renaming one is done", () => {
-    renderEditor();
-    expect(
-      screen.getByRole("link", { name: "Ouvrir Ligues et divisions" }),
-    ).toHaveAttribute("href", "/admin/config#ligues-divisions");
-  });
-
   /**
-   * Revue Codex : « Gestion Outils » est l'utilisateur principal de cet écran et
-   * n'a pas `configuration.read` depuis ce bloc. Un lien l'enverrait sur un 403
-   * garanti ; il lit la phrase sans le lien, comme le tableau Outils le fait
-   * déjà pour une destination hors de portée.
+   * Bloc 138/A : cet écran ne renvoie plus à Configuration. Le Bloc 137 y avait
+   * laissé une phrase et un lien — utiles quand l'échelle entière vivait
+   * ailleurs, sans objet depuis que le classement est revenu ici. La règle porte
+   * sur le renvoi, pas sur une formulation : ni lien vers la section, ni phrase
+   * qui désigne Configuration, quelle que soit la tournure.
    */
-  it("says it without a link to a role that cannot open Configuration", () => {
-    renderEditor(ladder, { canOpenLeagues: false });
-    expect(
-      screen.getByText(/Ajouter, renommer, réordonner ou masquer/),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "Ouvrir Ligues et divisions" }),
-    ).toBeNull();
+  it("points nowhere else: no link and no mention of Configuration", () => {
+    renderEditor();
+    for (const link of screen.queryAllByRole("link"))
+      expect(link).not.toHaveAttribute(
+        "href",
+        "/admin/config#ligues-divisions",
+      );
+    expect(screen.queryByText(/Configuration/)).toBeNull();
   });
 
   /**
@@ -174,6 +165,24 @@ describe("Bloc 137: the Classement tool's own screen", () => {
     save();
     await waitFor(() => expect(refresh).not.toHaveBeenCalled());
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  /**
+   * Bloc 138/C : le bouton actif porte le style d'Événements, par la fonction
+   * que les deux écrans lisent. Le Bloc 137 lui avait donné `bg-admin-accent`
+   * avec `text-admin-accent-ink` — un jeton qui n'existe pas, donc une classe
+   * jamais engendrée et un texte resté à la couleur héritée : 1,94:1 sur ce
+   * violet plein en thème clair, sous les 4,5:1 du WCAG 1.4.3.
+   *
+   * La comparaison avec l'écran Événements est dans `admin-league-chip.test.tsx`
+   * ; ici on tient le bout Classement, et l'absence du jeton fantôme.
+   */
+  it("styles the rung buttons with the shared league chip", () => {
+    renderEditor();
+    const [active, other] = within(rungs()).getAllByRole("button");
+    expect(active.className).toBe(adminLeagueChipClass(true));
+    expect(other.className).toBe(adminLeagueChipClass(false));
+    expect(active.className).not.toMatch(/accent-ink/);
   });
 
   it("shows the bands of the rung the URL names", () => {
@@ -345,32 +354,27 @@ describe("Bloc 131/C — dire où le classement coince", () => {
 });
 
 describe("Bloc 137: an empty ladder", () => {
-  it("says so, and points at the screen that fills it", () => {
+  /**
+   * Bloc 138/A, sur l'autre branche du rendu : l'écran dit qu'il n'a rien à
+   * classer, et s'arrête là. Le renvoi était conditionné en deux endroits, donc
+   * son retrait se vérifie aux deux — celui-ci est la branche qu'une
+   * installation neuve montre en premier.
+   */
+  it("says so, and points nowhere", () => {
     renderEditor([]);
     expect(
       screen.getByText("Aucune ligue ni division n’existe encore."),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Ouvrir Ligues et divisions" }),
-    ).toBeInTheDocument();
+    // Le lien de retour de l'en-tête reste, évidemment ; c'est le renvoi vers
+    // Configuration qui ne doit plus exister.
+    for (const link of screen.queryAllByRole("link"))
+      expect(link).not.toHaveAttribute(
+        "href",
+        "/admin/config#ligues-divisions",
+      );
+    expect(screen.queryByText(/Configuration/)).toBeNull();
     expect(
       screen.queryByRole("group", { name: "Ligue ou division" }),
-    ).toBeNull();
-  });
-
-  /**
-   * La même règle que sur l'échelle peuplée, sur l'autre branche du rendu : le
-   * lien est conditionné en deux endroits, et une condition tenue d'un seul côté
-   * n'est pas tenue. C'est cette branche-ci qu'une installation neuve montre en
-   * premier.
-   */
-  it("says it without a link when Configuration is out of reach", () => {
-    renderEditor([], { canOpenLeagues: false });
-    expect(
-      screen.getByText("Aucune ligue ni division n’existe encore."),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "Ouvrir Ligues et divisions" }),
     ).toBeNull();
   });
 });

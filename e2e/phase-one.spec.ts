@@ -2534,6 +2534,47 @@ test("Bloc 137: the ranking lives on the tool's screen, the list in Configuratio
       page.getByRole("button", { name }),
       `${name} n'a rien à faire sur l'écran de l'outil`,
     ).toHaveCount(0);
+  // Bloc 138/A : et le renvoi inverse a disparu aussi — cet écran ne mène plus
+  // à Configuration, puisque le classement est ici.
+  await expect(
+    page.getByRole("link", { name: /Ouvrir Ligues et divisions/ }),
+  ).toHaveCount(0);
+  await expect(page.getByText(/se fait dans Configuration/)).toHaveCount(0);
+
+  // Bloc 138/C : le bouton actif porte le style d'Événements — l'accent doux et
+  // son encre appariée, et non le violet plein que le Bloc 137 lui avait donné
+  // avec un jeton inexistant. Mesuré dans le navigateur, sur les couleurs
+  // effectivement appliquées : un fond qui n'est pas #5b2bb5 et un texte qui
+  // n'est pas la couleur héritée du corps.
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  const chip = await rungs
+    .getByRole("button", { name: "Bronze", exact: true })
+    .evaluate((el) => {
+      const style = getComputedStyle(el);
+      const parse = (value: string) =>
+        (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const luminance = (rgb: number[]) => {
+        const [r, g, b] = rgb.map((channel) => {
+          const ratio = channel / 255;
+          return ratio <= 0.04045
+            ? ratio / 12.92
+            : ((ratio + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const text = luminance(parse(style.color));
+      const background = luminance(parse(style.backgroundColor));
+      return {
+        background: style.backgroundColor,
+        contrast:
+          (Math.max(text, background) + 0.05) /
+          (Math.min(text, background) + 0.05),
+      };
+    });
+  // Le violet plein du Bloc 137, et le rapport qu'il donnait (1,94:1).
+  expect(chip.background).not.toBe("rgb(91, 43, 181)");
+  expect(chip.contrast).toBeGreaterThanOrEqual(4.5);
+
   // Une plage ajoutée ici, et son seuil réglé. Ajoutée plutôt que trouvée : ce
   // scénario ne doit pas dépendre de ce que la base semée donne à Bronze.
   await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
@@ -2545,7 +2586,7 @@ test("Bloc 137: the ranking lives on the tool's screen, the list in Configuratio
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 
-  // --- Configuration : la liste, aucun seuil, et un renvoi vers l'outil.
+  // --- Configuration : la liste, aucun seuil, et aucun renvoi vers l'outil.
   await b135OpenLeagues(page);
   await expect(
     ligues(page).getByRole("button", {
@@ -2553,9 +2594,14 @@ test("Bloc 137: the ranking lives on the tool's screen, the list in Configuratio
     }),
   ).toBeVisible();
   await expect(ligues(page).getByLabel(/Seuil/)).toHaveCount(0);
+  // Bloc 138/B : l'encadré « Plages de fin de saison » a quitté cette section, et
+  // rien n'a pris sa place — ni compteur, ni lien vers l'écran de l'outil.
+  await expect(ligues(page).getByText(/Plages de fin de saison/)).toHaveCount(
+    0,
+  );
   await expect(
     ligues(page).getByRole("link", { name: /Ouvrir Outils . Classement/ }),
-  ).toHaveAttribute("href", "/admin/tools/ranking");
+  ).toHaveCount(0);
 
   // --- Le croisement, qui est tout l'enjeu : renommer ici ne doit pas effacer
   // le seuil réglé là-bas.

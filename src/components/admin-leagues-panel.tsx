@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -20,7 +19,6 @@ import type { LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { configurationHref } from "@/lib/admin-sections";
-import { adminToolEditHref } from "@/lib/admin-tools";
 import { useSectionDirty } from "./admin-collapsible-section";
 import { ConfirmDialog } from "./admin-confirm-dialog";
 import { EditorSection } from "./admin-editor-section";
@@ -147,7 +145,6 @@ type LeagueProblem = {
  * tableau que le lien « Modifier » du tableau Outils, pour que les deux ne
  * puissent pas diverger.
  */
-const rankingToolHref = adminToolEditHref("ranking") ?? "/admin/tools";
 
 /** L'adresse d'un champ, pour comparer un problème à ce qu'on est en train de rendre. */
 function fieldKey(rungId: string, field: LeagueField) {
@@ -652,24 +649,6 @@ export function AdminLeaguesPanel({
                   />
                 </div>
               </div>
-            </EditorSection>
-
-            <EditorSection title={t("bands-section")}>
-              {/*
-                Bloc 137 : les seuils et récompenses de fin de saison sont le
-                classement, pas le référentiel. Ils se règlent dans l'écran de
-                l'outil ; cette section dit où, et combien cet échelon en porte,
-                pour qu'on ne cherche pas.
-              */}
-              <p className="text-sm text-admin-dim">
-                {t("bands-count-hint", { count: selected.bandCount })}{" "}
-                <Link
-                  className="admin-focus rounded-admin-control font-medium text-admin-text underline"
-                  href={rankingToolHref}
-                >
-                  {t("bands-elsewhere-link")}
-                </Link>
-              </p>
             </EditorSection>
           </div>
         )}
