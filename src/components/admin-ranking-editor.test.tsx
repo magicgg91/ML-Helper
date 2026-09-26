@@ -357,4 +357,20 @@ describe("Bloc 137: an empty ladder", () => {
       screen.queryByRole("group", { name: "Ligue ou division" }),
     ).toBeNull();
   });
+
+  /**
+   * La même règle que sur l'échelle peuplée, sur l'autre branche du rendu : le
+   * lien est conditionné en deux endroits, et une condition tenue d'un seul côté
+   * n'est pas tenue. C'est cette branche-ci qu'une installation neuve montre en
+   * premier.
+   */
+  it("says it without a link when Configuration is out of reach", () => {
+    renderEditor([], { canOpenLeagues: false });
+    expect(
+      screen.getByText("Aucune ligue ni division n’existe encore."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Ouvrir Ligues et divisions" }),
+    ).toBeNull();
+  });
 });
