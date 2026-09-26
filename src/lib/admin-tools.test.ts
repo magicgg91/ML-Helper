@@ -15,13 +15,20 @@ describe("admin tool editor routing", () => {
       expect(adminToolEditHref(slug)).toBe("/admin/tools/city-parameters");
   });
   it("uses dedicated parameter editors where required", () => {
-    expect(adminToolEditHref("ranking")).toBe("/admin/tools/ranking");
     expect(adminToolEditHref("templars")).toBe("/admin/tools/templars");
     expect(adminToolEditHref("xp-gain-rate")).toBe("/admin/tools/xp-gain-rate");
     expect(adminToolEditHref("demo-attack-troops")).toBe(
       "/admin/tools/demo-attack-troops",
     );
     expect(adminToolEditHref("gems")).toBe("/admin/tools/gems");
+  });
+  /**
+   * Bloc 135 : le Classement n'a plus d'écran d'édition. Ses seuls paramètres
+   * étaient l'échelle des ligues et des divisions, passée dans Configuration —
+   * `toolParameterSource` renvoie la section, et le tableau Outils y envoie.
+   */
+  it("ne donne plus d'écran d'édition au Classement", () => {
+    expect(adminToolEditHref("ranking")).toBeUndefined();
   });
   it("points Templiers' reference to the same shared formula editor as the Templars tool (Bloc 33/G)", () => {
     expect(adminToolEditHref("templiers")).toBe(

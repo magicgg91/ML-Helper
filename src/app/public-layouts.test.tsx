@@ -31,7 +31,12 @@ vi.mock("@/lib/prisma", () => ({
     guide: { findMany: vi.fn().mockResolvedValue([]) },
     // Bloc 108/E: the tool layout now reads the ranking ladder, to hand the
     // player settings panel the divisions it may offer.
-    referenceTable: { findUnique: vi.fn().mockResolvedValue(null) },
+    // Bloc 135 : l'échelle est lue sous sa clé actuelle ou l'ancienne, d'un
+    // seul aller-retour — d'où `findMany` et non `findUnique`.
+    referenceTable: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 vi.mock("../lib/calculators-server", () => ({

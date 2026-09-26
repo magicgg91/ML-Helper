@@ -9,7 +9,6 @@ import {
   XpGainRateEditor,
 } from "@/components/admin-tool-editors";
 import { TemplarsEditor } from "@/components/admin-templars-editor";
-import { RankingAdminEditor } from "@/components/admin-ranking-editor";
 import {
   getCityParameters,
   getDemoPercentages,
@@ -19,7 +18,6 @@ import {
 } from "@/lib/admin-formulas-server";
 import { toolsSharingEditor } from "@/lib/admin-tool-sources";
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
-import { getRankingLadder } from "@/lib/ranking";
 
 export default async function EditToolPage({
   params,
@@ -76,16 +74,6 @@ export default async function EditToolPage({
             href: "/admin/tools",
           }),
         )}
-      />
-    );
-  }
-  if (id === "ranking") {
-    return (
-      <RankingAdminEditor
-        initialLadder={await getRankingLadder()}
-        backHref={backHref}
-        backLabel={backLabel}
-        title={names("ranking.name")}
       />
     );
   }

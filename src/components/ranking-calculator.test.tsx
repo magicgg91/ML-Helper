@@ -9,12 +9,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
+import { rankCategoryShade } from "../lib/ranking";
 import {
-  defaultRankingLadder,
-  rankCategoryShade,
-  type RankingEntry,
-  type RankingLadder,
-} from "../lib/ranking";
+  defaultLeagueLadder,
+  type LeagueLadder,
+  type LeagueRung,
+} from "../lib/leagues";
 import { defaultPlayerSettings } from "../lib/player-settings";
 import { playerStorageKey } from "./player-settings-panel";
 import { mockViewport } from "../test/viewport";
@@ -47,7 +47,7 @@ describe("RankingCalculator", () => {
   ) =>
     render(
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <RankingCalculator ladder={defaultRankingLadder} />
+        <RankingCalculator ladder={defaultLeagueLadder} />
       </NextIntlClientProvider>,
     );
   it("converts correlated rank and percentage and renders confirmed rewards", () => {
@@ -307,13 +307,12 @@ describe("RankingCalculator", () => {
 });
 
 /** A ladder with divisions, one of them not switched on yet. */
-const withDivisions: RankingLadder = [
+const withDivisions: LeagueLadder = [
   {
     id: "bronze",
     league: "bronze",
     division: "",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 0,
     active: true,
     bands: [],
@@ -322,8 +321,7 @@ const withDivisions: RankingLadder = [
     id: "silver-2",
     league: "silver",
     division: "2",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 1,
     active: true,
     bands: [],
@@ -332,8 +330,7 @@ const withDivisions: RankingLadder = [
     id: "silver-1",
     league: "silver",
     division: "1",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 2,
     active: true,
     bands: [],
@@ -342,8 +339,7 @@ const withDivisions: RankingLadder = [
     id: "gold-2",
     league: "gold",
     division: "2",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 3,
     active: true,
     bands: [],
@@ -352,8 +348,7 @@ const withDivisions: RankingLadder = [
     id: "gold-1",
     league: "gold",
     division: "1",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 4,
     active: true,
     bands: [
@@ -373,8 +368,7 @@ const withDivisions: RankingLadder = [
     id: "platinum-2",
     league: "platinum",
     division: "2",
-    nameFr: "",
-    nameEn: "",
+    name: {},
     position: 5,
     active: false,
     bands: [
@@ -388,7 +382,7 @@ const withDivisions: RankingLadder = [
   },
 ];
 
-const renderLadder = (ladder: RankingLadder) =>
+const renderLadder = (ladder: LeagueLadder) =>
   render(
     <NextIntlClientProvider locale="fr" messages={frMessages}>
       <RankingCalculator ladder={ladder} />
@@ -515,13 +509,12 @@ describe("Bloc 108, revue Codex", () => {
   // stored per locale and falls back to English — never shown as typed in one
   // language to all five.
   it("P1: reads a free name in the reader's language, falling back to English", () => {
-    const named: RankingLadder = [
+    const named: LeagueLadder = [
       {
         id: "champion",
         league: null,
         division: "",
-        nameFr: "Champion suprême",
-        nameEn: "Supreme Champion",
+        name: { fr: "Champion suprême", en: "Supreme Champion" },
         position: 0,
         active: true,
         bands: [],
@@ -532,8 +525,7 @@ describe("Bloc 108, revue Codex", () => {
         id: "challenger",
         league: null,
         division: "",
-        nameFr: "",
-        nameEn: "Challenger",
+        name: { en: "Challenger" },
         position: 1,
         active: true,
         bands: [],
@@ -562,13 +554,12 @@ describe("Bloc 108, revue Codex", () => {
   // P2: a band may point at a rung prepared but not switched on. Naming it
   // would put a future division on the public page — what the flag prevents.
   it("P2: never names an inactive target, in any tile", () => {
-    const ladder: RankingLadder = [
+    const ladder: LeagueLadder = [
       {
         id: "gold",
         league: "gold",
         division: "",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: 0,
         active: true,
         bands: [
@@ -584,8 +575,7 @@ describe("Bloc 108, revue Codex", () => {
         id: "platinum-2",
         league: "platinum",
         division: "2",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: 1,
         active: false,
         bands: [],
@@ -616,14 +606,13 @@ describe("Bloc 108, revue Codex", () => {
         equipmentSkills: {},
       }),
     );
-    const moved: RankingLadder = [
+    const moved: LeagueLadder = [
       {
         // Same id, now under Platine — the player's stored "gold-1".
         id: "gold-1",
         league: "platinum",
         division: "1",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: 0,
         active: true,
         bands: [],
@@ -632,8 +621,7 @@ describe("Bloc 108, revue Codex", () => {
         id: "gold",
         league: "gold",
         division: "",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: 1,
         active: true,
         bands: [],
@@ -652,13 +640,12 @@ describe("Bloc 108, revue Codex", () => {
 });
 
 /** A ladder of `count` active rungs, named so each button is distinguishable. */
-const ladderOf = (count: number): RankingLadder =>
+const ladderOf = (count: number): LeagueLadder =>
   Array.from({ length: count }, (_, index) => ({
     id: `rung-${index + 1}`,
     league: null,
     division: "",
-    nameFr: `Rang ${index + 1}`,
-    nameEn: `Rung ${index + 1}`,
+    name: { fr: `Rang ${index + 1}`, en: `Rung ${index + 1}` },
     position: index,
     active: true,
     bands: [],
@@ -806,7 +793,7 @@ const partsOf = (selector: string) =>
 describe("Bloc 112: what a range tile reads", () => {
   afterEach(cleanup);
   const show = (league = "Diamant") => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: league }),
     );
@@ -867,7 +854,7 @@ describe("Bloc 112: what a range tile reads", () => {
   // The whole point of removing the estimated-players tile: that number is
   // the last range's upper bound, so the tile only restated it.
   it("ends the last range on the number the removed tile used to show", () => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Diamant" }),
     );
@@ -886,7 +873,7 @@ describe("Bloc 112: the player's own position", () => {
    * about that.
    */
   const showAt = (percentage: string) => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Diamant" }),
     );
@@ -970,7 +957,7 @@ describe("Bloc 112: the League Lock chip in the header", () => {
   afterEach(cleanup);
 
   it("sits in the section header, beside the heading", () => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
     const header = document.querySelector(".ranking-ranges-header")!;
     expect(header.querySelector("h2")).toHaveTextContent(
@@ -988,13 +975,12 @@ describe("Bloc 112: the League Lock chip in the header", () => {
   // since it shipped; moving it into the ranges header must not lose that.
   it("still shows for an entry that has no ranges yet", () => {
     // Three rungs, the top one deliberately without a single threshold.
-    const empty: RankingLadder = ["bronze", "silver", "gold"].map(
+    const empty: LeagueLadder = ["bronze", "silver", "gold"].map(
       (league, index) => ({
         id: league,
-        league: league as RankingEntry["league"],
+        league: league as LeagueRung["league"],
         division: "",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: index,
         active: true,
         bands: [],
@@ -1016,7 +1002,7 @@ describe("Bloc 112: the League Lock chip in the header", () => {
     // An earlier test in this file persists player settings, and a stored
     // league resolves an entry on its own (Bloc 108/E).
     window.localStorage.clear();
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     expect(document.querySelector(".ranking-ranges-header")).toBeNull();
     expect(screen.queryByTestId("ranking-league-lock")).toBeNull();
   });
@@ -1025,20 +1011,19 @@ describe("Bloc 112: the League Lock chip in the header", () => {
 // Codex review (PR #139), P2. The estimated-players figure was removed on
 // the grounds that the last range ends on it — true only of a range reaching
 // 100%: calculateRanking ceils there and floors everywhere else. A ladder can
-// stop short of 100 (isSavableRankingLadder only checks 0 < t <= 100), and a
+// stop short of 100 (isSavableLeagueLadder only checks 0 < t <= 100), and a
 // small enough population can drop the 100% range from one that has it. In
 // both cases the figure was nowhere on the page.
 describe("Bloc 112, revue Codex : le total quand aucune plage ne le porte", () => {
   afterEach(cleanup);
 
   /** A one-rung ladder whose single range stops at `top` percent. */
-  const stoppingAt = (top: number): RankingLadder => [
+  const stoppingAt = (top: number): LeagueLadder => [
     {
       id: "gold",
       league: "gold",
       division: "",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 0,
       active: true,
       bands: [
@@ -1046,7 +1031,7 @@ describe("Bloc 112, revue Codex : le total quand aucune plage ne le porte", () =
       ],
     },
   ];
-  const show = (ladder: RankingLadder) => {
+  const show = (ladder: LeagueLadder) => {
     renderLadder(ladder);
     fireEvent.click(within(leagueGroup()).getByRole("button", { name: "Or" }));
   };
@@ -1094,7 +1079,7 @@ describe("Bloc 112: the colors of a range tile", () => {
   // movement AND its position inside that movement's group. Nothing here is
   // a hard-coded per-league value.
   it("gives two ranges of the same result distinct shades", () => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Diamant" }),
     );
@@ -1112,7 +1097,7 @@ describe("Bloc 112: the colors of a range tile", () => {
     ["Argent", 6],
     ["Diamant", 5],
   ])("shades %s's %i ranges distinctly", (league, count) => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: league }),
     );
@@ -1128,7 +1113,7 @@ describe("Bloc 112: the colors of a range tile", () => {
   // class is what carries it, so two Maintien ranges wear the same blue
   // whatever their own shade.
   it("marks each tile with its result, for the fixed strong color", () => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Diamant" }),
     );
@@ -1153,13 +1138,12 @@ describe("Bloc 112: the colors of a range tile", () => {
   // A range whose movement an admin has not set yet is drawn as a Maintien —
   // the same neutral default rankBandShades gives it.
   it("falls back to the Maintien result when no movement is set", () => {
-    const unset: RankingLadder = [
+    const unset: LeagueLadder = [
       {
         id: "bronze",
         league: "bronze",
         division: "",
-        nameFr: "",
-        nameEn: "",
+        name: {},
         position: 0,
         active: true,
         bands: [{ threshold: 100, movement: null, target: null, rewards: [] }],
@@ -1190,7 +1174,7 @@ describe("Bloc 112: the position bar", () => {
   // Left edge is 0% (best), right edge 100% (worst): a range covers its own
   // slice of that axis.
   it("places each segment on its own slice of the ladder", () => {
-    renderLadder(defaultRankingLadder);
+    renderLadder(defaultLeagueLadder);
     fireEvent.click(
       within(leagueGroup()).getByRole("button", { name: "Diamant" }),
     );
@@ -1206,20 +1190,19 @@ describe("Bloc 112: the position bar", () => {
 
 // Codex review (PR #137), P2. An admin can save two bands on the same
 // threshold: the Add action seeds every new row at 100, and
-// isSavableRankingLadder only checks the range, never uniqueness. Keying the
+// isSavableLeagueLadder only checks the range, never uniqueness. Keying the
 // shades by threshold let the later band overwrite the earlier one's color —
 // so the interval actually drawn on the bar could wear another movement
 // category's shade.
 describe("Bloc 110, revue Codex : deux bandes sur le même seuil", () => {
   afterEach(cleanup);
 
-  const duplicated: RankingLadder = [
+  const duplicated: LeagueLadder = [
     {
       id: "gold",
       league: "gold",
       division: "",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 0,
       active: true,
       bands: [

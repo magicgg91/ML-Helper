@@ -41,7 +41,10 @@ export function isReferenceCalculatorSlug(slug: string): boolean {
 export function adminToolEditHref(slug: string): string | undefined {
   if (cityToolSlugs.includes(slug as (typeof cityToolSlugs)[number]))
     return "/admin/tools/city-parameters";
-  if (slug === "ranking") return "/admin/tools/ranking";
+  // Bloc 135 : le Classement n'a plus d'écran d'édition. Ses seuls paramètres
+  // étaient l'échelle des ligues et des divisions, qui est passée dans
+  // Configuration — `toolParameterSource` renvoie désormais la section, et
+  // c'est là que le tableau Outils envoie.
   if (slug === "templars") return "/admin/tools/templars";
   // Bloc 35/7.1, updated Bloc 50: carries provenance through the URL, so the
   // editor's back button returns to Référentiels — not just to whichever

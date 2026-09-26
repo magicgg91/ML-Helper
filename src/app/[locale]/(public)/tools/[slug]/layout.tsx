@@ -15,7 +15,7 @@ import {
 import { prisma } from "../../../../../lib/prisma";
 import { localizedText } from "../../../../../lib/translations";
 import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
-import { getRankingLadder } from "../../../../../lib/ranking";
+import { getLeagueLadder } from "../../../../../lib/leagues";
 import { JsonLd } from "../../../../../components/json-ld";
 import { webApplicationJsonLd } from "../../../../../lib/structured-data";
 import { BreadcrumbJsonLd } from "../../../../../components/breadcrumb-json-ld";
@@ -160,7 +160,7 @@ export default async function ToolDetailLayout({
       )}
       {/* Bloc 108/E: the ladder reaches the panel so its division field can
           offer the divisions an admin has actually configured. */}
-      <PlayerSettingsPanel ladder={await getRankingLadder()} />
+      <PlayerSettingsPanel ladder={await getLeagueLadder()} />
       {/* §3.8 : la navigation entre outils tient en deux rangées — les
           catégories, puis les outils de la catégorie, que le contenu de
           l'outil rend lui-même.

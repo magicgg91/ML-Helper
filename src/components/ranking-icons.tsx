@@ -10,7 +10,7 @@
  * aria-hidden and are skipped by screen readers rather than read twice.
  */
 
-import type { RankMovement, RankRewardType } from "../lib/ranking";
+import type { SeasonMovement, SeasonRewardType } from "../lib/leagues";
 import { strokeIcon } from "./icon-base";
 
 /**
@@ -20,7 +20,7 @@ import { strokeIcon } from "./icon-base";
 export function RankMovementIcon({
   movement,
 }: {
-  movement: RankMovement | null;
+  movement: SeasonMovement | null;
 }) {
   return (
     <svg className="ranking-icon" {...strokeIcon}>
@@ -35,7 +35,7 @@ export function RankMovementIcon({
   );
 }
 
-export function RankRewardIcon({ type }: { type: RankRewardType }) {
+export function RankRewardIcon({ type }: { type: SeasonRewardType }) {
   return (
     <svg className="ranking-icon" {...strokeIcon}>
       {type === "sapphires" ? (

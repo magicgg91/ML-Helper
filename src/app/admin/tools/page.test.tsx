@@ -102,9 +102,13 @@ describe("Bloc 119: the Outils page hands the list its rows", () => {
       href: "/admin/tools/city-parameters",
       sharedCount: 3,
     });
+    // Bloc 135 : le Classement n'a plus d'écran d'édition. Ses seuls
+    // paramètres étaient l'échelle des ligues et des divisions, qui se gère
+    // désormais dans Configuration — la ligne y envoie, au lieu de garder un
+    // bouton « Modifier » vers un écran qui n'existe plus.
     expect(source("ranking")).toEqual({
-      kind: "own",
-      href: "/admin/tools/ranking",
+      kind: "configuration",
+      href: "/admin/config#ligues-divisions",
     });
     expect(source("city-rewards")).toEqual({ kind: "none" });
     // The reference's name comes from the Référentiels catalogue, so both

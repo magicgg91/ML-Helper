@@ -19,10 +19,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId } from "react";
-import { can } from "@/auth/permissions";
 import {
   adminSectionGroups,
   adminSections,
+  canAny,
   type AdminSectionKey,
 } from "@/lib/admin-sections";
 import { cn } from "@/lib/utils";
@@ -128,7 +128,7 @@ export function AdminSidebar({
       >
         {adminSectionGroups.map((group) => {
           const entries = adminSections.filter(
-            (section) => section.group === group && can(role, section.read),
+            (section) => section.group === group && canAny(role, section.read),
           );
           if (entries.length === 0) return null;
           const headingId = `${groupHeadingId}-${group}`;

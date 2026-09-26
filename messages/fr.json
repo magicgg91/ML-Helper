@@ -1033,9 +1033,13 @@
       "open": "Ouvrir",
       "nothing-to-edit": "Rien à modifier",
       "visibility-of": "Visibilité de {tool}",
-      "no-results": "Aucun outil ne correspond à cette recherche."
+      "no-results": "Aucun outil ne correspond à cette recherche.",
+      "source-configuration": "Configuration › Ligues et divisions"
     },
-    "ranking": {
+    "leagues": {
+      "section": "Ligues et divisions",
+      "intro": "L’échelle que lisent le Classement, le sélecteur de division des Paramètres joueur et, par leur ligue de base, les Gemmes, la Progression, les Événements et les Villes.",
+      "summary": "{count, plural, one {# ligue/division} other {# ligues/divisions}} · {active, plural, one {# active} other {# actives}}",
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
@@ -1064,7 +1068,7 @@
       "entry-no-league": "Aucune",
       "entry-division": "Division",
       "entry-untitled": "Entrée sans nom",
-      "entry-name-error": "Choisis une ligue de base ou saisis un nom libre (FR ou EN).",
+      "entry-name-error": "Choisis une ligue de base, ou saisis un nom libre dans au moins une langue.",
       "entry-league-field": "{entry} (rang {position}) ligue de base",
       "entry-division-field": "{entry} (rang {position}) division",
       "entry-active-field": "{entry} (rang {position}) active publiquement",
@@ -1073,11 +1077,7 @@
       "remove-entry-confirm": "Supprimer cette entrée et toutes ses plages ?",
       "move-up": "Monter {entry}",
       "move-down": "Descendre {entry}",
-      "entry-name-fr": "Nom libre (FR)",
-      "entry-name-en": "Nom libre (EN)",
-      "entry-name-fr-field": "{entry} (rang {position}) nom libre FR",
-      "entry-name-en-field": "{entry} (rang {position}) nom libre EN",
-      "entries-label": "Entrées du classement",
+      "entries-label": "Ligues et divisions",
       "band-count": "{count, plural, =0 {aucune plage} one {# plage} other {# plages}}",
       "entry-position": "Entrée {position} sur {total}",
       "entry-actions": "Autres actions pour {entry}",
@@ -1086,7 +1086,11 @@
       "bands-section": "Plages de fin de saison",
       "row-actions": "Action",
       "top": "Top",
-      "band-name": "Plage {row} de {entry}"
+      "band-name": "Plage {row} de {entry}",
+      "languages-label": "Nom libre en",
+      "language-hidden": "{language} masquée sur le site",
+      "entry-name": "Nom libre ({language})",
+      "entry-name-field": "{entry} (rang {position}) nom libre {language}"
     },
     "references": {
       "columns": {
@@ -1464,6 +1468,9 @@
         },
         "highlights": {
           "update": "{actor} a modifié la sélection « Mis en avant » de l’accueil"
+        },
+        "leagues": {
+          "update": "{actor} a modifié les ligues et les divisions"
         }
       },
       "eyebrow": "Accès",

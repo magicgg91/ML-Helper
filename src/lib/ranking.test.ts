@@ -1,27 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { calculateRanking, rankBandShades, rankCategoryShade } from "./ranking";
 import {
-  activeLadder,
-  calculateRanking,
-  defaultRankingLadder,
-  divisionsForLeague,
-  findRankingEntry,
-  isSavableRankingLadder,
-  leagueLockFor,
-  orderedLadder,
-  parseRankingLadder,
-  rankBandShades,
-  rankCategoryShade,
-  rankingEntryId,
-  type RankingEntry,
-  type RankingLadder,
-} from "./ranking";
+  defaultLeagueLadder,
+  findLeagueRung,
+  parseLeagueLadder,
+  type LeagueLadder,
+} from "./leagues";
 
 /** The bands of one shipped entry, by id. */
-const bandsOf = (id: string) =>
-  findRankingEntry(defaultRankingLadder, id)!.bands;
+const bandsOf = (id: string) => findLeagueRung(defaultLeagueLadder, id)!.bands;
 /** The bands of one entry of a parsed ladder, by id. */
-const bandsIn = (ladder: RankingLadder, id: string) =>
-  findRankingEntry(ladder, id)!.bands;
+const bandsIn = (ladder: LeagueLadder, id: string) =>
+  findLeagueRung(ladder, id)!.bands;
 
 describe("ranking calculator", () => {
   it("deduces player count and computes increasing ranges", () => {
@@ -112,7 +102,7 @@ describe("ranking calculator", () => {
   });
 
   it("normalizes editable reference data", () => {
-    const config = parseRankingLadder({
+    const config = parseLeagueLadder({
       bronze: [
         {
           threshold: 50,
@@ -132,7 +122,7 @@ describe("ranking calculator", () => {
   });
 
   it("drops an invalid movement, target, or reward instead of failing the whole row", () => {
-    const config = parseRankingLadder({
+    const config = parseLeagueLadder({
       bronze: [
         {
           threshold: 50,
@@ -155,7 +145,7 @@ describe("ranking calculator", () => {
   });
 
   it("drops a fractional reward quantity instead of rounding it silently", () => {
-    const config = parseRankingLadder({
+    const config = parseLeagueLadder({
       bronze: [
         {
           threshold: 50,
@@ -174,7 +164,7 @@ describe("ranking calculator", () => {
   });
 
   it("converts a pre-Bloc-27 row's free-text target/reward into the new shape", () => {
-    const config = parseRankingLadder({
+    const config = parseLeagueLadder({
       bronze: [
         {
           threshold: 50,
@@ -220,15 +210,15 @@ describe("ranking calculator", () => {
   });
 
   it("allows confirmed ranking rows to be edited too", () => {
-    const edited: RankingLadder = structuredClone(defaultRankingLadder);
+    const edited: LeagueLadder = structuredClone(defaultLeagueLadder);
     const band = {
       threshold: 2,
       movement: "relegation" as const,
       target: "diamond",
       rewards: [{ type: "sapphires" as const, quantity: 10 }],
     };
-    findRankingEntry(edited, "legend")!.bands[0] = band;
-    expect(bandsIn(parseRankingLadder(edited), "legend")[0]).toEqual(band);
+    findLeagueRung(edited, "legend")!.bands[0] = band;
+    expect(bandsIn(parseLeagueLadder(edited), "legend")[0]).toEqual(band);
   });
 });
 
@@ -341,323 +331,5 @@ describe("rankBandShades", () => {
         { threshold: 10, movement: null, target: null, rewards: [] },
       ]),
     ).toEqual([rankCategoryShade("stay", 0)]);
-  });
-});
-
-// Bloc 108/A: the six leagues the tool shipped with, and everything an admin
-// had already configured for them, have to survive the move to a dynamic
-// ladder. The stored row is not rewritten by a SQL migration — it is read
-// through parseRankingLadder, which accepts both shapes, exactly as this file
-// already did for the pre-Bloc-27 French-sentence rows.
-describe("Bloc 108/A: migrating the six fixed leagues to a ladder", () => {
-  /** A stored row in the pre-Bloc-108 shape, with real configured data. */
-  const stored = {
-    bronze: [],
-    silver: [
-      {
-        threshold: 1,
-        movement: "promotion",
-        league: "gold",
-        rewards: [
-          { type: "sapphires", quantity: 100 },
-          { type: "speedups", quantity: 7 },
-          { type: "gems", quantity: 6 },
-        ],
-      },
-    ],
-    gold: [],
-    platinum: [{ threshold: 50, movement: null, league: null, rewards: [] }],
-    diamond: [
-      {
-        threshold: 100,
-        movement: "relegation",
-        league: "platinum",
-        rewards: [{ type: "gems", quantity: 1 }],
-      },
-    ],
-    legend: [],
-  };
-
-  it("keeps all six, in game order, active, with their league keys as ids", () => {
-    const ladder = parseRankingLadder(stored);
-    expect(ladder.map((entry) => entry.id)).toEqual([
-      "bronze",
-      "silver",
-      "gold",
-      "platinum",
-      "diamond",
-      "legend",
-    ]);
-    expect(ladder.map((entry) => entry.position)).toEqual([0, 1, 2, 3, 4, 5]);
-    // They are already in production: none of them may arrive switched off.
-    expect(ladder.every((entry) => entry.active)).toBe(true);
-    expect(ladder.every((entry) => entry.division === "")).toBe(true);
-  });
-
-  it("carries every configured band across, rewards included", () => {
-    const ladder = parseRankingLadder(stored);
-    expect(bandsIn(ladder, "silver")).toEqual(
-      stored.silver.map((row) => ({
-        threshold: row.threshold,
-        movement: row.movement,
-        target: row.league,
-        rewards: row.rewards,
-      })),
-    );
-    // Speedups specifically: the reward type Bloc 108/H is about.
-    expect(bandsIn(ladder, "silver")[0].rewards).toContainEqual({
-      type: "speedups",
-      quantity: 7,
-    });
-    // A threshold confirmed without a movement stays unconfirmed, not dropped.
-    expect(bandsIn(ladder, "platinum")).toHaveLength(1);
-    expect(bandsIn(ladder, "platinum")[0].movement).toBeNull();
-  });
-
-  it("re-points every promotion and relegation at the migrated entry", () => {
-    const ladder = parseRankingLadder(stored);
-    // `league: "gold"` becomes `target: "gold"`, which is a real id on the
-    // new ladder — the whole reason the six keep their league keys.
-    expect(bandsIn(ladder, "silver")[0].target).toBe("gold");
-    expect(findRankingEntry(ladder, "gold")).toBeDefined();
-    expect(bandsIn(ladder, "diamond")[0].target).toBe("platinum");
-  });
-
-  it("clears a target that names no entry, rather than leaving it dangling", () => {
-    const ladder = parseRankingLadder([
-      {
-        id: "bronze",
-        league: "bronze",
-        division: "",
-        nameFr: "",
-        nameEn: "",
-        position: 0,
-        active: true,
-        bands: [
-          { threshold: 50, movement: "promotion", target: "deleted-rung" },
-        ],
-      },
-    ]);
-    expect(bandsIn(ladder, "bronze")[0].target).toBeNull();
-    // The band itself survives: its threshold is still real.
-    expect(bandsIn(ladder, "bronze")[0].threshold).toBe(50);
-  });
-
-  it("refuses a ladder whose ids collide, because a target would be ambiguous", () => {
-    const twice = (id: string): RankingEntry => ({
-      id,
-      league: "gold",
-      division: "1",
-      nameFr: "",
-      nameEn: "",
-      position: 0,
-      active: true,
-      bands: [],
-    });
-    expect(isSavableRankingLadder([twice("gold-1")])).toBe(true);
-    expect(isSavableRankingLadder([twice("gold-1"), twice("gold-1")])).toBe(
-      false,
-    );
-    expect(isSavableRankingLadder([])).toBe(false);
-  });
-
-  it("builds an id from the league and division, or from a free name", () => {
-    expect(rankingEntryId({ league: "gold", division: "1" })).toBe("gold-1");
-    // Codex review (PR #135): the free name is stored per locale, and the id
-    // is built from the English one first so editing the French name later
-    // cannot move an id that bands already point at.
-    expect(
-      rankingEntryId({
-        league: null,
-        division: "",
-        nameFr: "Élite Suprême",
-        nameEn: "Supreme Elite",
-      }),
-    ).toBe("supreme-elite");
-    expect(
-      rankingEntryId({ league: null, division: "", nameFr: "Élite Suprême" }),
-    ).toBe("elite-supreme");
-  });
-});
-
-/** The ladder once the studio's divisions exist, bottom rung first. */
-function ladderWithDivisions(
-  overrides: Partial<Record<string, Partial<RankingEntry>>> = {},
-): RankingLadder {
-  const rungs: Array<[string, string]> = [
-    ["bronze", ""],
-    ["silver", "2"],
-    ["silver", "1"],
-    ["gold", "2"],
-    ["gold", "1"],
-    ["platinum", "2"],
-    ["platinum", "1"],
-    ["diamond", "2"],
-    ["diamond", "1"],
-    ["legend", ""],
-  ];
-  return rungs.map(([league, division], index) => {
-    const id = division ? `${league}-${division}` : league;
-    return {
-      id,
-      league: league as RankingEntry["league"],
-      division,
-      nameFr: "",
-      nameEn: "",
-      position: index,
-      active: true,
-      bands: [],
-      ...overrides[id],
-    };
-  });
-}
-
-// Bloc 108/D: the League Lock is new — the game has always had it, the tool
-// never showed it. No admin field: it is two rungs down the ladder.
-describe("Bloc 108/D: the League Lock is computed, never typed in", () => {
-  it("reproduces the studio's own example: Or 1 locks at Argent 1", () => {
-    // Or 1 -> Or 2 -> Argent 1, two rungs down.
-    expect(leagueLockFor(ladderWithDivisions(), "gold-1")?.id).toBe("silver-1");
-  });
-
-  it.each([
-    ["gold-2", "silver-2"],
-    ["platinum-1", "gold-1"],
-    ["diamond-2", "platinum-2"],
-    ["legend", "diamond-2"],
-  ])("locks %s at %s", (from, expected) => {
-    expect(leagueLockFor(ladderWithDivisions(), from)?.id).toBe(expected);
-  });
-
-  // Bloc 111: the three cases near the floor, which Bloc 108 left
-  // unspecified and answered with a plain "none". Bronze is the floor: never
-  // a lock for anyone, and never locked itself.
-  it.each([
-    // Already the floor — nothing below it to be held at.
-    ["bronze", null],
-    // One rung back would be the floor, so the walk shortens to zero rungs.
-    ["silver-2", "silver-2"],
-    // Two rungs back would be the floor, so it shortens to one.
-    ["silver-1", "silver-2"],
-  ])("clamps the lock of %s to %s near the floor", (from, expected) => {
-    expect(leagueLockFor(ladderWithDivisions(), from)?.id ?? null).toBe(
-      expected,
-    );
-  });
-
-  // The rule stated as the property, not as the three cases: whatever the
-  // ladder, the floor is never handed back as anyone's lock.
-  it("never returns the ladder's floor as a lock target", () => {
-    const ladders = [
-      defaultRankingLadder,
-      ladderWithDivisions(),
-      // A floor split into divisions, and a ladder switched down to two
-      // rungs — the shortest one where a lock can exist at all.
-      ladderWithDivisions({ "gold-1": { active: false } }),
-      ladderWithDivisions({
-        "gold-1": { active: false },
-        "gold-2": { active: false },
-        "silver-1": { active: false },
-      }),
-    ];
-    for (const ladder of ladders) {
-      const active = activeLadder(ladder);
-      const floor = active[0]!.id;
-      for (const entry of active)
-        expect(
-          leagueLockFor(ladder, entry.id)?.id,
-          `${entry.id} on a ${active.length}-rung ladder`,
-        ).not.toBe(floor);
-    }
-  });
-
-  // And the walk is only ever shortened, never lengthened: no rung is locked
-  // at something above itself.
-  it("never locks a rung above itself", () => {
-    const active = activeLadder(ladderWithDivisions());
-    for (const [index, entry] of active.entries()) {
-      const lock = leagueLockFor(ladderWithDivisions(), entry.id);
-      if (!lock) continue;
-      expect(
-        active.findIndex((item) => item.id === lock.id),
-        `${entry.id} locks at ${lock.id}`,
-      ).toBeLessThanOrEqual(index);
-    }
-  });
-
-  // Bloc 108/B: the lock is a consequence of the order, so reordering must
-  // move it. This is the assertion that would fail if insertion order were
-  // used as the source of truth instead of the explicit position.
-  it("follows a reordering of the ladder", () => {
-    const swapped = ladderWithDivisions({
-      "gold-2": { position: 4 },
-      "gold-1": { position: 3 },
-    });
-    // Or 1 is now BELOW Or 2, so it sits two rungs above Argent 2.
-    expect(leagueLockFor(swapped, "gold-1")?.id).toBe("silver-2");
-    expect(leagueLockFor(swapped, "gold-2")?.id).toBe("silver-1");
-  });
-
-  // Bloc 108/G: an entry an admin has prepared but not switched on does not
-  // exist for the player, so it must not shift the count either.
-  it("counts only active rungs", () => {
-    const pending = ladderWithDivisions({ "gold-2": { active: false } });
-    // With Or 2 switched off the ladder reads Argent 2, Argent 1, Or 1.
-    expect(leagueLockFor(pending, "gold-1")?.id).toBe("silver-2");
-    expect(activeLadder(pending).map((entry) => entry.id)).not.toContain(
-      "gold-2",
-    );
-  });
-
-  it("has no answer for an entry that is not on the ladder at all", () => {
-    expect(leagueLockFor(ladderWithDivisions(), "nowhere")).toBeNull();
-  });
-});
-
-// Bloc 108/E: the player settings' division field is driven by what an admin
-// has really configured — never by a hard-coded list of divisions.
-describe("Bloc 108/E: the divisions offered for a league", () => {
-  it("is empty for a league with no division configured", () => {
-    expect(divisionsForLeague(defaultRankingLadder, "gold")).toEqual([]);
-    expect(divisionsForLeague(ladderWithDivisions(), "bronze")).toEqual([]);
-    expect(divisionsForLeague(ladderWithDivisions(), "legend")).toEqual([]);
-  });
-
-  it("lists that league's divisions, in ladder order, once they exist", () => {
-    expect(
-      divisionsForLeague(ladderWithDivisions(), "gold").map((e) => e.id),
-    ).toEqual(["gold-2", "gold-1"]);
-  });
-
-  it("leaves out a division that is not active yet", () => {
-    const pending = ladderWithDivisions({ "gold-1": { active: false } });
-    expect(divisionsForLeague(pending, "gold").map((e) => e.id)).toEqual([
-      "gold-2",
-    ]);
-  });
-
-  it("has nothing to offer when no league is chosen", () => {
-    expect(divisionsForLeague(ladderWithDivisions(), "")).toEqual([]);
-  });
-});
-
-// Bloc 108/B: order is explicit, and orderedLadder renumbers positions so an
-// admin never has to keep them contiguous by hand.
-describe("Bloc 108/B: explicit order", () => {
-  it("sorts on position, not on the order the entries happen to be in", () => {
-    const shuffled = [...ladderWithDivisions()].reverse();
-    expect(orderedLadder(shuffled).map((entry) => entry.id)).toEqual(
-      ladderWithDivisions().map((entry) => entry.id),
-    );
-  });
-
-  it("renumbers gaps away, so positions stay 0..n-1", () => {
-    const sparse = ladderWithDivisions({
-      bronze: { position: 5 },
-      "silver-2": { position: 90 },
-    });
-    expect(orderedLadder(sparse).map((entry) => entry.position)).toEqual([
-      ...Array(10).keys(),
-    ]);
   });
 });

@@ -3,21 +3,26 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
 import {
-  activeLadder,
   calculateRanking,
-  findRankingEntry,
-  leagueLockFor,
   rankBandShades,
   rankCategoryShade,
-  rankRewardTypes,
-  type RankingBand,
-  type RankingEntry,
-  type RankingLadder,
   type RankingRange,
-  type RankRewardType,
 } from "../lib/ranking";
+import {
+  activeLadder,
+  baseLeagueOf,
+  findLeagueRung,
+  leagueLockFor,
+  seasonRewardTypes,
+  type LeagueLadder,
+  type LeagueRung,
+  type SeasonBand,
+  type SeasonRewardType,
+} from "../lib/leagues";
 import { leagueButtonRows, sliceIntoRows } from "../lib/league-button-rows";
-import { pickFrEn } from "../lib/translations";
+import { leagueRungLabel } from "./league-rung-label";
+
+type Translator = ReturnType<typeof useTranslations>;
 import { NumberStepper } from "./number-stepper";
 import {
   LeagueLockIcon,
@@ -26,30 +31,6 @@ import {
 } from "./ranking-icons";
 import { useNarrowViewport } from "./use-narrow-viewport";
 import { usePlayerSettings } from "./use-player-settings";
-
-type Translator = ReturnType<typeof useTranslations>;
-
-/**
- * Bloc 108/A: an entry's name in the reader's own language.
- *
- * A free name wins when an admin typed one — the rename escape hatch — and it
- * is stored per locale, read through pickFrEn so a missing translation falls
- * back to English like everything else on this site (Codex review, PR #135:
- * a single-language name would have reached every reader unchanged).
- * Otherwise the name is built from the base league, which IS translated
- * (game.leagues.*), plus the division label: "Or" + "1" reads "Or 1" in
- * French and "Gold 1" in English, with nothing to translate by hand.
- */
-export function rankingEntryLabel(
-  entry: RankingEntry,
-  game: Translator,
-  locale: string,
-) {
-  const free = pickFrEn(entry.nameFr, entry.nameEn, locale);
-  if (free) return free;
-  const base = entry.league ? game(`leagues.${entry.league}`) : "";
-  return entry.division ? `${base} ${entry.division}`.trim() : base;
-}
 
 /**
  * Bloc 112: what a range leads to, as two separate pieces — the movement verb
@@ -64,23 +45,21 @@ export function rankingEntryLabel(
  * a raw id, with no verb in front of it.
  */
 function rangeTarget(
-  band: RankingBand,
-  entries: RankingLadder,
+  band: SeasonBand,
+  entries: LeagueLadder,
   t: Translator,
   game: Translator,
   locale: string,
 ): { verb: string | null; league: string } {
-  const target = band.target
-    ? findRankingEntry(entries, band.target)
-    : undefined;
+  const target = band.target ? findLeagueRung(entries, band.target) : undefined;
   if (!band.movement || !target) return { verb: null, league: t("undefined") };
   return {
     verb: t(`movements.${band.movement}`),
-    league: rankingEntryLabel(target, game, locale),
+    league: leagueRungLabel(target, game, locale),
   };
 }
 
-function rewardQuantity(band: RankingBand, type: RankRewardType) {
+function rewardQuantity(band: SeasonBand, type: SeasonRewardType) {
   return band.rewards.find((item) => item.type === type)?.quantity ?? 0;
 }
 
@@ -103,7 +82,7 @@ function bandColorStyle(color: string) {
   return { "--band-color": color } as CSSProperties;
 }
 
-export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
+export function RankingCalculator({ ladder }: { ladder: LeagueLadder }) {
   const locale = useLocale();
   const t = useTranslations("ranking");
   const game = useTranslations("game");
@@ -122,7 +101,15 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
     // (Codex review, PR #135): an admin can move an entry to another base
     // league while its id — which is what was persisted — stays the same, and
     // the calculator would then quietly show another league's bands.
-    ofLeague.find((entry) => entry.id === settings.division)?.id ??
+    //
+    // Bloc 135 §4 : la comparaison passe par `baseLeagueOf`, le seul chemin
+    // nommé d'une division vers sa ligue de base. La règle était écrite ici en
+    // clair, et c'est celle dont tous les autres outils dépendent sans la
+    // dire — la nommer une fois est ce qui la rend vérifiable.
+    (settings.division &&
+    baseLeagueOf(ladder, settings.division) === settings.league
+      ? findLeagueRung(entries, settings.division)?.id
+      : undefined) ??
     // Without one, a league that still has a single rung resolves on its own;
     // a league already split into divisions does not, and the player picks —
     // guessing which half of their league they are in would invent data.
@@ -156,14 +143,14 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
   // it always uses the row markup; desktop only splits once the single row
   // it has always had stops fitting, above six.
   const splitRows = narrow || buttonRows.length > 1;
-  const entryButton = (item: RankingEntry) => (
+  const entryButton = (item: LeagueRung) => (
     <button
       key={item.id}
       type="button"
       aria-pressed={item.id === entryId}
       onClick={() => setManualEntry(item.id)}
     >
-      {rankingEntryLabel(item, game, locale)}
+      {leagueRungLabel(item, game, locale)}
     </button>
   );
 
@@ -261,7 +248,7 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
                   removed because the last range ends on it — but that only
                   holds for a range reaching 100%, and calculateRanking says
                   so itself: every other range floors at its own percentage.
-                  isSavableRankingLadder allows a ladder stopping short of
+                  isSavableLeagueLadder allows a ladder stopping short of
                   100, and a small enough population can drop the 100% range
                   even from a ladder that has one. In both cases the figure is
                   nowhere else on the page, so it comes back — as a chip, and
@@ -292,7 +279,7 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
                   data-testid="ranking-league-lock"
                 >
                   {lock
-                    ? rankingEntryLabel(lock, game, locale)
+                    ? leagueRungLabel(lock, game, locale)
                     : t("league-lock-none")}
                 </strong>
               </p>
@@ -311,7 +298,7 @@ export function RankingCalculator({ ladder }: { ladder: RankingLadder }) {
             // active/inactive is the only thing that decides visibility.
             <p className="ranking-placeholder">
               {t("errors.missing-bands", {
-                entry: rankingEntryLabel(entry, game, locale),
+                entry: leagueRungLabel(entry, game, locale),
               })}
             </p>
           ) : (
@@ -361,7 +348,7 @@ function RankingRangeTile({
 }: {
   range: RankingRange;
   color: string;
-  entries: RankingLadder;
+  entries: LeagueLadder;
   percentage: number;
   narrow: boolean;
 }) {
@@ -390,7 +377,7 @@ function RankingRangeTile({
   const playerBubble = (
     <span className="ranking-player-bubble">{playerLabel}</span>
   );
-  const rewards = rankRewardTypes
+  const rewards = seasonRewardTypes
     .map((type) => ({ type, quantity: rewardQuantity(range, type) }))
     .filter((reward) => reward.quantity > 0);
   return (

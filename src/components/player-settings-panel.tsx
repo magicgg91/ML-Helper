@@ -4,8 +4,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 import { NumberStepper } from "./number-stepper";
 import { LeagueButtons } from "./league-select";
-import { divisionsForLeague, type RankingLadder } from "../lib/ranking";
-import { rankingEntryLabel } from "./ranking-calculator";
+import { divisionsForLeague, type LeagueLadder } from "../lib/leagues";
+import { leagueRungLabel } from "./league-rung-label";
 import { usePersistedState } from "./use-persisted-state";
 import { formatSkillPercentValue } from "../lib/format";
 import { templarRates } from "../lib/gems-templars";
@@ -110,7 +110,7 @@ export function PlayerSettingsPanel({
   // the ladder was not passed.
   ladder = [],
 }: {
-  ladder?: RankingLadder;
+  ladder?: LeagueLadder;
 } = {}) {
   const locale = useLocale();
   const t = useTranslations("player-settings");
@@ -392,7 +392,7 @@ export function PlayerSettingsPanel({
                 <option value="">{t("division-none")}</option>
                 {divisions.map((entry) => (
                   <option key={entry.id} value={entry.id}>
-                    {rankingEntryLabel(entry, game, locale)}
+                    {leagueRungLabel(entry, game, locale)}
                   </option>
                 ))}
               </select>

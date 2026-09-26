@@ -7,6 +7,7 @@ import type { LanguageRow } from "@/components/admin-languages-panel";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/auth/require-session";
 import { getTrackingSettings } from "@/lib/site-settings";
+import { getLeagueLadder } from "@/lib/leagues";
 
 vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
@@ -19,14 +20,26 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("@/lib/site-settings", () => ({ getTrackingSettings: vi.fn() }));
+// Bloc 135 : l'échelle des ligues et des divisions. Seul son chargement est
+// doublé — `activeLadder`, qui compte les échelons publics du résumé, reste
+// celui du module.
+vi.mock("@/lib/leagues", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/leagues")>()),
+  getLeagueLadder: vi.fn(),
+}));
 vi.mock("next-intl/server", () => ({
   // Bloc 136 : les valeurs interpolées sont rendues à côté de la clé. Le
   // résumé d'une section repliée est fait de ces valeurs — sans elles,
   // « 4 actives sur 5 » se lirait « languages-summary », et un compte faux
   // passerait.
-  getTranslations:
-    async () => (key: string, values?: Record<string, unknown>) =>
-      values ? `${key} ${JSON.stringify(values)}` : key,
+  getTranslations: async () => {
+    const translate = (key: string, values?: Record<string, unknown>) =>
+      values ? `${key} ${JSON.stringify(values)}` : key;
+    // Bloc 135 : les noms de langue passés au panneau des ligues sont lus avec
+    // `has` avant `()`, comme sur les écrans Outils et Référentiels — la
+    // doublure doit donc porter les deux.
+    return Object.assign(translate, { has: () => true });
+  },
   getLocale: async () => "fr",
 }));
 // Bloc 132 §4 : l'écran calcule aussi ce qu'on peut mettre en avant. Ces
@@ -62,12 +75,44 @@ vi.mock("@/components/tracking-settings-panel", () => ({
 vi.mock("@/components/admin-logs-purge", () => ({
   AdminLogsPurge: () => <div data-testid="purge" />,
 }));
+// Bloc 135 : doublé comme les autres panneaux — ce que cet écran décide, c'est
+// de le montrer ou non, et avec quelles langues.
+vi.mock("@/components/admin-leagues-panel", () => ({
+  AdminLeaguesPanel: (props: {
+    initialLadder: { id: string }[];
+    hiddenLocales?: readonly string[];
+    languageNames?: Record<string, string>;
+  }) => <pre data-testid="leagues">{JSON.stringify(props)}</pre>,
+}));
 
 const mockedRequireCapability = vi.mocked(requireCapability);
 const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
 const mockedLocaleFindMany = vi.mocked(prisma.localeSetting.findMany);
 const mockedTracking = vi.mocked(getTrackingSettings);
 const mockedLogCount = vi.mocked(prisma.auditLog.count);
+const mockedLadder = vi.mocked(getLeagueLadder);
+
+/** Deux échelons, dont un préparé mais pas publié — de quoi compter. */
+const ladder = [
+  {
+    id: "bronze",
+    league: "bronze" as const,
+    division: "",
+    name: {},
+    position: 0,
+    active: true,
+    bands: [],
+  },
+  {
+    id: "silver-1",
+    league: "silver" as const,
+    division: "1",
+    name: { fr: "Argent I" },
+    position: 1,
+    active: false,
+    bands: [],
+  },
+];
 
 afterEach(() => {
   cleanup();
@@ -101,6 +146,7 @@ async function renderPage({
   ] as unknown as Awaited<ReturnType<typeof prisma.localeSetting.findMany>>);
   mockedTracking.mockResolvedValue({ url, websiteId: "" });
   mockedLogCount.mockResolvedValue(1234);
+  mockedLadder.mockResolvedValue(ladder);
   // Bloc 136 : l'en-tête des sections est un composant client — ses propres
   // libellés (la pastille « Modifié ») passent par le fournisseur, là où le
   // corps de la page lit `getTranslations`, doublé plus haut.
@@ -109,8 +155,10 @@ async function renderPage({
       {await ConfigAdminPage()}
     </NextIntlClientProvider>,
   );
+  // La section des langues n'existe pas pour un rôle qui entre ici par
+  // `leagues.read` seul (Bloc 135) : ses tests lisent alors autre chose.
   return JSON.parse(
-    screen.getByTestId("languages").textContent ?? "[]",
+    screen.queryByTestId("languages")?.textContent ?? "[]",
   ) as LanguageRow[];
 }
 
@@ -281,12 +329,16 @@ describe("Bloc 131/E — la purge du journal, en Configuration", () => {
  * et qu'elle porte l'ancre qui permet d'y envoyer quelqu'un.
  */
 describe("Bloc 136 — Configuration repliée par défaut", () => {
-  it("ouvre les quatre sections repliées", async () => {
+  it("ouvre les cinq sections repliées", async () => {
     await renderPage();
     // Chacune nommée par son seul titre : c'est l'en-tête d'une section, pas
-    // la phrase « titre + description + résumé » mise bout à bout.
+    // la phrase « titre + description + résumé » mise bout à bout. Les titres
+    // sont ici les clés elles-mêmes, la doublure de `getTranslations` les
+    // rendant telles quelles — d'où « section », le titre de la section
+    // Ligues et divisions dans son propre espace de noms.
     const headers = [
       "highlights.section",
+      "section",
       "languages-section",
       "tracking.section",
       "purge-title",
@@ -312,9 +364,100 @@ describe("Bloc 136 — Configuration repliée par défaut", () => {
   it("porte l'ancre de chaque section", async () => {
     await renderPage();
     expect(
-      ["mis-en-avant", "langues", "suivi-visites", "purge-journal"].map(
-        (id) => document.getElementById(id)?.tagName,
-      ),
-    ).toEqual(["SECTION", "SECTION", "SECTION", "SECTION"]);
+      [
+        "mis-en-avant",
+        "ligues-divisions",
+        "langues",
+        "suivi-visites",
+        "purge-journal",
+      ].map((id) => document.getElementById(id)?.tagName),
+    ).toEqual(["SECTION", "SECTION", "SECTION", "SECTION", "SECTION"]);
+  });
+});
+
+/**
+ * Bloc 135 §2 : la section Ligues et divisions, sur l'écran Configuration.
+ *
+ * Ce que cet écran décide : où la section se place, ce que son en-tête dit
+ * sans qu'on l'ouvre, et à qui elle s'affiche. Le CRUD lui-même est doublé —
+ * il a ses propres tests.
+ */
+describe("Bloc 135 §2 — Ligues et divisions dans Configuration", () => {
+  const panel = () =>
+    JSON.parse(screen.getByTestId("leagues").textContent ?? "{}") as {
+      initialLadder: { id: string }[];
+      hiddenLocales?: string[];
+      languageNames?: Record<string, string>;
+    };
+
+  it("compte les échelons et les actifs sans qu'on ouvre la section", async () => {
+    await renderPage();
+    const summary = screen.getByText(/^summary/).textContent ?? "";
+    expect(JSON.parse(summary.replace("summary ", ""))).toEqual({
+      count: 2,
+      active: 1,
+    });
+  });
+
+  // Entre la sélection de l'accueil et les langues du site : un référentiel de
+  // jeu, du même ordre que les langues, et non un réglage technique.
+  it("se place après « Mis en avant » et avant « Langues »", async () => {
+    await renderPage();
+    const order = [...document.querySelectorAll("section[id]")].map(
+      (section) => section.id,
+    );
+    expect(order).toEqual([
+      "mis-en-avant",
+      "ligues-divisions",
+      "langues",
+      "suivi-visites",
+      "purge-journal",
+    ]);
+  });
+
+  it("passe l'échelle, les langues masquées et leurs noms au panneau", async () => {
+    await renderPage();
+    const props = panel();
+    expect(props.initialLadder.map((rung) => rung.id)).toEqual([
+      "bronze",
+      "silver-1",
+    ]);
+    // L'espagnol est désactivé par la doublure de `localeSetting` : un nom
+    // écrit dedans n'est nulle part sur le site, et l'onglet doit le dire.
+    expect(props.hiddenLocales).toEqual(["es"]);
+    expect(Object.keys(props.languageNames ?? {})).toEqual([
+      "fr",
+      "en",
+      "de",
+      "es",
+      "tr",
+    ]);
+  });
+
+  /**
+   * Le point qui justifie une capacité à part. « Gestion Outils » éditait
+   * l'échelle quand elle vivait sur /admin/tools/ranking : il entre donc ici,
+   * et n'y voit que sa section — pas les langues du site, pas la sélection de
+   * l'accueil, pas le suivi, pas la purge.
+   */
+  it("s'ouvre à « Gestion Outils », et à lui seul cette section", async () => {
+    await renderPage({ role: "tools_manager" });
+    expect(screen.getByTestId("leagues")).toBeInTheDocument();
+    expect(screen.queryByTestId("languages")).toBeNull();
+    expect(screen.queryByTestId("highlights")).toBeNull();
+    expect(screen.queryByTestId("tracking")).toBeNull();
+    expect(screen.queryByTestId("purge")).toBeNull();
+  });
+
+  // Et les guides ne sont pas lus pour lui : il n'a pas `guides.read`, et le
+  // seul usage de leur contenu est le tableau des langues qu'il ne voit pas.
+  it("ne lit pas les guides pour un rôle qui n'a que les ligues", async () => {
+    await renderPage({ role: "tools_manager" });
+    expect(mockedGuideFindMany).not.toHaveBeenCalled();
+  });
+
+  it("n'affiche rien pour un rôle sans droit sur les ligues", async () => {
+    await renderPage({ role: "guides_manager" });
+    expect(screen.queryByTestId("leagues")).toBeNull();
   });
 });

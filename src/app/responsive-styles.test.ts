@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { narrowViewportMaxWidth } from "../components/use-narrow-viewport";
-import { rankCategoryShade, rankMovements } from "../lib/ranking";
+import { rankCategoryShade } from "../lib/ranking";
+import { seasonMovements } from "../lib/leagues";
 
 /** Every shade the range palette can produce, for the contrast checks below. */
-const rankCategoryShades = rankMovements.flatMap((movement) =>
+const rankCategoryShades = seasonMovements.flatMap((movement) =>
   Array.from({ length: 5 }, (_, index) => rankCategoryShade(movement, index)),
 );
 
