@@ -18,19 +18,36 @@ import {
   safePlayerSettings,
 } from "./player-settings-panel";
 import { defaultPlayerSettings } from "../lib/player-settings";
-import type { LeagueLadder } from "../lib/leagues";
+import { defaultLeagueLadder, type LeagueLadder } from "../lib/leagues";
 import { templarRates } from "../lib/gems-templars";
+import { mockViewport } from "../test/viewport";
 
-// Bloc 68/F: the league field is a LeagueButtons group now, not a <select>
-// — this mirrors the click-based interaction already established in
-// league-select.test.tsx / level-up-reference.test.tsx.
-function clickLeague(name: string) {
-  fireEvent.click(
-    within(screen.getByRole("group", { name: "Ligue" })).getByRole("button", {
-      name,
-    }),
+function panel(ladder?: LeagueLadder) {
+  return render(
+    <NextIntlClientProvider locale="fr" messages={messages}>
+      <PlayerSettingsPanel ladder={ladder} />
+    </NextIntlClientProvider>,
   );
 }
+
+/** Bloc 123 : un seul sélecteur pour la ligue et la division. */
+const rungGroup = () =>
+  screen.getByRole("group", { name: "Ligue ou division" });
+
+function clickRung(name: string) {
+  fireEvent.click(within(rungGroup()).getByRole("button", { name }));
+}
+
+/** L'étiquette d'une compétence dans le résumé replié. */
+const chip = (skill: string) =>
+  document.querySelector(`.player-stat-chip[data-skill="${skill}"]`);
+
+/** Le « = X% » d'une case de la matrice, ligne et colonne nommées. */
+const percentOf = (row: string, skill: string) =>
+  document.querySelector(`[data-percent="${row}-${skill}"]`);
+
+const level = () =>
+  screen.getByLabelText("Niveau du joueur", { selector: "input" });
 
 describe("PlayerSettingsPanel", () => {
   beforeEach(() => window.localStorage.clear());
@@ -64,11 +81,7 @@ describe("PlayerSettingsPanel", () => {
     const listener = (event: Event) => broadcasts.push(event);
     window.addEventListener(playerSettingsChangedEvent, listener);
     try {
-      render(
-        <NextIntlClientProvider locale="fr" messages={messages}>
-          <PlayerSettingsPanel />
-        </NextIntlClientProvider>,
-      );
+      panel();
       await waitFor(() =>
         expect(window.localStorage.getItem(playerStorageKey)).not.toBeNull(),
       );
@@ -81,25 +94,14 @@ describe("PlayerSettingsPanel", () => {
   });
 
   // Bloc 102: the second overwrite path, and the one Bloc 99 left standing.
-  // Bloc 99 stopped the panel from answering its own write by making the
-  // comparison come out equal; that only holds while storage and the panel
-  // agree. It cannot hold when the panel's own write is LATE: persisting
-  // happens in a passive effect, and React runs a passive effect after the
-  // commit that scheduled it — including after a newer render has already
-  // gone in. The effect then writes, and announces, the snapshot it
-  // captured rather than the current one, and answering that announcement
-  // adopted the older snapshot: the level the user had just typed went back
-  // to its previous value. Reproduced 7 times in 600 runs of the scenario
-  // under CPU contention before the fix, 0 in 600 after it — hence this
-  // test, which forces the same interleaving outright.
+  // Persisting happens in a passive effect, which React runs after the commit
+  // that scheduled it — including after a newer render has already gone in.
+  // The effect then writes, and announces, the snapshot it captured rather
+  // than the current one, and answering that announcement adopted the older
+  // snapshot: the level the user had just typed went back to its previous
+  // value.
   it("Bloc102: ignores its own broadcast, which can announce a snapshot it has moved past", async () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const level = () =>
-      screen.getByLabelText("Niveau du joueur", { selector: "input" });
+    panel();
 
     fireEvent.change(level(), { target: { value: "10" } });
     await waitFor(() =>
@@ -142,22 +144,13 @@ describe("PlayerSettingsPanel", () => {
     expect(level()).toHaveValue(6);
   });
 
-  // The other half of syncFromStorage's guard, which Bloc 102 left in place
-  // and nothing pinned down: `broadcasting` decides whether the event is
-  // ours, the content comparison decides whether anything actually changed.
-  // Drop the comparison and two mounted copies of the panel answer each
-  // other without end — each adopts a new-but-identical object, saves it,
-  // announces it, and wakes the other one up again.
+  // The other half of syncFromStorage's guard: `broadcasting` decides whether
+  // the event is ours, the content comparison decides whether anything
+  // actually changed. Drop the comparison and two mounted copies of the panel
+  // answer each other without end.
   it("Bloc102: an outside announcement that changes nothing leaves the panel alone", async () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    fireEvent.change(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      { target: { value: "10" } },
-    );
+    panel();
+    fireEvent.change(level(), { target: { value: "10" } });
     await waitFor(() =>
       expect(window.localStorage.getItem(playerStorageKey)).toContain(
         '"level":10',
@@ -181,124 +174,31 @@ describe("PlayerSettingsPanel", () => {
     }
   });
 
-  it("starts with no league selected", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const group = screen.getByRole("group", { name: "Ligue" });
-    for (const button of within(group).getAllByRole("button"))
+  it("starts with no rung selected", () => {
+    panel();
+    for (const button of within(rungGroup()).getAllByRole("button"))
       expect(button).toHaveAttribute("aria-pressed", "false");
   });
 
-  // Bloc 68/E: "Ligue non définie" replaces the old generic "— Choisir —"
-  // placeholder in the collapsed one-line summary.
-  it("Bloc68/E: shows 'Ligue non définie' in the summary until a league is picked, then the real league name", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    expect(document.querySelector(".player-summary-row1")).toHaveTextContent(
-      "Ligue non définie",
-    );
-    clickLeague("Or");
-    expect(document.querySelector(".player-summary-row1")).toHaveTextContent(
-      "Or",
-    );
-    expect(
-      document.querySelector(".player-summary-row1"),
-    ).not.toHaveTextContent("Ligue non définie");
-  });
-
-  // Bloc 68/G: the title and the one-line summary share a common wrapper
-  // (activating globals.css's own .player-summary-row1 rule, previously
-  // defined but unused by any component) so the mobile breakpoint can
-  // stack them below the title — the skills-breakdown line stays outside.
-  it("Bloc68/G: wraps the title and the one-line summary in .player-summary-row1, distinct from the skills-breakdown line", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const row1 = document.querySelector(".player-summary-row1");
-    expect(row1).not.toBeNull();
-    expect(row1!.querySelector("#player-settings-title")).not.toBeNull();
-    const line2 = screen.getByTestId("player-summary-line2");
-    expect(row1!.contains(line2)).toBe(false);
-  });
-
-  // Bloc 68/H+I: the primary fields grid keeps League, Level, VP as its
-  // first 3 children in that order — the mobile 2-col CSS (globals.css)
-  // relies on League being :first-child to span the full row.
-  it("Bloc68/H: keeps League as the primary grid's first child, ahead of Level and VP", () => {
-    const { container } = render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const primary = container.querySelector(".settings-grid-primary")!;
-    // Bloc 69/D: League's own group is now wrapped in a field div (to carry
-    // the new "Ligue" title above it) — that wrapper is the first child,
-    // and it still contains the league group.
-    expect(primary.children[0]).toContainElement(
-      screen.getByRole("group", { name: "Ligue" }),
-    );
-  });
-
-  it("gives the league button group the .league-buttons-grid class, so it forms a 2-row/3-column grid on mobile like Events/Progression's", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    expect(screen.getByRole("group", { name: "Ligue" })).toHaveClass(
-      "league-buttons-grid",
-    );
-  });
-
-  it("Bloc69/D: shows a visible 'Ligue' title above the league buttons (missing at Bloc68 delivery)", () => {
-    const { container } = render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const label = container.querySelector(".settings-grid-league-label");
-    expect(label).toHaveTextContent("Ligue");
-  });
-
-  // Bloc 68/I: every settings-grid section (equipment, points, templars,
-  // clan temple) carries the plain "settings-grid" class the shared mobile
-  // 2-col rule targets.
-  it("Bloc68/I: every skills/points/templars/clan-temple section uses the shared .settings-grid class", () => {
-    const { container } = render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const grids = container.querySelectorAll(".settings-grid");
-    // primary + equipment + points + templars + clan temple = 5.
-    expect(grids).toHaveLength(5);
+  // Bloc 68/E, Bloc 123 : « Ligue non définie » vit maintenant dans la
+  // pastille de l'en-tête, qui prend le nom de l'échelon dès qu'il y en a un.
+  it("shows 'Ligue non définie' in the header pill until a rung is picked", () => {
+    panel();
+    const pill = document.querySelector(".player-league-pill");
+    expect(pill).toHaveTextContent("Ligue non définie");
+    clickRung("Or");
+    expect(pill).toHaveTextContent("Or");
+    expect(pill).not.toHaveTextContent("Ligue non définie");
   });
 
   it("keeps equipment skills independent from planned points", async () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
+    panel();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Attaque avec équipement" }),
     );
-    fireEvent.change(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      {
-        target: { value: "10" },
-      },
-    );
-    clickLeague("Or");
+    fireEvent.change(level(), { target: { value: "10" } });
+    clickRung("Or");
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );
@@ -324,17 +224,9 @@ describe("PlayerSettingsPanel", () => {
       }),
     );
 
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
+    panel();
 
-    await waitFor(() =>
-      expect(
-        screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      ).toHaveValue(42),
-    );
+    await waitFor(() => expect(level()).toHaveValue(42));
     expect(screen.getByLabelText("Attaque avec équipement")).toHaveValue(7.5);
     expect(screen.getByLabelText("Unité des VP")).toHaveValue("1000000");
   });
@@ -383,79 +275,76 @@ describe("PlayerSettingsPanel", () => {
         clanTemple: { rusher: 50 },
       }),
     );
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
-        "Vit 50% (0% + 0% + 50%)",
-      ),
-    );
+    panel();
+    await waitFor(() => expect(chip("rusher")).toHaveTextContent("50%"));
   });
 
-  it("keeps the two-line summary visible while the panel stays collapsed", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    expect(screen.queryByRole("group", { name: "Ligue" })).not.toBeVisible();
-    const line2 = screen.getByTestId("player-summary-line2");
-    expect(line2).toBeVisible();
+  it("keeps the collapsed chips visible while the panel stays collapsed", () => {
+    panel();
+    expect(rungGroup()).not.toBeVisible();
+    const chips = screen.getByTestId("player-summary-chips");
+    expect(chips).toBeVisible();
     // Attaque and Vitesse are temple skills: even with no input yet, their
     // total already includes the confirmed temple base (20% / 50%).
-    expect(line2).toHaveTextContent("Atq 20%");
-    expect(line2).toHaveTextContent("Vit 50%");
+    expect(chip("striker")).toHaveTextContent("Atq");
+    expect(chip("striker")).toHaveTextContent("20%");
+    expect(chip("rusher")).toHaveTextContent("50%");
   });
 
-  it("shows the equipment/points/temple breakdown for a temple skill in the collapsed summary", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    const line2 = screen.getByTestId("player-summary-line2");
-    expect(line2).toHaveTextContent("Atq 20% (0% + 0% + 20%)");
-    // Bravoure is not a temple skill: just the total, no breakdown.
-    expect(line2).not.toHaveTextContent("Bra 0% (");
-    expect(line2.querySelectorAll(".player-summary-skill-group")).toHaveLength(
-      2,
-    );
-    expect(
-      line2.querySelectorAll(".player-summary-skill-group")[0]?.children,
-    ).toHaveLength(5);
-    expect(
-      line2.querySelectorAll(".player-summary-skill-group")[1]?.children,
-    ).toHaveLength(5);
-    expect(line2.querySelector(".sk-value")).toHaveClass("component-total");
+  // Bloc 123 §1 : dix étiquettes, cinq par rangée — la grille est dans la
+  // feuille de style, le nombre et l'ordre viennent d'ici.
+  it("lays the ten skills out in the cahier des charges' order", () => {
+    panel();
+    const chips = [
+      ...screen
+        .getByTestId("player-summary-chips")
+        .querySelectorAll(".player-stat-chip"),
+    ];
+    expect(chips.map((item) => item.getAttribute("data-skill"))).toEqual([
+      "striker",
+      "brave",
+      "scavenger",
+      "guardian",
+      "fearless",
+      "prosperous",
+      "recruiter",
+      "cautious",
+      "salvager",
+      "rusher",
+    ]);
   });
 
-  it("updates the collapsed summary's per-skill total after editing equipment and points", async () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
+  it("breaks a temple skill down, and leaves the others with their total alone", () => {
+    panel();
+    // Équipement + points + temple, dans les couleurs des trois sources.
+    const breakdown = chip("striker")?.querySelector(".player-chip-breakdown");
+    expect(breakdown).toHaveTextContent("0 + 0 + 20");
+    expect(breakdown?.querySelector(".component-equipment")).not.toBeNull();
+    expect(breakdown?.querySelector(".component-points")).not.toBeNull();
+    expect(breakdown?.querySelector(".component-temple")).not.toBeNull();
+    // Bravoure n'est pas une compétence de temple : le total, et rien d'autre.
+    expect(chip("brave")?.querySelector(".player-chip-breakdown")).toBeNull();
+    expect(chip("striker")?.querySelector(".player-chip-total")).toHaveClass(
+      "component-total",
     );
+  });
+
+  it("updates the collapsed chip's total after editing equipment and points", async () => {
+    panel();
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Attaque avec équipement" }),
     );
-    clickLeague("Or");
-    fireEvent.change(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      { target: { value: "10" } },
-    );
+    clickRung("Or");
+    fireEvent.change(level(), { target: { value: "10" } });
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );
-    const line2 = screen.getByTestId("player-summary-line2");
     // 0.5 (equipment) + 2 (1 point × bonus 2) + 20 (temple base, no clan
     // contribution entered) = 22.5.
-    await waitFor(() => expect(line2).toHaveTextContent("Atq 22,5%"));
+    await waitFor(() => expect(chip("striker")).toHaveTextContent("22,5%"));
   });
 
-  it("caps the collapsed summary's Bravoure/Intrépide total at 90% even if equipment plus points exceed it", async () => {
+  it("caps Bravoure/Intrépide at 90% even if equipment plus points exceed it", async () => {
     window.localStorage.setItem(
       playerStorageKey,
       JSON.stringify({
@@ -467,19 +356,11 @@ describe("PlayerSettingsPanel", () => {
         skillPoints: { fearless: 30 },
       }),
     );
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
-        "Int 90%",
-      ),
-    );
+    panel();
+    await waitFor(() => expect(chip("fearless")).toHaveTextContent("90%"));
   });
 
-  it("caps the collapsed summary's Bravoure/Intrépide total at 75% in Légende", async () => {
+  it("caps Bravoure/Intrépide at 75% in Légende", async () => {
     window.localStorage.setItem(
       playerStorageKey,
       JSON.stringify({
@@ -491,19 +372,11 @@ describe("PlayerSettingsPanel", () => {
         skillPoints: { fearless: 30 },
       }),
     );
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
-        "Int 75%",
-      ),
-    );
+    panel();
+    await waitFor(() => expect(chip("fearless")).toHaveTextContent("75%"));
   });
 
-  it("caps the collapsed summary's Récupération total at 50% even if equipment plus points exceed it", async () => {
+  it("caps Récupération at 50% even if equipment plus points exceed it", async () => {
     window.localStorage.setItem(
       playerStorageKey,
       JSON.stringify({
@@ -515,24 +388,12 @@ describe("PlayerSettingsPanel", () => {
         skillPoints: { cautious: 10 },
       }),
     );
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId("player-summary-line2")).toHaveTextContent(
-        "Rup 50%",
-      ),
-    );
+    panel();
+    await waitFor(() => expect(chip("cautious")).toHaveTextContent("50%"));
   });
 
-  it("caps the 'equipment stats' input for Récupération at 50%, and for Intrépide/Bravoure at 90% (75% in Légende)", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
+  it("caps the equipment field for Récupération at 50%, and Intrépide/Bravoure at 90% (75% in Légende)", () => {
+    panel();
     expect(
       screen.getByLabelText("Récupération avec équipement"),
     ).toHaveAttribute("max", "50");
@@ -548,7 +409,7 @@ describe("PlayerSettingsPanel", () => {
       screen.getByLabelText("Attaque avec équipement"),
     ).not.toHaveAttribute("max");
 
-    clickLeague("Légende");
+    clickRung("Légende");
     expect(screen.getByLabelText("Intrépide avec équipement")).toHaveAttribute(
       "max",
       "75",
@@ -562,31 +423,10 @@ describe("PlayerSettingsPanel", () => {
     ).toHaveAttribute("max", "50");
   });
 
-  it("highlights available points and the per-skill hint in gold, like the prototype", () => {
-    const { container } = render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    expect(
-      container.querySelector(".points-summary strong.stat-highlight"),
-    ).not.toBeNull();
-    expect(
-      container.querySelectorAll(".settings-grid output.stat-highlight"),
-    ).toHaveLength(10);
-  });
-
   it("reflects an external equipment-skills transfer live, without touching points or clan temple", async () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
-    clickLeague("Or");
-    fireEvent.change(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      { target: { value: "10" } },
-    );
+    panel();
+    clickRung("Or");
+    fireEvent.change(level(), { target: { value: "10" } });
     fireEvent.click(
       screen.getByRole("button", { name: "Augmenter Points Attaque" }),
     );
@@ -626,21 +466,12 @@ describe("PlayerSettingsPanel", () => {
     ).toHaveValue(0.25);
     // The panel keeps working normally afterwards (no feedback loop wedged
     // it into a stale or broken state).
-    fireEvent.change(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-      { target: { value: "5" } },
-    );
-    expect(
-      screen.getByLabelText("Niveau du joueur", { selector: "input" }),
-    ).toHaveValue(5);
+    fireEvent.change(level(), { target: { value: "5" } });
+    expect(level()).toHaveValue(5);
   });
 
   it("starts the clan Temple contribution at 0 and adds the confirmed base to the displayed total", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel />
-      </NextIntlClientProvider>,
-    );
+    panel();
     const attack = screen.getByLabelText("Temple Attaque", {
       selector: "input",
     });
@@ -675,20 +506,26 @@ describe("PlayerSettingsPanel", () => {
     );
     expect(speed).toHaveValue(1);
     // Vitesse's confirmed temple base is 50%, so entering 1% of clan
-    // contribution shows a 51% total right next to the field.
-    expect(screen.getByTestId("clan-temple-total-rusher")).toHaveTextContent(
-      "51%",
-    );
+    // contribution shows a 51% total right under the field.
+    expect(percentOf("temple", "rusher")).toHaveTextContent("51%");
   });
 });
 
-// Bloc 108/E: a division field of its own, driven by the ranking ladder and
-// nothing else. The league buttons above it are untouched by this bloc: they
-// still feed Gemmes, Équipement, Templiers and Boutique from the fixed enum.
-describe("Bloc 108/E: the division field", () => {
+/**
+ * Bloc 123 §3 — le sélecteur ligue/division, et la seule source qu'il lit.
+ *
+ * Avant ce bloc il y en avait deux : six boutons de ligue tirés d'une liste
+ * figée, et un `<select>` de division alimenté par l'échelle. Le joueur
+ * pouvait donc décrire un état que l'échelle ne connaît pas. Désormais un seul
+ * groupe, qui écrit les deux champs stockés d'un coup — la ligue de base que
+ * lisent Gemmes, Progression, Événements, Villes et Équipement, et
+ * l'identifiant d'échelon que lit le Classement.
+ */
+describe("Bloc 123: the rung picker", () => {
+  beforeEach(() => window.localStorage.clear());
   afterEach(cleanup);
 
-  const ladder: LeagueLadder = [
+  const split: LeagueLadder = [
     {
       id: "bronze",
       league: "bronze",
@@ -699,8 +536,8 @@ describe("Bloc 108/E: the division field", () => {
       bands: [],
     },
     {
-      id: "gold-2",
-      league: "gold",
+      id: "silver-2",
+      league: "silver",
       division: "2",
       name: {},
       position: 1,
@@ -708,8 +545,8 @@ describe("Bloc 108/E: the division field", () => {
       bands: [],
     },
     {
-      id: "gold-1",
-      league: "gold",
+      id: "silver-1",
+      league: "silver",
       division: "1",
       name: {},
       position: 2,
@@ -717,9 +554,9 @@ describe("Bloc 108/E: the division field", () => {
       bands: [],
     },
     {
-      id: "diamond-1",
-      league: "diamond",
-      division: "1",
+      id: "gold-2",
+      league: "gold",
+      division: "2",
       name: {},
       position: 3,
       active: false,
@@ -727,92 +564,345 @@ describe("Bloc 108/E: the division field", () => {
     },
   ];
 
-  const open = (props: { ladder?: LeagueLadder } = {}) => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel {...props} />
-      </NextIntlClientProvider>,
-    );
-    fireEvent.click(screen.getByText("Paramètres du joueur", { exact: true }));
-  };
-
-  it("does not exist for a league with no division configured", () => {
-    open({ ladder });
-    fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    expect(screen.queryByLabelText("Division")).toBeNull();
-  });
-
-  it("offers that league's active divisions once they exist", () => {
-    open({ ladder });
-    fireEvent.click(screen.getByRole("button", { name: "Or" }));
-    const field = screen.getByLabelText("Division");
+  it("offers the ladder's active rungs, in its order, and nothing else", () => {
+    panel(split);
     expect(
-      [...field.querySelectorAll("option")].map((o) => o.textContent),
-    ).toEqual(["Non précisée", "Or 2", "Or 1"]);
+      within(rungGroup())
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+      // L'échelon inactif n'existe pas pour le joueur (Bloc 108/G).
+    ).toEqual(["Bronze", "Argent 2", "Argent 1"]);
   });
 
-  it("leaves out a division that is not active yet", () => {
-    open({ ladder });
-    fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
-    expect(screen.queryByLabelText("Division")).toBeNull();
+  // Le nombre d'entrées n'est écrit nulle part dans l'écran : six tant que les
+  // ligues ne sont pas scindées, dix après, sans rien à modifier ici.
+  it("falls back to the module's own default when no ladder is passed", () => {
+    panel();
+    expect(within(rungGroup()).getAllByRole("button")).toHaveLength(
+      defaultLeagueLadder.length,
+    );
   });
 
-  // The two selectors are independent: picking a division must not touch the
-  // league the rest of the site reads, and changing league must not leave a
-  // division from the previous one behind.
-  it("stores the division without disturbing the league, and clears it on a league change", async () => {
-    open({ ladder });
-    fireEvent.click(screen.getByRole("button", { name: "Or" }));
-    fireEvent.change(screen.getByLabelText("Division"), {
-      target: { value: "gold-1" },
+  it("writes both the base league and the rung id when a rung is picked", async () => {
+    panel(split);
+    clickRung("Argent 1");
+    await waitFor(() => {
+      const stored = JSON.parse(
+        window.localStorage.getItem(playerStorageKey) ?? "{}",
+      );
+      // La ligue de base pour tous les autres outils, l'identifiant pour le
+      // Classement. C'est ce qui fait qu'aucun d'eux n'a eu à changer.
+      expect(stored.league).toBe("silver");
+      expect(stored.division).toBe("silver-1");
     });
-    // The panel persists on a deferred write (usePersistedState, Bloc 93/E1).
-    const stored = () =>
-      JSON.parse(String(window.localStorage.getItem(playerStorageKey) ?? "{}"));
-    await waitFor(() => expect(stored().division).toBe("gold-1"));
-    expect(stored().league).toBe("gold");
-
-    fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-    await waitFor(() => expect(stored().league).toBe("bronze"));
-    expect(stored().division).toBe("");
   });
 
-  // Codex review (PR #135): .settings-grid-primary is exactly three columns
-  // (5fr 2fr 3fr) for League/Level/VP, and its mobile rule keys off child
-  // order — a fourth child there pushed Level into VP's column and wrapped VP
-  // onto a row of its own.
-  it("P2: stays out of the three-column League/Level/VP row", () => {
-    const { container } = render(
-      <NextIntlClientProvider locale="fr" messages={messages}>
-        <PlayerSettingsPanel ladder={ladder} />
-      </NextIntlClientProvider>,
+  it("reads back the rung a returning player had picked", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "silver",
+        division: "silver-1",
+        v: 2,
+      }),
     );
-    fireEvent.click(screen.getByText("Paramètres du joueur", { exact: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Or" }));
-    const primary = container.querySelector(".settings-grid-primary")!;
-    expect(screen.getByLabelText("Division")).toBeVisible();
-    expect(primary.children).toHaveLength(3);
-    expect(primary.querySelector(".settings-grid-division-field")).toBeNull();
-    // And the order the mobile rule depends on is intact: league first.
-    expect(primary.firstElementChild).toHaveClass("settings-grid-league-field");
+    panel(split);
+    await waitFor(() =>
+      expect(
+        within(rungGroup()).getByRole("button", { name: "Argent 1" }),
+      ).toHaveAttribute("aria-pressed", "true"),
+    );
   });
 
-  it("shows nothing at all when no ladder was passed", () => {
-    open();
-    fireEvent.click(screen.getByRole("button", { name: "Or" }));
+  it("resolves a save that predates divisions when the league has a single rung", async () => {
+    // Une sauvegarde d'avant ce bloc : une ligue, pas de division. Bronze n'a
+    // qu'un échelon, donc il n'y a pas d'autre réponse possible.
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "bronze",
+        division: "",
+        v: 2,
+      }),
+    );
+    panel(split);
+    await waitFor(() =>
+      expect(
+        within(rungGroup()).getByRole("button", { name: "Bronze" }),
+      ).toHaveAttribute("aria-pressed", "true"),
+    );
+  });
+
+  it("selects nothing when the stored league is split and the save does not say which division", async () => {
+    // Le cas ambigu, et le seul : la ligue est scindée en deux, rien ne dit
+    // laquelle. Deviner inventerait une donnée de jeu et fausserait le
+    // Classement en silence — le joueur choisit, et la ligue stockée reste
+    // valable pour les outils qui n'ont que faire des divisions.
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "silver",
+        division: "",
+        v: 2,
+      }),
+    );
+    panel(split);
+    await waitFor(() => expect(level()).toHaveValue(1));
+    for (const button of within(rungGroup()).getAllByRole("button"))
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(
+      JSON.parse(window.localStorage.getItem(playerStorageKey) ?? "{}").league,
+    ).toBe("silver");
+  });
+
+  it("ignores a stored rung that has moved to another league since", async () => {
+    // Une administration peut déplacer un échelon sous une autre ligue de base
+    // sans changer son identifiant : l'accord des deux champs est ce qui rend
+    // la sélection légitime.
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "bronze",
+        division: "silver-1",
+        v: 2,
+      }),
+    );
+    panel(split);
+    await waitFor(() =>
+      expect(
+        within(rungGroup()).getByRole("button", { name: "Bronze" }),
+      ).toHaveAttribute("aria-pressed", "true"),
+    );
+    expect(
+      within(rungGroup()).getByRole("button", { name: "Argent 1" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("carries no separate division control any more", () => {
+    panel(split);
+    // Le `<select>` du Bloc 108/E a fusionné dans le groupe ci-dessus ; il
+    // laissait le joueur décrire une ligue et une division qui se
+    // contredisent.
     expect(screen.queryByLabelText("Division")).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "Division" })).toBeNull();
+  });
+});
+
+/** Bloc 123 §2.3 — la matrice : les mêmes chiffres, dans un tableau. */
+describe("Bloc 123: the matrix", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  it("puts one column per skill and one row per source, plus the total", () => {
+    panel();
+    const table = document.querySelector(".player-matrix")!;
+    expect(
+      [...table.querySelectorAll('thead th[scope="col"]')].map(
+        (cell) => cell.textContent,
+      ),
+    ).toEqual([
+      "Attaque",
+      "Bravoure",
+      "Charognard",
+      "Défense",
+      "Intrépide",
+      "Prospérité",
+      "Recruteur",
+      "Récupération",
+      "Recycleur",
+      "Vitesse",
+    ]);
+    expect(
+      [...table.querySelectorAll('tbody th[scope="row"]')].map((cell) =>
+        cell.textContent?.slice(0, 11),
+      ),
+    ).toEqual(["Équipement", "Points0 / 0", "Temple (cla", "Total"]);
   });
 
-  it("reads a stored division back, and ignores one of the wrong type", () => {
+  it("says the same total as the collapsed chip, for every skill", () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        league: "gold",
+        equipmentSkills: {
+          ...defaultPlayerSettings().equipmentSkills,
+          striker: 12.5,
+        },
+        v: 2,
+      }),
+    );
+    panel();
+    const totals = [
+      ...document.querySelectorAll(".player-matrix-row-total td output"),
+    ].map((cell) => cell.textContent);
+    const chips = [...document.querySelectorAll(".player-chip-total")].map(
+      (cell) => cell.textContent,
+    );
+    expect(totals).toEqual(chips);
+    // Et les templiers n'y entrent pas : la ligne Total ne bouge pas quand on
+    // en ajoute un.
+    fireEvent.click(
+      screen.getByRole("button", { name: "Augmenter Templiers Attaque" }),
+    );
     expect(
-      safePlayerSettings(
-        JSON.stringify({ ...defaultPlayerSettings(), division: "gold-1" }),
-      ).division,
-    ).toBe("gold-1");
+      [...document.querySelectorAll(".player-matrix-row-total td output")].map(
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(totals);
+  });
+
+  it("leaves the temple row empty on the five skills a temple does not touch", () => {
+    panel();
+    const temple = document.querySelector(".player-matrix-row-temple")!;
+    const cells = [...temple.querySelectorAll("td")];
+    const filled = cells.filter(
+      (cell) => cell.querySelector("input") !== null,
+    ).length;
+    expect(filled).toBe(5);
+    expect(temple.querySelectorAll(".player-matrix-empty")).toHaveLength(5);
+  });
+
+  it("shows the points budget and resets the distribution", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        level: 31,
+        league: "gold",
+        skillPoints: { ...defaultPlayerSettings().skillPoints, striker: 3 },
+        v: 2,
+      }),
+    );
+    panel();
+    // La sauvegarde est lue sur une micro-tâche : le budget part de « 0 / 0 ».
+    const budget = document.querySelector(".player-points-budget")!;
+    await waitFor(() => expect(budget).toHaveTextContent("3 / 30"));
+    // « 3 / 30 » ne dit rien à qui l'entend : la phrase entière est là pour lui.
+    expect(budget.querySelector(".sr-only")).toHaveTextContent(
+      "3 points alloués sur 30 disponibles",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
+    expect(screen.getByLabelText("Points Attaque")).toHaveValue(0);
+  });
+});
+
+/** Bloc 123 — le résumé replié, et le correctif d'unité des VP. */
+describe("Bloc 123: the collapsed summary", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  it("writes the VP on the site's own scale, never with a locale suffix", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        vp: 11,
+        vpUnit: 1_000_000_000,
+        v: 2,
+      }),
+    );
+    panel();
+    const meta = document.querySelector(".player-summary-meta")!;
+    await waitFor(() => expect(meta).toHaveTextContent("11G VP"));
+    // « Md » est ce que rendait `Intl` en notation compacte française, là où
+    // tout le reste du site écrit « G » (AGENTS.md, échelle k/M/G/T).
+    expect(meta).not.toHaveTextContent("Md");
+  });
+
+  it("offers the téra the scale names but the field did not have", () => {
+    panel();
     expect(
-      safePlayerSettings(
-        JSON.stringify({ ...defaultPlayerSettings(), division: 7 }),
-      ).division,
-    ).toBe("");
+      [...screen.getByLabelText("Unité des VP").querySelectorAll("option")].map(
+        (option) => option.textContent,
+      ),
+    ).toEqual(["×1", "k", "M", "G", "T"]);
+  });
+
+  it("names the collapse control's state, for a reader that cannot see the arrow", () => {
+    panel();
+    expect(document.querySelector("summary")).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
+});
+
+/**
+ * Bloc 123 §4 — le mobile transpose la matrice plutôt que de la faire défiler.
+ *
+ * Même modèle de données, mêmes gestionnaires : seul le rendu change. C'est ce
+ * que ces cas tiennent — une saisie faite dans la présentation mobile arrive
+ * au même endroit que sur desktop.
+ */
+describe("Bloc 123: the narrow layout", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  beforeEach(() => {
+    window.localStorage.clear();
+    viewport = mockViewport(true);
+  });
+  afterEach(() => {
+    viewport.restore();
+    cleanup();
+  });
+
+  it("transposes the matrix: one row per skill, three columns of fields", () => {
+    panel();
+    expect(document.querySelector(".player-matrix")).toBeNull();
+    const table = document.querySelector(".player-matrix-mobile")!;
+    expect(
+      [...table.querySelectorAll('thead th[scope="col"]')].map(
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(["Équipement", "Points", "Temple (clan)"]);
+    expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(10);
+  });
+
+  it("drops the − / + buttons, which do not fit, and keeps a numeric keypad", () => {
+    panel();
+    expect(
+      screen.queryByRole("button", { name: "Augmenter Points Attaque" }),
+    ).toBeNull();
+    const field = screen.getByLabelText("Points Attaque");
+    expect(field).toHaveAttribute("inputmode", "numeric");
+    // Un pas fractionnaire demande un séparateur décimal, que le clavier
+    // « numeric » d'iOS n'offre pas.
+    expect(screen.getByLabelText("Attaque avec équipement")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+  });
+
+  it("feeds the same handlers as the wide layout", async () => {
+    panel();
+    clickRung("Or");
+    fireEvent.change(level(), { target: { value: "10" } });
+    fireEvent.change(screen.getByLabelText("Points Attaque"), {
+      target: { value: "2" },
+    });
+    // 2 points × bonus 2 = 4 %, plus la base de temple de 20 %.
+    await waitFor(() =>
+      expect(percentOf("points", "striker")).toHaveTextContent("4%"),
+    );
+    expect(chip("striker")).toHaveTextContent("24%");
+  });
+
+  it("puts the points budget above the table, where the row header used to be", () => {
+    panel();
+    const bar = document.querySelector(".player-points-bar");
+    expect(bar).not.toBeNull();
+    // Au-dessus du tableau, et non dans un en-tête de ligne qui n'existe plus.
+    expect(
+      bar!.compareDocumentPosition(
+        document.querySelector(".player-matrix-mobile")!,
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      within(bar as HTMLElement).getByRole("button", { name: "Réinitialiser" }),
+    ).not.toBeNull();
   });
 });

@@ -608,13 +608,19 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     );
   });
 
-  // H+I: Player Settings' .settings-grid sections (equipment/points/
-  // templars/clan-temple) go 2-column on mobile, and within the primary
-  // fields grid specifically, the first child (the league LeagueButtons
-  // group, since F) spans the full row so Level/VP share the row below it.
-  it("H+I: Player Settings' .settings-grid sections go 2-column on mobile, with the primary grid's first child (league) spanning the full row", () => {
-    expect(css).toMatch(
-      /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+  // Bloc 123 : les quatre sections repliables ont disparu, et avec elles la
+  // grille qu'elles partageaient. Ce qui reste à tenir sur mobile est la
+  // rangée générale — Niveau et VP côte à côte, le sélecteur d'échelon sur sa
+  // propre rangée pleine largeur.
+  it("Bloc123: on mobile, Level and VP share a row and the rung picker takes one of its own", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toMatch(
+      /\.player-general\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.player-rung-field\s*{\s*\n\s*grid-column: 1 \/ -1;/,
     );
   });
 
@@ -624,18 +630,15 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // NumberSteppers end up close to the same width. Bloc 69/D: Level's own
   // share is reduced a further 10% (5fr -> 4.5fr), handed to VP (7fr ->
   // 7.5fr).
-  it("gives the mobile Level/VP row an uneven column split and a narrower VP unit select, so both NumberSteppers end up close in width", () => {
+  it("Bloc123: shrinks the VP unit select on mobile, so the field keeps its place", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
+      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
     );
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
-    );
-    expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
+      /\.player-general \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
     );
   });
 
@@ -644,12 +647,12 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // a 5:2:3 column grid (50%/20%/30%), with VP's own unit-input split 2:1
   // internally so its NumberStepper lands at 20% of the row and the unit
   // select at 10%.
-  it("gives Player Settings' primary grid a 5:2:3 desktop column split (League/Level/VP), not the old 4-equal-columns-with-League-spanning", () => {
+  it("Bloc123: keeps the 5:2:3 desktop split on the general row (rung/level/VP)", () => {
     const desktopRuleIndex = css.indexOf(
-      ".settings-grid-primary {\n  grid-template-columns: 5fr 2fr 3fr;\n}",
+      "  grid-template-columns: 5fr 2fr 3fr;",
     );
     const desktopUnitInputIndex = css.indexOf(
-      ".settings-grid-primary .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
+      ".player-general .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
     );
     const mediaQueryIndex = css.indexOf("@media (max-width: 900px) {");
     expect(desktopRuleIndex).toBeGreaterThan(-1);
@@ -658,16 +661,13 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     // unconditionally (desktop included), not just under it.
     expect(desktopRuleIndex).toBeLessThan(mediaQueryIndex);
     expect(desktopUnitInputIndex).toBeLessThan(mediaQueryIndex);
-    // The old desktop-wide full-span rule for League is gone — only the
-    // mobile-scoped one (inside the media query) should remain.
-    expect(css).not.toMatch(
-      /\.settings-grid-primary {\s*\n\s*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/,
-    );
+    // Et la grille des anciennes sections repliables n'est plus nulle part.
+    expect(css).not.toMatch(/\.settings-grid/);
   });
 
-  it("gives the league field a visible title matching the Level/VP fields' own label style", () => {
+  it("gives the rung field a visible title matching the Level/VP fields' own label style", () => {
     expect(css).toMatch(
-      /\.settings-grid-league-label\s*{\s*\n\s*color: var\(--muted\);\s*\n\s*font-size: 0\.78rem;\s*\n\s*font-weight: 700;/,
+      /\.player-field-label\s*{\s*\n\s*color: var\(--muted\);\s*\n\s*font-size: 0\.78rem;\s*\n\s*font-weight: 700;/,
     );
   });
 });
@@ -905,30 +905,22 @@ describe("Bloc 71/C: league button text is never bold", () => {
 // 68's "25% each for Level/VP" (which didn't put League on that row at
 // all) — a 50/20/20/10 split (League/Level/VP-number/VP-unit).
 describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)", () => {
-  it("splits the desktop row 5:2:3 (League 50%, Level 20%, VP-as-a-whole 30%)", () => {
-    expect(css).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: 5fr 2fr 3fr;/,
-    );
+  it("splits the desktop row 5:2:3 (rung 50%, Level 20%, VP-as-a-whole 30%)", () => {
+    expect(css).toMatch(/grid-template-columns: 5fr 2fr 3fr;/);
   });
 
   it("splits VP's own unit-input 2:1, landing its NumberStepper at 20% of the row and the unit select at 10%", () => {
     expect(css).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
+      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
     );
   });
 
-  it("keeps the mobile layout (Blocs 68/H+I, 69/D) completely unchanged", () => {
+  it("Bloc123: gives the mobile row the tap target the brief asks for", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
-    );
-    expect(mediaBlock).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
-    );
-    expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+      /\.player-general \.number-stepper input,\s*\n\s*\.player-general \.number-stepper button\s*{\s*\n\s*min-height: var\(--tap-target\);/,
     );
   });
 });
@@ -1006,15 +998,15 @@ describe("Bloc 72/D: Expedition equipment simulator's 5 family filters, 3+2 mobi
 describe("Bloc 73/A: Player Settings league buttons fill their 50% column", () => {
   it("grows each button to share the column, without shrinking below its own label", () => {
     expect(css).toMatch(
-      /\.settings-grid-league-field \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+      /\.player-rung-field \.player-rung-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
     );
   });
 });
 
 describe("Bloc 73/B: Niveau/VP fields match the panel's other field heights", () => {
-  it("stops .settings-grid label's own grid from stretching its rows to the row's full height (the League field's taller title+buttons stack was forcing Niveau/VP's stepper row taller too)", () => {
+  it("stops the general row's labels from stretching to the row's full height (the rung field's taller title+buttons stack was forcing Niveau/VP's stepper row taller too)", () => {
     expect(css).toMatch(
-      /\.settings-grid label\s*{\s*\n\s*display: grid;\s*\n\s*align-content: start;/,
+      /\.player-general label\s*{\s*\n\s*display: grid;\s*\n\s*align-content: start;/,
     );
   });
 });

@@ -43,6 +43,13 @@
       "recruiter": "Askere Alan",
       "rusher": "Hız"
     },
+    "templars-short": {
+      "striker": "Sal",
+      "guardian": "Sav",
+      "prosperous": "Altın",
+      "recruiter": "Asker",
+      "rusher": "Hız"
+    },
     "leagues": {
       "bronze": "Bronz",
       "silver": "Gümüş",
@@ -144,35 +151,37 @@
   },
   "player-settings": {
     "title": "Oyuncu ayarları",
-    "summary": "{league} · Seviye {level} · {vp} VP · {templarTotal, plural, other {# tapınak şövalyesi}}",
-    "league": "Lig",
+    "summary": "Seviye {level} · {vp} VP · {templarTotal, plural, other {# tapınak şövalyesi}}",
+    "rung": "Lig veya bölüm",
     "league-undefined": "Lig belirlenmedi",
     "player-level": "Oyuncu seviyesi",
     "player-vp": "Oyuncu VP'si",
     "vp-unit": "VP birimi",
     "equipment-skills": {
-      "title": "Ekipmanla yetenekler",
+      "title": "Ekipman",
       "field": "Ekipmanla {skill}"
     },
     "skill-points": {
-      "title": "Yetenek puanı dağılımı",
-      "available": "Kullanılabilir",
-      "allocated": "Ayrılmış",
-      "remaining": "Kalan",
+      "title": "Puanlar",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{available} puandan {allocated} tanesi dağıtıldı",
       "reset": "Sıfırla",
       "field": "{skill} puanları"
     },
     "templars": {
       "title": "Tapınak Şövalyeleri",
+      "not-counted": "istatistiklere dahil değil",
       "field": "{templar} tapınak şövalyesi"
     },
     "clan-temple": {
-      "title": "Tapınak bonusu (klan)",
-      "help": "Yalnızca klanın Tapınak Şövalyesi katkısını gir (örneğin Hız için 260). Onaylanmış istatistik başına tapınak tabanı, gösterilen toplama otomatik olarak eklenir.",
+      "title": "Tapınak (klan)",
+      "help": "Yalnızca klanın Tapınak Şövalyesi katkısı; onaylanmış taban toplama eklenir.",
       "field": "{templar} Tapınağı"
     },
-    "division": "Bölüm",
-    "division-none": "Belirtilmedi"
+    "matrix": {
+      "caption": "Kaynağa göre yetenekler: ekipman, puanlar ve tapınak",
+      "total": "Toplam"
+    }
   },
   "city-cost": {
     "name": "Şehir Maliyeti",

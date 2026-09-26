@@ -154,7 +154,12 @@ export type PlayerSettings = {
    */
   division: string;
   vp: number;
-  vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000;
+  /**
+   * Bloc 123 : l'unité dans laquelle le joueur saisit ses VP. Le téra rejoint
+   * la liste avec le correctif d'affichage — l'échelle du site est k/M/G/T
+   * (AGENTS.md), et le champ s'arrêtait au giga.
+   */
+  vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000 | 1_000_000_000_000;
   equipmentSkills: NumberMap<SkillKey>;
   skillPoints: NumberMap<SkillKey>;
   templars: NumberMap<TemplarKey>;

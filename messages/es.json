@@ -43,6 +43,13 @@
       "recruiter": "Reclutador",
       "rusher": "Velocidad"
     },
+    "templars-short": {
+      "striker": "Atq",
+      "guardian": "Def",
+      "prosperous": "Oro",
+      "recruiter": "Rec",
+      "rusher": "Vel"
+    },
     "leagues": {
       "bronze": "Bronce",
       "silver": "Plata",
@@ -144,35 +151,37 @@
   },
   "player-settings": {
     "title": "Ajustes del jugador",
-    "summary": "{league} · Nivel {level} · {vp} VP · {templarTotal, plural, one {# templario} other {# templarios}}",
-    "league": "Liga",
+    "summary": "Nivel {level} · {vp} VP · {templarTotal, plural, one {# templario} other {# templarios}}",
+    "rung": "Liga o división",
     "league-undefined": "Liga no definida",
     "player-level": "Nivel del jugador",
     "player-vp": "VP del jugador",
     "vp-unit": "Unidad de VP",
     "equipment-skills": {
-      "title": "Habilidades con equipo",
+      "title": "Equipo",
       "field": "{skill} con equipo"
     },
     "skill-points": {
-      "title": "Distribución de puntos de habilidad",
-      "available": "Disponibles",
-      "allocated": "Asignados",
-      "remaining": "Restantes",
+      "title": "Puntos",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} puntos asignados de {available} disponibles",
       "reset": "Restablecer",
       "field": "Puntos de {skill}"
     },
     "templars": {
       "title": "Templarios",
+      "not-counted": "no se cuentan en las estadísticas",
       "field": "{templar} templarios"
     },
     "clan-temple": {
-      "title": "Bono de templo (clan)",
-      "help": "Introduce solo la contribución de Templarios del clan (por ejemplo, 260 para Velocidad). La base de templo confirmada por estadística se añade automáticamente al total mostrado.",
+      "title": "Templo (clan)",
+      "help": "Solo la contribución de Templarios del clan; la base confirmada se suma al total.",
       "field": "Templo de {templar}"
     },
-    "division": "División",
-    "division-none": "Sin precisar"
+    "matrix": {
+      "caption": "Habilidades por fuente: equipo, puntos y templo",
+      "total": "Total"
+    }
   },
   "city-cost": {
     "name": "Coste de Ciudad",

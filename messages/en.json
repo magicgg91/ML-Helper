@@ -43,6 +43,13 @@
       "recruiter": "Recruiter",
       "rusher": "Speed"
     },
+    "templars-short": {
+      "striker": "Atk",
+      "guardian": "Def",
+      "prosperous": "Gold",
+      "recruiter": "Rec",
+      "rusher": "Spd"
+    },
     "leagues": {
       "bronze": "Bronze",
       "silver": "Silver",
@@ -144,35 +151,37 @@
   },
   "player-settings": {
     "title": "Player settings",
-    "summary": "{league} · Level {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
-    "league": "League",
+    "summary": "Lvl {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
+    "rung": "League or division",
     "league-undefined": "League not set",
     "player-level": "Player level",
     "player-vp": "Player VP",
     "vp-unit": "VP unit",
     "equipment-skills": {
-      "title": "Skills with equipment",
+      "title": "Equipment",
       "field": "{skill} with equipment"
     },
     "skill-points": {
-      "title": "Skill point distribution",
-      "available": "Available",
-      "allocated": "Allocated",
-      "remaining": "Remaining",
+      "title": "Points",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} points allocated out of {available} available",
       "reset": "Reset",
       "field": "{skill} points"
     },
     "templars": {
       "title": "Templars",
+      "not-counted": "not counted in the stats",
       "field": "{templar} templars"
     },
     "clan-temple": {
-      "title": "Temple bonus (clan)",
-      "help": "Enter only the clan's Templar contribution (e.g. 260 for Speed). The confirmed per-stat temple base is added automatically to the displayed total.",
+      "title": "Temple (clan)",
+      "help": "The clan's Templar contribution only; the confirmed base is added to the total.",
       "field": "{templar} Temple"
     },
-    "division": "Division",
-    "division-none": "Not set"
+    "matrix": {
+      "caption": "Skills by source: equipment, points and temple",
+      "total": "Total"
+    }
   },
   "city-cost": {
     "name": "City Cost",

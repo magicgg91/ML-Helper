@@ -294,7 +294,6 @@ test("tool routes alone expose persistent player settings", async ({
   await page
     .getByRole("spinbutton", { name: "Niveau du joueur", exact: true })
     .fill("30");
-  await page.getByText("Compétences avec équipement", { exact: true }).click();
   await page
     .getByRole("spinbutton", {
       name: "Attaque avec équipement",
@@ -310,7 +309,6 @@ test("tool routes alone expose persistent player settings", async ({
       exact: true,
     }),
   ).toHaveValue("30");
-  await page.getByText("Compétences avec équipement", { exact: true }).click();
   await expect(
     page.getByRole("spinbutton", {
       name: "Attaque avec équipement",
@@ -342,18 +340,23 @@ test("the clan temple bonus adds the confirmed base to the entered contribution"
 }) => {
   await page.goto("/tools/villes");
   await page.getByText("Paramètres du joueur", { exact: true }).click();
-  await page.getByText("Bonus de temple (clan)", { exact: true }).click();
 
-  const line2 = page.getByTestId("player-summary-line2");
+  // Bloc 123 : le résumé est une étiquette par compétence, et la contribution
+  // du clan se saisit dans la ligne Temple du tableau.
+  const speedChip = page.locator('.player-stat-chip[data-skill="rusher"]');
   // No clan contribution entered yet: only the confirmed temple base (50%
   // for Vitesse) shows up in the total.
-  await expect(line2).toContainText("Vit 50% (0% + 0% + 50%)");
+  await expect(speedChip).toContainText("50%");
+  await expect(speedChip).toContainText("0 + 0 + 50");
 
   await page
     .getByRole("spinbutton", { name: "Temple Vitesse", exact: true })
     .fill("260");
-  await expect(page.getByTestId("clan-temple-total-rusher")).toHaveText("310%");
-  await expect(line2).toContainText("Vit 310% (0% + 0% + 310%)");
+  await expect(page.locator('[data-percent="temple-rusher"]')).toHaveText(
+    "= 310%",
+  );
+  await expect(speedChip).toContainText("310%");
+  await expect(speedChip).toContainText("0 + 0 + 310");
 });
 
 test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in light theme", async ({
@@ -364,15 +367,18 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
   // line.
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/tools/villes");
-  await page.getByText("Paramètres du joueur", { exact: true }).click();
 
-  const groups = page.locator(".player-summary-skill-group");
-  await expect(groups).toHaveCount(2);
-  const [firstBox, secondBox] = await Promise.all([
-    groups.nth(0).boundingBox(),
-    groups.nth(1).boundingBox(),
+  // Bloc 123 : dix étiquettes sur cinq colonnes, donc deux rangées — la
+  // sixième est sous la première, quelle que soit la largeur. Panneau replié :
+  // c'est là que les étiquettes vivent, la ligne Total du tableau les
+  // remplaçant une fois ouvert.
+  const chips = page.locator(".player-stat-chip");
+  await expect(chips).toHaveCount(10);
+  const [firstBox, sixthBox] = await Promise.all([
+    chips.nth(0).boundingBox(),
+    chips.nth(5).boundingBox(),
   ]);
-  expect(secondBox!.y).toBeGreaterThan(firstBox!.y + firstBox!.height / 2);
+  expect(sixthBox!.y).toBeGreaterThan(firstBox!.y + firstBox!.height / 2);
 
   // Point 1: in light theme, the résumé's total color must meet WCAG AA
   // (>= 4.5:1) against the panel background — asserted here as the exact
@@ -380,7 +386,7 @@ test("the résumé splits 5/5 on a desktop viewport and reads at WCAG AA in ligh
   // responsive-styles.test.ts.
   await page.getByRole("button", { name: /Passer en thème clair/ }).click();
   const totalColor = await page
-    .locator(".player-summary-line2 .sk-value")
+    .locator(".player-chip-total")
     .first()
     .evaluate((el) => getComputedStyle(el).color);
   expect(totalColor).toBe("rgb(143, 50, 16)");
@@ -651,7 +657,7 @@ test("all three City tools use all six confirmed league multipliers", async ({
   await page.getByText("Paramètres du joueur", { exact: true }).click();
   const playerLeagueGroup = page
     .locator(".player-settings")
-    .getByRole("group", { name: "Ligue" });
+    .getByRole("group", { name: "Ligue ou division" });
   for (const [
     league,
     boostedGold,
@@ -708,7 +714,7 @@ test("dependent league selectors sync once and preserve manual choices", async (
   // aria-pressed instead of the field's value.
   const playerLeagueGroup = page
     .locator(".player-settings")
-    .getByRole("group", { name: "Ligue" });
+    .getByRole("group", { name: "Ligue ou division" });
   const cityLeagueGroup = page
     .locator(".city-calculators")
     .getByRole("group", { name: "Ligue" });

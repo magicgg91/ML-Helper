@@ -1051,8 +1051,12 @@ select:where(:not(.admin-shell select)) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
 .player-settings {
+  /* La largeur de la colonne d'en-têtes de la matrice, que la rangée des
+     templiers reprend pour s'aligner dessus. Déclarée sur le panneau plutôt
+     que sur `:root` : elle n'a de sens qu'ici, et le premier `:root` du
+     fichier appartient aux jetons de l'en-tête public (un test l'y attend). */
+  --player-matrix-head: 10.625rem;
   width: min(74rem, calc(100% - 2rem));
   margin: 1rem auto 0;
   border: 1px solid var(--border);
@@ -1061,37 +1065,23 @@ select:where(:not(.admin-shell select)) {
   box-shadow: 0 0.8rem 2.5rem rgb(37 44 39 / 7%);
   overflow: hidden;
 }
-.player-settings > details > summary,
-.settings-section > summary {
+.player-settings > details > summary {
+  padding: 1rem 1.2rem;
   cursor: pointer;
   list-style: none;
   font-weight: 800;
 }
-.player-settings > details > summary::-webkit-details-marker,
-.settings-section > summary::-webkit-details-marker {
+.player-settings > details > summary::-webkit-details-marker {
   display: none;
-}
-.player-settings > details > summary {
-  padding: 1rem 1.2rem;
-}
-.settings-section > summary::before {
-  content: "▸";
-  margin-right: 0.55rem;
-  color: var(--accent);
-}
-.settings-section[open] > summary::before {
-  content: "▾";
 }
 .player-settings summary small {
   color: var(--muted);
   font-weight: 500;
 }
-#player-settings-title + small {
-  margin-left: 0.6rem;
-}
 .player-summary-row1 {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
 }
 /* The disclosure arrow lives on the title itself, not as a 3rd flex item
@@ -1105,162 +1095,90 @@ select:where(:not(.admin-shell select)) {
 .player-settings > details[open] > summary #player-settings-title::before {
   content: "▾";
 }
-.player-summary-line2 {
-  display: block;
-  margin-top: 0.4rem;
-  padding-left: 1.1rem;
-  color: var(--muted);
-  font-weight: 500;
-  font-family: var(--font-mono, monospace);
+/* Bloc 123 §1 : à droite de l'en-tête, la pastille de ligue puis le niveau,
+   les VP et les templiers. Les VP passent par formatGameNumber (k/M/G/T),
+   plus par la notation compacte d'Intl qui écrivait « Md » en français. */
+.player-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.player-league-pill {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 0.78rem;
-  line-height: 1.6;
-  white-space: normal;
-  overflow-x: visible;
+  font-weight: 700;
+  white-space: nowrap;
 }
-/* Always 2 rows of 5 skills, regardless of viewport width — not just below
-   the mobile/tablet breakpoint. */
-.player-summary-skill-group {
-  display: block;
-  white-space: normal;
+/* Bloc 123 §1 : les dix statistiques en étiquettes, cinq par rangée et à
+   colonnes égales. Elles disent l'état sans rien ouvrir ; une fois le
+   panneau ouvert, la ligne Total du tableau les remplace à la même place. */
+.player-stat-chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.7rem;
 }
-.player-summary-line2 .sk-name {
+.player-settings > details[open] .player-stat-chips {
+  display: none;
+}
+.player-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.125rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  font-weight: 500;
+}
+.player-chip-name {
   color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
-.player-summary-line2 .sk-value {
-  color: var(--summary-total);
+.player-chip-total {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
-.sk-breakdown {
-  color: var(--text-faint);
+.player-chip-breakdown {
+  margin-left: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
-/* Component color coding shared between the input sections (Équipement /
-   Points / Temple clan) and the collapsed summary breakdown — same
-   component, same color, in both places. */
-.component-equipment {
+/* Component color coding shared between the matrix rows (Équipement /
+   Points / Temple clan), the collapsed chips and the Total — same
+   component, same color, wherever it is read. */
+.component-equipment,
+.tone-equipment {
   color: var(--emerald-bright);
 }
-.component-points {
+.component-points,
+.tone-points {
   color: var(--accent-strong);
 }
-.component-temple {
+.component-temple,
+.tone-temple {
   color: var(--sapphire-bright);
 }
-.settings-section-equipment > summary {
-  color: var(--emerald-bright);
-}
-.settings-section-points > summary {
-  color: var(--accent-strong);
-}
-.settings-section-temple > summary {
-  color: var(--sapphire-bright);
+.component-total {
+  color: var(--summary-total);
 }
 .player-settings-body {
   padding: 0 1.2rem 1.2rem;
 }
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 0.8rem;
-}
-.settings-grid-primary {
-  padding: 1rem 0;
-  border-top: 1px solid var(--border);
-}
-/* Bloc 71/D, desktop: League/Level/VP now share a single row — a 5:2:3
-   column grid (50%/20%/30% of the row) replacing Bloc 69/D's "League
-   spans alone, Level/VP split 25% each below it". VP's own unit-input
-   (below) further splits that 30% 2:1 internally, so the NumberStepper
-   itself lands at 20% of the full row and the unit select at 10%. */
-.settings-grid-primary {
-  grid-template-columns: 5fr 2fr 3fr;
-}
-.settings-grid-primary .unit-input {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-}
-/* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
-   skills, skill points, templars, clan temple) goes from 1 to 2 columns
-   (I). Within .settings-grid-primary specifically, its first child — the
-   league LeagueButtons group since Bloc 68/F — spans both columns on its
-   own full-width row, leaving Level and VP as the 2nd/3rd children to
-   share the row below (H). Depends on the JSX keeping League first,
-   Level second, VP third. */
-@media (max-width: 900px) {
-  .settings-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .settings-grid-primary > :first-child {
-    grid-column: 1 / -1;
-  }
-  /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
-     its unit select, and shrink that select, so the two NumberSteppers
-     (Level's, which has no unit select, and VP's) end up close to the
-     same width instead of VP's looking squeezed. Bloc 69/D: Level's own
-     share is reduced a further 10% (5fr -> 4.5fr) and handed to VP
-     (7fr -> 7.5fr), keeping the 12fr total. */
-  .settings-grid-primary {
-    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
-  }
-  .settings-grid-primary .unit-input {
-    grid-template-columns: minmax(0, 1fr) 3.1rem;
-  }
-  .settings-grid-primary .unit-input select {
-    padding: 0 0.3rem;
-  }
-}
-.settings-grid label {
-  display: grid;
-  align-content: start;
-  gap: 0.4rem;
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-/* Bloc 69/D: same label look as the Level/VP fields (.settings-grid
-   label above), for the league field's own title — a plain <div>/<span>
-   since LeagueButtons renders a role="group" div, not a <label>. */
-.settings-grid-league-field {
-  display: grid;
-  gap: 0.4rem;
-}
-/* Bloc 73/A review fix: the 50% column (Bloc 71/D) was mathematically
-   correct but the buttons themselves never grew to fill it — flex:0 0
-   auto left up to ~180px of dead space after the last button, reading
-   as "not actually 50%" to the eye. Same no-truncation equal-width
-   technique as Bloc 69/E (min-width: max-content, not 0, so a button
-   never shrinks below its own label while flex-grow: 1 spreads the
-   column's full width across all 6). */
-.settings-grid-league-field .family-buttons button {
-  flex: 1 1 0;
-  min-width: max-content;
-}
-.settings-grid-league-label {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-.settings-grid label > span {
-  display: flex;
-  justify-content: space-between;
-}
-.settings-grid output,
-.points-summary strong {
-  color: var(--success);
-}
-.points-summary strong.stat-highlight,
-.settings-grid output.stat-highlight {
-  color: var(--accent-strong);
-}
+
 /* Bloc 131/C : l'administration est exclue ici comme elle l'est déjà plus
    haut (Bloc 125 §2, même motif `:where(:not(.admin-shell …))`). Cette
    déclaration-ci n'avait pas reçu l'exclusion, et elle n'est dans aucune
    couche : elle battait donc toutes les classes utilitaires de la refonte,
-   qui vivent dans `@layer utilities`. Mesuré au navigateur avant le
-   correctif, sur Classement, Utilisateurs et Configuration — chaque champ
-   de l'admin sortait en `1px solid #d3d6dd`, rayon 8,8 px, fond blanc,
-   quelles que soient ses classes : `rounded-admin-control`,
-   `border-admin-card-border`, `bg-admin-card` et surtout les trois états du
-   champ numérique (vide en pointillés ambre, illisible en rouge, refusé en
-   rouge) se lisaient juste et ne rendaient rien.
+   qui vivent dans `@layer utilities`.
 
    `:where()` ne pèse rien : la règle reste à 0-0-1, exactement comme avant. */
 select:where(:not(.admin-shell select)),
@@ -1274,6 +1192,7 @@ input:where(:not(.admin-shell input)) {
 select:where(:not(.admin-shell select)) {
   padding: 0 0.7rem;
 }
+/* Le champ numéroté − / valeur / + que partagent tous les calculateurs. */
 .number-stepper {
   display: grid;
   grid-template-columns: 2.45rem minmax(0, 1fr) 2.45rem;
@@ -1290,7 +1209,7 @@ select:where(:not(.admin-shell select)) {
   appearance: none;
 }
 .number-stepper button,
-.points-summary button {
+.player-points-reset {
   border: 1px solid var(--border);
   background: var(--surface-muted);
   color: var(--foreground);
@@ -1309,34 +1228,344 @@ select:where(:not(.admin-shell select)) {
   grid-template-columns: minmax(0, 1fr) 4.5rem;
   gap: 0.45rem;
 }
-.settings-section {
+
+/* Bloc 123 §2.1 : l'échelon, le niveau et les VP sur une seule ligne. Le
+   sélecteur prend la moitié de la rangée, comme la ligue seule avant lui. */
+.player-general {
+  display: grid;
+  grid-template-columns: 5fr 2fr 3fr;
+  gap: 0.8rem;
+  padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
-.settings-section > summary {
-  padding: 1rem 0;
-}
-.settings-section-body {
-  padding-bottom: 1rem;
-}
-.settings-help {
-  margin: 0 0 0.8rem;
+.player-general label {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
   color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
-.points-summary {
+.player-field-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.player-rung-field {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+}
+.player-rung-buttons {
+  margin: 0;
+}
+/* Largeur égale et jamais tronquée : `min-width: max-content` empêche un
+   bouton de descendre sous son propre libellé pendant que flex-grow répartit
+   la rangée entre tous. Sélecteur en deux classes pour battre le
+   `flex: 0 0 auto` de `.family-buttons button`, déclaré plus bas dans ce
+   fichier — à égalité de spécificité, c'est le dernier qui gagne. */
+.player-rung-field .player-rung-buttons button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+.player-general .unit-input {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+/* Bloc 123 §2.2 : les templiers, au-dessus du tableau et hors des stats. La
+   colonne de gauche a la largeur de la colonne d'en-têtes de la matrice, pour
+   que les deux blocs s'alignent. */
+.player-templars {
+  display: grid;
+  grid-template-columns: var(--player-matrix-head) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.8rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--border);
+}
+.player-templars-head {
+  display: grid;
+  gap: 0.15rem;
+}
+.player-templars-head small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.player-templars-fields {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.player-templars-fields label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.player-templar-short {
+  display: none;
+}
+
+/* Bloc 123 §2.3 : la matrice. Un vrai tableau, à colonnes fixes — chaque case
+   se lit par son en-tête de ligne (la source) et son en-tête de colonne (la
+   compétence), ce qu'une grille de <div> ne donne pas. */
+.player-matrix,
+.player-matrix-mobile {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.player-matrix thead td,
+.player-matrix th[scope="row"] {
+  width: var(--player-matrix-head);
+}
+.player-matrix th[scope="col"] {
+  padding: 0.4rem 0.3rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+.player-matrix th[scope="row"] {
+  padding: 0.5rem 0.6rem 0.5rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+.player-matrix-row-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.player-matrix-row-equipment .player-matrix-row-title {
+  color: var(--emerald-bright);
+}
+.player-matrix-row-points .player-matrix-row-title {
+  color: var(--accent-strong);
+}
+.player-matrix-row-temple .player-matrix-row-title {
+  color: var(--sapphire-bright);
+}
+.player-matrix-row-note {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1.2rem;
-  margin-bottom: 1rem;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.player-matrix td {
+  padding: 0.25rem 0.15rem;
+  vertical-align: top;
+}
+/* Steppers compacts : 32 px de haut, boutons de 22 px. */
+.player-matrix .number-stepper {
+  grid-template-columns: 1.375rem minmax(0, 1fr) 1.375rem;
+}
+.player-matrix .number-stepper input,
+.player-matrix .number-stepper button {
+  min-height: 2rem;
+  padding: 0;
   font-size: 0.8rem;
 }
-.points-summary button {
-  padding: 0.45rem 0.7rem;
-  border-radius: 0.45rem;
+.player-matrix-percent {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  text-align: right;
 }
-.city-calculators {
+.player-matrix-empty {
+  display: block;
+  padding: 0.35rem 0;
+  border: 1px dashed var(--border);
+  border-radius: 0.45rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+.player-points-budget {
+  font-family: var(--font-mono, monospace);
+}
+.player-points-reset {
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.45rem;
+  font-size: 0.72rem;
+}
+/* La ligne Total, séparée du reste par un filet : c'est le même chiffre que
+   les étiquettes du panneau replié, à la même place à l'écran. */
+.player-matrix-row-total th[scope="row"],
+.player-matrix-row-total td {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.player-matrix-row-total {
+  font-weight: 700;
+}
+/* La couleur est posée sur les cellules, pas héritée de la ligne : une
+   déclaration plus haut dans ce fichier donne `color: var(--text)` à tout
+   `td`, et une valeur héritée perd toujours contre une déclaration portée par
+   l'élément lui-même. Mesuré au navigateur : la ligne Total sortait en
+   #17151f, le brun ne s'appliquait pas. */
+.player-matrix-row-total th[scope="row"],
+.player-matrix-row-total td {
+  color: var(--summary-total);
+  font-family: var(--font-mono, monospace);
+  text-align: center;
+}
+.player-matrix-row-total th[scope="row"] {
+  font-family: inherit;
+  text-align: left;
+}
+
+/* Bloc 123 §4 : le mobile transpose la matrice — une ligne par compétence,
+   trois colonnes de saisie, et le total contre le nom de la compétence plutôt
+   que sur une ligne à part qu'il faudrait aller chercher. */
+.player-matrix-mobile thead td,
+.player-matrix-mobile th[scope="row"] {
+  width: 5.75rem;
+}
+.player-matrix-mobile th[scope="col"] {
+  padding: 0.3rem 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+.player-matrix-mobile th[scope="row"] {
+  padding: 0.3rem 0.4rem 0.3rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+.player-matrix-mobile-name {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.player-matrix-mobile-total {
+  display: block;
+  color: var(--summary-total);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+}
+.player-matrix-mobile td {
+  padding: 0.2rem 0.15rem;
+  vertical-align: top;
+}
+/* Un champ simple, sans boutons − / + : à cette largeur ils mangeaient le
+   chiffre, et un tap sur le champ ouvre le clavier de toute façon. */
+.player-matrix-input {
+  width: 100%;
+  min-height: 2.5rem;
+  text-align: center;
+  /* Les flèches natives du champ numérique prennent la place du chiffre à
+     cette largeur, et elles sont intapables au doigt — le stepper les cachait
+     déjà de son côté. */
+  appearance: textfield;
+}
+.player-matrix-input::-webkit-inner-spin-button,
+.player-matrix-input::-webkit-outer-spin-button {
+  appearance: none;
+}
+.player-points-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+}
+.player-matrix-help {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  /* Replié : les mêmes dix étiquettes, en tuiles — l'abréviation au-dessus du
+     total, et pas de décomposition, qui ne tiendrait pas dans 70 px. */
+  .player-stat-chips {
+    gap: 0.3rem;
+  }
+  .player-stat-chip {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.2rem;
+  }
+  .player-chip-name {
+    font-size: 0.6875rem;
+  }
+  .player-chip-total {
+    font-size: 0.84rem;
+  }
+  .player-chip-breakdown {
+    display: none;
+  }
+  .player-summary-row1 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+  /* Niveau et VP se partagent une rangée, le sélecteur prend la sienne. */
+  .player-general {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .player-rung-field {
+    grid-column: 1 / -1;
+  }
+  /* Deux classes, pour la même raison qu'au-dessus : `.family-buttons` est
+     déclaré plus bas dans le fichier et gagnerait à égalité. */
+  .player-rung-field .player-rung-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+  .player-rung-field .player-rung-buttons button {
+    min-width: 0;
+    height: 2.375rem;
+    padding: 0 0.2rem;
+    font-size: 0.75rem;
+    white-space: normal;
+  }
+  /* Le sélecteur d'unité des VP, rétréci pour que le champ garde sa place. */
+  .player-general .unit-input {
+    grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .player-general .unit-input select {
+    padding: 0 0.3rem;
+  }
+  /* Zones tactiles : 44 px sur les deux champs de la rangée. */
+  .player-general .number-stepper input,
+  .player-general .number-stepper button {
+    min-height: var(--tap-target);
+  }
+  .player-templars {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  .player-templars-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .player-templars-fields {
+    gap: 0.3rem;
+  }
+  .player-templar-long {
+    display: none;
+  }
+  .player-templar-short {
+    display: block;
+    text-align: center;
+  }
+}.city-calculators {
   margin-top: 2rem;
 }
 .calculator-tabs {
@@ -2983,7 +3212,6 @@ td,
 .lead,
 .calculator-card > p,
 .calculator-field,
-.settings-grid label,
 .public-footer,
 .stuff-empty {
   color: var(--text-dim);

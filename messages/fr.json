@@ -43,6 +43,13 @@
       "recruiter": "Recruteur",
       "rusher": "Vitesse"
     },
+    "templars-short": {
+      "striker": "Atq",
+      "guardian": "Def",
+      "prosperous": "Or",
+      "recruiter": "Rec",
+      "rusher": "Vit"
+    },
     "leagues": {
       "bronze": "Bronze",
       "silver": "Argent",
@@ -144,35 +151,37 @@
   },
   "player-settings": {
     "title": "Paramètres du joueur",
-    "summary": "{league} · Niveau {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
-    "league": "Ligue",
+    "summary": "Niv. {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
+    "rung": "Ligue ou division",
     "league-undefined": "Ligue non définie",
     "player-level": "Niveau du joueur",
     "player-vp": "VP du joueur",
     "vp-unit": "Unité des VP",
     "equipment-skills": {
-      "title": "Compétences avec équipement",
+      "title": "Équipement",
       "field": "{skill} avec équipement"
     },
     "skill-points": {
-      "title": "Distribution des points",
-      "available": "Disponibles",
-      "allocated": "Alloués",
-      "remaining": "Restants",
+      "title": "Points",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} points alloués sur {available} disponibles",
       "reset": "Réinitialiser",
       "field": "Points {skill}"
     },
     "templars": {
       "title": "Templiers",
+      "not-counted": "non comptés dans les stats",
       "field": "Templiers {templar}"
     },
     "clan-temple": {
-      "title": "Bonus de temple (clan)",
-      "help": "Saisis uniquement la contribution des Templiers du clan (ex : 260 pour Vitesse). La base de temple confirmée par statistique s’ajoute automatiquement au total affiché.",
+      "title": "Temple (clan)",
+      "help": "Contribution des Templiers du clan seule ; la base confirmée s’ajoute au total.",
       "field": "Temple {templar}"
     },
-    "division": "Division",
-    "division-none": "Non précisée"
+    "matrix": {
+      "caption": "Compétences par source : équipement, points et temple",
+      "total": "Total"
+    }
   },
   "city-cost": {
     "name": "Coût de Ville",
