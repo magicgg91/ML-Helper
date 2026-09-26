@@ -1,11 +1,25 @@
-export const cityLeagues = ["bronze", "silver", "gold", "platinum", "diamond", "legend"] as const;
-export type CityLeague = (typeof cityLeagues)[number];
+import { leagues, type League } from "./player-settings";
+
+/**
+ * Bloc 135 §4 : les paramètres des Villes lisent l'énumération unique des
+ * ligues de base.
+ *
+ * Ce fichier portait la sienne — `cityLeagues`, les six mêmes clés recopiées à
+ * la main — et c'était le seul doublon de l'énumération dans le dépôt.
+ * `city-calculators.ts` indexe déjà `multipliers` avec le `League` de
+ * `player-settings`, si bien que les deux listes ne tenaient ensemble que
+ * parce qu'elles se trouvaient égales : divergentes d'une clé, le code aurait
+ * compilé et rendu `undefined` à l'exécution.
+ *
+ * Les Villes ne connaissent que la ligue de base, jamais une division (voir
+ * `baseLeagueOf` dans `lib/leagues.ts`).
+ */
 
 export type CityParameters = {
   vp: { base: number; ratio: number };
   walls: { base: number; ratio: number };
   cost: { base: number; ratio: number };
-  multipliers: Record<CityLeague, { army: number; gold: number }>;
+  multipliers: Record<League, { army: number; gold: number }>;
 };
 
 export const defaultCityParameters: CityParameters = {
@@ -27,7 +41,7 @@ export function parseCityParameters(value: unknown): CityParameters {
     vp: { base: finite(source.vp?.base, 20), ratio: finite(source.vp?.ratio, 1.115) },
     walls: { base: finite(source.walls?.base, 70), ratio: finite(source.walls?.ratio, 1.2) },
     cost: { base: finite(source.cost?.base, 10), ratio: finite(source.cost?.ratio, 1.2) },
-    multipliers: Object.fromEntries(cityLeagues.map((league) => [league, {
+    multipliers: Object.fromEntries(leagues.map((league) => [league, {
       army: finite(source.multipliers?.[league]?.army, defaultCityParameters.multipliers[league].army),
       gold: finite(source.multipliers?.[league]?.gold, defaultCityParameters.multipliers[league].gold),
     }])) as CityParameters["multipliers"],

@@ -43,8 +43,13 @@ export const auditTargets = [
   "expedition-equipment-increments",
   "expedition-equipment-secondary",
   "gems",
+  // Bloc 135 : l'échelle des ligues et des divisions, enregistrée depuis
+  // Configuration. Elle s'appelait `ranking` tant que son CRUD vivait sur
+  // l'écran de l'outil Classement ; la phrase de cette ancienne clé reste dans
+  // les deux fichiers de messages, parce que les lignes de journal déjà
+  // écrites la portent encore.
+  "leagues",
   "level-up",
-  "ranking",
   "templars",
   "templars-reference",
   "xp-gain-rate",

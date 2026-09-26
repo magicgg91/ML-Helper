@@ -4,7 +4,7 @@ import { CityCalculators } from "../../../../../components/city-calculators";
 import { RankingCalculator } from "../../../../../components/ranking-calculator";
 import { SkillsCalculators } from "../../../../../components/skills-calculators";
 import { CombatCalculators } from "../../../../../components/combat-calculators";
-import { getRankingLadder } from "../../../../../lib/ranking";
+import { getLeagueLadder } from "../../../../../lib/leagues";
 import { getCalculatorAvailability } from "../../../../../lib/calculators-server";
 import {
   getCityParameters,
@@ -105,7 +105,7 @@ export default async function ToolPage({
       </main>
     );
   if (slug === "classement") {
-    const ladder = await getRankingLadder();
+    const ladder = await getLeagueLadder();
     return (
       <main className="public-main">
         {active.ranking ? (

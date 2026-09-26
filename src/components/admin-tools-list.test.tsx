@@ -37,6 +37,7 @@ const messages = {
       "source-shared": "Paramètres partagés par {count} outils",
       "source-reference": "Référentiel {name}",
       "source-none": "Aucun paramètre",
+      "source-configuration": "Configuration › Ligues et divisions",
       edit: "Modifier",
       open: "Ouvrir",
       "nothing-to-edit": "Rien à modifier",
@@ -81,7 +82,18 @@ const rows: AdminToolRow[] = [
     label: "Classement",
     category: "classement",
     active: false,
-    source: { kind: "own", href: "/admin/tools/ranking" },
+    // Bloc 135 : ses paramètres sont un réglage du site — l'échelle des ligues
+    // et des divisions, que quatre autres outils lisent aussi.
+    source: { kind: "configuration", href: "/admin/config#ligues-divisions" },
+    description: {},
+  },
+  {
+    id: "5",
+    slug: "xp-gain-rate",
+    label: "Taux de gain d’XP",
+    category: "combat",
+    active: true,
+    source: { kind: "own", href: "/admin/tools/xp-gain-rate" },
     description: {},
   },
   {
@@ -107,6 +119,7 @@ function list(props: Partial<Parameters<typeof AdminToolsList>[0]> = {}) {
         canEdit
         canToggle
         canOpenReferences
+        canOpenConfiguration
         {...props}
       />
     </NextIntlClientProvider>
@@ -157,17 +170,53 @@ describe("Bloc 119: the Outils table", () => {
     expect(
       screen.getByRole("link", { name: "Référentiel Équipements de Combat" }),
     ).toHaveAttribute("href", "/admin/referentiels/reference-combat-equipment");
+    // Bloc 135 : une ligne dont les paramètres sont un réglage du site nomme
+    // la section, et y mène.
+    expect(
+      screen.getByRole("link", {
+        name: "Configuration › Ligues et divisions",
+      }),
+    ).toHaveAttribute("href", "/admin/config#ligues-divisions");
   });
 
   it("offers Modifier, Ouvrir, or the reason there is neither", () => {
     renderList();
     expect(screen.getAllByRole("link", { name: "Modifier" })).toHaveLength(2);
-    expect(screen.getByRole("link", { name: "Ouvrir" })).toHaveAttribute(
-      "href",
+    // « Ouvrir », deux fois : le référentiel qu'un outil lit, et la section de
+    // Configuration où vit l'échelle. Ni l'un ni l'autre n'est un écran
+    // d'édition de cet outil, d'où le verbe.
+    expect(
+      screen
+        .getAllByRole("link", { name: "Ouvrir" })
+        .map((link) => link.getAttribute("href")),
+    ).toEqual([
+      "/admin/config#ligues-divisions",
       "/admin/referentiels/reference-combat-equipment",
-    );
+    ]);
     // §2: never a hole — the row that cannot be edited says why.
     expect(screen.getByText("Rien à modifier")).toBeInTheDocument();
+  });
+
+  /**
+   * Bloc 135 : « Gestion Guides » n'a pas `leagues.read`. La ligne dit toujours
+   * où vivent les paramètres du Classement — c'est une information utile — mais
+   * elle ne propose pas un lien vers un écran qui lui répondrait 403.
+   */
+  it("nomme la section sans y mener pour un rôle qui ne peut pas l'ouvrir", () => {
+    renderList({ canOpenConfiguration: false });
+    expect(
+      screen.getByText("Configuration › Ligues et divisions"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: "Configuration › Ligues et divisions",
+      }),
+    ).toBeNull();
+    expect(
+      screen
+        .queryAllByRole("link", { name: "Ouvrir" })
+        .map((link) => link.getAttribute("href")),
+    ).toEqual(["/admin/referentiels/reference-combat-equipment"]);
   });
 
   it("explains the empty action column to a read-only role", () => {

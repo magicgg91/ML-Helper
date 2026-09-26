@@ -27,6 +27,7 @@ export function useEditorForm<T>({
   body = (value: T) => value,
   adopt,
   validate,
+  onSaved,
 }: {
   initial: T;
   endpoint: string;
@@ -40,6 +41,16 @@ export function useEditorForm<T>({
    * out, so the guard had nowhere to live.
    */
   validate?: (value: T) => string | undefined;
+  /**
+   * Bloc 135 : appelé après un enregistrement réussi, jamais après un refus.
+   *
+   * Il existe pour les panneaux posés dans une section repliable : leur
+   * en-tête affiche un résumé calculé sur le serveur (« 10 ligues/divisions,
+   * 10 actives »), qui resterait sur l'ancien compte sans un
+   * `router.refresh()` déclenché ici. Le reste des écrans d'édition ne le
+   * passe pas et ne change pas de comportement.
+   */
+  onSaved?: (stored: T) => void;
 }) {
   // One save vocabulary for every edit screen: "Paramètres enregistrés."
   // reads wrong on the Classement or the Boutique, and each screen carrying
@@ -80,10 +91,11 @@ export function useEditorForm<T>({
       setValue(stored);
       setSaved(stored);
       status.success(t("saved"));
+      onSaved?.(stored);
     } catch {
       status.error(t("server-error"));
     }
-  }, [adopt, body, endpoint, method, status, t, validate, value]);
+  }, [adopt, body, endpoint, method, onSaved, status, t, validate, value]);
 
   /** Back to what the server holds — the header's Annuler. */
   const cancel = useCallback(() => {

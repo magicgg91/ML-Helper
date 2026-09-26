@@ -1,3 +1,4 @@
+import { leaguesSectionHref } from "./admin-sections";
 import { adminToolEditHref, isReferenceCalculatorSlug } from "./admin-tools";
 import { calculatorCatalog, type CalculatorSlug } from "./calculator-catalog";
 
@@ -35,6 +36,16 @@ export type ToolParameterSource =
   | { kind: "shared"; href: string; tools: readonly CalculatorSlug[] }
   /** No parameters: its data is a reference's rows. */
   | { kind: "reference"; reference: CalculatorSlug; href: string }
+  /**
+   * Bloc 135 : ses paramètres sont un réglage du site, pas les siens.
+   *
+   * Le Classement est le seul dans ce cas : ses seuls paramètres étaient
+   * l'échelle des ligues et des divisions, que les Gemmes, la Progression, les
+   * Événements et les Villes lisent aussi, et qui se gère donc dans
+   * Configuration. La ligne le dit au lieu de laisser un bouton « Modifier »
+   * mener à un écran qui n'existe plus.
+   */
+  | { kind: "configuration"; href: string }
   /** Nothing to edit at all. */
   | { kind: "none" };
 
@@ -77,7 +88,14 @@ export function toolsSharingEditor(href: string): CalculatorSlug[] {
   return toolSlugs.filter((slug) => adminToolEditHref(slug) === href);
 }
 
+/** Les outils dont les paramètres vivent dans Configuration (Bloc 135). */
+const configurationBySlug: Partial<Record<CalculatorSlug, string>> = {
+  ranking: leaguesSectionHref,
+};
+
 export function toolParameterSource(slug: string): ToolParameterSource {
+  const configuration = configurationBySlug[slug as CalculatorSlug];
+  if (configuration) return { kind: "configuration", href: configuration };
   const reference = referenceByTool[slug as CalculatorSlug];
   if (reference)
     return {

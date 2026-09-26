@@ -86,7 +86,7 @@ const listPages = [
 
 const editors = [
   "src/components/admin-tool-editors.tsx",
-  "src/components/admin-ranking-editor.tsx",
+  "src/components/admin-leagues-panel.tsx",
   "src/components/admin-equipment-editor.tsx",
   "src/components/admin-shop-editor.tsx",
   "src/components/admin-events-editor.tsx",

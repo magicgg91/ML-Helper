@@ -1033,9 +1033,13 @@
       "open": "Open",
       "nothing-to-edit": "Nothing to edit",
       "visibility-of": "Visibility of {tool}",
-      "no-results": "No tool matches this search."
+      "no-results": "No tool matches this search.",
+      "source-configuration": "Configuration › Leagues and divisions"
     },
-    "ranking": {
+    "leagues": {
+      "section": "Leagues and divisions",
+      "intro": "The ladder read by the Ranking tool, by Player settings, and — through their base league — by every other tool.",
+      "summary": "{count, plural, one {# league/division} other {# leagues/divisions}} · {active, plural, one {# active} other {# active}}",
       "add": "Add range",
       "threshold": "Threshold (%)",
       "target": "Target league",
@@ -1064,7 +1068,7 @@
       "entry-no-league": "None",
       "entry-division": "Division",
       "entry-untitled": "Unnamed entry",
-      "entry-name-error": "Pick a base league or type a free name (FR or EN).",
+      "entry-name-error": "Pick a base league, or type a free name in at least one language.",
       "entry-league-field": "{entry} (rung {position}) base league",
       "entry-division-field": "{entry} (rung {position}) division",
       "entry-active-field": "{entry} (rung {position}) active publicly",
@@ -1073,11 +1077,7 @@
       "remove-entry-confirm": "Remove this entry and all its bands?",
       "move-up": "Move {entry} up",
       "move-down": "Move {entry} down",
-      "entry-name-fr": "Free name (FR)",
-      "entry-name-en": "Free name (EN)",
-      "entry-name-fr-field": "{entry} (rung {position}) free name FR",
-      "entry-name-en-field": "{entry} (rung {position}) free name EN",
-      "entries-label": "Ranking entries",
+      "entries-label": "Leagues and divisions",
       "band-count": "{count, plural, =0 {no band} one {# band} other {# bands}}",
       "entry-position": "Entry {position} of {total}",
       "entry-actions": "More actions for {entry}",
@@ -1086,7 +1086,11 @@
       "bands-section": "End-of-season bands",
       "row-actions": "Action",
       "top": "Top",
-      "band-name": "Band {row} of {entry}"
+      "band-name": "Band {row} of {entry}",
+      "languages-label": "Free name in",
+      "language-hidden": "{language} hidden on the site",
+      "entry-name": "Free name ({language})",
+      "entry-name-field": "{entry} (rung {position}) free name {language}"
     },
     "references": {
       "columns": {
@@ -1464,6 +1468,9 @@
         },
         "highlights": {
           "update": "{actor} changed the homepage highlights"
+        },
+        "leagues": {
+          "update": "{actor} updated the leagues and divisions"
         }
       },
       "eyebrow": "Access",

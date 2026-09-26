@@ -19,7 +19,9 @@ describe("Bloc 119: where a tool's parameters come from", () => {
     expect(tools).toHaveLength(11);
     for (const { slug } of tools)
       expect(toolParameterSource(slug).kind, slug).toMatch(
-        /^(own|shared|reference|none)$/,
+        // Bloc 135 : « configuration » a rejoint la liste — un outil dont les
+        // paramètres sont un réglage du site et non les siens.
+        /^(own|shared|reference|configuration|none)$/,
       );
   });
 
@@ -46,11 +48,23 @@ describe("Bloc 119: where a tool's parameters come from", () => {
       expect(adminToolEditHref(slug)).toBe(source.href);
   });
 
-  it("sends a tool with its own parameters to its own screen", () => {
+  /**
+   * Bloc 135 : le Classement n'a pas de paramètres à lui.
+   *
+   * Ses seuls paramètres étaient l'échelle des ligues et des divisions — que
+   * les Gemmes, la Progression, les Événements et les Villes lisent aussi, par
+   * leur ligue de base — et elle se gère dans Configuration. La ligne le dit,
+   * et y mène, au lieu de garder un « Modifier » vers un écran supprimé.
+   */
+  it("envoie le Classement vers la section de Configuration", () => {
     expect(toolParameterSource("ranking")).toEqual({
-      kind: "own",
-      href: "/admin/tools/ranking",
+      kind: "configuration",
+      href: "/admin/config#ligues-divisions",
     });
+    expect(adminToolEditHref("ranking")).toBeUndefined();
+  });
+
+  it("sends a tool with its own parameters to its own screen", () => {
     expect(toolParameterSource("gems")).toEqual({
       kind: "own",
       href: "/admin/tools/gems",

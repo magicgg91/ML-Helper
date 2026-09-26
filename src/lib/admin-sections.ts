@@ -26,17 +26,36 @@ export type AdminSectionKey =
 /** The groups of the side column; "main" carries no heading (§2). */
 export type AdminSectionGroup = "main" | "content" | "access" | "site";
 
+/**
+ * Bloc 135 : une section peut s'ouvrir sur plusieurs capacités.
+ *
+ * Elle n'en demandait qu'une, et cela a tenu tant qu'un écran servait un seul
+ * domaine. Configuration en sert désormais deux — les réglages du site, et
+ * l'échelle des ligues et des divisions — dont les droits ne se recouvrent
+ * pas : « Gestion Outils » a le second sans le premier. Une liste, et
+ * l'entrée s'affiche dès que le rôle en tient une, ce qui est exactement ce
+ * que la garde du serveur fait de son côté (`requireCapability` accepte déjà
+ * un tableau).
+ */
+export type AdminSectionAccess = AdminCapability | readonly AdminCapability[];
+
 export type AdminSection = {
   key: AdminSectionKey;
   href: string;
   group: AdminSectionGroup;
-  read: AdminCapability;
+  read: AdminSectionAccess;
   /**
    * What it takes to change anything there. Absent on the dashboard, which
    * shows and does nothing.
    */
-  write?: AdminCapability;
+  write?: AdminSectionAccess;
 };
+
+/** Si ce rôle tient au moins une des capacités demandées. */
+export function canAny(role: string, access: AdminSectionAccess): boolean {
+  const list = Array.isArray(access) ? access : [access];
+  return list.some((capability) => can(role, capability));
+}
 
 export const adminSections: readonly AdminSection[] = [
   {
@@ -91,8 +110,10 @@ export const adminSections: readonly AdminSection[] = [
     key: "config",
     href: "/admin/config",
     group: "site",
-    read: "configuration.read",
-    write: "configuration.write",
+    // Bloc 135 : « Gestion Outils » n'a pas `configuration.read` et n'en veut
+    // pas, mais il gère les ligues et les divisions, qui sont sur cet écran.
+    read: ["configuration.read", "leagues.read"],
+    write: ["configuration.write", "leagues.write"],
   },
 ];
 
@@ -103,15 +124,26 @@ export const adminSectionGroups: readonly AdminSectionGroup[] = [
   "site",
 ];
 
+/**
+ * Bloc 135 : l'ancre de la section « Ligues et divisions » de Configuration.
+ *
+ * Deux endroits la nomment — la section elle-même, et la ligne Classement du
+ * tableau Outils, qui dit désormais où ses paramètres se modifient. Écrite
+ * deux fois, elle finirait par ne plus désigner la même chose.
+ */
+export const configurationHref = "/admin/config";
+export const leaguesSectionAnchor = "ligues-divisions";
+export const leaguesSectionHref = `${configurationHref}#${leaguesSectionAnchor}`;
+
 /** The sections a role may open, and whether it may change anything there. */
 export function roleSections(
   role: string,
 ): { section: AdminSection; canWrite: boolean }[] {
   return adminSections
-    .filter((section) => can(role, section.read))
+    .filter((section) => canAny(role, section.read))
     .map((section) => ({
       section,
-      canWrite: Boolean(section.write && can(role, section.write)),
+      canWrite: Boolean(section.write && canAny(role, section.write)),
     }));
 }
 

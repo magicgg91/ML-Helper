@@ -1941,7 +1941,10 @@ test("direct admin URLs enforce all six roles", async ({ browser }) => {
         page.request.delete("/api/admin/logs", { data: {} }),
         page.request.patch("/api/admin/tools/calculator-ranking", { data: {} }),
         page.request.put("/api/admin/tools/city-parameters", { data: {} }),
-        page.request.put("/api/admin/tools/ranking", { data: {} }),
+        // Bloc 135 : l'échelle des ligues et des divisions a quitté
+        // `/api/admin/tools/ranking` pour `/api/admin/config/leagues`, sous
+        // sa propre capacité. `read_only` n'en a aucune : toujours 403.
+        page.request.put("/api/admin/config/leagues", { data: {} }),
         page.request.put("/api/admin/tools/templars", { data: {} }),
         page.request.put("/api/admin/tools/xp-gain-rate", { data: {} }),
         page.request.put("/api/admin/tools/demo-attack-troops", {
@@ -2445,6 +2448,39 @@ test("Bloc63: the reference tables switch layout at the same width in CSS and in
   await expect(templars.first().locator("tbody tr")).toHaveCount(10);
 });
 
+/**
+ * Bloc 135 : la section « Ligues et divisions » de l'écran Configuration.
+ *
+ * Le CRUD vivait sur `/admin/tools/ranking` ; il est maintenant une section
+ * repliable de Configuration, aux côtés des langues du site. L'ancre l'ouvre
+ * (Bloc 136), et `b136OpenSection` le vérifie plutôt que d'y compter :
+ * l'ancre est elle-même une des choses que ces scénarios prouvent.
+ *
+ * Les interactions du panneau sont portées par la section, parce que l'écran
+ * en compte désormais plusieurs et que « Enregistrer » y apparaît deux fois
+ * pour un Super Admin.
+ */
+const B135_LEAGUES = /^(Ligues et divisions|Leagues and divisions)$/;
+const ligues = (page: Page) => page.locator("#ligues-divisions");
+
+async function b135OpenLeagues(page: Page) {
+  await page.goto("/admin/config#ligues-divisions");
+  // L'ancre ouvre la section — à l'hydratation, pas dans le HTML rendu par le
+  // serveur. Mesuré sur ce dev server : l'en-tête passe à `true` entre 100 et
+  // 300 ms après le chargement. D'où une attente et non un clic : cliquer
+  // pendant ces 200 ms envoie un événement qu'aucun gestionnaire n'écoute
+  // encore, et le même clic rejoué après l'hydratation **referme** la section
+  // que l'ancre venait d'ouvrir — en effaçant l'ancre au passage. C'est ce
+  // qu'un `b136OpenSection` posé ici a fait, et le panneau restait masqué
+  // pour de bon.
+  //
+  // Attendre l'état plutôt que le forcer vérifie donc aussi l'ancre, qui est
+  // une des choses que ce bloc apporte.
+  await expect(
+    page.getByRole("button", { name: B135_LEAGUES }),
+  ).toHaveAttribute("aria-expanded", "true");
+}
+
 // Bloc 108/A+B+C+D+G: the whole point of the bloc, in one browser pass — an
 // admin creates a division that did not exist, orders it, switches it on, and
 // the public page picks it up with its League Lock computed. Unit tests drive
@@ -2460,11 +2496,11 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
-  await page.goto("/admin/tools/ranking");
+  await b135OpenLeagues(page);
   // Bloc 119: the ladder is a list on the left and one entry on the right,
   // so the rungs are named once, in that list, instead of once per stacked
   // form heading.
-  const headings = page.getByTestId("ranking-entry-name");
+  const headings = page.getByTestId("league-rung-name");
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2482,6 +2518,15 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
     .getByLabel("Entrée sans nom (rang 7) ligue de base")
     .selectOption("gold");
   await page.getByLabel("Or (rang 7) division").fill("1");
+  // Bloc 135 §2 : le nom libre est un objet par langue. Écrit en allemand
+  // seulement : la page allemande doit le rendre, et les autres retomber sur
+  // « Or 1 », construit depuis la ligue de base et la division — ce que la
+  // paire FR/EN ne pouvait pas faire.
+  await ligues(page)
+    .getByRole("group", { name: "Nom libre en" })
+    .getByText("de", { exact: true })
+    .click();
+  await page.getByLabel("Or 1 (rang 7) nom libre DE").fill("Gold Eins");
   await expect(headings).toHaveText([
     "Bronze",
     "Argent",
@@ -2513,8 +2558,12 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
     "Légende",
   ]);
   await page.getByLabel("Or 1 (rang 4) active publiquement").click();
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
 
   // Public side: the new rung is there, ordered, with no data of its own yet.
   await page.goto("/tools/classement");
@@ -2536,6 +2585,16 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
   // Bloc 108/D: two rungs below Or 1 is Argent.
   await expect(page.getByTestId("ranking-league-lock")).toHaveText("Argent");
 
+  // Bloc 135 §2 : et un lecteur allemand lit le nom écrit pour lui, aller et
+  // retour par la base comprise.
+  await page.goto("/de/tools/classement");
+  await expect(
+    page
+      .locator(".ranking-calculator")
+      .getByRole("button", { name: "Gold Eins", exact: true }),
+  ).toBeVisible();
+  await page.goto("/tools/classement");
+
   // Bloc 108/H: an entry that does have rewards names speedups beside
   // sapphires and gems — named on its own mini-tile since Bloc 112, rather
   // than once in a header row.
@@ -2549,15 +2608,19 @@ test("Bloc108: a division created in the admin reaches the public ranking with i
 
   // Put the ladder back, so the tests after this one see the six it shipped
   // with (this spec runs serially against one database).
-  await page.goto("/admin/tools/ranking");
+  await b135OpenLeagues(page);
   // Bloc 119: the deletion asks in a dialog of the site's own, not the
   // browser's, and it is reached from the entry's ⋯ menu.
-  await page.getByTestId("ranking-entry-name").getByText("Or 1").click();
+  await page.getByTestId("league-rung-name").getByText("Or 1").click();
   await page.getByRole("button", { name: "Autres actions pour Or 1" }).click();
   await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
   await page.getByRole("button", { name: "Confirmer" }).click();
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
 });
 
 // Bloc 109: the picker's row split is computed from a width the browser alone
@@ -2575,7 +2638,7 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   await expect(page).toHaveURL(/\/admin$/);
 
   // Take the ladder to 10 active rungs: the six shipped plus four divisions.
-  await page.goto("/admin/tools/ranking");
+  await b135OpenLeagues(page);
   for (const [index, division] of ["2", "1", "2", "1"].entries()) {
     const rung = 7 + index;
     await page
@@ -2590,8 +2653,12 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
       .getByLabel(`${label} ${division} (rang ${rung}) active publiquement`)
       .click();
   }
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
 
   const group = page.locator(".ranking-calculator .family-buttons");
   const rowSizes = async () =>
@@ -2652,19 +2719,30 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
   // labels do not fit. Nothing caps a free name's length, so give one an
   // absurd one and re-check the same no-overflow rule.
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/admin/tools/ranking");
+  await b135OpenLeagues(page);
   // Bloc 119: one entry is edited at a time, so pick it in the list first.
-  await page.getByTestId("ranking-entry-name").getByText("Argent 2").click();
+  await page.getByTestId("league-rung-name").getByText("Argent 2").click();
   await page
     .getByLabel("Argent 2 (rang 7) nom libre FR")
     .fill("Division Argent Deux Absolument Interminable");
+  // Bloc 135 : un seul champ, et les onglets choisissent la langue qu'il
+  // montre — il faut donc passer à l'anglais pour l'écrire, là où l'écran
+  // d'avant posait les deux côte à côte.
+  await ligues(page)
+    .getByRole("group", { name: "Nom libre en" })
+    .getByText("en", { exact: true })
+    .click();
   await page
     .getByLabel(
       "Division Argent Deux Absolument Interminable (rang 7) nom libre EN",
     )
     .fill("Absolutely Interminable Silver Division Two");
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
 
   for (const width of [390, 1000, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -2689,7 +2767,7 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
 
   // Put the ladder back to the six this spec's other tests expect.
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/admin/tools/ranking");
+  await b135OpenLeagues(page);
   for (const name of [
     "Division Argent Deux Absolument Interminable",
     "Argent 1",
@@ -2697,7 +2775,7 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     "Or 1",
   ]) {
     await page
-      .getByTestId("ranking-entry-name")
+      .getByTestId("league-rung-name")
       .getByText(name, { exact: true })
       .click();
     await page
@@ -2706,8 +2784,12 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     await page.getByRole("menuitem", { name: "Supprimer l’entrée" }).click();
     await page.getByRole("button", { name: "Confirmer" }).click();
   }
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
 });
 
 // Bloc 110: the Classement result zone, measured in a real browser — two
@@ -2999,18 +3081,46 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   const toolsContext = await browser.newContext();
   const tools = await toolsContext.newPage();
   await b90Login(tools, "b90-tools", "role-test-password");
+  /**
+   * Bloc 135 : « Gestion Outils » entre désormais dans Configuration — et
+   * n'y voit qu'une chose.
+   *
+   * Il éditait l'échelle des ligues et des divisions quand elle vivait sur
+   * /admin/tools/ranking, sous `calculators.write` ; la déplacer ne devait
+   * pas lui retirer ce droit. Lui donner `configuration.read` lui aurait
+   * ouvert les langues du site et la sélection de l'accueil, d'où une
+   * capacité à part, `leagues.read`, et une garde par section.
+   *
+   * Ce que le Bloc 90/A protégeait reste protégé, et c'est ce que la suite
+   * vérifie : les langues restent hors de portée, à l'écran comme par une
+   * requête forgée.
+   */
   await expect(tools.getByRole("link", { name: "Configuration" })).toHaveCount(
-    0,
+    1,
   );
-  const denied = await tools.goto("/admin/config");
-  expect(denied?.status()).toBe(403);
-  await expect(
-    tools.getByRole("heading", { name: "Accès interdit" }),
-  ).toBeVisible();
+  const allowed = await tools.goto("/admin/config");
+  expect(allowed?.status()).toBe(200);
+  await expect(tools.getByRole("button", { name: B135_LEAGUES })).toBeVisible();
+  for (const section of [
+    /^(Mis en avant|Homepage highlights)/,
+    B136_LANGUAGES,
+    B136_TRACKING,
+    B136_PURGE,
+  ])
+    await expect(
+      tools.getByRole("button", { name: section }),
+      `${section} hors de portée de Gestion Outils`,
+    ).toHaveCount(0);
   const forged = await tools.request.patch("/api/admin/config/locales", {
     data: { locale: "de", active: false },
   });
   expect(forged.status()).toBe(403);
+  // Et l'échelle, elle, lui répond : 400 sur un corps vide, pas 403. Un 403
+  // ici voudrait dire que le déplacement lui a retiré un droit qu'il avait.
+  const ladder = await tools.request.put("/api/admin/config/leagues", {
+    data: {},
+  });
+  expect(ladder.status()).toBe(400);
   await toolsContext.close();
 });
 
@@ -3852,7 +3962,9 @@ test("Bloc 125/8: each edit screen is named after what it edits, in French", asy
   await expect(page).toHaveURL(/\/admin$/);
 
   const screens = [
-    ["/admin/tools/ranking", "Outils", "Classement"],
+    // Bloc 135 : le Classement n'est plus de la liste — il n'a plus d'écran
+    // d'édition, ses seuls paramètres étant l'échelle des ligues et des
+    // divisions, passée dans Configuration.
     ["/admin/tools/city-parameters", "Outils", "Paramètres Villes partagés"],
     ["/admin/tools/gems", "Outils", "Gemmes"],
     ["/admin/tools/xp-gain-rate", "Outils", "Taux de gain d’XP"],
@@ -4303,6 +4415,9 @@ test("Bloc 136: Configuration opens folded, and an anchor opens one section", as
 
   for (const title of [
     /^(Mis en avant|Homepage highlights)/,
+    // Bloc 135 : une cinquième section, entre les mises en avant et les
+    // langues.
+    B135_LEAGUES,
     B136_LANGUAGES,
     B136_TRACKING,
     B136_PURGE,
@@ -4342,6 +4457,20 @@ test("Bloc 136: Configuration opens folded, and an anchor opens one section", as
   await expect(page.getByTestId("locale-toggle-de")).toBeVisible();
   await page.keyboard.press(" ");
   await expect(page.getByTestId("locale-toggle-de")).toBeHidden();
+
+  // Bloc 135 : la section des ligues se replie comme les autres, et son
+  // résumé dit l'état sans qu'on l'ouvre — dix échelons, dix actifs sur
+  // l'échelle que ce fichier laisse derrière lui.
+  await expect(
+    ligues(page).getByRole("navigation", { name: B135_LEAGUES }),
+  ).toBeHidden();
+  await expect(
+    ligues(page).getByText(/\d+ ligues?\/divisions?|\d+ leagues?\/divisions?/),
+  ).toBeVisible();
+  await b135OpenLeagues(page);
+  await expect(
+    ligues(page).getByRole("navigation", { name: B135_LEAGUES }),
+  ).toBeVisible();
 
   await context.close();
 });

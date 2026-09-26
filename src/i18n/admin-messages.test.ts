@@ -68,13 +68,15 @@ describe("admin page translations", () => {
     expect(en("admin.referentiels.references.level-up")).toBe("Level Up");
   });
 
-  it("covers the existing ranking tool editor", async () => {
+  // Bloc 135 : l'échelle a quitté l'écran de l'outil Classement pour la
+  // section « Ligues et divisions » de Configuration, et son vocabulaire avec
+  // elle — `admin.ranking` est devenu `admin.leagues`.
+  it("covers the leagues and divisions section (/admin/config)", async () => {
     const { en, fr } = await translators();
-    // Bloc 119: the screen's own save wording moved to the shared
-    // admin.editor vocabulary, so this spot-check reads a key the Classement
-    // editor still owns.
-    expect(en("admin.ranking.add")).toBe("Add range");
-    expect(fr("admin.ranking.add")).toBe("Ajouter une plage");
+    expect(en("admin.leagues.add")).toBe("Add range");
+    expect(fr("admin.leagues.add")).toBe("Ajouter une plage");
+    expect(en("admin.leagues.section")).toBe("Leagues and divisions");
+    expect(fr("admin.leagues.section")).toBe("Ligues et divisions");
   });
 
   it("covers /admin/users", async () => {

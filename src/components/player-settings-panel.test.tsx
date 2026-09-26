@@ -18,7 +18,7 @@ import {
   safePlayerSettings,
 } from "./player-settings-panel";
 import { defaultPlayerSettings } from "../lib/player-settings";
-import type { RankingLadder } from "../lib/ranking";
+import type { LeagueLadder } from "../lib/leagues";
 import { templarRates } from "../lib/gems-templars";
 
 // Bloc 68/F: the league field is a LeagueButtons group now, not a <select>
@@ -688,13 +688,12 @@ describe("PlayerSettingsPanel", () => {
 describe("Bloc 108/E: the division field", () => {
   afterEach(cleanup);
 
-  const ladder: RankingLadder = [
+  const ladder: LeagueLadder = [
     {
       id: "bronze",
       league: "bronze",
       division: "",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 0,
       active: true,
       bands: [],
@@ -703,8 +702,7 @@ describe("Bloc 108/E: the division field", () => {
       id: "gold-2",
       league: "gold",
       division: "2",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 1,
       active: true,
       bands: [],
@@ -713,8 +711,7 @@ describe("Bloc 108/E: the division field", () => {
       id: "gold-1",
       league: "gold",
       division: "1",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 2,
       active: true,
       bands: [],
@@ -723,15 +720,14 @@ describe("Bloc 108/E: the division field", () => {
       id: "diamond-1",
       league: "diamond",
       division: "1",
-      nameFr: "",
-      nameEn: "",
+      name: {},
       position: 3,
       active: false,
       bands: [],
     },
   ];
 
-  const open = (props: { ladder?: RankingLadder } = {}) => {
+  const open = (props: { ladder?: LeagueLadder } = {}) => {
     render(
       <NextIntlClientProvider locale="fr" messages={messages}>
         <PlayerSettingsPanel {...props} />

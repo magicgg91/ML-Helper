@@ -4,61 +4,75 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
-  isSavableRankingLadder,
-  rankingEntryId,
-  rankMovements,
-  rankRewardTypes,
-  type RankingEntry,
-  type RankingLadder,
-  type RankMovement,
-  type RankRewardType,
-} from "@/lib/ranking";
+  hasRungName,
+  isSavableLeagueLadder,
+  leagueRungId,
+  rungNameForm,
+  rungNameLocales,
+  rungNameToStore,
+  seasonMovements,
+  seasonRewardTypes,
+  type LeagueLadder,
+  type LeagueRung,
+  type SeasonMovement,
+  type SeasonRewardType,
+} from "@/lib/leagues";
 import { leagues, type League } from "@/lib/player-settings";
+import type { LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
+import { configurationHref } from "@/lib/admin-sections";
+import { useSectionDirty } from "./admin-collapsible-section";
 import { ConfirmDialog } from "./admin-confirm-dialog";
-import { EditorHeader } from "./admin-editor-header";
 import { EditorSection } from "./admin-editor-section";
+import { LangTabs } from "./admin-lang-tabs";
 import { NumberField } from "./admin-number-field";
 import { OverflowMenu } from "./admin-overflow-menu";
+import { Pill } from "./admin-pill";
 import { RowActions } from "./admin-row-actions";
-import type { EditorScreenProps } from "./admin-tool-editors";
 import { VisibilitySwitch } from "./admin-visibility-switch";
-import { rankingEntryLabel } from "./ranking-calculator";
+import { leagueRungLabel } from "./league-rung-label";
 import { useEditorForm } from "./use-editor-form";
+import { useUnsavedWarning } from "./use-unsaved-warning";
 
 /**
- * Bloc 119 §3 bis: the Classement editor, as master and detail.
+ * Bloc 135 §2 : les ligues et les divisions, dans Configuration.
  *
- * It used to stack every entry's full form down one page — a dozen identical
- * blocks, each with its own table, and nothing to say which one you were in.
- * The list on the left now holds the whole ladder at a glance (visible or
- * not, how many bands), and the right side holds exactly one entry.
+ * Le même CRUD qu'au Bloc 108, au même endroit que les langues du site et la
+ * sélection de l'accueil — parce qu'une division n'appartient pas à l'outil
+ * Classement plus qu'aux Gemmes ou à la Progression, et que l'écran d'un outil
+ * parmi seize était le seul endroit où en ajouter une.
  *
- * The selected entry lives in the URL, so a ladder rung is a link. The form
- * state does not: switching entries keeps every pending edit, because there
- * is one draft ladder behind both panes and one save that covers all of it.
+ * Bloc 119 §3 bis, conservé : maître et détail. La liste de gauche tient
+ * l'échelle entière d'un coup d'œil (visible ou non, combien de plages), la
+ * droite tient exactement un échelon. L'échelon ouvert vit dans l'URL, donc un
+ * barreau est un lien ; l'état du formulaire, non : changer d'échelon garde
+ * toutes les saisies en cours, parce qu'il y a une seule échelle brouillon
+ * derrière les deux volets et un seul enregistrement qui couvre le tout.
  */
 
-type RankingEditRow = Record<RankRewardType, string> & {
+type LeagueEditRow = Record<SeasonRewardType, string> & {
   threshold: string;
   movement: string;
   target: string;
 };
 
-/** The ladder as the form holds it: numbers and enums as input strings. */
-type EntryDraft = {
+/** L'échelle telle que le formulaire la tient : nombres et énumérations en chaînes. */
+type RungDraft = {
   id: string;
   league: League | "";
   division: string;
-  nameFr: string;
-  nameEn: string;
+  /**
+   * Le nom libre, toutes les langues présentes — blanches là où rien n'est
+   * écrit. Bloc 135 : c'était une paire FR/EN, et le site en publie cinq.
+   */
+  name: Record<LaunchLocale, string>;
   active: boolean;
-  rows: RankingEditRow[];
+  rows: LeagueEditRow[];
 };
 
-function toEditRow(band: RankingEntry["bands"][number]): RankingEditRow {
-  const quantity = (type: RankRewardType) =>
+function toEditRow(band: LeagueRung["bands"][number]): LeagueEditRow {
+  const quantity = (type: SeasonRewardType) =>
     String(band.rewards.find((item) => item.type === type)?.quantity ?? 0);
   return {
     threshold: String(band.threshold),
@@ -70,31 +84,29 @@ function toEditRow(band: RankingEntry["bands"][number]): RankingEditRow {
   };
 }
 
-function toDraft(entry: RankingEntry): EntryDraft {
+function toDraft(rung: LeagueRung): RungDraft {
   return {
-    id: entry.id,
-    league: entry.league ?? "",
-    division: entry.division,
-    nameFr: entry.nameFr,
-    nameEn: entry.nameEn,
-    active: entry.active,
-    rows: entry.bands.map(toEditRow),
+    id: rung.id,
+    league: rung.league ?? "",
+    division: rung.division,
+    name: rungNameForm(rung.name),
+    active: rung.active,
+    rows: rung.bands.map(toEditRow),
   };
 }
 
 /**
- * Bloc 108/A: a fresh id that no existing entry already uses.
+ * Bloc 108/A : un identifiant neuf qu'aucun échelon existant ne porte déjà.
  *
- * Ids are what bands point at, so they are generated once, here, and never
- * recomputed afterwards — renaming an entry later must not silently
- * re-target every band that aimed at it.
+ * Les identifiants sont ce sur quoi pointent les plages : ils sont engendrés
+ * une fois, ici, et jamais recalculés ensuite — renommer un échelon plus tard
+ * ne doit pas re-cibler silencieusement toutes les plages qui le visaient.
  */
-function uniqueEntryId(drafts: EntryDraft[], seed: Partial<EntryDraft>) {
-  const base = rankingEntryId({
+function uniqueRungId(drafts: RungDraft[], seed: Partial<RungDraft>) {
+  const base = leagueRungId({
     league: (seed.league || null) as League | null,
     division: seed.division ?? "",
-    nameFr: seed.nameFr ?? "",
-    nameEn: seed.nameEn ?? "",
+    name: rungNameToStore(seed.name ?? {}),
   });
   const taken = new Set(drafts.map((draft) => draft.id));
   if (!taken.has(base)) return base;
@@ -102,22 +114,21 @@ function uniqueEntryId(drafts: EntryDraft[], seed: Partial<EntryDraft>) {
     if (!taken.has(`${base}-${suffix}`)) return `${base}-${suffix}`;
 }
 
-function serialise(drafts: EntryDraft[]): RankingLadder {
-  // Bloc 108/B: order is a property of the list, not of when a row was
-  // inserted — the position each entry ends up with is simply its index.
+function serialise(drafts: RungDraft[]): LeagueLadder {
+  // Bloc 108/B : l'ordre est une propriété de la liste, pas du moment où une
+  // ligne a été insérée — la position d'un échelon est simplement son index.
   return drafts.map((draft, index) => ({
     id: draft.id,
     league: (draft.league || null) as League | null,
     division: draft.division.trim(),
-    nameFr: draft.nameFr.trim(),
-    nameEn: draft.nameEn.trim(),
+    name: rungNameToStore(draft.name),
     position: index,
     active: draft.active,
     bands: draft.rows.map((row) => ({
       threshold: Number(row.threshold),
-      movement: (row.movement || null) as RankMovement | null,
+      movement: (row.movement || null) as SeasonMovement | null,
       target: row.target || null,
-      rewards: rankRewardTypes
+      rewards: seasonRewardTypes
         .map((type) => ({ type, quantity: Number(row[type]) }))
         .filter((item) => item.quantity > 0),
     })),
@@ -128,24 +139,24 @@ function serialise(drafts: EntryDraft[]): RankingLadder {
  * Bloc 131/C : ce qui empêche l'enregistrement, et où c'est.
  *
  * La validation était un message et rien d'autre : « Corrige les champs
- * signalés » — alors que rien n'était signalé, et que l'entrée fautive
- * pouvait être une de celles que le volet de droite ne montre pas. Sur un
- * écran maître/détail, un refus sans adresse est un refus muet.
+ * signalés » — alors que rien n'était signalé, et que l'échelon fautif
+ * pouvait être un de ceux que le volet de droite ne montre pas. Sur un écran
+ * maître/détail, un refus sans adresse est un refus muet.
  *
  * Le champ est décrit par ce qu'il est à l'écran, pas par le chemin dans les
  * données : c'est ce qui permet de le retrouver, de l'entourer et d'y poser
  * le curseur.
  */
-type RankingField =
+type LeagueField =
   | { kind: "identity" }
   | { kind: "threshold"; row: number }
   | { kind: "movement"; row: number }
-  | { kind: "reward"; row: number; type: RankRewardType };
+  | { kind: "reward"; row: number; type: SeasonRewardType };
 
-type RankingProblem = {
-  /** L'entrée à ouvrir pour voir le champ. Vide quand rien n'est en cause. */
-  entryId: string;
-  field?: RankingField;
+type LeagueProblem = {
+  /** L'échelon à ouvrir pour voir le champ. Vide quand rien n'est en cause. */
+  rungId: string;
+  field?: LeagueField;
   /** La phrase déjà traduite, celle que le champ portera sous lui. */
   message: string;
   /** Où c'est, en toutes lettres, pour le bandeau du haut. */
@@ -153,59 +164,79 @@ type RankingProblem = {
 };
 
 /** L'adresse d'un champ, pour comparer un problème à ce qu'on est en train de rendre. */
-function fieldKey(entryId: string, field: RankingField) {
+function fieldKey(rungId: string, field: LeagueField) {
   const row = "row" in field ? field.row : "";
   const type = "type" in field ? field.type : "";
-  return `${entryId}|${field.kind}|${row}|${type}`;
+  return `${rungId}|${field.kind}|${row}|${type}`;
 }
 
-const movementTone: Record<RankMovement, string> = {
+const movementTone: Record<SeasonMovement, string> = {
   promotion: "border-admin-ok-ink bg-admin-ok text-admin-ok-ink",
   stay: "border-admin-neutral-ink bg-admin-neutral text-admin-neutral-ink",
   relegation: "border-admin-danger-ink bg-admin-warn text-admin-danger-ink",
 };
 
-export function RankingAdminEditor({
+export function AdminLeaguesPanel({
   initialLadder,
-  backHref,
-  backLabel,
-  title,
-}: EditorScreenProps & { initialLadder: RankingLadder }) {
-  const t = useTranslations("admin.ranking");
+  hiddenLocales,
+  languageNames,
+}: {
+  initialLadder: LeagueLadder;
+  /**
+   * Les langues désactivées dans Configuration, donc absentes du site public.
+   * Un nom de division écrit dans l'une d'elles n'est pas une erreur, et
+   * l'onglet le dit plutôt que de laisser croire à un bug.
+   */
+  hiddenLocales?: readonly string[];
+  languageNames?: Partial<Record<string, string>>;
+}) {
+  const t = useTranslations("admin.leagues");
+  const editor = useTranslations("admin.editor");
   const locale = useLocale();
   const game = useTranslations("game");
   const gameLeagues = useTranslations("game.leagues");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [dragging, setDragging] = useState<string>();
-  const [removing, setRemoving] = useState<EntryDraft>();
+  const [removing, setRemoving] = useState<RungDraft>();
+  /** La langue que le champ « nom libre » montre. Le brouillon tient les cinq. */
+  const [nameLocale, setNameLocale] = useState<LaunchLocale>("fr");
 
   const [showProblems, setShowProblems] = useState(false);
   // Le refus vient d'être prononcé : le curseur doit aller sur le premier
-  // champ fautif, une fois son entrée à l'écran (elle peut être une autre
-  // que celle qu'on regardait).
+  // champ fautif, une fois son échelon à l'écran (il peut être un autre
+  // que celui qu'on regardait).
   const [focusPending, setFocusPending] = useState(false);
   const firstInvalid = useRef<HTMLElement | null>(null);
   const errorId = useId();
 
-  const form = useEditorForm<EntryDraft[]>({
+  const form = useEditorForm<RungDraft[]>({
     initial: initialLadder.map(toDraft),
-    endpoint: "/api/admin/tools/ranking",
+    endpoint: "/api/admin/config/leagues",
     body: serialise,
     // Le bandeau du haut dit ce qui coince et où ; les champs eux-mêmes
     // portent le reste (§C). Les deux lisent la même liste.
     validate: (value) => summarise(findProblems(value)),
+    // Bloc 135 : le résumé de la section (« n ligues/divisions, n actives »)
+    // est calculé sur le serveur et mentirait sans cette demande.
+    onSaved: () => router.refresh(),
   });
   const drafts = form.value;
 
-  const label = (draft: EntryDraft) =>
-    rankingEntryLabel(
+  // Bloc 136 : l'en-tête de la section affiche « Modifié » tant que le
+  // brouillon s'écarte de ce qui est enregistré.
+  useSectionDirty(form.dirty);
+  // La moitié que le Bloc 119 pose sur les écrans d'édition : l'onglet fermé
+  // ou un lien suivi pendant qu'on saisit demandent aussi.
+  useUnsavedWarning(form.dirty, editor("leave-warning"));
+
+  const label = (draft: RungDraft) =>
+    leagueRungLabel(
       {
         id: draft.id,
         league: (draft.league || null) as League | null,
         division: draft.division,
-        nameFr: draft.nameFr,
-        nameEn: draft.nameEn,
+        name: rungNameToStore(draft.name),
         position: 0,
         active: draft.active,
         bands: [],
@@ -216,33 +247,33 @@ export function RankingAdminEditor({
 
   /**
    * Tout ce qui empêche l'enregistrement, dans l'ordre où on le lit à
-   * l'écran : les entrées de haut en bas, et pour chacune l'identité puis
+   * l'écran : les échelons de haut en bas, et pour chacun l'identité puis
    * ses plages.
    *
    * Les règles sont celles que l'écran appliquait déjà ; ce qui change,
    * c'est qu'elles rendent une adresse au lieu d'un booléen. Le dernier
-   * filet — `isSavableRankingLadder`, la fonction que la route utilise
+   * filet — `isSavableLeagueLadder`, la fonction que la route utilise
    * aussi — reste consulté à la fin : s'il refuse une échelle qu'aucune
    * règle ci-dessus n'a attrapée, le message doit quand même apparaître
    * plutôt que laisser passer un enregistrement que le serveur refusera.
    */
-  function findProblems(entries: EntryDraft[]): RankingProblem[] {
-    const found: RankingProblem[] = [];
+  function findProblems(entries: RungDraft[]): LeagueProblem[] {
+    const found: LeagueProblem[] = [];
     const seen = new Set<string>();
     for (const draft of entries) {
       const name = label(draft);
       const identity = () => ({
-        entryId: draft.id,
+        rungId: draft.id,
         field: { kind: "identity" } as const,
         where: t("entry-league-field", {
           entry: name,
           position: entries.indexOf(draft) + 1,
         }),
       });
-      if (!draft.league && !draft.nameFr.trim() && !draft.nameEn.trim())
+      if (!draft.league && !hasRungName(rungNameToStore(draft.name)))
         found.push({ ...identity(), message: t("entry-name-error") });
-      // Les identifiants sont générés uniques ; un doublon ne peut venir que
-      // des données, et c'est l'entrée qui le répète qu'il faut ouvrir.
+      // Les identifiants sont engendrés uniques ; un doublon ne peut venir que
+      // des données, et c'est l'échelon qui le répète qu'il faut ouvrir.
       else if (seen.has(draft.id))
         found.push({ ...identity(), message: t("duplicate-error") });
       seen.add(draft.id);
@@ -258,19 +289,19 @@ export function RankingAdminEditor({
           threshold > 100
         )
           found.push({
-            entryId: draft.id,
+            rungId: draft.id,
             field: { kind: "threshold", row: index },
             message: t("range-error"),
             where: where(t("threshold")),
           });
         if (Boolean(row.movement) !== Boolean(row.target))
           found.push({
-            entryId: draft.id,
+            rungId: draft.id,
             field: { kind: "movement", row: index },
             message: t("pairing-error"),
             where: where(t("movement")),
           });
-        for (const type of rankRewardTypes) {
+        for (const type of seasonRewardTypes) {
           const quantity = Number(row[type]);
           if (
             row[type].trim() === "" ||
@@ -278,7 +309,7 @@ export function RankingAdminEditor({
             quantity < 0
           )
             found.push({
-              entryId: draft.id,
+              rungId: draft.id,
               field: { kind: "reward", row: index, type },
               message: t("integer-error"),
               where: where(t(`reward-types.${type}`)),
@@ -286,13 +317,13 @@ export function RankingAdminEditor({
         }
       });
     }
-    if (found.length === 0 && !isSavableRankingLadder(serialise(entries)))
-      found.push({ entryId: "", message: t("validation") });
+    if (found.length === 0 && !isSavableLeagueLadder(serialise(entries)))
+      found.push({ rungId: "", message: t("validation") });
     return found;
   }
 
   /** Ce que le bandeau du haut dit : combien, et le premier, en toutes lettres. */
-  function summarise(found: RankingProblem[]) {
+  function summarise(found: LeagueProblem[]) {
     if (found.length === 0) return undefined;
     const [first] = found;
     return first.where
@@ -309,17 +340,17 @@ export function RankingAdminEditor({
     showProblems
       ? problems.flatMap((problem) =>
           problem.field
-            ? [[fieldKey(problem.entryId, problem.field), problem.message]]
+            ? [[fieldKey(problem.rungId, problem.field), problem.message]]
             : [],
         )
       : [],
   );
   const firstKey =
     showProblems && problems[0]?.field
-      ? fieldKey(problems[0].entryId, problems[0].field)
+      ? fieldKey(problems[0].rungId, problems[0].field)
       : undefined;
 
-  const selectedId = searchParams.get("entry");
+  const selectedId = searchParams.get("rung");
   const selectedIndex = Math.max(
     0,
     drafts.findIndex((draft) => draft.id === selectedId),
@@ -328,15 +359,20 @@ export function RankingAdminEditor({
 
   function select(id: string) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("entry", id);
-    router.replace(`/admin/tools/ranking?${params.toString()}`);
+    params.set("rung", id);
+    // Le fragment est conservé : c'est lui qui a ouvert la section (Bloc 136),
+    // et le perdre refermerait celle-ci au prochain remontage de l'arbre.
+    const hash = typeof window === "undefined" ? "" : window.location.hash;
+    router.replace(`${configurationHref}?${params.toString()}${hash}`, {
+      scroll: false,
+    });
   }
 
   /**
    * Bloc 131/C : enregistrer, ou dire où ça coince.
    *
-   * L'écran est un maître/détail, et le champ fautif est souvent dans une
-   * entrée que le volet de droite ne montre pas : le refus commence donc par
+   * L'écran est un maître/détail, et le champ fautif est souvent dans un
+   * échelon que le volet de droite ne montre pas : le refus commence donc par
    * l'ouvrir. Le message, lui, vient de `useEditorForm`, qui rejoue la même
    * validation — une seule liste de problèmes pour le bandeau et pour les
    * champs.
@@ -346,13 +382,13 @@ export function RankingAdminEditor({
     setShowProblems(found.length > 0);
     const [first] = found;
     if (first?.field) {
-      if (first.entryId !== selected?.id) select(first.entryId);
+      if (first.rungId !== selected?.id) select(first.rungId);
       setFocusPending(true);
     }
     void form.save();
   }
 
-  // Le curseur suit, une fois l'entrée fautive rendue. `selectedIndex` est
+  // Le curseur suit, une fois l'échelon fautif rendu. `selectedIndex` est
   // dans les dépendances parce que l'ouverture passe par l'URL : au tour où
   // le refus est prononcé, le champ n'est pas encore à l'écran.
   useEffect(() => {
@@ -363,7 +399,7 @@ export function RankingAdminEditor({
     setFocusPending(false);
   }, [focusPending, selectedIndex]);
 
-  const updateDraft = (id: string, patch: Partial<EntryDraft>) =>
+  const updateDraft = (id: string, patch: Partial<RungDraft>) =>
     form.setValue((current) =>
       current.map((draft) =>
         draft.id === id ? { ...draft, ...patch } : draft,
@@ -379,7 +415,7 @@ export function RankingAdminEditor({
       return next;
     });
 
-  /** Drops the entry being dragged just before `index` in the list. */
+  /** Dépose l'échelon en cours de glissement juste avant `index`. */
   function dropOn(index: number) {
     form.setValue((current) => {
       const from = current.findIndex((draft) => draft.id === dragging);
@@ -392,22 +428,22 @@ export function RankingAdminEditor({
     setDragging(undefined);
   }
 
-  function addEntry() {
-    // Seeded with no name at all, so the heading follows the base league and
-    // division as soon as they are picked. The id is opaque on purpose: it is
-    // generated once, before the entry has anything to be named after, and it
-    // must not move afterwards because bands may already point at it.
-    const id = uniqueEntryId(drafts, {});
+  function addRung() {
+    // Amorcé sans aucun nom, pour que le titre suive la ligue de base et la
+    // division dès qu'elles sont choisies. L'identifiant est opaque exprès :
+    // il est engendré une fois, avant que l'échelon ait de quoi se nommer, et
+    // il ne doit plus bouger ensuite parce que des plages peuvent déjà
+    // pointer dessus.
+    const id = uniqueRungId(drafts, {});
     form.setValue((current) => [
       ...current,
       {
         id,
         league: "",
         division: "",
-        nameFr: "",
-        nameEn: "",
-        // Bloc 108/G: off until an admin says otherwise — a new rung is being
-        // prepared, not published.
+        name: rungNameForm({}),
+        // Bloc 108/G : éteint jusqu'à ce qu'une administration en décide
+        // autrement — un barreau neuf est en préparation, pas publié.
         active: false,
         rows: [],
       },
@@ -415,19 +451,19 @@ export function RankingAdminEditor({
     select(id);
   }
 
-  // Bloc 108/A: every entry currently on the ladder is a possible target,
-  // including the ones being created in this very form.
+  // Bloc 108/A : tout échelon présent sur l'échelle est une cible possible,
+  // y compris ceux qu'on est en train de créer dans ce formulaire.
   const targetOptions = [
     { value: "", label: t("unconfirmed-option") },
     ...drafts.map((draft) => ({ value: draft.id, label: label(draft) })),
   ];
 
-  /** Ce que la validation reproche à ce champ de l'entrée ouverte, s'il y a. */
-  const problemOn = (field: RankingField) =>
+  /** Ce que la validation reproche à ce champ de l'échelon ouvert, s'il y a. */
+  const problemOn = (field: LeagueField) =>
     selected ? marked.get(fieldKey(selected.id, field)) : undefined;
 
   /** Le champ où le curseur doit aller : le premier de la liste, et lui seul. */
-  const isFirstInvalid = (field: RankingField) =>
+  const isFirstInvalid = (field: LeagueField) =>
     Boolean(selected) && firstKey === fieldKey(selected.id, field);
 
   /**
@@ -441,10 +477,10 @@ export function RankingAdminEditor({
   }, []);
 
   /** La ref à poser sur ce champ, ou rien. */
-  const captureFirstInvalid = (field: RankingField) =>
+  const captureFirstInvalid = (field: LeagueField) =>
     isFirstInvalid(field) ? keepFirstInvalid : undefined;
 
-  const setRow = (index: number, patch: Partial<RankingEditRow>) =>
+  const setRow = (index: number, patch: Partial<LeagueEditRow>) =>
     updateDraft(selected.id, {
       rows: selected.rows.map((row, i) =>
         i === index ? { ...row, ...patch } : row,
@@ -453,19 +489,41 @@ export function RankingAdminEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <EditorHeader
-        backHref={backHref}
-        backLabel={backLabel}
-        title={title}
-        dirty={form.dirty}
-        saving={form.saving}
-        onSave={saveOrShowProblems}
-        onCancel={() => {
-          setShowProblems(false);
-          form.cancel();
-        }}
-        message={form.message}
-      />
+      {/* La barre d'actions que l'`EditorHeader` portait sur l'écran d'un
+          outil. Mêmes mots (`admin.editor`), même enchaînement : l'état, le
+          retour aux valeurs enregistrées, puis l'enregistrement. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <AdminButton
+          type="button"
+          variant="primary"
+          onClick={saveOrShowProblems}
+          disabled={form.saving}
+        >
+          {editor("save")}
+        </AdminButton>
+        {form.dirty ? (
+          <>
+            <Pill tone="warn">{editor("unsaved")}</Pill>
+            <AdminButton
+              type="button"
+              onClick={() => {
+                setShowProblems(false);
+                form.cancel();
+              }}
+              disabled={form.saving}
+            >
+              {editor("cancel")}
+            </AdminButton>
+          </>
+        ) : (
+          <Pill tone="ok">{`✓ ${editor("all-saved")}`}</Pill>
+        )}
+        {form.message && (
+          <p className="text-sm text-admin-dim" role="status">
+            {form.message}
+          </p>
+        )}
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <nav
@@ -502,7 +560,7 @@ export function RankingAdminEditor({
                   />
                   <span
                     className="min-w-0 flex-1 truncate font-semibold"
-                    data-testid="ranking-entry-name"
+                    data-testid="league-rung-name"
                   >
                     {label(draft)}
                   </span>
@@ -513,7 +571,7 @@ export function RankingAdminEditor({
               </li>
             ))}
           </ul>
-          <AdminButton type="button" onClick={addEntry}>
+          <AdminButton type="button" onClick={addRung}>
             {t("add-entry")}
           </AdminButton>
         </nav>
@@ -565,88 +623,109 @@ export function RankingAdminEditor({
                 </>
               }
             >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <label className="flex flex-col gap-1 text-xs font-medium text-admin-dim">
-                  {t("entry-league")}
-                  {/* §C : une entrée sans ligue ni nom libre n'a pas
-                      d'identité, et c'est ici qu'on lui en donne une. Le
-                      contour rouge et la phrase sous le champ disent ce que
-                      le refus reprochait sans jamais le montrer. */}
-                  <select
-                    ref={captureFirstInvalid({ kind: "identity" })}
-                    aria-label={t("entry-league-field", {
+              <div className="flex flex-col gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="flex flex-col gap-1 text-xs font-medium text-admin-dim">
+                    {t("entry-league")}
+                    {/* §C : un échelon sans ligue ni nom libre n'a pas
+                        d'identité, et c'est ici qu'on lui en donne une. Le
+                        contour rouge et la phrase sous le champ disent ce que
+                        le refus reprochait sans jamais le montrer. */}
+                    <select
+                      ref={captureFirstInvalid({ kind: "identity" })}
+                      aria-label={t("entry-league-field", {
+                        entry: label(selected),
+                        position: selectedIndex + 1,
+                      })}
+                      aria-invalid={
+                        problemOn({ kind: "identity" }) ? true : undefined
+                      }
+                      aria-describedby={
+                        problemOn({ kind: "identity" })
+                          ? `${errorId}-identity`
+                          : undefined
+                      }
+                      className={cn(
+                        "admin-control admin-focus h-9 rounded-admin-control border bg-admin-card px-2 text-sm",
+                        problemOn({ kind: "identity" })
+                          ? "border-admin-danger-ink text-admin-danger-ink"
+                          : "border-admin-card-border text-admin-text",
+                      )}
+                      value={selected.league}
+                      onChange={(event) =>
+                        updateDraft(selected.id, {
+                          league: event.target.value as League | "",
+                        })
+                      }
+                    >
+                      <option value="">{t("entry-no-league")}</option>
+                      {leagues.map((league) => (
+                        <option key={league} value={league}>
+                          {gameLeagues(league)}
+                        </option>
+                      ))}
+                    </select>
+                    {problemOn({ kind: "identity" }) && (
+                      <span
+                        className="text-xs text-admin-danger-ink"
+                        id={`${errorId}-identity`}
+                      >
+                        {problemOn({ kind: "identity" })}
+                      </span>
+                    )}
+                  </label>
+                  <TextField
+                    label={t("entry-division")}
+                    accessibleName={t("entry-division-field", {
                       entry: label(selected),
                       position: selectedIndex + 1,
                     })}
-                    aria-invalid={
-                      problemOn({ kind: "identity" }) ? true : undefined
-                    }
-                    aria-describedby={
-                      problemOn({ kind: "identity" })
-                        ? `${errorId}-identity`
-                        : undefined
-                    }
-                    className={cn(
-                      "admin-control admin-focus h-9 rounded-admin-control border bg-admin-card px-2 text-sm",
-                      problemOn({ kind: "identity" })
-                        ? "border-admin-danger-ink text-admin-danger-ink"
-                        : "border-admin-card-border text-admin-text",
-                    )}
-                    value={selected.league}
-                    onChange={(event) =>
-                      updateDraft(selected.id, {
-                        league: event.target.value as League | "",
-                      })
-                    }
-                  >
-                    <option value="">{t("entry-no-league")}</option>
-                    {leagues.map((league) => (
-                      <option key={league} value={league}>
-                        {gameLeagues(league)}
-                      </option>
-                    ))}
-                  </select>
-                  {problemOn({ kind: "identity" }) && (
-                    <span
-                      className="text-xs text-admin-danger-ink"
-                      id={`${errorId}-identity`}
-                    >
-                      {problemOn({ kind: "identity" })}
-                    </span>
-                  )}
-                </label>
-                <TextField
-                  label={t("entry-division")}
-                  accessibleName={t("entry-division-field", {
-                    entry: label(selected),
-                    position: selectedIndex + 1,
-                  })}
-                  value={selected.division}
-                  onChange={(division) =>
-                    updateDraft(selected.id, { division })
-                  }
-                />
-                {/* Codex review (PR #135): a free name is admin-managed text
-                    that reaches every reader, so it is stored per locale and
-                    read with pickFrEn — the same fr/en pair the Templiers
-                    presentation uses, with English as the fallback. */}
-                {(["Fr", "En"] as const).map((suffix) => (
-                  <TextField
-                    key={suffix}
-                    label={t(`entry-name-${suffix.toLowerCase()}`)}
-                    accessibleName={t(
-                      `entry-name-${suffix.toLowerCase()}-field`,
-                      {
-                        entry: label(selected),
-                        position: selectedIndex + 1,
-                      },
-                    )}
-                    value={selected[`name${suffix}`]}
-                    onChange={(value) =>
-                      updateDraft(selected.id, { [`name${suffix}`]: value })
+                    value={selected.division}
+                    onChange={(division) =>
+                      updateDraft(selected.id, { division })
                     }
                   />
-                ))}
+                </div>
+                {/* Bloc 135 : le nom libre est du contenu éditorial, lu par
+                    le public dans sa propre langue. Il se stocke donc en
+                    objet par locale sur toutes les langues du site — comme le
+                    titre d'un guide — et non plus en paire FR/EN, qui
+                    montrait le renommage français à quatre lecteurs sur cinq.
+                    Les onglets choisissent ce qui est affiché, jamais ce qui
+                    est gardé : le brouillon tient les cinq langues. */}
+                <div className="flex flex-col gap-2">
+                  <LangTabs
+                    locale={nameLocale}
+                    onChange={setNameLocale}
+                    filled={(code) =>
+                      rungNameLocales(rungNameToStore(selected.name)).includes(
+                        code,
+                      )
+                    }
+                    label={t("languages-label")}
+                    languageNames={languageNames}
+                    hiddenLocales={hiddenLocales}
+                    hiddenLabel={(language) =>
+                      t("language-hidden", { language })
+                    }
+                  />
+                  <TextField
+                    label={t("entry-name", {
+                      language: nameLocale.toUpperCase(),
+                    })}
+                    accessibleName={t("entry-name-field", {
+                      entry: label(selected),
+                      position: selectedIndex + 1,
+                      language: nameLocale.toUpperCase(),
+                    })}
+                    value={selected.name[nameLocale] ?? ""}
+                    onChange={(value) =>
+                      updateDraft(selected.id, {
+                        name: { ...selected.name, [nameLocale]: value },
+                      })
+                    }
+                  />
+                </div>
               </div>
             </EditorSection>
 
@@ -693,7 +772,7 @@ export function RankingAdminEditor({
                         <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
                           {t("target")}
                         </th>
-                        {rankRewardTypes.map((type) => (
+                        {seasonRewardTypes.map((type) => (
                           <th
                             key={type}
                             className="admin-column-head px-3 py-2 text-right text-admin-dim"
@@ -783,11 +862,11 @@ export function RankingAdminEditor({
                                 )}
                                 role="radiogroup"
                               >
-                                {rankMovements.map((movement) => (
+                                {seasonMovements.map((movement) => (
                                   <button
                                     key={movement}
                                     ref={
-                                      movement === rankMovements[0]
+                                      movement === seasonMovements[0]
                                         ? captureFirstInvalid({
                                             kind: "movement",
                                             row: index,
@@ -805,9 +884,9 @@ export function RankingAdminEditor({
                                     )}
                                     onClick={() =>
                                       setRow(index, {
-                                        // Clicking the chosen one again
-                                        // clears it: a band with no confirmed
-                                        // movement is a real state.
+                                        // Recliquer sur celui qui est choisi
+                                        // l'efface : une plage sans mouvement
+                                        // confirmé est un état réel.
                                         movement:
                                           row.movement === movement
                                             ? ""
@@ -847,7 +926,7 @@ export function RankingAdminEditor({
                                 ))}
                               </select>
                             </td>
-                            {rankRewardTypes.map((type) => (
+                            {seasonRewardTypes.map((type) => (
                               <td key={type} className="px-3 text-right">
                                 <NumberField
                                   label={rowLabel(t(`reward-types.${type}`))}
@@ -883,8 +962,8 @@ export function RankingAdminEditor({
                             ))}
                             <td className="px-3">
                               <RowActions
-                                // The band, not one of its fields (see the
-                                // Événements editor for the same reason).
+                                // La plage, pas l'un de ses champs (même
+                                // raison que dans l'éditeur Événements).
                                 name={t("band-name", {
                                   entry: label(selected),
                                   row: index + 1,

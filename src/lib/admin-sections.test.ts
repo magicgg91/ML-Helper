@@ -3,11 +3,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   adminSections,
+  canAny,
   isReadOnlyRole,
   roleSections,
   type AdminSectionKey,
 } from "./admin-sections";
-import { can } from "@/auth/permissions";
 import { roles } from "@/auth/roles";
 
 const keysOf = (role: string): AdminSectionKey[] =>
@@ -84,7 +84,13 @@ describe("Bloc 119: what each role may open and change", () => {
   it("limits each manager role to its own section", () => {
     expect(keysOf("guides_manager")).toEqual(["dashboard", "guides"]);
     expect(keysOf("references_manager")).toEqual(["dashboard", "referentiels"]);
-    expect(keysOf("tools_manager")).toEqual(["dashboard", "tools"]);
+    // Bloc 135 : « Gestion Outils » ouvre aussi Configuration, et n'y voit
+    // que la section Ligues et divisions. Il pouvait déjà éditer l'échelle
+    // quand elle vivait sur /admin/tools/ranking sous `calculators.write` ;
+    // la déplacer ne devait pas lui retirer ce droit, et lui donner
+    // `configuration.read` lui aurait ouvert les langues du site et la
+    // sélection de l'accueil, qu'il n'a rien à y faire.
+    expect(keysOf("tools_manager")).toEqual(["dashboard", "tools", "config"]);
     for (const role of [
       "guides_manager",
       "references_manager",
@@ -120,8 +126,10 @@ describe("Bloc 119: what each role may open and change", () => {
         const listed = roleSections(role).find(
           ({ section: candidate }) => candidate.key === section.key,
         );
+        // Bloc 135 : une section peut s'ouvrir sur plusieurs capacités —
+        // Configuration accepte `configuration.read` ou `leagues.read`.
         expect(Boolean(listed), `${role}/${section.key}`).toBe(
-          can(role, section.read),
+          canAny(role, section.read),
         );
       }
   });

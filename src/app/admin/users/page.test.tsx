@@ -60,13 +60,17 @@ describe("Bloc 119: the role descriptions come from the permission matrix", () =
     expect(roleDescriptions.admin).not.toContain("content");
   });
 
-  it("describes a manager role by the one section it owns", async () => {
+  it("describes a manager role by the sections it owns", async () => {
     const { roleDescriptions } = await renderPage();
     expect(roleDescriptions.guides_manager).toBe(
       'role-writes({"sections":"guides"})',
     );
+    // Bloc 135 : « Gestion Outils » écrit aussi dans Configuration, où vit
+    // désormais l'échelle des ligues et des divisions qu'il éditait déjà quand
+    // elle était sur l'écran de l'outil Classement. La description est
+    // calculée sur la matrice, donc elle le dit sans qu'on l'écrive ici.
     expect(roleDescriptions.tools_manager).toBe(
-      'role-writes({"sections":"tools"})',
+      'role-writes({"sections":"tools, config"})',
     );
   });
 

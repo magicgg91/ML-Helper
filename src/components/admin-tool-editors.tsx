@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { cityLeagues, type CityParameters } from "@/lib/city-parameters";
+import type { CityParameters } from "@/lib/city-parameters";
 import type { XpTier } from "@/lib/combat-calculators";
 import type { GemParameters } from "@/lib/gem-parameters";
 import {
@@ -187,7 +187,7 @@ export function CityParametersEditor({
             </>
           }
         >
-          {cityLeagues.map((league) => (
+          {allLeagues.map((league) => (
             <EditRow key={league}>
               <td className="px-3 font-semibold text-admin-text">
                 {leagues(league)}
