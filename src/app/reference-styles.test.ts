@@ -1022,6 +1022,24 @@ describe("Bloc 73/A: Player Settings league buttons fill their 50% column", () =
       /grid-template-columns: repeat\(var\(--rung-columns/,
     );
   });
+
+  /**
+   * Revue Codex (PR #165) : la colonne est bornée à `1fr`, donc un nom libre
+   * d'un seul tenant — que `white-space: normal` ne sait pas couper — sortait
+   * de son bouton. Rien ne borne la longueur d'un nom libre, ni l'écran
+   * d'édition ni la route. Mesuré en e2e (« unbreakable label ») ; ici, la
+   * règle qui le permet.
+   */
+  it("lets an unbreakable rung name break anywhere, since its column cannot grow", () => {
+    const rule = css.match(
+      /\.player-rung-field \.player-rung-buttons button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/overflow-wrap: anywhere;/);
+    // `break-word` ne suffirait pas : il ne réduit pas la largeur minimale de
+    // la colonne, donc la grille repartirait plus large que son conteneur.
+    expect(rule).not.toMatch(/overflow-wrap: break-word;/);
+  });
 });
 
 describe("Bloc 73/B: Niveau/VP fields match the panel's other field heights", () => {

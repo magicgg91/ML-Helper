@@ -1278,6 +1278,14 @@ select:where(:not(.admin-shell select)) {
 .player-rung-field .player-rung-buttons button {
   min-width: 0;
   white-space: normal;
+  /* Revue Codex (PR #165) : `white-space: normal` ne coupe qu'aux espaces, et
+     rien ne borne la longueur d'un nom libre d'échelon — ni l'écran d'édition
+     ni la route. Un nom d'un seul tenant sortait donc de son bouton (mesuré :
+     222 px de débordement à 1440, et à 390 px, où le groupe n'est plus un
+     conteneur de défilement, la page elle-même partait de 10 px sur le côté).
+     La colonne étant bornée à `1fr`, c'est au texte de céder. Même parade que
+     `.player-matrix-mobile-name` plus bas dans ce fichier. */
+  overflow-wrap: anywhere;
 }
 .player-general .unit-input {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
