@@ -118,6 +118,20 @@ describe("Bloc 138/C: one style for the admin's league buttons", () => {
     expect(events.other?.className).toBe(adminLeagueChipClass(false));
   });
 
+  /**
+   * Revue Codex : un échelon peut porter un nom libre de plusieurs mots, et le
+   * bouton le rend tel quel. À fenêtre étroite ou à fort zoom, le libellé passe
+   * à la ligne ; avec la hauteur **fixe** reprise d'Événements, il débordait de
+   * la bordure (mesuré dans le navigateur : 36 px de contenu dans une boîte de
+   * 34). jsdom ne calcule pas de mise en page, donc ce cas tient la décision
+   * plutôt que le pixel — c'est elle qui se perdrait dans une réécriture.
+   */
+  it("gives the chip a minimum height, never a fixed one", () => {
+    const classes = adminLeagueChipClass(true).split(" ");
+    expect(classes).toContain("min-h-[var(--admin-control-h-sm)]");
+    expect(classes.filter((name) => /^h-\[/.test(name))).toEqual([]);
+  });
+
   it("dresses the selected chip in the soft accent pair, never the solid one", () => {
     // La paire de jetons appariée d'`admin.css` (8,96:1 en clair), celle que
     // portent déjà les onglets de langue et les filtres.

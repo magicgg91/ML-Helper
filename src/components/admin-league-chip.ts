@@ -21,7 +21,13 @@ import { cn } from "@/lib/utils";
  */
 export function adminLeagueChipClass(selected: boolean): string {
   return cn(
-    "admin-focus inline-flex h-[var(--admin-control-h-sm)] items-center gap-2 rounded-admin-control border px-3 text-sm font-semibold",
+    // Revue Codex : une hauteur **minimale**, et non fixe. Un échelon peut
+    // porter un nom libre de plusieurs mots ; à fenêtre étroite ou à fort zoom,
+    // le libellé passe à la ligne et débordait de la bordure, le bouton restant
+    // à 34 px (mesuré : contenu 36 px dans une boîte de 34). Sur un libellé
+    // d'une ligne — tous ceux d'Événements — la boîte fait toujours 34 px, donc
+    // les deux écrans rendent la même chose.
+    "admin-focus inline-flex min-h-[var(--admin-control-h-sm)] items-center gap-2 rounded-admin-control border px-3 py-1 text-sm font-semibold",
     selected
       ? "border-admin-accent bg-admin-accent-soft text-admin-accent-soft-ink"
       : "border-admin-card-border text-admin-dim hover:text-admin-text",
