@@ -919,8 +919,16 @@ describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
+    // Bloc 139/E : le sélecteur suit la classe qui dispose réellement le
+    // champ — `.num-stepper`, et non `.number-stepper`, dont les colonnes de
+    // grille sont inertes depuis qu'une règle postérieure repasse le
+    // conteneur en flex (mesuré au navigateur).
     expect(mediaBlock).toMatch(
-      /\.player-general \.number-stepper input,\s*\n\s*\.player-general \.number-stepper button\s*{\s*\n\s*min-height: var\(--tap-target\);/,
+      /\.player-general \.num-stepper input,\s*\n\s*\.player-general \.num-stepper button\s*{\s*\n\s*min-height: var\(--tap-target\);/,
+    );
+    // Et les boutons des deux champs maigrissent ensemble.
+    expect(mediaBlock).toMatch(
+      /\.player-general \.num-stepper button\s*{\s*\n\s*flex: 0 0 2rem;/,
     );
   });
 });
@@ -996,10 +1004,41 @@ describe("Bloc 72/D: Expedition equipment simulator's 5 family filters, 3+2 mobi
 // leaving a large dead gap after the last button — both fixed with the
 // same no-truncation equal-width technique as Bloc 69/E.
 describe("Bloc 73/A: Player Settings league buttons fill their 50% column", () => {
-  it("grows each button to share the column, without shrinking below its own label", () => {
+  /**
+   * Bloc 139/A : la rangée d'échelons n'est plus une ligne flex qui déborde
+   * mais une grille à deux rangées, dont le nombre de colonnes vient du
+   * composant — dix échelons débordaient et coupaient le dernier bouton.
+   */
+  it("lays the rungs out on two rows, whatever the ladder holds", () => {
     expect(css).toMatch(
-      /\.player-rung-field \.player-rung-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+      /\.player-rung-field \.player-rung-buttons\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(var\(--rung-columns, 5\), minmax\(0, 1fr\)\);/,
     );
+    // Hors de tout point de rupture : le desktop débordait autant que le
+    // mobile, c'est la même grille qui sert aux deux.
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).not.toMatch(
+      /grid-template-columns: repeat\(var\(--rung-columns/,
+    );
+  });
+
+  /**
+   * Revue Codex (PR #165) : la colonne est bornée à `1fr`, donc un nom libre
+   * d'un seul tenant — que `white-space: normal` ne sait pas couper — sortait
+   * de son bouton. Rien ne borne la longueur d'un nom libre, ni l'écran
+   * d'édition ni la route. Mesuré en e2e (« unbreakable label ») ; ici, la
+   * règle qui le permet.
+   */
+  it("lets an unbreakable rung name break anywhere, since its column cannot grow", () => {
+    const rule = css.match(
+      /\.player-rung-field \.player-rung-buttons button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/overflow-wrap: anywhere;/);
+    // `break-word` ne suffirait pas : il ne réduit pas la largeur minimale de
+    // la colonne, donc la grille repartirait plus large que son conteneur.
+    expect(rule).not.toMatch(/overflow-wrap: break-word;/);
   });
 });
 
@@ -1451,5 +1490,64 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
     )?.[0];
     expect(durationBadge).toBeDefined();
     expect(durationBadge).toMatch(/var\(--accent-strong\)/);
+  });
+});
+
+/**
+ * Bloc 139/B et D — les deux points qui se jouent uniquement dans la feuille
+ * de style. Les dimensions réellement obtenues par le navigateur sont mesurées
+ * en e2e (« Bloc 139 ») ; ce qui s'épingle ici, c'est la déclaration qui les
+ * produit, et surtout la classe sur laquelle elle porte.
+ */
+describe("Bloc 139: matrix field proportions, and the band's column width", () => {
+  /**
+   * B : la place rendue au chiffre. Le piège est le sélecteur — le stepper est
+   * disposé par `.num-stepper` (flex, boutons à `flex: 0 0 40px`, Bloc 92/L4),
+   * pas par les colonnes de grille de `.number-stepper`, déclarées plus haut
+   * dans le fichier et donc écrasées. Une règle écrite sur `.number-stepper`
+   * n'aurait aucun effet : mesuré au navigateur, la cellule de 93 px se
+   * répartissait en 40 + 13 + 40, et « 20 » était coupé.
+   */
+  it("B: narrows the matrix's − / + buttons on the class that actually lays them out", () => {
+    expect(css).toMatch(
+      /\.player-matrix \.num-stepper button\s*{\s*\n\s*flex: 0 0 1\.5rem;\s*\n\s*}/,
+    );
+    // Et la règle ne porte pas sur la classe inerte, faute de quoi elle
+    // reviendrait sans effet le jour où quelqu'un « harmonise » les deux.
+    expect(css).not.toMatch(/\.player-matrix \.number-stepper\b/);
+    // La hauteur ne bouge pas avec la largeur : 32 px, comme avant le bloc.
+    expect(css).toMatch(
+      /\.player-matrix \.num-stepper input,\s*\n\.player-matrix \.num-stepper button\s*{\s*\n\s*min-height: 2rem;/,
+    );
+  });
+
+  /**
+   * D : le bandeau de sélection — celui des catégories d'outils et celui des
+   * référentiels, un seul composant — prend la largeur de la colonne du site
+   * plutôt qu'une valeur à lui. Comparé à la déclaration partagée par
+   * `.public-main` et le bandeau des paramètres du joueur, pas à un littéral :
+   * c'est l'égalité qui est la garantie, et le bandeau était 1 rem plus large
+   * (mesuré à 1440 px : 1200 contre 1184).
+   */
+  it("D: gives the selection band the same column width as the content it sits between", () => {
+    const widthOf = (selector: string) =>
+      css
+        .match(new RegExp(`${selector}\\s*{([\\s\\S]*?)\\n}`))?.[1]
+        .match(/width: (min\([^;]*\));/)?.[1];
+    const column = widthOf("\\.public-main,\\n\\.player-settings");
+    expect(column).toBe("min(74rem, calc(100% - 2rem))");
+    expect(widthOf("\\.selection-banner")).toBe(column);
+    // D bis : l'en-tête de page et « Aller plus loin » étaient les deux
+    // derniers blocs restés à 75rem. La colonne n'a plus qu'une largeur.
+    expect(widthOf("\\.tool-page-head,\\n\\.further-reading")).toBe(column);
+  });
+
+  it("D: leaves the band's height alone — only its width changed", () => {
+    const banner = css.match(/\.selection-banner\s*{([\s\S]*?)\n}/)?.[1];
+    expect(banner).toBeDefined();
+    // Les propriétés qui feraient bouger sa hauteur, inchangées.
+    expect(banner).toMatch(/margin: 1\.5rem auto 0;/);
+    expect(banner).toMatch(/padding: 0\.625rem;/);
+    expect(banner).not.toMatch(/(^|\n)\s*(height|min-height|max-height):/);
   });
 });
