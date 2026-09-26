@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { requireCapability } from "@/auth/require-session";
 import { can } from "@/auth/permissions";
@@ -16,7 +16,10 @@ import {
   getTemplarParameters,
   getXpGainTiers,
 } from "@/lib/admin-formulas-server";
-import { toolsSharingEditor } from "@/lib/admin-tool-sources";
+import {
+  toolParameterSource,
+  toolsSharingEditor,
+} from "@/lib/admin-tool-sources";
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 
 export default async function EditToolPage({
@@ -57,6 +60,23 @@ export default async function EditToolPage({
     from === "referentiels" || !can(session.user.role, "calculators.read");
   const backHref = cameFromReferences ? "/admin/referentiels" : "/admin/tools";
   const backLabel = cameFromReferences ? references("title") : t("title");
+
+  // Bloc 137 : un outil dont les paramètres vivent dans Configuration n'a plus
+  // d'écran d'édition ici, et son ancienne adresse conduit à l'endroit qui les
+  // porte plutôt qu'à un 404 muet. Le Classement est le premier cas (Bloc 135,
+  // ligues et divisions) ; la règle est lue dans le même tableau que la
+  // colonne « Source des paramètres » du tableau Outils, pour qu'un futur
+  // déplacement soit couvert sans qu'on y repense.
+  //
+  // Après la garde ci-dessus, et non avant : une visite non authentifiée est
+  // renvoyée au login comme sur n'importe quelle autre adresse d'admin, et
+  // aucun rôle n'y perd l'accès — tous ceux qui tiennent `leagues.read`
+  // tiennent aussi `calculators.write`. `redirect` (307) et non
+  // `permanentRedirect` (308) : la destination vient d'un tableau qui peut
+  // changer, et un 308 resterait en cache dans le navigateur d'un
+  // administrateur bien après.
+  const parameterSource = toolParameterSource(id);
+  if (parameterSource.kind === "configuration") redirect(parameterSource.href);
 
   if (id === "city-parameters") {
     return (

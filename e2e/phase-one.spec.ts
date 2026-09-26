@@ -2481,6 +2481,84 @@ async function b135OpenLeagues(page: Page) {
   ).toHaveAttribute("aria-expanded", "true");
 }
 
+/**
+ * Bloc 137 : le Classement ne porte plus de capacité d'édition de ligue, et son
+ * ancienne adresse conduit à celle qui la porte.
+ *
+ * Constat du porteur de projet : créer ou modifier une ligue restait possible
+ * depuis l'outil Classement. Reproduit sur le code déployé — pas sur `dev`, où
+ * le Bloc 135 l'avait retiré neuf jours après l'observation. Restait qu'un
+ * administrateur ayant gardé l'ancienne adresse en favori tombait sur un 404
+ * muet : elle redirige maintenant vers la section qui porte l'échelle.
+ *
+ * Les tests unitaires tiennent la règle sur l'arbre des sources ; ce scénario
+ * est le seul à prouver l'aller-retour par un vrai navigateur — que la
+ * redirection, l'ancre et le panneau s'enchaînent, et que le Classement public
+ * n'offre rien pour écrire une ligue.
+ */
+test("Bloc 137: the old Classement edit URL lands on the leagues section, and nothing else edits a league", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // L'ancienne adresse du CRUD : une redirection, pas un 404, et la section
+  // ouverte à l'arrivée par son ancre.
+  const moved = await page.goto("/admin/tools/ranking");
+  expect(moved?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/admin\/config#ligues-divisions$/);
+  await expect(
+    page.getByRole("button", { name: B135_LEAGUES }),
+  ).toHaveAttribute("aria-expanded", "true");
+  // Et le CRUD est bien là, au bout de la redirection : celui qui crée un
+  // échelon, pas seulement celui qui ajoute une plage à l'échelon ouvert.
+  await expect(
+    ligues(page).getByRole("button", {
+      name: /^(Ajouter une ligue ou une division|Add a league or division)$/,
+    }),
+  ).toBeVisible();
+
+  // Le tableau Outils dit où vont les paramètres du Classement, et son bouton
+  // mène au même endroit — pas à un écran d'édition de l'outil.
+  await page.goto("/admin/tools");
+  const row = page.locator("tr", {
+    hasText: /Configuration ›\s*Ligues et divisions/,
+  });
+  await expect(row).toHaveCount(1);
+  for (const name of [/^Modifier$/, /^Edit$/])
+    await expect(row.getByRole("link", { name })).toHaveCount(0);
+  await expect(
+    row.getByRole("link", { name: /^(Ouvrir|Open)$/ }),
+  ).toHaveAttribute("href", "/admin/config#ligues-divisions");
+
+  // Le Classement public, tel qu'un joueur le voit : deux champs de saisie,
+  // ceux du calcul, et rien qui touche à une ligue.
+  await page.goto("/tools/classement");
+  const tool = page.getByRole("main");
+  // `getByRole` et non `getByLabel` : les boutons « Diminuer / Augmenter Ton
+  // pourcentage actuel » du pas-à-pas portent le libellé du champ dans le leur,
+  // et un `getByLabel` en attrape donc trois.
+  await expect(
+    tool.getByRole("spinbutton", { name: "Ton pourcentage actuel" }),
+  ).toBeVisible();
+  await expect(tool.locator("input:not([type=hidden])")).toHaveCount(2);
+  for (const name of [
+    /Ajouter/,
+    /Supprimer/,
+    /Enregistrer/,
+    /Renommer/,
+    /Nouvelle/,
+  ])
+    await expect(
+      tool.getByRole("button", { name }),
+      `${name} n'a rien à faire dans le Classement public`,
+    ).toHaveCount(0);
+});
+
 // Bloc 108/A+B+C+D+G: the whole point of the bloc, in one browser pass — an
 // admin creates a division that did not exist, orders it, switches it on, and
 // the public page picks it up with its League Lock computed. Unit tests drive
