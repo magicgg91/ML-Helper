@@ -84,13 +84,13 @@ describe("Bloc 119: what each role may open and change", () => {
   it("limits each manager role to its own section", () => {
     expect(keysOf("guides_manager")).toEqual(["dashboard", "guides"]);
     expect(keysOf("references_manager")).toEqual(["dashboard", "referentiels"]);
-    // Bloc 135 : « Gestion Outils » ouvre aussi Configuration, et n'y voit
-    // que la section Ligues et divisions. Il pouvait déjà éditer l'échelle
-    // quand elle vivait sur /admin/tools/ranking sous `calculators.write` ;
-    // la déplacer ne devait pas lui retirer ce droit, et lui donner
-    // `configuration.read` lui aurait ouvert les langues du site et la
-    // sélection de l'accueil, qu'il n'a rien à y faire.
-    expect(keysOf("tools_manager")).toEqual(["dashboard", "tools", "config"]);
+    // Bloc 137 : « Gestion Outils » n'ouvre plus Configuration. Le Bloc 135 y
+    // avait fait entrer ce rôle par une capacité à part, parce que le CRUD des
+    // ligues y avait atterri en entier — plages de fin de saison comprises, qui
+    // sont le classement et qu'il éditait sous `calculators.write`. Ces plages
+    // revenues dans l'écran de l'outil, il retrouve son droit là où il était et
+    // n'a plus rien à venir chercher dans Configuration.
+    expect(keysOf("tools_manager")).toEqual(["dashboard", "tools"]);
     for (const role of [
       "guides_manager",
       "references_manager",

@@ -220,7 +220,16 @@ export function AdminRankingEditor({
   /** Ce que le bandeau du haut dit : combien, et le premier, en toutes lettres. */
   function summarise(found: BandProblem[]) {
     if (found.length === 0) return undefined;
-    return t("save-blocked", { count: found.length, where: found[0].where });
+    const [first] = found;
+    // Trois arguments, pas deux : le compte, l'adresse du champ, et la raison.
+    // En oublier un ne rend pas une phrase incomplète — `next-intl` échoue à
+    // formater et affiche la clé, ce qui est exactement ce qu'un utilisateur ne
+    // doit jamais voir.
+    return t("save-blocked", {
+      count: found.length,
+      where: first.where,
+      message: first.message,
+    });
   }
 
   const problems = showProblems ? findProblems(draft) : [];
@@ -246,15 +255,17 @@ export function AdminRankingEditor({
   function saveOrShowProblems() {
     const found = findProblems(draft);
     setShowProblems(found.length > 0);
-    if (found.length === 0) {
-      void form.save();
-      return;
-    }
     // Le premier champ fautif peut être sous un autre échelon que celui qu'on
     // regarde : on l'ouvre, puis on y pose le curseur au rendu suivant.
     const [problem] = found;
-    if (problem.rungId !== selected?.id) select(problem.rungId);
-    setFocusPending(true);
+    if (problem) {
+      if (problem.rungId !== selected?.id) select(problem.rungId);
+      setFocusPending(true);
+    }
+    // `form.save()` dans tous les cas : c'est lui qui relit la validation et
+    // pose le message du bandeau, ou qui part sur le fil quand il n'y a rien à
+    // signaler. Refuser ici en silence laisserait l'écran sans phrase.
+    void form.save();
   }
 
   // Le curseur suit, une fois l'échelon fautif rendu. L'identifiant ouvert est

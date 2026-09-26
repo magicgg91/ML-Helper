@@ -435,29 +435,27 @@ describe("Bloc 135 §2 — Ligues et divisions dans Configuration", () => {
   });
 
   /**
-   * Le point qui justifie une capacité à part. « Gestion Outils » éditait
-   * l'échelle quand elle vivait sur /admin/tools/ranking : il entre donc ici,
-   * et n'y voit que sa section — pas les langues du site, pas la sélection de
-   * l'accueil, pas le suivi, pas la purge.
+   * Bloc 137 : cet écran est de nouveau gardé par la seule `configuration.read`.
+   *
+   * Le Bloc 135 y avait fait entrer « Gestion Outils » par une capacité à part,
+   * parce que le CRUD des ligues y avait atterri en entier — plages de fin de
+   * saison comprises, qui sont le classement et qu'il éditait déjà sur l'écran
+   * de l'outil. Ces plages y étant revenues, il n'a plus rien à venir chercher
+   * ici, et la garde par section disparaît avec le montage qu'elle servait.
    */
-  it("s'ouvre à « Gestion Outils », et à lui seul cette section", async () => {
-    await renderPage({ role: "tools_manager" });
+  it("n'est gardé que par `configuration.read`", async () => {
+    await renderPage();
+    // La garde elle-même, et non ce qu'un rôle voit : une seule capacité, donc
+    // « Gestion Outils » — qui ne l'a pas — reçoit de nouveau un 403, comme
+    // avant le Bloc 135. Le refus lui-même est vérifié en e2e (Bloc 90/A).
+    expect(mockedRequireCapability).toHaveBeenCalledWith("configuration.read");
+  });
+
+  it("montre la section, et lit les guides, à qui tient Configuration", async () => {
+    await renderPage({ role: "admin" });
     expect(screen.getByTestId("leagues")).toBeInTheDocument();
-    expect(screen.queryByTestId("languages")).toBeNull();
-    expect(screen.queryByTestId("highlights")).toBeNull();
-    expect(screen.queryByTestId("tracking")).toBeNull();
-    expect(screen.queryByTestId("purge")).toBeNull();
-  });
-
-  // Et les guides ne sont pas lus pour lui : il n'a pas `guides.read`, et le
-  // seul usage de leur contenu est le tableau des langues qu'il ne voit pas.
-  it("ne lit pas les guides pour un rôle qui n'a que les ligues", async () => {
-    await renderPage({ role: "tools_manager" });
-    expect(mockedGuideFindMany).not.toHaveBeenCalled();
-  });
-
-  it("n'affiche rien pour un rôle sans droit sur les ligues", async () => {
-    await renderPage({ role: "guides_manager" });
-    expect(screen.queryByTestId("leagues")).toBeNull();
+    // Le Bloc 135 sautait cette requête pour le rôle qui n'entrait que par les
+    // ligues ; il n'y a plus de tel rôle, donc plus de requête conditionnelle.
+    expect(mockedGuideFindMany).toHaveBeenCalled();
   });
 });

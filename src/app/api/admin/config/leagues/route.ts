@@ -47,14 +47,25 @@ export async function PUT(request: Request) {
     // cet écran, qui ne les édite plus.
     const parsed = parseLeagueLadder(raw);
     if (parsed.length !== raw.length) throw new Error("invalid");
-    const structure: LeagueRungStructure[] = parsed.map((rung) => ({
-      id: rung.id,
-      league: rung.league,
-      division: rung.division,
-      name: rung.name,
-      position: rung.position,
-      active: rung.active,
-    }));
+    // L'ordre de l'écran est celui de la liste reçue, pas les `position` qu'elle
+    // porte. `parseLeagueLadder` trie sur `position` — utile en lecture, où c'est
+    // la seule source d'ordre — mais ici les deux existent, et laisser gagner un
+    // `position` périmé annulerait le glisser-déposer qu'on vient de faire.
+    // `withLadderStructure` renumérote ensuite sur l'index, si bien qu'une seule
+    // notion d'ordre traverse tout le chemin.
+    const order = new Map(
+      (raw as { id?: unknown }[]).map((rung, index) => [rung?.id, index]),
+    );
+    const structure: LeagueRungStructure[] = [...parsed]
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+      .map((rung) => ({
+        id: rung.id,
+        league: rung.league,
+        division: rung.division,
+        name: rung.name,
+        position: rung.position,
+        active: rung.active,
+      }));
     if (!isSavableLadderStructure(structure)) throw new Error("invalid");
     // Bloc 137 : la fusion, et non la charge utile telle quelle — chaque échelon
     // repart avec les plages qu'il avait déjà.

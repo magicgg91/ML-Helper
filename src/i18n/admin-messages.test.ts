@@ -68,15 +68,30 @@ describe("admin page translations", () => {
     expect(en("admin.referentiels.references.level-up")).toBe("Level Up");
   });
 
-  // Bloc 135 : l'échelle a quitté l'écran de l'outil Classement pour la
-  // section « Ligues et divisions » de Configuration, et son vocabulaire avec
-  // elle — `admin.ranking` est devenu `admin.leagues`.
+  /**
+   * Bloc 135, recoupé au Bloc 137 : le vocabulaire suit la découpe des écrans.
+   *
+   * `admin.leagues` est celui de la section de Configuration — la liste des
+   * échelons. `admin.ranking` est revenu pour l'écran de l'outil — les plages de
+   * fin de saison. Les deux existent, et chacun ne dit que ce que son écran
+   * montre : c'est ce que ces deux cas épinglent.
+   */
   it("covers the leagues and divisions section (/admin/config)", async () => {
     const { en, fr } = await translators();
-    expect(en("admin.leagues.add")).toBe("Add range");
-    expect(fr("admin.leagues.add")).toBe("Ajouter une plage");
     expect(en("admin.leagues.section")).toBe("Leagues and divisions");
     expect(fr("admin.leagues.section")).toBe("Ligues et divisions");
+    expect(en("admin.leagues.add-entry")).toBe("Add a league or division");
+    expect(fr("admin.leagues.add-entry")).toBe(
+      "Ajouter une ligue ou une division",
+    );
+  });
+
+  it("covers the ranking tool's own screen (/admin/tools/ranking)", async () => {
+    const { en, fr } = await translators();
+    expect(en("admin.ranking.add")).toBe("Add range");
+    expect(fr("admin.ranking.add")).toBe("Ajouter une plage");
+    expect(en("admin.ranking.bands-section")).toBe("End-of-season bands");
+    expect(fr("admin.ranking.bands-section")).toBe("Plages de fin de saison");
   });
 
   it("covers /admin/users", async () => {

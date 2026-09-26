@@ -53,15 +53,18 @@ describe("Bloc 119: where a tool's parameters come from", () => {
    *
    * Ses seuls paramètres étaient l'échelle des ligues et des divisions — que
    * les Gemmes, la Progression, les Événements et les Villes lisent aussi, par
-   * leur ligue de base — et elle se gère dans Configuration. La ligne le dit,
-   * et y mène, au lieu de garder un « Modifier » vers un écran supprimé.
+   * leur ligue de base — et cette liste se gère dans Configuration.
+   *
+   * Bloc 137 : mais pas le classement lui-même. Les seuils et récompenses de fin
+   * de saison sont le paramètre de cet outil, et sa ligne mène donc de nouveau à
+   * son propre écran, comme celle des Gemmes ou du Taux de gain d'XP.
    */
-  it("envoie le Classement vers la section de Configuration", () => {
+  it("envoie le Classement vers son propre écran", () => {
     expect(toolParameterSource("ranking")).toEqual({
-      kind: "configuration",
-      href: "/admin/config#ligues-divisions",
+      kind: "own",
+      href: "/admin/tools/ranking",
     });
-    expect(adminToolEditHref("ranking")).toBeUndefined();
+    expect(adminToolEditHref("ranking")).toBe("/admin/tools/ranking");
   });
 
   it("sends a tool with its own parameters to its own screen", () => {

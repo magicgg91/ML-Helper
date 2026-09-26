@@ -23,12 +23,13 @@ describe("admin tool editor routing", () => {
     expect(adminToolEditHref("gems")).toBe("/admin/tools/gems");
   });
   /**
-   * Bloc 135 : le Classement n'a plus d'écran d'édition. Ses seuls paramètres
-   * étaient l'échelle des ligues et des divisions, passée dans Configuration —
-   * `toolParameterSource` renvoie la section, et le tableau Outils y envoie.
+   * Bloc 137 : le Classement a de nouveau son écran — les plages de fin de
+   * saison, c'est-à-dire le classement. Le Bloc 135 les avait emportées dans
+   * Configuration avec la liste des ligues et des divisions ; seule cette liste
+   * y appartenait.
    */
-  it("ne donne plus d'écran d'édition au Classement", () => {
-    expect(adminToolEditHref("ranking")).toBeUndefined();
+  it("rend au Classement son écran d'édition", () => {
+    expect(adminToolEditHref("ranking")).toBe("/admin/tools/ranking");
   });
   it("points Templiers' reference to the same shared formula editor as the Templars tool (Bloc 33/G)", () => {
     expect(adminToolEditHref("templiers")).toBe(
