@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { EditorHeader } from "./admin-editor-header";
 import { EditorSection } from "./admin-editor-section";
+import { adminLeagueChipClass } from "./admin-league-chip";
 import { LangTabs } from "./admin-lang-tabs";
 import { NumberField } from "./admin-number-field";
 import { Pill } from "./admin-pill";
@@ -188,12 +189,9 @@ export function EventsReferenceEditor({
                   type="button"
                   role="radio"
                   aria-checked={key === league}
-                  className={cn(
-                    "admin-focus h-[var(--admin-control-h-sm)] rounded-admin-control border px-3 text-sm font-semibold",
-                    key === league
-                      ? "border-admin-accent bg-admin-accent-soft text-admin-accent-soft-ink"
-                      : "border-admin-card-border text-admin-dim hover:text-admin-text",
-                  )}
+                  // Bloc 138/C : le style que cet écran portait, désormais lu
+                  // depuis un seul endroit — le Classement rend la même classe.
+                  className={adminLeagueChipClass(key === league)}
                   onClick={() => {
                     setLeague(key);
                     setOpen(new Set());

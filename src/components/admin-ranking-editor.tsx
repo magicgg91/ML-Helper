@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
@@ -13,10 +12,10 @@ import {
   type SeasonMovement,
   type SeasonRewardType,
 } from "@/lib/leagues";
-import { leaguesSectionHref } from "@/lib/admin-sections";
 import { cn } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { AdminButton } from "./admin-button";
+import { adminLeagueChipClass } from "./admin-league-chip";
 import { EditorHeader } from "./admin-editor-header";
 import { EditorSection } from "./admin-editor-section";
 import { NumberField } from "./admin-number-field";
@@ -134,20 +133,11 @@ export function AdminRankingEditor({
   backHref,
   backLabel,
   title,
-  canOpenLeagues = false,
 }: {
   initialLadder: LeagueLadder;
   backHref: string;
   backLabel: string;
   title: string;
-  /**
-   * Revue Codex : si ce rôle peut ouvrir la section de Configuration. « Gestion
-   * Outils » est l'utilisateur principal de cet écran et n'a pas
-   * `configuration.read` — lui présenter un lien l'enverrait sur un 403 garanti.
-   * Il lit alors la phrase sans le lien, comme le tableau Outils le fait déjà
-   * pour une destination hors de portée.
-   */
-  canOpenLeagues?: boolean;
 }) {
   const t = useTranslations("admin.ranking");
   const editor = useTranslations("admin.editor");
@@ -378,20 +368,7 @@ export function AdminRankingEditor({
         // L'échelle est vide : rien à classer, et la sortie est nommée plutôt
         // qu'un écran muet.
         <EditorSection title={t("rungs-label")}>
-          <p className="text-sm text-admin-dim">
-            {t("no-rung")}
-            {canOpenLeagues && (
-              <>
-                {" "}
-                <Link
-                  className="admin-focus rounded-admin-control font-medium text-admin-text underline"
-                  href={leaguesSectionHref}
-                >
-                  {t("leagues-elsewhere-link")}
-                </Link>
-              </>
-            )}
-          </p>
+          <p className="text-sm text-admin-dim">{t("no-rung")}</p>
         </EditorSection>
       ) : (
         selected && (
@@ -413,12 +390,7 @@ export function AdminRankingEditor({
                     <button
                       key={rung.id}
                       aria-current={current ? "true" : undefined}
-                      className={cn(
-                        "admin-focus flex items-center gap-2 rounded-admin-control border px-3 py-2 text-sm font-semibold",
-                        current
-                          ? "border-admin-accent-ink bg-admin-accent text-admin-accent-ink"
-                          : "border-admin-card-border bg-admin-card text-admin-text",
-                      )}
+                      className={adminLeagueChipClass(current)}
                       onClick={() => select(rung.id)}
                       type="button"
                     >
@@ -439,20 +411,6 @@ export function AdminRankingEditor({
                   );
                 })}
               </div>
-              <p className="text-sm text-admin-dim">
-                {t("leagues-elsewhere")}
-                {canOpenLeagues && (
-                  <>
-                    {" "}
-                    <Link
-                      className="admin-focus rounded-admin-control font-medium text-admin-text underline"
-                      href={leaguesSectionHref}
-                    >
-                      {t("leagues-elsewhere-link")}
-                    </Link>
-                  </>
-                )}
-              </p>
             </EditorSection>
 
             <EditorSection

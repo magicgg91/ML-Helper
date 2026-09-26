@@ -70,10 +70,6 @@ export default async function EditToolPage({
         backHref={backHref}
         backLabel={backLabel}
         title={names("ranking.name")}
-        // Revue Codex : « Gestion Outils » est l'utilisateur principal de cet
-        // écran et n'a pas `configuration.read` — sans cette garde, le renvoi
-        // vers la liste l'enverrait sur un 403 garanti.
-        canOpenLeagues={can(session.user.role, "configuration.read")}
       />
     );
   }

@@ -1062,13 +1062,10 @@
       "entry-actions": "Autres actions pour {entry}",
       "entry-public": "Visible publiquement",
       "entry-private": "Masquée",
-      "bands-section": "Plages de fin de saison",
       "languages-label": "Nom libre en",
       "language-hidden": "{language} masquée sur le site",
       "entry-name": "Nom libre ({language})",
-      "entry-name-field": "{entry} (rang {position}) nom libre {language}",
-      "bands-count-hint": "{count, plural, =0 {Aucune plage de fin de saison réglée pour cette entrée.} one {# plage de fin de saison réglée pour cette entrée.} other {# plages de fin de saison réglées pour cette entrée.}} Les seuils et les récompenses se règlent dans l’écran de l’outil.",
-      "bands-elsewhere-link": "Ouvrir Outils › Classement"
+      "entry-name-field": "{entry} (rang {position}) nom libre {language}"
     },
     "ranking": {
       "add": "Ajouter une plage",
@@ -1102,8 +1099,6 @@
       "rung-untitled": "Entrée sans nom",
       "rung-hidden": "masquée",
       "no-rung": "Aucune ligue ni division n’existe encore.",
-      "leagues-elsewhere": "Ajouter, renommer, réordonner ou masquer une ligue ou une division se fait dans Configuration.",
-      "leagues-elsewhere-link": "Ouvrir Ligues et divisions",
       "bands-caption": "Plages de fin de saison de {entry}",
       "ignored-rungs": "{count, plural, one {Un échelon a été supprimé dans Configuration entre-temps : ses plages n’ont pas été enregistrées.} other {# échelons ont été supprimés dans Configuration entre-temps : leurs plages n’ont pas été enregistrées.}} La liste a été rechargée."
     },

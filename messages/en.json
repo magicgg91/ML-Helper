@@ -1062,13 +1062,10 @@
       "entry-actions": "More actions for {entry}",
       "entry-public": "Publicly visible",
       "entry-private": "Hidden",
-      "bands-section": "End-of-season bands",
       "languages-label": "Free name in",
       "language-hidden": "{language} hidden on the site",
       "entry-name": "Free name ({language})",
-      "entry-name-field": "{entry} (rung {position}) free name {language}",
-      "bands-count-hint": "{count, plural, =0 {No end-of-season band set for this entry.} one {# end-of-season band set for this entry.} other {# end-of-season bands set for this entry.}} Thresholds and rewards are set on the tool's own screen.",
-      "bands-elsewhere-link": "Open Tools › Ranking"
+      "entry-name-field": "{entry} (rung {position}) free name {language}"
     },
     "ranking": {
       "add": "Add range",
@@ -1102,8 +1099,6 @@
       "rung-untitled": "Unnamed entry",
       "rung-hidden": "hidden",
       "no-rung": "No league or division exists yet.",
-      "leagues-elsewhere": "Adding, renaming, reordering or hiding a league or a division is done in Configuration.",
-      "leagues-elsewhere-link": "Open Leagues and divisions",
       "bands-caption": "End-of-season bands for {entry}",
       "ignored-rungs": "{count, plural, one {One rung was deleted in Configuration meanwhile: its bands were not saved.} other {# rungs were deleted in Configuration meanwhile: their bands were not saved.}} The list has been reloaded."
     },
