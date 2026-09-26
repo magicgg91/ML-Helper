@@ -170,12 +170,10 @@
     },
     "templars": {
       "title": "Templer",
-      "not-counted": "nicht in den Werten enthalten",
       "field": "{templar} Templer"
     },
     "clan-temple": {
       "title": "Tempel (Clan)",
-      "help": "Nur der Templer-Beitrag des Clans; die bestätigte Grundlage kommt automatisch dazu.",
       "field": "{templar}-Tempel"
     },
     "matrix": {

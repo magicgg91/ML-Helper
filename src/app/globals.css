@@ -1259,14 +1259,33 @@ select:where(:not(.admin-shell select)) {
 .player-rung-buttons {
   margin: 0;
 }
-/* Largeur égale et jamais tronquée : `min-width: max-content` empêche un
-   bouton de descendre sous son propre libellé pendant que flex-grow répartit
-   la rangée entre tous. Sélecteur en deux classes pour battre le
-   `flex: 0 0 auto` de `.family-buttons button`, déclaré plus bas dans ce
-   fichier — à égalité de spécificité, c'est le dernier qui gagne. */
+/* Bloc 139/A : deux rangées, et des colonnes égales.
+
+   Les dix échelons d'une échelle scindée tenaient sur une seule ligne en
+   `flex: nowrap` : elle débordait et coupait le dernier bouton. Le nombre de
+   colonnes est la moitié du nombre d'échelons, calculé par le composant
+   (`--rung-columns`) parce que la feuille de style ne sait pas combien
+   l'administration en a publié — dix échelons donnent 5 × 2, six en donnent
+   3 × 2, et le jour où ce nombre change la rangée suit sans retouche.
+
+   Sélecteur en deux classes pour battre `.family-buttons`, déclaré plus bas
+   dans ce fichier : à égalité de spécificité, c'est le dernier qui gagne. */
+.player-rung-field .player-rung-buttons {
+  display: grid;
+  grid-template-columns: repeat(var(--rung-columns, 5), minmax(0, 1fr));
+  gap: 0.35rem;
+}
 .player-rung-field .player-rung-buttons button {
-  flex: 1 1 0;
-  min-width: max-content;
+  min-width: 0;
+  white-space: normal;
+  /* Revue Codex (PR #165) : `white-space: normal` ne coupe qu'aux espaces, et
+     rien ne borne la longueur d'un nom libre d'échelon — ni l'écran d'édition
+     ni la route. Un nom d'un seul tenant sortait donc de son bouton (mesuré :
+     222 px de débordement à 1440, et à 390 px, où le groupe n'est plus un
+     conteneur de défilement, la page elle-même partait de 10 px sur le côté).
+     La colonne étant bornée à `1fr`, c'est au texte de céder. Même parade que
+     `.player-matrix-mobile-name` plus bas dans ce fichier. */
+  overflow-wrap: anywhere;
 }
 .player-general .unit-input {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -1286,11 +1305,6 @@ select:where(:not(.admin-shell select)) {
 .player-templars-head {
   display: grid;
   gap: 0.15rem;
-}
-.player-templars-head small {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 500;
 }
 .player-templars-fields {
   display: grid;
@@ -1363,12 +1377,21 @@ select:where(:not(.admin-shell select)) {
   padding: 0.25rem 0.15rem;
   vertical-align: top;
 }
-/* Steppers compacts : 32 px de haut, boutons de 22 px. */
-.player-matrix .number-stepper {
-  grid-template-columns: 1.375rem minmax(0, 1fr) 1.375rem;
+/* Bloc 139/B : des boutons plus étroits, et la place rendue au chiffre.
+
+   Le stepper est disposé par `.num-stepper` — flex, boutons à `flex: 0 0
+   40px` (Bloc 92/L4) — et non par les colonnes de grille de
+   `.number-stepper`, déclarées plus haut mais inertes puisqu'une règle
+   postérieure repasse le conteneur en flex. Mesuré au navigateur avant ce
+   bloc : dans une cellule de 93 px, 40 + 13 + 40, et « 20 » était coupé.
+
+   24 px est le minimum de cible de la WCAG 2.2 (2.5.8, niveau AA) ; la
+   hauteur reste à 32 px. Le champ passe de 13 à 45 px. */
+.player-matrix .num-stepper button {
+  flex: 0 0 1.5rem;
 }
-.player-matrix .number-stepper input,
-.player-matrix .number-stepper button {
+.player-matrix .num-stepper input,
+.player-matrix .num-stepper button {
   min-height: 2rem;
   padding: 0;
   font-size: 0.8rem;
@@ -1477,12 +1500,6 @@ select:where(:not(.admin-shell select)) {
   margin-top: 1rem;
   font-size: 0.75rem;
 }
-.player-matrix-help {
-  margin: 0.5rem 0 0;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.5;
-}
 
 @media (max-width: 900px) {
   /* Replié : les mêmes dix étiquettes, en tuiles — l'abréviation au-dessus du
@@ -1518,19 +1535,13 @@ select:where(:not(.admin-shell select)) {
   .player-rung-field {
     grid-column: 1 / -1;
   }
-  /* Deux classes, pour la même raison qu'au-dessus : `.family-buttons` est
-     déclaré plus bas dans le fichier et gagnerait à égalité. */
   .player-rung-field .player-rung-buttons {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.3rem;
   }
   .player-rung-field .player-rung-buttons button {
-    min-width: 0;
     height: 2.375rem;
     padding: 0 0.2rem;
     font-size: 0.75rem;
-    white-space: normal;
   }
   /* Le sélecteur d'unité des VP, rétréci pour que le champ garde sa place. */
   .player-general .unit-input {
@@ -1539,20 +1550,31 @@ select:where(:not(.admin-shell select)) {
   .player-general .unit-input select {
     padding: 0 0.3rem;
   }
-  /* Zones tactiles : 44 px sur les deux champs de la rangée. */
-  .player-general .number-stepper input,
-  .player-general .number-stepper button {
+  /* Bloc 139/E : les deux champs de la rangée, rééquilibrés.
+
+     Le champ des VP tombait à 16 px — un caractère coupé — coincé entre ses
+     boutons de 40 px et le sélecteur d'unité, pendant que celui du niveau en
+     gardait 72 pour y écrire au plus trois chiffres. Les deux maigrissent :
+     des boutons de 32 px des deux côtés, et la rangée partagée 4:6 au lieu de
+     moitié-moitié, parce que les VP portent une unité en plus.
+
+     Les boutons gardent leurs 44 px de haut (la cible tactile que le site se
+     donne depuis le Bloc 132 §3) ; 32 px de large reste au-dessus du minimum
+     de 24 px de la WCAG 2.2 (2.5.8, AA). */
+  .player-general {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  }
+  .player-general .num-stepper button {
+    flex: 0 0 2rem;
+  }
+  /* Zones tactiles : 44 px de haut sur les deux champs de la rangée. */
+  .player-general .num-stepper input,
+  .player-general .num-stepper button {
     min-height: var(--tap-target);
   }
   .player-templars {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.5rem;
-  }
-  .player-templars-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.4rem;
   }
   .player-templars-fields {
     gap: 0.3rem;
@@ -7023,7 +7045,13 @@ span.tool-share-dot.tool-share-stuff {
    --------------------------------------------------------------------- */
 .tool-page-head,
 .further-reading {
-  width: min(75rem, calc(100% - 2rem));
+  /* Bloc 139/D bis : la même largeur que tout le reste de la colonne — 74rem,
+     celle de `.public-main`, du bandeau des paramètres du joueur et des deux
+     bandeaux de sélection alignés au point D. Ces deux blocs-ci étaient restés
+     à 75rem, donc leur texte commençait 8 px à gauche du bord des cartes qui
+     les encadrent (mesuré à 1440 px : 1200 contre 1184). Largeur seule : la
+     marge, et avec elle la hauteur de la colonne, ne bouge pas. */
+  width: min(74rem, calc(100% - 2rem));
   margin: 0 auto;
 }
 .tool-page-head {
@@ -7044,7 +7072,12 @@ span.tool-share-dot.tool-share-stuff {
    référentiels.
    --------------------------------------------------------------------- */
 .selection-banner {
-  width: min(75rem, calc(100% - 2rem));
+  /* Bloc 139/D : 74rem, la largeur de `.public-main` et du bandeau des
+     paramètres du joueur — le bandeau était à 75rem, donc 16 px plus large
+     que le panneau au-dessus et que le contenu en dessous (mesuré à 1440 px :
+     1200 contre 1184). Les deux bandeaux, catégories et référentiels,
+     partagent ce composant, donc cette largeur. */
+  width: min(74rem, calc(100% - 2rem));
   margin: 1.5rem auto 0;
   padding: 0.625rem;
   border: 1px solid var(--border);

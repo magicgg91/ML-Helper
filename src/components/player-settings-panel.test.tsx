@@ -993,3 +993,95 @@ describe("Bloc 123: the narrow layout", () => {
     ).not.toBeNull();
   });
 });
+
+/**
+ * Bloc 139 — la mise en page du bandeau déplié.
+ *
+ * Rien ne change au calcul : ces cas tiennent ce que le rendu doit produire
+ * pour que la mise en forme tienne, et deux retraits de texte. Les largeurs et
+ * les hauteurs réellement obtenues se mesurent au navigateur (e2e « Bloc 139 »),
+ * jsdom n'ayant pas de mise en page ; ce qui se teste ici, c'est ce que le
+ * composant décide — le nombre de colonnes — et ce qu'il n'écrit plus.
+ */
+describe("Bloc 139: the expanded panel's layout", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  /** Une échelle de `count` échelons actifs, tous d'une ligue distincte. */
+  function ladderOf(count: number): LeagueLadder {
+    return Array.from({ length: count }, (_, index) => ({
+      id: `rung-${index}`,
+      league: null,
+      division: "",
+      name: { fr: `Échelon ${index + 1}` },
+      position: index,
+      active: true,
+      bands: [],
+    }));
+  }
+
+  const rungColumns = () =>
+    rungGroup().style.getPropertyValue("--rung-columns");
+
+  /**
+   * Point A : dix échelons tenaient sur une seule ligne, qui débordait et
+   * coupait le dernier bouton. Le composant donne le nombre de colonnes parce
+   * que la feuille de style ne sait pas combien l'administration en a publié —
+   * et la moitié du compte, arrondie au-dessus, fait deux rangées pour
+   * n'importe quel nombre, pair ou impair.
+   */
+  it("asks for half its rungs per row, so they always land on two rows", () => {
+    panel(ladderOf(10));
+    expect(rungColumns()).toBe("5");
+    cleanup();
+
+    // L'échelle livrée aujourd'hui : six échelons, 3 × 2.
+    panel();
+    expect(within(rungGroup()).getAllByRole("button")).toHaveLength(6);
+    expect(rungColumns()).toBe("3");
+    cleanup();
+
+    // Un compte impair arrondit au-dessus : 7 échelons donnent 4 + 3, jamais
+    // une troisième rangée.
+    panel(ladderOf(7));
+    expect(rungColumns()).toBe("4");
+  });
+
+  it("keeps a single rung on its own row rather than asking for zero columns", () => {
+    panel(ladderOf(1));
+    expect(rungColumns()).toBe("1");
+  });
+
+  /**
+   * Point C : les deux textes d'aide partent sans remplacement. Ils sont
+   * cherchés dans tout le bandeau — le second était rendu deux fois, en
+   * en-tête de la ligne Temple sur desktop et sous le tableau sur mobile.
+   */
+  const retiredTexts = [
+    "non comptés dans les stats",
+    "Contribution des Templiers du clan",
+  ];
+
+  it("no longer carries either of the two retired help texts", () => {
+    panel();
+    const text = document.querySelector(".player-settings")!.textContent ?? "";
+    for (const retired of retiredTexts) expect(text).not.toContain(retired);
+    // Et les titres qu'ils accompagnaient sont toujours là : c'est le texte
+    // d'aide qui part, pas la ligne.
+    expect(screen.getByText("Templiers")).toBeInTheDocument();
+    expect(document.querySelector(".player-matrix-row-temple")).not.toBeNull();
+  });
+
+  it("no longer carries them in the narrow layout either", () => {
+    const viewport = mockViewport(true);
+    try {
+      panel();
+      const text =
+        document.querySelector(".player-settings")!.textContent ?? "";
+      for (const retired of retiredTexts) expect(text).not.toContain(retired);
+      expect(document.querySelector(".player-matrix-mobile")).not.toBeNull();
+    } finally {
+      viewport.restore();
+    }
+  });
+});

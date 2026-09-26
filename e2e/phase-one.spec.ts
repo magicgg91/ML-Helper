@@ -2467,6 +2467,15 @@ test("Bloc63: the reference tables switch layout at the same width in CSS and in
  * pour un Super Admin.
  */
 const B135_LEAGUES = /^(Ligues et divisions|Leagues and divisions)$/;
+
+/**
+ * Bloc 139, revue Codex (PR #165) : un nom libre d'un seul tenant, que rien
+ * ne peut couper à un espace. Ni l'écran d'édition ni la route ne bornent la
+ * longueur d'un nom libre, donc c'est un nom qu'un administrateur peut bel et
+ * bien enregistrer.
+ */
+const B139_UNBREAKABLE_NAME =
+  "DivisionArgentDeuxAbsolumentInterminableSansEspace";
 const ligues = (page: Page) => page.locator("#ligues-divisions");
 
 async function b135OpenLeagues(page: Page) {
@@ -2869,6 +2878,45 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     "w390 page scrolls sideways",
   ).toBeLessThanOrEqual(1);
 
+  // Bloc 139/A: the shared player-settings panel has its own rung picker, and
+  // ten rungs are exactly what broke it — they sat on a single line that
+  // overflowed and cut the last button off. It is checked here rather than in
+  // its own file because this is the only place where ten rungs exist: the
+  // panel asks for half of them per row, so the count changes the layout.
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/tools/classement");
+    await page.getByText("Paramètres du joueur", { exact: true }).click();
+    const rungs = page.locator(".player-settings .player-rung-buttons");
+    await expect(rungs).toBeVisible();
+    const layout = await rungs.evaluate((group) => {
+      const buttons = [...group.querySelectorAll("button")];
+      const rect = group.getBoundingClientRect();
+      return {
+        count: buttons.length,
+        rows: new Set(
+          buttons.map((button) =>
+            Math.round(button.getBoundingClientRect().top),
+          ),
+        ).size,
+        overflowX: group.scrollWidth - group.clientWidth,
+        lastSpill: Math.round(
+          buttons[buttons.length - 1].getBoundingClientRect().right -
+            rect.right,
+        ),
+      };
+    });
+    expect(layout.count, `panel w${width} rungs`).toBe(10);
+    expect(layout.rows, `panel w${width} rows`).toBe(2);
+    expect(layout.overflowX, `panel w${width} horizontal`).toBeLessThanOrEqual(
+      1,
+    );
+    expect(layout.lastSpill, `panel w${width} last button`).toBeLessThanOrEqual(
+      1,
+    );
+  }
+  await page.setViewportSize({ width: 390, height: 900 });
+
   // Bloc 69/F's standing rule, on the new layout: no league group may scroll
   // on itself, in either axis, at any width.
   for (const width of [390, 1000, 1280]) {
@@ -2932,15 +2980,70 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     ).toBeLessThanOrEqual(1);
   }
 
+  // Bloc 139, revue Codex (PR #165) : le même nom absurde, mais d'un seul
+  // tenant. Les boutons du panneau vivent dans des colonnes bornées à `1fr`,
+  // et `white-space: normal` ne coupe qu'aux espaces — un nom sans espace
+  // sortait donc de son bouton, et sous 900 px, où le groupe n'est plus un
+  // conteneur de défilement, du groupe lui-même. Rien ne borne la longueur
+  // d'un nom libre, ni l'écran d'édition ni la route : c'est un état que
+  // l'administration peut créer.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await b135OpenLeagues(page);
+  await page
+    .getByTestId("league-rung-name")
+    .getByText("Division Argent Deux Absolument Interminable")
+    .click();
+  await page
+    .getByLabel(
+      "Division Argent Deux Absolument Interminable (rang 7) nom libre FR",
+    )
+    .fill(B139_UNBREAKABLE_NAME);
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
+
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/tools/classement");
+    await page.getByText("Paramètres du joueur", { exact: true }).click();
+    const rungs = page.locator(".player-settings .player-rung-buttons");
+    await expect(rungs).toBeVisible();
+    const unbreakable = await rungs.evaluate((group) => {
+      const buttons = [...group.querySelectorAll("button")];
+      return {
+        // Le texte tient dans son bouton — c'est ce que `overflow-wrap`
+        // garantit, et ce qu'aucune autre règle ne donnait.
+        texteHorsBouton: Math.max(
+          ...buttons.map((button) => button.scrollWidth - button.clientWidth),
+        ),
+        overflowX: group.scrollWidth - group.clientWidth,
+        rows: new Set(
+          buttons.map((button) =>
+            Math.round(button.getBoundingClientRect().top),
+          ),
+        ).size,
+      };
+    });
+    expect(
+      unbreakable.texteHorsBouton,
+      `unbreakable label, w${width} text out of its button`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      unbreakable.overflowX,
+      `unbreakable label, w${width} group horizontal`,
+    ).toBeLessThanOrEqual(1);
+    // Et la grille tient toujours ses deux rangées : le nom qui se coupe
+    // grandit en hauteur, pas en colonnes.
+    expect(unbreakable.rows, `unbreakable label, w${width} rows`).toBe(2);
+  }
+
   // Put the ladder back to the six this spec's other tests expect.
   await page.setViewportSize({ width: 1280, height: 900 });
   await b135OpenLeagues(page);
-  for (const name of [
-    "Division Argent Deux Absolument Interminable",
-    "Argent 1",
-    "Or 2",
-    "Or 1",
-  ]) {
+  for (const name of [B139_UNBREAKABLE_NAME, "Argent 1", "Or 2", "Or 1"]) {
     await page
       .getByTestId("league-rung-name")
       .getByText(name, { exact: true })

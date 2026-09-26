@@ -170,12 +170,10 @@
     },
     "templars": {
       "title": "Tapınak Şövalyeleri",
-      "not-counted": "istatistiklere dahil değil",
       "field": "{templar} tapınak şövalyesi"
     },
     "clan-temple": {
       "title": "Tapınak (klan)",
-      "help": "Yalnızca klanın Tapınak Şövalyesi katkısı; onaylanmış taban toplama eklenir.",
       "field": "{templar} Tapınağı"
     },
     "matrix": {
