@@ -1038,7 +1038,7 @@
     },
     "leagues": {
       "section": "Leagues and divisions",
-      "intro": "The ladder read by the Ranking tool, by the division picker in Player settings, and — through their base league — by Gems, Level Up, Events and Cities.",
+      "intro": "The ladder read by the Ranking tool, by Player settings, and — through their base league — by every other tool.",
       "summary": "{count, plural, one {# league/division} other {# leagues/divisions}} · {active, plural, one {# active} other {# active}}",
       "add": "Add range",
       "threshold": "Threshold (%)",

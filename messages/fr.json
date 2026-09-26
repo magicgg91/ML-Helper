@@ -1038,7 +1038,7 @@
     },
     "leagues": {
       "section": "Ligues et divisions",
-      "intro": "L’échelle que lisent le Classement, le sélecteur de division des Paramètres joueur et, par leur ligue de base, les Gemmes, la Progression, les Événements et les Villes.",
+      "intro": "L’échelle que lisent le Classement, les Paramètres joueur, et tous les autres outils par leur ligue de base.",
       "summary": "{count, plural, one {# ligue/division} other {# ligues/divisions}} · {active, plural, one {# active} other {# actives}}",
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",

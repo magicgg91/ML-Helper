@@ -21,6 +21,7 @@ import { leagues, type League } from "@/lib/player-settings";
 import type { LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
+import { configurationHref } from "@/lib/admin-sections";
 import { useSectionDirty } from "./admin-collapsible-section";
 import { ConfirmDialog } from "./admin-confirm-dialog";
 import { EditorSection } from "./admin-editor-section";
@@ -362,7 +363,7 @@ export function AdminLeaguesPanel({
     // Le fragment est conservé : c'est lui qui a ouvert la section (Bloc 136),
     // et le perdre refermerait celle-ci au prochain remontage de l'arbre.
     const hash = typeof window === "undefined" ? "" : window.location.hash;
-    router.replace(`/admin/config?${params.toString()}${hash}`, {
+    router.replace(`${configurationHref}?${params.toString()}${hash}`, {
       scroll: false,
     });
   }

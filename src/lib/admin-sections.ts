@@ -131,8 +131,9 @@ export const adminSectionGroups: readonly AdminSectionGroup[] = [
  * tableau Outils, qui dit désormais où ses paramètres se modifient. Écrite
  * deux fois, elle finirait par ne plus désigner la même chose.
  */
+export const configurationHref = "/admin/config";
 export const leaguesSectionAnchor = "ligues-divisions";
-export const leaguesSectionHref = `/admin/config#${leaguesSectionAnchor}`;
+export const leaguesSectionHref = `${configurationHref}#${leaguesSectionAnchor}`;
 
 /** The sections a role may open, and whether it may change anything there. */
 export function roleSections(

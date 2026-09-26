@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
+import deMessages from "../../messages/de.json";
 import { rankCategoryShade } from "../lib/ranking";
 import {
   defaultLeagueLadder,
@@ -1235,5 +1236,72 @@ describe("Bloc 110, revue Codex : deux bandes sur le même seuil", () => {
     );
     expect(tiles.length).toBeGreaterThan(0);
     expect(tiles[0]).toBe(rankCategoryShade("promotion", 0));
+  });
+});
+
+/**
+ * Bloc 135 §2 : le nom libre sur le site public, dans une langue au-delà de
+ * FR et EN.
+ *
+ * C'est ce que la paire `nameFr`/`nameEn` ne pouvait pas faire : un lecteur
+ * allemand voyait le nom anglais, quoi que l'administration ait écrit pour
+ * lui. Vérifié ici sur le paquet de traductions réel, pas sur un double —
+ * la page allemande existe, et c'est elle qui doit rendre l'allemand.
+ */
+describe("Bloc 135 §2 — le nom libre, au-delà de FR et EN", () => {
+  afterEach(cleanup);
+
+  const named: LeagueLadder = [
+    {
+      id: "meisterliga",
+      league: null,
+      division: "",
+      name: {
+        fr: "Ligue des maîtres",
+        en: "Masters League",
+        de: "Meisterliga",
+      },
+      position: 0,
+      active: true,
+      bands: [],
+    },
+    {
+      // Rien en allemand : le repli du site s'applique — l'anglais, puis le
+      // français, jamais un libellé vide.
+      id: "challenger",
+      league: null,
+      division: "",
+      name: { fr: "Prétendant", en: "Challenger" },
+      position: 1,
+      active: true,
+      bands: [],
+    },
+  ];
+
+  const namesIn = (locale: string, messages: typeof deMessages) => {
+    render(
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <RankingCalculator ladder={named} />
+      </NextIntlClientProvider>,
+    );
+    return within(screen.getByRole("group", { name: /Liga|Ligue|League/ }))
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+  };
+
+  it("rend l'allemand à un lecteur allemand", () => {
+    expect(namesIn("de", deMessages)).toEqual(["Meisterliga", "Challenger"]);
+  });
+
+  it("garde le français et l'anglais tels qu'ils étaient", () => {
+    expect(namesIn("fr", frMessages as unknown as typeof deMessages)).toEqual([
+      "Ligue des maîtres",
+      "Prétendant",
+    ]);
+    cleanup();
+    expect(namesIn("en", enMessages as unknown as typeof deMessages)).toEqual([
+      "Masters League",
+      "Challenger",
+    ]);
   });
 });
