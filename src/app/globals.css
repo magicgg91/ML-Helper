@@ -7045,7 +7045,13 @@ span.tool-share-dot.tool-share-stuff {
    --------------------------------------------------------------------- */
 .tool-page-head,
 .further-reading {
-  width: min(75rem, calc(100% - 2rem));
+  /* Bloc 139/D bis : la même largeur que tout le reste de la colonne — 74rem,
+     celle de `.public-main`, du bandeau des paramètres du joueur et des deux
+     bandeaux de sélection alignés au point D. Ces deux blocs-ci étaient restés
+     à 75rem, donc leur texte commençait 8 px à gauche du bord des cartes qui
+     les encadrent (mesuré à 1440 px : 1200 contre 1184). Largeur seule : la
+     marge, et avec elle la hauteur de la colonne, ne bouge pas. */
+  width: min(74rem, calc(100% - 2rem));
   margin: 0 auto;
 }
 .tool-page-head {

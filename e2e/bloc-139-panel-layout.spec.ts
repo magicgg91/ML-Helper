@@ -163,25 +163,41 @@ test("Bloc 139/D: both selection bands are exactly as wide as the content around
   await page.setViewportSize({ width: 1440, height: 1100 });
 
   // Le bandeau des catégories d'outils, entre le bandeau des paramètres du
-  // joueur et le contenu de l'outil.
+  // joueur et le contenu de l'outil — et, avec eux, l'en-tête de page (fil
+  // d'Ariane et titre), resté 16 px plus large que le reste jusqu'à ce que le
+  // porteur du projet demande la colonne parfaitement homogène.
+  //
+  // « Aller plus loin » partage la même règle CSS que cet en-tête, mais ne se
+  // mesure pas : `furtherReading` (src/lib/site-highlights.ts) est vide à la
+  // livraison, donc la section ne rend rien nulle part — ici, en dev ou en
+  // production. Elle est donc lue si elle existe, et le jour où cette table
+  // sera remplie ce cas la couvrira sans retouche ; en attendant, c'est
+  // l'épingle CSS (reference-styles.test.ts) qui tient sa largeur.
   await page.goto("/tools/villes");
   const tools = await page.evaluate(() => {
-    const width = (selector: string) =>
-      document.querySelector(selector)!.getBoundingClientRect().width;
+    const width = (selector: string) => {
+      const element = document.querySelector(selector);
+      return element ? element.getBoundingClientRect().width : null;
+    };
     return {
       band: width(".selection-banner"),
-      main: width("main.public-main"),
       panel: width(".player-settings"),
+      head: width(".tool-page-head"),
+      furtherReading: width(".further-reading"),
+      main: width("main.public-main")!,
     };
   });
-  expect(
-    Math.abs(tools.band - tools.main),
-    "tools band vs main",
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(tools.band - tools.panel),
-    "tools band vs panel",
-  ).toBeLessThanOrEqual(1);
+  // Les trois qui rendent toujours : leur absence est un échec, pas un saut.
+  for (const name of ["band", "panel", "head"] as const) {
+    expect(tools[name], `${name} missing`).not.toBeNull();
+  }
+  for (const [name, measured] of Object.entries(tools)) {
+    if (measured === null) continue;
+    expect(
+      Math.abs(measured - tools.main),
+      `${name} vs main`,
+    ).toBeLessThanOrEqual(1);
+  }
 
   // Le bandeau des référentiels : même composant, même page-type, même règle.
   await page.goto("/referentiels/level-up");

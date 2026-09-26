@@ -1537,6 +1537,9 @@ describe("Bloc 139: matrix field proportions, and the band's column width", () =
     const column = widthOf("\\.public-main,\\n\\.player-settings");
     expect(column).toBe("min(74rem, calc(100% - 2rem))");
     expect(widthOf("\\.selection-banner")).toBe(column);
+    // D bis : l'en-tête de page et « Aller plus loin » étaient les deux
+    // derniers blocs restés à 75rem. La colonne n'a plus qu'une largeur.
+    expect(widthOf("\\.tool-page-head,\\n\\.further-reading")).toBe(column);
   });
 
   it("D: leaves the band's height alone — only its width changed", () => {
