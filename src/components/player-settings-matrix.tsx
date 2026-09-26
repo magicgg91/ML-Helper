@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { NumberStepper } from "./number-stepper";
-import { selectOnFocus } from "../lib/utils";
 import type { SkillKey } from "../lib/player-settings";
 
 /**
@@ -71,23 +70,34 @@ function NotApplicable() {
 }
 
 /**
- * Le champ du mobile : pas de boutons − / +, parce qu'à cette largeur ils
- * prennent la place du chiffre et qu'un tap sur le champ ouvre de toute façon
- * le clavier. `inputMode` suit le pas : « numeric » n'offre pas de séparateur
- * décimal sur iOS, et un champ dont le pas est 0,5 doit pouvoir recevoir 12,5.
+ * Le champ d'une case, avec ou sans ses boutons − / +.
+ *
+ * Le mobile les retire : à cette largeur ils prennent la place du chiffre, et
+ * un tap sur le champ ouvre le clavier de toute façon. Mais il garde le reste
+ * du `NumberStepper` — le brouillon de saisie et le bornage à la validation —
+ * plutôt que de rendre un `<input>` nu : `min` et `max` ne contraignent pas ce
+ * qu'on tape, et une coercition à chaque frappe mange le séparateur décimal
+ * (revue Codex ; « 12, » redevenait « 12 », donc 12,5 était intapable).
+ *
+ * `inputMode` suit le pas : « numeric » n'offre pas de séparateur décimal sur
+ * iOS, et un champ dont le pas est 0,5 doit pouvoir recevoir 12,5.
  */
-export function PlainNumberField({ cell }: { cell: MatrixCell }) {
+export function MatrixField({
+  buttons,
+  cell,
+}: {
+  buttons: boolean;
+  cell: MatrixCell;
+}) {
   return (
-    <input
-      aria-label={cell.label}
-      className="player-matrix-input"
+    <NumberStepper
+      buttons={buttons}
       inputMode={Number.isInteger(cell.step) ? "numeric" : "decimal"}
+      label={cell.label}
       max={cell.max}
       min={cell.min}
-      onChange={(event) => cell.onChange(Number(event.target.value) || 0)}
-      onFocus={selectOnFocus}
+      onChange={cell.onChange}
       step={cell.step}
-      type="number"
       value={cell.value}
     />
   );
@@ -128,14 +138,7 @@ export function PlayerSettingsMatrix({
               <td key={columns[index].key}>
                 {cell ? (
                   <>
-                    <NumberStepper
-                      label={cell.label}
-                      max={cell.max}
-                      min={cell.min}
-                      onChange={cell.onChange}
-                      step={cell.step}
-                      value={cell.value}
-                    />
+                    <MatrixField buttons cell={cell} />
                     {cell.percent !== undefined && (
                       <output
                         className={`player-matrix-percent tone-${row.key}`}
@@ -192,7 +195,19 @@ export function PlayerSettingsMatrixMobile({
         {columns.map((column, columnIndex) => (
           <tr key={column.key}>
             <th scope="row">
-              <span className="player-matrix-mobile-name">{column.label}</span>
+              {/*
+                Revue Codex : l'abréviation à l'écran, le nom entier pour qui
+                écoute. La colonne fait 92 px — la largeur que demande la
+                maquette — et « Bergungsexperte » y mesure 99 px : mesuré au
+                navigateur en allemand, le nom entier sortait de sa cellule et
+                passait sous le premier champ. C'est aussi l'abréviation que
+                portent déjà les étiquettes du panneau replié et les cinq
+                champs de templiers, à cette largeur.
+              */}
+              <span aria-hidden="true" className="player-matrix-mobile-name">
+                {column.short}
+              </span>
+              <span className="sr-only">{column.label}</span>
               <output className="player-matrix-mobile-total">
                 {column.total}%
               </output>
@@ -203,7 +218,7 @@ export function PlayerSettingsMatrixMobile({
                 <td key={row.key}>
                   {cell ? (
                     <>
-                      <PlainNumberField cell={cell} />
+                      <MatrixField buttons={false} cell={cell} />
                       {cell.percent !== undefined && (
                         <output
                           className={`player-matrix-percent tone-${row.key}`}

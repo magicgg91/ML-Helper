@@ -1444,6 +1444,9 @@ select:where(:not(.admin-shell select)) {
   display: block;
   font-size: 0.78rem;
   font-weight: 700;
+  /* Ceinture et bretelles : même une abréviation inattendue reste dans sa
+     colonne plutôt que de passer sous le champ voisin. */
+  overflow-wrap: anywhere;
 }
 .player-matrix-mobile-total {
   display: block;
@@ -1456,19 +1459,15 @@ select:where(:not(.admin-shell select)) {
   vertical-align: top;
 }
 /* Un champ simple, sans boutons − / + : à cette largeur ils mangeaient le
-   chiffre, et un tap sur le champ ouvre le clavier de toute façon. */
-.player-matrix-input {
-  width: 100%;
-  min-height: 2.5rem;
-  text-align: center;
-  /* Les flèches natives du champ numérique prennent la place du chiffre à
-     cette largeur, et elles sont intapables au doigt — le stepper les cachait
-     déjà de son côté. */
-  appearance: textfield;
+   chiffre, et un tap sur le champ ouvre le clavier de toute façon. Il garde la
+   mécanique du stepper (brouillon, bornage), donc aussi ses flèches natives
+   masquées — voir `.number-stepper input`. */
+.number-stepper-plain {
+  grid-template-columns: minmax(0, 1fr);
 }
-.player-matrix-input::-webkit-inner-spin-button,
-.player-matrix-input::-webkit-outer-spin-button {
-  appearance: none;
+.number-stepper-plain input {
+  min-height: 2.5rem;
+  border-radius: 0.55rem;
 }
 .player-points-bar {
   display: flex;
@@ -1565,7 +1564,8 @@ select:where(:not(.admin-shell select)) {
     display: block;
     text-align: center;
   }
-}.city-calculators {
+}
+.city-calculators {
   margin-top: 2rem;
 }
 .calculator-tabs {

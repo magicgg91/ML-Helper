@@ -15,7 +15,7 @@ import { useNarrowViewport } from "./use-narrow-viewport";
 import { formatGameNumber, formatSkillPercentValue } from "../lib/format";
 import { templarRates } from "../lib/gems-templars";
 import {
-  PlainNumberField,
+  MatrixField,
   PlayerSettingsMatrix,
   PlayerSettingsMatrixMobile,
   type MatrixCell,
@@ -140,8 +140,13 @@ export function selectedRungOf(
   rungs: LeagueLadder,
   settings: Pick<PlayerSettings, "league" | "division">,
 ): LeagueRung | undefined {
+  // Revue Codex : un échelon « libre » n'a pas de ligue de base (`null`), et
+  // c'est une chaîne vide qui est stockée pour lui — comparer les deux sans
+  // les ramener à la même forme dé-sélectionnait le bouton dans la foulée du
+  // clic.
   const stored = rungs.find(
-    (rung) => rung.id === settings.division && rung.league === settings.league,
+    (rung) =>
+      rung.id === settings.division && (rung.league ?? "") === settings.league,
   );
   if (stored) return stored;
   if (!settings.league) return undefined;
@@ -553,17 +558,7 @@ export function PlayerSettingsPanel({
                     </span>
                     {/* Et, pour la même raison de largeur, le champ perd ses
                         boutons − / + sur mobile, comme ceux de la matrice. */}
-                    {narrow ? (
-                      <PlainNumberField cell={cell} />
-                    ) : (
-                      <NumberStepper
-                        label={cell.label}
-                        max={cell.max}
-                        min={cell.min}
-                        onChange={cell.onChange}
-                        value={cell.value}
-                      />
-                    )}
+                    <MatrixField buttons={!narrow} cell={cell} />
                   </label>
                 );
               })}

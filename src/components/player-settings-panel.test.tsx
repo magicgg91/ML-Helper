@@ -682,6 +682,37 @@ describe("Bloc 123: the rung picker", () => {
     ).toHaveAttribute("aria-pressed", "false");
   });
 
+  /**
+   * Revue Codex : un échelon « libre » — publié sans ligue de base, avec un nom
+   * à lui — est proposé par le sélecteur, et `selectRung` enregistre alors une
+   * ligue vide. La comparaison de relecture opposait `null` à `""` : le bouton
+   * se dé-sélectionnait dans la foulée du clic.
+   */
+  it("keeps a free-named rung selected after it is picked", async () => {
+    const withFree: LeagueLadder = [
+      ...split,
+      {
+        id: "studio-cup",
+        league: null,
+        division: "",
+        name: { fr: "Coupe du studio" },
+        position: 4,
+        active: true,
+        bands: [],
+      },
+    ];
+    panel(withFree);
+    clickRung("Coupe du studio");
+    await waitFor(() =>
+      expect(
+        within(rungGroup()).getByRole("button", { name: "Coupe du studio" }),
+      ).toHaveAttribute("aria-pressed", "true"),
+    );
+    expect(document.querySelector(".player-league-pill")).toHaveTextContent(
+      "Coupe du studio",
+    );
+  });
+
   it("carries no separate division control any more", () => {
     panel(split);
     // Le `<select>` du Bloc 108/E a fusionné dans le groupe ci-dessus ; il
@@ -862,6 +893,27 @@ describe("Bloc 123: the narrow layout", () => {
     expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(10);
   });
 
+  /**
+   * Revue Codex : la colonne d'en-têtes fait 92 px — la largeur de la maquette
+   * — et le nom entier d'une compétence n'y tient pas dans toutes les langues
+   * (« Bergungsexperte » : 99 px, mesuré au navigateur). L'abréviation est
+   * affichée, le nom entier reste le nom accessible de la ligne.
+   */
+  it("shows the abbreviation, and keeps the full name for a screen reader", () => {
+    panel();
+    const header = document.querySelector(
+      '.player-matrix-mobile tbody th[scope="row"]',
+    )!;
+    expect(
+      header.querySelector(".player-matrix-mobile-name"),
+    ).toHaveTextContent("Atq");
+    expect(header.querySelector(".player-matrix-mobile-name")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(header.querySelector(".sr-only")).toHaveTextContent("Attaque");
+  });
+
   it("drops the − / + buttons, which do not fit, and keeps a numeric keypad", () => {
     panel();
     expect(
@@ -889,6 +941,41 @@ describe("Bloc 123: the narrow layout", () => {
       expect(percentOf("points", "striker")).toHaveTextContent("4%"),
     );
     expect(chip("striker")).toHaveTextContent("24%");
+  });
+
+  /**
+   * Revue Codex : sans les boutons, plus rien ne bornait la saisie — `min` et
+   * `max` ne contraignent pas ce qu'on tape, et la valeur partait telle quelle
+   * en base. Un temple négatif ou cinquante templiers traversaient ensuite tous
+   * les calculateurs. Et la coercition à chaque frappe mangeait le séparateur
+   * décimal : « 12, » redevenait « 12 », donc 12,5 était intapable.
+   */
+  it("clamps what is typed, and lets a decimal be typed at all", async () => {
+    panel();
+    const temple = screen.getByLabelText("Temple Or");
+    fireEvent.change(temple, { target: { value: "-10" } });
+    fireEvent.blur(temple);
+    expect(temple).toHaveValue(0);
+
+    const templars = screen.getByLabelText("Templiers Attaque");
+    fireEvent.change(templars, { target: { value: "50" } });
+    fireEvent.blur(templars);
+    expect(templars).toHaveValue(20);
+
+    // Le brouillon de saisie — celui qui laisse taper « 12, » avant le 5 — est
+    // celui du stepper, éprouvé dans `number-stepper.test.tsx` (Bloc 34/C) :
+    // jsdom refuse « 12. » dans un champ numérique, donc c'est là qu'il se
+    // teste, pas ici. Ce qui compte ici, c'est que la valeur décimale arrive
+    // entière jusqu'au stockage.
+    const equipment = screen.getByLabelText("Attaque avec équipement");
+    fireEvent.change(equipment, { target: { value: "12.5" } });
+    fireEvent.blur(equipment);
+    expect(equipment).toHaveValue(12.5);
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).toContain(
+        '"striker":12.5',
+      ),
+    );
   });
 
   it("puts the points budget above the table, where the row header used to be", () => {
