@@ -34,6 +34,19 @@
 -- sans ligue de base : ordre conservé, plages intactes, `active: false`
 -- conservé, un renommage français seul donnant `{"fr": "…"}` et une paire
 -- complète `{"fr": "…", "en": "…"}`.
+--
+-- La réécriture ne touche QUE la forme tableau (revue Codex, PR #160). Une
+-- installation qui n'a pas ré-enregistré son échelle depuis le Bloc 108 stocke
+-- encore la forme objet — une clé par ligue, ses plages en valeur — que
+-- `parseLeagueLadder` sait lire. `json_each` y itère les *valeurs* : sans cette
+-- garde, l'agrégation rendait un tableau de tableaux de plages, l'analyseur
+-- n'y reconnaissait plus aucun échelon, et le site public retombait sur les
+-- six ligues livrées — les seuils et les récompenses configurés disparus, sans
+-- un mot. Reproduit sur une base jetable avant d'être corrigé.
+--
+-- Cette forme est donc laissée telle quelle : l'analyseur la migre à la
+-- lecture, comme il le fait depuis le Bloc 108, et le prochain enregistrement
+-- la réécrit en tableau. Seule la clé de la ligne change pour elle.
 
 UPDATE "reference_tables"
 SET "rows" = (
@@ -73,7 +86,8 @@ SET "rows" = (
   )
   FROM json_each("reference_tables"."rows")
 )
-WHERE "key" = 'ranking_leagues';
+WHERE "key" = 'ranking_leagues'
+  AND json_type("rows") = 'array';
 
 -- Le renommage ne s'applique que s'il ne heurte pas une ligne existante :
 -- `reference_tables.key` est unique, et une installation qui aurait déjà les
