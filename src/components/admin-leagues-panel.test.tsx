@@ -121,18 +121,14 @@ describe("Bloc 119: the Classement editor", () => {
     await waitFor(() => expect(request).toHaveBeenCalled());
     expect(request.mock.calls[0][0]).toBe("/api/admin/config/leagues");
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
-    expect(
-      body.map((entry: { id: string; position: number }) => entry),
-    ).toMatchObject([
-      { id: "bronze", position: 0 },
-      { id: "silver", position: 1 },
+    expect(body).toMatchObject([
+      { id: "bronze", position: 0, league: "bronze", active: true },
+      { id: "silver", position: 1, league: "silver", active: false },
     ]);
-    expect(body[0].bands[0]).toMatchObject({
-      threshold: 10,
-      movement: "promotion",
-      target: "silver",
-      rewards: [{ type: "sapphires", quantity: 300 }],
-    });
+    // Bloc 137 : l'identité seule part d'ici. Les plages sont le classement,
+    // donc le paramètre de l'outil, et c'est son écran qui les envoie — la route
+    // reporte cette liste sur les plages déjà stockées.
+    expect(body[0]).not.toHaveProperty("bands");
   });
 
   it("moves a rung from the ⋯ menu, keyboard and all", async () => {
@@ -188,39 +184,6 @@ describe("Bloc 119: the Classement editor", () => {
     expect(within(entryList()).getAllByRole("listitem")).toHaveLength(1);
   });
 
-  it("sets a band's movement from three buttons, and clears it on a second click", () => {
-    renderEditor();
-    const group = screen.getAllByRole("radiogroup")[0];
-    const promotion = within(group).getByRole("radio", { name: "Montée" });
-    expect(promotion).toHaveAttribute("aria-checked", "true");
-    fireEvent.click(promotion);
-    // A band with no confirmed movement is a real state.
-    expect(promotion).toHaveAttribute("aria-checked", "false");
-    fireEvent.click(within(group).getByRole("radio", { name: "Descente" }));
-    expect(
-      within(group).getByRole("radio", { name: "Descente" }),
-    ).toHaveAttribute("aria-checked", "true");
-  });
-
-  it("refuses to save a band whose movement has no target", async () => {
-    const request = renderEditor();
-    const group = screen.getAllByRole("radiogroup")[0];
-    // Clear the target while the movement stays set.
-    fireEvent.change(screen.getByLabelText("Bronze ligne 1 Ligue cible"), {
-      target: { value: "" },
-    });
-    expect(
-      within(group).getByRole("radio", { name: "Montée" }),
-    ).toHaveAttribute("aria-checked", "true");
-    save();
-    expect(
-      await screen.findByText(
-        "Mouvement et cible doivent être confirmés ensemble.",
-      ),
-    ).toBeInTheDocument();
-    expect(request).not.toHaveBeenCalled();
-  });
-
   it("adds a rung, selects it, and leaves it hidden until somebody says otherwise", () => {
     renderEditor();
     fireEvent.click(
@@ -246,71 +209,31 @@ describe("Bloc 119: the Classement editor", () => {
  * L'écran est un maître/détail : le refus doit donc ouvrir l'entrée, poser
  * le curseur sur le champ, et l'entourer. Les trois sont tenus ici.
  */
+/**
+ * Bloc 131/C, recoupé au Bloc 137 : ce qui empêche l'enregistrement, et où.
+ *
+ * Ce panneau ne valide plus que l'identité d'un échelon — les seuils et les
+ * récompenses sont validés par l'écran de l'outil Classement, et leurs cas ont
+ * suivi dans `admin-ranking-editor.test.tsx`. La mécanique est la même : le
+ * bandeau nomme, le champ est entouré, le curseur y va, et l'échelon fautif
+ * s'ouvre même si ce n'est pas celui qu'on regarde.
+ */
 describe("Bloc 131/C — dire où l'enregistrement coince", () => {
-  const threshold = (row: number) =>
-    screen.getByLabelText(new RegExp(`ligne ${row} Seuil`));
   const league = () => screen.getByLabelText(/ligue de base/);
   const banner = () => screen.getByRole("status");
-  /** Tout ce que `aria-describedby` rattache au champ, mis bout à bout. */
-  const describedBy = (field: HTMLElement) =>
-    (field.getAttribute("aria-describedby") ?? "")
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((id) => document.getElementById(id)?.textContent ?? "")
-      .join(" ");
-
-  it("n'envoie rien et nomme l'entrée, la plage et le champ", async () => {
-    const request = renderEditor();
-    fireEvent.change(threshold(1), { target: { value: "150" } });
-    save();
-    await waitFor(() =>
-      expect(banner()).toHaveTextContent(
-        "Enregistrement impossible : un champ à corriger. Bronze ligne 1 Seuil (%) : Entre 0 et 100 requis.",
-      ),
-    );
-    expect(request).not.toHaveBeenCalled();
-  });
-
-  it("entoure le champ fautif, y met le curseur et dit pourquoi", async () => {
-    renderEditor();
-    fireEvent.change(threshold(1), { target: { value: "0" } });
-    save();
-    const field = threshold(1);
-    await waitFor(() => expect(field).toHaveAttribute("aria-invalid", "true"));
-    expect(field).toHaveClass("border-admin-danger-ink");
-    expect(field).toHaveFocus();
-    // La raison est rattachée au champ, pas seulement posée à côté. Le
-    // seuil est décrit par deux éléments — son unité « % » et son erreur —
-    // et `aria-describedby` les liste tous les deux.
-    expect(describedBy(field)).toContain("Entre 0 et 100 requis.");
-  });
-
-  // « Envisage d'indiquer les autres aussi » : ils le sont tous, et le
-  // compte du bandeau le dit.
-  it("signale tous les champs fautifs, pas seulement le premier", async () => {
-    renderEditor();
-    fireEvent.change(threshold(1), { target: { value: "150" } });
-    fireEvent.change(threshold(2), { target: { value: "-4" } });
-    save();
-    await waitFor(() =>
-      expect(banner()).toHaveTextContent("2 champs à corriger"),
-    );
-    expect(threshold(1)).toHaveAttribute("aria-invalid", "true");
-    expect(threshold(2)).toHaveAttribute("aria-invalid", "true");
-  });
-
   /**
    * Le cas qui rendait le refus muet : le champ fautif est dans une entrée
    * que le volet de droite ne montre pas. Le refus l'ouvre.
    */
   it("ouvre l'entrée fautive quand ce n'est pas celle qu'on regarde", async () => {
-    // L'échelle de départ porte le seuil hors plage plutôt qu'une saisie :
+    // L'échelle de départ porte le défaut plutôt qu'une saisie :
     // `useSearchParams` est figé par le mock, donc la seule façon d'ouvrir
-    // Argent est de partir d'elle — et la plage de Bronze n'est alors plus
-    // atteignable à l'écran.
+    // Argent est de partir d'elle — et le champ de Bronze n'est alors plus
+    // atteignable à l'écran. Bloc 137 : le défaut est une identité vide (ni
+    // ligue de base ni nom libre), la seule chose que ce panneau valide.
     search = "rung=silver";
     const broken = structuredClone(ladder);
-    broken[0].bands[0].threshold = 150;
+    broken[0].league = null;
     renderEditor(broken);
     expect(screen.getByRole("heading", { name: "Argent" })).toBeInTheDocument();
     replace.mockClear();
@@ -339,25 +262,11 @@ describe("Bloc 131/C — dire où l'enregistrement coince", () => {
     expect(league()).toHaveFocus();
   });
 
-  it("refuse un mouvement sans cible, sur la paire entière", async () => {
-    renderEditor();
-    fireEvent.change(screen.getByLabelText(/ligne 1 Ligue cible/), {
-      target: { value: "" },
-    });
-    save();
-    await waitFor(() =>
-      expect(banner()).toHaveTextContent(
-        "Mouvement et cible doivent être confirmés ensemble.",
-      ),
-    );
-    const group = screen.getByRole("radiogroup", { name: /ligne 1 Mouvement/ });
-    expect(group).toHaveAttribute("aria-invalid", "true");
-    expect(group).toHaveClass("border-admin-danger-ink");
-  });
-
   it("enregistre sans rien signaler quand tout est bon", async () => {
     const request = renderEditor();
-    fireEvent.change(threshold(1), { target: { value: "12" } });
+    fireEvent.change(screen.getByLabelText(/division$/), {
+      target: { value: "1" },
+    });
     save();
     await waitFor(() => expect(request).toHaveBeenCalled());
     expect(document.querySelectorAll('[aria-invalid="true"]')).toHaveLength(0);
@@ -367,10 +276,10 @@ describe("Bloc 131/C — dire où l'enregistrement coince", () => {
   // les valeurs qu'elles visaient.
   it("efface les marques quand on revient aux valeurs enregistrées", async () => {
     renderEditor();
-    fireEvent.change(threshold(1), { target: { value: "150" } });
+    fireEvent.change(league(), { target: { value: "" } });
     save();
     await waitFor(() =>
-      expect(threshold(1)).toHaveAttribute("aria-invalid", "true"),
+      expect(league()).toHaveAttribute("aria-invalid", "true"),
     );
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
     await waitFor(() =>

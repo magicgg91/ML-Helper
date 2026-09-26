@@ -2481,6 +2481,121 @@ async function b135OpenLeagues(page: Page) {
   ).toHaveAttribute("aria-expanded", "true");
 }
 
+/**
+ * Bloc 137 : les deux moitiés de l'échelle, sur leurs deux écrans, par la base.
+ *
+ * Constat du porteur de projet : en éditant l'outil Classement on arrivait sur
+ * Configuration › Ligues et divisions, avec la possibilité de créer des ligues,
+ * là où il ne devait y avoir que les boutons des divisions existantes et la
+ * gestion du classement. La faute était la découpe du Bloc 135, qui avait
+ * emporté les plages de fin de saison avec la liste des échelons.
+ *
+ * Les tests unitaires tiennent la règle sur l'arbre des sources et la fusion par
+ * champs. Ce scénario est le seul à prouver l'aller-retour réel : deux écrans,
+ * une seule ligne en base, et aucun des deux n'efface le travail de l'autre.
+ */
+test("Bloc 137: the ranking lives on the tool's screen, the list in Configuration", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  // --- Le tableau Outils mène à l'écran de l'outil, pas à Configuration.
+  await page.goto("/admin/tools");
+  const row = page.locator("tr", { hasText: "Classement" }).last();
+  await expect(
+    row.getByRole("link", { name: /^(Modifier|Edit)$/ }),
+  ).toHaveAttribute("href", "/admin/tools/ranking");
+
+  // --- L'écran du classement : des boutons, des plages, et rien pour créer.
+  await page.goto("/admin/tools/ranking");
+  const rungs = page.getByRole("group", {
+    name: /Ligue ou division|League or division/,
+  });
+  await expect(rungs.getByRole("button")).toHaveText([
+    "Bronze",
+    "Argent",
+    "Or",
+    "Platine",
+    "Diamant",
+    "Légende",
+  ]);
+  for (const name of [
+    /Ajouter une ligue/,
+    /Supprimer l’entrée/,
+    /^Monter/,
+    /^Descendre/,
+  ])
+    await expect(
+      page.getByRole("button", { name }),
+      `${name} n'a rien à faire sur l'écran de l'outil`,
+    ).toHaveCount(0);
+  // Une plage ajoutée ici, et son seuil réglé. Ajoutée plutôt que trouvée : ce
+  // scénario ne doit pas dépendre de ce que la base semée donne à Bronze.
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  const before = await page.getByRole("radiogroup").count();
+  await page.getByRole("button", { name: "Ajouter une plage" }).click();
+  await expect(page.getByRole("radiogroup")).toHaveCount(before + 1);
+  const lastThreshold = () => page.getByLabel(/ligne \d+ Seuil/).last();
+  await lastThreshold().fill("7");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+
+  // --- Configuration : la liste, aucun seuil, et un renvoi vers l'outil.
+  await b135OpenLeagues(page);
+  await expect(
+    ligues(page).getByRole("button", {
+      name: /Ajouter une ligue ou une division/,
+    }),
+  ).toBeVisible();
+  await expect(ligues(page).getByLabel(/Seuil/)).toHaveCount(0);
+  await expect(
+    ligues(page).getByRole("link", { name: /Ouvrir Outils . Classement/ }),
+  ).toHaveAttribute("href", "/admin/tools/ranking");
+
+  // --- Le croisement, qui est tout l'enjeu : renommer ici ne doit pas effacer
+  // le seuil réglé là-bas.
+  await page.getByLabel("Bronze (rang 1) division").fill("I");
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
+  await page.goto("/admin/tools/ranking");
+  await rungs.getByRole("button", { name: "Bronze I", exact: true }).click();
+  await expect(lastThreshold()).toHaveValue("7");
+
+  // --- Et l'inverse : régler un seuil ne doit pas défaire le renommage.
+  await lastThreshold().fill("9");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await b135OpenLeagues(page);
+  await expect(page.getByLabel("Bronze I (rang 1) division")).toHaveValue("I");
+
+  // --- Remise en état : cette suite tourne en série sur une seule base.
+  await page.getByLabel("Bronze I (rang 1) division").fill("");
+  await ligues(page)
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(
+    ligues(page).getByText("Modifications enregistrées."),
+  ).toBeVisible();
+  await page.goto("/admin/tools/ranking");
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  await page
+    .getByRole("button", { name: /^Supprimer Plage \d+ de Bronze$/ })
+    .last()
+    .click();
+  await expect(page.getByRole("radiogroup")).toHaveCount(before);
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+});
+
 // Bloc 108/A+B+C+D+G: the whole point of the bloc, in one browser pass — an
 // admin creates a division that did not exist, orders it, switches it on, and
 // the public page picks it up with its League Lock computed. Unit tests drive
@@ -3082,45 +3197,45 @@ test("Bloc 90/A: Configuration tab restricted to admin/super_admin", async ({
   const tools = await toolsContext.newPage();
   await b90Login(tools, "b90-tools", "role-test-password");
   /**
-   * Bloc 135 : « Gestion Outils » entre désormais dans Configuration — et
-   * n'y voit qu'une chose.
+   * Bloc 137 : « Gestion Outils » n'entre plus dans Configuration — et garde
+   * exactement le droit qu'il avait.
    *
-   * Il éditait l'échelle des ligues et des divisions quand elle vivait sur
-   * /admin/tools/ranking, sous `calculators.write` ; la déplacer ne devait
-   * pas lui retirer ce droit. Lui donner `configuration.read` lui aurait
-   * ouvert les langues du site et la sélection de l'accueil, d'où une
-   * capacité à part, `leagues.read`, et une garde par section.
+   * Le Bloc 135 l'y avait fait entrer par une capacité à part, parce que le CRUD
+   * des ligues y avait atterri en entier, plages de fin de saison comprises —
+   * or ces plages sont le classement, qu'il éditait sur l'écran de l'outil sous
+   * `calculators.write`. Elles y sont revenues, donc ce rôle retrouve son droit
+   * là où il était, et cet écran redevient fermé pour lui comme au Bloc 90/A.
    *
-   * Ce que le Bloc 90/A protégeait reste protégé, et c'est ce que la suite
-   * vérifie : les langues restent hors de portée, à l'écran comme par une
-   * requête forgée.
+   * Les deux moitiés sont vérifiées ici : la porte de Configuration est close (à
+   * l'écran comme par une requête forgée), et celle du classement est ouverte.
    */
   await expect(tools.getByRole("link", { name: "Configuration" })).toHaveCount(
-    1,
+    0,
   );
-  const allowed = await tools.goto("/admin/config");
-  expect(allowed?.status()).toBe(200);
-  await expect(tools.getByRole("button", { name: B135_LEAGUES })).toBeVisible();
-  for (const section of [
-    /^(Mis en avant|Homepage highlights)/,
-    B136_LANGUAGES,
-    B136_TRACKING,
-    B136_PURGE,
-  ])
-    await expect(
-      tools.getByRole("button", { name: section }),
-      `${section} hors de portée de Gestion Outils`,
-    ).toHaveCount(0);
+  const refused = await tools.goto("/admin/config");
+  expect(refused?.status()).toBe(403);
   const forged = await tools.request.patch("/api/admin/config/locales", {
     data: { locale: "de", active: false },
   });
   expect(forged.status()).toBe(403);
-  // Et l'échelle, elle, lui répond : 400 sur un corps vide, pas 403. Un 403
-  // ici voudrait dire que le déplacement lui a retiré un droit qu'il avait.
+  // Et la liste des ligues, elle, lui est fermée aussi : c'est un référentiel du
+  // site, pas un paramètre d'outil.
   const ladder = await tools.request.put("/api/admin/config/leagues", {
+    data: [],
+  });
+  expect(ladder.status()).toBe(403);
+  // Le classement, en revanche, lui répond : 400 sur un corps vide, pas 403. Un
+  // 403 ici voudrait dire que le découpage lui a retiré un droit qu'il avait.
+  const bands = await tools.request.put("/api/admin/tools/ranking", {
     data: {},
   });
-  expect(ladder.status()).toBe(400);
+  expect(bands.status()).toBe(400);
+  // Et son écran s'ouvre.
+  const ranking = await tools.goto("/admin/tools/ranking");
+  expect(ranking?.status()).toBe(200);
+  await expect(
+    tools.getByRole("group", { name: /Ligue ou division|League or division/ }),
+  ).toBeVisible();
   await toolsContext.close();
 });
 

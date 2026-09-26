@@ -47,17 +47,15 @@ export default async function ToolsAdminPage() {
               href: source.href,
               referenceLabel: references(source.reference),
             }
-          : source.kind === "configuration"
-            ? { kind: "configuration", href: source.href }
-            : source.kind === "shared"
-              ? {
-                  kind: "shared",
-                  href: source.href,
-                  sharedCount: source.tools.length,
-                }
-              : source.kind === "own"
-                ? { kind: "own", href: source.href }
-                : { kind: "none" };
+          : source.kind === "shared"
+            ? {
+                kind: "shared",
+                href: source.href,
+                sharedCount: source.tools.length,
+              }
+            : source.kind === "own"
+              ? { kind: "own", href: source.href }
+              : { kind: "none" };
       return {
         id: tool.id,
         slug: tool.slug,
@@ -83,7 +81,6 @@ export default async function ToolsAdminPage() {
         canEdit={can(session.user.role, "calculators.write")}
         canToggle={can(session.user.role, "calculators.toggle")}
         canOpenReferences={canOpenReferences}
-        canOpenConfiguration={can(session.user.role, "leagues.read")}
         hiddenLocales={hiddenLocales}
         languageNames={Object.fromEntries(
           launchLocales.map((code) => [

@@ -2,26 +2,35 @@ import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import {
+  isSavableLadderStructure,
   isSavableLeagueLadder,
   leagueLadderKey,
   parseLeagueLadder,
+  readLeagueLadder,
+  withLadderStructure,
+  type LeagueRungStructure,
 } from "@/lib/leagues";
 import { prisma } from "@/lib/prisma";
 import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 
 /**
- * Bloc 135 : l'échelle des ligues et des divisions, enregistrée depuis
- * Configuration.
+ * Bloc 135, recoupée au Bloc 137 : la **liste** des ligues et des divisions,
+ * enregistrée depuis Configuration.
  *
- * Elle était `/api/admin/tools/ranking`, sous `calculators.write`. Elle est
- * maintenant sous `leagues.write` — une capacité à elle, précisément pour que
- * le rôle « Gestion Outils » garde le droit qu'il avait quand le CRUD vivait
- * sur l'écran d'un outil, sans pour autant hériter du reste de Configuration
- * (langues du site, script de suivi, purge du journal). Voir
- * `auth/permissions.ts`.
+ * Elle n'écrit que l'identité des échelons — quelle ligue de base, quelle
+ * division, quel nom libre, dans quel ordre, publié ou non. Les plages de fin
+ * de saison sont le classement, donc le paramètre de l'outil Classement, et
+ * repassent par `/api/admin/tools/ranking`. Les plages déjà stockées de chaque
+ * échelon sont conservées telles quelles (voir `withLadderStructure`) : sans
+ * cela, réordonner la liste effacerait les seuils.
+ *
+ * Sous `configuration.write`, comme le reste de cet écran. Le Bloc 135 avait
+ * inventé `leagues.write` pour que « Gestion Outils » garde la main sur
+ * l'échelle ; ce rôle édite maintenant le classement depuis l'écran de l'outil,
+ * qui est le droit qu'il exerçait avant, et la capacité à part disparaît.
  */
 export async function PUT(request: Request) {
-  const session = await authorizedSession("leagues.write");
+  const session = await authorizedSession("configuration.write");
   if (!session) return forbiddenResponse();
   try {
     const raw = await request.json();
@@ -32,23 +41,51 @@ export async function PUT(request: Request) {
     // échelon sans rien pour se nommer) raccourcit la liste, et cet écart est
     // un 400 plutôt qu'une échelle à moitié enregistrée.
     if (!Array.isArray(raw)) throw new Error("invalid");
-    const ladder = parseLeagueLadder(raw);
-    if (ladder.length !== raw.length) throw new Error("invalid");
-    raw.forEach((rung, index) => {
-      const bands = (rung as { bands?: unknown }).bands;
-      if (Array.isArray(bands) && bands.length !== ladder[index].bands.length)
-        throw new Error("invalid");
-    });
-    if (!isSavableLeagueLadder(ladder)) throw new Error("invalid");
-    await prisma.$transaction(async (tx) => {
+    // `parseLeagueLadder` reste l'analyseur : il connaît les formes anciennes et
+    // refuse une ligne incomplète. Ce qu'on en garde ici, c'est l'identité — les
+    // plages qu'il aurait lues sont celles de la ligne stockée, pas celles de
+    // cet écran, qui ne les édite plus.
+    const parsed = parseLeagueLadder(raw);
+    if (parsed.length !== raw.length) throw new Error("invalid");
+    // L'ordre de l'écran est celui de la liste reçue, pas les `position` qu'elle
+    // porte. `parseLeagueLadder` trie sur `position` — utile en lecture, où c'est
+    // la seule source d'ordre — mais ici les deux existent, et laisser gagner un
+    // `position` périmé annulerait le glisser-déposer qu'on vient de faire.
+    // `withLadderStructure` renumérote ensuite sur l'index, si bien qu'une seule
+    // notion d'ordre traverse tout le chemin.
+    const order = new Map(
+      (raw as { id?: unknown }[]).map((rung, index) => [rung?.id, index]),
+    );
+    const structure: LeagueRungStructure[] = [...parsed]
+      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+      .map((rung) => ({
+        id: rung.id,
+        league: rung.league,
+        division: rung.division,
+        name: rung.name,
+        position: rung.position,
+        active: rung.active,
+      }));
+    if (!isSavableLadderStructure(structure)) throw new Error("invalid");
+    const ladder = await prisma.$transaction(async (tx) => {
+      // Bloc 137, revue Codex : lire, fusionner et écrire dans une seule
+      // transaction. Chaque échelon repart avec les plages qu'il avait déjà — et
+      // lire avant la transaction laissait une fenêtre où l'écran du Classement,
+      // enregistrant en même temps, partait du même instantané : le second
+      // `upsert` réécrivait la ligne entière et effaçait la moitié de l'autre.
+      const merged = withLadderStructure(await readLeagueLadder(tx), structure);
+      // Ce qui part en base est une échelle entière, donc c'est elle qui doit
+      // tenir : les plages conservées ont été écrites par l'autre écran, mais
+      // c'est cette route qui les renvoie au stockage.
+      if (!isSavableLeagueLadder(merged)) throw new Error("invalid");
       const table = await tx.referenceTable.upsert({
         where: { key: leagueLadderKey },
         create: {
           key: leagueLadderKey,
           columns: ["threshold", "movement", "target", "rewards"],
-          rows: ladder,
+          rows: merged,
         },
-        update: { rows: ladder },
+        update: { rows: merged },
       });
       await tx.auditLog.create({
         data: {
@@ -62,9 +99,10 @@ export async function PUT(request: Request) {
           action: "update",
           entityType: "reference_table",
           entityId: table.id,
-          diff: { after: ladder },
+          diff: { after: merged },
         },
       });
+      return merged;
     });
     // L'échelle nourrit les outils publics — le Classement et le sélecteur de
     // division des Paramètres joueur.

@@ -1,47 +1,52 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   hasRungName,
-  isSavableLeagueLadder,
+  isSavableLadderStructure,
   leagueRungId,
   rungNameForm,
   rungNameLocales,
   rungNameToStore,
-  seasonMovements,
-  seasonRewardTypes,
   type LeagueLadder,
   type LeagueRung,
-  type SeasonMovement,
-  type SeasonRewardType,
+  type LeagueRungStructure,
 } from "@/lib/leagues";
 import { leagues, type League } from "@/lib/player-settings";
 import type { LaunchLocale } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { configurationHref } from "@/lib/admin-sections";
+import { adminToolEditHref } from "@/lib/admin-tools";
 import { useSectionDirty } from "./admin-collapsible-section";
 import { ConfirmDialog } from "./admin-confirm-dialog";
 import { EditorSection } from "./admin-editor-section";
 import { LangTabs } from "./admin-lang-tabs";
-import { NumberField } from "./admin-number-field";
 import { OverflowMenu } from "./admin-overflow-menu";
 import { Pill } from "./admin-pill";
-import { RowActions } from "./admin-row-actions";
 import { VisibilitySwitch } from "./admin-visibility-switch";
 import { leagueRungLabel } from "./league-rung-label";
 import { useEditorForm } from "./use-editor-form";
 import { useUnsavedWarning } from "./use-unsaved-warning";
 
 /**
- * Bloc 135 §2 : les ligues et les divisions, dans Configuration.
+ * Bloc 135 §2, recoupé au Bloc 137 : la **liste** des ligues et des divisions,
+ * dans Configuration.
  *
- * Le même CRUD qu'au Bloc 108, au même endroit que les langues du site et la
- * sélection de l'accueil — parce qu'une division n'appartient pas à l'outil
- * Classement plus qu'aux Gemmes ou à la Progression, et que l'écran d'un outil
- * parmi seize était le seul endroit où en ajouter une.
+ * Au même endroit que les langues du site et la sélection de l'accueil — parce
+ * qu'une division n'appartient pas à l'outil Classement plus qu'aux Gemmes ou à
+ * la Progression, et que l'écran d'un outil parmi seize était le seul endroit
+ * où en ajouter une.
+ *
+ * Bloc 137 : cet écran porte l'identité des échelons — quelle ligue de base,
+ * quelle division, quel nom libre, dans quel ordre, publié ou non — et rien de
+ * plus. Les seuils et récompenses de fin de saison sont *le classement* : ils
+ * sont revenus dans Outils › Classement, l'écran de l'outil dont ils sont le
+ * paramètre. Le Bloc 135 avait emporté les deux, ce qui donnait une création de
+ * ligue là où l'on venait éditer un classement.
  *
  * Bloc 119 §3 bis, conservé : maître et détail. La liste de gauche tient
  * l'échelle entière d'un coup d'œil (visible ou non, combien de plages), la
@@ -50,12 +55,6 @@ import { useUnsavedWarning } from "./use-unsaved-warning";
  * toutes les saisies en cours, parce qu'il y a une seule échelle brouillon
  * derrière les deux volets et un seul enregistrement qui couvre le tout.
  */
-
-type LeagueEditRow = Record<SeasonRewardType, string> & {
-  threshold: string;
-  movement: string;
-  target: string;
-};
 
 /** L'échelle telle que le formulaire la tient : nombres et énumérations en chaînes. */
 type RungDraft = {
@@ -68,21 +67,13 @@ type RungDraft = {
    */
   name: Record<LaunchLocale, string>;
   active: boolean;
-  rows: LeagueEditRow[];
+  /**
+   * Bloc 137 : combien de plages de fin de saison cet échelon porte. En lecture
+   * seule — la liste le dit pour qu'on voie d'un coup d'œil lesquels sont encore
+   * vides, mais les régler se fait dans Outils › Classement.
+   */
+  bandCount: number;
 };
-
-function toEditRow(band: LeagueRung["bands"][number]): LeagueEditRow {
-  const quantity = (type: SeasonRewardType) =>
-    String(band.rewards.find((item) => item.type === type)?.quantity ?? 0);
-  return {
-    threshold: String(band.threshold),
-    movement: band.movement ?? "",
-    target: band.target ?? "",
-    sapphires: quantity("sapphires"),
-    speedups: quantity("speedups"),
-    gems: quantity("gems"),
-  };
-}
 
 function toDraft(rung: LeagueRung): RungDraft {
   return {
@@ -91,7 +82,7 @@ function toDraft(rung: LeagueRung): RungDraft {
     division: rung.division,
     name: rungNameForm(rung.name),
     active: rung.active,
-    rows: rung.bands.map(toEditRow),
+    bandCount: rung.bands.length,
   };
 }
 
@@ -114,7 +105,7 @@ function uniqueRungId(drafts: RungDraft[], seed: Partial<RungDraft>) {
     if (!taken.has(`${base}-${suffix}`)) return `${base}-${suffix}`;
 }
 
-function serialise(drafts: RungDraft[]): LeagueLadder {
+function serialise(drafts: RungDraft[]): LeagueRungStructure[] {
   // Bloc 108/B : l'ordre est une propriété de la liste, pas du moment où une
   // ligne a été insérée — la position d'un échelon est simplement son index.
   return drafts.map((draft, index) => ({
@@ -124,14 +115,6 @@ function serialise(drafts: RungDraft[]): LeagueLadder {
     name: rungNameToStore(draft.name),
     position: index,
     active: draft.active,
-    bands: draft.rows.map((row) => ({
-      threshold: Number(row.threshold),
-      movement: (row.movement || null) as SeasonMovement | null,
-      target: row.target || null,
-      rewards: seasonRewardTypes
-        .map((type) => ({ type, quantity: Number(row[type]) }))
-        .filter((item) => item.quantity > 0),
-    })),
   }));
 }
 
@@ -147,11 +130,7 @@ function serialise(drafts: RungDraft[]): LeagueLadder {
  * données : c'est ce qui permet de le retrouver, de l'entourer et d'y poser
  * le curseur.
  */
-type LeagueField =
-  | { kind: "identity" }
-  | { kind: "threshold"; row: number }
-  | { kind: "movement"; row: number }
-  | { kind: "reward"; row: number; type: SeasonRewardType };
+type LeagueField = { kind: "identity" };
 
 type LeagueProblem = {
   /** L'échelon à ouvrir pour voir le champ. Vide quand rien n'est en cause. */
@@ -163,18 +142,17 @@ type LeagueProblem = {
   where?: string;
 };
 
+/**
+ * Où les plages de fin de saison se règlent depuis le Bloc 137. Lu dans le même
+ * tableau que le lien « Modifier » du tableau Outils, pour que les deux ne
+ * puissent pas diverger.
+ */
+const rankingToolHref = adminToolEditHref("ranking") ?? "/admin/tools";
+
 /** L'adresse d'un champ, pour comparer un problème à ce qu'on est en train de rendre. */
 function fieldKey(rungId: string, field: LeagueField) {
-  const row = "row" in field ? field.row : "";
-  const type = "type" in field ? field.type : "";
-  return `${rungId}|${field.kind}|${row}|${type}`;
+  return `${rungId}|${field.kind}`;
 }
-
-const movementTone: Record<SeasonMovement, string> = {
-  promotion: "border-admin-ok-ink bg-admin-ok text-admin-ok-ink",
-  stay: "border-admin-neutral-ink bg-admin-neutral text-admin-neutral-ink",
-  relegation: "border-admin-danger-ink bg-admin-warn text-admin-danger-ink",
-};
 
 export function AdminLeaguesPanel({
   initialLadder,
@@ -277,47 +255,8 @@ export function AdminLeaguesPanel({
       else if (seen.has(draft.id))
         found.push({ ...identity(), message: t("duplicate-error") });
       seen.add(draft.id);
-
-      draft.rows.forEach((row, index) => {
-        const where = (field: string) =>
-          t("row-label", { league: name, row: index + 1, field });
-        const threshold = Number(row.threshold);
-        if (
-          row.threshold.trim() === "" ||
-          !Number.isFinite(threshold) ||
-          threshold <= 0 ||
-          threshold > 100
-        )
-          found.push({
-            rungId: draft.id,
-            field: { kind: "threshold", row: index },
-            message: t("range-error"),
-            where: where(t("threshold")),
-          });
-        if (Boolean(row.movement) !== Boolean(row.target))
-          found.push({
-            rungId: draft.id,
-            field: { kind: "movement", row: index },
-            message: t("pairing-error"),
-            where: where(t("movement")),
-          });
-        for (const type of seasonRewardTypes) {
-          const quantity = Number(row[type]);
-          if (
-            row[type].trim() === "" ||
-            !Number.isInteger(quantity) ||
-            quantity < 0
-          )
-            found.push({
-              rungId: draft.id,
-              field: { kind: "reward", row: index, type },
-              message: t("integer-error"),
-              where: where(t(`reward-types.${type}`)),
-            });
-        }
-      });
     }
-    if (found.length === 0 && !isSavableLeagueLadder(serialise(entries)))
+    if (found.length === 0 && !isSavableLadderStructure(serialise(entries)))
       found.push({ rungId: "", message: t("validation") });
     return found;
   }
@@ -445,18 +384,11 @@ export function AdminLeaguesPanel({
         // Bloc 108/G : éteint jusqu'à ce qu'une administration en décide
         // autrement — un barreau neuf est en préparation, pas publié.
         active: false,
-        rows: [],
+        bandCount: 0,
       },
     ]);
     select(id);
   }
-
-  // Bloc 108/A : tout échelon présent sur l'échelle est une cible possible,
-  // y compris ceux qu'on est en train de créer dans ce formulaire.
-  const targetOptions = [
-    { value: "", label: t("unconfirmed-option") },
-    ...drafts.map((draft) => ({ value: draft.id, label: label(draft) })),
-  ];
 
   /** Ce que la validation reproche à ce champ de l'échelon ouvert, s'il y a. */
   const problemOn = (field: LeagueField) =>
@@ -479,13 +411,6 @@ export function AdminLeaguesPanel({
   /** La ref à poser sur ce champ, ou rien. */
   const captureFirstInvalid = (field: LeagueField) =>
     isFirstInvalid(field) ? keepFirstInvalid : undefined;
-
-  const setRow = (index: number, patch: Partial<LeagueEditRow>) =>
-    updateDraft(selected.id, {
-      rows: selected.rows.map((row, i) =>
-        i === index ? { ...row, ...patch } : row,
-      ),
-    });
 
   return (
     <div className="flex flex-col gap-6">
@@ -565,7 +490,7 @@ export function AdminLeaguesPanel({
                     {label(draft)}
                   </span>
                   <span className="text-xs text-admin-dim">
-                    {t("band-count", { count: draft.rows.length })}
+                    {t("band-count", { count: draft.bandCount })}
                   </span>
                 </button>
               </li>
@@ -729,261 +654,22 @@ export function AdminLeaguesPanel({
               </div>
             </EditorSection>
 
-            <EditorSection
-              title={t("bands-section")}
-              actions={
-                <AdminButton
-                  type="button"
-                  size="sm"
-                  onClick={() =>
-                    updateDraft(selected.id, {
-                      rows: [
-                        ...selected.rows,
-                        {
-                          threshold: "100",
-                          movement: "",
-                          target: "",
-                          sapphires: "0",
-                          speedups: "0",
-                          gems: "0",
-                        },
-                      ],
-                    })
-                  }
+            <EditorSection title={t("bands-section")}>
+              {/*
+                Bloc 137 : les seuils et récompenses de fin de saison sont le
+                classement, pas le référentiel. Ils se règlent dans l'écran de
+                l'outil ; cette section dit où, et combien cet échelon en porte,
+                pour qu'on ne cherche pas.
+              */}
+              <p className="text-sm text-admin-dim">
+                {t("bands-count-hint", { count: selected.bandCount })}{" "}
+                <Link
+                  className="admin-focus rounded-admin-control font-medium text-admin-text underline"
+                  href={rankingToolHref}
                 >
-                  {t("add")}
-                </AdminButton>
-              }
-            >
-              {selected.rows.length === 0 ? (
-                <p className="text-sm text-admin-dim">{t("empty")}</p>
-              ) : (
-                <div className="overflow-x-auto rounded-admin-card border border-admin-card-border">
-                  <table className="w-full border-collapse text-sm">
-                    <caption className="sr-only">{t("bands-section")}</caption>
-                    <thead className="bg-admin-head">
-                      <tr className="border-b border-admin-rule">
-                        <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
-                          {t("threshold")}
-                        </th>
-                        <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
-                          {t("movement")}
-                        </th>
-                        <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
-                          {t("target")}
-                        </th>
-                        {seasonRewardTypes.map((type) => (
-                          <th
-                            key={type}
-                            className="admin-column-head px-3 py-2 text-right text-admin-dim"
-                          >
-                            {t(`reward-types.${type}`)}
-                          </th>
-                        ))}
-                        <th className="admin-column-head px-3 py-2 text-right text-admin-dim">
-                          {t("row-actions")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selected.rows.map((row, index) => {
-                        const rowLabel = (field: string) =>
-                          t("row-label", {
-                            league: label(selected),
-                            row: index + 1,
-                            field,
-                          });
-                        return (
-                          <tr
-                            key={index}
-                            className="h-[var(--admin-row-h-edit)] border-b border-admin-rule-soft last:border-0"
-                          >
-                            <td className="px-3">
-                              <span className="flex items-center gap-1.5">
-                                <span className="text-xs text-admin-dim">
-                                  {t("top")}
-                                </span>
-                                <NumberField
-                                  label={rowLabel(t("threshold"))}
-                                  hideLabel
-                                  width="s"
-                                  unit="%"
-                                  invalid={Boolean(
-                                    problemOn({
-                                      kind: "threshold",
-                                      row: index,
-                                    }),
-                                  )}
-                                  invalidMessage={problemOn({
-                                    kind: "threshold",
-                                    row: index,
-                                  })}
-                                  fieldRef={captureFirstInvalid({
-                                    kind: "threshold",
-                                    row: index,
-                                  })}
-                                  value={
-                                    row.threshold === ""
-                                      ? null
-                                      : Number(row.threshold)
-                                  }
-                                  onChange={(next) =>
-                                    setRow(index, {
-                                      threshold:
-                                        next === null ? "" : String(next),
-                                    })
-                                  }
-                                />
-                              </span>
-                            </td>
-                            <td className="px-3">
-                              {/* §C : le mouvement et la cible vont par
-                                  paire, et c'est la paire qui est refusée —
-                                  le contour tient donc le groupe entier,
-                                  pas l'un de ses trois boutons. */}
-                              <div
-                                aria-label={rowLabel(t("movement"))}
-                                aria-invalid={
-                                  problemOn({ kind: "movement", row: index })
-                                    ? true
-                                    : undefined
-                                }
-                                aria-describedby={
-                                  problemOn({ kind: "movement", row: index })
-                                    ? `${errorId}-movement-${index}`
-                                    : undefined
-                                }
-                                className={cn(
-                                  "flex gap-1 rounded-admin-control border border-transparent",
-                                  problemOn({
-                                    kind: "movement",
-                                    row: index,
-                                  }) && "border-admin-danger-ink p-1",
-                                )}
-                                role="radiogroup"
-                              >
-                                {seasonMovements.map((movement) => (
-                                  <button
-                                    key={movement}
-                                    ref={
-                                      movement === seasonMovements[0]
-                                        ? captureFirstInvalid({
-                                            kind: "movement",
-                                            row: index,
-                                          })
-                                        : undefined
-                                    }
-                                    type="button"
-                                    role="radio"
-                                    aria-checked={row.movement === movement}
-                                    className={cn(
-                                      "admin-focus rounded-admin-control border px-2 py-1 text-xs font-semibold",
-                                      row.movement === movement
-                                        ? movementTone[movement]
-                                        : "border-admin-card-border text-admin-dim",
-                                    )}
-                                    onClick={() =>
-                                      setRow(index, {
-                                        // Recliquer sur celui qui est choisi
-                                        // l'efface : une plage sans mouvement
-                                        // confirmé est un état réel.
-                                        movement:
-                                          row.movement === movement
-                                            ? ""
-                                            : movement,
-                                      })
-                                    }
-                                  >
-                                    {t(`movements.${movement}`)}
-                                  </button>
-                                ))}
-                              </div>
-                              {problemOn({ kind: "movement", row: index }) && (
-                                <span
-                                  className="block text-xs text-admin-danger-ink"
-                                  id={`${errorId}-movement-${index}`}
-                                >
-                                  {problemOn({ kind: "movement", row: index })}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3">
-                              <select
-                                aria-label={rowLabel(t("target"))}
-                                className="admin-control admin-focus h-9 rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
-                                value={row.target}
-                                onChange={(event) =>
-                                  setRow(index, { target: event.target.value })
-                                }
-                              >
-                                {targetOptions.map((option) => (
-                                  <option
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            {seasonRewardTypes.map((type) => (
-                              <td key={type} className="px-3 text-right">
-                                <NumberField
-                                  label={rowLabel(t(`reward-types.${type}`))}
-                                  hideLabel
-                                  width="s"
-                                  invalid={Boolean(
-                                    problemOn({
-                                      kind: "reward",
-                                      row: index,
-                                      type,
-                                    }),
-                                  )}
-                                  invalidMessage={problemOn({
-                                    kind: "reward",
-                                    row: index,
-                                    type,
-                                  })}
-                                  fieldRef={captureFirstInvalid({
-                                    kind: "reward",
-                                    row: index,
-                                    type,
-                                  })}
-                                  value={
-                                    row[type] === "" ? null : Number(row[type])
-                                  }
-                                  onChange={(next) =>
-                                    setRow(index, {
-                                      [type]: next === null ? "" : String(next),
-                                    })
-                                  }
-                                />
-                              </td>
-                            ))}
-                            <td className="px-3">
-                              <RowActions
-                                // La plage, pas l'un de ses champs (même
-                                // raison que dans l'éditeur Événements).
-                                name={t("band-name", {
-                                  entry: label(selected),
-                                  row: index + 1,
-                                })}
-                                onRemove={() =>
-                                  updateDraft(selected.id, {
-                                    rows: selected.rows.filter(
-                                      (_, i) => i !== index,
-                                    ),
-                                  })
-                                }
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                  {t("bands-elsewhere-link")}
+                </Link>
+              </p>
             </EditorSection>
           </div>
         )}

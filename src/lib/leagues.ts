@@ -1,3 +1,4 @@
+import type { PrismaClient } from "@prisma/client";
 import { prisma } from "./prisma";
 import { leagues, type League, type LeagueSelection } from "./player-settings";
 import {
@@ -596,22 +597,130 @@ export function baseLeagueOf(
 }
 
 /**
- * Si cette échelle peut être stockée telle quelle. Les identifiants doivent
- * être uniques — c'est sur eux que pointent les plages, donc un doublon
- * rendrait une cible ambiguë.
+ * Si cette liste d'échelons peut être stockée telle quelle — ce que Configuration
+ * enregistre. Les identifiants doivent être uniques : c'est sur eux que pointent
+ * les plages, donc un doublon rendrait une cible ambiguë. Et un échelon sans
+ * ligue de base doit porter un nom libre, sinon rien ne le nomme.
+ *
+ * Bloc 137 : séparé de la validation des plages, parce que les deux moitiés de
+ * l'échelle sont enregistrées par deux écrans. Celui de Configuration ne voit
+ * pas les plages et n'a pas à en répondre.
  */
-export function isSavableLeagueLadder(ladder: LeagueLadder): boolean {
-  if (!ladder.length) return false;
+export function isSavableLadderStructure(
+  structure: readonly LeagueRungStructure[],
+): boolean {
+  if (!structure.length) return false;
   const ids = new Set<string>();
-  for (const rung of ladder) {
+  for (const rung of structure) {
     if (!rung.id) return false;
     if (ids.has(rung.id)) return false;
     ids.add(rung.id);
     if (!rung.league && !hasRungName(rung.name)) return false;
-    for (const item of rung.bands)
-      if (item.threshold <= 0 || item.threshold > 100) return false;
   }
   return true;
+}
+
+/**
+ * Si cette échelle entière peut être stockée telle quelle : la liste, plus les
+ * plages. C'est ce que vérifient les **deux** routes après fusion — chacune
+ * n'écrit que sa moitié, mais ce qui part en base est une échelle complète, et
+ * c'est elle qui doit tenir.
+ */
+export function isSavableLeagueLadder(ladder: LeagueLadder): boolean {
+  if (!isSavableLadderStructure(ladderStructure(ladder))) return false;
+  for (const rung of ladder)
+    for (const item of rung.bands)
+      if (item.threshold <= 0 || item.threshold > 100) return false;
+  return true;
+}
+
+/**
+ * Bloc 137 — l'échelle a deux propriétaires, et chacun n'écrit que sa moitié.
+ *
+ * Le Bloc 135 a déplacé l'échelle entière dans Configuration, plages de fin de
+ * saison comprises. C'était couper au mauvais endroit : la **liste** des
+ * échelons est un référentiel du site (qui existe, comment il s'appelle, dans
+ * quel ordre, s'il est public), mais les **plages** sont le classement
+ * lui-même, donc le paramètre de l'outil Classement. Les deux se gèrent
+ * maintenant sur deux écrans.
+ *
+ * Ils partagent une seule ligne de `reference_tables`, d'où ces deux fusions.
+ * Chaque écran renvoie l'état qu'il connaît ; la fusion ne reporte sur la
+ * ligne stockée que les champs dont cet écran est propriétaire. Sans elle, le
+ * dernier à enregistrer écraserait le travail de l'autre : régler des seuils
+ * annulerait un renommage fait entre-temps, et réordonner la liste effacerait
+ * les seuils.
+ *
+ * L'appariement se fait par identifiant, ce qui est sûr parce qu'un
+ * identifiant est engendré une fois et jamais recalculé (voir `leagueRungId`
+ * et `uniqueRungId`) : renommer ou déplacer un échelon ne le change pas.
+ */
+export type LeagueRungStructure = Omit<LeagueRung, "bands">;
+
+/** L'identité des échelons, sans les plages — ce que Configuration édite. */
+export function ladderStructure(ladder: LeagueLadder): LeagueRungStructure[] {
+  // Champ par champ, et non « tout sauf les plages » : `LeagueRungStructure`
+  // étant un `Omit`, le jour où un échelon gagne un champ d'identité, c'est
+  // `tsc` qui rappelle de le faire voyager ici.
+  return orderedLadder(ladder).map((rung) => ({
+    id: rung.id,
+    league: rung.league,
+    division: rung.division,
+    name: rung.name,
+    position: rung.position,
+    active: rung.active,
+  }));
+}
+
+/**
+ * La liste telle que Configuration vient de l'enregistrer, en gardant les
+ * plages déjà stockées de chaque échelon. Un échelon qui vient d'être créé n'en
+ * a aucune ; un échelon supprimé emporte les siennes, ce qui est bien le sens
+ * d'une suppression.
+ */
+export function withLadderStructure(
+  current: LeagueLadder,
+  structure: LeagueRungStructure[],
+): LeagueLadder {
+  const bandsById = new Map(current.map((rung) => [rung.id, rung.bands]));
+  return structure.map((rung, index) => ({
+    ...rung,
+    position: index,
+    bands: bandsById.get(rung.id) ?? [],
+  }));
+}
+
+/** Les plages par identifiant d'échelon — ce que l'outil Classement édite. */
+export function ladderBands(
+  ladder: LeagueLadder,
+): Record<string, SeasonBand[]> {
+  return Object.fromEntries(ladder.map((rung) => [rung.id, rung.bands]));
+}
+
+/**
+ * Les plages telles que l'outil Classement vient de les enregistrer, sur
+ * l'identité et l'ordre déjà stockés.
+ *
+ * Un identifiant que l'échelle ne connaît plus est **ignoré et nommé**, pas
+ * refusé : il désigne un échelon supprimé depuis Configuration pendant que
+ * l'écran du Classement était ouvert. Refuser toute la sauvegarde ferait perdre
+ * au second administrateur un travail qui ne pose aucun problème, et le
+ * ressusciter irait contre la suppression — d'où la troisième voie, appliquer
+ * ce qui existe encore et dire ce qui a été laissé de côté. Un échelon dont
+ * l'écran n'envoie rien garde ses plages : il n'était pas à l'écran, il n'a
+ * rien à perdre.
+ */
+export function withLadderBands(
+  current: LeagueLadder,
+  bands: Record<string, SeasonBand[]>,
+): { ladder: LeagueLadder; ignored: string[] } {
+  const known = new Set(current.map((rung) => rung.id));
+  return {
+    ladder: current.map((rung) =>
+      rung.id in bands ? { ...rung, bands: bands[rung.id] } : rung,
+    ),
+    ignored: Object.keys(bands).filter((id) => !known.has(id)),
+  };
 }
 
 /**
@@ -626,13 +735,30 @@ export const leagueLadderKey = "leagues_divisions";
 /** L'ancienne clé, lue en repli — voir `getLeagueLadder`. */
 const legacyLeagueLadderKey = "ranking_leagues";
 
-export async function getLeagueLadder(): Promise<LeagueLadder> {
+/**
+ * Le client minimal qu'une lecture de l'échelle demande : le client Prisma, ou
+ * celui d'une transaction en cours.
+ *
+ * Bloc 137, revue Codex : les deux routes qui écrivent l'échelle doivent la lire
+ * *dans* leur transaction. Chacune n'écrit que sa moitié en la fusionnant sur ce
+ * qu'elle a lu ; une lecture faite avant la transaction laisse une fenêtre où
+ * deux enregistrements simultanés partent du même instantané, et le second
+ * réécrit la ligne entière — donc défait l'autre moitié, ce que toute la
+ * mécanique existe pour empêcher.
+ */
+export type LeagueLadderReader = {
+  referenceTable: Pick<PrismaClient["referenceTable"], "findMany">;
+};
+
+export async function readLeagueLadder(
+  client: LeagueLadderReader,
+): Promise<LeagueLadder> {
   // Les deux clés d'un seul aller-retour, la nouvelle d'abord. Le repli
   // existe pour la fenêtre où l'application tourne sans que
   // `prisma migrate deploy` ait encore renommé la ligne : sans lui, l'échelle
   // que l'administration a construite disparaîtrait du site public au profit
   // des six ligues par défaut, sans le moindre message.
-  const rows = await prisma.referenceTable.findMany({
+  const rows = await client.referenceTable.findMany({
     where: { key: { in: [leagueLadderKey, legacyLeagueLadderKey] } },
     select: { key: true, rows: true },
   });
@@ -640,4 +766,9 @@ export async function getLeagueLadder(): Promise<LeagueLadder> {
     rows.find((row) => row.key === leagueLadderKey) ??
     rows.find((row) => row.key === legacyLeagueLadderKey);
   return stored ? parseLeagueLadder(stored.rows) : defaultLeagueLadder;
+}
+
+/** L'échelle, pour un lecteur qui n'est pas au milieu d'une transaction. */
+export async function getLeagueLadder(): Promise<LeagueLadder> {
+  return readLeagueLadder(prisma);
 }

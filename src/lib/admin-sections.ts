@@ -110,10 +110,8 @@ export const adminSections: readonly AdminSection[] = [
     key: "config",
     href: "/admin/config",
     group: "site",
-    // Bloc 135 : « Gestion Outils » n'a pas `configuration.read` et n'en veut
-    // pas, mais il gère les ligues et les divisions, qui sont sur cet écran.
-    read: ["configuration.read", "leagues.read"],
-    write: ["configuration.write", "leagues.write"],
+    read: "configuration.read",
+    write: "configuration.write",
   },
 ];
 

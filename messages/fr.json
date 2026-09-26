@@ -1040,27 +1040,6 @@
       "section": "Ligues et divisions",
       "intro": "L’échelle que lisent le Classement, les Paramètres joueur, et tous les autres outils par leur ligue de base.",
       "summary": "{count, plural, one {# ligue/division} other {# ligues/divisions}} · {active, plural, one {# active} other {# actives}}",
-      "add": "Ajouter une plage",
-      "threshold": "Seuil (%)",
-      "target": "Ligue cible",
-      "movement": "Mouvement",
-      "remove": "Supprimer",
-      "row-label": "{league} ligne {row} {field}",
-      "unconfirmed-option": "Non confirmé",
-      "movements": {
-        "promotion": "Montée",
-        "stay": "Maintien",
-        "relegation": "Descente"
-      },
-      "reward-types": {
-        "sapphires": "Saphirs",
-        "speedups": "Speedups",
-        "gems": "Gemmes"
-      },
-      "range-error": "Entre 0 et 100 requis.",
-      "pairing-error": "Mouvement et cible doivent être confirmés ensemble.",
-      "integer-error": "Nombre entier requis.",
-      "empty": "Aucune plage confirmée.",
       "validation": "Corrige les champs signalés avant l’enregistrement.",
       "save-blocked": "{count, plural, one {Enregistrement impossible : un champ à corriger.} other {Enregistrement impossible : # champs à corriger.}} {where} : {message}",
       "duplicate-error": "Deux entrées portent le même identifiant.",
@@ -1084,13 +1063,49 @@
       "entry-public": "Visible publiquement",
       "entry-private": "Masquée",
       "bands-section": "Plages de fin de saison",
-      "row-actions": "Action",
-      "top": "Top",
-      "band-name": "Plage {row} de {entry}",
       "languages-label": "Nom libre en",
       "language-hidden": "{language} masquée sur le site",
       "entry-name": "Nom libre ({language})",
-      "entry-name-field": "{entry} (rang {position}) nom libre {language}"
+      "entry-name-field": "{entry} (rang {position}) nom libre {language}",
+      "bands-count-hint": "{count, plural, =0 {Aucune plage de fin de saison réglée pour cette entrée.} one {# plage de fin de saison réglée pour cette entrée.} other {# plages de fin de saison réglées pour cette entrée.}} Les seuils et les récompenses se règlent dans l’écran de l’outil.",
+      "bands-elsewhere-link": "Ouvrir Outils › Classement"
+    },
+    "ranking": {
+      "add": "Ajouter une plage",
+      "threshold": "Seuil (%)",
+      "target": "Ligue cible",
+      "movement": "Mouvement",
+      "remove": "Supprimer",
+      "row-label": "{league} ligne {row} {field}",
+      "unconfirmed-option": "Non confirmé",
+      "movements": {
+        "promotion": "Montée",
+        "stay": "Maintien",
+        "relegation": "Descente"
+      },
+      "reward-types": {
+        "sapphires": "Saphirs",
+        "speedups": "Speedups",
+        "gems": "Gemmes"
+      },
+      "range-error": "Entre 0 et 100 requis.",
+      "pairing-error": "Mouvement et cible doivent être confirmés ensemble.",
+      "integer-error": "Nombre entier requis.",
+      "empty": "Aucune plage confirmée.",
+      "row-actions": "Action",
+      "top": "Top",
+      "band-name": "Plage {row} de {entry}",
+      "band-count": "{count, plural, =0 {aucune plage} one {# plage} other {# plages}}",
+      "save-blocked": "{count, plural, one {Enregistrement impossible : un champ à corriger.} other {Enregistrement impossible : # champs à corriger.}} {where} : {message}",
+      "bands-section": "Plages de fin de saison",
+      "rungs-label": "Ligue ou division",
+      "rung-untitled": "Entrée sans nom",
+      "rung-hidden": "masquée",
+      "no-rung": "Aucune ligue ni division n’existe encore.",
+      "leagues-elsewhere": "Ajouter, renommer, réordonner ou masquer une ligue ou une division se fait dans Configuration.",
+      "leagues-elsewhere-link": "Ouvrir Ligues et divisions",
+      "bands-caption": "Plages de fin de saison de {entry}",
+      "ignored-rungs": "{count, plural, one {Un échelon a été supprimé dans Configuration entre-temps : ses plages n’ont pas été enregistrées.} other {# échelons ont été supprimés dans Configuration entre-temps : leurs plages n’ont pas été enregistrées.}} La liste a été rechargée."
     },
     "references": {
       "columns": {
