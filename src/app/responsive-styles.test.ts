@@ -57,18 +57,21 @@ describe("public responsive styles", () => {
   });
 
   it("always splits the skill summary 5/5 across two rows, on every viewport width", () => {
-    // Unconditional — not gated behind any @media breakpoint, so desktop
-    // gets the same 2-row split as mobile/tablet instead of one long
-    // horizontally-scrolling line.
+    // Bloc 123 : le résumé est une grille d'étiquettes, et ses cinq colonnes
+    // ne sont conditionnées par aucun point de rupture — le desktop a les
+    // mêmes deux rangées de cinq que le mobile, jamais une ligne qui défile.
     expect(css).toMatch(
-      /\.player-summary-skill-group\s*{\s*display: block;\s*white-space: normal;/,
+      /\.player-stat-chips\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/,
     );
-    const mediaBlock = css.match(
-      /@media \(max-width: 42rem\)\s*{([\s\S]*?)\n}/,
-    )?.[1];
-    expect(mediaBlock).toBeDefined();
-    expect(mediaBlock).not.toMatch(/\.player-summary-skill-group/);
-    expect(mediaBlock).not.toMatch(/\.player-summary-line2/);
+    const mobileBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mobileBlock).toBeDefined();
+    // Le mobile resserre l'espacement et empile le contenu de l'étiquette,
+    // mais ne touche pas au nombre de colonnes.
+    expect(mobileBlock).not.toMatch(
+      /\.player-stat-chips\s*{[^}]*grid-template-columns/,
+    );
   });
 
   // Bloc 109: the Classement picker can now run to several rows, and the

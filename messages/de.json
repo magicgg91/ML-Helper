@@ -43,6 +43,13 @@
       "recruiter": "Rekrutierer",
       "rusher": "Geschwindigkeit"
     },
+    "templars-short": {
+      "striker": "Ang",
+      "guardian": "Vert",
+      "prosperous": "Gold",
+      "recruiter": "Rekr",
+      "rusher": "Gesch"
+    },
     "leagues": {
       "bronze": "Bronze",
       "silver": "Silber",
@@ -144,35 +151,37 @@
   },
   "player-settings": {
     "title": "Spielereinstellungen",
-    "summary": "{league} · Stufe {level} · {vp} VP · {templarTotal, plural, one {# Templer} other {# Templer}}",
-    "league": "Liga",
+    "summary": "Stufe {level} · {vp} VP · {templarTotal, plural, one {# Templer} other {# Templer}}",
+    "rung": "Liga oder Division",
     "league-undefined": "Liga nicht festgelegt",
     "player-level": "Spielerstufe",
     "player-vp": "Spieler-VP",
     "vp-unit": "VP-Einheit",
     "equipment-skills": {
-      "title": "Fähigkeiten mit Ausrüstung",
+      "title": "Ausrüstung",
       "field": "{skill} mit Ausrüstung"
     },
     "skill-points": {
-      "title": "Verteilung der Fähigkeitspunkte",
-      "available": "Verfügbar",
-      "allocated": "Zugewiesen",
-      "remaining": "Verbleibend",
+      "title": "Punkte",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} von {available} verfügbaren Punkten zugewiesen",
       "reset": "Zurücksetzen",
       "field": "{skill}-Punkte"
     },
     "templars": {
       "title": "Templer",
+      "not-counted": "nicht in den Werten enthalten",
       "field": "{templar} Templer"
     },
     "clan-temple": {
-      "title": "Tempelbonus (Clan)",
-      "help": "Gib nur den Templer-Beitrag des Clans ein (z. B. 260 für Geschwindigkeit). Die bestätigte Tempel-Grundlage pro Statistik wird automatisch zur angezeigten Gesamtsumme hinzugefügt.",
+      "title": "Tempel (Clan)",
+      "help": "Nur der Templer-Beitrag des Clans; die bestätigte Grundlage kommt automatisch dazu.",
       "field": "{templar}-Tempel"
     },
-    "division": "Division",
-    "division-none": "Nicht angegeben"
+    "matrix": {
+      "caption": "Fähigkeiten nach Quelle: Ausrüstung, Punkte und Tempel",
+      "total": "Gesamt"
+    }
   },
   "city-cost": {
     "name": "Stadtkosten",
