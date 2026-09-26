@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import {
-  getLeagueLadder,
   isSavableLeagueLadder,
   leagueLadderKey,
   seasonMovements,
+  readLeagueLadder,
   seasonRewardTypes,
   withLadderBands,
+  type SeasonBand,
 } from "@/lib/leagues";
 import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
@@ -36,13 +37,20 @@ const bandSchema = z.object({
   rewards: z.array(
     z.object({
       type: z.enum(seasonRewardTypes),
-      quantity: z.number(),
+      // Revue Codex : entier et non négatif, à la frontière. Une récompense est
+      // une quantité absolue (AGENTS.md), et `isSavableLeagueLadder` ne vérifie
+      // que les seuils — un appelant qui contourne l'écran pouvait donc stocker
+      // `-3` ou `1.5` et les faire afficher au public.
+      quantity: z.number().int().nonnegative(),
     }),
   ),
 });
 const payloadSchema = z.object({
   bands: z.record(z.string(), z.array(bandSchema)),
 });
+
+/** Le refus, levé depuis la transaction pour l'annuler, traduit en 400 dehors. */
+class InvalidRanking extends Error {}
 
 export async function PUT(request: Request) {
   const session = await authorizedSession("calculators.write");
@@ -53,15 +61,43 @@ export async function PUT(request: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: "invalid_ranking" }, { status: 400 });
 
-  const current = await getLeagueLadder();
-  const { ladder, ignored } = withLadderBands(current, parsed.data.bands);
-  // Ce qui part en base est une échelle entière, donc c'est l'échelle entière
-  // qui doit tenir — la même vérification que la route de Configuration fait de
-  // son côté.
-  if (!isSavableLeagueLadder(ladder))
+  // Revue Codex : la lecture, la fusion et l'écriture dans une seule
+  // transaction. Lire avant elle laissait une fenêtre où deux enregistrements
+  // simultanés partaient du même instantané, et le second réécrivait la ligne
+  // entière — donc effaçait la moitié de l'autre écran, ce que la fusion existe
+  // pour empêcher. Sous SQLite les transactions d'écriture se sérialisent : la
+  // seconde attend la première et relit ce qu'elle a écrit.
+  const outcome = await runInTransaction(session, parsed.data.bands).catch(
+    (error: unknown) => {
+      if (error instanceof InvalidRanking) return undefined;
+      throw error;
+    },
+  );
+  if (!outcome)
     return NextResponse.json({ error: "invalid_ranking" }, { status: 400 });
+  // L'échelle nourrit le Classement public et le sélecteur de division des
+  // Paramètres joueur.
+  await revalidateContent("tools");
+  // `ignored` nomme les échelons supprimés depuis Configuration pendant que cet
+  // écran était ouvert : leurs plages n'ont pas été écrites, et le dire évite
+  // qu'un enregistrement paraisse complet alors qu'il ne l'était pas. L'écran
+  // le lit et le montre (voir `admin-ranking-editor`).
+  return NextResponse.json({ bands: parsed.data.bands, ...outcome });
+}
 
-  const table = await prisma.$transaction(async (tx) => {
+type Session = NonNullable<Awaited<ReturnType<typeof authorizedSession>>>;
+
+function runInTransaction(
+  session: Session,
+  bands: Record<string, SeasonBand[]>,
+) {
+  return prisma.$transaction(async (tx) => {
+    const current = await readLeagueLadder(tx);
+    const { ladder, ignored } = withLadderBands(current, bands);
+    // Ce qui part en base est une échelle entière, donc c'est l'échelle entière
+    // qui doit tenir — la même vérification que la route de Configuration fait
+    // de son côté.
+    if (!isSavableLeagueLadder(ladder)) throw new InvalidRanking();
     const row = await tx.referenceTable.upsert({
       where: { key: leagueLadderKey },
       create: {
@@ -86,14 +122,7 @@ export async function PUT(request: Request) {
         diff: { after: ladder },
       },
     });
-    return row;
+    void row;
+    return { ignored };
   });
-  void table;
-  // L'échelle nourrit le Classement public et le sélecteur de division des
-  // Paramètres joueur.
-  await revalidateContent("tools");
-  // `ignored` nomme les échelons supprimés depuis Configuration pendant que cet
-  // écran était ouvert : leurs plages n'ont pas été écrites, et le dire évite
-  // qu'un enregistrement paraisse complet alors qu'il ne l'était pas.
-  return NextResponse.json({ bands: parsed.data.bands, ignored });
 }

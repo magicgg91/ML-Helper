@@ -67,6 +67,13 @@ function toRow(band: SeasonBand): BandRow {
   };
 }
 
+/** Les plages telles que la route dit les avoir stockées, ramenées au brouillon. */
+function draftFromBands(bands: Record<string, SeasonBand[]>): BandsDraft {
+  return Object.fromEntries(
+    Object.entries(bands).map(([rungId, rows]) => [rungId, rows.map(toRow)]),
+  );
+}
+
 function toDraft(ladder: LeagueLadder): BandsDraft {
   return Object.fromEntries(
     ladder.map((rung) => [rung.id, rung.bands.map(toRow)]),
@@ -127,11 +134,20 @@ export function AdminRankingEditor({
   backHref,
   backLabel,
   title,
+  canOpenLeagues = false,
 }: {
   initialLadder: LeagueLadder;
   backHref: string;
   backLabel: string;
   title: string;
+  /**
+   * Revue Codex : si ce rôle peut ouvrir la section de Configuration. « Gestion
+   * Outils » est l'utilisateur principal de cet écran et n'a pas
+   * `configuration.read` — lui présenter un lien l'enverrait sur un 403 garanti.
+   * Il lit alors la phrase sans le lien, comme le tableau Outils le fait déjà
+   * pour une destination hors de portée.
+   */
+  canOpenLeagues?: boolean;
 }) {
   const t = useTranslations("admin.ranking");
   const editor = useTranslations("admin.editor");
@@ -141,6 +157,13 @@ export function AdminRankingEditor({
   const searchParams = useSearchParams();
 
   const [showProblems, setShowProblems] = useState(false);
+  /**
+   * Revue Codex : les échelons que la route a laissés de côté parce que
+   * Configuration les avait supprimés entre-temps. Sans les lire, l'écran
+   * annonçait « enregistré » alors qu'une partie de la saisie n'avait pas été
+   * écrite — un échec silencieux, ce qu'AGENTS.md interdit.
+   */
+  const [ignoredRungs, setIgnoredRungs] = useState<string[]>([]);
   const [focusPending, setFocusPending] = useState(false);
   const firstInvalid = useRef<HTMLElement | null>(null);
   const errorId = useId();
@@ -158,6 +181,25 @@ export function AdminRankingEditor({
     // un renommage fait dans Configuration entre-temps.
     body: (value) => ({ bands: serialise(value) }),
     validate: (value) => summarise(findProblems(value)),
+    // `adopt` est le seul endroit où la réponse de la route est lue. Elle rend
+    // `ignored` ; s'il n'est pas vide, on le dit et on redemande l'écran, pour
+    // qu'il cesse de montrer un échelon qui n'existe plus.
+    adopt: (stored): BandsDraft => {
+      const answer = stored as {
+        bands?: Record<string, SeasonBand[]>;
+        ignored?: unknown;
+      };
+      const names = Array.isArray(answer?.ignored)
+        ? answer.ignored.map(String)
+        : [];
+      setIgnoredRungs(names);
+      // L'écran cesse de montrer un échelon que Configuration a supprimé : il se
+      // redemande, donc il repart de l'échelle réelle.
+      if (names.length > 0) router.refresh();
+      // Bloc 107/A : on adopte ce que la route dit avoir stocké, pas ce qu'on
+      // croit avoir envoyé.
+      return answer?.bands ? draftFromBands(answer.bands) : toDraft(rungs);
+    },
   });
   const draft = form.value;
 
@@ -324,18 +366,31 @@ export function AdminRankingEditor({
         message={form.message}
       />
 
+      {ignoredRungs.length > 0 && (
+        <p
+          className="rounded-admin-card border border-admin-danger-ink bg-admin-warn px-3 py-2 text-sm text-admin-danger-ink"
+          role="alert"
+        >
+          {t("ignored-rungs", { count: ignoredRungs.length })}
+        </p>
+      )}
       {rungs.length === 0 ? (
         // L'échelle est vide : rien à classer, et la sortie est nommée plutôt
         // qu'un écran muet.
         <EditorSection title={t("rungs-label")}>
           <p className="text-sm text-admin-dim">
-            {t("no-rung")}{" "}
-            <Link
-              className="admin-focus rounded-admin-control font-medium text-admin-text underline"
-              href={leaguesSectionHref}
-            >
-              {t("leagues-elsewhere-link")}
-            </Link>
+            {t("no-rung")}
+            {canOpenLeagues && (
+              <>
+                {" "}
+                <Link
+                  className="admin-focus rounded-admin-control font-medium text-admin-text underline"
+                  href={leaguesSectionHref}
+                >
+                  {t("leagues-elsewhere-link")}
+                </Link>
+              </>
+            )}
           </p>
         </EditorSection>
       ) : (
@@ -385,13 +440,18 @@ export function AdminRankingEditor({
                 })}
               </div>
               <p className="text-sm text-admin-dim">
-                {t("leagues-elsewhere")}{" "}
-                <Link
-                  className="admin-focus rounded-admin-control font-medium text-admin-text underline"
-                  href={leaguesSectionHref}
-                >
-                  {t("leagues-elsewhere-link")}
-                </Link>
+                {t("leagues-elsewhere")}
+                {canOpenLeagues && (
+                  <>
+                    {" "}
+                    <Link
+                      className="admin-focus rounded-admin-control font-medium text-admin-text underline"
+                      href={leaguesSectionHref}
+                    >
+                      {t("leagues-elsewhere-link")}
+                    </Link>
+                  </>
+                )}
               </p>
             </EditorSection>
 

@@ -10,34 +10,35 @@ import type { LeagueLadder, LeagueRungStructure } from "@/lib/leagues";
  * l'écran de l'outil a réglés. Les deux écrans partagent une ligne de
  * `reference_tables` ; chacun n'écrit que ses champs.
  */
-const { $transaction, upsert, auditCreate, getLeagueLadder, revalidate } =
-  vi.hoisted(() => {
+const { $transaction, findMany, upsert, auditCreate, revalidate } = vi.hoisted(
+  () => {
     // Typé par sa signature, pour que `written()` puisse lire l'échelle partie
     // en base sans transtypage, et sans paramètre inutilisé à nommer.
     const upsert =
       vi.fn<(args: { update: { rows: unknown } }) => Promise<{ id: string }>>();
     const auditCreate = vi.fn();
+    // Revue Codex : la route lit l'échelle *dans* sa transaction, pour qu'une
+    // écriture simultanée ne puisse pas partir du même instantané qu'elle. Le
+    // faux client de transaction porte donc la lecture, et ces cas passent par
+    // l'analyseur réel — plus près de la production qu'un chargeur moqué.
+    const findMany = vi.fn<() => Promise<{ key: string; rows: unknown }[]>>();
     const tx = {
-      referenceTable: { upsert },
+      referenceTable: { findMany, upsert },
       auditLog: { create: auditCreate },
     };
     return {
+      findMany,
       upsert,
       auditCreate,
       $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) =>
         callback(tx),
       ),
-      getLeagueLadder: vi.fn(),
       revalidate: vi.fn(),
     };
-  });
+  },
+);
 vi.mock("@/lib/prisma", () => ({ prisma: { $transaction } }));
 vi.mock("@/lib/revalidate-content", () => ({ revalidateContent: revalidate }));
-vi.mock("@/lib/leagues", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/lib/leagues")>("@/lib/leagues");
-  return { ...actual, getLeagueLadder };
-});
 
 let capability: string | undefined;
 let session: { user: { id: string; role: string; name: string } } | null = {
@@ -107,7 +108,9 @@ beforeEach(() => {
   capability = undefined;
   session = { user: { id: "u1", role: "admin", name: "Alice" } };
   upsert.mockResolvedValue({ id: "row-1" });
-  getLeagueLadder.mockResolvedValue(structuredClone(stored));
+  findMany.mockResolvedValue([
+    { key: "leagues_divisions", rows: structuredClone(stored) },
+  ]);
 });
 
 describe("PUT /api/admin/config/leagues", () => {

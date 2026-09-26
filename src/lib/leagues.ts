@@ -1,3 +1,4 @@
+import type { PrismaClient } from "@prisma/client";
 import { prisma } from "./prisma";
 import { leagues, type League, type LeagueSelection } from "./player-settings";
 import {
@@ -734,13 +735,30 @@ export const leagueLadderKey = "leagues_divisions";
 /** L'ancienne clé, lue en repli — voir `getLeagueLadder`. */
 const legacyLeagueLadderKey = "ranking_leagues";
 
-export async function getLeagueLadder(): Promise<LeagueLadder> {
+/**
+ * Le client minimal qu'une lecture de l'échelle demande : le client Prisma, ou
+ * celui d'une transaction en cours.
+ *
+ * Bloc 137, revue Codex : les deux routes qui écrivent l'échelle doivent la lire
+ * *dans* leur transaction. Chacune n'écrit que sa moitié en la fusionnant sur ce
+ * qu'elle a lu ; une lecture faite avant la transaction laisse une fenêtre où
+ * deux enregistrements simultanés partent du même instantané, et le second
+ * réécrit la ligne entière — donc défait l'autre moitié, ce que toute la
+ * mécanique existe pour empêcher.
+ */
+export type LeagueLadderReader = {
+  referenceTable: Pick<PrismaClient["referenceTable"], "findMany">;
+};
+
+export async function readLeagueLadder(
+  client: LeagueLadderReader,
+): Promise<LeagueLadder> {
   // Les deux clés d'un seul aller-retour, la nouvelle d'abord. Le repli
   // existe pour la fenêtre où l'application tourne sans que
   // `prisma migrate deploy` ait encore renommé la ligne : sans lui, l'échelle
   // que l'administration a construite disparaîtrait du site public au profit
   // des six ligues par défaut, sans le moindre message.
-  const rows = await prisma.referenceTable.findMany({
+  const rows = await client.referenceTable.findMany({
     where: { key: { in: [leagueLadderKey, legacyLeagueLadderKey] } },
     select: { key: true, rows: true },
   });
@@ -748,4 +766,9 @@ export async function getLeagueLadder(): Promise<LeagueLadder> {
     rows.find((row) => row.key === leagueLadderKey) ??
     rows.find((row) => row.key === legacyLeagueLadderKey);
   return stored ? parseLeagueLadder(stored.rows) : defaultLeagueLadder;
+}
+
+/** L'échelle, pour un lecteur qui n'est pas au milieu d'une transaction. */
+export async function getLeagueLadder(): Promise<LeagueLadder> {
+  return readLeagueLadder(prisma);
 }

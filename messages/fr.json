@@ -1104,7 +1104,8 @@
       "no-rung": "Aucune ligue ni division n’existe encore.",
       "leagues-elsewhere": "Ajouter, renommer, réordonner ou masquer une ligue ou une division se fait dans Configuration.",
       "leagues-elsewhere-link": "Ouvrir Ligues et divisions",
-      "bands-caption": "Plages de fin de saison de {entry}"
+      "bands-caption": "Plages de fin de saison de {entry}",
+      "ignored-rungs": "{count, plural, one {Un échelon a été supprimé dans Configuration entre-temps : ses plages n’ont pas été enregistrées.} other {# échelons ont été supprimés dans Configuration entre-temps : leurs plages n’ont pas été enregistrées.}} La liste a été rechargée."
     },
     "references": {
       "columns": {

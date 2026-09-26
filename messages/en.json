@@ -1104,7 +1104,8 @@
       "no-rung": "No league or division exists yet.",
       "leagues-elsewhere": "Adding, renaming, reordering or hiding a league or a division is done in Configuration.",
       "leagues-elsewhere-link": "Open Leagues and divisions",
-      "bands-caption": "End-of-season bands for {entry}"
+      "bands-caption": "End-of-season bands for {entry}",
+      "ignored-rungs": "{count, plural, one {One rung was deleted in Configuration meanwhile: its bands were not saved.} other {# rungs were deleted in Configuration meanwhile: their bands were not saved.}} The list has been reloaded."
     },
     "references": {
       "columns": {

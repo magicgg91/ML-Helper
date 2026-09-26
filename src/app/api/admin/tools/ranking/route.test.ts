@@ -14,34 +14,35 @@ import type { LeagueLadder } from "@/lib/leagues";
  * fonction de fusion : deux écrans écrivent une seule ligne, et celui-ci ne doit
  * pas pouvoir défaire le travail de l'autre.
  */
-const { $transaction, upsert, auditCreate, getLeagueLadder, revalidate } =
-  vi.hoisted(() => {
+const { $transaction, findMany, upsert, auditCreate, revalidate } = vi.hoisted(
+  () => {
     // Typé par sa signature, pour que `written()` puisse lire l'échelle partie
     // en base sans transtypage, et sans paramètre inutilisé à nommer.
     const upsert =
       vi.fn<(args: { update: { rows: unknown } }) => Promise<{ id: string }>>();
     const auditCreate = vi.fn();
+    // Revue Codex : la route lit l'échelle *dans* sa transaction, pour qu'une
+    // écriture simultanée ne puisse pas partir du même instantané qu'elle. Le
+    // faux client de transaction porte donc la lecture, et ces cas passent par
+    // l'analyseur réel — plus près de la production qu'un chargeur moqué.
+    const findMany = vi.fn<() => Promise<{ key: string; rows: unknown }[]>>();
     const tx = {
-      referenceTable: { upsert },
+      referenceTable: { findMany, upsert },
       auditLog: { create: auditCreate },
     };
     return {
+      findMany,
       upsert,
       auditCreate,
       $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) =>
         callback(tx),
       ),
-      getLeagueLadder: vi.fn(),
       revalidate: vi.fn(),
     };
-  });
+  },
+);
 vi.mock("@/lib/prisma", () => ({ prisma: { $transaction } }));
 vi.mock("@/lib/revalidate-content", () => ({ revalidateContent: revalidate }));
-vi.mock("@/lib/leagues", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/lib/leagues")>("@/lib/leagues");
-  return { ...actual, getLeagueLadder };
-});
 
 let capability: string | undefined;
 let session: { user: { id: string; role: string; name: string } } | null = {
@@ -95,7 +96,9 @@ beforeEach(() => {
   capability = undefined;
   session = { user: { id: "u1", role: "tools_manager", name: "Alice" } };
   upsert.mockResolvedValue({ id: "row-1" });
-  getLeagueLadder.mockResolvedValue(structuredClone(stored));
+  findMany.mockResolvedValue([
+    { key: "leagues_divisions", rows: structuredClone(stored) },
+  ]);
 });
 
 describe("PUT /api/admin/tools/ranking", () => {
@@ -172,6 +175,29 @@ describe("PUT /api/admin/tools/ranking", () => {
     expect($transaction).not.toHaveBeenCalled();
   });
 
+  it("refuses a reward quantity that is negative or fractional", async () => {
+    // Revue Codex : `z.number()` acceptait les deux, et `isSavableLeagueLadder`
+    // ne vérifie que les seuils — un appelant qui contourne l'écran pouvait donc
+    // faire afficher au public une récompense de -3 ou de 1,5. Une récompense est
+    // une quantité absolue (AGENTS.md), donc entière et non négative.
+    for (const quantity of [-3, 1.5]) {
+      const response = await put({
+        bands: {
+          bronze: [
+            {
+              threshold: 10,
+              movement: null,
+              target: null,
+              rewards: [{ type: "sapphires", quantity }],
+            },
+          ],
+        },
+      });
+      expect(response.status, String(quantity)).toBe(400);
+    }
+    expect($transaction).not.toHaveBeenCalled();
+  });
+
   it("refuses a threshold outside the playable range", async () => {
     // La même vérification que la route de Configuration fait de son côté : ce
     // qui part en base est une échelle entière, donc c'est elle qui doit tenir.
@@ -181,7 +207,10 @@ describe("PUT /api/admin/tools/ranking", () => {
       },
     });
     expect(response.status).toBe(400);
-    expect($transaction).not.toHaveBeenCalled();
+    // La transaction s'ouvre — c'est en elle que l'échelle est lue et fusionnée
+    // — puis se défait sans rien écrire.
+    expect(upsert).not.toHaveBeenCalled();
+    expect(auditCreate).not.toHaveBeenCalled();
   });
 
   it("logs who changed the ranking, and refreshes the public tools", async () => {

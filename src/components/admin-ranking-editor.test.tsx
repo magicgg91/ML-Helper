@@ -72,16 +72,20 @@ const ladder: LeagueLadder = [
   },
 ];
 
-function renderEditor(initial: LeagueLadder = ladder) {
+function renderEditor(
+  initial: LeagueLadder = ladder,
+  { canOpenLeagues = true, answer = "{}" } = {},
+) {
   const request = vi
     .spyOn(globalThis, "fetch")
-    .mockResolvedValue(new Response("{}", { status: 200 }));
+    .mockResolvedValue(new Response(answer, { status: 200 }));
   render(
     <AdminRankingEditor
       initialLadder={structuredClone(initial)}
       backHref="/admin/tools"
       backLabel="Outils"
       title="Classement"
+      canOpenLeagues={canOpenLeagues}
     />,
   );
   return request;
@@ -130,6 +134,46 @@ describe("Bloc 137: the Classement tool's own screen", () => {
     expect(
       screen.getByRole("link", { name: "Ouvrir Ligues et divisions" }),
     ).toHaveAttribute("href", "/admin/config#ligues-divisions");
+  });
+
+  /**
+   * Revue Codex : « Gestion Outils » est l'utilisateur principal de cet écran et
+   * n'a pas `configuration.read` depuis ce bloc. Un lien l'enverrait sur un 403
+   * garanti ; il lit la phrase sans le lien, comme le tableau Outils le fait
+   * déjà pour une destination hors de portée.
+   */
+  it("says it without a link to a role that cannot open Configuration", () => {
+    renderEditor(ladder, { canOpenLeagues: false });
+    expect(
+      screen.getByText(/Ajouter, renommer, réordonner ou masquer/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Ouvrir Ligues et divisions" }),
+    ).toBeNull();
+  });
+
+  /**
+   * Revue Codex : sans lire `ignored`, l'écran annonçait « enregistré » alors
+   * qu'une partie de la saisie n'avait pas été écrite — un échec silencieux.
+   */
+  it("says so when a rung was deleted meanwhile, and reloads", async () => {
+    renderEditor(ladder, {
+      answer: JSON.stringify({ bands: { bronze: [] }, ignored: ["silver"] }),
+    });
+    save();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /Un échelon a été supprimé dans Configuration entre-temps/,
+    );
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it("stays quiet when nothing was ignored", async () => {
+    renderEditor(ladder, {
+      answer: JSON.stringify({ bands: { bronze: [] }, ignored: [] }),
+    });
+    save();
+    await waitFor(() => expect(refresh).not.toHaveBeenCalled());
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("shows the bands of the rung the URL names", () => {

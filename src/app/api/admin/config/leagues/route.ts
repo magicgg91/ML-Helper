@@ -2,11 +2,11 @@ import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import {
-  getLeagueLadder,
   isSavableLadderStructure,
   isSavableLeagueLadder,
   leagueLadderKey,
   parseLeagueLadder,
+  readLeagueLadder,
   withLadderStructure,
   type LeagueRungStructure,
 } from "@/lib/leagues";
@@ -67,22 +67,25 @@ export async function PUT(request: Request) {
         active: rung.active,
       }));
     if (!isSavableLadderStructure(structure)) throw new Error("invalid");
-    // Bloc 137 : la fusion, et non la charge utile telle quelle — chaque échelon
-    // repart avec les plages qu'il avait déjà.
-    const ladder = withLadderStructure(await getLeagueLadder(), structure);
-    // Ce qui part en base est une échelle entière, donc c'est elle qui doit
-    // tenir : les plages conservées ont été écrites par l'autre écran, mais
-    // c'est cette route qui les renvoie au stockage.
-    if (!isSavableLeagueLadder(ladder)) throw new Error("invalid");
-    await prisma.$transaction(async (tx) => {
+    const ladder = await prisma.$transaction(async (tx) => {
+      // Bloc 137, revue Codex : lire, fusionner et écrire dans une seule
+      // transaction. Chaque échelon repart avec les plages qu'il avait déjà — et
+      // lire avant la transaction laissait une fenêtre où l'écran du Classement,
+      // enregistrant en même temps, partait du même instantané : le second
+      // `upsert` réécrivait la ligne entière et effaçait la moitié de l'autre.
+      const merged = withLadderStructure(await readLeagueLadder(tx), structure);
+      // Ce qui part en base est une échelle entière, donc c'est elle qui doit
+      // tenir : les plages conservées ont été écrites par l'autre écran, mais
+      // c'est cette route qui les renvoie au stockage.
+      if (!isSavableLeagueLadder(merged)) throw new Error("invalid");
       const table = await tx.referenceTable.upsert({
         where: { key: leagueLadderKey },
         create: {
           key: leagueLadderKey,
           columns: ["threshold", "movement", "target", "rewards"],
-          rows: ladder,
+          rows: merged,
         },
-        update: { rows: ladder },
+        update: { rows: merged },
       });
       await tx.auditLog.create({
         data: {
@@ -96,9 +99,10 @@ export async function PUT(request: Request) {
           action: "update",
           entityType: "reference_table",
           entityId: table.id,
-          diff: { after: ladder },
+          diff: { after: merged },
         },
       });
+      return merged;
     });
     // L'échelle nourrit les outils publics — le Classement et le sélecteur de
     // division des Paramètres joueur.
