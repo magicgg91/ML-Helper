@@ -2869,6 +2869,45 @@ test("Bloc109: the league picker splits over rows and keeps its half of the row"
     "w390 page scrolls sideways",
   ).toBeLessThanOrEqual(1);
 
+  // Bloc 139/A: the shared player-settings panel has its own rung picker, and
+  // ten rungs are exactly what broke it — they sat on a single line that
+  // overflowed and cut the last button off. It is checked here rather than in
+  // its own file because this is the only place where ten rungs exist: the
+  // panel asks for half of them per row, so the count changes the layout.
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/tools/classement");
+    await page.getByText("Paramètres du joueur", { exact: true }).click();
+    const rungs = page.locator(".player-settings .player-rung-buttons");
+    await expect(rungs).toBeVisible();
+    const layout = await rungs.evaluate((group) => {
+      const buttons = [...group.querySelectorAll("button")];
+      const rect = group.getBoundingClientRect();
+      return {
+        count: buttons.length,
+        rows: new Set(
+          buttons.map((button) =>
+            Math.round(button.getBoundingClientRect().top),
+          ),
+        ).size,
+        overflowX: group.scrollWidth - group.clientWidth,
+        lastSpill: Math.round(
+          buttons[buttons.length - 1].getBoundingClientRect().right -
+            rect.right,
+        ),
+      };
+    });
+    expect(layout.count, `panel w${width} rungs`).toBe(10);
+    expect(layout.rows, `panel w${width} rows`).toBe(2);
+    expect(layout.overflowX, `panel w${width} horizontal`).toBeLessThanOrEqual(
+      1,
+    );
+    expect(layout.lastSpill, `panel w${width} last button`).toBeLessThanOrEqual(
+      1,
+    );
+  }
+  await page.setViewportSize({ width: 390, height: 900 });
+
   // Bloc 69/F's standing rule, on the new layout: no league group may scroll
   // on itself, in either axis, at any width.
   for (const width of [390, 1000, 1280]) {

@@ -1,7 +1,13 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { NumberStepper } from "./number-stepper";
 import {
   activeLadder,
@@ -377,9 +383,6 @@ export function PlayerSettingsPanel({
     {
       key: "temple",
       title: t("clan-temple.title"),
-      note: (
-        <span className="player-matrix-row-note">{t("clan-temple.help")}</span>
-      ),
       cells: skillKeys.map((key) =>
         isTemplarKey(key)
           ? ({
@@ -465,6 +468,18 @@ export function PlayerSettingsPanel({
                 aria-label={t("rung")}
                 className="family-buttons player-rung-buttons"
                 role="group"
+                /*
+                  Bloc 139/A : deux rangées, quel que soit le nombre
+                  d'échelons. Dix boutons tenaient sur une seule ligne, qui
+                  débordait et coupait le dernier ; le compte vient d'ici
+                  parce que la feuille de style ne sait pas combien
+                  l'administration en a publié.
+                */
+                style={
+                  {
+                    "--rung-columns": Math.max(1, Math.ceil(rungs.length / 2)),
+                  } as CSSProperties
+                }
               >
                 {rungs.map((rung) => (
                   <button
@@ -524,7 +539,6 @@ export function PlayerSettingsPanel({
           <div className="player-templars">
             <div className="player-templars-head">
               <span className="player-field-label">{t("templars.title")}</span>
-              <small>{t("templars.not-counted")}</small>
             </div>
             <div className="player-templars-fields">
               {templarKeys.map((key) => {
@@ -596,7 +610,6 @@ export function PlayerSettingsPanel({
                 columns={columns}
                 rows={rows}
               />
-              <p className="player-matrix-help">{t("clan-temple.help")}</p>
             </>
           ) : (
             <PlayerSettingsMatrix

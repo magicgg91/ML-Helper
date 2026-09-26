@@ -170,12 +170,10 @@
     },
     "templars": {
       "title": "Templiers",
-      "not-counted": "non comptés dans les stats",
       "field": "Templiers {templar}"
     },
     "clan-temple": {
       "title": "Temple (clan)",
-      "help": "Contribution des Templiers du clan seule ; la base confirmée s’ajoute au total.",
       "field": "Temple {templar}"
     },
     "matrix": {
