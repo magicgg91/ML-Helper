@@ -35,7 +35,6 @@ export type AdminToolSource =
   | { kind: "shared"; href: string; sharedCount: number }
   | { kind: "reference"; href: string; referenceLabel: string }
   /** Bloc 135 : un réglage du site — voir `toolParameterSource`. */
-  | { kind: "configuration"; href: string }
   | { kind: "none" };
 
 export type AdminToolRow = {
@@ -58,7 +57,6 @@ export function AdminToolsList({
   canEdit,
   canToggle,
   canOpenReferences,
-  canOpenConfiguration,
   hiddenLocales,
   languageNames,
 }: {
@@ -67,13 +65,6 @@ export function AdminToolsList({
   canToggle: boolean;
   /** Whether this role may open a reference editor the row points at. */
   canOpenReferences: boolean;
-  /**
-   * Bloc 135 : si ce rôle peut ouvrir la section de Configuration qu'une ligne
-   * désigne. Distinct de `canEdit` : « Gestion Outils » tient
-   * `leagues.read` sans tenir le reste de Configuration, et un `read_only`
-   * tient l'inverse de rien du tout.
-   */
-  canOpenConfiguration: boolean;
   /** Bloc 130: the launch languages switched off in Configuration. */
   hiddenLocales?: readonly string[];
   languageNames?: Partial<Record<string, string>>;
@@ -149,16 +140,6 @@ export function AdminToolsList({
         name: row.source.referenceLabel,
       });
       return canOpenReferences ? (
-        <Pill tone="accent" href={row.source.href}>
-          {label}
-        </Pill>
-      ) : (
-        <Pill tone="accent">{label}</Pill>
-      );
-    }
-    if (row.source.kind === "configuration") {
-      const label = t("source-configuration");
-      return canOpenConfiguration ? (
         <Pill tone="accent" href={row.source.href}>
           {label}
         </Pill>
@@ -266,14 +247,6 @@ export function AdminToolsList({
               if (row.source.kind === "none") return null;
               if (row.source.kind === "reference")
                 return canOpenReferences ? (
-                  <AdminButton asChild size="sm">
-                    <Link href={row.source.href}>{t("open")}</Link>
-                  </AdminButton>
-                ) : null;
-              // Bloc 135 : « Ouvrir », pas « Modifier » — le bouton mène
-              // ailleurs qu'à un écran d'édition de cet outil.
-              if (row.source.kind === "configuration")
-                return canOpenConfiguration ? (
                   <AdminButton asChild size="sm">
                     <Link href={row.source.href}>{t("open")}</Link>
                   </AdminButton>

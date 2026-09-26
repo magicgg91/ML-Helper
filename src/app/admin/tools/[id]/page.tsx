@@ -8,6 +8,7 @@ import {
   GemParametersEditor,
   XpGainRateEditor,
 } from "@/components/admin-tool-editors";
+import { AdminRankingEditor } from "@/components/admin-ranking-editor";
 import { TemplarsEditor } from "@/components/admin-templars-editor";
 import {
   getCityParameters,
@@ -17,6 +18,7 @@ import {
   getXpGainTiers,
 } from "@/lib/admin-formulas-server";
 import { toolsSharingEditor } from "@/lib/admin-tool-sources";
+import { getLeagueLadder } from "@/lib/leagues";
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
 
 export default async function EditToolPage({
@@ -58,6 +60,19 @@ export default async function EditToolPage({
   const backHref = cameFromReferences ? "/admin/referentiels" : "/admin/tools";
   const backLabel = cameFromReferences ? references("title") : t("title");
 
+  // Bloc 137 : le classement est de nouveau un paramètre d'outil. Ce sont les
+  // seuils et récompenses de fin de saison ; la liste des ligues et des
+  // divisions, que tous les outils lisent, reste dans Configuration.
+  if (id === "ranking") {
+    return (
+      <AdminRankingEditor
+        initialLadder={await getLeagueLadder()}
+        backHref={backHref}
+        backLabel={backLabel}
+        title={names("ranking.name")}
+      />
+    );
+  }
   if (id === "city-parameters") {
     return (
       <CityParametersEditor

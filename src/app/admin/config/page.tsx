@@ -40,20 +40,13 @@ import {
 // requireCapability renders "Accès interdit" (403) for every other role,
 // matching the nav link which is hidden for them too.
 //
-// Bloc 135 : à une exception près, « Gestion Outils », qui entre par
-// `leagues.read` et ne voit que la section Ligues et divisions. Chaque section
-// porte donc sa propre garde, comme le suivi et la purge le faisaient déjà.
+// Bloc 137 : une seule garde de nouveau. Le Bloc 135 avait ouvert cet écran à
+// « Gestion Outils » par une capacité à part, parce que le CRUD des ligues y
+// avait atterri en entier — plages de fin de saison comprises. Ces plages étant
+// revenues dans l'écran de l'outil Classement, ce rôle n'a plus rien à venir
+// chercher ici.
 export default async function ConfigAdminPage() {
-  // Bloc 135 : deux domaines sur un écran. « Gestion Outils » n'a pas
-  // `configuration.read` — il n'a rien à faire dans les langues du site — mais
-  // il gère les ligues et les divisions depuis que leur CRUD a quitté l'écran
-  // de l'outil Classement. Il entre donc ici, et n'y voit que sa section.
-  const session = await requireCapability([
-    "configuration.read",
-    "leagues.read",
-  ]);
-  const canConfigureSite = can(session.user.role, "configuration.read");
-  const canManageLeagues = can(session.user.role, "leagues.read");
+  const session = await requireCapability("configuration.read");
   // Revue Codex (PR #127): the tracking section is super_admin only — setting
   // a script URL means running code in this origin on everyone's pages. An
   // `admin` keeps the rest of the tab; showing them a field whose save is
@@ -88,16 +81,11 @@ export default async function ConfigAdminPage() {
     // that makes the visibility switch answerable rather than blind.
     // Bloc 132 §4 : le titre et le slug servent aussi à la liste des
     // entrées qu'on peut mettre en avant.
-    // Bloc 135 : seulement pour qui voit les sections qui s'en servent (le
-    // tableau des langues et la liste des mises en avant). « Gestion
-    // Outils » entre sur cet écran pour les ligues et n'a pas `guides.read`.
-    canConfigureSite
-      ? prisma.guide.findMany({
-          where: {},
-          select: { content: true, slug: true, title: true, status: true },
-          orderBy: { publishedAt: "desc" },
-        })
-      : [],
+    prisma.guide.findMany({
+      where: {},
+      select: { content: true, slug: true, title: true, status: true },
+      orderBy: { publishedAt: "desc" },
+    }),
     getCalculatorAvailability(),
     getHomeHighlights(),
     getLocale(),
@@ -164,7 +152,7 @@ export default async function ConfigAdminPage() {
       {/* Bloc 136 : chaque section se replie, et son identifiant est son
           ancre — /admin/config#langues ouvre les langues et les amène à
           l'écran, /admin/config#ligues-divisions la section du Bloc 135. */}
-      {canConfigureSite && (
+      {
         <CollapsibleSection
           id="mis-en-avant"
           title={t("highlights.section")}
@@ -182,7 +170,7 @@ export default async function ConfigAdminPage() {
             arrivent distincts : le panneau les affiche différemment. */}
           <AdminHighlightsPanel candidates={candidates} initial={highlights} />
         </CollapsibleSection>
-      )}
+      }
       {/* Bloc 135 §2 : les ligues et les divisions, venues de l'écran de
           l'outil Classement. Placées ici, entre la sélection de l'accueil et
           les langues du site : c'est un référentiel de jeu, du même ordre que
@@ -190,51 +178,47 @@ export default async function ConfigAdminPage() {
           fois par saison — et non un réglage technique. Le rouge de la purge
           reste en dernier, l'ordre de l'écran allant de l'éditorial aux
           référentiels puis à l'irréversible. */}
-      {canManageLeagues && (
-        <CollapsibleSection
-          id={leaguesSectionAnchor}
-          title={leagueLabels("section")}
-          description={leagueLabels("intro")}
-          summary={
-            <Pill tone="neutral">
-              {leagueLabels("summary", {
-                count: ladder.length,
-                active: activeLadder(ladder).length,
-              })}
-            </Pill>
-          }
-        >
-          <AdminLeaguesPanel
-            initialLadder={ladder}
-            hiddenLocales={hiddenLocales}
-            languageNames={Object.fromEntries(
-              launchLocales.map((code) => [
-                code,
-                languageNames.has(code)
-                  ? languageNames(code)
-                  : code.toUpperCase(),
-              ]),
-            )}
-          />
-        </CollapsibleSection>
-      )}
-      {canConfigureSite && (
-        <CollapsibleSection
-          id="langues"
-          title={t("languages-section")}
-          description={t("intro")}
-          summary={
-            <Pill tone="neutral">
-              {t("languages-summary", {
-                count: rows.filter((row) => row.active).length,
-                total: rows.length,
-              })}
-            </Pill>
-          }
-        >
-          <AdminLanguagesPanel rows={rows} />
-        </CollapsibleSection>
-      )}
+      <CollapsibleSection
+        id={leaguesSectionAnchor}
+        title={leagueLabels("section")}
+        description={leagueLabels("intro")}
+        summary={
+          <Pill tone="neutral">
+            {leagueLabels("summary", {
+              count: ladder.length,
+              active: activeLadder(ladder).length,
+            })}
+          </Pill>
+        }
+      >
+        <AdminLeaguesPanel
+          initialLadder={ladder}
+          hiddenLocales={hiddenLocales}
+          languageNames={Object.fromEntries(
+            launchLocales.map((code) => [
+              code,
+              languageNames.has(code)
+                ? languageNames(code)
+                : code.toUpperCase(),
+            ]),
+          )}
+        />
+      </CollapsibleSection>
+      <CollapsibleSection
+        id="langues"
+        title={t("languages-section")}
+        description={t("intro")}
+        summary={
+          <Pill tone="neutral">
+            {t("languages-summary", {
+              count: rows.filter((row) => row.active).length,
+              total: rows.length,
+            })}
+          </Pill>
+        }
+      >
+        <AdminLanguagesPanel rows={rows} />
+      </CollapsibleSection>
       {canConfigureScripts && (
         <CollapsibleSection
           id="suivi-visites"

@@ -1040,27 +1040,6 @@
       "section": "Leagues and divisions",
       "intro": "The ladder read by the Ranking tool, by Player settings, and — through their base league — by every other tool.",
       "summary": "{count, plural, one {# league/division} other {# leagues/divisions}} · {active, plural, one {# active} other {# active}}",
-      "add": "Add range",
-      "threshold": "Threshold (%)",
-      "target": "Target league",
-      "movement": "Movement",
-      "remove": "Delete",
-      "row-label": "{league} row {row} {field}",
-      "unconfirmed-option": "Not confirmed",
-      "movements": {
-        "promotion": "Promotion",
-        "stay": "Stay",
-        "relegation": "Relegation"
-      },
-      "reward-types": {
-        "sapphires": "Sapphires",
-        "speedups": "Speedups",
-        "gems": "Gems"
-      },
-      "range-error": "A value between 0 and 100 is required.",
-      "pairing-error": "Movement and target must be confirmed together.",
-      "integer-error": "A whole number is required.",
-      "empty": "No confirmed range.",
       "validation": "Fix the highlighted fields before saving.",
       "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
       "duplicate-error": "Two entries share the same identifier.",
@@ -1084,13 +1063,48 @@
       "entry-public": "Publicly visible",
       "entry-private": "Hidden",
       "bands-section": "End-of-season bands",
-      "row-actions": "Action",
-      "top": "Top",
-      "band-name": "Band {row} of {entry}",
       "languages-label": "Free name in",
       "language-hidden": "{language} hidden on the site",
       "entry-name": "Free name ({language})",
-      "entry-name-field": "{entry} (rung {position}) free name {language}"
+      "entry-name-field": "{entry} (rung {position}) free name {language}",
+      "bands-count-hint": "{count, plural, =0 {No end-of-season band set for this entry.} one {# end-of-season band set for this entry.} other {# end-of-season bands set for this entry.}} Thresholds and rewards are set on the tool's own screen.",
+      "bands-elsewhere-link": "Open Tools › Ranking"
+    },
+    "ranking": {
+      "add": "Add range",
+      "threshold": "Threshold (%)",
+      "target": "Target league",
+      "movement": "Movement",
+      "remove": "Delete",
+      "row-label": "{league} row {row} {field}",
+      "unconfirmed-option": "Not confirmed",
+      "movements": {
+        "promotion": "Promotion",
+        "stay": "Stay",
+        "relegation": "Relegation"
+      },
+      "reward-types": {
+        "sapphires": "Sapphires",
+        "speedups": "Speedups",
+        "gems": "Gems"
+      },
+      "range-error": "A value between 0 and 100 is required.",
+      "pairing-error": "Movement and target must be confirmed together.",
+      "integer-error": "A whole number is required.",
+      "empty": "No confirmed range.",
+      "row-actions": "Action",
+      "top": "Top",
+      "band-name": "Band {row} of {entry}",
+      "band-count": "{count, plural, =0 {no band} one {# band} other {# bands}}",
+      "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
+      "bands-section": "End-of-season bands",
+      "rungs-label": "League or division",
+      "rung-untitled": "Unnamed entry",
+      "rung-hidden": "hidden",
+      "no-rung": "No league or division exists yet.",
+      "leagues-elsewhere": "Adding, renaming, reordering or hiding a league or a division is done in Configuration.",
+      "leagues-elsewhere-link": "Open Leagues and divisions",
+      "bands-caption": "End-of-season bands for {entry}"
     },
     "references": {
       "columns": {

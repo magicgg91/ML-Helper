@@ -22,16 +22,6 @@ const adminCapabilities = [
   // roles have explicit capability sets that never include it.
   "configuration.read",
   "configuration.write",
-  // Bloc 135 : les ligues et les divisions, dont le CRUD a quitté l'écran de
-  // l'outil Classement pour Configuration. Une capacité à part, et non
-  // `configuration.*`, pour une raison précise : le rôle « Gestion Outils »
-  // pouvait éditer l'échelle quand elle vivait sous `calculators.write`, et le
-  // déplacement ne doit pas la lui retirer — alors qu'il n'a rien à faire dans
-  // les langues du site ni dans la sélection de l'accueil, qui sont sur le même
-  // écran. C'est ce qui permet à /admin/config de s'ouvrir sur la seule section
-  // qu'un rôle a le droit de voir.
-  "leagues.read",
-  "leagues.write",
   // Bloc 100, revue Codex (PR #127): configuring a remote script URL is not
   // the same power as the rest of Configuration. The script runs in this
   // origin, with a valid nonce, on every page — including the ones a Super
@@ -67,10 +57,6 @@ const matrix: Record<AdminRole, ReadonlySet<AdminCapability>> = {
     "calculators.read",
     "calculators.write",
     "calculators.toggle",
-    // Bloc 135 : ce que `calculators.write` couvrait tant que l'échelle vivait
-    // sur /admin/tools/ranking.
-    "leagues.read",
-    "leagues.write",
   ]),
   // Bloc 59/B: read_only is strictly limited to Dashboard/Tools/Références/
   // Guides in read-only — no Historique, no Utilisateurs (neither the nav
