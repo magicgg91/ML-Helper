@@ -125,12 +125,24 @@ const storedSilver = {
       duration: 24,
       color: "emerald",
       tiers: [
+        // Les deux formes sur les DEUX champs du palier : l'objet gagne à
+        // chaque fois, et la paire qui traîne à côté ne l'écrase pas.
         {
           objective: { es: "Objetivo en español" },
           objective_fr: "Objectif français",
           objective_en: "English objective",
+          reward: { de: "Belohnung" },
           reward_fr: "Récompense",
           reward_en: "Reward",
+        },
+        // Un palier déjà entièrement migré, dans un événement qui, lui, ne
+        // l'est pas : c'est la seule forme qui atteigne la garde « traverser
+        // intact » au niveau du palier. Un événement entièrement migré est
+        // écarté bien avant, par la garde extérieure, et sa boucle de paliers
+        // ne tourne jamais.
+        {
+          objective: { tr: "İkinci hedef" },
+          reward: { tr: "İkinci ödül" },
         },
       ],
     },
@@ -268,10 +280,17 @@ describe("Bloc 127 : la migration des Événements", () => {
     expect(event.description).toEqual({ tr: "Türkçe açıklama" });
     const tiers = event.tiers as Stored[];
     expect(tiers[0].objective).toEqual({ es: "Objetivo en español" });
-    // La récompense, elle, n'existait qu'en paire : elle est bien convertie.
-    expect(tiers[0].reward).toEqual({ fr: "Récompense", en: "Reward" });
+    expect(tiers[0].reward).toEqual({ de: "Belohnung" });
     expect(event).not.toHaveProperty("description_fr");
     expect(tiers[0]).not.toHaveProperty("objective_fr");
+    expect(tiers[0]).not.toHaveProperty("reward_fr");
+  });
+
+  it("laisse intact un palier déjà migré dans un événement qui ne l'est pas", () => {
+    const tiers = catalog.silver.events[0].tiers as Stored[];
+    expect(tiers).toHaveLength(2);
+    expect(tiers[1].objective).toEqual({ tr: "İkinci hedef" });
+    expect(tiers[1].reward).toEqual({ tr: "İkinci ödül" });
   });
 
   it("rend des objets JSON, jamais des chaînes contenant du JSON", () => {
