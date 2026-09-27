@@ -284,3 +284,74 @@ test("Bloc 139/E: on a phone, Niveau and VP both show their value whole, buttons
     ).toBeGreaterThanOrEqual(44);
   }
 });
+
+/**
+ * Bloc 140 — la hauteur des champs des templiers, égale à celle des champs de
+ * la matrice.
+ *
+ * Le cas vit dans ce fichier parce que c'est le même sujet et la même méthode
+ * que les quatre précédents : une dimension du bandeau déplié, lue dans un
+ * vrai navigateur et comparée à une autre dimension plutôt qu'à un littéral.
+ *
+ * Les deux zones se lisent sur le même écran, l'une au-dessus de l'autre, et
+ * leurs champs n'avaient pas la même hauteur : ceux des templiers retombaient
+ * sur celle que le site donne à tout `input` public (40,8 px), quand ceux de
+ * la matrice portaient leur hauteur compacte (32 px).
+ *
+ * Les deux largeurs comptent, et pour des raisons différentes : en desktop
+ * c'est l'écart à corriger, en mobile c'est une égalité déjà acquise (les deux
+ * zones y partagent la forme sans boutons) qu'un correctif mal ciblé casserait.
+ */
+test("Bloc 140: the templars fields are exactly as tall as the matrix fields", async ({
+  page,
+}) => {
+  for (const [label, width] of [
+    ["desktop", 1440],
+    ["mobile", 390],
+  ] as const) {
+    await page.setViewportSize({ width, height: 1100 });
+    await openPanel(page, "/tools/villes");
+
+    const measured = await page.evaluate(() => {
+      const height = (element: Element | null) =>
+        element ? element.getBoundingClientRect().height : null;
+      // La matrice, dans la présentation qui est à l'écran à cette largeur.
+      const matrix =
+        document.querySelector(".player-matrix") ??
+        document.querySelector(".player-matrix-mobile");
+      const templarButtons = [
+        ...document.querySelectorAll(".player-templars-fields button"),
+      ].map((button) => {
+        const box = button.getBoundingClientRect();
+        return { w: box.width, h: box.height };
+      });
+      return {
+        templars: height(
+          document.querySelector(".player-templars-fields input"),
+        ),
+        matrix: height(matrix?.querySelector("tbody input") ?? null),
+        templarButtons,
+      };
+    });
+
+    expect(measured.templars, `${label}: no templars field`).not.toBeNull();
+    expect(measured.matrix, `${label}: no matrix field`).not.toBeNull();
+    // Égalité mesurée, au pixel près — pas « visuellement proche ».
+    expect(
+      Math.abs(measured.templars! - measured.matrix!),
+      `${label}: templars ${measured.templars} vs matrix ${measured.matrix}`,
+    ).toBeLessThanOrEqual(1);
+
+    // Les boutons − / + des templiers restent des cibles : le minimum de la
+    // WCAG 2.2 (2.5.8, niveau AA) est 24 × 24 px. En mobile le champ n'en a
+    // aucun — c'est la forme sans boutons, comme la matrice — donc la boucle
+    // ne porte sur rien, ce qui est le résultat attendu et non un oubli.
+    expect(measured.templarButtons.length, `${label}: templars buttons`).toBe(
+      width >= 901 ? 10 : 0,
+    );
+    for (const button of measured.templarButtons) {
+      expect(button.w, `${label}: button width`).toBeGreaterThanOrEqual(24);
+      expect(button.h, `${label}: button height`).toBeGreaterThanOrEqual(24);
+    }
+  }
+});
