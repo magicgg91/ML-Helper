@@ -16,6 +16,7 @@ import {
 } from "@/lib/events";
 import { leagues } from "@/lib/player-settings";
 import {
+  localizedField,
   localizedFieldOrPair,
   saveReferenceTable,
 } from "@/services/reference-table-admin";
@@ -76,7 +77,17 @@ function parseEvent(raw: unknown): EventRow {
   // la frise et la tuile). La description reste facultative, donc
   // `readableWhenWritten` : vide, ou lisible par tous, jamais l'entre-deux
   // d'un texte écrit dans une seule langue et blanc pour les autres.
-  const name = localizedFieldOrPair(source, "name");
+  // Le nom d'avant ce bloc était une **chaîne**, pas une paire :
+  // `localizedFieldOrPair` ne sait pas la reconnaître — il voit un `name`
+  // défini et le passe à l'analyseur strict, qui refuse tout ce qui n'est pas
+  // un objet. Un onglet ouvert avant la livraison verrait donc son
+  // enregistrement rejeté en 400, alors que le filet existe précisément pour
+  // qu'il passe (revue Codex P2 sur la PR #169). La chaîne devient du
+  // français, exactement comme la migration la convertit en base.
+  const name =
+    typeof source.name === "string"
+      ? localizedField({ fr: source.name })
+      : localizedFieldOrPair(source, "name");
   const description = localizedFieldOrPair(source, "description");
   if (!readableInEveryLocale(name)) throw new Error("missing event name");
   if (!readableWhenWritten(description))
