@@ -51,9 +51,8 @@ describe("PublicNav", () => {
   });
 
   // Bloc 132 §3 : le bouton ☰ et l'ouverture du panneau ont déménagé dans
-  // PublicHeader, qui les partage avec la loupe — leurs tests aussi. Ce qui
-  // reste ici est ce que cette nav décide encore : quelles entrées, et
-  // laquelle est celle de la page.
+  // PublicHeader — leurs tests aussi. Ce qui reste ici est ce que cette nav
+  // décide encore : quelles entrées, et laquelle est celle de la page.
   it("expose les entrées de navigation, sans liste déroulante", () => {
     render(<PublicNav links={links} navLabel="Navigation principale" />);
     const nav = screen.getByRole("navigation", {

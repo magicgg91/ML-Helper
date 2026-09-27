@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuIcon, SearchIcon, XIcon } from "lucide-react";
+import { MenuIcon, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { CalculatorAvailability } from "@/lib/calculator-catalog";
@@ -16,21 +16,28 @@ import { ThemeToggle } from "./theme-toggle";
  * Le Bloc 129 laissait le gabarit assembler la marque, la recherche, la nav,
  * la langue et le thème, chacun indépendant. Sur mobile ça donnait trois
  * lignes — titre et sous-titre, puis les boutons, puis la recherche. La
- * recette demande une seule ligne de 64 px, et que la loupe ouvre le panneau
- * en plaçant le focus dans le champ.
+ * recette demande une seule ligne de 64 px, et qu'ouvrir le panneau place le
+ * focus dans le champ de recherche.
  *
- * Deux commandes qui ouvrent le même panneau et un focus à poser dans un
- * champ qui vit ailleurs : il fallait un propriétaire commun. C'est ce
- * composant, et c'est tout ce qu'il fait de plus que le gabarit d'avant.
+ * Bloc 141 : le §3 donnait à la barre mobile quatre boutons — loupe, langue,
+ * thème, menu. La loupe ouvrait le panneau en plaçant le focus dans le champ
+ * de recherche ; le menu ouvrait ce même panneau, dont le champ de recherche
+ * est le premier élément. Deux commandes, une seule destination : un doublon
+ * fonctionnel, pas seulement visuel. La loupe part, le menu reste — et il
+ * reprend le focus qu'elle posait, pour que la recherche s'atteigne toujours
+ * en une action.
+ *
+ * Le focus à poser dans un champ qui vit ailleurs demande un propriétaire
+ * commun : c'est ce composant, et c'est tout ce qu'il fait de plus que le
+ * gabarit d'avant.
  *
  * Une seule structure sert les deux tailles d'écran :
  *
  * - `.public-header-panel` est `display: contents` sur desktop, donc la
  *   recherche et la nav retombent dans la rangée comme avant ; sur mobile il
  *   devient le panneau déroulant qui les contient tous les deux ;
- * - l'ordre du DOM — loupe, langue, thème, menu — est celui que le §3
- *   demande sur mobile ; sur desktop la loupe et le menu sont masqués, et
- *   il reste nav, langue, thème.
+ * - l'ordre du DOM — langue, thème, menu — est celui que le §3 demande sur
+ *   mobile ; sur desktop le menu est masqué, et il reste nav, langue, thème.
  */
 export function PublicHeader({
   brand,
@@ -45,16 +52,24 @@ export function PublicHeader({
   guides: SiteSearchGuide[];
   active: CalculatorAvailability;
   links: PublicNavLink[];
-  labels: { nav: string; menu: string; search: string };
+  labels: { nav: string; menu: string };
   locales: string[];
 }) {
   const [open, setOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Ouvrir depuis la loupe, c'est ouvrir pour écrire : le focus suit. Le
-  // champ n'existe dans le DOM mobile qu'une fois le panneau ouvert, donc le
-  // focus se pose après le rendu.
-  function openSearch() {
+  // Bloc 141 : ouvrir le panneau, c'est le plus souvent ouvrir pour
+  // chercher — le champ en est le premier élément. Le focus suit donc
+  // l'ouverture, comme il suivait la loupe avant qu'elle ne disparaisse.
+  //
+  // Il se pose après le rendu : tant que le panneau est fermé, le CSS mobile
+  // le laisse en `display: none`, et un élément non affiché ne prend pas le
+  // focus.
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
     setOpen(true);
     requestAnimationFrame(() => searchInputRef.current?.focus());
   }
@@ -81,16 +96,6 @@ export function PublicHeader({
         />
       </div>
       <div className="public-header-actions">
-        <button
-          type="button"
-          className="public-header-icon public-header-search"
-          aria-label={labels.search}
-          aria-expanded={open}
-          aria-controls="public-header-panel"
-          onClick={() => (open ? setOpen(false) : openSearch())}
-        >
-          <SearchIcon aria-hidden="true" size={18} />
-        </button>
         <LocaleToggle locales={locales} />
         <ThemeToggle />
         <button
@@ -99,7 +104,7 @@ export function PublicHeader({
           aria-label={labels.menu}
           aria-expanded={open}
           aria-controls="public-header-panel"
-          onClick={() => setOpen((value) => !value)}
+          onClick={toggle}
         >
           {open ? (
             <XIcon aria-hidden="true" size={18} />

@@ -19,7 +19,6 @@ export default async function PublicLayout({
     t,
     navigation,
     footer,
-    search,
     tools,
     references,
     locales,
@@ -30,7 +29,6 @@ export default async function PublicLayout({
     getTranslations("Public"),
     getTranslations("Navigation"),
     getTranslations("footer"),
-    getTranslations("search"),
     getTranslations("tools"),
     getTranslations("references"),
     getActiveLocales(),
@@ -55,8 +53,11 @@ export default async function PublicLayout({
   return (
     <div className="public-shell">
       {/* Bloc 132 §1 et §3 : la barre entière passe dans un composant, qui
-          tient l'état du panneau mobile (la loupe et le menu l'ouvrent tous
-          les deux). Le gabarit lui donne les données déjà traduites. */}
+          tient l'état du panneau mobile. Le gabarit lui donne les données
+          déjà traduites.
+          Bloc 141 : le bouton loupe a disparu — il menait au même panneau que
+          le menu —, donc le libellé `search.label` n'a plus à être passé ici.
+          Il reste lu par `SiteSearch`, qui en nomme son champ. */}
       <PublicHeader
         brand="ML-Helper"
         guides={searchGuides}
@@ -65,7 +66,6 @@ export default async function PublicLayout({
         labels={{
           nav: navigation("main"),
           menu: navigation("menu"),
-          search: search("label"),
         }}
         links={[
           { href: "/tools", label: navigation("tools") },

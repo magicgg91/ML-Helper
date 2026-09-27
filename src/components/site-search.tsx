@@ -19,9 +19,10 @@ export function SiteSearch({
   guides: SiteSearchGuide[];
   active?: Partial<CalculatorAvailability>;
   /**
-   * Bloc 132 §3 : sur mobile, le bouton loupe de l'en-tête ouvre le panneau
-   * puis place le focus ici. Le champ vit dans ce composant, la commande
-   * ailleurs — d'où la référence prêtée par l'appelant.
+   * Bloc 132 §3, révisé par le Bloc 141 : sur mobile, le bouton menu de
+   * l'en-tête ouvre le panneau puis place le focus ici. Le champ vit dans ce
+   * composant, la commande ailleurs — d'où la référence prêtée par
+   * l'appelant.
    */
   inputRef?: RefObject<HTMLInputElement | null>;
   /**

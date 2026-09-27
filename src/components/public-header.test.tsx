@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import messages from "../../messages/fr.json";
@@ -49,7 +55,6 @@ function renderHeader(guides: SiteSearchGuide[] = []) {
         labels={{
           nav: "Navigation principale",
           menu: "Menu",
-          search: "Rechercher sur le site",
         }}
       />
     </NextIntlClientProvider>,
@@ -57,21 +62,52 @@ function renderHeader(guides: SiteSearchGuide[] = []) {
 }
 
 /**
- * Bloc 132 §3 : sur mobile, l'en-tête tient sur une ligne et deux boutons
- * ouvrent le même panneau — la loupe et le menu. C'est cette bascule
- * partagée que les tests suivants gardent : deux commandes, un seul état,
- * et un focus qui suit la loupe.
+ * Bloc 132 §3, révisé par le Bloc 141 : sur mobile, l'en-tête tient sur une
+ * ligne, et **un seul** bouton ouvre le panneau — le menu. La loupe menait au
+ * même endroit, le champ de recherche étant le premier élément du panneau :
+ * c'était un doublon fonctionnel, pas seulement visuel.
+ *
+ * Ce que ces tests gardent : les trois boutons qui restent, l'absence de la
+ * loupe, et le focus qu'elle posait — repris par le menu, pour que la
+ * recherche s'atteigne toujours en une action.
  */
 describe("PublicHeader", () => {
-  it("part panneau fermé, les deux boutons le disant", () => {
+  it("part panneau fermé, le bouton menu le disant", () => {
     renderHeader();
     expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
       "aria-expanded",
       "false",
     );
+  });
+
+  /**
+   * Bloc 141 : la barre porte trois boutons, pas quatre. La langue et le
+   * thème nomment leur état courant, donc on les cherche par ce que leur
+   * `aria-label` contient plutôt que par un libellé figé.
+   */
+  it("ne porte que trois boutons : langue, thème, menu", () => {
+    renderHeader();
+    const actions = document.querySelector(".public-header-actions")!;
+    const buttons = within(actions as HTMLElement).getAllByRole("button");
+    expect(buttons).toHaveLength(3);
+    expect(buttons[2]).toHaveAccessibleName("Menu");
+  });
+
+  it("n'a plus de bouton recherche dédié", () => {
+    renderHeader();
+    // Le libellé reste celui du **champ**, qui le garde : c'est un bouton
+    // portant ce nom qui ne doit plus exister.
     expect(
-      screen.getByRole("button", { name: "Rechercher sur le site" }),
-    ).toHaveAttribute("aria-expanded", "false");
+      screen.queryByRole("button", { name: "Rechercher sur le site" }),
+    ).not.toBeInTheDocument();
+    expect(
+      document.querySelector(".public-header-search"),
+      "la classe du bouton retiré ne doit subsister nulle part",
+    ).toBeNull();
+    // Le champ, lui, est toujours là et toujours nommé.
+    expect(
+      screen.getByRole("searchbox", { name: "Rechercher sur le site" }),
+    ).toBeInTheDocument();
   });
 
   it("ouvre et referme depuis le menu", () => {
@@ -81,20 +117,6 @@ describe("PublicHeader", () => {
     expect(menu).toHaveAttribute("aria-expanded", "true");
     fireEvent.click(menu);
     expect(menu).toHaveAttribute("aria-expanded", "false");
-  });
-
-  // Les deux boutons commandent le même panneau : ouvrir par la loupe doit
-  // se lire sur le menu aussi, sinon un lecteur d'écran annonce un état qui
-  // n'est plus vrai.
-  it("partage l'état entre la loupe et le menu", () => {
-    renderHeader();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Rechercher sur le site" }),
-    );
-    expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
   });
 
   it("referme le panneau quand on part sur une page", () => {
@@ -120,35 +142,43 @@ describe("PublicHeader", () => {
         excerpt: "Les bases du jeu.",
       },
     ]);
-    const search = screen.getByRole("button", {
-      name: "Rechercher sur le site",
-    });
-    fireEvent.click(search);
+    const menu = screen.getByRole("button", { name: "Menu" });
+    fireEvent.click(menu);
     fireEvent.change(screen.getByRole("searchbox"), {
       target: { value: "bien" },
     });
     fireEvent.click(await screen.findByRole("link", { name: /Bien débuter/ }));
-    expect(search).toHaveAttribute("aria-expanded", "false");
+    expect(menu).toHaveAttribute("aria-expanded", "false");
   });
 
-  // La loupe ouvre pour écrire : sans le focus, il faudrait viser le champ
-  // après l'avoir fait apparaître.
-  it("place le focus dans le champ de recherche depuis la loupe", async () => {
+  /**
+   * Bloc 141 : le focus que la loupe posait, repris par le menu. C'est la
+   * garantie qui remplace le bouton retiré — sans elle, atteindre la
+   * recherche demanderait d'ouvrir le panneau puis de viser le champ.
+   */
+  it("place le focus dans le champ de recherche en ouvrant le menu", async () => {
     renderHeader();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Rechercher sur le site" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     const field = screen.getByRole("searchbox");
     await vi.waitFor(() => expect(field).toHaveFocus());
   });
 
-  it("désigne le panneau que les deux boutons commandent", () => {
+  // Refermer ne replace pas le focus : seule l'ouverture le déplace.
+  it("ne rouvre pas le champ en refermant le panneau", async () => {
     renderHeader();
-    for (const name of ["Menu", "Rechercher sur le site"]) {
-      expect(screen.getByRole("button", { name })).toHaveAttribute(
-        "aria-controls",
-        "public-header-panel",
-      );
-    }
+    const menu = screen.getByRole("button", { name: "Menu" });
+    fireEvent.click(menu);
+    const field = screen.getByRole("searchbox");
+    await vi.waitFor(() => expect(field).toHaveFocus());
+    fireEvent.click(menu);
+    expect(menu).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("désigne le panneau que le bouton menu commande", () => {
+    renderHeader();
+    expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
+      "aria-controls",
+      "public-header-panel",
+    );
   });
 });

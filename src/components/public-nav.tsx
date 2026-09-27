@@ -17,10 +17,11 @@ export type PublicNavLink = {
  * Les entrées de navigation, et rien d'autre.
  *
  * Bloc 132 §3 : le bouton ☰ vivait ici et ouvrait cette nav. Sur mobile, la
- * nav partage maintenant un panneau avec le champ de recherche, et deux
- * boutons de l'en-tête l'ouvrent — la loupe et le menu. L'état a donc
- * remonté dans PublicHeader, qui les tient tous les trois ; ce composant ne
- * décide plus de son ouverture, il la reçoit.
+ * nav partage maintenant un panneau avec le champ de recherche, et c'est le
+ * bouton menu de l'en-tête qui l'ouvre — seul depuis le Bloc 141, qui a
+ * retiré la loupe menant au même panneau. L'état a donc remonté dans
+ * PublicHeader ; ce composant ne décide plus de son ouverture, il la
+ * reçoit.
  */
 export function PublicNav({
   links,
