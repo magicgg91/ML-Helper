@@ -91,6 +91,29 @@ const migratedTemplar = {
 };
 storedTemplars.rusher = migratedTemplar;
 
+// Deux templiers **à moitié** migrés : un champ déjà converti, l'autre encore
+// en paire. C'est la seule forme qui atteigne la branche « garder ce qui est
+// déjà converti » du SQL — une ligne entièrement migrée comme `rusher` est
+// écartée bien avant par la garde extérieure, qui la rend telle quelle. Sans
+// ces deux lignes, cette branche pouvait être remplacée par `json('{}')` sans
+// qu'aucun test tombe : mesuré par mutation, et c'est pourquoi elles existent.
+storedTemplars.prosperous = {
+  image: "/templars/templar-prosperous.webp",
+  name: { de: "Gold (DE)" },
+  description_fr: "Le templier d'or.",
+  description_en: "The gold Templar.",
+  temple_base: "3",
+  bonus: "1.5",
+};
+storedTemplars.recruiter = {
+  image: "/templars/templar-recruiter.webp",
+  name_fr: "Recruteur",
+  name_en: "Recruiter",
+  description: { es: "El templario reclutador." },
+  temple_base: "3",
+  bonus: "1.5",
+};
+
 const storedCombat = [
   {
     metric_label_fr: "Coût de fusion",
@@ -186,6 +209,26 @@ describe("Bloc 127 : la migration de la présentation des Templiers", () => {
 
   it("laisse absente une langue laissée blanche, jamais écrite vide", () => {
     expect(templars.guardian.description).toEqual({});
+  });
+
+  it("garde le champ déjà converti d'une ligne à moitié migrée", () => {
+    // `prosperous` : le nom est déjà un objet, la description encore une paire.
+    // La migration convertit la seconde sans reconstruire le premier depuis
+    // des paires absentes, ce qui le viderait — son allemand avec.
+    expect(templars.prosperous.name).toEqual({ de: "Gold (DE)" });
+    expect(templars.prosperous.description).toEqual({
+      fr: "Le templier d'or.",
+      en: "The gold Templar.",
+    });
+    // `recruiter` : l'inverse, pour que la même garde soit vérifiée sur les
+    // deux champs et pas seulement sur le premier.
+    expect(templars.recruiter.name).toEqual({
+      fr: "Recruteur",
+      en: "Recruiter",
+    });
+    expect(templars.recruiter.description).toEqual({
+      es: "El templario reclutador.",
+    });
   });
 
   it("ne touche pas une ligne déjà migrée, son allemand compris", () => {
