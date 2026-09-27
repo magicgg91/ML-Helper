@@ -7,6 +7,7 @@ import {
   type ConsumableCatalog,
 } from "@/lib/consumables";
 import {
+  localizedField,
   numericString,
   saveReferenceTable,
   stringField,
@@ -31,10 +32,11 @@ function parseRows(rawRows: unknown) {
     const rowSource = raw as Record<string, unknown>;
     return {
       image: stringField(rowSource.image),
-      name_fr: stringField(rowSource.name_fr),
-      name_en: stringField(rowSource.name_en),
-      description_fr: stringField(rowSource.description_fr),
-      description_en: stringField(rowSource.description_en),
+      // Bloc 127: one field per language instead of the fr/en pair. Strict,
+      // like the cost below: a malformed field rejects the whole catalogue
+      // with a 400 rather than saving half of it.
+      name: localizedField(rowSource.name),
+      description: localizedField(rowSource.description),
       // Left empty rather than defaulted to 0 when the cost isn't
       // confirmed yet (AGENTS.md: never invent a game value).
       cost: numericString(rowSource.cost),
@@ -59,14 +61,7 @@ export async function PUT(request: Request) {
     await saveReferenceTable({
       key: consumablesReferenceKey,
       target: "consumables",
-      columns: [
-        "image",
-        "name_fr",
-        "name_en",
-        "description_fr",
-        "description_en",
-        "cost",
-      ],
+      columns: ["image", "name", "description", "cost"],
       rows: catalog,
       userId: session.user.id,
       actorRole: session.user.role,

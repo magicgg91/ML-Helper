@@ -17,6 +17,7 @@ import { getLevelUpParameters } from "@/lib/admin-formulas-server";
 import { getConsumableCatalog } from "@/lib/consumables-server";
 import { getEventsCatalog } from "@/lib/events-server";
 import { toolUsingReference } from "@/lib/admin-tool-sources";
+import { hiddenPublicLocales } from "@/lib/locale-settings";
 
 export default async function EditReferentielPage({
   params,
@@ -102,6 +103,10 @@ export default async function EditReferentielPage({
         backHref="/admin/referentiels"
         backLabel={t("title")}
         title={t("references.consommables")}
+        // Bloc 127 : l'écran édite cinq langues depuis cette PR, donc il dit
+        // lesquelles Configuration a éteintes — comme les guides et les
+        // mentions légales le font déjà.
+        hiddenLocales={await hiddenPublicLocales()}
       />
     );
   }

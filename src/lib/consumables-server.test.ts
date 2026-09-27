@@ -3,11 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("./prisma", () => ({ prisma: {} }));
 
 import { normalizeStoredValue } from "./consumables-server";
-import {
-  consumableCategories,
-  defaultConsumableCatalog,
-  type ConsumableRow,
-} from "./consumables";
+import { consumableCategories, defaultConsumableCatalog } from "./consumables";
 
 function rowsOf(catalog: ReturnType<typeof normalizeStoredValue>) {
   return consumableCategories.flatMap((category) => catalog[category]);
@@ -40,7 +36,9 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
   // table rather than throwing or dropping the rest of the catalog.
   it("Bloc58/A: passes the intro table through losslessly when present", () => {
     const stored = {
-      intro: [{ ...defaultConsumableCatalog.equipment[0], name_fr: "Saphirs" }],
+      intro: [
+        { ...defaultConsumableCatalog.equipment[0], name: { fr: "Saphirs" } },
+      ],
       advisors: [],
       equipment: [],
       expedition: [],
@@ -71,9 +69,9 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
   });
 
   it("Bloc46 legacy shape: regroups a flat array with a category field per row, losslessly", () => {
-    const legacyRow = (
-      overrides: Partial<ConsumableRow> & { category: string; name_fr: string },
-    ) => ({
+    // La forme stockée d'alors : la paire FR/EN, que le repli de lecture du
+    // Bloc 127 relit en champs par langue.
+    const legacyRow = (overrides: { category: string; name_fr: string }) => ({
       image: "/consumables/x.webp",
       name_en: "X",
       description_fr: "D",
@@ -88,9 +86,9 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     ];
     const result = normalizeStoredValue(stored);
     expect(rowsOf(result)).toHaveLength(3);
-    expect(result.advisors.map((r) => r.name_fr)).toEqual(["Commandant"]);
-    expect(result.equipment.map((r) => r.name_fr)).toEqual(["Coffre"]);
-    expect(result.inventory.map((r) => r.name_fr)).toEqual(["Objet perso"]);
+    expect(result.advisors.map((r) => r.name.fr)).toEqual(["Commandant"]);
+    expect(result.equipment.map((r) => r.name.fr)).toEqual(["Coffre"]);
+    expect(result.inventory.map((r) => r.name.fr)).toEqual(["Objet perso"]);
     // The category field itself is dropped — it's now implicit to the table.
     expect(result.advisors[0]).not.toHaveProperty("category");
   });
@@ -107,7 +105,7 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
       },
     ];
     const result = normalizeStoredValue(stored);
-    expect(result.advisors.map((r) => r.name_fr)).toEqual(["Commandant"]);
+    expect(result.advisors.map((r) => r.name.fr)).toEqual(["Commandant"]);
   });
 
   // Bloc 48/E: even an already-Bloc46-migrated installation, where potions
@@ -127,7 +125,7 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     ];
     const result = normalizeStoredValue(stored);
     expect(result.inventory).toEqual([]);
-    expect(result.expedition.map((r) => r.name_fr)).toEqual([
+    expect(result.expedition.map((r) => r.name.fr)).toEqual([
       "Potion de 25 PV",
     ]);
   });
@@ -154,7 +152,7 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     };
     const result = normalizeStoredValue(stored);
     expect(result.inventory).toEqual([]);
-    expect(result.expedition.map((r) => r.name_fr)).toEqual([
+    expect(result.expedition.map((r) => r.name.fr)).toEqual([
       "Potion de 25 PV",
     ]);
   });
@@ -177,6 +175,46 @@ describe("normalizeStoredValue (Bloc 48/B+E migration)", () => {
     const withoutAdvisor = normalizeStoredValue([]);
     expect(withAdvisor.advisors).toHaveLength(1);
     expect(withoutAdvisor.advisors).toEqual([]);
+  });
+
+  // Bloc 127: the shape a running installation actually holds just before the
+  // migration — grouped by section, rows still carrying the fr/en pair. The
+  // read has to serve it, or the Boutique would come back nameless between the
+  // deploy and the migration (and on a backup restored from before it).
+  it("Bloc127: reads a grouped catalogue whose rows still carry the fr/en pair", () => {
+    const stored = {
+      intro: [],
+      advisors: [
+        {
+          image: "/consumables/advisor-commander.webp",
+          name_fr: "Commandant",
+          name_en: "Commander",
+          description_fr: "Un conseiller.",
+          description_en: "An advisor.",
+          cost: "800",
+        },
+      ],
+      equipment: [],
+      expedition: [],
+      inventory: [],
+    };
+    const [row] = normalizeStoredValue(stored).advisors;
+    expect(row.name).toEqual({ fr: "Commandant", en: "Commander" });
+    expect(row.description).toEqual({
+      fr: "Un conseiller.",
+      en: "An advisor.",
+    });
+    expect(row).not.toHaveProperty("name_fr");
+    // Une langue vide de la paire reste absente, jamais `""` (Bloc 126/D).
+    const frenchOnly = normalizeStoredValue({
+      intro: [{ image: "", name_fr: "Saphirs", name_en: "", cost: "" }],
+      advisors: [],
+      equipment: [],
+      expedition: [],
+      inventory: [],
+    });
+    expect(frenchOnly.intro[0].name).toEqual({ fr: "Saphirs" });
+    expect(frenchOnly.intro[0].description).toEqual({});
   });
 
   it("ignores malformed entries instead of throwing", () => {

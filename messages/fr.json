@@ -1176,6 +1176,7 @@
       "secondary-row": "Indicateur",
       "row-destruction": "Destruction",
       "texts-in": "Textes en",
+      "language-hidden": "{language} masquée sur le site",
       "item-count": "{count, plural, =0 {aucun objet} one {# objet} other {# objets}}",
       "item-unnamed": "Objet sans nom",
       "item-panel": "Objet sélectionné",

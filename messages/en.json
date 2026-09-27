@@ -1176,6 +1176,7 @@
       "secondary-row": "Metric",
       "row-destruction": "Dismantle",
       "texts-in": "Text in",
+      "language-hidden": "{language} hidden on the site",
       "item-count": "{count, plural, =0 {no item} one {# item} other {# items}}",
       "item-unnamed": "Unnamed item",
       "item-panel": "Selected item",

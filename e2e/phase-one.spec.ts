@@ -1356,10 +1356,12 @@ test("Bloc57/A+B: a single Boutique save produces exactly 1 audit log line, corr
         intro: [
           {
             image: "/consumables/sapphires.webp",
-            name_fr: "Saphirs",
-            name_en: "Sapphires",
-            description_fr: "Introduction Boutique Bloc57",
-            description_en: "Boutique Bloc57 introduction",
+            // Bloc 127 : un champ par langue, plus la paire FR/EN.
+            name: { fr: "Saphirs", en: "Sapphires" },
+            description: {
+              fr: "Introduction Boutique Bloc57",
+              en: "Boutique Bloc57 introduction",
+            },
             cost: "",
           },
         ],
@@ -4334,13 +4336,19 @@ test("Bloc 125/8: each edit screen is named after what it edits, in French", asy
   await context.close();
 });
 
-// Bloc 125 §9: the language tabs tell the truth about what is stored.
+// Bloc 125 §9, repris au Bloc 127 : les onglets de langue disent la vérité sur
+// ce qui est stocké.
 //
 // Reproduced in a browser before anything was changed: on the Boutique's DE
 // tab, typing a German name saved it into the *English* column, showed it
 // back on the DE tab — which reads that same column — and destroyed the
 // English text with nothing said anywhere. Four screens did this, because
 // they offered five languages over a model that holds two.
+//
+// Le Bloc 127 prend le problème par l'autre bout, écran par écran : la Boutique
+// stocke maintenant les cinq langues, donc elle les offre — et ce qui est tapé
+// en allemand s'enregistre en allemand et s'affiche en allemand. Les trois
+// autres écrans gardent leur paire jusqu'aux PR 2 et 3 de ce bloc.
 test("Bloc 125/9: fr/en content offers fr and en, and five-language content says which are hidden", async ({
   browser,
 }) => {
@@ -4357,10 +4365,10 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
-  // The four screens whose rows hold one French field and one for everybody
-  // else. None of them may offer a tab for a column it does not have.
+  // Les écrans dont les lignes tiennent un champ français et un pour tout le
+  // reste. Aucun ne peut offrir un onglet pour une colonne qu'il n'a pas.
+  // (La Boutique n'en fait plus partie depuis le Bloc 127, voir plus bas.)
   for (const url of [
-    "/admin/referentiels/reference-consommables",
     "/admin/referentiels/reference-events",
     "/admin/tools/templars",
     "/admin/referentiels/reference-combat-equipment",
@@ -4381,13 +4389,26 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
       ).toHaveCount(0);
   }
 
-  // Editing the English text leaves the French alone, end to end.
+  // Bloc 127 : la Boutique offre les cinq langues du site, parce qu'elle les
+  // stocke. Aller-retour complet, sur la langue que la paire ne pouvait pas
+  // tenir : l'allemand.
   await page.goto("/admin/referentiels/reference-consommables");
   const name = () => page.getByLabel(/^Nom/).first();
   await expect(name()).toBeVisible();
   const french = await name().inputValue();
+  for (const code of ["FR", "EN", "DE", "ES", "TR"])
+    await expect(
+      page.getByRole("button", { name: new RegExp(`^${code} — `) }),
+      `Boutique : l'onglet ${code}`,
+    ).toBeVisible();
+
   await page.getByRole("button", { name: /^EN — English/ }).click();
-  await name().fill("Bloc125 English name");
+  await name().fill("Bloc127 English name");
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  // Rien n'est écrit en allemand : le champ est vide, il ne montre pas
+  // l'anglais comme s'il l'était.
+  expect(await name().inputValue()).toBe("");
+  await name().fill("Bloc127 deutscher Name");
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
   await page.reload();
@@ -4396,14 +4417,29 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
     french,
   );
   await page.getByRole("button", { name: /^EN — English/ }).click();
-  expect(await name().inputValue()).toBe("Bloc125 English name");
+  expect(await name().inputValue(), "l'allemand a écrasé l'anglais").toBe(
+    "Bloc127 English name",
+  );
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  expect(await name().inputValue()).toBe("Bloc127 deutscher Name");
 
-  // And the public site reads each language from its own column.
+  // And the public site reads each language from its own field — including the
+  // three that used to read the English one.
   await page.goto("/en/referentiels/shop");
-  await expect(page.getByText("Bloc125 English name")).toBeVisible();
+  await expect(page.getByText("Bloc127 English name")).toBeVisible();
+  await page.goto("/de/referentiels/shop");
+  await expect(page.getByText("Bloc127 deutscher Name")).toBeVisible();
+  await expect(page.getByText("Bloc127 English name")).toHaveCount(0);
+  // L'espagnol n'est pas traduit : il lit l'anglais, jamais un vide.
+  await page.goto("/es/referentiels/shop");
+  await expect(page.getByText("Bloc127 English name")).toBeVisible();
+  // Le français en dernier, et ce n'est pas qu'une question d'ordre : le proxy
+  // rabat l'administration sur EN ou FR d'après la langue publique courante
+  // (Bloc 47/C), et la suite de ce test lit des libellés d'administration en
+  // français.
   await page.goto("/fr/referentiels/shop");
   await expect(page.getByText(french)).toBeVisible();
-  await expect(page.getByText("Bloc125 English name")).toHaveCount(0);
+  await expect(page.getByText("Bloc127 English name")).toHaveCount(0);
 
   // A guide really is stored in all five, so its tabs keep all five — and say
   // which of them the public cannot see, so a translation that is written and
