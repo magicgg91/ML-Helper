@@ -2,10 +2,16 @@ import type { PrismaClient } from "@prisma/client";
 import { prisma } from "./prisma";
 import { leagues, type League, type LeagueSelection } from "./player-settings";
 import {
-  dropEmptyLocales,
+  hasLocalizedField,
+  localizedFieldForm,
+  localizedFieldLocales,
+  localizedFieldToStore,
+  parseLocalizedFieldPair,
+  type LocalizedField,
+} from "./localized-field";
+import {
   launchLocales,
   localizedText,
-  translationRecord,
   type LaunchLocale,
 } from "./translations";
 
@@ -63,15 +69,13 @@ export type SeasonBand = {
  * Il était une paire FR/EN (`nameFr`/`nameEn`, lue par `pickFrEn`) depuis le
  * Bloc 108. Le site en publie cinq, et un échelon inventé par le studio est
  * du contenu éditorial comme le titre d'un guide : il se stocke en objet par
- * locale, comme `ToolDescription` (Bloc 130) et le titre d'un guide, et se lit
- * par `localizedText` — repli sur l'anglais puis le français, jamais un vide.
+ * locale et se lit par `localizedText`.
  *
- * Une langue laissée blanche est **absente**, pas `""` : le Bloc 126/D a
- * montré ce que coûte la différence — `localizedText` considère une chaîne
- * vide comme écrite et s'arrête là, au lieu de se replier sur une langue qui
- * a quelque chose à dire.
+ * Bloc 127/A.1 : cette forme est celle de tout le contenu éditorial du site,
+ * et vit maintenant dans `lib/localized-field.ts` — ce nom-ci en garde le
+ * vocabulaire (un échelon a un « nom »), pas une deuxième implémentation.
  */
-export type RungName = Partial<Record<LaunchLocale, string>>;
+export type RungName = LocalizedField;
 
 /**
  * Bloc 108/A+B+G : un barreau de l'échelle — une ligue, ou une division dans
@@ -122,30 +126,24 @@ export function rungFreeName(rung: LeagueRung, locale: string): string {
 
 /** Les langues dans lesquelles ce nom libre est réellement écrit. */
 export function rungNameLocales(name: RungName): LaunchLocale[] {
-  return launchLocales.filter((locale) => (name[locale] ?? "").trim() !== "");
+  return localizedFieldLocales(name);
 }
 
 /** Si cet échelon porte un nom libre, dans n'importe quelle langue. */
 export function hasRungName(name: RungName): boolean {
-  return rungNameLocales(name).length > 0;
+  return hasLocalizedField(name);
 }
 
 /** Toutes les langues, blanches là où rien n'est écrit — ce qu'un formulaire veut. */
 export function rungNameForm(name: RungName): Record<LaunchLocale, string> {
-  return Object.fromEntries(
-    launchLocales.map((locale) => [locale, name[locale] ?? ""]),
-  ) as Record<LaunchLocale, string>;
+  return localizedFieldForm(name);
 }
 
 /** Ce qui se stocke, depuis ce qu'un formulaire tient. */
 export function rungNameToStore(
   form: Partial<Record<string, string>>,
 ): RungName {
-  return dropEmptyLocales(
-    Object.fromEntries(
-      launchLocales.map((locale) => [locale, (form[locale] ?? "").trim()]),
-    ),
-  ) as RungName;
+  return localizedFieldToStore(form);
 }
 
 function reward(type: SeasonRewardType, quantity: number): SeasonReward {
@@ -388,22 +386,13 @@ const text = (value: unknown) =>
  * Bloc 135 : le nom libre, quelle que soit la forme stockée.
  *
  * La migration `20260926000000_leagues_divisions_central` réécrit
- * `nameFr`/`nameEn` en objet par locale, et c'est la forme que lit la
- * première branche. La seconde reste pour ce que la migration ne peut pas
- * atteindre : une sauvegarde restaurée d'avant elle, une installation dont
- * l'image n'a pas encore tourné. Elle ne coûte que trois lignes, et sans
- * elle un nom de division disparaîtrait de l'écran sans rien dire.
+ * `nameFr`/`nameEn` en objet par locale ; le repli sur la paire reste pour ce
+ * que le SQL ne peut pas atteindre — une sauvegarde restaurée d'avant elle,
+ * une installation dont l'image n'a pas encore tourné. Sans lui, un nom de
+ * division disparaîtrait de l'écran sans rien dire.
  */
 function parseRungName(row: Record<string, unknown>): RungName {
-  const stored = translationRecord(row.name);
-  const written = launchLocales
-    .map((locale) => [locale, text(stored[locale])] as const)
-    .filter(([, value]) => value !== "");
-  if (written.length) return Object.fromEntries(written) as RungName;
-  return dropEmptyLocales({
-    fr: text(row.nameFr),
-    en: text(row.nameEn),
-  }) as RungName;
+  return parseLocalizedFieldPair(row.name, { fr: row.nameFr, en: row.nameEn });
 }
 
 function parseRung(value: unknown, index: number): LeagueRung | null {

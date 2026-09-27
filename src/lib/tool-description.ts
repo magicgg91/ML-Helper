@@ -1,9 +1,10 @@
 import {
-  dropEmptyLocales,
-  launchLocales,
-  translationRecord,
-  type LaunchLocale,
-} from "./translations";
+  localizedFieldForm,
+  localizedFieldToStore,
+  parseLocalizedField,
+  type LocalizedField,
+} from "./localized-field";
+import { type LaunchLocale } from "./translations";
 
 /**
  * Bloc 130: the one-line description of a tool or a reference, in every
@@ -23,27 +24,23 @@ import {
  * Shaped like a guide's title or the legal notice: one object per record
  * carrying N languages, never a key in `messages/*.json`. Interface text is
  * a key; what an editor writes is a row.
+ *
+ * Bloc 127/A.1: that shape is now written once, in `lib/localized-field.ts`,
+ * for every editorial field of the site. This module keeps the vocabulary of
+ * a description (and its length limit), not a second implementation of it.
  */
-export type ToolDescription = Partial<Record<LaunchLocale, string>>;
+export type ToolDescription = LocalizedField;
 
 /** The stored value, as a record this app can index by locale. */
 export function parseToolDescription(value: unknown): ToolDescription {
-  const stored = translationRecord(value);
-  return Object.fromEntries(
-    launchLocales
-      .filter((locale) => stored[locale] !== undefined)
-      .map((locale) => [locale, stored[locale]]),
-  );
+  return parseLocalizedField(value);
 }
 
 /** Every launch locale, blank where nothing is written — what a form needs. */
 export function toolDescriptionForm(
   value: unknown,
 ): Record<LaunchLocale, string> {
-  const stored = parseToolDescription(value);
-  return Object.fromEntries(
-    launchLocales.map((locale) => [locale, stored[locale] ?? ""]),
-  ) as Record<LaunchLocale, string>;
+  return localizedFieldForm(parseToolDescription(value));
 }
 
 /**
@@ -60,11 +57,7 @@ export function toolDescriptionForm(
 export function toolDescriptionToStore(
   form: Partial<Record<string, string>>,
 ): ToolDescription {
-  return dropEmptyLocales(
-    Object.fromEntries(
-      launchLocales.map((locale) => [locale, (form[locale] ?? "").trim()]),
-    ),
-  ) as ToolDescription;
+  return localizedFieldToStore(form);
 }
 
 /**

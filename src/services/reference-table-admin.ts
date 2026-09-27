@@ -6,6 +6,11 @@ import {
   auditMessageColumns,
   type AuditTarget,
 } from "../lib/audit-message";
+import {
+  localizedFieldToStore,
+  type LocalizedField,
+} from "../lib/localized-field";
+import { launchLocales } from "../lib/translations";
 
 export type SaveReferenceTableArgs = {
   key: string;
@@ -86,4 +91,30 @@ export function numericString(value: unknown) {
   if (result && (!Number.isFinite(Number(result)) || Number(result) < 0))
     throw new Error("invalid number");
   return result;
+}
+
+/**
+ * Bloc 127 : un champ de texte éditorial reçu d'un éditeur, par langue.
+ *
+ * Strict comme `numericString` l'est d'un nombre : ce qui n'est pas un objet de
+ * chaînes est refusé plutôt que rattrapé, si bien qu'une ligne mal formée rend
+ * un 400 au lieu d'un demi-enregistrement (la règle de ces routes depuis le
+ * Bloc 43). Une langue que le site ne publie pas est ignorée — personne ne peut
+ * l'éditer et rien ne l'affiche.
+ *
+ * Une langue laissée blanche ressort **absente**, jamais `""` (Bloc 126/D).
+ */
+export function localizedField(value: unknown): LocalizedField {
+  if (value === undefined) return {};
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("invalid localized field");
+  const source = value as Record<string, unknown>;
+  for (const locale of launchLocales)
+    if (source[locale] !== undefined && typeof source[locale] !== "string")
+      throw new Error("invalid localized field");
+  return localizedFieldToStore(
+    Object.fromEntries(
+      launchLocales.map((locale) => [locale, source[locale] as string]),
+    ),
+  );
 }
