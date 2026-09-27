@@ -122,6 +122,9 @@ export default async function EditReferentielPage({
         backHref="/admin/referentiels"
         backLabel={t("title")}
         title={t("references.events")}
+        // Bloc 127 (PR 3/3) : le dernier écran de l'audit édite lui aussi
+        // cinq langues, donc il dit lesquelles Configuration a éteintes.
+        hiddenLocales={hiddenLocales}
       />
     );
   }

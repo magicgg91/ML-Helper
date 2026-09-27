@@ -39,9 +39,10 @@ describe("Bloc60/77: events data model", () => {
   // fixed-enum duration field — events chain back-to-back within a season.
   it("Bloc77/B: emptyEventRow starts with a valid duration, no tiers, no trace of startDay/endDay", () => {
     expect(emptyEventRow).toEqual({
-      name: "",
-      description_fr: "",
-      description_en: "",
+      // Bloc 127 (PR 3/3) : un champ par langue, vide veut dire « aucune
+      // langue écrite » — pas « écrit vide dans les cinq ».
+      name: {},
+      description: {},
       duration: 24,
       color: "violet",
       tiers: [],
@@ -50,13 +51,8 @@ describe("Bloc60/77: events data model", () => {
     expect(emptyEventRow).not.toHaveProperty("endDay");
   });
 
-  it("emptyEventTierRow has both fr/en free-text fields empty, no structured sub-fields", () => {
-    expect(emptyEventTierRow).toEqual({
-      objective_fr: "",
-      objective_en: "",
-      reward_fr: "",
-      reward_en: "",
-    });
+  it("emptyEventTierRow has both free-text fields empty, no structured sub-fields", () => {
+    expect(emptyEventTierRow).toEqual({ objective: {}, reward: {} });
   });
 
   // Bloc 77 review (Codex PR #95): the admin editor and the PUT route both

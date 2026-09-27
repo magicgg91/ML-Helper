@@ -4349,7 +4349,7 @@ test("Bloc 125/8: each edit screen is named after what it edits, in French", asy
 // stocke maintenant les cinq langues, donc elle les offre — et ce qui est tapé
 // en allemand s'enregistre en allemand et s'affiche en allemand. Les trois
 // autres écrans gardent leur paire jusqu'aux PR 2 et 3 de ce bloc.
-test("Bloc 125/9: fr/en content offers fr and en, and five-language content says which are hidden", async ({
+test("Bloc 127: le contenu éditorial offre les cinq langues, et dit lesquelles sont masquées", async ({
   browser,
 }) => {
   test.setTimeout(120_000);
@@ -4365,27 +4365,15 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
-  // Les écrans dont les lignes tiennent un champ français et un pour tout le
-  // reste. Aucun ne peut offrir un onglet pour une colonne qu'il n'a pas.
-  // (La Boutique en est sortie en PR 1/3 du Bloc 127, les Templiers et les
-  // Équipements en PR 2/3 — voir plus bas ; il ne reste que les Événements,
-  // que la PR 3/3 emportera.)
-  for (const url of ["/admin/referentiels/reference-events"]) {
-    await page.goto(url);
-    await expect(
-      page.getByRole("button", { name: /^FR — Français/ }),
-      `${url}: the French tab`,
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /^EN — English/ }),
-      `${url}: the English tab`,
-    ).toBeVisible();
-    for (const absent of [/^DE — /, /^ES — /, /^TR — /])
-      await expect(
-        page.getByRole("button", { name: absent }),
-        `${url}: ${absent} has no column to write to`,
-      ).toHaveCount(0);
-  }
+  // Ce test portait une liste d'écrans à deux langues : ceux dont les lignes
+  // tenaient un champ français et un pour tout le reste, et qui ne pouvaient
+  // donc pas offrir d'onglet pour une colonne qu'ils n'avaient pas. La
+  // Boutique en est sortie en PR 1/3 du Bloc 127, les Templiers et les
+  // Équipements en PR 2/3, les Événements en PR 3/3 : **la liste est vide**,
+  // et une boucle sur rien ne vérifie rien. Ce que les quatre écrans doivent
+  // faire maintenant se vérifie plus bas, écran par écran — et le pendant
+  // côté code, « un écran offre exactement les langues que son modèle
+  // stocke », est tenu par `src/lib/content-round-trip.test.ts`.
 
   // Bloc 127 : la Boutique offre les cinq langues du site, parce qu'elle les
   // stocke. Aller-retour complet, sur la langue que la paire ne pouvait pas
@@ -4480,6 +4468,80 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await expect(page.getByText("Bloc127 auf Deutsch")).toBeVisible();
   await page.goto("/fr/referentiels/templars");
   await expect(page.getByText("Bloc127 auf Deutsch")).toHaveCount(0);
+
+  // Bloc 127 (PR 3/3) : les Événements, le dernier écran de l'audit — et le
+  // plus profond, puisque deux de ses quatre champs vivent dans les paliers.
+  await page.goto("/admin/referentiels/reference-events");
+  for (const code of ["FR", "EN", "DE", "ES", "TR"])
+    await expect(
+      page.getByRole("button", { name: new RegExp(`^${code} — `) }),
+      `Événements : l'onglet ${code}`,
+    ).toBeVisible();
+
+  // L'événement est créé ici plutôt que repris d'un test précédent : ce
+  // scénario tourne dans son propre contexte, et dépendre de ce qu'un autre
+  // test a laissé en base rend l'échec illisible quand cet autre test change.
+  const eventName = () => page.getByLabel("Nom de l’événement 1");
+  const tierField = (field: string) =>
+    page.getByLabel(new RegExp(`^${field} du palier 1 de `)).first();
+  if ((await eventName().count()) === 0) {
+    await page.getByTestId("add-event-bronze").click();
+    await eventName().fill("Recruteur");
+    await page.getByTestId("add-tier-bronze-0").click();
+    // Le nom et les deux champs du palier sont obligatoires, et la règle est
+    // « lisible par tout visiteur » : le français suffit, une langue isolée
+    // non. C'est ce que la route refuserait.
+    await tierField("Objectif").fill("1G troupes enrôlées");
+    await tierField("Récompense").fill("100M or");
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  }
+  const frenchEventName = await eventName().inputValue();
+  expect(frenchEventName, "l'événement de Bronze a bien un nom").not.toBe("");
+
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  // Rien n'est écrit en allemand : le champ part vide. C'est exactement ce
+  // que le Bloc 125 §9 ne faisait pas — l'onglet DE montrait le texte anglais
+  // parce qu'il lisait la même colonne que lui.
+  expect(
+    await eventName().inputValue(),
+    "Événements : l'allemand part vide",
+  ).toBe("");
+  await eventName().fill("Rekrutierer (DE)");
+
+  // Et le palier, deux niveaux plus bas : objectif et récompense.
+  await expect(tierField("Objectif")).toBeVisible();
+  expect(
+    await tierField("Objectif").inputValue(),
+    "le palier aussi part vide en allemand",
+  ).toBe("");
+  await tierField("Objectif").fill("Deutsches Ziel");
+  await tierField("Récompense").fill("Deutsche Belohnung");
+
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  expect(await eventName().inputValue()).toBe("Rekrutierer (DE)");
+  expect(await tierField("Objectif").inputValue()).toBe("Deutsches Ziel");
+  // Le français n'a pas bougé : c'est la garantie que le Bloc 125 a coûté.
+  await page.getByRole("button", { name: /^FR — Français/ }).click();
+  expect(
+    await eventName().inputValue(),
+    "Événements : l'allemand a écrasé le français",
+  ).toBe(frenchEventName);
+
+  // Le public lit chaque langue là où elle est écrite, et se replie sinon —
+  // ici le repli est bien le standard : contrairement aux libellés
+  // d'équipement, aucun de ces textes n'a de traduction par défaut derrière
+  // lui.
+  await page.goto("/de/referentiels/events");
+  await page.getByRole("button", { name: /Bronze/ }).click();
+  await expect(page.getByText("Rekrutierer (DE)").first()).toBeVisible();
+  await page.goto("/fr/referentiels/events");
+  await page.getByRole("button", { name: /Bronze/ }).click();
+  await expect(page.getByText("Rekrutierer (DE)")).toHaveCount(0);
+  await expect(page.getByText(frenchEventName).first()).toBeVisible();
 
   // A guide really is stored in all five, so its tabs keep all five — and say
   // which of them the public cannot see, so a translation that is written and

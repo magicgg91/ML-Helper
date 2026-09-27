@@ -18,23 +18,18 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
 
   it("passes a stored league -> {seasonDurationDays, events -> tiers} shape through losslessly", () => {
     const legendEvent: EventRow = {
-      name: "Recruteur",
-      description_fr: "Enrôle des troupes",
-      description_en: "Enlist troops",
+      name: { fr: "Recruteur" },
+      description: { fr: "Enrôle des troupes", en: "Enlist troops" },
       duration: 72,
       color: "emerald-bright",
       tiers: [
         {
-          objective_fr: "1G troupes enrôlées",
-          objective_en: "1B troops enlisted",
-          reward_fr: "100M or + 250 éclats",
-          reward_en: "100M gold + 250 shards",
+          objective: { fr: "1G troupes enrôlées", en: "1B troops enlisted" },
+          reward: { fr: "100M or + 250 éclats", en: "100M gold + 250 shards" },
         },
         {
-          objective_fr: "3G troupes enrôlées",
-          objective_en: "3B troops enlisted",
-          reward_fr: "300M or + 5 saphirs",
-          reward_en: "300M gold + 5 sapphires",
+          objective: { fr: "3G troupes enrôlées", en: "3B troops enlisted" },
+          reward: { fr: "300M or + 5 saphirs", en: "300M gold + 5 sapphires" },
         },
       ],
     };
@@ -74,7 +69,7 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
       bronze: {
         seasonDurationDays: 21,
         events: [
-          { name: "A", duration: 999, tiers: [] },
+          { name: { fr: "A" }, duration: 999, tiers: [] },
           { name: "B", tiers: [] },
         ],
       },
@@ -105,7 +100,15 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
     const stored = {
       bronze: {
         seasonDurationDays: 21,
-        events: [{ name: "X", description_fr: "", description_en: "", duration: 24, tiers: [] }],
+        events: [
+          {
+            name: "X",
+            description_fr: "",
+            description_en: "",
+            duration: 24,
+            tiers: [],
+          },
+        ],
       },
     };
     const result = normalizeStoredValue(stored);
@@ -128,26 +131,28 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
     };
     const result = normalizeStoredValue(stored);
     expect(result.bronze.events).toHaveLength(1);
-    expect(result.bronze.events[0].name).toBe("Ok");
+    // Bloc 127 (PR 3/3) : le nom d'avant ce bloc était une chaîne unique ;
+    // la lecture le rend comme du français, ce qui le conserve.
+    expect(result.bronze.events[0].name).toEqual({ fr: "Ok" });
     expect(result.bronze.events[0].tiers).toEqual([]);
   });
 
   it("defaults a missing/non-string field to an empty string instead of throwing", () => {
     const stored = {
-      bronze: { seasonDurationDays: 21, events: [{ tiers: [{ objective_fr: 5 }] }] },
+      bronze: {
+        seasonDurationDays: 21,
+        events: [{ tiers: [{ objective_fr: 5 }] }],
+      },
     };
     const result = normalizeStoredValue(stored);
     expect(result.bronze.events[0]).toMatchObject({
-      name: "",
-      description_fr: "",
-      description_en: "",
+      name: {},
+      description: {},
       duration: 24,
     });
     expect(result.bronze.events[0].tiers[0]).toEqual({
-      objective_fr: "",
-      objective_en: "",
-      reward_fr: "",
-      reward_en: "",
+      objective: {},
+      reward: {},
     });
   });
 
@@ -172,7 +177,15 @@ describe("Bloc60/77: events-server normalizeStoredValue", () => {
     const withEvent = normalizeStoredValue({
       bronze: {
         seasonDurationDays: 21,
-        events: [{ name: "X", description_fr: "", description_en: "", duration: 24, tiers: [] }],
+        events: [
+          {
+            name: "X",
+            description_fr: "",
+            description_en: "",
+            duration: 24,
+            tiers: [],
+          },
+        ],
       },
     });
     const withoutEvent = normalizeStoredValue({});

@@ -7,7 +7,7 @@ import {
   parseLocalizedField,
   type LocalizedField,
 } from "./localized-field";
-import { contentPairLocales, localizedText } from "./translations";
+import { localizedText } from "./translations";
 
 /**
  * Bloc 127/A.2 : ce qu'un administrateur écrit dans une langue revient dans
@@ -147,8 +147,8 @@ const editorialScreens = [
     screen: "Événements",
     module: "lib/events.ts",
     editor: "components/admin-events-editor.tsx",
-    // Migré par la PR 3/3.
-    localized: false,
+    // Migré par cette PR (Bloc 127, PR 3/3) — le dernier des quatre.
+    localized: true,
   },
 ] as const;
 
@@ -177,22 +177,28 @@ describe("Bloc 127/A.2 : un écran offre exactement les langues que son modèle 
     },
   );
 
-  it("garde la constante de la paire tant qu'un écran s'en sert, et pas au-delà", async () => {
+  it("garde la machinerie de la paire tant qu'un écran s'en sert, et pas au-delà", async () => {
     const stillPaired = editorialScreens.filter(({ localized }) => !localized);
-    const translations = await source("lib/translations.ts");
+    const translations = code(await source("lib/translations.ts"));
+    // Les trois symboles que la paire faisait vivre : la liste des deux
+    // langues, son type, et la lecture qui choisissait entre elles.
+    const survivors = ["contentPairLocales", "ContentPairLocale", "pickFrEn"]
+      .filter((symbol) => new RegExp(symbol).test(translations));
     if (stillPaired.length) {
-      expect([...contentPairLocales]).toEqual(["fr", "en"]);
+      // Tant qu'un modèle stocke une paire, la constante doit exister : c'est
+      // elle qui empêche son éditeur d'offrir plus de langues qu'il n'en garde.
       expect(
-        contentPairLocales.every((code) => launchLocales.includes(code)),
-      ).toBe(true);
-    } else {
-      // La PR 3 emporte le dernier écran : la paire n'a alors plus de modèle
-      // derrière elle, et une constante qui survit à son dernier lecteur est
-      // ce que le prochain éditeur reprendra par erreur.
-      expect(
-        /contentPairLocales/.test(code(translations)),
-        "plus aucun écran ne stocke de paire : la constante doit partir avec le dernier",
-      ).toBe(false);
+        survivors,
+        `${stillPaired.map(({ screen }) => screen).join(", ")} stocke(nt) encore une paire`,
+      ).toContain("contentPairLocales");
+      return;
     }
+    // La PR 3/3 emporte le dernier écran : la paire n'a plus de modèle
+    // derrière elle, et un symbole qui survit à son dernier lecteur est ce que
+    // le prochain éditeur reprendra par erreur.
+    expect(
+      survivors,
+      "plus aucun écran ne stocke de paire : ces symboles doivent partir avec le dernier",
+    ).toEqual([]);
   });
 });

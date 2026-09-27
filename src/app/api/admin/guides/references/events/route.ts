@@ -16,19 +16,39 @@ import {
 } from "@/lib/events";
 import { leagues } from "@/lib/player-settings";
 import {
+  localizedField,
+  localizedFieldOrPair,
   saveReferenceTable,
-  stringField,
 } from "@/services/reference-table-admin";
+import {
+  readableInEveryLocale,
+  readableWhenWritten,
+} from "@/lib/localized-field";
 
+// Bloc 127 (PR 3/3) : les deux champs d'un palier passent de la paire FR/EN
+// à un champ par langue. `localizedFieldOrPair` (service partagé) accepte
+// encore l'ancienne charge utile : pendant la fenêtre de déploiement, un
+// onglet d'administration ouvert avant la livraison envoie toujours la paire,
+// et sans ce repli l'enregistrement effacerait les textes en répondant 200
+// (revue Codex P1 sur la PR #167).
+//
+// `readableInEveryLocale` : un palier sans objectif ni récompense lisibles
+// est une ligne vide dans le tableau public. L'écran les exigeait déjà — dans
+// la langue ouverte, faute de mieux ; la règle devient « lisible par tout
+// visiteur », c'est-à-dire écrite au moins en français ou en anglais, les
+// deux langues sur lesquelles `localizedText` se replie.
 function parseTier(raw: unknown): EventTierRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid tier");
   const source = raw as Record<string, unknown>;
-  return {
-    objective_fr: stringField(source.objective_fr),
-    objective_en: stringField(source.objective_en),
-    reward_fr: stringField(source.reward_fr),
-    reward_en: stringField(source.reward_en),
+  const tier = {
+    objective: localizedFieldOrPair(source, "objective"),
+    reward: localizedFieldOrPair(source, "reward"),
   };
+  if (!readableInEveryLocale(tier.objective))
+    throw new Error("missing tier objective");
+  if (!readableInEveryLocale(tier.reward))
+    throw new Error("missing tier reward");
+  return tier;
 }
 
 function parseDuration(raw: unknown): EventDuration {
@@ -52,10 +72,29 @@ function parseEvent(raw: unknown): EventRow {
   if (!raw || typeof raw !== "object") throw new Error("invalid event");
   const source = raw as Record<string, unknown>;
   if (!Array.isArray(source.tiers)) throw new Error("invalid tiers");
+  // Le nom : obligatoire, comme l'écran l'exigeait déjà — un événement sans
+  // nom n'est identifiable sur aucune des deux zones publiques (le segment de
+  // la frise et la tuile). La description reste facultative, donc
+  // `readableWhenWritten` : vide, ou lisible par tous, jamais l'entre-deux
+  // d'un texte écrit dans une seule langue et blanc pour les autres.
+  // Le nom d'avant ce bloc était une **chaîne**, pas une paire :
+  // `localizedFieldOrPair` ne sait pas la reconnaître — il voit un `name`
+  // défini et le passe à l'analyseur strict, qui refuse tout ce qui n'est pas
+  // un objet. Un onglet ouvert avant la livraison verrait donc son
+  // enregistrement rejeté en 400, alors que le filet existe précisément pour
+  // qu'il passe (revue Codex P2 sur la PR #169). La chaîne devient du
+  // français, exactement comme la migration la convertit en base.
+  const name =
+    typeof source.name === "string"
+      ? localizedField({ fr: source.name })
+      : localizedFieldOrPair(source, "name");
+  const description = localizedFieldOrPair(source, "description");
+  if (!readableInEveryLocale(name)) throw new Error("missing event name");
+  if (!readableWhenWritten(description))
+    throw new Error("missing fallback translation");
   return {
-    name: stringField(source.name),
-    description_fr: stringField(source.description_fr),
-    description_en: stringField(source.description_en),
+    name,
+    description,
     duration: parseDuration(source.duration),
     color: parseColor(source.color),
     tiers: source.tiers.map(parseTier),
@@ -98,11 +137,14 @@ export async function PUT(request: Request) {
     await saveReferenceTable({
       key: eventsReferenceKey,
       target: "events",
+      // Bloc 127 (PR 3/3) : la paire `description_fr`/`description_en` laisse
+      // la place au champ unique par langue. `color` manquait déjà à cette
+      // liste avant ce bloc — elle décrit le journal d'audit, pas la forme
+      // enregistrée, et la corriger ici dépasserait cette PR.
       columns: [
         "seasonDurationDays",
         "name",
-        "description_fr",
-        "description_en",
+        "description",
         "duration",
         "tiers",
       ],
