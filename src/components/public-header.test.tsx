@@ -68,8 +68,8 @@ function renderHeader(guides: SiteSearchGuide[] = []) {
  * c'était un doublon fonctionnel, pas seulement visuel.
  *
  * Ce que ces tests gardent : les trois boutons qui restent, l'absence de la
- * loupe, et le fait que le panneau s'ouvre sans rien attraper — le champ de
- * recherche reste simplement atteignable, il ne réclame pas le focus.
+ * loupe, et le focus que l'ouverture pose sur le panneau — sur le panneau,
+ * jamais sur le champ de recherche.
  */
 describe("PublicHeader", () => {
   it("part panneau fermé, le bouton menu le disant", () => {
@@ -152,25 +152,47 @@ describe("PublicHeader", () => {
   });
 
   /**
-   * Bloc 141 : ouvrir le menu ne déplace le focus nulle part. La loupe le
-   * posait dans le champ ; le menu ne reprend pas ce geste, sans quoi le
-   * clavier logiciel se lèverait à chaque ouverture du panneau, y compris
-   * pour qui l'ouvre seulement pour naviguer. Le champ reste ce qu'il doit
-   * être : présent, nommé, et focusable quand on le lui demande.
+   * Bloc 141, revue Codex : le panneau précède les boutons dans le DOM, donc
+   * sans déplacement du focus une tabulation depuis le bouton menu saute
+   * par-dessus tout ce que l'ouverture vient de révéler. L'ouverture pose
+   * donc le focus sur le panneau.
+   *
+   * Sur le panneau, et non sur le champ de recherche : un conteneur ne lève
+   * pas le clavier logiciel, une zone de saisie si.
    */
-  it("ouvre le panneau sans prendre le focus, le champ restant focusable", async () => {
+  it("place le focus sur le panneau en l'ouvrant", async () => {
+    renderHeader();
+    fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+    const panel = document.getElementById("public-header-panel")!;
+    await vi.waitFor(() => expect(panel).toHaveFocus());
+  });
+
+  it("ne pose jamais le focus dans le champ de recherche", async () => {
     renderHeader();
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
     const field = screen.getByRole("searchbox", {
       name: "Rechercher sur le site",
     });
-    // Le focus retiré se posait dans une frame d'animation : l'affirmation
-    // doit survivre à ce délai pour mordre si quelqu'un le réintroduit.
+    // Le focus se pose dans une frame d'animation : l'affirmation doit
+    // survivre à ce délai pour mordre si quelqu'un vise le champ.
     await new Promise((resolve) => requestAnimationFrame(resolve));
     expect(field).not.toHaveFocus();
 
+    // Il reste atteignable, simplement : c'est la tabulation qui y mène.
     field.focus();
     expect(field).toHaveFocus();
+  });
+
+  /**
+   * Le panneau ne doit pas s'insérer dans l'ordre de tabulation : il reçoit
+   * le focus qu'on lui donne, il ne le prend pas au passage.
+   */
+  it("garde le panneau hors de l'ordre de tabulation", () => {
+    renderHeader();
+    expect(document.getElementById("public-header-panel")).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
   });
 
   it("désigne le panneau que le bouton menu commande", () => {

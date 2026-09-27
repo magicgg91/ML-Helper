@@ -1,7 +1,7 @@
 "use client";
 
 import { MenuIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { CalculatorAvailability } from "@/lib/calculator-catalog";
 import type { SiteSearchGuide } from "@/lib/site-search";
@@ -25,9 +25,18 @@ import { ThemeToggle } from "./theme-toggle";
  * seule destination : un doublon fonctionnel, pas seulement visuel. La loupe
  * part, le menu reste.
  *
- * Le panneau ouvert ne prend le focus nulle part : le champ de recherche s'y
- * atteint comme le reste, en le touchant ou au clavier. Ouvrir le menu pour
- * naviguer ne doit pas lever le clavier logiciel.
+ * Ouvrir le panneau y place le focus — sur le panneau lui-même, pas sur le
+ * champ de recherche. La nuance fait tout : un conteneur n'est pas une zone
+ * de saisie, donc aucun clavier logiciel ne se lève, alors qu'ouvrir le menu
+ * pour naviguer est le cas le plus courant.
+ *
+ * Sans ce déplacement, le panneau serait hors d'atteinte au clavier : il
+ * précède les boutons dans le DOM (voir plus bas pourquoi), donc une
+ * tabulation depuis le bouton menu sautait par-dessus tout ce que
+ * l'ouverture venait de révéler, et rejoignait la page. La loupe masquait ce
+ * défaut en posant le focus dans le champ ; elle partie, il fallait le
+ * corriger. Le focus posé sur le panneau, la tabulation suivante entre
+ * dedans, sur le champ de recherche.
  *
  * Une seule structure sert les deux tailles d'écran :
  *
@@ -54,13 +63,35 @@ export function PublicHeader({
   locales: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Le focus se pose après le rendu : tant que le panneau est fermé, le CSS
+  // mobile le laisse en `display: none`, et un élément non affiché ne prend
+  // pas le focus.
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    setOpen(true);
+    requestAnimationFrame(() => panelRef.current?.focus());
+  }
 
   return (
     <header className="public-header" data-open={open}>
       <Link className="brand" href="/">
         <span className="brand-name">{brand}</span>
       </Link>
-      <div className="public-header-panel" id="public-header-panel">
+      {/* `tabIndex={-1}` : le panneau n'entre pas dans l'ordre de tabulation,
+          il reçoit seulement le focus que lui donne l'ouverture. L'indicateur
+          de focus est celui du Bloc 92, commun à tout `[tabindex]` — visible
+          quand on ouvre au clavier, absent quand on ouvre au doigt. */}
+      <div
+        className="public-header-panel"
+        id="public-header-panel"
+        ref={panelRef}
+        tabIndex={-1}
+      >
         {/* Les deux enfants du panneau ferment sur navigation : suivre un
             résultat de recherche mène ailleurs tout autant qu'un lien de
             navigation, et le gabarit public survit à la navigation. */}
@@ -84,7 +115,7 @@ export function PublicHeader({
           aria-label={labels.menu}
           aria-expanded={open}
           aria-controls="public-header-panel"
-          onClick={() => setOpen((wasOpen) => !wasOpen)}
+          onClick={toggle}
         >
           {open ? (
             <XIcon aria-hidden="true" size={18} />
