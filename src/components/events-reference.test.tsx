@@ -9,23 +9,21 @@ function catalogWith(overrides: Partial<EventsCatalog>): EventsCatalog {
 }
 
 const recruiterEvent = {
-  name: "Recruteur",
-  description_fr: "Enrôle un maximum de troupes",
-  description_en: "Enlist as many troops as possible",
+  name: { fr: "Recruteur" },
+  description: {
+    fr: "Enrôle un maximum de troupes",
+    en: "Enlist as many troops as possible",
+  },
   duration: 72 as const,
   color: "violet" as const,
   tiers: [
     {
-      objective_fr: "1G troupes enrôlées",
-      objective_en: "1B troops enlisted",
-      reward_fr: "100M or + 250 éclats",
-      reward_en: "100M gold + 250 shards",
+      objective: { fr: "1G troupes enrôlées", en: "1B troops enlisted" },
+      reward: { fr: "100M or + 250 éclats", en: "100M gold + 250 shards" },
     },
     {
-      objective_fr: "3G troupes enrôlées",
-      objective_en: "3B troops enlisted",
-      reward_fr: "300M or + 5 saphirs",
-      reward_en: "300M gold + 5 sapphires",
+      objective: { fr: "3G troupes enrôlées", en: "3B troops enlisted" },
+      reward: { fr: "300M or + 5 saphirs", en: "300M gold + 5 sapphires" },
     },
   ],
 };
@@ -87,8 +85,8 @@ describe("EventsReferenceTable", () => {
       bronze: {
         seasonDurationDays: 21,
         events: [
-          { ...recruiterEvent, name: "Premier", duration: 24 },
-          { ...recruiterEvent, name: "Second", duration: 48 },
+          { ...recruiterEvent, name: { fr: "Premier" }, duration: 24 },
+          { ...recruiterEvent, name: { fr: "Second" }, duration: 48 },
         ],
       },
     });
@@ -159,9 +157,8 @@ describe("EventsReferenceTable", () => {
         seasonDurationDays: 21,
         events: [
           {
-            name: "Vide",
-            description_fr: "",
-            description_en: "",
+            name: { fr: "Vide" },
+            description: {},
             duration: 24,
             color: "violet",
             tiers: [],
@@ -184,8 +181,8 @@ describe("EventsReferenceTable", () => {
         bronze: {
           seasonDurationDays: 21,
           events: [
-            { ...recruiterEvent, name: "Premier" },
-            { ...recruiterEvent, name: "Second" },
+            { ...recruiterEvent, name: { fr: "Premier" } },
+            { ...recruiterEvent, name: { fr: "Second" } },
           ],
         },
       });
@@ -231,9 +228,8 @@ describe("EventsReferenceTable", () => {
           seasonDurationDays: 21,
           events: [
             {
-              name: "Vide",
-              description_fr: "",
-              description_en: "",
+              name: { fr: "Vide" },
+              description: {},
               duration: 24,
               color: "violet",
               tiers: [],
@@ -248,9 +244,9 @@ describe("EventsReferenceTable", () => {
         tile.querySelector(".events-tile-badge-objective"),
       ).not.toBeInTheDocument();
       // Bloc 81/F: the only event in the list, so J0-J1 for a 24h event.
-      expect(tile.querySelector(".events-tile-badge-duration")).toHaveTextContent(
-        "J0-J1 (24h)",
-      );
+      expect(
+        tile.querySelector(".events-tile-badge-duration"),
+      ).toHaveTextContent("J0-J1 (24h)");
     });
 
     it("clicking the tile opens it, revealing every tier (Objectif + Récompense), clicking again closes it", () => {
@@ -283,12 +279,12 @@ describe("EventsReferenceTable", () => {
   // exactly filling the season with no gap).
   describe("Bloc77/D: season timeline", () => {
     const diamondLegendEvents = [
-      { ...recruiterEvent, name: "E1", duration: 72 as const },
-      { ...recruiterEvent, name: "E2", duration: 72 as const },
-      { ...recruiterEvent, name: "E3", duration: 72 as const },
-      { ...recruiterEvent, name: "E4", duration: 72 as const },
-      { ...recruiterEvent, name: "E5", duration: 24 as const },
-      { ...recruiterEvent, name: "E6", duration: 24 as const },
+      { ...recruiterEvent, name: { fr: "E1" }, duration: 72 as const },
+      { ...recruiterEvent, name: { fr: "E2" }, duration: 72 as const },
+      { ...recruiterEvent, name: { fr: "E3" }, duration: 72 as const },
+      { ...recruiterEvent, name: { fr: "E4" }, duration: 72 as const },
+      { ...recruiterEvent, name: { fr: "E5" }, duration: 24 as const },
+      { ...recruiterEvent, name: { fr: "E6" }, duration: 24 as const },
     ];
 
     function segmentStyle(index: number) {
@@ -340,7 +336,7 @@ describe("EventsReferenceTable", () => {
         ".events-timeline",
       ) as HTMLElement;
       for (const event of diamondLegendEvents) {
-        expect(within(timeline).getByText(event.name)).toBeInTheDocument();
+        expect(within(timeline).getByText(event.name.fr!)).toBeInTheDocument();
       }
       expect(
         timeline.querySelector(".events-timeline-duration"),
@@ -354,13 +350,17 @@ describe("EventsReferenceTable", () => {
         within(timeline).queryByText("100M or + 250 éclats"),
       ).not.toBeInTheDocument();
       expect(within(timeline).queryByText("Objectif")).not.toBeInTheDocument();
-      expect(within(timeline).queryByText("Récompense")).not.toBeInTheDocument();
+      expect(
+        within(timeline).queryByText("Récompense"),
+      ).not.toBeInTheDocument();
     });
 
     it("renders no timeline for a league with no events", () => {
       render(<EventsReferenceTable catalog={emptyEventsCatalog} />);
       fireEvent.click(screen.getByRole("button", { name: "Bronze" }));
-      expect(document.querySelector(".events-timeline")).not.toBeInTheDocument();
+      expect(
+        document.querySelector(".events-timeline"),
+      ).not.toBeInTheDocument();
     });
 
     // Bloc 81/E: revises Bloc 79/D's flat every-24h scale — a LABELED tick
@@ -469,13 +469,13 @@ describe("EventsReferenceTable", () => {
           events: [
             {
               ...recruiterEvent,
-              name: "Architecte",
+              name: { fr: "Architecte" },
               duration: 72,
               color: "sapphire",
             },
             {
               ...recruiterEvent,
-              name: "Recruteur",
+              name: { fr: "Recruteur" },
               duration: 24,
               color: "amber-bright",
             },
@@ -483,7 +483,7 @@ describe("EventsReferenceTable", () => {
             // the admin, not derived from the (identical) name.
             {
               ...recruiterEvent,
-              name: "Architecte",
+              name: { fr: "Architecte" },
               duration: 24,
               color: "sapphire",
             },
@@ -539,7 +539,13 @@ describe("EventsReferenceTable", () => {
       const catalog = catalogWith({
         diamond: {
           seasonDurationDays: 14,
-          events: [{ ...recruiterEvent, name: "Enrôleur de troupes", duration: 72 }],
+          events: [
+            {
+              ...recruiterEvent,
+              name: { fr: "Enrôleur de troupes" },
+              duration: 72,
+            },
+          ],
         },
       });
       render(<EventsReferenceTable catalog={catalog} />);
@@ -561,11 +567,17 @@ describe("EventsReferenceTable", () => {
         diamond: {
           seasonDurationDays: 14,
           events: [
-            { ...recruiterEvent, name: "Enrôleur de troupes", duration: 72 },
+            {
+              ...recruiterEvent,
+              name: { fr: "Enrôleur de troupes" },
+              duration: 72,
+            },
           ],
         },
       });
-      const { unmount } = render(<EventsReferenceTable catalog={wideCatalog} />);
+      const { unmount } = render(
+        <EventsReferenceTable catalog={wideCatalog} />,
+      );
       fireEvent.click(screen.getByRole("button", { name: "Diamant" }));
       const wideLabel = document.querySelector(
         ".events-timeline-label",
@@ -577,7 +589,11 @@ describe("EventsReferenceTable", () => {
         bronze: {
           seasonDurationDays: 21,
           events: [
-            { ...recruiterEvent, name: "Enrôleur de troupes", duration: 24 },
+            {
+              ...recruiterEvent,
+              name: { fr: "Enrôleur de troupes" },
+              duration: 24,
+            },
           ],
         },
       });

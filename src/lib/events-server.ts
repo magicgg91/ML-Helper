@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { parseLocalizedFieldPair } from "./localized-field";
 import { leagues } from "./player-settings";
 import {
   emptyEventsCatalog,
@@ -34,15 +35,22 @@ function freshEmptyCatalog(): EventsCatalog {
   ) as EventsCatalog;
 }
 
+// Bloc 127 (PR 3/3) : la lecture sert les deux formes — le champ par langue,
+// et la paire FR/EN d'avant la migration. Le repli n'est pas un substitut à
+// la migration mais son filet : une sauvegarde restaurée d'avant, ou une
+// image déployée avant que le SQL n'ait tourné, rendraient sinon des paliers
+// muets. Il part avec la migration, pas avec cette PR.
 function normalizeTier(raw: unknown): EventTierRow | null {
   if (!isPlainObject(raw)) return null;
   return {
-    objective_fr:
-      typeof raw.objective_fr === "string" ? raw.objective_fr : "",
-    objective_en:
-      typeof raw.objective_en === "string" ? raw.objective_en : "",
-    reward_fr: typeof raw.reward_fr === "string" ? raw.reward_fr : "",
-    reward_en: typeof raw.reward_en === "string" ? raw.reward_en : "",
+    objective: parseLocalizedFieldPair(raw.objective, {
+      fr: raw.objective_fr,
+      en: raw.objective_en,
+    }),
+    reward: parseLocalizedFieldPair(raw.reward, {
+      fr: raw.reward_fr,
+      en: raw.reward_en,
+    }),
   };
 }
 
@@ -67,11 +75,20 @@ function normalizeEvent(raw: unknown): EventRow | null {
   if (!isPlainObject(raw)) return null;
   const rawTiers = Array.isArray(raw.tiers) ? raw.tiers : [];
   return {
-    name: typeof raw.name === "string" ? raw.name : "",
-    description_fr:
-      typeof raw.description_fr === "string" ? raw.description_fr : "",
-    description_en:
-      typeof raw.description_en === "string" ? raw.description_en : "",
+    // Le nom était une chaîne unique, pas une paire : la relire comme du
+    // français est ce qui la conserve. `parseLocalizedField` rend `{}` pour
+    // une chaîne, donc la même fonction sert les deux formes — l'objet quand
+    // il est là, l'ancienne chaîne sinon. Un visiteur allemand lisait déjà
+    // ce texte tel quel ; il le lit maintenant par repli, au lieu de n'avoir
+    // que lui.
+    name: parseLocalizedFieldPair(raw.name, {
+      fr: raw.name,
+      en: undefined,
+    }),
+    description: parseLocalizedFieldPair(raw.description, {
+      fr: raw.description_fr,
+      en: raw.description_en,
+    }),
     duration: normalizeDuration(raw.duration),
     color: normalizeColor(raw.color),
     tiers: rawTiers

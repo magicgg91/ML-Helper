@@ -168,23 +168,15 @@ export function hasLocalizedText(value: unknown, locale: string): boolean {
  * NOT cross-fall-back: an absent override there means "use the built-in
  * label", not "use the other language".
  */
-/**
- * Bloc 125 §9: the languages a reference's free text is actually stored in.
- *
- * Boutique, Événements, the Templiers catalogue and the equipment labels each
- * keep one French field and one other-language field, which `pickFrEn` above
- * reads back. Their editors offered all five launch locales anyway, and
- * collapsed DE/ES/TR onto the English one — so typing a German name saved it
- * into the English column, showed it back on the German tab (which reads the
- * same column), and destroyed the English text without saying so. The tabs
- * offer this pair instead: what the model holds, and nothing it does not.
- */
-export const contentPairLocales = [
-  "fr",
-  "en",
-] as const satisfies readonly LaunchLocale[];
-export type ContentPairLocale = (typeof contentPairLocales)[number];
-
-export function pickFrEn(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
+// Bloc 127 (PR 3/3) : `contentPairLocales`, `ContentPairLocale` et `pickFrEn`
+// vivaient ici. Ils décrivaient un modèle à deux langues — un champ français,
+// un champ « autre » — et la lecture qui choisissait entre les deux. Les
+// quatre écrans éditoriaux (Boutique, Templiers, libellés d'équipement,
+// Événements) stockent désormais un champ par langue (`LocalizedField`,
+// lib/localized-field.ts) et se lisent par `localizedText` ci-dessus.
+//
+// Ils sont retirés plutôt que laissés en place : c'est la propriété que
+// `content-round-trip.test.ts` exige, et pour une raison mesurée — le Bloc
+// 125 §9 est né d'un éditeur qui offrait cinq langues au-dessus d'un modèle
+// qui n'en gardait que deux. Un symbole qui survit à son dernier lecteur est
+// ce que le prochain éditeur reprendra par erreur.

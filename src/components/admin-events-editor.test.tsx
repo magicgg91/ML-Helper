@@ -30,24 +30,20 @@ const catalog: EventsCatalog = {
     seasonDurationDays: 21,
     events: [
       {
-        name: "Architecte",
-        description_fr: "Construis des bâtiments.",
-        description_en: "Build buildings.",
+        name: { fr: "Architecte" },
+        description: { fr: "Construis des bâtiments.", en: "Build buildings." },
         duration: 72,
         color: "violet",
         tiers: [
           {
-            objective_fr: "10 bâtiments",
-            objective_en: "10 buildings",
-            reward_fr: "500 or",
-            reward_en: "500 gold",
+            objective: { fr: "10 bâtiments", en: "10 buildings" },
+            reward: { fr: "500 or", en: "500 gold" },
           },
         ],
       },
       {
-        name: "Conquérant",
-        description_fr: "",
-        description_en: "",
+        name: { fr: "Conquérant" },
+        description: {},
         duration: 24,
         color: "emerald",
         tiers: [],
@@ -149,7 +145,7 @@ describe("Bloc 119: the Événements editor", () => {
     );
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
     expect(body.bronze.events[0]).toMatchObject({
-      name: "Bâtisseur",
+      name: { fr: "Bâtisseur" },
       duration: 48,
     });
   });
@@ -167,8 +163,7 @@ describe("Bloc 119: the Événements editor", () => {
     await waitFor(() => expect(request).toHaveBeenCalled());
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
     expect(body.bronze.events[0]).toMatchObject({
-      description_fr: "Construis des bâtiments.",
-      description_en: "Raise buildings.",
+      description: { fr: "Construis des bâtiments.", en: "Raise buildings." },
     });
   });
 
@@ -201,9 +196,11 @@ describe("Bloc 119: the Événements editor", () => {
     save();
     await waitFor(() => expect(request).toHaveBeenCalled());
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    // Bloc 127 (PR 3/3) : ce qui est tapé se range dans la langue ouverte —
+    // le français ici, l'onglet par défaut.
     expect(body.bronze.events[1].tiers[0]).toMatchObject({
-      objective_fr: "5 victoires",
-      reward_fr: "200 or",
+      objective: { fr: "5 victoires" },
+      reward: { fr: "200 or" },
     });
   });
 
