@@ -486,11 +486,14 @@ export function CombatReferenceTable({
       ) : null}
       {/* Bloc 76/B: each row's label comes from its own admin-editable
           metric_label once an admin has saved one for THIS visitor's own
-          locale (fr direct, every other locale reads the en field, per
-          secondaryLabel above) — falls back to this reference's own
-          translated default until then. Fixed per Codex review on PR #94: a
-          label saved from one locale's admin no longer overrides every
-          other locale's public page. */}
+          locale — and for that locale alone, per secondaryLabel above; until
+          then the label is this reference's own translated default. Fixed per
+          Codex review on PR #94: a label saved from one locale's admin no
+          longer overrides every other locale's public page.
+          Bloc 127 (PR 2/3): the override is stored per language, so each of
+          the five reads its own field. Before, only French had one — every
+          other locale read the English field, which is the leak the
+          non-fallback was meant to prevent in the first place. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
