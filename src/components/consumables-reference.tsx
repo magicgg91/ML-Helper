@@ -1,6 +1,6 @@
 "use client";
 
-import { pickFrEn } from "../lib/translations";
+import { localizedText } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { renderBoldText } from "./bold-text";
@@ -87,12 +87,12 @@ function ReferenceTileGrid({
       <h2 className="editable-reference-title">{title}</h2>
       <div className="consumable-tile-grid">
         {rows.map((row, index) => {
-          const name = pickFrEn(row.name_fr, row.name_en, locale);
-          const description = pickFrEn(
-            row.description_fr,
-            row.description_en,
-            locale,
-          );
+          // Bloc 127 : un champ par langue, lu par `localizedText` — la langue
+          // du visiteur, l'anglais à défaut, le français en dernier recours.
+          // La paire qu'il remplace ne connaissait que le français et
+          // « tout le reste », donc un visiteur allemand lisait l'anglais.
+          const name = localizedText(row.name, locale);
+          const description = localizedText(row.description, locale);
           return (
             <article className="consumable-tile" key={`${row.image}-${index}`}>
               <GameImage

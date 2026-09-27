@@ -14,6 +14,12 @@ vi.mock("@/auth/require-session", () => ({
 vi.mock("@/lib/admin-formulas-server", () => ({
   getLevelUpParameters: async () => ({}),
 }));
+// Bloc 127 : l'écran Boutique édite cinq langues et reçoit donc de la page la
+// liste de celles que Configuration a éteintes. Ce test-ci vérifie le câblage
+// des écrans, pas la base : le lecteur de langues est simulé comme les autres.
+vi.mock("@/lib/locale-settings", () => ({
+  hiddenPublicLocales: async () => [],
+}));
 vi.mock("@/lib/consumables-server", () => ({
   getConsumableCatalog: async () => ({
     intro: [],

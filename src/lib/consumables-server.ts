@@ -4,6 +4,7 @@ import {
   consumablePotionNames,
   defaultConsumableCatalog,
   parseConsumableCategory,
+  parseConsumableRow,
   type ConsumableCatalog,
   type ConsumableRow,
 } from "./consumables";
@@ -12,7 +13,13 @@ import {
 // shared module-level constant, so spreading it would leave every grouped
 // result sharing (and mutating, via push) the very same array instances.
 function freshEmptyCatalog(): ConsumableCatalog {
-  return { intro: [], advisors: [], equipment: [], expedition: [], inventory: [] };
+  return {
+    intro: [],
+    advisors: [],
+    equipment: [],
+    expedition: [],
+    inventory: [],
+  };
 }
 
 export const consumablesReferenceKey = "consumables";
@@ -26,11 +33,16 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // category: "inventory") must have them relocated on next read, not just
 // freshly-added ones. This override always wins over whatever category was
 // previously recovered/stored.
-function recoverCategory(row: {
-  category?: unknown;
-  name_fr?: unknown;
-}): ReturnType<typeof parseConsumableCategory> {
-  const nameFr = typeof row.name_fr === "string" ? row.name_fr : undefined;
+//
+// Bloc 127: the French name it recovers a category by now comes from the
+// parsed row (`name.fr`), so it reads a migrated row and a pre-migration
+// `name_fr` one alike. The shipped catalogue's French names are the keys of
+// that lookup, and they did not change.
+function recoverCategory(
+  row: { category?: unknown },
+  parsed: ConsumableRow,
+): ReturnType<typeof parseConsumableCategory> {
+  const nameFr = parsed.name.fr;
   if (nameFr && consumablePotionNames.has(nameFr)) return "expedition";
   return parseConsumableCategory(row.category, nameFr);
 }
@@ -51,28 +63,26 @@ export function normalizeStoredValue(value: unknown): ConsumableCatalog {
     const grouped = freshEmptyCatalog();
     for (const raw of value) {
       if (!isPlainObject(raw)) continue;
-      const row = { ...raw };
-      delete row.category;
-      grouped[recoverCategory(raw)].push(row as ConsumableRow);
+      const row = parseConsumableRow(raw);
+      grouped[recoverCategory(raw, row)].push(row);
     }
     return grouped;
   }
   if (isPlainObject(value)) {
     const grouped = freshEmptyCatalog();
     if (Array.isArray(value.intro))
-      grouped.intro = value.intro.filter(isPlainObject) as ConsumableRow[];
+      grouped.intro = value.intro.filter(isPlainObject).map(parseConsumableRow);
     for (const category of consumableCategories) {
       const rawRows = value[category];
       if (!Array.isArray(rawRows)) continue;
       for (const raw of rawRows) {
         if (!isPlainObject(raw)) continue;
-        const row = raw as ConsumableRow;
+        const row = parseConsumableRow(raw);
         // Codex review (PR #71): the grouped shape must re-home potions
         // too, not just the legacy flat-array path — a row saved via the
         // PUT endpoint (or a manual DB edit) under the wrong category
         // would otherwise never self-correct on later reads.
-        const nameFr =
-          typeof row.name_fr === "string" ? row.name_fr : undefined;
+        const nameFr = row.name.fr;
         const target =
           nameFr && consumablePotionNames.has(nameFr) ? "expedition" : category;
         grouped[target].push(row);
