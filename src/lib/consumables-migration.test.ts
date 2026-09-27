@@ -112,6 +112,22 @@ const storedCatalog: Record<string, unknown[]> = {
       description_en: "",
       cost: "",
     },
+    // À moitié migrée : le nom l'est déjà (et traduit en allemand), la
+    // description est restée en paire. C'est la seule forme qui atteint la
+    // branche « garder ce qui est déjà là » du SQL, champ par champ — sans
+    // cette ligne, la mutation qui remplace cette branche par un objet vide
+    // passait inaperçue (trouvé par mutation, d'où sa présence ici).
+    {
+      image: "/consumables/half.webp",
+      name: {
+        fr: "À moitié migré",
+        en: "Half migrated",
+        de: "Halb migriert",
+      },
+      description_fr: "Description restée en paire.",
+      description_en: "Description still a pair.",
+      cost: "",
+    },
   ],
 };
 
@@ -203,12 +219,12 @@ describe("Bloc 127 : la migration du catalogue Boutique", () => {
         category,
       ).toEqual(shipped.map((row) => row.name.fr));
     }
-    // Les 38 objets livrés, plus les trois cas ajoutés dans l'intro.
+    // Les 38 objets livrés, plus les quatre cas ajoutés dans l'intro.
     const total = sections.reduce(
       (count, section) => count + migrated[section].length,
       0,
     );
-    expect(total).toBe(38 + 3);
+    expect(total).toBe(38 + 4);
   });
 
   it("ne laisse aucune colonne de paire derrière elle", () => {
@@ -254,6 +270,21 @@ describe("Bloc 127 : la migration du catalogue Boutique", () => {
       en: "Coming soon",
     });
     expect(migrated.intro[2].description).toEqual({});
+  });
+
+  it("garde ce qui est déjà migré d'une ligne à moitié convertie", () => {
+    // Le nom est déjà un objet, la description est encore une paire : chaque
+    // champ suit son propre chemin, et celui qui n'a plus de paire garde sa
+    // valeur — l'allemand compris — au lieu d'être rebâti depuis rien.
+    expect(migrated.intro[3].name).toEqual({
+      fr: "À moitié migré",
+      en: "Half migrated",
+      de: "Halb migriert",
+    });
+    expect(migrated.intro[3].description).toEqual({
+      fr: "Description restée en paire.",
+      en: "Description still a pair.",
+    });
   });
 
   it("ne touche pas une ligne déjà migrée, ses cinq langues comprises", () => {
