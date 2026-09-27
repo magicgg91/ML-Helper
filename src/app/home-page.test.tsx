@@ -170,6 +170,46 @@ describe("HomePage", () => {
     );
   });
 
+  /**
+   * Bloc 142/A : les quatre surtitres — « Compagnon communautaire » sur le
+   * hero, « Simuler », « Consulter », « Apprendre » sur les trois sections —
+   * sont retirés sans être remplacés.
+   *
+   * `getTranslations` est simulé pour rendre la clé demandée : un surtitre
+   * resté en place afficherait donc son propre nom de clé, et c'est ce que
+   * ces affirmations cherchent. La classe `.eyebrow` sert ailleurs sur le
+   * site (index Outils, page d'un guide) ; elle ne doit simplement plus
+   * apparaître sur l'accueil.
+   */
+  it("n'affiche plus aucun surtitre", async () => {
+    const { container } = render(await HomePage());
+    for (const key of [
+      "eyebrow",
+      "toolsEyebrow",
+      "referentielsEyebrow",
+      "guidesEyebrow",
+    ])
+      expect(screen.queryByText(key), key).toBeNull();
+    expect(container.querySelectorAll(".eyebrow")).toHaveLength(0);
+  });
+
+  /**
+   * Bloc 142/A : et ce que le retrait ne devait pas emporter — le H2 et
+   * l'introduction de chaque section restent en place.
+   */
+  it("garde le titre et l'introduction de chaque section", async () => {
+    render(await HomePage());
+    for (const key of [
+      "toolsTitle",
+      "toolsDescription",
+      "referentielsTitle",
+      "referentielsDescription",
+      "guidesTitle",
+      "guidesDescription",
+    ])
+      expect(screen.getByText(key), key).toBeInTheDocument();
+  });
+
   it("compte les outils, les référentiels et les guides réellement accessibles", async () => {
     render(await HomePage());
     // 9 outils actifs sur 11 (xp-gain-rate et demo-attack-troops sont

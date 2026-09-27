@@ -5166,21 +5166,40 @@ body > main h1 {
   background: var(--accent-soft);
   color: var(--accent);
 }
+/* Bloc 142 : « 11 outils · 7 référentiels · 5 guides » est le repère de
+   confiance d'un visiteur qui arrive — combien le site couvre. En 13,6 px
+   gris `--muted`, il passait après tout le reste du hero.
+
+   Le traitement n'invente rien : c'est celui que le site donne déjà à un
+   décompte ailleurs (`.tool-count`, Bloc 133/C) — chasse fixe et couleur
+   d'accent —, repris ici à l'échelle du hero. La chasse fixe était déjà là
+   (§1.1) ; ce qui change est la taille (13,6 → 17 px), la graisse (600) et
+   surtout la couleur, qui sort le chiffre du gris de service.
+
+   Contrastes mesurés sur le fond de page : 9,05:1 en sombre (#c9a8ec sur
+   #14131a), 7,26:1 en clair (#5b21b6 sur #e5e7ec) — AA texte normal tenu
+   des deux côtés, sans dépendre de la taille.
+
+   La hiérarchie des titres ne bouge pas : le H1 reste à 36-54 px (§1.1), et
+   l'introduction à 18 px passe toujours avant ces 17 px. */
 .home-hero-counters {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: 1.75rem 0 0;
+  gap: 1rem;
+  margin: 2rem 0 0;
   padding: 0;
   list-style: none;
-  color: var(--muted);
+  color: var(--accent-strong);
   font-family: var(--font-mono, monospace);
-  font-size: 0.85rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
 }
+/* Le séparateur monte de `--border` à `--muted` : à cette taille, la
+   ponctuation des bordures ne se voyait plus entre deux compteurs. */
 .home-hero-counters li + li::before {
   content: "·";
-  margin-right: 0.75rem;
-  color: var(--border);
+  margin-right: 1rem;
+  color: var(--muted);
 }
 .home-hero-panel {
   padding: 1.25rem;

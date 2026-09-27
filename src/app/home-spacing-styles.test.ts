@@ -211,3 +211,48 @@ describe("Bloc 134 — le bas de page", () => {
     expect(rule(".public-footer")).toMatch(/margin-top: 4rem/);
   });
 });
+
+/**
+ * Bloc 142/B — les compteurs du hero.
+ *
+ * Le choix se documente ici plutôt que dans la seule PR : ce qui le
+ * défait n'est pas une valeur discutable mais un retour au gris de
+ * service, qui rendrait la ligne à nouveau invisible.
+ */
+describe("Bloc 142 — les compteurs du hero", () => {
+  it("les rend dans la couleur d'accent, pas dans le gris de service", () => {
+    const body = rule(".home-hero-counters")!;
+    expect(body).toMatch(/color: var\(--accent-strong\)/);
+    expect(body).not.toMatch(/color: var\(--muted\)/);
+  });
+
+  it("les grossit et les épaissit", () => {
+    const body = rule(".home-hero-counters")!;
+    expect(body).toMatch(/font-size: 1\.0625rem/);
+    expect(body).toMatch(/font-weight: 600/);
+  });
+
+  /**
+   * §1.1 : la chasse fixe était déjà le traitement des compteurs, et c'est
+   * aussi celui de `.tool-count`. Le Bloc 142 la garde — la reprendre ici
+   * évite qu'un futur passage en police de texte la fasse disparaître.
+   */
+  it("garde la chasse fixe, commune aux décomptes du site", () => {
+    expect(rule(".home-hero-counters")).toMatch(/font-family: var\(--font-mono/);
+    expect(rule(".tool-count")).toMatch(/font-family: var\(--font-mono/);
+  });
+
+  /**
+   * La contrainte que le bloc pose explicitement : le H1 reste le plus
+   * grand titre de la page. Sa borne basse (36 px) doit dépasser les
+   * compteurs (17 px).
+   */
+  it("laisse le H1 plus grand que les compteurs, à toute largeur", () => {
+    const h1 = rule(".home-hero-copy h1")!;
+    const min = h1.match(/font-size: clamp\((\d+(?:\.\d+)?)rem/)?.[1];
+    const counters = rule(".home-hero-counters")!.match(
+      /font-size: (\d+(?:\.\d+)?)rem/,
+    )?.[1];
+    expect(Number(min)).toBeGreaterThan(Number(counters));
+  });
+});

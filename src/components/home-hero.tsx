@@ -6,6 +6,10 @@ import { GameImage } from "./game-image";
  * Bloc 129 §3.1 : le hero de l'accueil — ce que fait le site à gauche, les
  * cinq entrées les plus utilisées à droite.
  *
+ * Bloc 142 : le surtitre « Compagnon communautaire » a été retiré, sans être
+ * remplacé. Le H1 ouvre donc la colonne, et les compteurs qui la ferment
+ * portent seuls le repère de confiance que le surtitre diluait.
+ *
  * Le composant ne va rien chercher : la page lui passe des libellés déjà
  * traduits et des compteurs déjà calculés. C'est ce qui permet de tester la
  * mise en page sans base de données, et de garder le calcul des compteurs
@@ -22,7 +26,6 @@ export type HeroEntry = {
 };
 
 export function HomeHero({
-  eyebrow,
   title,
   intro,
   actions,
@@ -30,7 +33,6 @@ export function HomeHero({
   panelTitle,
   entries,
 }: {
-  eyebrow: string;
   title: string;
   intro: string;
   /**
@@ -49,7 +51,6 @@ export function HomeHero({
   return (
     <section className="home-hero">
       <div className="home-hero-copy">
-        <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="home-hero-intro">{intro}</p>
         <div className="home-hero-actions">
