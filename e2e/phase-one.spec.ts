@@ -4349,7 +4349,7 @@ test("Bloc 125/8: each edit screen is named after what it edits, in French", asy
 // stocke maintenant les cinq langues, donc elle les offre — et ce qui est tapé
 // en allemand s'enregistre en allemand et s'affiche en allemand. Les trois
 // autres écrans gardent leur paire jusqu'aux PR 2 et 3 de ce bloc.
-test("Bloc 125/9: fr/en content offers fr and en, and five-language content says which are hidden", async ({
+test("Bloc 127: le contenu éditorial offre les cinq langues, et dit lesquelles sont masquées", async ({
   browser,
 }) => {
   test.setTimeout(120_000);
@@ -4365,27 +4365,15 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 
-  // Les écrans dont les lignes tiennent un champ français et un pour tout le
-  // reste. Aucun ne peut offrir un onglet pour une colonne qu'il n'a pas.
-  // (La Boutique en est sortie en PR 1/3 du Bloc 127, les Templiers et les
-  // Équipements en PR 2/3 — voir plus bas ; il ne reste que les Événements,
-  // que la PR 3/3 emportera.)
-  for (const url of ["/admin/referentiels/reference-events"]) {
-    await page.goto(url);
-    await expect(
-      page.getByRole("button", { name: /^FR — Français/ }),
-      `${url}: the French tab`,
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /^EN — English/ }),
-      `${url}: the English tab`,
-    ).toBeVisible();
-    for (const absent of [/^DE — /, /^ES — /, /^TR — /])
-      await expect(
-        page.getByRole("button", { name: absent }),
-        `${url}: ${absent} has no column to write to`,
-      ).toHaveCount(0);
-  }
+  // Ce test portait une liste d'écrans à deux langues : ceux dont les lignes
+  // tenaient un champ français et un pour tout le reste, et qui ne pouvaient
+  // donc pas offrir d'onglet pour une colonne qu'ils n'avaient pas. La
+  // Boutique en est sortie en PR 1/3 du Bloc 127, les Templiers et les
+  // Équipements en PR 2/3, les Événements en PR 3/3 : **la liste est vide**,
+  // et une boucle sur rien ne vérifie rien. Ce que les quatre écrans doivent
+  // faire maintenant se vérifie plus bas, écran par écran — et le pendant
+  // côté code, « un écran offre exactement les langues que son modèle
+  // stocke », est tenu par `src/lib/content-round-trip.test.ts`.
 
   // Bloc 127 : la Boutique offre les cinq langues du site, parce qu'elle les
   // stocke. Aller-retour complet, sur la langue que la paire ne pouvait pas
@@ -4490,10 +4478,24 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
       `Événements : l'onglet ${code}`,
     ).toBeVisible();
 
-  // Le premier événement de Bronze existe depuis le début de ce scénario
-  // (« Recruteur »), avec son palier. On déplie l'événement pour atteindre
-  // ses champs de palier.
+  // L'événement est créé ici plutôt que repris d'un test précédent : ce
+  // scénario tourne dans son propre contexte, et dépendre de ce qu'un autre
+  // test a laissé en base rend l'échec illisible quand cet autre test change.
   const eventName = () => page.getByLabel("Nom de l’événement 1");
+  const tierField = (field: string) =>
+    page.getByLabel(new RegExp(`^${field} du palier 1 de `)).first();
+  if ((await eventName().count()) === 0) {
+    await page.getByTestId("add-event-bronze").click();
+    await eventName().fill("Recruteur");
+    await page.getByTestId("add-tier-bronze-0").click();
+    // Le nom et les deux champs du palier sont obligatoires, et la règle est
+    // « lisible par tout visiteur » : le français suffit, une langue isolée
+    // non. C'est ce que la route refuserait.
+    await tierField("Objectif").fill("1G troupes enrôlées");
+    await tierField("Récompense").fill("100M or");
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  }
   const frenchEventName = await eventName().inputValue();
   expect(frenchEventName, "l'événement de Bronze a bien un nom").not.toBe("");
 
@@ -4508,13 +4510,6 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await eventName().fill("Rekrutierer (DE)");
 
   // Et le palier, deux niveaux plus bas : objectif et récompense.
-  const tierField = (field: string) =>
-    page.getByLabel(new RegExp(`^${field} du palier 1 de `)).first();
-  if ((await tierField("Objectif").count()) === 0)
-    await page
-      .getByRole("button", { name: /Palier|palier/ })
-      .first()
-      .click();
   await expect(tierField("Objectif")).toBeVisible();
   expect(
     await tierField("Objectif").inputValue(),
