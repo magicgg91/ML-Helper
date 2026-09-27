@@ -1122,6 +1122,7 @@
       "row-label": "Row {row} {field}",
       "expedition-row-label": "Expedition row {row} {field}",
       "required": "This field is required.",
+      "required-fallback": "Every item needs a name and a description in French or English — the other languages are optional.",
       "minimum": "The minimum value is {min}.",
       "saving": "Saving…",
       "save-all-error": "Failed to save one or more tables on this page.",

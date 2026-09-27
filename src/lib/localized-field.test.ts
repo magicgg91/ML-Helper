@@ -7,6 +7,7 @@ import {
   localizedFieldToStore,
   parseLocalizedField,
   parseLocalizedFieldPair,
+  readableInEveryLocale,
 } from "./localized-field";
 import { localizedText } from "./translations";
 
@@ -20,10 +21,12 @@ import { localizedText } from "./translations";
  */
 describe("Bloc 127/A.1 : le champ éditorial, par langue", () => {
   it("relit les langues dans lesquelles il est écrit, et pas les autres", () => {
-    expect(parseLocalizedField({ fr: "Commandant", de: "Kommandant" })).toEqual({
-      fr: "Commandant",
-      de: "Kommandant",
-    });
+    expect(parseLocalizedField({ fr: "Commandant", de: "Kommandant" })).toEqual(
+      {
+        fr: "Commandant",
+        de: "Kommandant",
+      },
+    );
     expect(parseLocalizedField({})).toEqual({});
     for (const stored of [null, undefined, "Commandant", 42, []])
       expect(parseLocalizedField(stored)).toEqual({});
@@ -32,7 +35,9 @@ describe("Bloc 127/A.1 : le champ éditorial, par langue", () => {
   it("ignore une langue que le site ne publie pas", () => {
     // Une clé que personne ne peut éditer et que rien n'affiche n'a pas à
     // revenir comme si c'était une traduction.
-    expect(parseLocalizedField({ fr: "Oui", jp: "はい" })).toEqual({ fr: "Oui" });
+    expect(parseLocalizedField({ fr: "Oui", jp: "はい" })).toEqual({
+      fr: "Oui",
+    });
   });
 
   it("tient une langue blanche pour absente, à la lecture comme à l'écriture", () => {
@@ -104,6 +109,42 @@ describe("Bloc 127/A.1 : le champ éditorial, par langue", () => {
     it("rend un champ vide quand ni l'un ni l'autre n'est écrit", () => {
       expect(parseLocalizedFieldPair({}, { fr: "", en: "" })).toEqual({});
       expect(parseLocalizedFieldPair(null, { fr: null, en: 7 })).toEqual({});
+    });
+  });
+
+  describe("ce que tous les visiteurs peuvent lire", () => {
+    it("dit vrai exactement quand aucune langue ne rend un vide", () => {
+      // La propriété plutôt que la règle : `readableInEveryLocale` doit dire
+      // oui exactement quand `localizedText` rend un texte à chacune des
+      // langues du site. Écrite ainsi, elle ne peut pas dériver du repli
+      // qu'elle résume (langue demandée, puis anglais, puis français).
+      const cases: Array<Partial<Record<string, string>>> = [
+        {},
+        { fr: "Commandant" },
+        { en: "Commander" },
+        { de: "Kommandant" },
+        { de: "Kommandant", es: "Comandante" },
+        { fr: "Commandant", de: "Kommandant" },
+        { en: "Commander", tr: "Komutan" },
+      ];
+      for (const written of cases) {
+        const field = parseLocalizedField(written);
+        const everyLocaleReads = launchLocales.every(
+          (locale) => localizedText(field, locale) !== "",
+        );
+        expect(readableInEveryLocale(field), JSON.stringify(written)).toBe(
+          everyLocaleReads,
+        );
+      }
+    });
+
+    it("refuse une ligne écrite dans une langue sans repli", () => {
+      // Revue Codex (PR #167, P2) : un objet nommé en allemand seul est blanc
+      // pour un visiteur anglais, espagnol, turc — et français.
+      const german = parseLocalizedField({ de: "Kommandant" });
+      expect(readableInEveryLocale(german)).toBe(false);
+      expect(localizedText(german, "en")).toBe("");
+      expect(localizedText(german, "de")).toBe("Kommandant");
     });
   });
 

@@ -292,6 +292,39 @@ describe("Bloc 119: the Boutique editor", () => {
     expect(header).toHaveTextContent("1 objet");
   });
 
+  it("Bloc127: refuse une ligne écrite dans une langue sans repli public", async () => {
+    // Revue Codex (PR #167, P2) : le repli va de la langue du visiteur à
+    // l'anglais puis au français. Un objet nommé en allemand seul serait donc
+    // blanc pour tous les autres — et l'écran l'acceptait.
+    const request = renderEditor();
+    for (const code of ["FR", "EN"]) {
+      fireEvent.click(
+        screen.getByRole("button", { name: new RegExp(`^${code}`) }),
+      );
+      fireEvent.change(within(panel()).getByLabelText("Nom"), {
+        target: { value: "" },
+      });
+      fireEvent.change(
+        within(panel()).getByLabelText("Description · Markdown"),
+        { target: { value: "" } },
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: /^DE/ }));
+    fireEvent.change(within(panel()).getByLabelText("Nom"), {
+      target: { value: "Willkommen" },
+    });
+    fireEvent.change(within(panel()).getByLabelText("Description · Markdown"), {
+      target: { value: "## Titel" },
+    });
+    save();
+    expect(
+      await screen.findByText(
+        "Chaque objet doit avoir un nom et une description en français ou en anglais — les autres langues sont facultatives.",
+      ),
+    ).toBeInTheDocument();
+    expect(request).not.toHaveBeenCalled();
+  });
+
   it("refuses to save an item with no name in any language", async () => {
     const request = renderEditor();
     fireEvent.change(within(panel()).getByLabelText("Nom"), {
@@ -303,7 +336,9 @@ describe("Bloc 119: the Boutique editor", () => {
     });
     save();
     expect(
-      await screen.findByText("Ce champ est obligatoire."),
+      await screen.findByText(
+        "Chaque objet doit avoir un nom et une description en français ou en anglais — les autres langues sont facultatives.",
+      ),
     ).toBeInTheDocument();
     expect(request).not.toHaveBeenCalled();
   });

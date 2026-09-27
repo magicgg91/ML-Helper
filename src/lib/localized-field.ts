@@ -64,6 +64,26 @@ export function hasLocalizedField(field: LocalizedField): boolean {
   return localizedFieldLocales(field).length > 0;
 }
 
+/**
+ * Si ce champ rend un texte **à tous les visiteurs**, quelle que soit leur
+ * langue.
+ *
+ * `localizedText` essaie la langue demandée, puis l'anglais, puis le français :
+ * un champ écrit en allemand seul est donc vide pour tout le monde sauf un
+ * visiteur allemand. Un écran d'édition qui accepte cet état publie une page
+ * blanche, ce qu'AGENTS.md interdit — « repli sur l'anglais si une traduction
+ * manque, jamais un vide ». C'est la règle que les guides appliquent déjà
+ * (`guideInputSchema` : français OU anglais), posée ici une fois pour tout le
+ * contenu éditorial.
+ *
+ * Revue Codex (PR #167, P2) : la validation de la Boutique demandait « au moins
+ * une langue », ce qui laissait passer une ligne écrite en allemand seul.
+ */
+export function readableInEveryLocale(field: LocalizedField): boolean {
+  const locales = localizedFieldLocales(field);
+  return locales.includes("en") || locales.includes("fr");
+}
+
 /** Toutes les langues, blanches là où rien n'est écrit — ce qu'un formulaire veut. */
 export function localizedFieldForm(
   field: LocalizedField,

@@ -11,8 +11,8 @@ import {
   type ConsumableRow,
 } from "@/lib/consumables";
 import {
-  hasLocalizedField,
   localizedFieldLocales,
+  readableInEveryLocale,
   withLocalizedFieldLocale,
   type LocalizedField,
 } from "@/lib/localized-field";
@@ -118,19 +118,23 @@ export function ShopReferenceEditor({
       // The same two rules the screen already enforced, reported once by the
       // one save button instead of per field.
       //
-      // Bloc 127: "in at least one language", not "in the language on screen".
-      // Five languages over ~40 items means DE/ES/TR are written over time,
-      // and a rule that demanded the open tab be complete would have blocked
-      // every save until it was — which is how a screen teaches its user to
-      // invent translations. The public read falls back to English; what it
-      // cannot do is render a row nobody ever named.
+      // Bloc 127: not "in the language on screen". Five languages over ~40
+      // items means DE/ES/TR are written over time, and a rule that demanded
+      // the open tab be complete would have blocked every save until it was —
+      // which is how a screen teaches its user to invent translations.
+      //
+      // Revue Codex (PR #167, P2) : « au moins une langue » ne suffisait pas
+      // pour autant. Le repli public va de la langue du visiteur à l'anglais
+      // puis au français : une ligne écrite en allemand seul est blanche pour
+      // tous les autres. La règle est donc celle des guides — français OU
+      // anglais — et les trois autres langues restent facultatives.
       for (const section of shopSections)
         for (const row of catalog[section]) {
           if (
-            !hasLocalizedField(row.name) ||
-            !hasLocalizedField(row.description)
+            !readableInEveryLocale(row.name) ||
+            !readableInEveryLocale(row.description)
           )
-            return t("required");
+            return t("required-fallback");
           if (row.cost !== "" && !(Number(row.cost) >= 0))
             return t("minimum", { min: 0 });
         }
