@@ -25,9 +25,19 @@
 -- les données réelles des deux écrans : voir
 -- `src/lib/templars-equipment-migration.test.ts`.
 --
--- Comme pour la Boutique (PR 1/3), une ligne qui ne porte plus aucune clé de
--- paire traverse **intacte** : sans cette garde, son objet serait reconstruit
--- depuis des paires absentes, donc vidé — avec ses DE/ES/TR.
+-- Trois gardes, dans l'ordre où le SQL les évalue, chacune tenue par un test :
+--
+--  1. **Le champ par langue gagne** quand les deux formes coexistent sur la
+--     même ligne. C'est la règle de `parseLocalizedFieldPair` côté lecture, et
+--     la migration doit trancher pareil : sans elle, la paire FR/EN écrasait un
+--     objet portant déjà DE/ES/TR, qu'aucune paire ne sait exprimer (revue
+--     Codex P1 sur la PR #168 — c'était une vraie perte de données).
+--  2. Sinon, la paire est convertie, la langue vide retirée.
+--  3. Comme pour la Boutique (PR 1/3), une ligne qui ne porte plus aucune clé
+--     de paire traverse **intacte** : sans cette garde, son objet serait
+--     reconstruit depuis des paires absentes, donc vidé — avec ses DE/ES/TR.
+--     `json(...)` l'enveloppe pour que l'agrégation la reprenne comme objet et
+--     non comme une chaîne contenant du JSON.
 
 -- 1. Templiers : la ligne est un objet, une clé par templier.
 UPDATE "reference_tables"
@@ -45,6 +55,15 @@ SET "rows" = (
             templar.value,
             '$.name',
             CASE
+              -- Garde 1 : au moins une langue est déjà écrite dans `$.name`.
+              WHEN (
+                SELECT count(*)
+                FROM json_each(
+                  coalesce(json_extract(templar.value, '$.name'), '{}')
+                ) AS written
+                WHERE trim(coalesce(written.value, '')) <> ''
+              ) > 0
+              THEN json(json_extract(templar.value, '$.name'))
               WHEN json_type(templar.value, '$.name_fr') IS NOT NULL
                 OR json_type(templar.value, '$.name_en') IS NOT NULL
               -- `json_object` ne sait pas omettre une clé sous condition : les
@@ -70,6 +89,15 @@ SET "rows" = (
           ),
           '$.description',
           CASE
+            -- Garde 1, pour la description.
+            WHEN (
+              SELECT count(*)
+              FROM json_each(
+                coalesce(json_extract(templar.value, '$.description'), '{}')
+              ) AS written
+              WHERE trim(coalesce(written.value, '')) <> ''
+            ) > 0
+            THEN json(json_extract(templar.value, '$.description'))
             WHEN json_type(templar.value, '$.description_fr') IS NOT NULL
               OR json_type(templar.value, '$.description_en') IS NOT NULL
             THEN json_remove(
@@ -91,7 +119,7 @@ SET "rows" = (
         ),
         '$.name_fr', '$.name_en', '$.description_fr', '$.description_en'
       )
-      ELSE templar.value
+      ELSE json(templar.value)
     END
   )
   FROM json_each("reference_tables"."rows") AS templar
@@ -113,24 +141,36 @@ SET "rows" = (
         json_set(
           metric.value,
           '$.metric_label',
-          json_remove(
-            json_object(
-              'fr', json_extract(metric.value, '$.metric_label_fr'),
-              'en', json_extract(metric.value, '$.metric_label_en')
-            ),
-            CASE
-              WHEN trim(coalesce(json_extract(metric.value, '$.metric_label_fr'), '')) = ''
-              THEN '$.fr' ELSE '$.absent'
-            END,
-            CASE
-              WHEN trim(coalesce(json_extract(metric.value, '$.metric_label_en'), '')) = ''
-              THEN '$.en' ELSE '$.absent'
-            END
-          )
+          CASE
+            -- Garde 1, comme pour les Templiers : un libellé déjà converti
+            -- n'est pas écrasé par la paire restée à côté de lui.
+            WHEN (
+              SELECT count(*)
+              FROM json_each(
+                coalesce(json_extract(metric.value, '$.metric_label'), '{}')
+              ) AS written
+              WHERE trim(coalesce(written.value, '')) <> ''
+            ) > 0
+            THEN json(json_extract(metric.value, '$.metric_label'))
+            ELSE json_remove(
+              json_object(
+                'fr', json_extract(metric.value, '$.metric_label_fr'),
+                'en', json_extract(metric.value, '$.metric_label_en')
+              ),
+              CASE
+                WHEN trim(coalesce(json_extract(metric.value, '$.metric_label_fr'), '')) = ''
+                THEN '$.fr' ELSE '$.absent'
+              END,
+              CASE
+                WHEN trim(coalesce(json_extract(metric.value, '$.metric_label_en'), '')) = ''
+                THEN '$.en' ELSE '$.absent'
+              END
+            )
+          END
         ),
         '$.metric_label_fr', '$.metric_label_en'
       )
-      ELSE metric.value
+      ELSE json(metric.value)
     END
     ORDER BY metric."key"
   )

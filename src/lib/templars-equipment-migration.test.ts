@@ -105,6 +105,20 @@ storedTemplars.prosperous = {
   temple_base: "3",
   bonus: "1.5",
 };
+// Un templier portant **les deux** formes à la fois (revue Codex P1, PR #168).
+// Le module de lecture préfère le champ par langue quand les deux sont là
+// (`parseLocalizedFieldPair`) ; la migration doit trancher pareil, sinon elle
+// écrase un objet qui porte déjà DE/ES/TR par une paire FR/EN.
+storedTemplars.guardian = {
+  image: "/templars/templar-guardian.webp",
+  name: { de: "Verteidigung (DE)", tr: "Savunma (TR)" },
+  name_fr: "Défense",
+  name_en: "Defense",
+  description_fr: "",
+  description_en: "",
+  temple_base: "3",
+  bonus: "1.5",
+};
 storedTemplars.recruiter = {
   image: "/templars/templar-recruiter.webp",
   name_fr: "Recruteur",
@@ -190,7 +204,10 @@ describe("Bloc 127 : la migration de la présentation des Templiers", () => {
 
   it("remplace la paire par un champ par langue, texte pour texte", () => {
     expect(templars.striker.name).toEqual(shippedNames.striker);
-    expect(templars.guardian.name).toEqual(shippedNames.guardian);
+    // `recruiter` et non `guardian` : depuis la revue Codex P1 (PR #168),
+    // `guardian` porte les deux formes à la fois et sert à vérifier laquelle
+    // gagne. Ici on veut une ligne dont le nom vient vraiment de la paire.
+    expect(templars.recruiter.name).toEqual(shippedNames.recruiter);
     expect(templars.striker.description).toEqual({
       fr: "Le templier d'attaque.",
     });
@@ -229,6 +246,26 @@ describe("Bloc 127 : la migration de la présentation des Templiers", () => {
     expect(templars.recruiter.description).toEqual({
       es: "El templario reclutador.",
     });
+  });
+
+  it("préfère le champ par langue quand la ligne porte les deux formes", () => {
+    // Revue Codex P1 (PR #168) : la paire ne doit pas écraser un objet qui
+    // porte déjà des langues que la paire ne sait pas exprimer.
+    expect(templars.guardian.name).toEqual({
+      de: "Verteidigung (DE)",
+      tr: "Savunma (TR)",
+    });
+    expect(templars.guardian).not.toHaveProperty("name_fr");
+  });
+
+  it("rend des objets JSON, jamais des chaînes contenant du JSON", () => {
+    // Revue Codex P1 (PR #168) : une ligne qui traverse la migration sans
+    // être modifiée doit rester un objet pour l'agrégation, pas devenir une
+    // chaîne entre guillemets — les lecteurs la rejetteraient.
+    for (const key of templarKeys)
+      expect(typeof templars[key], key).toBe("object");
+    for (const row of [...combat, ...expedition])
+      expect(typeof row).toBe("object");
   });
 
   it("ne touche pas une ligne déjà migrée, son allemand compris", () => {
