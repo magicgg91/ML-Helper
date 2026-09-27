@@ -398,9 +398,9 @@ export function CombatReferenceTable({
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
     labels?: {
-      mergeCost?: { fr?: string; en?: string };
-      gemSlots?: { fr?: string; en?: string };
-      skydust?: { fr?: string; en?: string };
+      mergeCost?: LocalizedField;
+      gemSlots?: LocalizedField;
+      skydust?: LocalizedField;
     };
   };
 }) {
@@ -631,8 +631,8 @@ export function ExpeditionReferenceTable({
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
     labels?: {
-      mergeCost?: { fr?: string; en?: string };
-      dismantle?: { fr?: string; en?: string };
+      mergeCost?: LocalizedField;
+      dismantle?: LocalizedField;
     };
   };
 }) {

@@ -61,7 +61,10 @@ const shippedNames: Record<string, { fr: string; en: string }> = {
   rusher: { fr: "Vitesse", en: "Speed" },
 };
 
-const storedTemplars = Object.fromEntries(
+const storedTemplars: Record<
+  string,
+  Record<string, unknown>
+> = Object.fromEntries(
   templarKeys.map((key) => [
     key,
     {
@@ -200,9 +203,9 @@ describe("Bloc 127 : la migration des libellés de métrique", () => {
     // tableau public lisent cet ordre, pas une clé.
     expect(combat).toHaveLength(3);
     expect(expedition).toHaveLength(2);
-    expect(combat[0].common).toBe(defaultCombatMergeCostBase.common);
-    expect(combat[1].common).toBe(defaultCombatGemSlotsBase.common);
-    expect(combat[2].common).toBe(defaultCombatSkydustBase.common);
+    expect(combat[0].Commun).toBe(defaultCombatMergeCostBase.Commun);
+    expect(combat[1].Commun).toBe(defaultCombatGemSlotsBase.Commun);
+    expect(combat[2].Commun).toBe(defaultCombatSkydustBase.Commun);
   });
 
   it("remplace la paire par un champ par langue", () => {

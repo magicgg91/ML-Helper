@@ -117,9 +117,9 @@ describe("PUT /api/admin/guides/references/combat-equipment-secondary", () => {
   it("garde les trois lignes dans leur ordre, avec leurs nombres", () => {
     return PUT(body(rows([{}, {}, {}]))).then(() => {
       expect(savedRows()).toHaveLength(3);
-      expect(savedRows()[0].common).toBe(defaultCombatMergeCostBase.common);
-      expect(savedRows()[1].common).toBe(defaultCombatGemSlotsBase.common);
-      expect(savedRows()[2].common).toBe(defaultCombatSkydustBase.common);
+      expect(savedRows()[0].Commun).toBe(defaultCombatMergeCostBase.Commun);
+      expect(savedRows()[1].Commun).toBe(defaultCombatGemSlotsBase.Commun);
+      expect(savedRows()[2].Commun).toBe(defaultCombatSkydustBase.Commun);
       expect(saveReferenceTable.mock.calls[0][0].columns[0]).toBe(
         "metric_label",
       );
