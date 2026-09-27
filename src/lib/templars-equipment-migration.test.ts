@@ -145,7 +145,11 @@ const storedExpedition = [
     metric_label_en: "",
     ...defaultExpeditionMergeCostBase,
   },
+  // Les deux formes sur la même ligne (revue Codex P1, PR #168) : le champ par
+  // langue porte du turc, que la paire ne sait pas exprimer. C'est l'objet qui
+  // doit gagner, jamais « Dismantle ».
   {
+    metric_label: { tr: "Sökme (TR)" },
     metric_label_fr: "",
     metric_label_en: "Dismantle",
     ...defaultExpeditionDismantleBase,
@@ -294,7 +298,6 @@ describe("Bloc 127 : la migration des libellés de métrique", () => {
       en: "Merge cost",
     });
     expect(expedition[0].metric_label).toEqual({ fr: "Fusion Terradust" });
-    expect(expedition[1].metric_label).toEqual({ en: "Dismantle" });
     for (const row of [...combat, ...expedition]) {
       expect(row).not.toHaveProperty("metric_label_fr");
       expect(row).not.toHaveProperty("metric_label_en");
@@ -305,6 +308,13 @@ describe("Bloc 127 : la migration des libellés de métrique", () => {
     // Et c'est ce vide qui laisse le libellé traduit par défaut reprendre la
     // main : un `""` l'en empêcherait.
     expect(combat[1].metric_label).toEqual({});
+  });
+
+  it("préfère le libellé par langue quand la ligne porte les deux formes", () => {
+    // Revue Codex P1 (PR #168), pendant de la garde des Templiers : « Dismantle »
+    // ne doit pas remplacer un objet qui porte déjà du turc.
+    expect(expedition[1].metric_label).toEqual({ tr: "Sökme (TR)" });
+    expect(expedition[1]).not.toHaveProperty("metric_label_en");
   });
 
   it("ne touche pas un libellé déjà migré", () => {
