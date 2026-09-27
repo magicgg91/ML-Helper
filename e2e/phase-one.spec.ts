@@ -1534,6 +1534,66 @@ test("Bloc60: Événements ships inactive, and the full admin add -> public coll
     .getByRole("group", { name: "Durée de l’événement 1" })
     .getByRole("button", { name: "48h" })
     .click();
+  // Bloc 141 : les trois options de durée se partagent la largeur du groupe.
+  //
+  // Le groupe, lui, remplissait déjà sa cellule de grille (150 px sur le
+  // gabarit `xl`, et toute la rangée en dessous) — ce sont les options qui
+  // laissaient du vide à droite : 116 px de boutons pour 144 px utiles en
+  // desktop, et 116 pour 278 en mobile. La mesure est donc relative à la
+  // largeur intérieure du groupe, et non à un littéral.
+  //
+  // Les deux thèmes sont passés : ils changent les couleurs, pas la mise en
+  // page — l'assertion le vérifie plutôt que de le supposer.
+  const durationGroup = page.getByRole("group", {
+    name: "Durée de l’événement 1",
+  });
+  for (const colorScheme of ["light", "dark"] as const) {
+    await page.emulateMedia({ colorScheme });
+    for (const [label, width] of [
+      ["desktop", 1440],
+      ["mobile", 390],
+    ] as const) {
+      await page.setViewportSize({ width, height: 900 });
+      const filled = await durationGroup.evaluate((group) => {
+        const style = getComputedStyle(group);
+        const inner =
+          group.getBoundingClientRect().width -
+          parseFloat(style.paddingLeft) -
+          parseFloat(style.paddingRight);
+        const gap = parseFloat(style.gap) || 0;
+        const buttons = [...group.querySelectorAll("button")].map((button) =>
+          button.getBoundingClientRect(),
+        );
+        const used =
+          buttons.reduce((total, box) => total + box.width, 0) +
+          gap * (buttons.length - 1);
+        return {
+          ratio: used / inner,
+          widths: buttons.map((box) => Math.round(box.width)),
+          heights: buttons.map((box) => Math.round(box.height)),
+        };
+      });
+      const where = `${colorScheme}/${label}`;
+      // Toute la largeur utile, à un pixel d'arrondi près.
+      expect(filled.ratio, `${where}: fill ratio`).toBeGreaterThan(0.99);
+      // Et à parts égales : trois options de même largeur.
+      expect(new Set(filled.widths).size, `${where}: equal shares`).toBe(1);
+      // Cibles tactiles : le minimum de la WCAG 2.2 (2.5.8, niveau AA) est
+      // 24 × 24 px. Les options ne font que grandir avec ce bloc.
+      for (const [index, w] of filled.widths.entries()) {
+        expect(w, `${where}: option ${index} width`).toBeGreaterThanOrEqual(24);
+        expect(
+          filled.heights[index],
+          `${where}: option ${index} height`,
+        ).toBeGreaterThanOrEqual(24);
+      }
+    }
+  }
+  // On rend au test son contexte : le thème que la configuration épingle
+  // (playwright.config.ts) et la fenêtre de `devices["Desktop Chrome"]`.
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.setViewportSize({ width: 1280, height: 720 });
+
   // Bloc 119: an event is one line, and its tiers appear under it only once
   // it is unfolded — an event you have just added opens on its own, so there
   // is nothing to click here. Bloc 125 §6: the row carries no title of its
