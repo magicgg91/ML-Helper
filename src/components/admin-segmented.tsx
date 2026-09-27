@@ -24,6 +24,7 @@ export function AdminSegmented<T extends string | number>({
   label,
   disabled = false,
   optionLabel,
+  fill = false,
   className,
 }: {
   options: readonly T[];
@@ -34,6 +35,18 @@ export function AdminSegmented<T extends string | number>({
   disabled?: boolean;
   /** What each option reads as; the option itself when left out. */
   optionLabel?: (option: T) => string;
+  /**
+   * Bloc 141 : le groupe prend toute la largeur qu'on lui donne, et ses
+   * options la partagent à parts égales.
+   *
+   * Hors de ce mode le groupe fait la largeur de son contenu, ce qui est la
+   * bonne forme pour la paire de langues de la barre latérale — deux options
+   * de trois lettres au milieu d'un menu. Ce n'était pas la bonne pour la
+   * durée d'un événement : elle occupe une cellule de rangée à elle seule, et
+   * trois boutons de 37 px groupés à gauche d'une cellule de 1126 px (mesuré
+   * à 1440 px) se lisent comme un oubli plutôt que comme un choix.
+   */
+  fill?: boolean;
   className?: string;
 }) {
   return (
@@ -41,7 +54,8 @@ export function AdminSegmented<T extends string | number>({
       role="group"
       aria-label={label}
       className={cn(
-        "inline-flex gap-[2px] rounded-admin-control bg-admin-segment p-[3px]",
+        "gap-[2px] rounded-admin-control bg-admin-segment p-[3px]",
+        fill ? "flex w-full" : "inline-flex",
         className,
       )}
     >
@@ -56,6 +70,9 @@ export function AdminSegmented<T extends string | number>({
             onClick={() => onChange(option)}
             className={cn(
               "admin-focus inline-flex h-7 min-w-9 cursor-pointer items-center justify-center rounded-[6px] px-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+              // `min-w-9` reste sous `flex-1` : il devient le plancher de
+              // l'option, pas sa largeur.
+              fill && "flex-1",
               active
                 ? "bg-admin-card text-admin-accent-soft-ink shadow-sm"
                 : "text-admin-dim hover:text-admin-text",

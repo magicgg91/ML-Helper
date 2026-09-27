@@ -344,6 +344,7 @@ export function EventsReferenceEditor({
                         pair (§2): three loose buttons did not say that
                         picking one unpicks the others. */}
                     <AdminSegmented
+                      fill
                       options={eventDurations}
                       value={event.duration}
                       label={rowLabel(t("events-columns.duration"))}

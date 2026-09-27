@@ -1516,8 +1516,12 @@ describe("Bloc 139: matrix field proportions, and the band's column width", () =
     // reviendrait sans effet le jour où quelqu'un « harmonise » les deux.
     expect(css).not.toMatch(/\.player-matrix \.number-stepper\b/);
     // La hauteur ne bouge pas avec la largeur : 32 px, comme avant le bloc.
+    // Le Bloc 140 l'a sortie de cette règle pour la partager avec les champs
+    // des templiers — la valeur est la même, elle vit dans `--player-field-h`
+    // et le cas « Bloc140 » ci-dessus tient l'égalité des deux zones.
+    expect(css).toMatch(/--player-field-h: 2rem;/);
     expect(css).toMatch(
-      /\.player-matrix \.num-stepper input,\s*\n\.player-matrix \.num-stepper button\s*{\s*\n\s*min-height: 2rem;/,
+      /\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{\s*\n\s*min-height: var\(--player-field-h\);/,
     );
   });
 
@@ -1540,6 +1544,45 @@ describe("Bloc 139: matrix field proportions, and the band's column width", () =
     // D bis : l'en-tête de page et « Aller plus loin » étaient les deux
     // derniers blocs restés à 75rem. La colonne n'a plus qu'une largeur.
     expect(widthOf("\\.tool-page-head,\\n\\.further-reading")).toBe(column);
+  });
+
+  /**
+   * Bloc 140 : les champs des templiers et ceux de la matrice se lisent côte à
+   * côte, et tiennent leur hauteur du même jeton — c'est l'égalité qui est la
+   * propriété voulue, pas le chiffre, donc le test compare les deux règles
+   * plutôt que de figer une valeur.
+   */
+  it("Bloc140: gives the templars fields and the matrix fields one shared height", () => {
+    const rule = css.match(
+      /\.player-templars-fields \.num-stepper:not\(\.number-stepper-plain\) input,\n\.player-templars-fields \.num-stepper:not\(\.number-stepper-plain\) button,\n\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/min-height: var\(--player-field-h\);/);
+    // Le jeton vit sur le panneau, comme `--player-matrix-head` : le premier
+    // `:root` du fichier appartient aux jetons de l'en-tête public.
+    expect(css).toMatch(/\.player-settings\s*{[\s\S]*?--player-field-h: 2rem;/);
+    // Et plus aucune hauteur propre à la matrice, qui la ferait diverger.
+    const matrixOwn = css.match(
+      /\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(matrixOwn).toBeDefined();
+    expect(matrixOwn).not.toMatch(/min-height/);
+  });
+
+  /**
+   * L'exclusion de `number-stepper-plain` n'est pas cosmétique : c'est la
+   * forme sans boutons, celle du mobile, où templiers et matrice partagent
+   * déjà `.number-stepper-plain input` et donc déjà la même hauteur. Sans
+   * l'exclusion, la règle ci-dessus l'emporterait sur elle par spécificité et
+   * rapetisserait les deux champs mobiles.
+   */
+  it("Bloc140: leaves the buttonless (mobile) form to its own height", () => {
+    expect(css).toMatch(
+      /\.number-stepper-plain input\s*{\s*\n\s*min-height: 2\.5rem;/,
+    );
+    expect(css).not.toMatch(
+      /\.player-templars-fields \.num-stepper input\b(?!:)/,
+    );
   });
 
   it("D: leaves the band's height alone — only its width changed", () => {

@@ -1057,6 +1057,11 @@ select:where(:not(.admin-shell select)) {
      que sur `:root` : elle n'a de sens qu'ici, et le premier `:root` du
      fichier appartient aux jetons de l'en-tête public (un test l'y attend). */
   --player-matrix-head: 10.625rem;
+  /* Bloc 140 : la hauteur des champs compacts du bandeau déplié — ceux de la
+     matrice et ceux des templiers, qui se lisent côte à côte sur le même
+     écran. Un jeton plutôt que la même valeur écrite à deux endroits : c'est
+     l'égalité qui est la propriété voulue, pas le chiffre. */
+  --player-field-h: 2rem;
   width: min(74rem, calc(100% - 2rem));
   margin: 1rem auto 0;
   border: 1px solid var(--border);
@@ -1392,9 +1397,26 @@ select:where(:not(.admin-shell select)) {
 }
 .player-matrix .num-stepper input,
 .player-matrix .num-stepper button {
-  min-height: 2rem;
   padding: 0;
   font-size: 0.8rem;
+}
+/* Bloc 140 : une seule hauteur pour les deux zones de saisie du bandeau.
+
+   Les champs des templiers retombaient sur la hauteur que le site donne à
+   tout `input` public (`min-height: 2.55rem`, soit 40,8 px), quand ceux de la
+   matrice, juste en dessous, portent leur propre hauteur compacte — mesuré au
+   navigateur à 1440 px : 40,8 contre 32, l'écart que l'on voit à l'œil.
+
+   Le sélecteur écarte la forme sans boutons (`number-stepper-plain`), qui est
+   celle du mobile : là, templiers et matrice partagent déjà `.number-stepper-plain`
+   et donc déjà la même hauteur (40 px, mesurée). Une règle qui n'exclurait pas
+   cette forme l'emporterait sur elle par spécificité et rapetisserait les deux
+   champs mobiles — en rognant au passage leur cible tactile. */
+.player-templars-fields .num-stepper:not(.number-stepper-plain) input,
+.player-templars-fields .num-stepper:not(.number-stepper-plain) button,
+.player-matrix .num-stepper input,
+.player-matrix .num-stepper button {
+  min-height: var(--player-field-h);
 }
 .player-matrix-percent {
   display: block;
