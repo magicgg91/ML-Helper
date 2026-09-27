@@ -1,7 +1,7 @@
 "use client";
 
 import { MenuIcon, XIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { CalculatorAvailability } from "@/lib/calculator-catalog";
 import type { SiteSearchGuide } from "@/lib/site-search";
@@ -20,16 +20,14 @@ import { ThemeToggle } from "./theme-toggle";
  * focus dans le champ de recherche.
  *
  * Bloc 141 : le §3 donnait à la barre mobile quatre boutons — loupe, langue,
- * thème, menu. La loupe ouvrait le panneau en plaçant le focus dans le champ
- * de recherche ; le menu ouvrait ce même panneau, dont le champ de recherche
- * est le premier élément. Deux commandes, une seule destination : un doublon
- * fonctionnel, pas seulement visuel. La loupe part, le menu reste — et il
- * reprend le focus qu'elle posait, pour que la recherche s'atteigne toujours
- * en une action.
+ * thème, menu. La loupe ouvrait le panneau ; le menu ouvrait ce même panneau,
+ * dont le champ de recherche est le premier élément. Deux commandes, une
+ * seule destination : un doublon fonctionnel, pas seulement visuel. La loupe
+ * part, le menu reste.
  *
- * Le focus à poser dans un champ qui vit ailleurs demande un propriétaire
- * commun : c'est ce composant, et c'est tout ce qu'il fait de plus que le
- * gabarit d'avant.
+ * Le panneau ouvert ne prend le focus nulle part : le champ de recherche s'y
+ * atteint comme le reste, en le touchant ou au clavier. Ouvrir le menu pour
+ * naviguer ne doit pas lever le clavier logiciel.
  *
  * Une seule structure sert les deux tailles d'écran :
  *
@@ -56,23 +54,6 @@ export function PublicHeader({
   locales: string[];
 }) {
   const [open, setOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Bloc 141 : ouvrir le panneau, c'est le plus souvent ouvrir pour
-  // chercher — le champ en est le premier élément. Le focus suit donc
-  // l'ouverture, comme il suivait la loupe avant qu'elle ne disparaisse.
-  //
-  // Il se pose après le rendu : tant que le panneau est fermé, le CSS mobile
-  // le laisse en `display: none`, et un élément non affiché ne prend pas le
-  // focus.
-  function toggle() {
-    if (open) {
-      setOpen(false);
-      return;
-    }
-    setOpen(true);
-    requestAnimationFrame(() => searchInputRef.current?.focus());
-  }
 
   return (
     <header className="public-header" data-open={open}>
@@ -86,7 +67,6 @@ export function PublicHeader({
         <SiteSearch
           guides={guides}
           active={active}
-          inputRef={searchInputRef}
           onNavigate={() => setOpen(false)}
         />
         <PublicNav
@@ -104,7 +84,7 @@ export function PublicHeader({
           aria-label={labels.menu}
           aria-expanded={open}
           aria-controls="public-header-panel"
-          onClick={toggle}
+          onClick={() => setOpen((wasOpen) => !wasOpen)}
         >
           {open ? (
             <XIcon aria-hidden="true" size={18} />

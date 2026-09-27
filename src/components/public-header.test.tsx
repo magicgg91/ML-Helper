@@ -68,8 +68,8 @@ function renderHeader(guides: SiteSearchGuide[] = []) {
  * c'était un doublon fonctionnel, pas seulement visuel.
  *
  * Ce que ces tests gardent : les trois boutons qui restent, l'absence de la
- * loupe, et le focus qu'elle posait — repris par le menu, pour que la
- * recherche s'atteigne toujours en une action.
+ * loupe, et le fait que le panneau s'ouvre sans rien attraper — le champ de
+ * recherche reste simplement atteignable, il ne réclame pas le focus.
  */
 describe("PublicHeader", () => {
   it("part panneau fermé, le bouton menu le disant", () => {
@@ -152,26 +152,25 @@ describe("PublicHeader", () => {
   });
 
   /**
-   * Bloc 141 : le focus que la loupe posait, repris par le menu. C'est la
-   * garantie qui remplace le bouton retiré — sans elle, atteindre la
-   * recherche demanderait d'ouvrir le panneau puis de viser le champ.
+   * Bloc 141 : ouvrir le menu ne déplace le focus nulle part. La loupe le
+   * posait dans le champ ; le menu ne reprend pas ce geste, sans quoi le
+   * clavier logiciel se lèverait à chaque ouverture du panneau, y compris
+   * pour qui l'ouvre seulement pour naviguer. Le champ reste ce qu'il doit
+   * être : présent, nommé, et focusable quand on le lui demande.
    */
-  it("place le focus dans le champ de recherche en ouvrant le menu", async () => {
+  it("ouvre le panneau sans prendre le focus, le champ restant focusable", async () => {
     renderHeader();
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
-    const field = screen.getByRole("searchbox");
-    await vi.waitFor(() => expect(field).toHaveFocus());
-  });
+    const field = screen.getByRole("searchbox", {
+      name: "Rechercher sur le site",
+    });
+    // Le focus retiré se posait dans une frame d'animation : l'affirmation
+    // doit survivre à ce délai pour mordre si quelqu'un le réintroduit.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(field).not.toHaveFocus();
 
-  // Refermer ne replace pas le focus : seule l'ouverture le déplace.
-  it("ne rouvre pas le champ en refermant le panneau", async () => {
-    renderHeader();
-    const menu = screen.getByRole("button", { name: "Menu" });
-    fireEvent.click(menu);
-    const field = screen.getByRole("searchbox");
-    await vi.waitFor(() => expect(field).toHaveFocus());
-    fireEvent.click(menu);
-    expect(menu).toHaveAttribute("aria-expanded", "false");
+    field.focus();
+    expect(field).toHaveFocus();
   });
 
   it("désigne le panneau que le bouton menu commande", () => {
