@@ -1,5 +1,6 @@
 import { templarKeys, templeBase, type TemplarKey } from "./player-settings";
 import { templarRates } from "./gems-templars";
+import { type LocalizedField } from "./localized-field";
 
 // Bloc 66/B, restored Bloc 68/C: the presentation catalog behind the tile
 // section — one row per Templar, fully editable in admin (Image, Nom,
@@ -13,12 +14,20 @@ import { templarRates } from "./gems-templars";
 // (not permanently tied to) the confirmed templeBase/templarRates
 // constants. An empty value is treated as "not confirmed yet" and shown
 // as such publicly (see TemplarPresentationTile), never invented.
+/**
+ * Bloc 127 (PR 2/3) : le nom et la description passent de la paire FR/EN à un
+ * champ par langue (`LocalizedField`, posé en PR 1/3), comme la Boutique.
+ *
+ * `image`, `temple_base` et `bonus` ne sont pas du texte éditorial et ne
+ * bougent pas. Les cinq **noms de compétence** de `messages/*.json`
+ * (`game.templars.*`) ne bougent pas non plus : ce sont du texte d'interface,
+ * hors du périmètre de ce bloc. Ils servent seulement de graine au nom de la
+ * ligne, ci-dessous.
+ */
 export type TemplarPresentationRow = {
   image: string;
-  name_fr: string;
-  name_en: string;
-  description_fr: string;
-  description_en: string;
+  name: LocalizedField;
+  description: LocalizedField;
   temple_base: string;
   bonus: string;
 };
@@ -28,19 +37,23 @@ export type TemplarPresentationCatalog = Record<
   TemplarPresentationRow
 >;
 
-// The 5 competence names are already fully confirmed and translated
-// (game.templars.<key>, all 5 locales) — reused here as the Nom seed
-// rather than left blank, since it's already-known content, not invented.
-// Only fr/en are captured (same as every other reference's admin-editable
-// item text): the public tile falls back to these two exactly like
-// Boutique (pickLocaleText).
-const defaultNames: Record<TemplarKey, { fr: string; en: string }> = {
-  striker: { fr: "Attaque", en: "Attack" },
-  guardian: { fr: "Défense", en: "Defense" },
-  prosperous: { fr: "Or", en: "Gold" },
-  recruiter: { fr: "Recruteur", en: "Recruiter" },
-  rusher: { fr: "Vitesse", en: "Speed" },
-};
+// Bloc 127 (PR 2/3): the Nom field is now an **override** of the competence
+// name, not a copy of it.
+//
+// The five names are already confirmed and translated in all five languages
+// (`game.templars.<key>` in messages/*.json). Until this bloc the catalogue
+// seeded a French and an English copy of them, because it could hold nothing
+// else — and a German visitor therefore read the English one. Seeding the five
+// languages instead would have written the launch list into this file, which
+// `src/i18n/launch-locales-derivation.test.ts` forbids for a reason: a record
+// keyed by locale is exactly what silently stripped a new language twice
+// before (Bloc 120).
+//
+// So the row ships with no name at all, and the screens read
+// `game.templars.<key>` when the override is empty — the tile, the admin
+// placeholder and every aria-label alike. Adding a language to messages/ now
+// translates these five names with nothing else to do, and an admin who wants
+// another word writes it in the language they mean.
 
 // Bloc 68/B: the 5 real illustrations delivered to public/templars/,
 // wired in as the seed default — same convention as every other
@@ -64,10 +77,12 @@ export const defaultTemplarPresentationCatalog: TemplarPresentationCatalog =
       key,
       {
         image: defaultImages[key],
-        name_fr: defaultNames[key].fr,
-        name_en: defaultNames[key].en,
-        description_fr: "",
-        description_en: "",
+        // Vide : le nom de compétence traduit fait foi tant que
+        // l'administration n'écrit pas autre chose.
+        name: {},
+        // Rien n'est livré ici : la description s'écrit en administration, et
+        // une langue non écrite reste absente plutôt que vide (Bloc 126/D).
+        description: {},
         temple_base: String(templeBase[key]),
         bonus: String(templarRates[key]),
       } satisfies TemplarPresentationRow,

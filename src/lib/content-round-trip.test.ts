@@ -131,15 +131,17 @@ const editorialScreens = [
     screen: "Templiers, présentation",
     module: "lib/templars-presentation.ts",
     editor: "components/admin-templars-editor.tsx",
-    // Migré par la PR 2/3.
-    localized: false,
+    // Migré par cette PR (Bloc 127, PR 2/3).
+    localized: true,
   },
   {
     screen: "Libellés de métrique des équipements",
     module: "lib/reference-equipment-server.ts",
     editor: "components/admin-equipment-editor.tsx",
-    // Migré par la PR 2/3.
-    localized: false,
+    // Migré par cette PR (Bloc 127, PR 2/3). Son libellé se lit sans repli
+    // (voir `secondaryLabel`), ce que la colonne « onglets » ne dit pas : elle
+    // ne parle que de ce qui est offert à l'écriture.
+    localized: true,
   },
   {
     screen: "Événements",

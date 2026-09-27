@@ -53,7 +53,7 @@ describe("Bloc 119: the Templiers screen", () => {
     expect(request.mock.calls[0][0]).toBe("/api/admin/tools/templars");
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
     expect(body.parameters).toEqual({ base: 160, ratio: 1.3 });
-    expect(body.presentation.striker.name_fr).toBe("Frappe");
+    expect(body.presentation.striker.name).toEqual({ fr: "Frappe" });
   });
 
   it("computes the preview with the public tool's own function", () => {
@@ -73,17 +73,62 @@ describe("Bloc 119: the Templiers screen", () => {
       target: { value: "Frappe" },
     });
     fireEvent.click(screen.getByRole("button", { name: /^EN/ }));
-    expect(screen.getByLabelText("Nom de Attaque")).toHaveValue("Attack");
+    // Bloc 127 (PR 2/3) : rien n'est surchargé en anglais, donc le champ est
+    // vide — et le placeholder montre le nom de compétence traduit qui fait
+    // foi tant que personne n'écrit par-dessus.
+    const english = screen.getByLabelText("Nom de Attaque");
+    expect(english).toHaveValue("");
+    expect(english).toHaveAttribute("placeholder", "Attaque");
+    fireEvent.change(english, { target: { value: "Strike" } });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    expect(body.presentation.striker.name).toEqual({
+      fr: "Frappe",
+      en: "Strike",
+    });
+  });
+
+  // Bloc 127 (PR 2/3) : ce que la paire ne pouvait pas faire. Sur l'onglet DE,
+  // taper un nom l'écrivait dans la colonne anglaise (Bloc 125 §9).
+  it("Bloc127: writes German in German, and leaves the other languages alone", async () => {
+    const request = renderEditor();
+    for (const code of ["DE", "ES", "TR"])
+      expect(
+        screen.getByRole("button", { name: new RegExp(`^${code} — `) }),
+        code,
+      ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /^DE — / }));
     fireEvent.change(screen.getByLabelText("Nom de Attaque"), {
-      target: { value: "Strike" },
+      target: { value: "Angriff (Klan)" },
+    });
+    fireEvent.change(screen.getByLabelText("Description de Attaque"), {
+      target: { value: "Auf Deutsch." },
     });
     save();
     await waitFor(() => expect(request).toHaveBeenCalled());
     const body = JSON.parse(String(request.mock.calls[0][1]?.body));
-    expect(body.presentation.striker).toMatchObject({
-      name_fr: "Frappe",
-      name_en: "Strike",
+    expect(body.presentation.striker.name).toEqual({ de: "Angriff (Klan)" });
+    expect(body.presentation.striker.description).toEqual({
+      de: "Auf Deutsch.",
     });
+    // L'onglet français reste vide : rien n'y a été écrit.
+    fireEvent.click(screen.getByRole("button", { name: /^FR — / }));
+    expect(screen.getByLabelText("Nom de Attaque")).toHaveValue("");
+  });
+
+  it("Bloc127: clearing a language drops it instead of saving it blank", async () => {
+    const request = renderEditor();
+    fireEvent.change(screen.getByLabelText("Nom de Attaque"), {
+      target: { value: "Frappe" },
+    });
+    fireEvent.change(screen.getByLabelText("Nom de Attaque"), {
+      target: { value: "" },
+    });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    expect(body.presentation.striker.name).toEqual({});
   });
 
   it("keeps the numbers out of the language switch", () => {

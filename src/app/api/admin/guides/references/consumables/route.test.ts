@@ -14,6 +14,7 @@ vi.mock("@/services/reference-table-admin", async () => {
     stringField: actual.stringField,
     numericString: actual.numericString,
     localizedField: actual.localizedField,
+    localizedFieldOrPair: actual.localizedFieldOrPair,
   };
 });
 vi.mock("@/lib/revalidate-content", () => ({ revalidateContent }));

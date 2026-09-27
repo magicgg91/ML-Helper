@@ -8,10 +8,12 @@ import type { TemplarPresentationCatalog } from "@/lib/templars-presentation";
 import { templarsPresentationReferenceKey } from "@/lib/templars-presentation-server";
 import { saveFormulaParametersIn } from "@/services/formula-parameters-admin";
 import {
+  localizedFieldOrPair,
   numericString,
   saveReferenceTableIn,
   stringField,
 } from "@/services/reference-table-admin";
+import { readableWhenWritten } from "@/lib/localized-field";
 
 /**
  * Bloc 119 §3 bis: one save for the whole Templiers screen.
@@ -29,12 +31,23 @@ import {
 function parseRow(raw: unknown) {
   if (!raw || typeof raw !== "object") throw new Error("invalid row");
   const source = raw as Record<string, unknown>;
+  // Bloc 127 (PR 2/3) : un champ par langue, avec le repli sur la paire pour un
+  // onglet d'administration resté ouvert pendant le déploiement (revue Codex,
+  // PR #167 P1 — sans lui, un enregistrement d'alors effacerait les textes).
+  const name = localizedFieldOrPair(source, "name");
+  const description = localizedFieldOrPair(source, "description");
+  // Les deux champs sont facultatifs : vide, le nom laisse parler le nom de
+  // compétence traduit, et la description ne s'affiche pas. Ce qui reste
+  // interdit est la description écrite dans une seule langue sans repli, blanche
+  // pour tous les autres visiteurs (revue Codex, PR #167 P2). Le nom, lui, est
+  // une surcharge lue langue par langue : une langue non surchargée retombe sur
+  // sa traduction, jamais sur un vide — la règle n'a donc pas lieu d'être.
+  if (!readableWhenWritten(description))
+    throw new Error("missing fallback translation");
   return {
     image: stringField(source.image),
-    name_fr: stringField(source.name_fr),
-    name_en: stringField(source.name_en),
-    description_fr: stringField(source.description_fr),
-    description_en: stringField(source.description_en),
+    name,
+    description,
     temple_base: numericString(source.temple_base),
     bonus: numericString(source.bonus),
   };
@@ -42,10 +55,8 @@ function parseRow(raw: unknown) {
 
 const presentationColumns = [
   "image",
-  "name_fr",
-  "name_en",
-  "description_fr",
-  "description_en",
+  "name",
+  "description",
   "temple_base",
   "bonus",
 ];

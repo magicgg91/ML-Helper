@@ -94,6 +94,28 @@ export function numericString(value: unknown) {
 }
 
 /**
+ * Le même champ, avec le repli sur la paire `<champ>_fr`/`_en` d'avant la
+ * migration du Bloc 127.
+ *
+ * Revue Codex (PR #167, P1) : pendant la fenêtre de déploiement, un onglet
+ * d'administration ouvert avant la livraison envoie encore la paire et aucun
+ * objet par langue. Sans ce repli, le champ arrivait `undefined`, ressortait
+ * `{}`, et l'enregistrement effaçait les textes en répondant 200. C'est le
+ * pendant, côté écriture, du repli de lecture des modules de données, et il
+ * disparaîtra avec lui.
+ */
+export function localizedFieldOrPair(
+  row: Record<string, unknown> | undefined,
+  field: string,
+): LocalizedField {
+  if (row?.[field] !== undefined) return localizedField(row[field]);
+  return localizedField({
+    fr: stringField(row?.[`${field}_fr`]),
+    en: stringField(row?.[`${field}_en`]),
+  });
+}
+
+/**
  * Bloc 127 : un champ de texte éditorial reçu d'un éditeur, par langue.
  *
  * Strict comme `numericString` l'est d'un nombre : ce qui n'est pas un objet de

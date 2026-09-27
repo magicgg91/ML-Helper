@@ -2,6 +2,12 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import EditToolPage from "./[id]/page";
 
+// Bloc 127 (PR 2/3) : l'écran Templiers édite cinq langues et reçoit donc de
+// la page celles que Configuration a éteintes. Ce test-ci vérifie le câblage
+// des écrans, pas la base : le lecteur de langues est simulé comme les autres.
+vi.mock("@/lib/locale-settings", () => ({
+  hiddenPublicLocales: async () => [],
+}));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
 }));

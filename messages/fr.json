@@ -1270,6 +1270,7 @@
       "presentation-section": "Présentation",
       "presentation-help": "Ce que le site affiche pour chaque Templier. Les nombres ne dépendent pas de la langue.",
       "texts-in": "Textes en",
+      "language-hidden": "{language} masquée sur le site",
       "columns": {
         "image": "Image",
         "name": "Nom",

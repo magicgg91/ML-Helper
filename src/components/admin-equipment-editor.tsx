@@ -23,7 +23,11 @@ import {
   type ExpeditionReferenceRow,
   type ExpeditionStarIncrements,
 } from "@/lib/reference-equipment";
-import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
+import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import {
+  localizedFieldToStore,
+  type LocalizedField,
+} from "@/lib/localized-field";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { CollapsibleGroup } from "./admin-collapsible-group";
@@ -242,16 +246,19 @@ export function EquipmentReferenceEditor({
   backLabel,
   title,
   usedByTool,
+  hiddenLocales,
 }: EditorScreenProps & {
   variant: Variant;
   initialRows: CombatReferenceRow[] | ExpeditionReferenceRow[];
   secondaryInitial: {
     rows: { key: string; base: Record<string, number> }[];
-    labels: Record<string, { fr?: string; en?: string } | undefined>;
+    labels: Record<string, LocalizedField | undefined>;
   };
   incrementsInitial: EquipmentStarIncrements | ExpeditionStarIncrements;
   /** The tool this reference feeds — the cross-link chip of §3 bis. */
   usedByTool?: { label: string; href: string };
+  /** Les langues éteintes dans Configuration — leur onglet le dit. */
+  hiddenLocales?: readonly string[];
 }) {
   const t = useTranslations("admin.references");
   // The save speaks the admin's one save vocabulary, like every other edit
@@ -266,7 +273,7 @@ export function EquipmentReferenceEditor({
       : "expedition-equipment.columns",
   );
   const status = useSaveStatus();
-  const [labelLocale, setLabelLocale] = useState<ContentPairLocale>("fr");
+  const [labelLocale, setLabelLocale] = useState<LaunchLocale>("fr");
 
   const incrementKeys =
     variant === "combat"
@@ -277,8 +284,15 @@ export function EquipmentReferenceEditor({
     () => ({
       rows: (initialRows as EquipmentRow[]).map((row) => ({ ...row })),
       secondary: secondaryInitial.rows.map((row): EquipmentRow => ({
-        metric_label_fr: secondaryInitial.labels[row.key]?.fr ?? "",
-        metric_label_en: secondaryInitial.labels[row.key]?.en ?? "",
+        // Bloc 127 (PR 2/3) : le formulaire tient une clé plate par langue —
+        // `metric_label_<code>` — et l'envoi les recompose en un champ par
+        // langue (voir `save`). Les cinq langues remplacent la paire FR/EN.
+        ...Object.fromEntries(
+          launchLocales.map((code) => [
+            `metric_label_${code}`,
+            secondaryInitial.labels[row.key]?.[code] ?? "",
+          ]),
+        ),
         ...Object.fromEntries(
           mergeCostRarityKeys.map((key) => [key, String(row.base[key])]),
         ),
@@ -457,7 +471,21 @@ export function EquipmentReferenceEditor({
       const bases = await Promise.all([
         put(
           `/api/admin/guides/references/${variant}-equipment-secondary`,
-          form.secondary,
+          // Le libellé part en un champ par langue ; une langue laissée
+          // blanche en est absente, jamais écrite `""` (Bloc 126/D) — sans
+          // quoi le libellé par défaut, pourtant traduit, ne reprendrait
+          // jamais la main.
+          form.secondary.map((row) => ({
+            ...row,
+            metric_label: localizedFieldToStore(
+              Object.fromEntries(
+                launchLocales.map((code) => [
+                  code,
+                  row[`metric_label_${code}`],
+                ]),
+              ),
+            ),
+          })),
         ),
         put(`/api/admin/guides/references/${variant}-equipment-increments`, [
           form.increments,
@@ -519,7 +547,6 @@ export function EquipmentReferenceEditor({
         title={t("global-parameters")}
         actions={
           <LangTabs
-            locales={contentPairLocales}
             locale={labelLocale}
             onChange={setLabelLocale}
             label={t("labels-in")}
@@ -529,13 +556,15 @@ export function EquipmentReferenceEditor({
               )
             }
             languageNames={Object.fromEntries(
-              contentPairLocales.map((code) => [
+              launchLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)
                   : code.toUpperCase(),
               ]),
             )}
+            hiddenLocales={hiddenLocales}
+            hiddenLabel={(language) => t("language-hidden", { language })}
           />
         }
       >

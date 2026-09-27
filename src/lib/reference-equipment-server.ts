@@ -1,3 +1,7 @@
+import {
+  parseLocalizedFieldPair,
+  type LocalizedField,
+} from "./localized-field";
 import { prisma } from "./prisma";
 import {
   equipmentStarIncrement,
@@ -144,35 +148,34 @@ export type CombatSecondaryBase = {
   gemSlots: CombatGemSlotsBase;
   skydust: CombatSkydustBase;
   // Bloc 76/B, fixed per Codex review on PR #94: the row's own
-  // admin-editable label, stored per locale (fr/en — same convention as
-  // Boutique/Templiers/Events item text: only fr/en are actually captured,
-  // other locales fall back to en) rather than one literal string that
-  // would otherwise override next-intl for every visitor regardless of
+  // admin-editable label, stored per locale rather than one literal string
+  // that would otherwise override next-intl for every visitor regardless of
   // their own locale (AGENTS.md: "tout texte visible par l'utilisateur
-  // passe par next-intl"). Both fr/en undefined whenever the row has never
-  // been (re-)saved since Bloc 76 shipped (including the pre-Bloc-75 legacy
-  // fallback below, which predates row labels entirely) — callers fall back
-  // to their own locale-aware default translation in that case.
+  // passe par next-intl"). Empty whenever the row has never been (re-)saved
+  // since Bloc 76 shipped (including the pre-Bloc-75 legacy fallback below,
+  // which predates row labels entirely) — callers fall back to their own
+  // locale-aware default translation in that case.
+  //
+  // Bloc 127 (PR 2/3): the fr/en pair becomes a field per language, like the
+  // rest of the site's editorial text. What does NOT change is how it is
+  // read: `secondaryLabel` (reference-tables.tsx) takes this visitor's own
+  // locale and nothing else, because every one of these labels already has a
+  // real translated default in all five languages. Falling back to another
+  // locale's override here would show a visitor text typed for someone else
+  // instead of the translation waiting for them — the exact bug PR #94 fixed.
   labels?: {
-    mergeCost?: { fr?: string; en?: string };
-    gemSlots?: { fr?: string; en?: string };
-    skydust?: { fr?: string; en?: string };
+    mergeCost?: LocalizedField;
+    gemSlots?: LocalizedField;
+    skydust?: LocalizedField;
   };
 };
 
-function rowLabel(row: unknown): { fr?: string; en?: string } {
-  const record = row as
-    | { metric_label_fr?: unknown; metric_label_en?: unknown }
-    | undefined;
-  const fr =
-    typeof record?.metric_label_fr === "string" && record.metric_label_fr.trim()
-      ? record.metric_label_fr
-      : undefined;
-  const en =
-    typeof record?.metric_label_en === "string" && record.metric_label_en.trim()
-      ? record.metric_label_en
-      : undefined;
-  return { fr, en };
+function rowLabel(row: unknown): LocalizedField {
+  const record = row as Record<string, unknown> | undefined;
+  return parseLocalizedFieldPair(record?.metric_label, {
+    fr: record?.metric_label_fr,
+    en: record?.metric_label_en,
+  });
 }
 
 // Bloc 75/A: the 3 previously-separate admin tables (Fusion/Gemmes/
@@ -238,8 +241,8 @@ export type ExpeditionSecondaryBase = {
   dismantle: ExpeditionDismantleBase;
   // Bloc 76/B: see CombatSecondaryBase.labels above — same convention.
   labels?: {
-    mergeCost?: { fr?: string; en?: string };
-    dismantle?: { fr?: string; en?: string };
+    mergeCost?: LocalizedField;
+    dismantle?: LocalizedField;
   };
 };
 

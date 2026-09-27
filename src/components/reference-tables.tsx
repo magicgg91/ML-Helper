@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  localizedFieldInLocale,
+  type LocalizedField,
+} from "../lib/localized-field";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
@@ -49,20 +53,26 @@ import { TabList, TabPanel } from "./tabs";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
-// override (fr direct, every other locale the en field — same fr/en-only
-// capture convention as Boutique/Templiers/Events) and falls back straight
-// to the translated default, never to the OTHER locale's override. Unlike
-// Boutique's item names (pure freeform text with no translation to fall
-// back to), this row label always has a real translated default in every
-// locale, so showing another locale's raw admin text here would still leak
-// a label this visitor never asked to see — the exact bug Codex flagged.
+// override and falls back straight to the translated default, never to
+// ANOTHER locale's override. Unlike Boutique's item names (pure freeform text
+// with no translation to fall back to), this row label always has a real
+// translated default in every locale, so showing another locale's raw admin
+// text here would still leak a label this visitor never asked to see — the
+// exact bug Codex flagged.
+//
+// Bloc 127 (PR 2/3): the override is now stored per language instead of as an
+// fr/en pair, so "this visitor's own locale" finally means what it says — a
+// German visitor reads the German override, where before every non-French
+// visitor read the English one. **The non-fallback is unchanged and
+// deliberate**: `localizedFieldInLocale` is the strict read that keeps it,
+// and `localizedText`'s en-then-fr fallback would be a regression here, not
+// an improvement. A test holds that specifically.
 function secondaryLabel(
-  override: { fr?: string; en?: string } | undefined,
+  override: LocalizedField | undefined,
   locale: string,
   fallback: string,
 ): string {
-  const lang = locale === "fr" ? "fr" : "en";
-  return override?.[lang] || fallback;
+  return localizedFieldInLocale(override ?? {}, locale) || fallback;
 }
 
 // Bloc 39: every equipment item now renders as a tile (base 1★ value, no
@@ -388,9 +398,9 @@ export function CombatReferenceTable({
     gemSlots: CombatGemSlotsBase;
     skydust: CombatSkydustBase;
     labels?: {
-      mergeCost?: { fr?: string; en?: string };
-      gemSlots?: { fr?: string; en?: string };
-      skydust?: { fr?: string; en?: string };
+      mergeCost?: LocalizedField;
+      gemSlots?: LocalizedField;
+      skydust?: LocalizedField;
     };
   };
 }) {
@@ -476,11 +486,14 @@ export function CombatReferenceTable({
       ) : null}
       {/* Bloc 76/B: each row's label comes from its own admin-editable
           metric_label once an admin has saved one for THIS visitor's own
-          locale (fr direct, every other locale reads the en field, per
-          secondaryLabel above) — falls back to this reference's own
-          translated default until then. Fixed per Codex review on PR #94: a
-          label saved from one locale's admin no longer overrides every
-          other locale's public page. */}
+          locale — and for that locale alone, per secondaryLabel above; until
+          then the label is this reference's own translated default. Fixed per
+          Codex review on PR #94: a label saved from one locale's admin no
+          longer overrides every other locale's public page.
+          Bloc 127 (PR 2/3): the override is stored per language, so each of
+          the five reads its own field. Before, only French had one — every
+          other locale read the English field, which is the leak the
+          non-fallback was meant to prevent in the first place. */}
       <RarityValueMergedTable
         title={t("columns.secondary-title")}
         rarityColumnLabel={t("columns.rarity")}
@@ -621,8 +634,8 @@ export function ExpeditionReferenceTable({
     mergeCost: ExpeditionMergeCostBase;
     dismantle: ExpeditionDismantleBase;
     labels?: {
-      mergeCost?: { fr?: string; en?: string };
-      dismantle?: { fr?: string; en?: string };
+      mergeCost?: LocalizedField;
+      dismantle?: LocalizedField;
     };
   };
 }) {

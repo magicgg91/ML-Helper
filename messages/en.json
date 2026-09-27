@@ -1270,6 +1270,7 @@
       "presentation-section": "Presentation",
       "presentation-help": "What the site shows for each Templar. The numbers do not depend on the language.",
       "texts-in": "Text in",
+      "language-hidden": "{language} hidden on the site",
       "columns": {
         "image": "Image",
         "name": "Name",

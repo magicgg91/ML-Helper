@@ -20,6 +20,7 @@ import {
 import { toolsSharingEditor } from "@/lib/admin-tool-sources";
 import { getLeagueLadder } from "@/lib/leagues";
 import { getTemplarPresentation } from "@/lib/templars-presentation-server";
+import { hiddenPublicLocales } from "@/lib/locale-settings";
 
 export default async function EditToolPage({
   params,
@@ -100,6 +101,9 @@ export default async function EditToolPage({
       <TemplarsEditor
         initialParameters={await getTemplarParameters()}
         initialPresentation={await getTemplarPresentation()}
+        // Bloc 127 (PR 2/3) : l'écran édite cinq langues, donc il dit
+        // lesquelles Configuration a éteintes.
+        hiddenLocales={await hiddenPublicLocales()}
         backHref={backHref}
         backLabel={backLabel}
         title={references("references.templiers")}
