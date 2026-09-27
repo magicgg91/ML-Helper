@@ -3,7 +3,7 @@
 import { SearchIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CalculatorAvailability } from "@/lib/calculator-catalog";
 import {
   buildSiteSearchResults,
@@ -13,17 +13,10 @@ import {
 export function SiteSearch({
   guides,
   active,
-  inputRef: externalInputRef,
   onNavigate,
 }: {
   guides: SiteSearchGuide[];
   active?: Partial<CalculatorAvailability>;
-  /**
-   * Bloc 132 §3 : sur mobile, le bouton loupe de l'en-tête ouvre le panneau
-   * puis place le focus ici. Le champ vit dans ce composant, la commande
-   * ailleurs — d'où la référence prêtée par l'appelant.
-   */
-  inputRef?: RefObject<HTMLInputElement | null>;
   /**
    * Bloc 132, retour de revue : suivre un résultat ferme la liste locale,
    * mais pas ce qui contient ce champ. Sur mobile c'est le panneau de
@@ -38,8 +31,7 @@ export function SiteSearch({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const ownInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = externalInputRef ?? ownInputRef;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const results = useMemo(
     () =>
@@ -90,10 +82,10 @@ export function SiteSearch({
     }
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
-    // `inputRef` peut être celle de l'appelant (Bloc 132 §3) : sa référence
-    // entre dans les dépendances pour que l'écouteur suive un changement de
-    // propriétaire, même si en pratique elle est stable.
-  }, [inputRef]);
+    // Bloc 141 : la référence est désormais purement interne — plus aucun
+    // appelant n'en prête une —, donc elle est stable et n'a rien à faire
+    // dans les dépendances.
+  }, []);
 
   return (
     <div className="site-search" ref={containerRef}>

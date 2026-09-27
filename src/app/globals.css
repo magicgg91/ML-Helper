@@ -593,7 +593,9 @@ select:where(:not(.admin-shell select)) {
 .public-header-panel {
   display: contents;
 }
-/* Les deux boutons à icône propres au mobile : loupe et menu. */
+/* Le bouton à icône propre au mobile : le menu. Bloc 141 : la loupe a été
+   retirée — elle ouvrait le même panneau, dont la recherche est le premier
+   élément. */
 .public-header-icon {
   display: none;
   width: var(--tap-target);
