@@ -4481,6 +4481,73 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await page.goto("/fr/referentiels/templars");
   await expect(page.getByText("Bloc127 auf Deutsch")).toHaveCount(0);
 
+  // Bloc 127 (PR 3/3) : les Événements, le dernier écran de l'audit — et le
+  // plus profond, puisque deux de ses quatre champs vivent dans les paliers.
+  await page.goto("/admin/referentiels/reference-events");
+  for (const code of ["FR", "EN", "DE", "ES", "TR"])
+    await expect(
+      page.getByRole("button", { name: new RegExp(`^${code} — `) }),
+      `Événements : l'onglet ${code}`,
+    ).toBeVisible();
+
+  // Le premier événement de Bronze existe depuis le début de ce scénario
+  // (« Recruteur »), avec son palier. On déplie l'événement pour atteindre
+  // ses champs de palier.
+  const eventName = () => page.getByLabel("Nom de l’événement 1");
+  const frenchEventName = await eventName().inputValue();
+  expect(frenchEventName, "l'événement de Bronze a bien un nom").not.toBe("");
+
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  // Rien n'est écrit en allemand : le champ part vide. C'est exactement ce
+  // que le Bloc 125 §9 ne faisait pas — l'onglet DE montrait le texte anglais
+  // parce qu'il lisait la même colonne que lui.
+  expect(
+    await eventName().inputValue(),
+    "Événements : l'allemand part vide",
+  ).toBe("");
+  await eventName().fill("Rekrutierer (DE)");
+
+  // Et le palier, deux niveaux plus bas : objectif et récompense.
+  const tierField = (field: string) =>
+    page.getByLabel(new RegExp(`^${field} du palier 1 de `)).first();
+  if ((await tierField("Objectif").count()) === 0)
+    await page
+      .getByRole("button", { name: /Palier|palier/ })
+      .first()
+      .click();
+  await expect(tierField("Objectif")).toBeVisible();
+  expect(
+    await tierField("Objectif").inputValue(),
+    "le palier aussi part vide en allemand",
+  ).toBe("");
+  await tierField("Objectif").fill("Deutsches Ziel");
+  await tierField("Récompense").fill("Deutsche Belohnung");
+
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+  expect(await eventName().inputValue()).toBe("Rekrutierer (DE)");
+  expect(await tierField("Objectif").inputValue()).toBe("Deutsches Ziel");
+  // Le français n'a pas bougé : c'est la garantie que le Bloc 125 a coûté.
+  await page.getByRole("button", { name: /^FR — Français/ }).click();
+  expect(
+    await eventName().inputValue(),
+    "Événements : l'allemand a écrasé le français",
+  ).toBe(frenchEventName);
+
+  // Le public lit chaque langue là où elle est écrite, et se replie sinon —
+  // ici le repli est bien le standard : contrairement aux libellés
+  // d'équipement, aucun de ces textes n'a de traduction par défaut derrière
+  // lui.
+  await page.goto("/de/referentiels/events");
+  await page.getByRole("button", { name: /Bronze/ }).click();
+  await expect(page.getByText("Rekrutierer (DE)").first()).toBeVisible();
+  await page.goto("/fr/referentiels/events");
+  await page.getByRole("button", { name: /Bronze/ }).click();
+  await expect(page.getByText("Rekrutierer (DE)")).toHaveCount(0);
+  await expect(page.getByText(frenchEventName).first()).toBeVisible();
+
   // A guide really is stored in all five, so its tabs keep all five — and say
   // which of them the public cannot see, so a translation that is written and
   // invisible does not read as a save that failed.
