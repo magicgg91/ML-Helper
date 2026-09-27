@@ -4367,12 +4367,10 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
 
   // Les écrans dont les lignes tiennent un champ français et un pour tout le
   // reste. Aucun ne peut offrir un onglet pour une colonne qu'il n'a pas.
-  // (La Boutique n'en fait plus partie depuis le Bloc 127, voir plus bas.)
-  for (const url of [
-    "/admin/referentiels/reference-events",
-    "/admin/tools/templars",
-    "/admin/referentiels/reference-combat-equipment",
-  ]) {
+  // (La Boutique en est sortie en PR 1/3 du Bloc 127, les Templiers et les
+  // Équipements en PR 2/3 — voir plus bas ; il ne reste que les Événements,
+  // que la PR 3/3 emportera.)
+  for (const url of ["/admin/referentiels/reference-events"]) {
     await page.goto(url);
     await expect(
       page.getByRole("button", { name: /^FR — Français/ }),
@@ -4440,6 +4438,48 @@ test("Bloc 125/9: fr/en content offers fr and en, and five-language content says
   await page.goto("/fr/referentiels/shop");
   await expect(page.getByText(french)).toBeVisible();
   await expect(page.getByText("Bloc127 English name")).toHaveCount(0);
+
+  // Bloc 127 (PR 2/3) : les Templiers et les libellés d'équipement offrent eux
+  // aussi les cinq langues, et ce qui y est tapé en allemand s'y range.
+  for (const [url, field] of [
+    ["/admin/tools/templars", /^Nom de /],
+    ["/admin/referentiels/reference-combat-equipment", /^Libellé de l/],
+  ] as const) {
+    await page.goto(url);
+    for (const code of ["FR", "EN", "DE", "ES", "TR"])
+      await expect(
+        page.getByRole("button", { name: new RegExp(`^${code} — `) }),
+        `${url} : l'onglet ${code}`,
+      ).toBeVisible();
+    const first = () => page.getByLabel(field).first();
+    await expect(first()).toBeVisible();
+    const french = await first().inputValue();
+    await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+    // Rien n'est surchargé en allemand : le champ est vide, il ne montre pas
+    // le texte d'une autre langue comme s'il l'était.
+    expect(await first().inputValue(), `${url} : l'allemand part vide`).toBe(
+      "",
+    );
+    await first().fill("Bloc127 auf Deutsch");
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+    await page.reload();
+    await page.getByRole("button", { name: /^DE — Deutsch/ }).click();
+    expect(await first().inputValue()).toBe("Bloc127 auf Deutsch");
+    await page.getByRole("button", { name: /^FR — Français/ }).click();
+    expect(
+      await first().inputValue(),
+      `${url} : l'allemand a écrasé le français`,
+    ).toBe(french);
+  }
+
+  // …et le public lit l'allemand là où il est écrit. Les deux écrans lisent
+  // leur surcharge **sans repli** (Bloc 76/B) : une langue non surchargée
+  // retombe sur sa propre traduction, jamais sur celle d'un voisin.
+  await page.goto("/de/referentiels/templars");
+  await expect(page.getByText("Bloc127 auf Deutsch")).toBeVisible();
+  await page.goto("/fr/referentiels/templars");
+  await expect(page.getByText("Bloc127 auf Deutsch")).toHaveCount(0);
 
   // A guide really is stored in all five, so its tabs keep all five — and say
   // which of them the public cannot see, so a translation that is written and

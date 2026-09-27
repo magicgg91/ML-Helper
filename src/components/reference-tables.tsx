@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  localizedFieldInLocale,
+  type LocalizedField,
+} from "../lib/localized-field";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
@@ -49,20 +53,26 @@ import { TabList, TabPanel } from "./tabs";
 import { referenceCatalog, toolHref } from "../lib/reference-catalog";
 
 // Bloc 76/B fix (Codex review, PR #94): reads only the visitor's own locale
-// override (fr direct, every other locale the en field — same fr/en-only
-// capture convention as Boutique/Templiers/Events) and falls back straight
-// to the translated default, never to the OTHER locale's override. Unlike
-// Boutique's item names (pure freeform text with no translation to fall
-// back to), this row label always has a real translated default in every
-// locale, so showing another locale's raw admin text here would still leak
-// a label this visitor never asked to see — the exact bug Codex flagged.
+// override and falls back straight to the translated default, never to
+// ANOTHER locale's override. Unlike Boutique's item names (pure freeform text
+// with no translation to fall back to), this row label always has a real
+// translated default in every locale, so showing another locale's raw admin
+// text here would still leak a label this visitor never asked to see — the
+// exact bug Codex flagged.
+//
+// Bloc 127 (PR 2/3): the override is now stored per language instead of as an
+// fr/en pair, so "this visitor's own locale" finally means what it says — a
+// German visitor reads the German override, where before every non-French
+// visitor read the English one. **The non-fallback is unchanged and
+// deliberate**: `localizedFieldInLocale` is the strict read that keeps it,
+// and `localizedText`'s en-then-fr fallback would be a regression here, not
+// an improvement. A test holds that specifically.
 function secondaryLabel(
-  override: { fr?: string; en?: string } | undefined,
+  override: LocalizedField | undefined,
   locale: string,
   fallback: string,
 ): string {
-  const lang = locale === "fr" ? "fr" : "en";
-  return override?.[lang] || fallback;
+  return localizedFieldInLocale(override ?? {}, locale) || fallback;
 }
 
 // Bloc 39: every equipment item now renders as a tile (base 1★ value, no

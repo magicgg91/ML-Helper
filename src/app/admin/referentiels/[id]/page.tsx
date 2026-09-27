@@ -31,6 +31,7 @@ export default async function EditReferentielPage({
   // same name the Référentiels table shows — one name per reference, not a
   // short one in the list and an "Éditer …" one on the screen.
   const { id } = await params;
+  const hiddenLocales = await hiddenPublicLocales();
   if (id === "reference-level-up") {
     return (
       <ProgressionEditor
@@ -73,6 +74,9 @@ export default async function EditReferentielPage({
           backLabel={t("title")}
           title={t("references.combat-equipment")}
           usedByTool={usedByTool}
+          // Bloc 127 (PR 2/3) : les libellés de métrique s'éditent en cinq
+          // langues, donc l'écran dit lesquelles Configuration a éteintes.
+          hiddenLocales={hiddenLocales}
         />
       );
     }
@@ -93,6 +97,7 @@ export default async function EditReferentielPage({
         backLabel={t("title")}
         title={t("references.expedition-equipment")}
         usedByTool={usedByTool}
+        hiddenLocales={hiddenLocales}
       />
     );
   }
@@ -106,7 +111,7 @@ export default async function EditReferentielPage({
         // Bloc 127 : l'écran édite cinq langues depuis cette PR, donc il dit
         // lesquelles Configuration a éteintes — comme les guides et les
         // mentions légales le font déjà.
-        hiddenLocales={await hiddenPublicLocales()}
+        hiddenLocales={hiddenLocales}
       />
     );
   }

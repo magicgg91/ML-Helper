@@ -1,6 +1,6 @@
 "use client";
 
-import { pickFrEn } from "../lib/translations";
+import { localizedFieldInLocale } from "../lib/localized-field";
 import { useLocale, useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import {
@@ -42,8 +42,17 @@ function TemplarPresentationTile({
   locale: string;
 }) {
   const t = useTranslations("templars");
+  const competenceNames = useTranslations("game.templars");
   const color = skillColor(templarKey);
-  const name = pickFrEn(row.name_fr, row.name_en, locale);
+  // Bloc 127 (PR 2/3) : le nom de la ligne est une **surcharge** du nom de
+  // compétence, déjà traduit dans les cinq langues (`game.templars.*`). On lit
+  // donc la langue du visiteur et elle seule : se replier sur une autre langue
+  // lui montrerait un texte saisi pour quelqu'un d'autre alors que sa propre
+  // traduction attend — c'est la règle que le Bloc 76/B a posée pour les
+  // libellés d'équipement, et la paire d'avant ce bloc ne savait pas la tenir
+  // (un visiteur allemand lisait la surcharge anglaise).
+  const name =
+    localizedFieldInLocale(row.name, locale) || competenceNames(templarKey);
   return (
     <article
       className="templars-tile"

@@ -65,6 +65,24 @@ export function hasLocalizedField(field: LocalizedField): boolean {
 }
 
 /**
+ * Le texte de **cette** langue exactement, sans aucun repli.
+ *
+ * Pour un champ qui *surcharge* un défaut déjà traduit dans les cinq langues :
+ * les libellés de métrique des Équipements (Bloc 76/B, revue Codex PR #94). Là,
+ * se replier sur une autre langue ferait lire au visiteur un texte saisi pour
+ * quelqu'un d'autre, alors que sa propre langue a une traduction prête. Le
+ * repli de `localizedText` serait donc une régression, pas un progrès — c'est
+ * la seule règle de lecture qui diffère dans tout le contenu éditorial.
+ */
+export function localizedFieldInLocale(
+  field: LocalizedField,
+  locale: string,
+): string {
+  const text = field[locale as LaunchLocale];
+  return text !== undefined && text.trim() !== "" ? text : "";
+}
+
+/**
  * Si ce champ rend un texte **à tous les visiteurs**, quelle que soit leur
  * langue.
  *
@@ -82,6 +100,18 @@ export function hasLocalizedField(field: LocalizedField): boolean {
 export function readableInEveryLocale(field: LocalizedField): boolean {
   const locales = localizedFieldLocales(field);
   return locales.includes("en") || locales.includes("fr");
+}
+
+/**
+ * Un champ **facultatif** : vide, ou lisible par tous les visiteurs.
+ *
+ * La règle de `readableInEveryLocale` pour les champs qu'un écran n'oblige pas
+ * à remplir — la description d'un templier, par exemple. Ce qui reste interdit
+ * est l'entre-deux : un texte écrit dans une seule langue sans repli, blanc
+ * pour tous les autres.
+ */
+export function readableWhenWritten(field: LocalizedField): boolean {
+  return !hasLocalizedField(field) || readableInEveryLocale(field);
 }
 
 /** Toutes les langues, blanches là où rien n'est écrit — ce qu'un formulaire veut. */

@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { parseLocalizedFieldPair } from "./localized-field";
 import { templarKeys, type TemplarKey } from "./player-settings";
 import {
   defaultTemplarPresentationCatalog,
@@ -12,16 +13,22 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+// Bloc 127 (PR 2/3): the name and the description are read per language, with
+// the fr/en pair as the fallback for what the migration cannot reach — a backup
+// restored from before it, an image that has not yet run. A net, not a
+// migration: the data moves to the new shape once, in SQL.
 function normalizeRow(raw: unknown, key: TemplarKey): TemplarPresentationRow {
   if (!isPlainObject(raw)) return defaultTemplarPresentationCatalog[key];
   return {
     image: typeof raw.image === "string" ? raw.image : "",
-    name_fr: typeof raw.name_fr === "string" ? raw.name_fr : "",
-    name_en: typeof raw.name_en === "string" ? raw.name_en : "",
-    description_fr:
-      typeof raw.description_fr === "string" ? raw.description_fr : "",
-    description_en:
-      typeof raw.description_en === "string" ? raw.description_en : "",
+    name: parseLocalizedFieldPair(raw.name, {
+      fr: raw.name_fr,
+      en: raw.name_en,
+    }),
+    description: parseLocalizedFieldPair(raw.description, {
+      fr: raw.description_fr,
+      en: raw.description_en,
+    }),
     temple_base: typeof raw.temple_base === "string" ? raw.temple_base : "",
     bonus: typeof raw.bonus === "string" ? raw.bonus : "",
   };

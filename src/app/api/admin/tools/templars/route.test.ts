@@ -25,6 +25,7 @@ vi.mock("@/services/reference-table-admin", async () => {
     saveReferenceTableIn,
     stringField: actual.stringField,
     numericString: actual.numericString,
+    localizedFieldOrPair: actual.localizedFieldOrPair,
   };
 });
 

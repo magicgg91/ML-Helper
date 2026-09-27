@@ -13,7 +13,12 @@ import type {
   TemplarPresentationCatalog,
   TemplarPresentationRow,
 } from "@/lib/templars-presentation";
-import { contentPairLocales, type ContentPairLocale } from "@/lib/translations";
+import { launchLocales, type LaunchLocale } from "@/lib/translations";
+import {
+  localizedFieldLocales,
+  withLocalizedFieldLocale,
+  type LocalizedField,
+} from "@/lib/localized-field";
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./admin-button";
 import { EditorHeader } from "./admin-editor-header";
@@ -53,14 +58,17 @@ export function TemplarsEditor({
   backHref,
   backLabel,
   title,
+  hiddenLocales,
 }: EditorScreenProps & {
   initialParameters: TemplarParameters;
   initialPresentation: TemplarPresentationCatalog;
+  /** Les langues éteintes dans Configuration — leur onglet le dit. */
+  hiddenLocales?: readonly string[];
 }) {
   const t = useTranslations("admin.templar-parameters");
   const names = useTranslations("game.templars");
   const languageNames = useTranslations("admin.config.languages");
-  const [locale, setLocale] = useState<ContentPairLocale>("fr");
+  const [locale, setLocale] = useState<LaunchLocale>("fr");
   const form = useEditorForm<TemplarsScreen>({
     initial: {
       parameters: initialParameters,
@@ -70,14 +78,10 @@ export function TemplarsEditor({
   });
   const { parameters, presentation } = form.value;
 
-  const lang = locale;
-  const nameKey = `name_${lang}` as const;
-  const descriptionKey = `description_${lang}` as const;
-
   const setRow = (
     key: TemplarKey,
     field: keyof TemplarPresentationRow,
-    next: string,
+    next: string | LocalizedField,
   ) =>
     form.setValue((current) => ({
       ...current,
@@ -86,6 +90,22 @@ export function TemplarsEditor({
         [key]: { ...current.presentation[key], [field]: next },
       },
     }));
+
+  /**
+   * Bloc 127 (PR 2/3) : une langue à la fois, et seulement celle-ci. Effacée,
+   * elle quitte l'objet plutôt que d'y rester `""` — sans quoi le repli public
+   * s'arrêterait dessus (Bloc 126/D).
+   */
+  const setText = (
+    key: TemplarKey,
+    field: "name" | "description",
+    text: string,
+  ) =>
+    setRow(
+      key,
+      field,
+      withLocalizedFieldLocale(presentation[key][field], locale, text),
+    );
 
   // The catalog stores its two numbers as strings, empty meaning "not
   // confirmed" (templars-presentation.ts) — so they go through NumberField's
@@ -178,22 +198,24 @@ export function TemplarsEditor({
         description={t("presentation-help")}
         actions={
           <LangTabs
-            locales={contentPairLocales}
             locale={locale}
             onChange={setLocale}
             label={t("texts-in")}
-            filled={(code) => {
-              const field = `name_${code}` as const;
-              return templarKeys.some((key) => presentation[key][field].trim());
-            }}
+            filled={(code) =>
+              templarKeys.some((key) =>
+                localizedFieldLocales(presentation[key].name).includes(code),
+              )
+            }
             languageNames={Object.fromEntries(
-              contentPairLocales.map((code) => [
+              launchLocales.map((code) => [
                 code,
                 languageNames.has(code)
                   ? languageNames(code)
                   : code.toUpperCase(),
               ]),
             )}
+            hiddenLocales={hiddenLocales}
+            hiddenLabel={(language) => t("language-hidden", { language })}
           />
         }
       >
@@ -221,7 +243,10 @@ export function TemplarsEditor({
             <tbody>
               {templarKeys.map((key) => {
                 const row = presentation[key];
-                const description = row[descriptionKey];
+                // Ce que l'onglet ouvert montre : la langue courante telle
+                // quelle, et non ce que le public lirait — c'est ici qu'on
+                // écrit. Le pointillé signale une description à écrire.
+                const description = row.description[locale] ?? "";
                 return (
                   <tr
                     key={key}
@@ -260,9 +285,14 @@ export function TemplarsEditor({
                         aria-label={t("name-of", { name: names(key) })}
                         className="admin-control admin-focus h-9 w-full min-w-[140px] rounded-admin-control border border-admin-card-border bg-admin-card px-2 text-sm text-admin-text"
                         type="text"
-                        value={row[nameKey]}
+                        // Bloc 127 (PR 2/3) : vide, le champ signale que le
+                        // nom de compétence traduit fait foi — le placeholder
+                        // montre lequel, dans la langue de l'onglet ouvert
+                        // quand elle en a un.
+                        placeholder={names(key)}
+                        value={row.name[locale] ?? ""}
                         onChange={(event) =>
-                          setRow(key, nameKey, event.target.value)
+                          setText(key, "name", event.target.value)
                         }
                       />
                     </td>
@@ -278,7 +308,7 @@ export function TemplarsEditor({
                         placeholder={t("description-to-write")}
                         value={description}
                         onChange={(event) =>
-                          setRow(key, descriptionKey, event.target.value)
+                          setText(key, "description", event.target.value)
                         }
                       />
                     </td>

@@ -352,10 +352,53 @@ describe("Bloc 119: the equipment reference editor", () => {
       String(url).endsWith("-secondary"),
     )!;
     const body = JSON.parse(String(secondary[1]?.body));
-    expect(body[0]).toMatchObject({
-      metric_label_fr: "Fusion",
-      metric_label_en: "Merging",
+    expect(body[0].metric_label).toEqual({ fr: "Fusion", en: "Merging" });
+  });
+
+  // Bloc 127 (PR 2/3) : la paire FR/EN devient un champ par langue, donc les
+  // cinq langues du site ont chacune leur place. Le libellé reste lu **sans
+  // repli** côté public (voir `secondaryLabel`) : ce qui est écrit ici en
+  // allemand ne s'affiche qu'en allemand.
+  it("Bloc127: writes the label in each of the site's languages", async () => {
+    const request = renderCombat(rows);
+    for (const code of ["FR", "EN", "DE", "ES", "TR"])
+      expect(
+        screen.getByRole("button", { name: new RegExp(`^${code} — `) }),
+        code,
+      ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /^DE — / }));
+    // Rien n'est surchargé en allemand : le champ est vide et son placeholder
+    // montre le libellé traduit qui fait foi.
+    const german = screen.getByLabelText("Libellé de l’indicateur 1");
+    expect(german).toHaveValue("");
+    fireEvent.change(german, { target: { value: "Verschmelzen" } });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const secondary = request.mock.calls.find(([url]) =>
+      String(url).endsWith("-secondary"),
+    )!;
+    const body = JSON.parse(String(secondary[1]?.body));
+    expect(body[0].metric_label).toEqual({
+      fr: "Fusion",
+      en: "Merge",
+      de: "Verschmelzen",
     });
+  });
+
+  it("Bloc127: clearing a language drops it instead of saving it blank", async () => {
+    // Un `""` empêcherait le libellé traduit par défaut de reprendre la main —
+    // c'est précisément ce que ce champ doit permettre.
+    const request = renderCombat(rows);
+    fireEvent.change(screen.getByLabelText("Libellé de l’indicateur 1"), {
+      target: { value: "" },
+    });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const secondary = request.mock.calls.find(([url]) =>
+      String(url).endsWith("-secondary"),
+    )!;
+    const body = JSON.parse(String(secondary[1]?.body));
+    expect(body[0].metric_label).toEqual({ en: "Merge" });
   });
 
   it("names an indicator row nobody has renamed", () => {

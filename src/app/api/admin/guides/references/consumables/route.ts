@@ -7,7 +7,7 @@ import {
   type ConsumableCatalog,
 } from "@/lib/consumables";
 import {
-  localizedField,
+  localizedFieldOrPair,
   numericString,
   saveReferenceTable,
   stringField,
@@ -26,25 +26,6 @@ import { readableInEveryLocale } from "@/lib/localized-field";
 // write, one entry, since there is only ever one table to save again).
 const consumableSections = ["intro", ...consumableCategories] as const;
 
-/**
- * Un champ de texte de la ligne reçue, dans la forme que l'éditeur envoie.
- *
- * Revue Codex (PR #167, P1) : pendant la fenêtre de déploiement, un onglet
- * d'administration ouvert avant la livraison envoie encore la paire
- * `<champ>_fr`/`_en` et aucun objet par langue. Sans ce repli, `localizedField`
- * recevait `undefined`, rendait `{}`, et l'enregistrement effaçait le nom et la
- * description de **tous** les objets du catalogue en répondant 200. C'est le
- * même filet que la lecture (`parseConsumableRow`), du côté de l'écriture, et
- * il disparaîtra avec elle.
- */
-function editorialField(row: Record<string, unknown>, field: string) {
-  if (row[field] !== undefined) return localizedField(row[field]);
-  return localizedField({
-    fr: stringField(row[`${field}_fr`]),
-    en: stringField(row[`${field}_en`]),
-  });
-}
-
 function parseRows(rawRows: unknown) {
   if (!Array.isArray(rawRows)) throw new Error("invalid category rows");
   return rawRows.map((raw) => {
@@ -53,8 +34,8 @@ function parseRows(rawRows: unknown) {
     // Bloc 127: one field per language instead of the fr/en pair. Strict,
     // like the cost below: a malformed field rejects the whole catalogue
     // with a 400 rather than saving half of it.
-    const name = editorialField(rowSource, "name");
-    const description = editorialField(rowSource, "description");
+    const name = localizedFieldOrPair(rowSource, "name");
+    const description = localizedFieldOrPair(rowSource, "description");
     // Revue Codex (PR #167, P2) : le serveur tient la règle, pas seulement
     // l'écran. `localizedText` essaie la langue du visiteur, puis l'anglais,
     // puis le français : une ligne écrite en allemand seul serait blanche pour
