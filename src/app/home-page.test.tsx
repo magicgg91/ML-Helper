@@ -219,6 +219,27 @@ describe("HomePage", () => {
     expect(screen.getByText("count-guides")).toBeInTheDocument();
   });
 
+  /**
+   * Bloc 142/B : chaque compteur **entier** — nombre et nom — tient dans une
+   * pastille, et c'est celle du Bloc 133/C : la classe est reprise telle
+   * quelle, pas recopiée sous un autre nom. `.home-hero-count-badge` ne fait
+   * que la mettre à l'échelle du hero.
+   */
+  it("met chaque compteur entier dans la pastille du Bloc 133", async () => {
+    const { container } = render(await HomePage());
+    const list = container.querySelector<HTMLElement>(".home-hero-counters")!;
+    const badges = list.querySelectorAll(".tool-count-badge");
+    expect(badges).toHaveLength(3);
+    for (const badge of badges)
+      expect(badge).toHaveClass("home-hero-count-badge");
+    // La pastille porte le compteur entier, pas seulement son nombre.
+    expect([...badges].map((b) => b.textContent)).toEqual([
+      "count-tools",
+      "count-references",
+      "count-guides",
+    ]);
+  });
+
   it("met « Commence ici » sur le guide de la catégorie configurée", async () => {
     const { container } = render(await HomePage());
     const card = container.querySelector<HTMLAnchorElement>(".start-here-card");
