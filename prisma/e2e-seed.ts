@@ -26,6 +26,12 @@ import { e2eDatabaseUrl, singleConnection } from "./e2e-database";
  * DROP IF EXISTS rather than DELETE FROM so a half-migrated or half-written
  * database from a previous attempt cannot survive as a stale column.
  */
+/**
+ * L'instant que porte tout ce que le semis date lui-même. Fixe : voir le
+ * commentaire du guide plus bas.
+ */
+const SEEDED_AT = new Date("2026-01-01T00:00:00.000Z");
+
 export async function resetE2eDatabase(databaseUrl = e2eDatabaseUrl) {
   // Une seule connexion : voir `singleConnection`. Cette fonction n'est
   // qu'une suite de DDL, exactement le cas où le pool fait perdre de vue à
@@ -423,7 +429,14 @@ export async function resetE2eDatabase(databaseUrl = e2eDatabaseUrl) {
           en: "Test content",
         },
         author: "Équipe ML-Helper",
-        publishedAt: new Date(),
+        // Bloc 143/C : une date fixe, pas l'instant du semis. Deux remises à
+        // zéro successives doivent rendre un état **identique octet pour
+        // octet** — c'est ce qui permet de le comparer strictement plutôt que
+        // d'exclure les colonnes qui bougent, et une exclusion est exactement
+        // l'endroit où un champ non restauré passerait inaperçu.
+        publishedAt: SEEDED_AT,
+        createdAt: SEEDED_AT,
+        updatedAt: SEEDED_AT,
       },
     });
   } finally {

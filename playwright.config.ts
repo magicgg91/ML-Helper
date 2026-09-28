@@ -28,7 +28,25 @@ export default defineConfig({
     // suite out once while writing this bloc. Three minutes is room, not a
     // mask: a server that never comes up still fails the run.
     timeout: 180_000,
-    reuseExistingServer: !process.env.CI,
+    /**
+     * Bloc 143/C : jamais de réutilisation, même en local.
+     *
+     * `!process.env.CI` laissait Playwright adopter n'importe quel serveur déjà
+     * à l'écoute sur ce port — y compris un `pnpm dev` ouvert sur une **autre**
+     * base. La commande ci-dessus n'est alors pas lancée du tout, donc
+     * `test:e2e:prepare` non plus, donc la remise à zéro non plus : la suite
+     * s'exécute sur une base étrangère, en silence.
+     *
+     * Reproduit : un `pnpm dev` sur `b130.db`, puis une seule spec →
+     * `setup-e2e` n'apparaît pas une seule fois dans le journal, et
+     * « Bloc 91/F2: an inactive reference still renders but is noindex »
+     * échoue. Un échec qui ressemble à un défaut de code et n'en est pas — le
+     * pire cas pour le diagnostic, parce qu'on cherche un bug qui n'existe pas.
+     *
+     * Sans réutilisation, un port déjà pris fait échouer le démarrage avec un
+     * message qui le dit. Bruyant et juste, plutôt que silencieux et faux.
+     */
+    reuseExistingServer: false,
     env: {
       DATABASE_URL: e2eDatabaseUrl,
       NEXTAUTH_URL: "http://127.0.0.1:3000",
