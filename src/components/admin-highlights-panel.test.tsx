@@ -3,7 +3,6 @@ import {
   fireEvent,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl as render } from "../test/render-with-intl";
@@ -35,16 +34,27 @@ function renderUnset() {
   render(<AdminHighlightsPanel candidates={candidates} initial={undefined} />);
 }
 
-/** Les noms de la sélection, dans l'ordre affiché. */
-const selectedNames = () =>
-  within(screen.getByTestId("highlights-selected"))
-    .getAllByRole("listitem")
-    .map((item) => item.textContent);
+/** Les cinq listes déroulantes, dans l'ordre des emplacements. */
+const slots = () =>
+  Array.from({ length: 5 }, (_, index) =>
+    screen.getByLabelText(`Emplacement ${index + 1}`),
+  ) as HTMLSelectElement[];
 
-const add = (name: string) =>
-  fireEvent.click(
-    screen.getByRole("button", { name: `Ajouter ${name} à la sélection` }),
+/** Ce que chaque emplacement affiche, vide compris. */
+const chosen = () =>
+  slots().map(
+    (slot) => slot.selectedOptions[0]?.textContent ?? "",
   );
+
+/** Les options proposées par un emplacement, « Aucun » exclu. */
+const optionsOf = (index: number) =>
+  Array.from(slots()[index].options)
+    .filter((option) => option.value !== "")
+    .map((option) => option.textContent ?? "");
+
+/** Choisir dans un emplacement, par la valeur `kind:slug`. */
+const pick = (index: number, value: string) =>
+  fireEvent.change(slots()[index], { target: { value } });
 
 // Bloc 136 : le panneau redemande l'écran après un enregistrement, pour
 // que le résumé de la section — calculé sur le serveur — suive.
@@ -69,78 +79,94 @@ describe("AdminHighlightsPanel", () => {
     );
   });
 
+  it("rend cinq emplacements, chacun listant guides, outils et référentiels", () => {
+    renderPanel();
+    expect(slots()).toHaveLength(5);
+    // Chaque liste porte la totalité des candidats, les trois natures
+    // mélangées — c'est ce que le bloc demande.
+    const options = optionsOf(0);
+    expect(options).toHaveLength(candidates.length);
+    for (const candidate of candidates)
+      expect(options.some((option) => option.includes(candidate.name))).toBe(
+        true,
+      );
+  });
+
   it("part de la sélection enregistrée, dans son ordre", () => {
     renderPanel([
       { kind: "reference", slug: "gems" },
       { kind: "tool", slug: "city-cost" },
     ]);
-    expect(selectedNames()).toEqual([
-      expect.stringContaining("Gemmes"),
-      expect.stringContaining("Coût de Ville"),
-    ]);
+    expect(chosen()[0]).toContain("Gemmes");
+    expect(chosen()[1]).toContain("Coût de Ville");
+    // Les trois places restantes sont vides, et se voient comme telles.
+    expect(chosen()[2]).toBe("— Aucun —");
   });
 
-  it("ajoute à la fin, et retire l'entrée de la liste des candidats", () => {
+  /**
+   * Le filtrage des doublons : ce qu'un emplacement a pris disparaît des
+   * quatre autres. C'est la garantie qui empêche une entrée d'occuper deux
+   * places.
+   */
+  it("retire des autres emplacements ce qu'un emplacement a pris", () => {
     renderPanel();
-    add("Le clan");
-    expect(selectedNames()).toEqual([expect.stringContaining("Le clan")]);
-    expect(
-      screen.queryByRole("button", { name: "Ajouter Le clan à la sélection" }),
-    ).toBeNull();
+    expect(optionsOf(1).some((option) => option.includes("Gemmes"))).toBe(true);
+    pick(0, "reference:gems");
+    for (const index of [1, 2, 3, 4])
+      expect(
+        optionsOf(index).some((option) => option.includes("Gemmes")),
+        `emplacement ${index + 1}`,
+      ).toBe(false);
+    // Et l'emplacement qui l'a prise la garde, sans quoi elle ne pourrait
+    // plus s'afficher.
+    expect(chosen()[0]).toContain("Gemmes");
   });
 
-  it("retire une entrée et la rend de nouveau proposable", () => {
-    renderPanel([{ kind: "guide", slug: "clan" }]);
-    fireEvent.click(screen.getByRole("button", { name: "Supprimer Le clan" }));
-    expect(screen.queryByTestId("highlights-selected")).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Ajouter Le clan à la sélection" }),
-    ).toBeInTheDocument();
-  });
-
-  it("monte et descend une entrée", () => {
-    renderPanel([
-      { kind: "tool", slug: "city-cost" },
-      { kind: "guide", slug: "clan" },
-    ]);
-    fireEvent.click(screen.getByRole("button", { name: "Monter Le clan" }));
-    expect(selectedNames()[0]).toContain("Le clan");
-    fireEvent.click(screen.getByRole("button", { name: "Descendre Le clan" }));
-    expect(selectedNames()[0]).toContain("Coût de Ville");
-  });
-
-  // Cinq places : au-delà, il faut choisir, et le panneau le dit plutôt que
-  // de laisser cliquer pour rien.
-  it("bloque l'ajout à cinq entrées", () => {
-    renderPanel();
-    for (const name of [
-      "Coût de Ville",
-      "Production",
-      "Gemmes",
-      "Boutique",
-      "Bien débuter",
-    ])
-      add(name);
-    expect(selectedNames()).toHaveLength(5);
-    expect(
-      screen.getByRole("button", { name: "Ajouter Le clan à la sélection" }),
-    ).toBeDisabled();
-  });
-
-  it("filtre les candidats sur la recherche", () => {
-    renderPanel();
-    fireEvent.change(
-      screen.getByLabelText("Chercher un guide, un outil ou un référentiel"),
-      { target: { value: "gem" } },
+  it("la rend de nouveau disponible quand on la repose", () => {
+    renderPanel([{ kind: "reference", slug: "gems" }]);
+    expect(optionsOf(1).some((option) => option.includes("Gemmes"))).toBe(
+      false,
     );
-    const list = within(screen.getByTestId("highlights-candidates"));
-    expect(list.getAllByRole("listitem")).toHaveLength(1);
-    expect(list.getByText("Gemmes")).toBeInTheDocument();
+    pick(0, "");
+    for (const index of [0, 1, 2, 3, 4])
+      expect(
+        optionsOf(index).some((option) => option.includes("Gemmes")),
+        `emplacement ${index + 1}`,
+      ).toBe(true);
+  });
+
+  /**
+   * La limite de cinq n'a plus besoin d'être annoncée : il n'existe que cinq
+   * champs. Un sixième candidat reste proposé dans chaque liste — non pas
+   * pour s'ajouter, mais pour **remplacer** ce que la place tient déjà, ce
+   * qui est le seul geste qu'un champ sait faire.
+   */
+  it("s'en tient à cinq entrées même quand tout est choisi", async () => {
+    renderPanel();
+    for (const [index, value] of [
+      "tool:city-cost",
+      "tool:city-production",
+      "reference:gems",
+      "reference:shop",
+      "guide:bien-debuter",
+    ].entries())
+      pick(index, value);
+    expect(slots()).toHaveLength(5);
+    // Le sixième reste proposé : il remplacerait celui de la place.
+    expect(optionsOf(2).some((option) => option.includes("Le clan"))).toBe(
+      true,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer la sélection" }),
+    );
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+    const [, init] = vi.mocked(globalThis.fetch).mock.calls[0];
+    expect(JSON.parse(String(init?.body)).highlights).toHaveLength(5);
   });
 
   it("envoie la sélection dans son ordre", async () => {
     renderPanel([{ kind: "tool", slug: "city-cost" }]);
-    add("Gemmes");
+    pick(1, "reference:gems");
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer la sélection" }),
     );
@@ -166,9 +192,7 @@ describe("AdminHighlightsPanel", () => {
   // s'enregistrer telle quelle.
   it("sait enregistrer une sélection vide", async () => {
     renderPanel([{ kind: "tool", slug: "city-cost" }]);
-    fireEvent.click(
-      screen.getByRole("button", { name: "Supprimer Coût de Ville" }),
-    );
+    pick(0, "");
     fireEvent.click(
       screen.getByRole("button", { name: "Enregistrer la sélection" }),
     );
@@ -221,9 +245,32 @@ describe("AdminHighlightsPanel", () => {
    */
   it("montre une entrée orpheline plutôt que de la cacher", () => {
     renderPanel([{ kind: "guide", slug: "guide-disparu" }]);
-    expect(selectedNames()[0]).toContain("guide-disparu");
-    expect(
-      screen.getByRole("button", { name: "Supprimer guide-disparu" }),
-    ).toBeInTheDocument();
+    // Elle reste affichée, nommée par son identifiant — tout ce qui reste
+    // d'une cible disparue.
+    expect(chosen()[0]).toContain("guide-disparu");
+    // Et elle reste modifiable : reposer l'emplacement la retire.
+    pick(0, "");
+    expect(chosen()[0]).toBe("— Aucun —");
+  });
+
+  /**
+   * Un trou au milieu n'est pas un état à enregistrer : les entrées choisies
+   * partent dans leur ordre, sans la place vide qui les sépare à l'écran.
+   */
+  it("referme les trous à l'enregistrement", async () => {
+    renderPanel();
+    pick(0, "tool:city-cost");
+    pick(3, "guide:clan");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer la sélection" }),
+    );
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+    const [, init] = vi.mocked(globalThis.fetch).mock.calls[0];
+    expect(JSON.parse(String(init?.body))).toEqual({
+      highlights: [
+        { kind: "tool", slug: "city-cost" },
+        { kind: "guide", slug: "clan" },
+      ],
+    });
   });
 });
