@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import {
   isSavableLeagueLadder,
+  ladderBands,
   leagueLadderKey,
   seasonMovements,
   readLeagueLadder,
@@ -82,7 +83,14 @@ export async function PUT(request: Request) {
   // écran était ouvert : leurs plages n'ont pas été écrites, et le dire évite
   // qu'un enregistrement paraisse complet alors qu'il ne l'était pas. L'écran
   // le lit et le montre (voir `admin-ranking-editor`).
-  return NextResponse.json({ bands: parsed.data.bands, ...outcome });
+  //
+  // Revue Codex (PR #173) : `bands` vient de l'échelle fusionnée, jamais de la
+  // requête. L'écran adopte cette réponse comme état enregistré, et
+  // `router.refresh()` ne remonte pas un composant client : renvoyer l'envoi
+  // tel quel y réinstallait l'échelon supprimé, que chaque enregistrement
+  // suivant renvoyait pour se le voir refuser — « enregistrement partiel » à
+  // perpétuité.
+  return NextResponse.json(outcome);
 }
 
 type Session = NonNullable<Awaited<ReturnType<typeof authorizedSession>>>;
@@ -123,6 +131,6 @@ function runInTransaction(
       },
     });
     void row;
-    return { ignored };
+    return { bands: ladderBands(ladder), ignored };
   });
 }

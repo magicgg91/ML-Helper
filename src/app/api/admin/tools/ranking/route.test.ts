@@ -161,6 +161,32 @@ describe("PUT /api/admin/tools/ranking", () => {
     expect(written().map((rung) => rung.id)).toEqual(["bronze", "studio-cup"]);
   });
 
+  it("answers with the bands it stored, not the ones it was sent", async () => {
+    // Revue Codex (PR #173) : la réponse renvoyait `parsed.data.bands`, donc
+    // l'échelon supprimé y revenait. L'écran adopte cette réponse comme état
+    // enregistré et `router.refresh()` ne remonte pas un composant client :
+    // l'échelon fantôme repartait à chaque enregistrement suivant, qui se le
+    // voyait refuser — « enregistrement partiel » sans fin possible.
+    const response = await put({
+      bands: {
+        bronze: [{ threshold: 7, movement: null, target: null, rewards: [] }],
+        "diamond-2": [
+          { threshold: 5, movement: null, target: null, rewards: [] },
+        ],
+      },
+    });
+    const answer = (await response.json()) as {
+      bands: Record<string, unknown>;
+    };
+    expect(Object.keys(answer.bands).sort()).toEqual(["bronze", "studio-cup"]);
+    expect(answer.bands).not.toHaveProperty("diamond-2");
+    // Et ce qu'elle annonce est bien ce qui est parti en base, échelon par
+    // échelon — y compris celui que l'écran n'avait pas envoyé.
+    expect(answer.bands).toEqual(
+      Object.fromEntries(written().map((rung) => [rung.id, rung.bands])),
+    );
+  });
+
   it("refuses a payload that is not bands by rung", async () => {
     for (const payload of [
       null,
