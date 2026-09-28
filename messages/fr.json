@@ -256,7 +256,7 @@
     "none": "—",
     "full-production": {
       "title": "Si reskill full-prod",
-      "note": "{points} points investis intégralement · calculé sur la production de base",
+      "note": "{points} points investis intégralement",
       "army": "Armée si full Recruteur",
       "gold": "Or si full Prospérité"
     }

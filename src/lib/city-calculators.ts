@@ -163,10 +163,40 @@ export function calculateProduction(
     vpTotal: perCity.vp * count,
     gold,
     troops,
+    /**
+     * Bloc 115 : la simulation « et si je remettais tous mes points en
+     * production ? ».
+     *
+     * Elle passe par `bonusBreakdown` — la fonction de la production normale
+     * ci-dessus — avec le même temple et l'équipement augmenté du pourcentage
+     * de TOUT le budget de points de la ligue. Une seule formule sert donc les
+     * deux colonnes : un écart entre la production normale et sa simulation
+     * devient structurellement impossible.
+     *
+     * Elle multipliait auparavant `goldBase`/`troopsBase` — la base nue — donc
+     * elle perdait l'équipement et le temple en route. Chez un joueur à 602 %
+     * d'équipement Recruteur, elle annonçait 8,25 G là où la règle donne
+     * 15,72 G, soit *moins* que les 8,72 G qu'il produit déjà : un reskill
+     * complet affiché comme une perte.
+     *
+     * Aucun plafond ici, et il n'y en a pas à écarter : `skillPointMeta` donne
+     * `cap: null` à Prospérité comme à Recruteur, donc `skillCapForLeague` rend
+     * `undefined` pour les deux (voir `player-settings.test.ts`). Le calcul ne
+     * lit ni ne modifie les points réellement investis — c'est une simulation,
+     * et `input` n'en porte aucun.
+     */
     fullProduction: {
       points,
-      gold: goldBase * (1 + fullProsperous / 100),
-      troops: troopsBase * (1 + fullRecruiter / 100),
+      gold: bonusBreakdown(
+        goldBase,
+        input.prosperousEquipment + fullProsperous,
+        input.prosperousTemple,
+      ).total,
+      troops: bonusBreakdown(
+        troopsBase,
+        input.recruiterEquipment + fullRecruiter,
+        input.recruiterTemple,
+      ).total,
     },
   };
 }

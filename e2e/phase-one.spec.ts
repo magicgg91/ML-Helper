@@ -597,7 +597,10 @@ test("the Cities category exposes its three working calculators", async ({
     page.getByRole("heading", { name: "Si reskill full-prod" }),
   ).toBeVisible();
   await expect(page.getByText("Or si full Prospérité")).toBeVisible();
-  await expect(page.getByTestId("full-production-gold")).toHaveText("200/h");
+  // Bloc 115 : 200 de base × (1 + 30 % de temple), le joueur par défaut étant
+  // niveau 1 — donc 0 point de compétence à investir. Valait « 200/h » quand la
+  // simulation partait de la base nue et perdait le temple en chemin.
+  await expect(page.getByTestId("full-production-gold")).toHaveText("260/h");
 });
 
 test("Récompenses de Production is a standalone Villes calculator with no shared league", async ({

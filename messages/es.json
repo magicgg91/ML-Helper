@@ -256,7 +256,7 @@
     "none": "—",
     "full-production": {
       "title": "Reasignación de producción completa",
-      "note": "{points} puntos invertidos íntegramente · calculado sobre la producción base",
+      "note": "{points} puntos invertidos íntegramente",
       "army": "Ejército con Reclutador completo",
       "gold": "Oro con Prosperidad completa"
     }

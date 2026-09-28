@@ -169,8 +169,11 @@ describe("CityCalculators", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: "Production" }));
     expect(screen.getByText("280/h")).toBeInTheDocument();
+    // Bloc 115 : 200 × (1 + (10 équip. + 30 temple + 60 points)/100).
+    // Valait « 320/h » — la base nue × les seuls points, équipement et temple
+    // perdus.
     expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
-      "320/h",
+      "400/h",
     );
     expect(
       screen.getByTestId("full-production-gold").closest("strong"),
@@ -300,9 +303,40 @@ describe("CityCalculators", () => {
         new CustomEvent(playerSettingsChangedEvent, { detail: settings }),
       );
     });
+    // Bloc 115 : 200 × (1 + (0 équip. + 30 temple + 30 points)/100).
+    // Valait « 260/h » — le temple manquait.
     expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
-      "260/h",
+      "320/h",
     );
+  });
+
+  /**
+   * Bloc 115 : la simulation ne touche à rien.
+   *
+   * « Si reskill full-prod » répond à « et si je remettais tout en production ? ».
+   * Elle ne doit donc modifier ni les Paramètres joueur, ni ce qui en est
+   * stocké — ce qui serait une perte de données silencieuse, et non un
+   * affichage faux.
+   */
+  it("ne modifie ni les Paramètres joueur ni leur stockage", () => {
+    const settings = defaultPlayerSettings();
+    settings.level = 95;
+    settings.league = "diamond";
+    settings.equipmentSkills.recruiter = 602;
+    settings.skillPoints.striker = 40;
+    const stored = JSON.stringify(settings);
+    window.localStorage.setItem(playerStorageKey, stored);
+
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    // La simulation est bien affichée — sans quoi la comparaison ne prouverait
+    // rien sur un écran qui n'aurait rien calculé.
+    expect(screen.getByTestId("full-production-army")).toBeInTheDocument();
+    expect(window.localStorage.getItem(playerStorageKey)).toBe(stored);
   });
 
   it.each([
