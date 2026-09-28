@@ -260,3 +260,113 @@ describe("Bloc 121: the per-attempt database reset", () => {
     expect(e2eDatabaseFile.endsWith(path.join("prisma", "e2e.db"))).toBe(true);
   });
 });
+
+/**
+ * Bloc 143/C : la remise à zéro, comparée à une base fraîchement amorcée —
+ * table par table, ligne par ligne, sans exclusion.
+ *
+ * Ce que ce fichier vérifiait déjà : quelques compteurs choisis. Le piège
+ * qu'il laissait ouvert : un champ mutable qu'aucun compteur ne regarde. Une
+ * remise à zéro qui restaure « presque tout » est pire qu'une qui ne restaure
+ * rien, parce qu'on lui fait confiance — et un faux échec e2e ressemble à un
+ * défaut de code, ce qui envoie chercher un bug qui n'existe pas.
+ *
+ * D'où la comparaison stricte, et sans liste de colonnes à ignorer : le semis
+ * date lui-même ce qu'il crée (`SEEDED_AT`), donc deux remises à zéro rendent
+ * un état identique. Exclure les colonnes qui bougent serait précisément
+ * l'endroit où un champ non restauré passerait.
+ */
+describe("Bloc 143/C : la remise à zéro restaure tout, pas presque tout", () => {
+  const dumpUrl = `file:${path.join(scratch, "dump.db")}`;
+
+  /** Toutes les tables, toutes les lignes, dans un ordre stable. */
+  async function dump() {
+    const prisma = new PrismaClient({
+      datasourceUrl: singleConnection(dumpUrl),
+    });
+    try {
+      const tables = await prisma.$queryRawUnsafe<{ name: string }[]>(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+      );
+      const state: Record<string, string[]> = {};
+      for (const { name } of tables) {
+        const rows = await prisma.$queryRawUnsafe<Record<string, unknown>[]>(
+          `SELECT * FROM "${name}"`,
+        );
+        state[name] = rows
+          .map((row) =>
+            JSON.stringify(row, (_key, value) =>
+              typeof value === "bigint" ? String(value) : value,
+            ),
+          )
+          .sort();
+      }
+      return state;
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
+  /** Salir comme le scénario e2e salit : visibilité, contenu, réglages. */
+  async function dirty() {
+    const prisma = new PrismaClient({
+      datasourceUrl: singleConnection(dumpUrl),
+    });
+    try {
+      // La bascule de visibilité d'un outil — celle qui avait fait soupçonner
+      // cette fonction au Bloc 141.
+      await prisma.calculator.updateMany({ data: { active: false } });
+      // Une écriture de contenu de référentiel.
+      await prisma.referenceTable.updateMany({ data: { columns: ["sali"] } });
+      // Une dépublication de guide.
+      await prisma.guide.updateMany({ data: { status: "draft" } });
+      // Une langue coupée.
+      await prisma.localeSetting.updateMany({ data: { active: false } });
+      // Un réglage de site inventé, qui n'existe pas dans l'état semé.
+      await prisma.siteSetting.upsert({
+        where: { key: "bloc-143-sali" },
+        create: {
+          key: "bloc-143-sali",
+          value: "x",
+          updatedAt: new Date("2026-06-06T06:06:06.000Z"),
+        },
+        update: { value: "x" },
+      });
+      // Un compte et son journal : le scénario en crée, la base semée n'en a
+      // aucun.
+      const user = await prisma.user.create({
+        data: {
+          id: "bloc-143-sali",
+          username: "sali",
+          passwordHash: "x",
+          role: "super_admin",
+        },
+      });
+      await prisma.auditLog.create({
+        data: {
+          id: "bloc-143-sali",
+          userId: user.id,
+          actorRole: "super_admin",
+          action: "update",
+          entityType: "calculator",
+          entityId: "x",
+        },
+      });
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
+  it("rend un état identique à celui d'une base fraîchement amorcée", async () => {
+    await resetE2eDatabase(dumpUrl);
+    const fresh = await dump();
+
+    await dirty();
+    // La base est bien sale : sans cette vérification, une salissure qui
+    // n'écrit rien rendrait la comparaison suivante vide de sens.
+    expect(await dump()).not.toEqual(fresh);
+
+    await resetE2eDatabase(dumpUrl);
+    expect(await dump()).toEqual(fresh);
+  }, 120_000);
+});
