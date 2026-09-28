@@ -3,7 +3,7 @@ import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { isReferenceCalculatorSlug } from "@/lib/admin-tools";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 
 const payloadSchema = z.object({ active: z.boolean() });
 export async function PATCH(
@@ -34,10 +34,14 @@ export async function PATCH(
       data: {
         userId: session.user.id,
         actorRole: session.user.role,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          parsed.data.active ? "activate" : "deactivate",
-          `l’outil ${before.slug}`,
+        ...auditMessageColumns(
+          auditMessage(
+            `tool.${parsed.data.active ? "activate" : "deactivate"}`,
+            {
+              actor: session.user.name ?? session.user.id,
+              slug: before.slug,
+            },
+          ),
         ),
         action: parsed.data.active ? "activate" : "deactivate",
         entityType: "tool",

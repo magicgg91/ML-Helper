@@ -162,3 +162,72 @@ describe("MarkdownRenderer", () => {
     expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
   });
 });
+
+describe("Bloc 119: the legal notice's own rendering", () => {
+  it("folds a lone newline into a space by default, as CommonMark says", () => {
+    // What guides are written under, and what must not change: a hard-wrapped
+    // paragraph stays one paragraph.
+    const { container } = render(
+      <MarkdownRenderer markdown={"Une ligne\nUne autre ligne"} />,
+    );
+    expect(container.querySelectorAll("br")).toHaveLength(0);
+    expect(container.textContent).toContain("Une ligne");
+  });
+
+  it("honours single line breaks when asked to", () => {
+    const { container } = render(
+      <MarkdownRenderer breaks markdown={"Une ligne\nUne autre ligne"} />,
+    );
+    expect(container.querySelectorAll("br")).toHaveLength(1);
+  });
+
+  it("marks the notice's unfinished fields, leaving the text around them", () => {
+    const { container } = render(
+      <MarkdownRenderer
+        breaks
+        highlightPlaceholders
+        markdown="Contact : [ADRESSE EMAIL — À COMPLÉTER] pour toute question."
+      />,
+    );
+    const marks = container.querySelectorAll("mark.legal-placeholder");
+    expect(marks).toHaveLength(1);
+    expect(marks[0].textContent).toBe("[ADRESSE EMAIL — À COMPLÉTER]");
+    expect(container.textContent).toContain("pour toute question.");
+  });
+
+  it("marks every field of a line, not just the first", () => {
+    const { container } = render(
+      <MarkdownRenderer
+        highlightPlaceholders
+        markdown="[UN — À COMPLÉTER] et [DEUX — À COMPLÉTER]"
+      />,
+    );
+    expect(container.querySelectorAll("mark.legal-placeholder")).toHaveLength(
+      2,
+    );
+  });
+
+  it("leaves a finished notice untouched", () => {
+    const { container } = render(
+      <MarkdownRenderer
+        highlightPlaceholders
+        markdown="Éditeur : Jean Dupont"
+      />,
+    );
+    expect(container.querySelector("mark")).toBeNull();
+  });
+
+  it("reaches a field inside bold text, where the notice actually puts them", () => {
+    // The shipped notice writes **[NOM DE L'ÉDITEUR — À COMPLÉTER]**: the
+    // text node is a child of <strong>, not of the paragraph.
+    const { container } = render(
+      <MarkdownRenderer
+        highlightPlaceholders
+        markdown="**[NOM DE L'ÉDITEUR — À COMPLÉTER]**"
+      />,
+    );
+    expect(
+      container.querySelector("strong mark.legal-placeholder"),
+    ).not.toBeNull();
+  });
+});

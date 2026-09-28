@@ -1,8 +1,9 @@
 "use client";
 
-import { Link, usePathname } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
+import { SelectionBanner, SelectionTab } from "./selection-banner";
 
 // Bloc 50/E: promoted from an inline nav inside the [slug] detail page to
 // the section-level header nav of the whole /referentiels route (rendered
@@ -10,9 +11,9 @@ import { referenceCatalog, referenceHref } from "@/lib/reference-catalog";
 // every detail page). Since a shared layout has no access to the page's
 // own route params, `aria-current` is derived from the current pathname
 // instead of a `reference.slug` prop passed down — same pattern as
-// tool-category-nav.tsx for /tools. Keeps the exact same classNames
-// (reference-switcher/category-nav/category-btn) driving existing CSS
-// (Bloc 40/A, Bloc 41/C).
+// tool-category-nav.tsx for /tools. Bloc 132 §8: the two navs now share
+// SelectionBanner, which supersedes the deliberately separate class names
+// of Bloc 40/A and Bloc 41/C.
 // The translator is read locally via useTranslations, not passed as a
 // `t` prop from the server layout — a next-intl/server translator is a
 // function, and Next.js forbids passing functions from a Server Component
@@ -37,37 +38,43 @@ export function ReferenceSwitcherNav({
   const sorted = [...referenceCatalog].sort((a, b) =>
     t(`catalog.${a.slug}`).localeCompare(t(`catalog.${b.slug}`), locale),
   );
+  // Bloc 129 §3.9 : sept onglets sur une seule rangée, donc des libellés
+  // courts là où le nom complet ne tient pas. Seuls les deux équipements en
+  // ont un ; les autres gardent leur nom, sans clé à écrire pour rien.
+  const label = (slug: string) =>
+    t.has(`catalog-short.${slug}`)
+      ? t(`catalog-short.${slug}`)
+      : t(`catalog.${slug}`);
   return (
-    <nav
-      className="reference-switcher category-nav"
-      aria-label={t("tabs-label")}
-    >
+    // Bloc 129 §2.2 : son propre nom, distinct de « Référentiels » — le
+    // pied de page nomme ainsi une de ses colonnes, et deux repères de
+    // navigation portant le même nom ne se distinguent plus à l'oreille.
+    // Bloc 132 §8 : la forme du bandeau est celle de SelectionBanner, la
+    // même que celle des catégories d'outils.
+    <SelectionBanner navLabel={t("nav-label")} columns={7}>
       {sorted.map((item) =>
         active[item.calculatorSlug] ? (
-          <Link
-            className="category-btn"
+          <SelectionTab
             key={item.slug}
             href={referenceHref(item.slug)}
-            aria-current={
-              pathname === `/referentiels/${item.slug}` ? "page" : undefined
-            }
-          >
-            {t(`catalog.${item.slug}`)}
-          </Link>
+            image={item.image}
+            label={label(item.slug)}
+            current={pathname === `/referentiels/${item.slug}`}
+          />
         ) : (
-          <span
-            className="category-btn category-btn-unavailable"
+          // Bloc 62/I : un référentiel pas encore ouvert garde sa place au
+          // lieu de disparaître — il n'a pas de page, donc pas de bouton
+          // non plus, seulement une case inerte.
+          <SelectionTab
             key={item.slug}
-            aria-disabled="true"
+            element="span"
             title={tools("unavailable")}
-          >
-            <span className="category-btn-label">
-              {t(`catalog.${item.slug}`)}
-            </span>
-            <span className="tool-unavailable">{tools("comingSoon")}</span>
-          </span>
+            image={item.image}
+            label={label(item.slug)}
+            badge={tools("comingSoon")}
+          />
         ),
       )}
-    </nav>
+    </SelectionBanner>
   );
 }

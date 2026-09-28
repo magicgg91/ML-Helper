@@ -1,16 +1,18 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
-// Bloc 91/M1: next/font/google is a build-time loader Next's compiler
-// transforms; imported directly under vitest it throws. Stub the families the
-// app uses so any component that loads a font (e.g. the root layout) can be
-// unit-tested. The real self-hosting is exercised by the production build.
-// Codex review (PR #113): expose the loaders by name rather than a catch-all
+// Bloc 91/M1: next/font is a build-time loader Next's compiler transforms;
+// imported directly under vitest it throws. Stub it so any component that
+// loads a font (e.g. the root layout) can be unit-tested. The real
+// self-hosting is exercised by the production build.
+// Codex review (PR #113): expose the loader by name rather than a catch-all
 // Proxy — a Proxy that also answers `then` reads as a thenable, and Vitest
 // awaiting the mocked module namespace would then hang on module load.
-vi.mock("next/font/google", () => {
+// Bloc 116/A: the families moved from next/font/google to next/font/local,
+// whose export is the default one.
+vi.mock("next/font/local", () => {
   const loader = () => ({ className: "", variable: "", style: {} });
-  return { Cinzel: loader, IBM_Plex_Sans: loader, JetBrains_Mono: loader };
+  return { default: loader };
 });
 
 // Bloc 91/E1: unit tests render components in isolation, without the Next.js

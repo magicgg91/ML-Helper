@@ -1,12 +1,18 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { consumablesReferenceKey } from "@/lib/consumables-server";
-import { consumableCategories, type ConsumableCatalog } from "@/lib/consumables";
 import {
+  consumableCategories,
+  type ConsumableCatalog,
+} from "@/lib/consumables";
+import {
+  localizedFieldOrPair,
   numericString,
   saveReferenceTable,
   stringField,
 } from "@/services/reference-table-admin";
+import { readableInEveryLocale } from "@/lib/localized-field";
 
 // Bloc 43: Consumables has free CRUD (cdc: "ajout et suppression libre de
 // lignes") — no fixed row count to enforce, array order is itself the
@@ -25,12 +31,24 @@ function parseRows(rawRows: unknown) {
   return rawRows.map((raw) => {
     if (!raw || typeof raw !== "object") throw new Error("invalid row");
     const rowSource = raw as Record<string, unknown>;
+    // Bloc 127: one field per language instead of the fr/en pair. Strict,
+    // like the cost below: a malformed field rejects the whole catalogue
+    // with a 400 rather than saving half of it.
+    const name = localizedFieldOrPair(rowSource, "name");
+    const description = localizedFieldOrPair(rowSource, "description");
+    // Revue Codex (PR #167, P2) : le serveur tient la règle, pas seulement
+    // l'écran. `localizedText` essaie la langue du visiteur, puis l'anglais,
+    // puis le français : une ligne écrite en allemand seul serait blanche pour
+    // tous les autres, ce qu'AGENTS.md interdit. Un catalogue sans texte
+    // lisible est refusé en entier plutôt qu'écrit à moitié — et c'est aussi ce
+    // qui arrête une charge utile vidée de ses textes, quelle qu'en soit
+    // l'origine.
+    if (!readableInEveryLocale(name) || !readableInEveryLocale(description))
+      throw new Error("missing fallback translation");
     return {
       image: stringField(rowSource.image),
-      name_fr: stringField(rowSource.name_fr),
-      name_en: stringField(rowSource.name_en),
-      description_fr: stringField(rowSource.description_fr),
-      description_en: stringField(rowSource.description_en),
+      name,
+      description,
       // Left empty rather than defaulted to 0 when the cost isn't
       // confirmed yet (AGENTS.md: never invent a game value).
       cost: numericString(rowSource.cost),
@@ -47,24 +65,21 @@ export async function PUT(request: Request) {
       throw new Error("invalid catalog");
     const source = body as Record<string, unknown>;
     const catalog: ConsumableCatalog = Object.fromEntries(
-      consumableSections.map((section) => [section, parseRows(source[section])]),
+      consumableSections.map((section) => [
+        section,
+        parseRows(source[section]),
+      ]),
     ) as ConsumableCatalog;
     await saveReferenceTable({
       key: consumablesReferenceKey,
-      target: "le référentiel Boutique",
-      columns: [
-        "image",
-        "name_fr",
-        "name_en",
-        "description_fr",
-        "description_en",
-        "cost",
-      ],
+      target: "consumables",
+      columns: ["image", "name", "description", "cost"],
       rows: catalog,
       userId: session.user.id,
       actorRole: session.user.role,
       actorName: session.user.name ?? session.user.id,
     });
+    await revalidateContent("references", "shop");
     return NextResponse.json(catalog);
   } catch {
     return NextResponse.json(

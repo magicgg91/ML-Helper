@@ -1,14 +1,67 @@
+import { launchLocales } from "./launch-locales.generated";
+
 // Bloc 44: DE/ES/TR activated (files delivered, structure verified against
 // en.json). Polish is still planned but has no messages file, so it is not
 // listed here — Bloc 93/F2 dropped the separate `plannedLocales` constant
 // that recorded it, since nothing ever read it.
-export const launchLocales = ["fr", "en", "de", "es", "tr"] as const;
+//
+// Bloc 120: the list is no longer written here. It is derived from the
+// contents of messages/ by scripts/generate-launch-locales.ts, which runs
+// before dev, build and test, so adding a language is adding a file and
+// nothing else — the promise section 3.3 of the cahier des charges makes.
+// The generated module is a plain array of string literals, which is what
+// lets this stay importable from a client component and keeps the locale
+// segments statically prerenderable; that script's header explains why the
+// alternative (reading the directory at runtime) cannot work here.
+export { launchLocales };
 export type LaunchLocale = (typeof launchLocales)[number];
-// Bloc 91/E1: the site's default locale, kept here (Edge-safe, no node:fs)
-// so src/i18n/routing.ts — imported by the Edge middleware — can reach it
-// without pulling in src/i18n/config.ts's filesystem reads. Mirrors
-// config.ts's own defaultLocale.
+// Bloc 91/E1: the site's default locale, kept here (no node:fs) so
+// src/i18n/routing.ts — imported by the proxy — can reach it without pulling
+// in src/i18n/config.ts's filesystem reads. Mirrors config.ts's own
+// defaultLocale.
+//
+// Deliberately still written by hand: which language a visitor lands in is a
+// product decision, not a consequence of which files exist. Typing it against
+// the derived union is the guard — delete messages/fr.json and this line
+// stops compiling rather than silently pointing at a locale the site no
+// longer ships.
 export const defaultLaunchLocale: LaunchLocale = "fr";
+
+/**
+ * Bloc 118: the admin is an EN/FR product, and only those two.
+ *
+ * src/proxy.ts clamps every /admin and /login request to one of these two
+ * locales (Bloc 47/C, Bloc 90), so admin chrome is *rendered* in English or
+ * French whatever the visitor picked publicly — which means a DE/ES/TR
+ * translation of it could never appear on screen. Bloc 116/C drew that
+ * conclusion for the audit log alone; this bloc draws it for the whole admin
+ * interface, so `messages/{de,es,tr}.json` carry none of it.
+ *
+ * This is about the admin's OWN interface text, listed in `adminNamespaces`
+ * below. It is not about the content an admin authors for the public site —
+ * guides, the legal notice, reference tables — which the public reads in all
+ * five languages and whose editors (EditorialLocaleSelect, the language
+ * activation panel) still offer the full `launchLocales` list, unchanged.
+ */
+export const adminLocales = ["en", "fr"] as const;
+export type AdminLocale = (typeof adminLocales)[number];
+
+/**
+ * Bloc 118: the top-level message namespaces rendered only under those
+ * clamped routes — the admin chrome (`admin`), its sign-in page (`login`)
+ * and the role names in /admin/users (`roles`, reached through a root
+ * translator as `roles.<role>`).
+ *
+ * Deriving this list by hand would rot; src/i18n/admin-locale-scope.test.ts
+ * recomputes it from the import graph and fails if a namespace joins or
+ * leaves the admin side without this constant following.
+ */
+export const adminNamespaces = ["admin", "login", "roles"] as const;
+
+/** Whether a dotted message key belongs to the admin's own interface text. */
+export function isAdminMessageKey(key: string): boolean {
+  return (adminNamespaces as readonly string[]).includes(key.split(".")[0]);
+}
 
 export function translationRecord(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -66,9 +119,30 @@ export function dropEmptyLocales(
 // (guideInputSchema) only require fr OR en, never both, so a fr-only
 // record must still render something rather than "" for every other
 // locale (AGENTS.md: a missing translation is never a blank).
+// Bloc 126/D: `??` fell back on an absent key but not on a blank one, and a
+// blank one is what the editor actually writes. Guides validate on "fr OR
+// en", and services/guides.ts stores BOTH of those columns whatever the
+// admin filled in (nonEmptyLocaleValues drops DE/ES/TR when blank, never the
+// required pair) — so a guide typed in French alone is `{fr: "…", en: ""}`,
+// not `{fr: "…"}`. Every English-reading surface then rendered an empty
+// string: a blank title in the admin's guides table, and the reason the
+// callers below carry `|| slug` crutches.
+//
+// An empty translation is a missing translation, which is what this
+// function's own contract says never renders blank. `trim()` because a
+// field cleared to a stray space means the same thing as one cleared to
+// nothing.
+const written = (value: string | undefined) =>
+  value !== undefined && value.trim() !== "" ? value : undefined;
+
 export function localizedText(value: unknown, locale: string) {
   const translations = translationRecord(value);
-  return translations[locale] ?? translations.en ?? translations.fr ?? "";
+  return (
+    written(translations[locale]) ??
+    written(translations.en) ??
+    written(translations.fr) ??
+    ""
+  );
 }
 
 // Bloc 42/F: unlike localizedText() above, no English fallback — checks
@@ -94,6 +168,15 @@ export function hasLocalizedText(value: unknown, locale: string): boolean {
  * NOT cross-fall-back: an absent override there means "use the built-in
  * label", not "use the other language".
  */
-export function pickFrEn(fr: string, en: string, locale: string): string {
-  return locale === "fr" ? fr || en : en || fr;
-}
+// Bloc 127 (PR 3/3) : `contentPairLocales`, `ContentPairLocale` et `pickFrEn`
+// vivaient ici. Ils décrivaient un modèle à deux langues — un champ français,
+// un champ « autre » — et la lecture qui choisissait entre les deux. Les
+// quatre écrans éditoriaux (Boutique, Templiers, libellés d'équipement,
+// Événements) stockent désormais un champ par langue (`LocalizedField`,
+// lib/localized-field.ts) et se lisent par `localizedText` ci-dessus.
+//
+// Ils sont retirés plutôt que laissés en place : c'est la propriété que
+// `content-round-trip.test.ts` exige, et pour une raison mesurée — le Bloc
+// 125 §9 est né d'un éditeur qui offrait cinq langues au-dessus d'un modèle
+// qui n'en gardait que deux. Un symbole qui survit à son dernier lecteur est
+// ce que le prochain éditeur reprendra par erreur.

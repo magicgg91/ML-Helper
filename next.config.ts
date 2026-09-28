@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { securityHeaders } from "./src/lib/security-headers";
+import { launchLocales } from "./src/lib/launch-locales.generated";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -42,7 +43,10 @@ const nextConfig: NextConfig = {
   // the locale prefix first, so these match the already-prefixed form and keep
   // the visitor's locale (:locale is carried into the destination).
   async redirects() {
-    const withLocale = "/:locale(fr|en|de|es|tr)";
+    // Bloc 120: built from the locales actually shipped, so a language
+    // added as a messages/*.json file inherits these redirects too
+    // instead of being the one locale they silently skip.
+    const withLocale = `/:locale(${launchLocales.join("|")})`;
     return [
       {
         source: `${withLocale}/referentiels/gemmes`,

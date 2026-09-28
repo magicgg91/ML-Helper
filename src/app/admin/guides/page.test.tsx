@@ -1,24 +1,25 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import GuidesAdminPage from "./page";
+import type { AdminGuideRow } from "@/components/admin-guides-list";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/auth/require-session";
 
-vi.mock("@/auth/require-session", () => ({
-  requireCapability: vi.fn(),
-}));
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    guide: { findMany: vi.fn() },
-  },
-}));
-vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => key,
-  getLocale: async () => "fr",
-}));
-vi.mock("@/components/guide-status-list", () => ({
-  GuideStatusList: (props: { rows: unknown[] }) => (
-    <pre data-testid="rows">{JSON.stringify(props.rows)}</pre>
+vi.mock("@/auth/require-session", () => ({ requireCapability: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({ prisma: { guide: { findMany: vi.fn() } } }));
+// Bloc 126/D: the admin's own language, which src/proxy.ts clamps to EN/FR.
+// A let rather than a constant so a test can read the page in both.
+let adminLocale = "fr";
+vi.mock("next-intl/server", () => {
+  const translator = Object.assign((key: string) => key, { has: () => true });
+  return {
+    getTranslations: async () => translator,
+    getLocale: async () => adminLocale,
+  };
+});
+vi.mock("@/components/admin-guides-list", () => ({
+  AdminGuidesList: (props: Record<string, unknown>) => (
+    <pre data-testid="props">{JSON.stringify(props)}</pre>
   ),
 }));
 
@@ -28,121 +29,146 @@ const mockedGuideFindMany = vi.mocked(prisma.guide.findMany);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  adminLocale = "fr";
 });
 
-describe("GuidesAdminPage", () => {
-  it("keeps the create action available even when there are no guides (Bloc 32/A.3 regression)", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
+const guide = (overrides: Record<string, unknown> = {}) => ({
+  id: "g1",
+  slug: "debuter",
+  title: { fr: "Bien débuter", en: "Getting started" },
+  content: { fr: "texte", en: "text" },
+  excerpt: {},
+  category: [],
+  author: "claire",
+  status: "published",
+  createdAt: new Date("2026-09-01T08:00:00Z"),
+  updatedAt: new Date("2026-09-22T18:04:00Z"),
+  publishedAt: new Date("2026-09-02T08:00:00Z"),
+  coverImage: null,
+  ...overrides,
+});
+
+async function renderPage(role = "super_admin") {
+  mockedRequireCapability.mockResolvedValue({
+    user: { id: "admin", role, name: "Admin" },
+  } as Awaited<ReturnType<typeof requireCapability>>);
+  render(await GuidesAdminPage());
+  return JSON.parse(screen.getByTestId("props").textContent ?? "{}") as {
+    rows: AdminGuideRow[];
+    canWrite: boolean;
+    canPublish: boolean;
+    canDelete: boolean;
+    languageNames: Record<string, string>;
+  };
+}
+
+describe("Bloc 119: the Guides page hands the list its rows", () => {
+  it("says which languages a guide is really written in", async () => {
+    // Bloc 55/C: fr/en are always keys, so "written" is the presence of
+    // text, not of the key.
+    mockedGuideFindMany.mockResolvedValue([
+      guide({ content: { fr: "texte", en: "", de: "Text" } }),
+    ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
+    const { rows } = await renderPage();
+    expect(rows[0].translations).toEqual({
+      fr: true,
+      en: false,
+      de: true,
+      es: false,
+      tr: false,
+    });
+  });
+
+  it("passes the dates as ISO, for the list to format in Europe/Paris", async () => {
+    mockedGuideFindMany.mockResolvedValue([guide()] as unknown as Awaited<
+      ReturnType<typeof prisma.guide.findMany>
+    >);
+    const { rows } = await renderPage();
+    expect(rows[0].createdAt).toBe("2026-09-01T08:00:00.000Z");
+    expect(rows[0].updatedAt).toBe("2026-09-22T18:04:00.000Z");
+    expect(rows[0].status).toBe("published");
+  });
+
+  it("offers the creation only to a role that may write", async () => {
     mockedGuideFindMany.mockResolvedValue(
       [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
     );
-
-    render(await GuidesAdminPage());
-
-    expect(screen.getByText("empty")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "new" })).toHaveAttribute(
+    await renderPage("guides_manager");
+    expect(screen.getByRole("link", { name: "new-title" })).toHaveAttribute(
       "href",
       "/admin/guides/new",
     );
+    cleanup();
+    await renderPage("read_only");
+    expect(screen.queryByRole("link", { name: "new-title" })).toBeNull();
   });
 
-  // Bloc 55/B: the "Nouveau" action now sits right next to the "Contenu
-  // éditorial" eyebrow title, instead of on its own row above the table
-  // (Bloc 32) — that row was left orphaned by the post-Bloc 50 rework.
-  it("Bloc55/B: puts the 'Nouveau' link next to the eyebrow title, whether or not there are guides", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
+  it("splits write, publish and delete the way the matrix does", async () => {
     mockedGuideFindMany.mockResolvedValue(
       [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
     );
-
-    render(await GuidesAdminPage());
-
-    const heading = screen.getByText("eyebrow").parentElement;
-    expect(heading).toHaveClass("admin-section-heading");
-    expect(
-      screen.getByRole("link", { name: "new" }).parentElement,
-    ).toBe(heading);
+    const manager = await renderPage("guides_manager");
+    expect(manager).toMatchObject({
+      canWrite: true,
+      canPublish: false,
+      canDelete: false,
+    });
+    cleanup();
+    const superAdmin = await renderPage("super_admin");
+    expect(superAdmin).toMatchObject({
+      canWrite: true,
+      canPublish: true,
+      canDelete: true,
+    });
   });
 
-  it("Bloc55/B: still puts the 'Nouveau' link next to the eyebrow title when guides exist", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedGuideFindMany.mockResolvedValue([
-      {
-        id: "guide-1",
-        slug: "premiers-pas",
-        title: { fr: "Premiers pas" },
-        content: { fr: "Contenu" },
-        author: "Équipe",
-        createdAt: new Date("2026-01-01"),
-        updatedAt: new Date("2026-01-01"),
-        status: "draft",
-        active: true,
-      },
-    ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
+  // Bloc 126/D: the title an admin reads is the one in the language they are
+  // reading the admin in.
+  describe("the title follows the admin's own language", () => {
+    const titled = async (title: Record<string, string>, locale: string) => {
+      adminLocale = locale;
+      mockedGuideFindMany.mockResolvedValue([
+        guide({ title }),
+      ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
+      const { rows } = await renderPage();
+      return rows[0].title;
+    };
 
-    render(await GuidesAdminPage());
+    it("reads each language its own title", async () => {
+      const both = { fr: "Bien débuter", en: "Getting started" };
+      expect(await titled(both, "fr")).toBe("Bien débuter");
+      cleanup();
+      expect(await titled(both, "en")).toBe("Getting started");
+    });
 
-    const heading = screen.getByText("eyebrow").parentElement;
-    expect(heading).toHaveClass("admin-section-heading");
-    expect(
-      screen.getByRole("link", { name: "new" }).parentElement,
-    ).toBe(heading);
+    // The case the brief calls rare but possible, in the shape the editor
+    // really writes it: the language that was not filled in is stored as a
+    // blank string, not left out. Before this bloc that blank won the
+    // lookup and the row's title was empty.
+    it("falls back across a blank side rather than showing nothing", async () => {
+      expect(await titled({ fr: "Bien débuter", en: "" }, "en")).toBe(
+        "Bien débuter",
+      );
+      cleanup();
+      expect(await titled({ fr: "", en: "Getting started" }, "fr")).toBe(
+        "Getting started",
+      );
+    });
+
+    it("falls back the same way when the language is simply absent", async () => {
+      expect(await titled({ fr: "Bien débuter" }, "en")).toBe("Bien débuter");
+      cleanup();
+      expect(await titled({ en: "Getting started" }, "fr")).toBe(
+        "Getting started",
+      );
+    });
   });
 
-  // Bloc 55/C: only locales with real written content (hasLocalizedText, no
-  // English fallback) count as "written" — a locale key present but blank
-  // must not read as translated.
-  it("Bloc55/C: computes which locales each guide is really written in", async () => {
-    mockedRequireCapability.mockResolvedValue({
-      user: { id: "admin", role: "super_admin", name: "Admin" },
-    } as Awaited<ReturnType<typeof requireCapability>>);
-    mockedGuideFindMany.mockResolvedValue([
-      {
-        id: "guide-multi",
-        slug: "multi",
-        title: { fr: "Multi", en: "Multi" },
-        content: { fr: "Contenu", en: "Content", de: "" },
-        author: "Équipe",
-        createdAt: new Date("2026-01-01"),
-        updatedAt: new Date("2026-01-01"),
-        status: "draft",
-        active: true,
-      },
-      {
-        id: "guide-mono",
-        slug: "mono",
-        title: { fr: "Mono" },
-        content: { fr: "Contenu seul" },
-        author: "Équipe",
-        createdAt: new Date("2026-01-01"),
-        updatedAt: new Date("2026-01-01"),
-        status: "draft",
-        active: true,
-      },
-    ] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>);
-
-    render(await GuidesAdminPage());
-
-    const rows = JSON.parse(screen.getByTestId("rows").textContent ?? "[]");
-    expect(rows[0].languages).toEqual({
-      fr: true,
-      en: true,
-      de: false,
-      es: false,
-      tr: false,
-    });
-    expect(rows[1].languages).toEqual({
-      fr: true,
-      en: false,
-      de: false,
-      es: false,
-      tr: false,
-    });
+  it("names the five languages for the chips", async () => {
+    mockedGuideFindMany.mockResolvedValue(
+      [] as unknown as Awaited<ReturnType<typeof prisma.guide.findMany>>,
+    );
+    const { languageNames } = await renderPage();
+    expect(Object.keys(languageNames)).toEqual(["fr", "en", "de", "es", "tr"]);
   });
 });

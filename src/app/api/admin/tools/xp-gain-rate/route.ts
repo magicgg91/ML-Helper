@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { parseXpTiers } from "@/lib/combat-calculators";
@@ -23,7 +24,8 @@ export async function PUT(request: Request) {
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
-    target: "les paliers du taux de gain d’XP",
+    target: "xp-gain-rate",
   });
+  await revalidateContent("tools");
   return NextResponse.json({ tiers });
 }

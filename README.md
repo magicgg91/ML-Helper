@@ -99,6 +99,57 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
+The end-to-end suite runs as two projects over one dev server. `public` holds
+every read-only spec; `admin` holds `e2e/phase-one.spec.ts`, the one serial
+scenario that writes, and runs only once `public` is done — it rebuilds the
+database before each attempt, and that reset must never land while another
+file is reading. Both get the single retry `CI=1` grants.
+
+To prove a retry really starts from a clean database (opt-in — it fails its
+first attempt on purpose):
+
+```sh
+rm -f prisma/e2e.db
+E2E_RETRY_DRILL=1 CI=1 pnpm test:e2e --project=admin
+```
+
+The expected outcome is `1 flaky`, not `1 failed`: attempt 1 records the Super
+Admin's id and creates a user, attempt 2 finds neither.
+
+## Adding a language
+
+Add `messages/<locale>.json` — a two-letter code, or `pt-br` for a regional
+one — and that is the whole change. The list the site routes on is derived
+from the files present in `messages/` by
+`scripts/generate-launch-locales.ts`, which `pnpm dev`, `pnpm build`,
+`pnpm test` and `pnpm typecheck` each run first. It writes
+`src/lib/launch-locales.generated.ts`, which is git-ignored: never edit it,
+and never commit it.
+
+On a fresh clone that file does not exist yet, so a tool invoked directly
+rather than through those scripts (`npx vitest`, `npx tsc`) reports it as a
+missing module. `pnpm locales:generate` writes it.
+
+Two things the new file itself must respect:
+
+- Start from `messages/en.json` and **drop the `admin`, `login` and `roles`
+  namespaces**. The admin interface is English and French only (Bloc 118) and
+  a test fails if another language carries it.
+- Missing keys fall back to English, so a partial translation is fine; an
+  empty string is not, and is also checked.
+
+The language is then live on the public site and appears in
+Admin → Configuration, where it can be switched off like any other. Only the
+site's default (`defaultLaunchLocale`, French) and the always-active EN/FR
+base are still decided in code, because those are product choices rather than
+a consequence of which files exist.
+
+To run the derivation on its own:
+
+```sh
+pnpm locales:generate
+```
+
 ## Vérification visuelle du prototype
 
 Le projet ne dispose pas encore d'un service de snapshots visuels avec images de référence. Avant validation d'une modification d'interface, vérifier manuellement les points suivants dans les deux thèmes :

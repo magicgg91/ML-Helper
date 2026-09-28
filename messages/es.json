@@ -6,8 +6,8 @@
     "increase": "Aumentar {label}",
     "select-league": "Elige una liga para calcular.",
     "language": "Idioma",
-    "theme-light": "Activar modo claro",
-    "theme-dark": "Activar modo oscuro",
+    "theme-light": "Cambiar al tema claro",
+    "theme-dark": "Cambiar al tema oscuro",
     "star-count": "{level} estrellas",
     "duration-hours": "{hours} h"
   },
@@ -33,7 +33,7 @@
       "prosperous": "Pro",
       "recruiter": "Rec",
       "cautious": "Cau",
-      "salvager": "Rec",
+      "salvager": "Rcp",
       "rusher": "Ímp"
     },
     "templars": {
@@ -42,6 +42,13 @@
       "prosperous": "Oro",
       "recruiter": "Reclutador",
       "rusher": "Velocidad"
+    },
+    "templars-short": {
+      "striker": "Atq",
+      "guardian": "Def",
+      "prosperous": "Oro",
+      "recruiter": "Rec",
+      "rusher": "Vel"
     },
     "leagues": {
       "bronze": "Bronce",
@@ -112,8 +119,6 @@
     }
   },
   "tools": {
-    "title": "Decide con las cifras correctas",
-    "subtitle": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
     "cities": "Ciudades",
     "combat": "Combate",
     "combat-simulator": "Combate",
@@ -121,7 +126,9 @@
     "ranking": "Clasificación",
     "skills": "Habilidades",
     "count": "{count, plural, =0 {Ninguna herramienta disponible} one {# herramienta disponible} other {# herramientas disponibles}}",
+    "count-short": "{count, plural, =0 {Ninguna herramienta} one {# herramienta} other {# herramientas}}",
     "comingSoon": "Próximamente",
+    "comingSoonShort": "Pronto",
     "unavailable": "No disponible actualmente",
     "navigation-label": "Categorías de herramientas",
     "city-tabs": "Herramientas de ciudad",
@@ -134,25 +141,30 @@
       "combat": "Herramientas de combate para Million Lords: tasa de XP, tropas de ataque demo para atacante y objetivo, y tropas enemigas para preparar cada asalto.",
       "ranking": "Estima tu progreso en la clasificación de Million Lords: tu rango actual y los puntos de victoria que necesitas para alcanzar el rango que buscas.",
       "skills": "Optimiza tu equipo y tus habilidades en Million Lords: equipo de combate y de expedición, gemas y templarios, con los costes de fusión."
-    }
+    },
+    "index-title": "Herramientas",
+    "index-intro": "Decide con las cifras correctas: explora costes, producción, clasificación y habilidades con simuladores pensados para preparar cada decisión.",
+    "settings-note": "Rellena tus parámetros de jugador una sola vez: todas las herramientas los reutilizan.",
+    "further-reading": "Ir más lejos",
+    "kind": "Herramienta",
+    "kind-guide": "Guía"
   },
   "player-settings": {
     "title": "Ajustes del jugador",
-    "summary": "{league} · Nivel {level} · {vp} VP · {templarTotal, plural, one {# templario} other {# templarios}}",
-    "league": "Liga",
+    "summary": "Nivel {level} · {vp} VP · {templarTotal, plural, one {# templario} other {# templarios}}",
+    "rung": "Liga o división",
     "league-undefined": "Liga no definida",
     "player-level": "Nivel del jugador",
     "player-vp": "VP del jugador",
     "vp-unit": "Unidad de VP",
     "equipment-skills": {
-      "title": "Habilidades con equipo",
+      "title": "Equipo",
       "field": "{skill} con equipo"
     },
     "skill-points": {
-      "title": "Distribución de puntos de habilidad",
-      "available": "Disponibles",
-      "allocated": "Asignados",
-      "remaining": "Restantes",
+      "title": "Puntos",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} puntos asignados de {available} disponibles",
       "reset": "Restablecer",
       "field": "Puntos de {skill}"
     },
@@ -161,9 +173,12 @@
       "field": "{templar} templarios"
     },
     "clan-temple": {
-      "title": "Bono de templo (clan)",
-      "help": "Introduce solo la contribución de Templarios del clan (por ejemplo, 260 para Velocidad). La base de templo confirmada por estadística se añade automáticamente al total mostrado.",
+      "title": "Templo (clan)",
       "field": "Templo de {templar}"
+    },
+    "matrix": {
+      "caption": "Habilidades por fuente: equipo, puntos y templo",
+      "total": "Total"
     }
   },
   "city-cost": {
@@ -174,17 +189,26 @@
       "start-level": "Nivel inicial",
       "target-level": "Nivel objetivo"
     },
-    "start": "Inicio",
-    "target": "Objetivo",
-    "wall": "Muralla",
-    "gold-hour": "Oro/h",
-    "army-hour": "Ejército/h",
+    "total": "Total",
+    "recall": "{count, plural, one {# ciudad} other {# ciudades}} · {league} · nivel {start} → {target}",
+    "cost-total": "Coste",
     "gold-unit": "oro",
-    "total-cities": "{count, plural, one {Total para # ciudad} other {Total para # ciudades}}",
-    "cost-total": "Coste total",
-    "vp-gained": "VP total obtenido",
-    "gold-transition": "Oro/h antes → después",
-    "army-transition": "Ejército/h antes → después"
+    "wall": "Muro",
+    "vp-gained": "VP ganados",
+    "army-hour": "Ejército / h",
+    "gold-hour": "Oro / h",
+    "per-city": "por ciudad",
+    "columns": {
+      "source": "Fuente",
+      "level": "Niv. {level}",
+      "gap": "Diferencia"
+    },
+    "total-per-city": "Total / ciudad",
+    "total-all": "{count, plural, one {Total # ciudad} other {Total # ciudades}}",
+    "base": "Base",
+    "temple": "Templo",
+    "equipment": "Equipo",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Nivel Máximo Alcanzable",
@@ -195,15 +219,16 @@
       "available-gold": "Oro disponible",
       "gold-unit": "Unidad de oro disponible"
     },
-    "wall": "Muralla",
-    "gold-hour": "Oro/h",
-    "army-hour": "Ejército/h",
-    "total-cities": "{count, plural, one {Total para # ciudad} other {Total para # ciudades}}",
-    "reachable-level": "Nivel objetivo alcanzable",
+    "total": "Total",
+    "recall": "{count, plural, one {# ciudad} other {# ciudades}} · {league} · nivel {level} · {gold} de oro disponible",
+    "reachable-level": "Nivel máximo",
+    "levels-gained": "+{count}",
     "remaining-gold": "Oro restante",
-    "vp-gained": "VP total obtenido",
-    "gold-transition": "Oro/h antes → después",
-    "army-transition": "Ejército/h antes → después"
+    "gold-unit": "oro",
+    "vp-gained": "VP ganados",
+    "army-hour": "Ejército / h",
+    "gold-hour": "Oro / h",
+    "none": "—"
   },
   "city-production": {
     "name": "Producción",
@@ -212,44 +237,50 @@
       "city-count": "Número de ciudades",
       "average-level": "Nivel medio de ciudad"
     },
-    "per-city-base": "Por ciudad — base",
+    "total": "Total",
+    "recall": "{count, plural, one {# ciudad} other {# ciudades}} · {league} · nivel medio {level}",
+    "army-hour": "Ejército / h",
+    "gold-hour": "Oro / h",
     "vp": "VP",
-    "wall": "Muralla",
-    "gold-hour": "Oro/h",
-    "army-hour": "Ejército/h",
-    "gold-total": "💰 Oro — Producción total",
-    "troops-total": "⚔️ Tropas — Producción total",
+    "per-city": "por ciudad",
+    "columns": {
+      "source": "Fuente",
+      "production": "Producción",
+      "share": "Parte"
+    },
+    "total-per-city": "Total / ciudad",
+    "total-all-level": "{count, plural, one {Total # ciudad de nivel {level}} other {Total # ciudades de nivel {level}}}",
     "base": "Base",
-    "equipment": "Equipo",
     "temple": "Templo",
-    "vp-total": "VP total",
+    "equipment": "Equipo",
+    "none": "—",
     "full-production": {
       "title": "Reasignación de producción completa",
-      "note": "Simulación con los {points} puntos disponibles invertidos, calculada a partir de la producción base.",
-      "gold": "Oro con Prosperidad completa",
-      "troops": "Tropas con Reclutador completo"
+      "note": "{points} puntos invertidos íntegramente · calculado sobre la producción base",
+      "army": "Ejército con Reclutador completo",
+      "gold": "Oro con Prosperidad completa"
     }
   },
   "city-rewards": {
     "name": "Recompensas de Producción",
+    "army": {
+      "title": "Ejército",
+      "base": "Producción base de ejército",
+      "base-unit": "Unidad de producción de ejército",
+      "hours": "Horas recibidas",
+      "bonus": "Bono de ejército obtenido"
+    },
     "gold": {
       "title": "Oro",
       "base": "Producción base de oro",
       "base-unit": "Unidad de producción de oro",
-      "hours": "Horas de oro recibidas",
+      "hours": "Horas recibidas",
       "bonus": "Bono de oro obtenido"
     },
-    "troops": {
-      "title": "Tropas",
-      "base": "Producción base de tropas",
-      "base-unit": "Unidad de producción de tropas",
-      "hours": "Horas de tropas recibidas",
-      "bonus": "Bono de tropas obtenido"
-    }
+    "bonus-short": "Bono obtenido"
   },
   "xp-gain-rate": {
     "name": "Tasa de Ganancia de XP",
-    "mode-label": "Modo de cálculo de XP",
     "modes": {
       "attacker": "Soy el atacante",
       "target": "Soy el objetivo"
@@ -258,9 +289,11 @@
       "my-vp": "Mi VP",
       "unit": "Unidad de VP"
     },
-    "columns": {
-      "rate": "Tasa de ganancia de XP",
-      "opponent-vp": "Rango de VP del oponente"
+    "of-xp": "de XP",
+    "opponent-vp": "VP del oponente",
+    "xp-for": {
+      "attacker": "para mí",
+      "target": "para el atacante"
     }
   },
   "demo-attack-troops": {
@@ -271,41 +304,42 @@
       "league": "Liga del atacante"
     },
     "wall": "Murallas objetivo",
-    "maximum": "Tropas máximas"
+    "maximum": "Tropas máximas",
+    "result": "Resultado",
+    "recall": "Atacante {league} · ciudad de nivel {level}",
+    "recall-short": "Atacante {league}"
   },
   "ranking": {
     "name": "Clasificación",
     "fields": {
-      "league": "Liga",
       "percentage": "Tu porcentaje actual",
-      "rank": "Tu posición actual"
+      "rank": "Tu posición actual",
+      "entry": "Liga / División"
     },
     "undefined": "Por definir en la administración",
     "total-players": "Número estimado de jugadores",
     "errors": {
-      "select-league": "Elige una liga para calcular.",
+      "select-league": "Elige una liga o división para calcular.",
       "positive-percentage": "Introduce un porcentaje mayor que 0 para calcular.",
-      "missing-bands": "Los umbrales y recompensas deben definirse en la administración para la liga {league}."
+      "missing-bands": "Umbrales y recompensas por definir en la administración para {entry}."
     },
     "ranking-ranges": "Rangos de clasificación",
-    "columns": {
-      "range": "Rango",
-      "rank": "Posición del rango",
-      "target-league": "Liga objetivo",
-      "reward": "Recompensa"
+    "tile": {
+      "ranks": "Posiciones",
+      "sapphires": "Zafiros",
+      "speedups": "Aceleraciones",
+      "gems": "Gemas"
     },
     "movements": {
-      "promotion": "Ascenso a {league}",
-      "stay": "Permanencia en {league}",
-      "relegation": "Descenso a {league}"
+      "promotion": "Ascenso",
+      "stay": "Permanencia",
+      "relegation": "Descenso"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# zafiro} other {# zafiros}}",
-      "speedups": "{count} aceleración",
-      "gems": "{count, plural, one {# gema} other {# gemas}}"
-    },
-    "scale-label": "Escala de clasificación de 100% a 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "league-lock": "Liga de bloqueo",
+    "league-lock-none": "Ninguna — no hay suficientes escalones por debajo",
+    "percentile-top": "Top {value} %",
+    "percentile-range": "{from} → {to} %",
+    "player-position": "Tú · {percentage} %"
   },
   "stuff-simulator": {
     "name": "Equipo de Combate",
@@ -437,11 +471,12 @@
     "menu": "Menú",
     "main": "Navegación principal",
     "footer": "Pie de página",
-    "home": "Inicio"
+    "home": "Inicio",
+    "breadcrumb": "Ruta de navegación"
   },
   "search": {
     "label": "Buscar en el sitio",
-    "placeholder": "Buscar",
+    "placeholder": "Busca una herramienta, una referencia, una guía…",
     "results-label": "Resultados de búsqueda",
     "no-results": "Sin resultados.",
     "types": {
@@ -464,39 +499,70 @@
       "guide-fallback": "Una guía de Million Lords en ML Helper.",
       "guides": "Guías y tablas de referencia para Million Lords: costes, estadísticas y mecánicas de juego verificadas por la comunidad.",
       "legal": "Aviso legal del sitio web ML Helper."
-    }
+    },
+    "report-error": "Informar de un error",
+    "image-placeholder": "Ilustración",
+    "legal-updated": "Última actualización: {date}"
   },
   "contact": {
-    "eyebrow": "Contacto",
-    "title": "Contactar con ML-Helper",
+    "title": "Contacto",
     "lead": "¿Un error de datos que reportar, una idea de mejora o una pregunta? Escríbenos, lo leemos todo.",
-    "email": "Correo electrónico",
+    "email": "Tu correo",
     "subject": "Asunto",
-    "choose-subject": "— Elegir —",
     "subjects": {
-      "data-error": "Reportar un error de datos",
-      "improvement-suggestion": "Sugerencia de mejora",
-      "technical-bug": "Problema técnico / error",
+      "data-error": "Error en los datos",
+      "improvement-suggestion": "Idea de mejora",
+      "question": "Pregunta",
       "other": "Otro"
     },
     "message": "Mensaje",
     "submit": "Enviar",
     "success": "¡Mensaje enviado, gracias!",
     "error-invalid": "Revisa los campos del formulario e inténtalo de nuevo.",
-    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde."
+    "error-not-configured": "El envío de correo no está configurado en este momento, inténtalo de nuevo más tarde.",
+    "page-field": "Página afectada",
+    "page-placeholder": "Opcional — ej. Ciudades › Coste de ciudad",
+    "privacy": "Tu correo solo sirve para responderte. No se publica ni se comparte.",
+    "placeholders": {
+      "data-error": "¿Qué valor se muestra y cuál ves en el juego?",
+      "improvement-suggestion": "Describe tu idea en unas líneas.",
+      "question": "Haz tu pregunta.",
+      "other": "Tu mensaje."
+    },
+    "reasons": {
+      "data-error-title": "Un dato es incorrecto",
+      "data-error-text": "Indica la página, el valor mostrado y el que ves en el juego: lo corregimos antes.",
+      "idea-title": "Una idea de herramienta o de guía",
+      "idea-text": "Dinos qué decisión te gustaría preparar mejor.",
+      "question-title": "Una pregunta",
+      "question-text": "Sobre una herramienta, un cálculo o el sitio en general."
+    }
   },
   "Home": {
-    "h1": "Herramientas y guías de Million Lords",
-    "intro": "ML Helper reúne las herramientas y referencias de la comunidad para ayudarte a planificar cada decisión en Million Lords.",
-    "toolsEyebrow": "Simular",
+    "h1": "Herramientas y guías para Million Lords",
+    "intro": "Simuladores, tablas de referencia y guías de la comunidad para preparar cada decisión, desde tu primera ciudad hasta Leyenda.",
     "toolsTitle": "Decide con las cifras correctas",
-    "toolsDescription": "Explora costes, producción, clasificación, habilidades y equipo con herramientas diseñadas para preparar cada decisión.",
-    "guidesEyebrow": "Aprender",
+    "toolsDescription": "Costes, producción, clasificación, habilidades y equipo: simuladores para preparar cada decisión.",
     "guidesTitle": "Perfecciona tu estrategia",
-    "guidesDescription": "Consulta las guías de la comunidad para entender las mecánicas del juego y progresar con confianza.",
-    "referentielsEyebrow": "Consultar",
+    "guidesDescription": "Las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
     "referentielsTitle": "Encuentra las cifras exactas",
-    "referentielsDescription": "Consulta las tablas de referencia de la comunidad para conocer los costes, estadísticas y umbrales exactos del juego."
+    "referentielsDescription": "Los costes, estadísticas y niveles exactos del juego: equipo, gemas, templarios, tienda…",
+    "explore-tools": "Explorar las herramientas",
+    "explore-references": "Consultar las tablas de referencia",
+    "start-guide": "Empieza aquí",
+    "count-tools": "{count, plural, one {# herramienta} other {# herramientas}}",
+    "count-references": "{count, plural, one {# referencia} other {# referencias}}",
+    "count-guides": "{count, plural, one {# guía} other {# guías}}",
+    "highlights": "Destacados",
+    "entry-tool": "Herramienta · {category}",
+    "entry-reference": "Referencia",
+    "entry-guide": "Guía",
+    "all-tools": "Todas las herramientas",
+    "all-references": "Todas las referencias",
+    "all-guides": "Todas las guías",
+    "start-here": "Empieza aquí",
+    "banner-title": "¿Ha cambiado un valor en el juego?",
+    "banner-text": "Los datos cambian con cada actualización. Señala una diferencia o propón una mejora: lo leemos todo."
   },
   "ToolsPage": {
     "eyebrow": "Herramientas",
@@ -518,11 +584,9 @@
     "references": "Tablas de referencia"
   },
   "guides": {
-    "eyebrow": "Guías y datos",
     "title": "Guías",
     "sections": {
-      "guides": "Guías",
-      "references": "Tablas de referencia"
+      "guides": "Guías"
     },
     "filters": {
       "guides-label": "Filtrar guías por categoría",
@@ -543,11 +607,19 @@
     "no-results": "Ninguna guía coincide con estos filtros.",
     "detail": {
       "eyebrow": "Guía en {category}",
-      "not-translated": "Esta guía aún no se ha traducido a este idioma."
-    }
+      "not-translated": "Esta guía aún no se ha traducido a este idioma.",
+      "toc": "Índice",
+      "intro": "Introducción",
+      "reading-time": "Lectura: ~{minutes} min",
+      "callout": "Para recordar",
+      "continue": "Continúa con",
+      "kind": "Guía"
+    },
+    "index-intro": "Afina tu estrategia: las guías de la comunidad para entender las mecánicas del juego y progresar con más calma.",
+    "tool-pill": "Herramienta: {name}",
+    "start-here": "Empieza aquí"
   },
   "references": {
-    "eyebrow": "Tablas de referencia",
     "title": "Tablas de referencia",
     "filters": {
       "label": "Filtros de tabla de referencia",
@@ -615,7 +687,16 @@
       "gems": "Todas las gemas de Million Lords: bonificación por habilidad y por liga, ranuras y coste de fusión en zafiros, con optimización multihabilidad.",
       "shop": "Referencia de la tienda de Million Lords: consumibles y datos verificados por la comunidad para gastar en el momento adecuado.",
       "events": "Referencia de los eventos de Million Lords: datos y recompensas verificados por la comunidad para preparar cada evento."
-    }
+    },
+    "index-intro": "Encuentra los datos clave: costes, estadísticas y niveles exactos del juego, del equipo a las gemas y templarios, hasta los consumibles de la tienda.",
+    "missing-title": "¿Falta una referencia?",
+    "missing-text": "Dinos qué datos te gustaría encontrar aquí.",
+    "missing-cta": "Proponer",
+    "catalog-short": {
+      "combat-equipment": "Equipo de combate",
+      "expedition-equipment": "Equipo de exped."
+    },
+    "nav-label": "Navegación entre referencias"
   },
   "combat-equipment": {
     "name": "Equipo de Combate",
@@ -670,546 +751,18 @@
     "page": "Página {current} de {total}",
     "pagination-label": "Páginas de nivel"
   },
-  "login": {
-    "title": "Inicio de sesión de administración",
-    "username": "Nombre de usuario",
-    "password": "Contraseña",
-    "totp": "Código de autenticación",
-    "totp-hint": "Introduce el código de 6 dígitos solo si la autenticación de dos factores está activada.",
-    "submit": "Iniciar sesión",
-    "error": "Nombre de usuario o contraseña no válidos",
-    "error-disabled": "Cuenta desactivada, contacta con el administrador."
-  },
-  "admin": {
-    "title": "Administración",
-    "view-site": "Ver el sitio",
-    "navigation-label": "Navegación de administración",
-    "navigation": {
-      "dashboard": "Panel",
-      "tools": "Herramientas",
-      "referentiels": "Referencias",
-      "guides": "Guías",
-      "content": "Términos de uso",
-      "users": "Usuarios",
-      "logs": "Historial",
-      "config": "Configuración"
-    },
-    "account": {
-      "change-password": "Cambiar mi contraseña",
-      "current-password": "Contraseña actual",
-      "new-password": "Nueva contraseña",
-      "save": "Guardar",
-      "saved": "Contraseña actualizada.",
-      "invalid": "La contraseña actual es incorrecta o la nueva contraseña no es válida.",
-      "logout": "Cerrar sesión",
-      "totp": {
-        "title": "Autenticación de dos factores",
-        "active": "La autenticación de dos factores está activada.",
-        "activate": "Activar autenticación de dos factores",
-        "scan": "Escanea este código QR con tu aplicación de autenticación y luego introduce el código generado.",
-        "qr-alt": "Código QR de autenticación de dos factores",
-        "manual-key": "Clave de configuración manual",
-        "code": "Código de 6 dígitos",
-        "confirm": "Confirmar activación",
-        "disable": "Desactivar autenticación de dos factores",
-        "enabled": "Autenticación de dos factores activada.",
-        "disabled": "Autenticación de dos factores desactivada.",
-        "invalid": "El código de autenticación no es válido o ha caducado.",
-        "setup-error": "No se pudo iniciar la configuración de la autenticación de dos factores.",
-        "disable-error": "La contraseña o el código de autenticación no son válidos."
-      }
-    },
-    "dashboard": {
-      "eyebrow": "Resumen",
-      "title": "Panel",
-      "metrics-label": "Estado del contenido",
-      "tools": "Herramientas",
-      "tools-summary": "{active} activadas / {total} en total",
-      "guides": "Guías",
-      "guides-summary": "{published} publicadas / {total} en total",
-      "references": "Tablas de referencia",
-      "references-summary": "{active} activadas / {total} en total",
-      "users": "Usuarios",
-      "users-summary": "{active} activos / {total} en total",
-      "recent-actions": "Últimas acciones",
-      "user": "Usuario",
-      "role": "Rol",
-      "message": "Mensaje",
-      "date": "Fecha",
-      "empty": "Ninguna acción registrada."
-    },
-    "setup": {
-      "eyebrow": "Configuración inicial",
-      "title": "Crear el primer Super Admin",
-      "description": "Este formulario está disponible solo una vez. Elige las credenciales que se usarán para administrar ML-Helper.",
-      "username": "Nombre de usuario",
-      "password": "Contraseña",
-      "submit": "Crear Super Admin",
-      "creating": "Creando cuenta…",
-      "already-completed": "La configuración inicial ya se ha completado.",
-      "invalid": "No se puede crear la cuenta. Revisa el nombre de usuario y usa una contraseña de al menos 12 caracteres.",
-      "unavailable": "No se puede contactar con el servidor. Inténtalo de nuevo más tarde."
-    },
-    "guides": {
-      "eyebrow": "Contenido editorial",
-      "title": "Guías",
-      "new": "Nueva",
-      "new-title": "Nueva guía",
-      "edit-title": "Editar guía",
-      "empty": "No se ha creado ninguna guía.",
-      "columns": {
-        "title": "Título",
-        "author": "Autor",
-        "created": "Creada",
-        "updated": "Última edición",
-        "languages": "Idiomas",
-        "status": "Estado",
-        "actions": "Acciones"
-      },
-      "language-written": "{locale} redactado",
-      "language-missing": "{locale} sin traducir",
-      "no-results": "Ningún resultado para este filtro.",
-      "statuses": {
-        "draft": "Borrador",
-        "pending_review": "Pendiente de revisión",
-        "published": "Publicada"
-      },
-      "disabled-tooltip": "Desactivada y oculta del sitio público",
-      "status-label": "Estado de {title}",
-      "edit": "Editar",
-      "enable": "Activar",
-      "disable": "Desactivar",
-      "delete": "Eliminar",
-      "confirm-delete": "¿Eliminar permanentemente la guía «{title}»?",
-      "status-forbidden": "Tu rol no permite este cambio de estado.",
-      "status-saved": "Estado guardado.",
-      "visibility-error": "No se pudo cambiar la visibilidad.",
-      "enabled": "Guía activada.",
-      "disabled": "Guía desactivada.",
-      "delete-forbidden": "Tu rol no permite eliminar esta guía.",
-      "deleted": "Guía eliminada permanentemente."
-    },
-    "referentiels": {
-      "eyebrow": "Datos de referencia",
-      "title": "Referencias",
-      "columns": {
-        "title": "Título",
-        "status": "Estado",
-        "actions": "Acciones"
-      },
-      "statuses": {
-        "active": "Activada",
-        "inactive": "Desactivada"
-      },
-      "reference-combat": "Editar Equipo de Combate",
-      "reference-expedition": "Editar Equipo de Expedición",
-      "reference-level-up": "Editar Subida de Nivel",
-      "reference-consommables": "Editar la Tienda",
-      "references": {
-        "combat-equipment": "Equipo de Combate",
-        "expedition-equipment": "Equipo de Expedición",
-        "level-up": "Subida de Nivel",
-        "templiers": "Templarios",
-        "gemmes": "Gemas",
-        "consommables": "Tienda",
-        "events": "Eventos"
-      },
-      "disabled-tooltip": "Desactivada y oculta del sitio público",
-      "edit": "Editar",
-      "enable": "Activar",
-      "disable": "Desactivar",
-      "visibility-error": "No se pudo cambiar la visibilidad.",
-      "enabled": "Tabla de referencia activada.",
-      "disabled": "Tabla de referencia desactivada.",
-      "no-results": "No se encontró ninguna tabla de referencia.",
-      "reference-events": "Editar Eventos"
-    },
-    "guide-editor": {
-      "language-label": "Idioma de la guía",
-      "title": "Título ({locale})",
-      "excerpt": "Resumen ({locale})",
-      "content": "Contenido Markdown ({locale})",
-      "preview": "Vista previa en directo",
-      "categories-label": "Categorías de la guía",
-      "categories-summary": "Categorías de la guía ({count, plural, one {# seleccionada} other {# seleccionadas}})",
-      "categories": {
-        "debuter": "Inicio y progresión",
-        "combat": "Combate y conquista",
-        "defense": "Defensa y territorio",
-        "competences": "Habilidades y builds",
-        "equipement": "Equipo y Templarios",
-        "expeditions": "Expediciones",
-        "evenements": "Eventos y clasificación",
-        "clan": "Clan y estrategia colectiva"
-      },
-      "cover-image": "URL de la imagen representativa",
-      "cover-image-placeholder": "https://example.com/guide-cover.jpg",
-      "cover-image-preview": "Vista previa de la imagen representativa",
-      "save": "Guardar",
-      "submit-review": "Enviar para revisión",
-      "publish": "Publicar",
-      "unpublish": "Retirar como borrador",
-      "saving": "Guardando…",
-      "missing-title": "Introduce un título en EN o FR antes de guardar.",
-      "missing-category": "Selecciona al menos una categoría antes de guardar.",
-      "duplicate-slug": "Ya existe una guía con este título/slug.",
-      "invalid": "La guía contiene campos no válidos o incompletos.",
-      "status-forbidden": "Guía guardada, pero tu rol no permite este cambio de estado.",
-      "saved": "Guía guardada."
-    },
-    "tools": {
-      "eyebrow": "Contenido funcional",
-      "title": "Herramientas",
-      "edit-ranking": "Editar umbrales de clasificación",
-      "columns": {
-        "tool": "Herramienta",
-        "category": "Categoría",
-        "status": "Estado",
-        "action": "Acción"
-      },
-      "category-values": {
-        "villes": "Ciudades",
-        "combat": "Combate",
-        "classement": "Clasificación",
-        "competences": "Habilidades"
-      },
-      "active": "Activada",
-      "inactive": "Desactivada",
-      "enable": "Activar",
-      "disable": "Desactivar",
-      "disabled-tooltip": "Desactivada — no disponible en el sitio público",
-      "saving": "Guardando…",
-      "save-error": "Error al guardar (HTTP {status}).",
-      "state-saved": "{tool} ahora está {state}.",
-      "server-error": "No se puede contactar con el servidor. Inténtalo de nuevo más tarde.",
-      "name": "Nombre",
-      "edit": "Editar",
-      "city-parameters": "Parámetros compartidos de Ciudad",
-      "ranking-editor": "Umbrales de clasificación",
-      "templar-parameters": "Parámetros de coste de Templarios",
-      "xp-gain-rate-editor": "Niveles de tasa de ganancia de XP",
-      "demo-attack-troops-editor": "Porcentajes de ataque demo",
-      "gems-editor": "Parámetros de Gemas"
-    },
-    "ranking": {
-      "title": "Clasificación",
-      "description": "Edita cada rango individualmente. Bronce y Oro pueden quedar vacíos hasta que sus datos se confirmen.",
-      "add": "Añadir rango",
-      "threshold": "Umbral (%)",
-      "target": "Liga objetivo",
-      "movement": "Movimiento",
-      "reward": "Recompensa",
-      "action": "Acción",
-      "remove": "Eliminar",
-      "row-label": "{league} fila {row} {field}",
-      "unconfirmed-option": "No confirmado",
-      "movements": {
-        "promotion": "Ascenso",
-        "stay": "Permanencia",
-        "relegation": "Descenso"
-      },
-      "reward-types": {
-        "sapphires": "Zafiros",
-        "speedups": "Aceleraciones",
-        "gems": "Gemas"
-      },
-      "range-error": "Se requiere un valor entre 0 y 100.",
-      "pairing-error": "El movimiento y la liga objetivo deben confirmarse juntos.",
-      "integer-error": "Se requiere un número entero.",
-      "required": "Este campo es obligatorio.",
-      "empty": "Ningún rango confirmado.",
-      "save": "Guardar clasificación",
-      "validation": "Corrige los campos resaltados antes de guardar.",
-      "saving": "Guardando…",
-      "save-error": "Error al guardar (HTTP {status}).",
-      "saved": "Configuración guardada.",
-      "server-error": "No se puede contactar con el servidor. Inténtalo de nuevo más tarde."
-    },
-    "references": {
-      "eyebrow": "Datos del juego",
-      "title": "Tablas de referencia",
-      "combat-detail": "180 filas editables",
-      "expedition-detail": "120 filas editables",
-      "templars-detail": "20 costes exactos editables",
-      "page-title": "Tabla de referencia — {name}",
-      "combat-description": "Las 180 filas y cada valor se pueden editar individualmente. Introduce un valor desconocido solo después de confirmarlo en el juego.",
-      "expedition-description": "Detalle del equipo de expedición",
-      "expedition-increments-description": "Incrementos por estrella para las estadísticas del Equipo de Expedición",
-      "templars-description": "Cada coste exacto de nivel se puede editar individualmente.",
-      "columns": {
-        "set-name": "Nombre del set",
-        "family": "Familia",
-        "slot-type": "Tipo de ranura",
-        "slot-name": "Nombre de la ranura",
-        "value": "Valor {number} (%)",
-        "type-value": "Valor de tipo (%)",
-        "secondary-value": "Valor secundario (%)",
-        "level": "Nivel alcanzado",
-        "level-cost": "Coste del nivel"
-      },
-      "row-label": "Fila {row} {field}",
-      "expedition-row-label": "Fila de expedición {row} {field}",
-      "templar-level-label": "Nivel de templario {level}",
-      "templar-cost-label": "Coste del nivel de templario {level}",
-      "save": "Guardar toda la tabla",
-      "save-all": "Guardar toda la página",
-      "required": "Este campo es obligatorio.",
-      "number": "Introduce un valor numérico válido.",
-      "minimum": "El valor mínimo es {min}.",
-      "validation": "Corrige los campos resaltados antes de guardar.",
-      "saving": "Guardando…",
-      "save-error": "Error al guardar (HTTP {status}).",
-      "save-all-error": "No se pudo guardar una o más tablas de esta página.",
-      "saved": "Tabla de referencia guardada.",
-      "server-error": "No se puede contactar con el servidor. Comprueba la conexión e inténtalo de nuevo.",
-      "all": "Todas",
-      "filters": {
-        "skill": "Habilidad"
-      },
-      "add": "Añadir un objeto",
-      "add-category": "Añadir ({category})",
-      "confirm-remove": "¿Eliminar definitivamente este objeto?",
-      "category-row-label": "{category} — fila {row} {field}",
-      "consumables-columns": {
-        "cost": "Coste (Zafiros)",
-        "description": "Descripción",
-        "image": "Ruta de la imagen",
-        "name": "Nombre"
-      },
-      "consumables-intro-language-label": "Idioma del texto",
-      "consumables-intro-title": "Intro",
-      "consumables-table-title": "Objetos",
-      "empty": "Aún no hay objetos.",
-      "move-down": "Mover hacia abajo",
-      "actions": "Acciones",
-      "move-up": "Mover hacia arriba",
-      "remove": "Eliminar",
-      "events-league-label": "Liga",
-      "events-language-label": "Idioma del texto",
-      "events-season-duration-label": "Duración de la temporada (días)",
-      "events-season-overrun": "La duración total de los eventos ({total}) supera la duración de la temporada ({season}).",
-      "events-table-title": "Lista de eventos",
-      "add-event": "Añadir un evento",
-      "events-columns": {
-        "name": "Nombre",
-        "description": "Descripción",
-        "duration": "Duración",
-        "color": "Color"
-      },
-      "event-colors": {
-        "violet": "Violeta oscuro",
-        "violet-bright": "Violeta claro",
-        "emerald": "Verde oscuro",
-        "emerald-bright": "Verde claro",
-        "amber": "Amarillo oscuro",
-        "amber-bright": "Amarillo claro",
-        "ember": "Rojo oscuro",
-        "ember-bright": "Rojo claro",
-        "sapphire": "Azul oscuro",
-        "sapphire-bright": "Azul claro"
-      },
-      "tier-columns": {
-        "objective": "Objetivo",
-        "reward": "Recompensa"
-      },
-      "add-tier": "Añadir un nivel",
-      "events-tiers-summary": "Niveles ({count})",
-      "event-row-label": "{field} del evento {row}",
-      "events-position-aria": "Posición {row}",
-      "tier-row-label": "{field} del nivel {row} de {event}",
-      "templars-presentation-title": "Presentación",
-      "templars-presentation-language-label": "Idioma del texto",
-      "templars-columns": {
-        "image": "Ruta de la imagen",
-        "name": "Nombre",
-        "description": "Descripción",
-        "temple-base": "Base de templo",
-        "bonus": "Bono (%)"
-      },
-      "secondary-row": "Indicador",
-      "secondary-label-language": "Idioma del indicador",
-      "row-merge-cost": "Fusión",
-      "row-gem-slots": "Gemas",
-      "row-destruction": "Desmontaje",
-      "combat-secondary-description": "Pouciel (fusión, desmontaje) y ranuras de gema, por rareza.",
-      "expedition-secondary-description": "Terrapolvo (fusión, desmontaje), por rareza.",
-      "combat-increments-description": "Incrementos por estrella para las habilidades del Equipo de Combate"
-    },
-    "common": {
-      "back": "Atrás"
-    },
-    "parameters": {
-      "save": "Guardar parámetros",
-      "saving": "Guardando…",
-      "saved": "Parámetros guardados.",
-      "error": "Error al guardar (HTTP {status}).",
-      "server-error": "No se puede contactar con el servidor.",
-      "league": "Liga",
-      "coefficient": "Coeficiente",
-      "ratio": "Ratio",
-      "xp-base": "Base de XP",
-      "xp-ratio": "Ratio de XP",
-      "unconfirmed": "Fórmula de tropas no confirmada"
-    },
-    "city-parameters": {
-      "progression": "Parámetros de progresión",
-      "multipliers": "Multiplicadores de liga",
-      "league": "Liga",
-      "army": "Multiplicador de ejército",
-      "gold": "Multiplicador de oro",
-      "vp": {
-        "base": "Base de VP",
-        "ratio": "Ratio de VP"
-      },
-      "walls": {
-        "base": "Base de murallas",
-        "ratio": "Ratio de murallas"
-      },
-      "cost": {
-        "base": "Base de coste",
-        "ratio": "Ratio de coste"
-      }
-    },
-    "templar-parameters": {
-      "formula": "Coste(n) = redondeo(base × ratio^(n-1))",
-      "base": "Base",
-      "ratio": "Ratio"
-    },
-    "xp-gain-rate": {
-      "formula": "Tasa de ganancia de XP = f(ratio VP objetivo / VP atacante)",
-      "tier": "Nivel",
-      "upper-bound": "Límite superior (%)",
-      "upper-bound-field": "Límite superior del nivel {tier}",
-      "rate": "Tasa de XP (%)",
-      "rate-field": "Tasa de XP del nivel {tier}"
-    },
-    "demo-attack-troops": {
-      "formula": "TropasMax = (X% / 100) × Murallas(nivel de la ciudad objetivo)",
-      "percentage": "X (% de las murallas)"
-    },
-    "gems": {
-      "formula": "Valor de gema = valor base (por habilidad y por liga)",
-      "value": "Valor base por habilidad y por liga",
-      "value-field": "{skill} · {league}",
-      "price": "Precio de compra de gema por liga (en zafiros)",
-      "price-field": "Precio {league}"
-    },
-    "users": {
-      "title": "Usuarios de administración",
-      "create": "Crear usuario",
-      "username": "Nombre de usuario",
-      "password": "Contraseña",
-      "role": "Rol",
-      "delete": "Eliminar",
-      "save": "Guardar",
-      "created": "Usuario creado",
-      "saved": "Usuario guardado",
-      "password-too-short": "La nueva contraseña debe contener al menos 12 caracteres.",
-      "error": "No se pudo completar la acción",
-      "server-error": "Servidor no disponible",
-      "status": "Estado",
-      "active": "Activado",
-      "inactive": "Desactivado",
-      "activate": "Activar",
-      "deactivate": "Desactivar",
-      "activated": "Usuario activado",
-      "deactivated": "Usuario desactivado"
-    },
-    "logs": {
-      "title": "Historial de cambios",
-      "actor": "Autor",
-      "actor-role": "Rol en el momento de la acción",
-      "message": "Mensaje",
-      "date": "Fecha",
-      "start": "Fecha de inicio",
-      "end": "Fecha de fin",
-      "purge": "Purgar rango",
-      "purged": "Historial purgado",
-      "error": "No se pudo purgar el historial",
-      "filter-user": "Usuario",
-      "filter-message": "Palabra en el mensaje",
-      "filter-apply": "Filtrar",
-      "filter-reset": "Restablecer",
-      "no-results": "Ninguna entrada coincide con los filtros.",
-      "pagination": "Paginación del historial",
-      "previous": "Anterior",
-      "next": "Siguiente",
-      "page-summary": "Página {page} / {total}"
-    },
-    "content": {
-      "eyebrow": "Página institucional",
-      "title": "Aviso legal",
-      "language-label": "Idioma del contenido",
-      "field": "Markdown",
-      "preview": "Vista previa en directo",
-      "save": "Guardar",
-      "saving": "Guardando…",
-      "saved": "Aviso legal guardado.",
-      "error": "No se pudo guardar el aviso legal."
-    },
-    "forbidden": {
-      "eyebrow": "Error 403",
-      "title": "Acceso prohibido",
-      "description": "Tu rol no permite acceder a esta sección o acción.",
-      "back": "Volver al panel"
-    },
-    "config": {
-      "eyebrow": "Configuración",
-      "title": "Configuración del sitio",
-      "intro": "Activa o desactiva la visibilidad de cada idioma en el sitio público. Los archivos de traducción no se modifican. El inglés y el francés siempre están activos.",
-      "columns": {
-        "language": "Idioma",
-        "status": "Estado",
-        "action": "Acción"
-      },
-      "active": "Activo",
-      "inactive": "Inactivo",
-      "enable": "Activar",
-      "disable": "Desactivar",
-      "locked-tooltip": "Idioma base — siempre activo",
-      "saving": "Guardando…",
-      "save-error": "Error al guardar (HTTP {status}).",
-      "state-saved": "{language} ahora está {state}.",
-      "server-error": "No se puede conectar con el servidor. Inténtalo más tarde.",
-      "languages": {
-        "en": "English",
-        "fr": "Français",
-        "de": "Deutsch",
-        "es": "Español",
-        "tr": "Türkçe"
-      },
-      "languages-section": "Idiomas",
-      "tracking": {
-        "section": "Seguimiento de visitas",
-        "intro": "Carga un script de analítica en todas las páginas, públicas y de administración. Deja el campo vacío para no cargar nada.",
-        "label": "URL del script de seguimiento",
-        "placeholder": "https://ejemplo.com/script.js",
-        "hint": "La URL del script que te da tu herramienta de seguimiento. Se carga de forma diferida, con el nonce de la página.",
-        "save": "Guardar",
-        "saving": "Guardando…",
-        "saved": "URL de seguimiento guardada.",
-        "cleared": "Seguimiento desactivado: ya no se carga ningún script.",
-        "invalid-url": "No es una URL http(s) válida.",
-        "save-error": "Error al guardar (HTTP {status}).",
-        "server-error": "No se pudo contactar con el servidor. Inténtalo más tarde.",
-        "website-id-label": "Identificador del sitio",
-        "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
-        "website-id-hint": "Se añade a la etiqueta como `data-website-id`. Déjalo vacío si tu herramienta no lo pide.",
-        "invalid-website-id": "Ese identificador contiene caracteres que no corresponden."
-      }
-    }
-  },
-  "roles": {
-    "super_admin": "Super Admin",
-    "admin": "Admin",
-    "guides_manager": "Gestor de guías",
-    "references_manager": "Référentiels",
-    "tools_manager": "Gestor de herramientas",
-    "read_only": "Solo lectura"
-  },
   "notFound": {
     "title": "Página no encontrada",
     "description": "Esta página no existe o se ha movido. Aquí puedes continuar:",
     "home": "Inicio"
+  },
+  "footer": {
+    "lead": "Herramientas, referencias y guías de la comunidad para preparar cada decisión en Million Lords.",
+    "note": "Sitio comunitario no oficial, sin vínculo con la editora del juego.",
+    "help": "Ayuda",
+    "start-here": "Empieza aquí",
+    "all-guides": "Todas las guías",
+    "all-references": "Todas las referencias",
+    "copyright": "© {year} ML-Helper"
   }
 }

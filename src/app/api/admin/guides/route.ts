@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canPerformGuideAction } from "@/auth/guide-actions";
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
       },
       await request.json(),
     );
+    await revalidateContent("guides", guide.slug);
     return NextResponse.json({ id: guide.id }, { status: 201 });
   } catch (error) {
     return NextResponse.json(

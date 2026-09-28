@@ -44,13 +44,18 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
       title: { fr: "Guide 1" },
       excerpt: { fr: "Excerpt 1" },
       coverImage: null,
+      category: ["combat"],
+      publishedAt: new Date("2026-03-01"),
     },
     {
       id: "g2",
       slug: "guide-2",
       title: { fr: "Guide 2" },
-      excerpt: { fr: "Excerpt 2" },
+      // §1.4 : un résumé écrit en markdown doit s'afficher sans ses marques.
+      excerpt: { fr: "Les bases de **Million Lords**." },
       coverImage: null,
+      category: ["debuter"],
+      publishedAt: new Date("2026-01-15"),
     },
     {
       id: "g3",
@@ -58,6 +63,8 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
       title: { fr: "Guide 3" },
       excerpt: { fr: "Excerpt 3" },
       coverImage: null,
+      category: ["clan"],
+      publishedAt: new Date("2026-02-01"),
     },
   ];
   return {
@@ -68,8 +75,26 @@ const { recentGuides, findManyMock } = vi.hoisted(() => {
 vi.mock("@/lib/prisma", () => ({
   prisma: { guide: { findMany: findManyMock } },
 }));
+// Bloc 132 §4 : la sélection « Mis en avant » vient de l'administration.
+// `undefined` = aucune ligne enregistrée, donc le repli — c'est l'état de
+// tous les tests qui ne s'en occupent pas.
+const highlights = vi.hoisted(() => ({
+  value: undefined as
+    { kind: "tool" | "reference" | "guide"; slug: string }[] | undefined,
+}));
+// Bloc 132 §5 : les cartes de référentiels de l'accueil portent leur
+// description, lue en base comme sur l'index.
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => ({ gemmes: "Le coût de chaque fusion." }),
+}));
+vi.mock("@/lib/home-highlights-server", () => ({
+  getHomeHighlights: async () => highlights.value,
+}));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  highlights.value = undefined;
+});
 
 // Bloc 42/J: every public page's metadata must carry a real (never empty)
 // description, plus hreflang alternates for the 5 launched locales — this
@@ -103,10 +128,14 @@ describe("HomePage", () => {
     ).toBeNull();
   });
 
-  it("replaces the carousel/hero with a short intro sentence (Bloc 34/D)", async () => {
+  // Bloc 129 §3.1 : le hero revient, mais ce n'est pas le carrousel que le
+  // Bloc 34/D avait retiré — c'est un bloc statique de texte et de liens.
+  it("ouvre sur un hero de texte, jamais sur un carrousel", async () => {
     render(await HomePage());
     expect(document.querySelector(".home-carousel")).toBeNull();
+    expect(document.querySelector(".home-hero")).toBeInTheDocument();
     expect(screen.getByText("intro")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("h1");
   });
 
   // Bloc 50 Group3: the combined guides/référentiels section split into 2
@@ -120,39 +149,198 @@ describe("HomePage", () => {
       });
       expect(link).toHaveAttribute("href", `/guides/${guide.slug}`);
     }
-    // No detour via /guides — the section links directly to each guide,
-    // not to a "browse all guides" page.
-    expect(screen.queryByRole("link", { name: "guides" })).toBeNull();
+    // Bloc 129 §3.1 : la section porte désormais un lien « Tous les guides »
+    // à droite de son titre — le §3.1 le demande explicitement. Ce que ce
+    // test protégeait tient toujours : chaque guide reste joignable en un
+    // clic depuis l'accueil, sans passer par /guides.
   });
 
-  it("fetches the 6 most recent published guides (Bloc 50 Group3: raised from 3)", async () => {
+  // Bloc 129 §3.1 : la page ne prend plus « les six derniers ». Elle lit
+  // tous les guides publiés, parce qu'elle en a besoin pour deux choses que
+  // la page d'avant ne faisait pas — compter les guides dans le hero, et
+  // désigner celui de la carte « Commence ici » — puis n'en affiche que
+  // cinq à côté de cette carte.
+  it("lit tous les guides publiés, et n'en liste que cinq à côté de la carte", async () => {
     render(await HomePage());
     expect(findManyMock).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 6 }),
+      expect.not.objectContaining({ take: expect.anything() }),
+    );
+    expect(findManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { status: "published" } }),
     );
   });
 
-  it("shows the built references, each directly clickable, in their own section", async () => {
+  /**
+   * Bloc 142/A : les quatre surtitres — « Compagnon communautaire » sur le
+   * hero, « Simuler », « Consulter », « Apprendre » sur les trois sections —
+   * sont retirés sans être remplacés.
+   *
+   * `getTranslations` est simulé pour rendre la clé demandée : un surtitre
+   * resté en place afficherait donc son propre nom de clé, et c'est ce que
+   * ces affirmations cherchent. La classe `.eyebrow` sert ailleurs sur le
+   * site (index Outils, page d'un guide) ; elle ne doit simplement plus
+   * apparaître sur l'accueil.
+   */
+  it("n'affiche plus aucun surtitre", async () => {
     const { container } = render(await HomePage());
-    const referencesSection =
-      container.querySelector<HTMLElement>(".home-references")!;
-    expect(referencesSection).not.toBeNull();
-    for (const slug of [
-      "combat-equipment",
-      "expedition-equipment",
-      "level-up",
-      "templars",
-    ]) {
-      const link = within(referencesSection).getByRole("link", {
-        name: new RegExp(`catalog.${slug}`),
-      });
-      expect(link).toHaveAttribute("href", `/referentiels/${slug}`);
-    }
-    // No detour via /referentiels — the section links directly to each
-    // reference, not to a "browse all references" page.
+    for (const key of [
+      "eyebrow",
+      "toolsEyebrow",
+      "referentielsEyebrow",
+      "guidesEyebrow",
+    ])
+      expect(screen.queryByText(key), key).toBeNull();
+    expect(container.querySelectorAll(".eyebrow")).toHaveLength(0);
+  });
+
+  /**
+   * Bloc 142/A : et ce que le retrait ne devait pas emporter — le H2 et
+   * l'introduction de chaque section restent en place.
+   */
+  it("garde le titre et l'introduction de chaque section", async () => {
+    render(await HomePage());
+    for (const key of [
+      "toolsTitle",
+      "toolsDescription",
+      "referentielsTitle",
+      "referentielsDescription",
+      "guidesTitle",
+      "guidesDescription",
+    ])
+      expect(screen.getByText(key), key).toBeInTheDocument();
+  });
+
+  it("compte les outils, les référentiels et les guides réellement accessibles", async () => {
+    render(await HomePage());
+    // 9 outils actifs sur 11 (xp-gain-rate et demo-attack-troops sont
+    // désactivés dans le mock), 7 référentiels, 3 guides.
+    expect(screen.getByText("count-tools")).toBeInTheDocument();
+    expect(screen.getByText("count-references")).toBeInTheDocument();
+    expect(screen.getByText("count-guides")).toBeInTheDocument();
+  });
+
+  /**
+   * Bloc 142/B : chaque compteur **entier** — nombre et nom — tient dans une
+   * pastille, et c'est celle du Bloc 133/C : la classe est reprise telle
+   * quelle, pas recopiée sous un autre nom. `.home-hero-count-badge` ne fait
+   * que la mettre à l'échelle du hero.
+   */
+  it("met chaque compteur entier dans la pastille du Bloc 133", async () => {
+    const { container } = render(await HomePage());
+    const list = container.querySelector<HTMLElement>(".home-hero-counters")!;
+    const badges = list.querySelectorAll(".tool-count-badge");
+    expect(badges).toHaveLength(3);
+    for (const badge of badges)
+      expect(badge).toHaveClass("home-hero-count-badge");
+    // La pastille porte le compteur entier, pas seulement son nombre.
+    expect([...badges].map((b) => b.textContent)).toEqual([
+      "count-tools",
+      "count-references",
+      "count-guides",
+    ]);
+  });
+
+  it("met « Commence ici » sur le guide de la catégorie configurée", async () => {
+    const { container } = render(await HomePage());
+    const card = container.querySelector<HTMLAnchorElement>(".start-here-card");
+    // guide-2 est le seul de la catégorie « debuter ».
+    expect(card).toHaveAttribute("href", "/guides/guide-2");
+    // §1.4 : et son résumé s'affiche sans ses astérisques.
     expect(
-      within(referencesSection).queryByRole("link", { name: "referentiels" }),
-    ).toBeNull();
+      within(card!).getByText("Les bases de Million Lords."),
+    ).toBeInTheDocument();
+    // Le guide mis en avant ne se répète pas dans la liste à côté.
+    const list = container.querySelector<HTMLElement>(".home-guide-list")!;
+    expect(within(list).queryByRole("link", { name: /Guide 2/ })).toBeNull();
+  });
+
+  // Bloc 132 §4 : sans sélection enregistrée, le panneau garde la liste de
+  // repli — le §4 demande qu'il ne soit jamais vide à la livraison.
+  it("propose le panneau « Mis en avant » de repli et le bandeau de signalement", async () => {
+    const { container } = render(await HomePage());
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(panel).not.toBeNull();
+    // Les trois outils de Villes du repli, plus deux référentiels.
+    expect(within(panel).getAllByRole("link")).toHaveLength(5);
+    expect(
+      within(panel).getByRole("link", { name: /city-cost.name/ }),
+    ).toHaveAttribute("href", "/tools/villes?open=cost");
+    const banner = container.querySelector<HTMLElement>(".report-banner")!;
+    expect(
+      within(banner).getByRole("link", { name: "report-error" }),
+    ).toHaveAttribute("href", "/contact?subject=data-error");
+  });
+
+  it("suit la sélection enregistrée, dans son ordre, guides compris", async () => {
+    highlights.value = [
+      { kind: "guide", slug: "guide-2" },
+      { kind: "reference", slug: "gems" },
+      { kind: "tool", slug: "city-cost" },
+    ];
+    const { container } = render(await HomePage());
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(
+      within(panel)
+        .getAllByRole("link")
+        .map((link) => link.getAttribute("href")),
+    ).toEqual([
+      "/guides/guide-2",
+      "/referentiels/gems",
+      "/tools/villes?open=cost",
+    ]);
+  });
+
+  /**
+   * La sélection vit en JSON, pas en table liée : la base ne garantit pas
+   * que la cible existe encore. Une entrée qui ne mène nulle part se retire
+   * d'elle-même, sans qu'on ait à retoucher la sélection.
+   */
+  it("laisse tomber une entrée devenue invisible", async () => {
+    highlights.value = [
+      { kind: "tool", slug: "city-cost" },
+      { kind: "guide", slug: "guide-jamais-publie" },
+      { kind: "reference", slug: "referentiel-inconnu" },
+    ];
+    const { container } = render(await HomePage());
+    const panel = container.querySelector<HTMLElement>(".home-hero-panel")!;
+    expect(within(panel).getAllByRole("link")).toHaveLength(1);
+  });
+
+  // Une sélection vidée est un choix, pas une absence de choix : le panneau
+  // disparaît au lieu de ressusciter le repli.
+  it("masque le panneau quand la sélection est vide", async () => {
+    highlights.value = [];
+    const { container } = render(await HomePage());
+    expect(container.querySelector(".home-hero-panel")).toBeNull();
+  });
+
+  /**
+   * Bloc 132 §5 : la section montrait les sept référentiels, ce qui en
+   * faisait un doublon de l'index que son propre lien atteint en un clic.
+   * Elle en montre quatre, nommés par la recette.
+   */
+  it("ne montre que les quatre référentiels retenus, chacun cliquable", async () => {
+    const { container } = render(await HomePage());
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    const links = within(section)
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+      // Le lien « Tous les référentiels » de l'en-tête de section reste.
+      .filter((href) => href !== "/referentiels");
+    expect(links).toEqual([
+      "/referentiels/events",
+      "/referentiels/gems",
+      "/referentiels/level-up",
+      "/referentiels/shop",
+    ]);
+  });
+
+  it("porte la description d'un référentiel, lue en base", async () => {
+    const { container } = render(await HomePage());
+    const section = container.querySelector<HTMLElement>(".home-references")!;
+    expect(
+      within(section).getByText("Le coût de chaque fusion."),
+    ).toBeInTheDocument();
   });
 
   it("Bloc36/B: shows the real category illustration for every tile on the homepage too", async () => {

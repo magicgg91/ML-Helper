@@ -12,8 +12,13 @@ model Guide {
   id          String    @id @default(uuid())
   slug        String    @unique
   category    Json
+  // Bloc 119: the one state of a guide. It used to carry a second,
+  // independent `active` flag, so "published" and "visible" were two
+  // switches with one meaning between them — a published guide could be
+  // invisible, and the admin showed both without saying which one won. The
+  // flag is gone; `status` is the answer (migration
+  // 20260923100000_guides_single_status).
   status      String    @default("draft")
-  active      Boolean   @default(true)
   title       Json
   content     Json
   excerpt     Json
@@ -23,12 +28,13 @@ model Guide {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   publishedAt DateTime? @map("published_at")
 
-  // Bloc 93/F5: every public read filters on exactly this pair and orders by
+  // Bloc 93/F5: every public read filters on the status and orders by
   // publishedAt — the guides list, the home page, the public layout (so: on
   // every public request), and the sitemap. Slug lookups are already served
   // by @unique above. Guides are written only from the admin, so the write
   // cost of the index is negligible next to the read frequency.
-  @@index([status, active, publishedAt])
+  // Bloc 119: `active` left the pair with the column itself.
+  @@index([status, publishedAt])
   @@map("guides")
 }
 
@@ -95,16 +101,26 @@ model LoginThrottle {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String   @map("user_id")
-  actorRole  String   @map("actor_role")
-  message    String   @default("")
-  action     String
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  diff       Json?
-  createdAt  DateTime @default(now()) @map("created_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  actorRole     String   @map("actor_role")
+  /// Bloc 116/C: the sentence this entry reads as, as a key into
+  /// admin.logs.messages (see src/lib/audit-message.ts) rather than the
+  /// French string the column below used to hold.
+  messageKey    String   @default("") @map("message_key")
+  /// Its interpolated values, as JSON text — text, not Json, so the logs
+  /// search can still `contains` over the names it holds.
+  messageParams String   @default("{}") @map("message_params")
+  /// Entries written before Bloc 116/C, whose French sentence is all there
+  /// is. Nothing writes it any more; /admin/logs falls back to it when
+  /// messageKey is empty, so an install's history stays readable.
+  legacyMessage String   @default("") @map("message")
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  diff          Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([createdAt])
   @@map("audit_logs")

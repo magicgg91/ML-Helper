@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it } from "vitest";
 import frMessages from "../../messages/fr.json";
 import enMessages from "../../messages/en.json";
+import deMessages from "../../messages/de.json";
 import {
   CombatReferenceTable,
   ExpeditionReferenceTable,
@@ -458,7 +459,9 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(
       within(combatSecondary).getByRole("row", { name: /Coût de fusion/ }),
     ).toBeInTheDocument();
-    expect(within(combatSecondary).queryByText("Fusion")).not.toBeInTheDocument();
+    expect(
+      within(combatSecondary).queryByText("Fusion"),
+    ).not.toBeInTheDocument();
     expect(
       within(combatSecondary).getByRole("row", { name: /Gemmes/ }),
     ).toBeInTheDocument();
@@ -492,6 +495,63 @@ describe("ReferenceTables — Bloc 39: tile grid", () => {
     expect(
       within(combatSecondary).queryByText("Coût de fusion"),
     ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Bloc 127 (PR 2/3) : le non-repli de `secondaryLabel`, à N langues.
+   *
+   * Ce libellé est une **surcharge** d'un défaut déjà traduit dans les cinq
+   * langues. Lire la langue du visiteur et elle seule est donc délibéré, et
+   * c'est ce que le Bloc 76/B a corrigé après la revue Codex de la PR #94 :
+   * montrer la surcharge d'une autre langue ferait lire un texte saisi pour
+   * quelqu'un d'autre, alors que sa propre traduction attend.
+   *
+   * Ce test échoue si `localizedText` (repli anglais puis français) remplace un
+   * jour la lecture stricte : un visiteur allemand y lirait la surcharge
+   * anglaise au lieu de « Verschmelzung ».
+   */
+  it("Bloc127: an English-only label override never reaches a German visitor", () => {
+    render(
+      <NextIntlClientProvider locale="de" messages={deMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: defaultCombatGemSlotsBase,
+            skydust: defaultCombatSkydustBase,
+            labels: { mergeCost: { en: "Merge cost" } },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const section = document.querySelector(".calculator-card:last-of-type")!;
+    expect(section.textContent).not.toContain("Merge cost");
+    // …et le libellé allemand par défaut est bien celui qui s'affiche.
+    expect(section.textContent).toContain(
+      deMessages["combat-equipment"].columns["row-merge"],
+    );
+  });
+
+  it("Bloc127: a German override is what a German visitor reads", () => {
+    render(
+      <NextIntlClientProvider locale="de" messages={deMessages}>
+        <CombatReferenceTable
+          rows={combatReferenceRows}
+          secondaryBase={{
+            mergeCost: defaultCombatMergeCostBase,
+            gemSlots: defaultCombatGemSlotsBase,
+            skydust: defaultCombatSkydustBase,
+            // Ce que la paire FR/EN ne savait pas stocker : chaque langue a
+            // désormais sa place.
+            labels: { mergeCost: { fr: "Coût de fusion", de: "Verschmelzen" } },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(
+      screen.getByRole("row", { name: /Verschmelzen/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Coût de fusion")).not.toBeInTheDocument();
   });
 
   it("PR #57 review (kept): formats a rarity table value ≥1000 as compact k/M/G/T/P, not the raw number", () => {
@@ -529,9 +589,9 @@ describe("Bloc 68/M: mobile filter grids (family 2-col, rarity 3+2) on Combat/Ex
         <CombatReferenceTable rows={combatReferenceRows} />
       </NextIntlClientProvider>,
     );
-    const familyGroup = screen.getByTestId("filter-family-Attaque").closest(
-      ".family-buttons",
-    )!;
+    const familyGroup = screen
+      .getByTestId("filter-family-Attaque")
+      .closest(".family-buttons")!;
     expect(familyGroup.className).toContain("family-buttons");
     expect(familyGroup.className).toContain("reference-filter-grid-2");
   });
@@ -555,9 +615,9 @@ describe("Bloc 68/M: mobile filter grids (family 2-col, rarity 3+2) on Combat/Ex
         <ExpeditionReferenceTable rows={expeditionReferenceRows} />
       </NextIntlClientProvider>,
     );
-    const familyGroup = screen.getByTestId("filter-family-Or").closest(
-      ".family-buttons",
-    )!;
+    const familyGroup = screen
+      .getByTestId("filter-family-Or")
+      .closest(".family-buttons")!;
     expect(familyGroup.className).toContain("family-buttons");
     expect(familyGroup.className).toContain("reference-filter-grid-2");
   });

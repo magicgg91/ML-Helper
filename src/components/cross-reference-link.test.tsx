@@ -15,7 +15,6 @@ describe("CrossReferenceLink — Bloc 54/B", () => {
         href="/referentiels/gems"
         title="Gemmes"
         image="/referentials/referential-gems.webp"
-        fallbackImage="/category-skills.svg"
         label="Aller plus loin en vérifiant le référentiel"
       />,
     );

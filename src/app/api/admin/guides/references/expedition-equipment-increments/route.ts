@@ -1,3 +1,4 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { referenceKeys } from "@/lib/reference-equipment-server";
@@ -21,12 +22,13 @@ export async function PUT(request: Request) {
   const increments = parseExpeditionStarIncrements(raw[0]);
   await saveReferenceTable({
     key: referenceKeys.expeditionIncrements,
-    target: "les incréments par étoile des Équipements d’Expédition",
+    target: "expedition-equipment-increments",
     columns: [...expeditionStatKeys],
     rows: [increments],
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
   });
+  await revalidateContent("references", "expedition-equipment");
   return NextResponse.json(increments);
 }

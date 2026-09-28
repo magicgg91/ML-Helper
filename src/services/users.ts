@@ -2,7 +2,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { isAdminRole } from "@/auth/roles";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 
 async function actorName(id: string) {
   return (
@@ -39,10 +39,8 @@ export async function createAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(
-          actor,
-          "create",
-          `l’utilisateur ${user.username}`,
+        ...auditMessageColumns(
+          auditMessage("user.create", { actor, username: user.username }),
         ),
         action: "create",
         entityType: "user",
@@ -72,6 +70,15 @@ export async function updateAdminUser(
   }
   const actor = await actorName(actorId);
   const before = await prisma.user.findUniqueOrThrow({ where: { id } });
+  // Bloc 119: nobody changes their own role. Locking yourself out is the
+  // obvious risk, but the sharper one is that only a Super Admin holds
+  // users.manage: the account demoting itself would be taking the last hand
+  // that can hand the role back — and it cannot delete itself either, so the
+  // site would be left with an administrator nobody can promote. Sending the
+  // role it already has is not a change and stays allowed, so a form that
+  // posts every field still works.
+  if (actorId === id && data.role !== undefined && data.role !== before.role)
+    throw new Error("cannot_change_own_role");
   const passwordHash = data.password
     ? await hash(data.password, 12)
     : undefined;
@@ -96,7 +103,9 @@ export async function updateAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(actor, action, `l’utilisateur ${user.username}`),
+        ...auditMessageColumns(
+          auditMessage(`user.${action}`, { actor, username: user.username }),
+        ),
         action,
         entityType: "user",
         entityId: id,
@@ -127,10 +136,8 @@ export async function deleteAdminUser(
       data: {
         userId: actorId,
         actorRole,
-        message: auditMessage(
-          actor,
-          "delete",
-          `l’utilisateur ${user.username}`,
+        ...auditMessageColumns(
+          auditMessage("user.delete", { actor, username: user.username }),
         ),
         action: "delete",
         entityType: "user",

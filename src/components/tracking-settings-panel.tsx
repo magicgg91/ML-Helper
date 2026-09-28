@@ -1,8 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { AdminButton } from "./admin-button";
+import { useSectionDirty } from "./admin-collapsible-section";
+import { useUnsavedWarning } from "./use-unsaved-warning";
 
 // Bloc 100/A: the visit-tracking script URL. Deliberately generic — the field
 // takes any script URL, and nothing in the site knows which analytics tool is
@@ -19,10 +22,28 @@ export function TrackingSettingsPanel({
   websiteId: string;
 }) {
   const t = useTranslations("admin.config.tracking");
+  const editor = useTranslations("admin.editor");
+  const router = useRouter();
   const [value, setValue] = useState(url);
   const [id, setId] = useState(websiteId);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+
+  /**
+   * Bloc 136 : ce que ce panneau tient et que le serveur n'a pas encore.
+   *
+   * Comparé à ce qui est enregistré, et non aux valeurs reçues au chargement
+   * : la route normalise ce qu'elle stocke (Bloc 100/A), et le panneau adopte
+   * sa réponse. Sans cette copie, une URL réécrite à l'enregistrement
+   * laisserait le panneau « modifié » pour toujours.
+   *
+   * Deux usages, la même mesure — la pastille quand la section est repliée,
+   * et la question posée en quittant la page.
+   */
+  const [saved, setSaved] = useState({ url, websiteId });
+  const dirty = value !== saved.url || id !== saved.websiteId;
+  useSectionDirty(dirty);
+  useUnsavedWarning(dirty, editor("leave-warning"));
 
   async function save() {
     setSaving(true);
@@ -51,13 +72,18 @@ export function TrackingSettingsPanel({
         setMessage(t("save-error", { status: response.status }));
         return;
       }
-      const saved = (await response.json()) as {
+      const stored = (await response.json()) as {
         url: string;
         websiteId: string;
       };
-      setValue(saved.url);
-      setId(saved.websiteId);
-      setMessage(saved.url ? t("saved") : t("cleared"));
+      setValue(stored.url);
+      setId(stored.websiteId);
+      setSaved(stored);
+      setMessage(stored.url ? t("saved") : t("cleared"));
+      // Revue Codex (PR #156), même raison que pour les langues : la pastille
+      // « Script actif » / « Aucun script » est calculée sur le serveur, et
+      // resterait sur son ancienne valeur une fois la section repliée.
+      router.refresh();
     } catch {
       setMessage(t("server-error"));
     } finally {
@@ -66,51 +92,53 @@ export function TrackingSettingsPanel({
   }
 
   return (
-    <div className="max-w-2xl">
-      <label className="block text-sm font-medium" htmlFor="tracking-url">
-        {t("label")}
-      </label>
-      <input
-        id="tracking-url"
-        name="tracking-url"
-        type="url"
-        inputMode="url"
-        className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-        placeholder={t("placeholder")}
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-      />
-      <p className="mt-2 text-sm text-muted-foreground">{t("hint")}</p>
-
-      <label
-        className="mt-4 block text-sm font-medium"
-        htmlFor="tracking-website-id"
-      >
-        {t("website-id-label")}
-      </label>
-      <input
-        id="tracking-website-id"
-        name="tracking-website-id"
-        type="text"
-        className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-        placeholder={t("website-id-placeholder")}
-        value={id}
-        onChange={(event) => setId(event.target.value)}
-      />
-      <p className="mt-2 text-sm text-muted-foreground">
-        {t("website-id-hint")}
-      </p>
-
-      <div className="mt-4 flex items-center gap-2">
-        <Button onClick={save} disabled={saving}>
-          {t("save")}
-        </Button>
+    <div className="flex max-w-2xl flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-semibold" htmlFor="tracking-url">
+          {t("label")}
+        </label>
+        {/* Bloc 119: a script URL and a site identifier are code, not prose —
+            the two places besides times and language codes where the mono
+            face earns its keep (§1). */}
+        <input
+          id="tracking-url"
+          name="tracking-url"
+          type="url"
+          inputMode="url"
+          className="admin-control admin-focus h-[var(--admin-control-h)] rounded-admin-control border border-admin-card-border bg-admin-card px-3 font-admin-mono text-sm text-admin-text"
+          placeholder={t("placeholder")}
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+        />
+        <p className="text-xs text-admin-dim">{t("hint")}</p>
       </div>
-      {message && (
-        <p className="mt-2 text-sm text-muted-foreground" role="status">
-          {message}
-        </p>
-      )}
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-semibold" htmlFor="tracking-website-id">
+          {t("website-id-label")}
+        </label>
+        <input
+          id="tracking-website-id"
+          name="tracking-website-id"
+          type="text"
+          className="admin-control admin-focus h-[var(--admin-control-h)] rounded-admin-control border border-admin-card-border bg-admin-card px-3 font-admin-mono text-sm text-admin-text"
+          placeholder={t("website-id-placeholder")}
+          value={id}
+          onChange={(event) => setId(event.target.value)}
+        />
+        <p className="text-xs text-admin-dim">{t("website-id-hint")}</p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <AdminButton variant="primary" onClick={save} disabled={saving}>
+          {t("save")}
+        </AdminButton>
+        {message && (
+          <p className="text-sm text-admin-dim" role="status">
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

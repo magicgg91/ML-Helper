@@ -24,6 +24,38 @@ function renderSearch() {
 describe("SiteSearch", () => {
   afterEach(cleanup);
 
+  // Bloc 129 §2.1 : « / » place le focus dans la recherche — sauf si on est
+  // déjà en train de saisir quelque chose, sinon le raccourci volerait la
+  // touche à qui écrit une barre oblique dans un champ.
+  describe("le raccourci /", () => {
+    const search = () =>
+      screen.getByRole("searchbox", { name: "Rechercher sur le site" });
+
+    it("amène le focus dans le champ", () => {
+      renderSearch();
+      expect(search()).not.toHaveFocus();
+      fireEvent.keyDown(document.body, { key: "/" });
+      expect(search()).toHaveFocus();
+    });
+
+    it("laisse la touche à qui est en train d'écrire ailleurs", () => {
+      renderSearch();
+      const other = document.createElement("textarea");
+      document.body.append(other);
+      other.focus();
+      fireEvent.keyDown(other, { key: "/" });
+      expect(search()).not.toHaveFocus();
+      expect(other).toHaveFocus();
+      other.remove();
+    });
+
+    it("ne se déclenche pas sur un raccourci du navigateur", () => {
+      renderSearch();
+      fireEvent.keyDown(document.body, { key: "/", ctrlKey: true });
+      expect(search()).not.toHaveFocus();
+    });
+  });
+
   it("exposes an accessible search box, closed by default", () => {
     renderSearch();
     expect(

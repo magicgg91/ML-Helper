@@ -34,7 +34,19 @@ export function formatPercent(value: number | null, locale: string) {
 export function formatGameNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100;
   const absolute = Math.abs(rounded);
+  // Which suffixes exist is a product rule, not an implementation detail:
+  // AGENTS.md lists the scale under "Règles produit non négociables" and the
+  // cahier des charges §3.3 tables its thresholds. E/Z/Y were added there on
+  // 18/09/2026, by the project owner, once Bloc 63 extended the Progression
+  // reference to level 200 — Légende fields 3.5e20 troops at that level and
+  // reaching it costs 1.8e24 XP, which a scale capped at P printed as
+  // "348148.01P" and "1818669406.06P": a compact format that had stopped
+  // compacting. Do not extend this list without revising those two documents
+  // first; a test pins the code to what they say.
   const units = [
+    { threshold: 1e24, suffix: "Y" },
+    { threshold: 1e21, suffix: "Z" },
+    { threshold: 1e18, suffix: "E" },
     { threshold: 1e15, suffix: "P" },
     { threshold: 1e12, suffix: "T" },
     { threshold: 1e9, suffix: "G" },

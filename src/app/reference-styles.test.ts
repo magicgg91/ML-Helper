@@ -47,33 +47,47 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("I: halves .home-tools' own top margin, leaving .home-guides' untouched", () => {
+  // Bloc 129 §3.1 : les trois sections de l'accueil ne règlent plus leur
+  // marge chacune de leur côté (le Bloc 38/I avait dû diviser par deux
+  // celle d'Outils parce qu'elle suivait un bloc d'intro, les deux autres
+  // gardant la leur). Elles partagent un seul espacement.
+  //
+  // Bloc 134 : ce n'est plus une marge sur .home-section mais le `gap` de
+  // la colonne. La marge s'ajoutait au rembourrage du hero — deux
+  // mécanismes pour un seul écart, 141 px de vide entre les deux. Ce que ce
+  // test tient reste l'intention du §3.1 : aucune section ne reprend un
+  // espacement pour elle seule. Le mécanisme, lui, est tenu en détail par
+  // home-spacing-styles.test.ts.
+  it("Bloc129/§3.1, Bloc134: une seule règle d'espacement pour les trois sections", () => {
     expect(css).toMatch(
-      /\.home-tools\s*{\s*margin-top: clamp\(1\.5rem, 4vw, 3\.5rem\);\s*}/,
+      /\.public-main\.home-page\s*{[^}]*gap: var\(--space-section\);/,
     );
-    expect(css).toMatch(
-      /\.home-guides\s*{\s*margin-top: clamp\(3rem, 8vw, 7rem\);\s*}/,
-    );
+    for (const section of ["home-tools", "home-references", "home-guides"])
+      expect(css, section).not.toMatch(
+        new RegExp(`\\.${section}\\s*{[^}]*margin`),
+      );
   });
 
-  it("L: excludes .tools-page-title/.reference-page-title from the generic hero-title rule that was overriding their own font-size clamp", () => {
-    const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.tools-page-title)");
-    expect(match![1]).toContain(":not(.reference-page-title)");
-  });
-
-  // Bloc 53/D: /guides and /referentiels get the same smaller-title
-  // treatment, added to the same exclusion list above.
-  it("Bloc53/D: also excludes .guides-page-title/.referentiels-page-title from the generic hero-title rule", () => {
-    const match = css.match(
-      /\.hero h1,\s*\n\.public-main\s*> h1([^,{]*),\s*\n\.guide-shell h1\s*{/,
-    );
-    expect(match).not.toBeNull();
-    expect(match![1]).toContain(":not(.guides-page-title)");
-    expect(match![1]).toContain(":not(.referentiels-page-title)");
+  // Bloc 129 : les deux tests qui vivaient ici vérifiaient que la règle
+  // générique du titre de hero excluait .tools-page-title,
+  // .reference-page-title, .guides-page-title et .referentiels-page-title —
+  // quatre classes posées par les Blocs 33/35/53 pour donner à ces titres
+  // une taille plus petite que le clamp géant du hero. Aucune n'existe plus :
+  // les quatre pages d'index et les pages référentiel passent par l'en-tête
+  // de page commun (§2), qui a sa propre taille (§1.1). Ce qui reste à
+  // vérifier, c'est qu'on n'a pas laissé les exclusions derrière les classes.
+  it("Bloc129: ni les classes de titre d'index, ni les exclusions qui les visaient", () => {
+    // Sur les sélecteurs, pas sur le texte : les commentaires ont le droit
+    // de raconter d'où l'on vient.
+    for (const name of [
+      "tools-page-title",
+      "reference-page-title",
+      "guides-page-title",
+      "referentiels-page-title",
+    ]) {
+      expect(css).not.toMatch(new RegExp(`\\.${name}[,\\s]*{`));
+      expect(css).not.toContain(`:not(.${name})`);
+    }
   });
 
   it("M: gives Level Up/Templiers/Gemmes' shared table class alternating row colors", () => {
@@ -88,47 +102,90 @@ describe("Bloc 38 public reference/homepage styles", () => {
     );
   });
 
-  it("Bloc 50 Group3: caps the homepage guides teaser grid at 3 columns per row, same computed-floor technique as .tool-category-grid", () => {
+  // Bloc 129 §3.1 : la grille de six cartes de guides laisse la place à la
+  // carte « Commence ici » et à une liste à côté d'elle — donc deux
+  // colonnes, pas une grille de cartes, et la liste prend toute la largeur
+  // quand aucun guide n'est mis en avant.
+  it("Bloc129/§3.1: section Apprendre en deux colonnes, carte puis liste", () => {
     expect(css).toMatch(
-      /\.home-guides-grid\s*{\s*grid-template-columns: repeat\(\s*auto-fit,\s*minmax\(max\(18rem, calc\(\(100% - 2 \* 0\.65rem\) \/ 3\)\), 1fr\)\s*\);/,
+      /\.home-learn\s*{\s*display: grid;\s*grid-template-columns: 30rem minmax\(0, 1fr\);/,
     );
     expect(css).toMatch(
-      /@media \(max-width: 42rem\)\s*{\s*\.home-guides-grid\s*{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+      /\.home-learn\[data-featured="no"\]\s*{\s*grid-template-columns: minmax\(0, 1fr\);\s*}/,
+    );
+    expect(css).not.toMatch(/\.home-guides-grid/);
+  });
+
+  // §3.3 : les sept référentiels tiennent sur une seule rangée.
+  // Bloc 132 §5 : la rangée de sept référentiels de l'accueil (Bloc 129
+  // §3.3) a disparu avec son composant. La section montre quatre cartes,
+  // celles de la grille partagée — d'où le test de la grille, pas d'une
+  // rangée qui lui était propre.
+  it("Bloc132/§5: n'a plus de rangée de référentiels propre à l'accueil", () => {
+    expect(css).not.toMatch(/\.home-reference-row/);
+    expect(css).not.toMatch(/\.home-reference-image/);
+    expect(css).not.toMatch(/\.home-reference-label/);
+  });
+
+  /**
+   * Bloc 132 §5 : sur mobile, « Explorer les outils » prend toute la
+   * largeur et les deux actions secondaires se partagent la ligne suivante.
+   * Une grille le garantit ; un flex-wrap ne garantissait ni la coupure ni
+   * l'égalité des deux.
+   */
+  it("Bloc132/§5: range les trois actions du hero 1 + 2 sur mobile", () => {
+    const mobile = css.match(
+      /@media \(max-width: 34rem\) {\n  \.home-hero-actions {([\s\S]*?)\n  }/,
+    )?.[1];
+    expect(mobile).toMatch(/display: grid;/);
+    expect(mobile).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+    expect(css).toMatch(
+      /\.home-hero-actions > :first-child {\n\s*grid-column: 1 \/ -1;/,
     );
   });
 
-  // Bloc 68/D: the homepage reuses the Outils/Référentiels/Guides section
-  // titles verbatim from /tools, /referentiels and /guides — but those 3
-  // pages render theirs as a real <h1>, which picks up the gradient
-  // clipped-text violet from the "Prototype visual language" h1 rule
-  // (~line 1471), while the homepage rendered the same text as a plain
-  // var(--text) <h2> that never inherited it.
-  it("Bloc68/D: gives the homepage's Outils/Référentiels/Guides section titles the same gradient violet clip as their h1 counterparts", () => {
-    const rule = css.match(
-      /\.home-tools h2,\n\.home-references h2,\n\.home-guides h2\s*{([\s\S]*?)\n}/,
-    )?.[1];
-    expect(rule).toBeDefined();
-    expect(rule).toMatch(
-      /background: linear-gradient\(110deg, var\(--accent-strong\), var\(--accent\)\);/,
+  // §5 : sur l'accueil la carte se réduit à son image et son nom ; la
+  // description reste sur l'index, où elle aide à choisir.
+  it("Bloc132/§5: retire la description des cartes de l'accueil sur mobile", () => {
+    expect(css).toMatch(
+      /\.home-references \.reference-card-description {\n\s*display: none;/,
     );
-    expect(rule).toMatch(/color: transparent;/);
-    expect(rule).toMatch(/background-clip: text;/);
-    expect(rule).not.toMatch(/color: var\(--text\);/);
+  });
+
+  it("Bloc129/§1.1: les titres de section de l'accueil sont en accent uni, sans dégradé", () => {
+    const rule = css.match(/\.home-section-head h2\s*{([\s\S]*?)\n}/)?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/color: var\(--accent\);/);
+    expect(rule).not.toMatch(/linear-gradient/);
+    expect(rule).not.toMatch(/background-clip: text;/);
   });
 
   it("P: removes the browser increment/decrement arrows on every admin numeric field", () => {
+    // Bloc 119: the selector lost its `main` prefix — the admin's <main> is
+    // the shell's, and each screen's container below it is a div.
     expect(css).toMatch(
-      /main\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
+      /\.admin-main input\[type="number"\]\s*{\s*appearance: textfield;\s*}/,
     );
     expect(css).toMatch(
-      /main\.admin-main input\[type="number"\]::-webkit-inner-spin-button,\s*\nmain\.admin-main input\[type="number"\]::-webkit-outer-spin-button\s*{\s*appearance: none;/,
+      /\.admin-main input\[type="number"\]::-webkit-inner-spin-button,\s*\n\.admin-main input\[type="number"\]::-webkit-outer-spin-button\s*{\s*appearance: none;/,
     );
   });
 
-  it("K: /tools' title and intro sentence are word-for-word the homepage's tools section", () => {
+  // Bloc 129 §3.2 : /tools ne reprend plus mot pour mot la section Outils de
+  // l'accueil. Le Bloc 38/K les avait alignés pour que la page se lise comme
+  // le même point d'entrée atteint autrement ; le brief leur donne chacun son
+  // rôle — « Décide avec les bons chiffres » reste le titre de la section sur
+  // l'accueil, et /tools s'appelle « Outils » avec sa propre introduction.
+  it("Bloc129/§3.2: /tools a son propre titre et sa propre introduction", () => {
     for (const messages of [frMessages, enMessages]) {
-      expect(messages.tools.title).toBe(messages.Home.toolsTitle);
-      expect(messages.tools.subtitle).toBe(messages.Home.toolsDescription);
+      expect(messages.tools["index-title"]).toBeTruthy();
+      expect(messages.tools["index-intro"]).toBeTruthy();
+      expect(messages.tools["index-title"]).not.toBe(messages.Home.toolsTitle);
+      expect(messages.tools["index-intro"]).not.toBe(
+        messages.Home.toolsDescription,
+      );
     }
   });
 
@@ -214,9 +271,11 @@ describe("Bloc 41: referentiel fixes", () => {
     expect(css).not.toMatch(/\.reference-tile-block\s*{\s*flex:/);
   });
 
-  it("C: adds breathing room under the référentiels switcher specifically, not the shared category-nav (so /tools' banner is untouched)", () => {
+  // Bloc 132 §8 : l'écart sous le bandeau ne lui est plus propre — il n'y
+  // a qu'un bandeau, et il l'emporte avec lui des deux côtés.
+  it("C, Bloc132 §8: détache le bandeau de ce qui le suit", () => {
     expect(css).toMatch(
-      /\.reference-switcher\s*{\s*margin-bottom: 1\.5rem;\s*}/,
+      /\.selection-banner\s*{[\s\S]*?margin: 1\.5rem auto 0;/,
     );
   });
 
@@ -284,11 +343,12 @@ describe("Bloc 53: Boutique admin columns + intro pages + cross-links", () => {
     expect(rule).toMatch(/min-width: 0;/);
   });
 
-  it("D: /guides and /referentiels get their own smaller title class, excluded from the generic hero-title rule", () => {
-    expect(css).toMatch(
-      /\.guides-page-title,\s*\n\.referentiels-page-title\s*{/,
-    );
-  });
+  // Bloc 129 : /guides et /referentiels n'ont plus de classe de titre à eux.
+  // Le Bloc 53/D la leur avait donnée pour qu'ils reprennent les titres des
+  // sections de l'accueil, plus petits que le clamp du hero ; le brief leur
+  // rend leur propre titre, rendu par l'en-tête de page commun (§2), qui a
+  // sa taille à lui. Le test qui gardait cette classe est remplacé, plus
+  // haut, par celui qui vérifie qu'elle n'a pas survécu à son usage.
 
   it("E: the cross-reference banner/mini-card CSS replaces the old plain-text .reference-cross-link rule", () => {
     expect(css).not.toMatch(/\.reference-cross-link\s*{/);
@@ -383,7 +443,9 @@ describe("Bloc 68/B: Boutique tile cost badge moves under the name, mobile only"
   // top-right via space-between — the mobile override above must not leak
   // into the base (non-media-query) rule.
   it("leaves the desktop rule untouched: still a row, still space-between", () => {
-    const heading = css.match(/\.consumable-tile-heading\s*{([\s\S]*?)\n}/)?.[1];
+    const heading = css.match(
+      /\.consumable-tile-heading\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(heading).toBeDefined();
     expect(heading).toMatch(/justify-content: space-between/);
     expect(heading).not.toMatch(/flex-direction/);
@@ -481,7 +543,9 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
   it("B: lays the Templiers tiles out 3 per row, dropping to 1 column on mobile, images at 6rem", () => {
     const grid = css.match(/\.templars-tile-grid\s*{([\s\S]*?)\n}/)?.[1];
     expect(grid).toBeDefined();
-    expect(grid).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+    expect(grid).toMatch(
+      /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+    );
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-tile-grid\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -499,7 +563,9 @@ describe("Bloc 66: Templiers presentation tiles, tile-title harmonization", () =
       "gems-tile-title",
       "templars-tile-title",
     ]) {
-      const rule = css.match(new RegExp(`\\.${selector}\\s*{([\\s\\S]*?)\\n}`))?.[1];
+      const rule = css.match(
+        new RegExp(`\\.${selector}\\s*{([\\s\\S]*?)\\n}`),
+      )?.[1];
       expect(rule, selector).toBeDefined();
       expect(rule, selector).toMatch(/font-size: 1\.1rem;/);
     }
@@ -525,7 +591,9 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
       /@media \(max-width: 900px\) {\s*\n\s*\.reference-filter-grid-rarity\s*{([\s\S]*?)\n {2}}/,
     )?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(6, minmax\(0, 1fr\)\);/,
+    );
     expect(css).toMatch(
       /\.reference-filter-grid-rarity button:nth-child\(1\),\s*\n\s*\.reference-filter-grid-rarity button:nth-child\(2\)\s*{\s*\n\s*grid-column: span 3;/,
     );
@@ -540,13 +608,19 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     );
   });
 
-  // H+I: Player Settings' .settings-grid sections (equipment/points/
-  // templars/clan-temple) go 2-column on mobile, and within the primary
-  // fields grid specifically, the first child (the league LeagueButtons
-  // group, since F) spans the full row so Level/VP share the row below it.
-  it("H+I: Player Settings' .settings-grid sections go 2-column on mobile, with the primary grid's first child (league) spanning the full row", () => {
-    expect(css).toMatch(
-      /@media \(max-width: 900px\) {\s*\n\s*\.settings-grid\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);\s*\n\s*}\s*\n\s*\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+  // Bloc 123 : les quatre sections repliables ont disparu, et avec elles la
+  // grille qu'elles partageaient. Ce qui reste à tenir sur mobile est la
+  // rangée générale — Niveau et VP côte à côte, le sélecteur d'échelon sur sa
+  // propre rangée pleine largeur.
+  it("Bloc123: on mobile, Level and VP share a row and the rung picker takes one of its own", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).toMatch(
+      /\.player-general\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+    expect(mediaBlock).toMatch(
+      /\.player-rung-field\s*{\s*\n\s*grid-column: 1 \/ -1;/,
     );
   });
 
@@ -556,18 +630,15 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // NumberSteppers end up close to the same width. Bloc 69/D: Level's own
   // share is reduced a further 10% (5fr -> 4.5fr), handed to VP (7fr ->
   // 7.5fr).
-  it("gives the mobile Level/VP row an uneven column split and a narrower VP unit select, so both NumberSteppers end up close in width", () => {
+  it("Bloc123: shrinks the VP unit select on mobile, so the field keeps its place", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
+      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
     );
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
-    );
-    expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
+      /\.player-general \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
     );
   });
 
@@ -576,12 +647,12 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // a 5:2:3 column grid (50%/20%/30%), with VP's own unit-input split 2:1
   // internally so its NumberStepper lands at 20% of the row and the unit
   // select at 10%.
-  it("gives Player Settings' primary grid a 5:2:3 desktop column split (League/Level/VP), not the old 4-equal-columns-with-League-spanning", () => {
+  it("Bloc123: keeps the 5:2:3 desktop split on the general row (rung/level/VP)", () => {
     const desktopRuleIndex = css.indexOf(
-      ".settings-grid-primary {\n  grid-template-columns: 5fr 2fr 3fr;\n}",
+      "  grid-template-columns: 5fr 2fr 3fr;",
     );
     const desktopUnitInputIndex = css.indexOf(
-      ".settings-grid-primary .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
+      ".player-general .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
     );
     const mediaQueryIndex = css.indexOf("@media (max-width: 900px) {");
     expect(desktopRuleIndex).toBeGreaterThan(-1);
@@ -590,16 +661,13 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
     // unconditionally (desktop included), not just under it.
     expect(desktopRuleIndex).toBeLessThan(mediaQueryIndex);
     expect(desktopUnitInputIndex).toBeLessThan(mediaQueryIndex);
-    // The old desktop-wide full-span rule for League is gone — only the
-    // mobile-scoped one (inside the media query) should remain.
-    expect(css).not.toMatch(
-      /\.settings-grid-primary {\s*\n\s*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/,
-    );
+    // Et la grille des anciennes sections repliables n'est plus nulle part.
+    expect(css).not.toMatch(/\.settings-grid/);
   });
 
-  it("gives the league field a visible title matching the Level/VP fields' own label style", () => {
+  it("gives the rung field a visible title matching the Level/VP fields' own label style", () => {
     expect(css).toMatch(
-      /\.settings-grid-league-label\s*{\s*\n\s*color: var\(--muted\);\s*\n\s*font-size: 0\.78rem;\s*\n\s*font-weight: 700;/,
+      /\.player-field-label\s*{\s*\n\s*color: var\(--muted\);\s*\n\s*font-size: 0\.78rem;\s*\n\s*font-weight: 700;/,
     );
   });
 });
@@ -629,7 +697,9 @@ describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
   it("gives .templars-cost-fields 3 equal columns on desktop, 1 on mobile", () => {
     const rule = css.match(/\.templars-cost-fields\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    );
     expect(css).toMatch(
       /@media \(max-width: 900px\) {\s*\n\s*\.templars-cost-fields\s*{\s*\n\s*grid-template-columns: 1fr;/,
     );
@@ -642,8 +712,11 @@ describe("Bloc 68/C: Templiers calculator fields+cost merge", () => {
 // (.category-nav on /tools, .reference-switcher on /referentiels), so a
 // flex + align-items:center fix here covers both at once.
 describe("Bloc 69/A: banner buttons center their content vertically", () => {
-  it("makes .category-btn a flex container centered on both axes, shared by the /tools and /referentiels banners", () => {
-    const rule = css.match(/\.category-btn\s*{([\s\S]*?)\n}/)?.[1];
+  // Bloc 132 §8 : l'onglet du bandeau partagé a pris la place de
+  // .category-btn et de .reference-tab, mais le centrage reste le même
+  // besoin — un libellé sur deux lignes ne doit pas décaler ses voisins.
+  it("makes the shared banner tab a flex container centered on both axes", () => {
+    const rule = css.match(/\.selection-tab\s*{([\s\S]*?)\n}/)?.[1];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/display: flex;/);
     expect(rule).toMatch(/align-items: center;/);
@@ -657,7 +730,9 @@ describe("Bloc 69/A: banner buttons center their content vertically", () => {
 // buttons, and full-width numeric fields.
 describe("Bloc 69/G: Ranking mobile-only redesign", () => {
   it("stacks each ranking field's label above its control on mobile only, leaving the desktop inline-label rule untouched", () => {
-    const desktopRule = css.match(/\.ranking-inline-field\s*{([\s\S]*?)\n}/)?.[1];
+    const desktopRule = css.match(
+      /\.ranking-inline-field\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(desktopRule).toBeDefined();
     expect(desktopRule).toMatch(/align-items: center;/);
     expect(desktopRule).not.toMatch(/flex-direction: column;/);
@@ -701,7 +776,9 @@ describe("Bloc 71/B: Classement desktop league field joins the 50%-width pattern
     // .ranking-inline-field itself must still exist for the 2 numeric
     // fields (Bloc 64/G, tested in Bloc 69/G above) — only the league
     // field's own rule declares the 50% width independently.
-    const leagueRule = css.match(/\.ranking-league-field\s*{([\s\S]*?)\n}/)?.[1];
+    const leagueRule = css.match(
+      /\.ranking-league-field\s*{([\s\S]*?)\n}/,
+    )?.[1];
     expect(leagueRule).toBeDefined();
     expect(leagueRule).not.toMatch(/display: flex;/);
   });
@@ -828,30 +905,30 @@ describe("Bloc 71/C: league button text is never bold", () => {
 // 68's "25% each for Level/VP" (which didn't put League on that row at
 // all) — a 50/20/20/10 split (League/Level/VP-number/VP-unit).
 describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)", () => {
-  it("splits the desktop row 5:2:3 (League 50%, Level 20%, VP-as-a-whole 30%)", () => {
-    expect(css).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: 5fr 2fr 3fr;/,
-    );
+  it("splits the desktop row 5:2:3 (rung 50%, Level 20%, VP-as-a-whole 30%)", () => {
+    expect(css).toMatch(/grid-template-columns: 5fr 2fr 3fr;/);
   });
 
   it("splits VP's own unit-input 2:1, landing its NumberStepper at 20% of the row and the unit select at 10%", () => {
     expect(css).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
+      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
     );
   });
 
-  it("keeps the mobile layout (Blocs 68/H+I, 69/D) completely unchanged", () => {
+  it("Bloc123: gives the mobile row the tap target the brief asks for", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
+    // Bloc 139/E : le sélecteur suit la classe qui dispose réellement le
+    // champ — `.num-stepper`, et non `.number-stepper`, dont les colonnes de
+    // grille sont inertes depuis qu'une règle postérieure repasse le
+    // conteneur en flex (mesuré au navigateur).
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary > :first-child\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+      /\.player-general \.num-stepper input,\s*\n\s*\.player-general \.num-stepper button\s*{\s*\n\s*min-height: var\(--tap-target\);/,
     );
+    // Et les boutons des deux champs maigrissent ensemble.
     expect(mediaBlock).toMatch(
-      /\.settings-grid-primary\s*{\s*\n\s*grid-template-columns: minmax\(0, 4\.5fr\) minmax\(0, 7\.5fr\);/,
-    );
-    expect(mediaBlock).toMatch(
-      /\.settings-grid-primary \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+      /\.player-general \.num-stepper button\s*{\s*\n\s*flex: 0 0 2rem;/,
     );
   });
 });
@@ -927,17 +1004,48 @@ describe("Bloc 72/D: Expedition equipment simulator's 5 family filters, 3+2 mobi
 // leaving a large dead gap after the last button — both fixed with the
 // same no-truncation equal-width technique as Bloc 69/E.
 describe("Bloc 73/A: Player Settings league buttons fill their 50% column", () => {
-  it("grows each button to share the column, without shrinking below its own label", () => {
+  /**
+   * Bloc 139/A : la rangée d'échelons n'est plus une ligne flex qui déborde
+   * mais une grille à deux rangées, dont le nombre de colonnes vient du
+   * composant — dix échelons débordaient et coupaient le dernier bouton.
+   */
+  it("lays the rungs out on two rows, whatever the ladder holds", () => {
     expect(css).toMatch(
-      /\.settings-grid-league-field \.family-buttons button\s*{\s*\n\s*flex: 1 1 0;\s*\n\s*min-width: max-content;/,
+      /\.player-rung-field \.player-rung-buttons\s*{\s*\n\s*display: grid;\s*\n\s*grid-template-columns: repeat\(var\(--rung-columns, 5\), minmax\(0, 1fr\)\);/,
     );
+    // Hors de tout point de rupture : le desktop débordait autant que le
+    // mobile, c'est la même grille qui sert aux deux.
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    expect(mediaBlock).not.toMatch(
+      /grid-template-columns: repeat\(var\(--rung-columns/,
+    );
+  });
+
+  /**
+   * Revue Codex (PR #165) : la colonne est bornée à `1fr`, donc un nom libre
+   * d'un seul tenant — que `white-space: normal` ne sait pas couper — sortait
+   * de son bouton. Rien ne borne la longueur d'un nom libre, ni l'écran
+   * d'édition ni la route. Mesuré en e2e (« unbreakable label ») ; ici, la
+   * règle qui le permet.
+   */
+  it("lets an unbreakable rung name break anywhere, since its column cannot grow", () => {
+    const rule = css.match(
+      /\.player-rung-field \.player-rung-buttons button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/overflow-wrap: anywhere;/);
+    // `break-word` ne suffirait pas : il ne réduit pas la largeur minimale de
+    // la colonne, donc la grille repartirait plus large que son conteneur.
+    expect(rule).not.toMatch(/overflow-wrap: break-word;/);
   });
 });
 
 describe("Bloc 73/B: Niveau/VP fields match the panel's other field heights", () => {
-  it("stops .settings-grid label's own grid from stretching its rows to the row's full height (the League field's taller title+buttons stack was forcing Niveau/VP's stepper row taller too)", () => {
+  it("stops the general row's labels from stretching to the row's full height (the rung field's taller title+buttons stack was forcing Niveau/VP's stepper row taller too)", () => {
     expect(css).toMatch(
-      /\.settings-grid label\s*{\s*\n\s*display: grid;\s*\n\s*align-content: start;/,
+      /\.player-general label\s*{\s*\n\s*display: grid;\s*\n\s*align-content: start;/,
     );
   });
 });
@@ -968,19 +1076,17 @@ describe("Bloc 73/C: Classement league buttons genuinely hold 50%, at every desk
 // (never "N★"/"N*" text) for both the equipment and each gem.
 describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column right", () => {
   it("lays the slot's body out as a row: left column (image+star), right column (stacked gems)", () => {
+    expect(css).toMatch(/\.stuff-slot-layout\s*{\s*\n\s*display: flex;/);
     expect(css).toMatch(
-      /\.stuff-slot-layout\s*{\s*\n\s*display: flex;/,
+      /\.stuff-slot-left\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/,
     );
-    expect(css).toMatch(/\.stuff-slot-left\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/);
     expect(css).toMatch(
       /\.stuff-slot-gems\s*{\s*\n\s*display: flex;\s*\n\s*flex-direction: column;/,
     );
   });
 
   it("defines the shared star-rating rendering (converts fully to a distinct yellow past level 4)", () => {
-    expect(css).toMatch(
-      /\.star-rating svg\s*{\s*\n\s*fill: currentColor;/,
-    );
+    expect(css).toMatch(/\.star-rating svg\s*{\s*\n\s*fill: currentColor;/);
     // Bloc 74/B replaced the var(--amber-bright) reference — see that
     // block below for the current (fixed-value) rule.
     expect(css).toMatch(/\.star-rating-yellow\s*{\s*\n\s*color: #a8710a;/);
@@ -1007,7 +1113,9 @@ describe("Bloc 73/D: Combat equipment slot cell — image+star left, gems column
     )?.[0];
     expect(mediaBlock).toBeDefined();
     expect(mediaBlock).toMatch(/max-height: 1\.6rem;/);
-    expect(mediaBlock).toMatch(/\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/);
+    expect(mediaBlock).toMatch(
+      /\.star-rating svg\s*{\s*\n\s*width: 6px;\s*\n\s*height: 6px;/,
+    );
   });
 
   // Bloc 78/B: Expedition gets its own mobile floor for the new
@@ -1151,7 +1259,9 @@ describe("Bloc 80/C: Événements admin event row is a real grid, aligned across
   });
 
   it("gives Nom a fixed width too, same width-per-column requirement the grid above needs to actually line up", () => {
-    const rule = css.match(/\.events-admin-name-field input\s*{([\s\S]*?)\n}/)?.[0];
+    const rule = css.match(
+      /\.events-admin-name-field input\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(rule).toBeDefined();
     expect(rule).toMatch(/width: 14rem;/);
   });
@@ -1233,15 +1343,28 @@ describe("Bloc 80/E: Récompense (tier level) is 3x the base field width, Object
 
 describe("Bloc 80/F: the manual color picker's toggle + popup swatch grid", () => {
   it("styles the toggle as a round swatch button and the popup as a floating grid of round options", () => {
-    const toggle = css.match(/\.events-color-picker-toggle\s*{([\s\S]*?)\n}/)?.[0];
+    const toggle = css.match(
+      /\.events-color-picker-toggle\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(toggle).toBeDefined();
     expect(toggle).toMatch(/border-radius: 999px;/);
 
-    const options = css.match(/\.events-color-picker-options\s*{([\s\S]*?)\n}/)?.[0];
+    const options = css.match(
+      /\.events-color-picker-options\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(options).toBeDefined();
-    expect(options).toMatch(/position: absolute;/);
+    expect(options).toMatch(/display: grid;/);
+    // Bloc 125 §3: it used to place and stack itself here — `position:
+    // absolute` inside the event row, which the row then clipped, so the
+    // grid was never fully visible. It is carried by a portalled popover
+    // now, which owns where it goes; positioning it here again would put
+    // it back inside the box that was cutting it.
+    expect(options).not.toMatch(/position: absolute;/);
+    expect(options).not.toMatch(/z-index:/);
 
-    const option = css.match(/\.events-color-picker-option\s*{([\s\S]*?)\n}/)?.[0];
+    const option = css.match(
+      /\.events-color-picker-option\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(option).toBeDefined();
     expect(option).toMatch(/border-radius: 999px;/);
   });
@@ -1314,7 +1437,9 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
   it("lays out a 2-per-row grid, 1 on mobile — same breakpoint/columns as .consumable-tile-grid", () => {
     const rule = css.match(/\.events-tile-grid\s*{([\s\S]*?)\n}/)?.[0];
     expect(rule).toBeDefined();
-    expect(rule).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+    expect(rule).toMatch(
+      /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
     const mobileBlock = css.match(
       /@media \(max-width: 900px\) {\s*\n\s*\.events-tile-grid\s*{([\s\S]*?)\n\s*}/,
     )?.[0];
@@ -1337,7 +1462,9 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
     expect(tileRule).toBeDefined();
     expect(tileRule).toMatch(/background: var\(--surface-muted\);/);
 
-    const headingRule = css.match(/\.events-tile-heading\s*{([\s\S]*?)\n}/)?.[0];
+    const headingRule = css.match(
+      /\.events-tile-heading\s*{([\s\S]*?)\n}/,
+    )?.[0];
     expect(headingRule).toBeDefined();
     expect(headingRule).toMatch(/justify-content: space-between;/);
 
@@ -1363,5 +1490,107 @@ describe("Bloc 79/I: Événements public tiles — grey grid, no image, matching
     )?.[0];
     expect(durationBadge).toBeDefined();
     expect(durationBadge).toMatch(/var\(--accent-strong\)/);
+  });
+});
+
+/**
+ * Bloc 139/B et D — les deux points qui se jouent uniquement dans la feuille
+ * de style. Les dimensions réellement obtenues par le navigateur sont mesurées
+ * en e2e (« Bloc 139 ») ; ce qui s'épingle ici, c'est la déclaration qui les
+ * produit, et surtout la classe sur laquelle elle porte.
+ */
+describe("Bloc 139: matrix field proportions, and the band's column width", () => {
+  /**
+   * B : la place rendue au chiffre. Le piège est le sélecteur — le stepper est
+   * disposé par `.num-stepper` (flex, boutons à `flex: 0 0 40px`, Bloc 92/L4),
+   * pas par les colonnes de grille de `.number-stepper`, déclarées plus haut
+   * dans le fichier et donc écrasées. Une règle écrite sur `.number-stepper`
+   * n'aurait aucun effet : mesuré au navigateur, la cellule de 93 px se
+   * répartissait en 40 + 13 + 40, et « 20 » était coupé.
+   */
+  it("B: narrows the matrix's − / + buttons on the class that actually lays them out", () => {
+    expect(css).toMatch(
+      /\.player-matrix \.num-stepper button\s*{\s*\n\s*flex: 0 0 1\.5rem;\s*\n\s*}/,
+    );
+    // Et la règle ne porte pas sur la classe inerte, faute de quoi elle
+    // reviendrait sans effet le jour où quelqu'un « harmonise » les deux.
+    expect(css).not.toMatch(/\.player-matrix \.number-stepper\b/);
+    // La hauteur ne bouge pas avec la largeur : 32 px, comme avant le bloc.
+    // Le Bloc 140 l'a sortie de cette règle pour la partager avec les champs
+    // des templiers — la valeur est la même, elle vit dans `--player-field-h`
+    // et le cas « Bloc140 » ci-dessus tient l'égalité des deux zones.
+    expect(css).toMatch(/--player-field-h: 2rem;/);
+    expect(css).toMatch(
+      /\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{\s*\n\s*min-height: var\(--player-field-h\);/,
+    );
+  });
+
+  /**
+   * D : le bandeau de sélection — celui des catégories d'outils et celui des
+   * référentiels, un seul composant — prend la largeur de la colonne du site
+   * plutôt qu'une valeur à lui. Comparé à la déclaration partagée par
+   * `.public-main` et le bandeau des paramètres du joueur, pas à un littéral :
+   * c'est l'égalité qui est la garantie, et le bandeau était 1 rem plus large
+   * (mesuré à 1440 px : 1200 contre 1184).
+   */
+  it("D: gives the selection band the same column width as the content it sits between", () => {
+    const widthOf = (selector: string) =>
+      css
+        .match(new RegExp(`${selector}\\s*{([\\s\\S]*?)\\n}`))?.[1]
+        .match(/width: (min\([^;]*\));/)?.[1];
+    const column = widthOf("\\.public-main,\\n\\.player-settings");
+    expect(column).toBe("min(74rem, calc(100% - 2rem))");
+    expect(widthOf("\\.selection-banner")).toBe(column);
+    // D bis : l'en-tête de page et « Aller plus loin » étaient les deux
+    // derniers blocs restés à 75rem. La colonne n'a plus qu'une largeur.
+    expect(widthOf("\\.tool-page-head,\\n\\.further-reading")).toBe(column);
+  });
+
+  /**
+   * Bloc 140 : les champs des templiers et ceux de la matrice se lisent côte à
+   * côte, et tiennent leur hauteur du même jeton — c'est l'égalité qui est la
+   * propriété voulue, pas le chiffre, donc le test compare les deux règles
+   * plutôt que de figer une valeur.
+   */
+  it("Bloc140: gives the templars fields and the matrix fields one shared height", () => {
+    const rule = css.match(
+      /\.player-templars-fields \.num-stepper:not\(\.number-stepper-plain\) input,\n\.player-templars-fields \.num-stepper:not\(\.number-stepper-plain\) button,\n\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(rule).toBeDefined();
+    expect(rule).toMatch(/min-height: var\(--player-field-h\);/);
+    // Le jeton vit sur le panneau, comme `--player-matrix-head` : le premier
+    // `:root` du fichier appartient aux jetons de l'en-tête public.
+    expect(css).toMatch(/\.player-settings\s*{[\s\S]*?--player-field-h: 2rem;/);
+    // Et plus aucune hauteur propre à la matrice, qui la ferait diverger.
+    const matrixOwn = css.match(
+      /\.player-matrix \.num-stepper input,\n\.player-matrix \.num-stepper button\s*{([\s\S]*?)\n}/,
+    )?.[1];
+    expect(matrixOwn).toBeDefined();
+    expect(matrixOwn).not.toMatch(/min-height/);
+  });
+
+  /**
+   * L'exclusion de `number-stepper-plain` n'est pas cosmétique : c'est la
+   * forme sans boutons, celle du mobile, où templiers et matrice partagent
+   * déjà `.number-stepper-plain input` et donc déjà la même hauteur. Sans
+   * l'exclusion, la règle ci-dessus l'emporterait sur elle par spécificité et
+   * rapetisserait les deux champs mobiles.
+   */
+  it("Bloc140: leaves the buttonless (mobile) form to its own height", () => {
+    expect(css).toMatch(
+      /\.number-stepper-plain input\s*{\s*\n\s*min-height: 2\.5rem;/,
+    );
+    expect(css).not.toMatch(
+      /\.player-templars-fields \.num-stepper input\b(?!:)/,
+    );
+  });
+
+  it("D: leaves the band's height alone — only its width changed", () => {
+    const banner = css.match(/\.selection-banner\s*{([\s\S]*?)\n}/)?.[1];
+    expect(banner).toBeDefined();
+    // Les propriétés qui feraient bouger sa hauteur, inchangées.
+    expect(banner).toMatch(/margin: 1\.5rem auto 0;/);
+    expect(banner).toMatch(/padding: 0\.625rem;/);
+    expect(banner).not.toMatch(/(^|\n)\s*(height|min-height|max-height):/);
   });
 });

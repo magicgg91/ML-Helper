@@ -58,20 +58,40 @@ describe("admin page translations", () => {
 
   // Bloc 68 review (Codex): the Bloc 67 rename added its translated value
   // under the wrong namespace (admin.tools, never read by
-  // EditReferentielPage) and left the key it actually consumes
-  // (admin.referentiels.reference-level-up) untranslated — this exact
-  // real-translation lookup is what would have caught it.
+  // EditReferentielPage) and left the key it actually consumes untranslated —
+  // this exact real-translation lookup is what would have caught it.
+  // Bloc 125 §8: the screen is named after the reference, with the name the
+  // Référentiels table already shows, so that key is the one to check.
   it("covers the Progression reference editor heading (/admin/referentiels/reference-level-up)", async () => {
-    const { fr } = await translators();
-    expect(fr("admin.referentiels.reference-level-up")).toBe(
-      "Éditer Progression",
+    const { en, fr } = await translators();
+    expect(fr("admin.referentiels.references.level-up")).toBe("Progression");
+    expect(en("admin.referentiels.references.level-up")).toBe("Level Up");
+  });
+
+  /**
+   * Bloc 135, recoupé au Bloc 137 : le vocabulaire suit la découpe des écrans.
+   *
+   * `admin.leagues` est celui de la section de Configuration — la liste des
+   * échelons. `admin.ranking` est revenu pour l'écran de l'outil — les plages de
+   * fin de saison. Les deux existent, et chacun ne dit que ce que son écran
+   * montre : c'est ce que ces deux cas épinglent.
+   */
+  it("covers the leagues and divisions section (/admin/config)", async () => {
+    const { en, fr } = await translators();
+    expect(en("admin.leagues.section")).toBe("Leagues and divisions");
+    expect(fr("admin.leagues.section")).toBe("Ligues et divisions");
+    expect(en("admin.leagues.add-entry")).toBe("Add a league or division");
+    expect(fr("admin.leagues.add-entry")).toBe(
+      "Ajouter une ligue ou une division",
     );
   });
 
-  it("covers the existing ranking tool editor", async () => {
+  it("covers the ranking tool's own screen (/admin/tools/ranking)", async () => {
     const { en, fr } = await translators();
-    expect(en("admin.ranking.save")).toBe("Save ranking");
-    expect(fr("admin.ranking.save")).toBe("Enregistrer le classement");
+    expect(en("admin.ranking.add")).toBe("Add range");
+    expect(fr("admin.ranking.add")).toBe("Ajouter une plage");
+    expect(en("admin.ranking.bands-section")).toBe("End-of-season bands");
+    expect(fr("admin.ranking.bands-section")).toBe("Plages de fin de saison");
   });
 
   it("covers /admin/users", async () => {
@@ -94,8 +114,13 @@ describe("admin page translations", () => {
 
   it("covers reference editors integrated into /admin/guides", async () => {
     const { en, fr } = await translators();
-    expect(en("admin.references.save")).toBe("Save entire table");
-    expect(fr("admin.references.save")).toBe("Enregistrer toute la table");
+    // Bloc 119: likewise — and the sentence the brief requires kept.
+    expect(en("admin.references.unknown-value-warning")).toBe(
+      "Only fill in an unknown value once it is confirmed in game.",
+    );
+    expect(fr("admin.references.unknown-value-warning")).toBe(
+      "Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
+    );
   });
 
   it("covers the legal notice editor", async () => {

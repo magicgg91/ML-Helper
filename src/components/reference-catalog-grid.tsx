@@ -5,9 +5,9 @@ import { sortByLabel } from "../lib/sort-by-label";
 import { GameImage } from "./game-image";
 
 // Bloc 38/O: shared between the homepage and /guides (previously duplicated
-// markup in each) — same GameImage + fallback-icon treatment as
-// ToolCategoryGrid's tool categories, including the aspect-ratio: 1 image
-// box (Bloc 38/H) via the shared .tool-category-image class.
+// markup in each) — same GameImage treatment as ToolCategoryGrid's tool
+// categories, including the aspect-ratio: 1 image box (Bloc 38/H) via the
+// shared .tool-category-image class.
 // `t` is typed loosely (rather than next-intl/server's exact getTranslations
 // return type) since this component is used from both a server page
 // (getTranslations) and a client component (useTranslations) — the two
@@ -24,23 +24,53 @@ import { GameImage } from "./game-image";
 // unneeded; the direct /referentiels/<slug> URL already showed the
 // "unavailable" message on its own (see the [slug] page), but this grid
 // linked to it anyway.
+export type ReferenceSuggestionCard = {
+  href: string;
+  title: string;
+  text: string;
+  cta: string;
+};
+
 export function ReferenceCatalogGrid({
   t,
   limit,
+  only,
   locale,
   active,
+  descriptions,
+  suggestion,
 }: {
   t: (key: string) => string;
   limit?: number;
+  /**
+   * Bloc 132 §5 : restreint la grille à ces slugs publics. L'accueil n'en
+   * montre que quatre (`homeReferenceSlugs`) ; l'index les montre tous et
+   * omet ce paramètre. Le tri alphabétique et le filtre d'activation
+   * s'appliquent ensuite, dans les deux cas.
+   */
+  only?: readonly string[];
   // Bloc 64/A: tiles ordered by the label actually shown, in the visitor's
   // locale — the catalog's declaration order means nothing to them. Sorted
   // before `limit` applies, so the homepage teaser shows the first N
   // alphabetically rather than the first N declared.
   locale: string;
   active: CalculatorAvailability;
+  /**
+   * Bloc 129 §3.3 : la description d'une ligne de chaque référentiel, par
+   * slug public. Elle vient de `calculators.description` en base (Bloc 130),
+   * jamais d'une clé i18n. Une description absente n'affiche pas de ligne
+   * vide : le §5 demande de masquer, pas d'inventer.
+   */
+  descriptions?: Record<string, string>;
+  /** La 8e case du §3.3, « Il manque un référentiel ? ». */
+  suggestion?: ReferenceSuggestionCard;
 }) {
   const available = sortByLabel(
-    referenceCatalog.filter((reference) => active[reference.calculatorSlug]),
+    referenceCatalog.filter(
+      (reference) =>
+        active[reference.calculatorSlug] &&
+        (!only || only.includes(reference.slug)),
+    ),
     (reference) => t(`catalog.${reference.slug}`),
     locale,
   );
@@ -63,22 +93,34 @@ export function ReferenceCatalogGrid({
               alt=""
               width={500}
               height={500}
-              fallback={
-                // eslint-disable-next-line @next/next/no-img-element -- static bundled placeholder icon, no next/image benefit for a tiny SVG.
-                <img
-                  src={reference.fallbackImage}
-                  alt=""
-                  width={500}
-                  height={500}
-                />
-              }
+              // Bloc 104: see tool-category-grid.tsx — no placeholder image.
+              fallback={null}
             />
           </div>
           <div className="tool-category-copy">
             <h2>{t(`catalog.${reference.slug}`)}</h2>
+            {descriptions?.[reference.slug] ? (
+              <p className="reference-card-description">
+                {descriptions[reference.slug]}
+              </p>
+            ) : null}
           </div>
         </Link>
       ))}
+      {suggestion ? (
+        <Link
+          className="reference-suggestion-card"
+          href={suggestion.href}
+          prefetch={false}
+        >
+          <span className="reference-suggestion-plus" aria-hidden="true">
+            +
+          </span>
+          <span className="reference-suggestion-title">{suggestion.title}</span>
+          <span className="reference-suggestion-text">{suggestion.text}</span>
+          <span className="reference-suggestion-cta">{suggestion.cta} →</span>
+        </Link>
+      ) : null}
     </div>
   );
 }

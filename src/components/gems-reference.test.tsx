@@ -119,6 +119,27 @@ describe("GemsReferenceTable (Bloc 36/A)", () => {
       expect(cell.textContent).not.toMatch(/[kKmMgG]/);
   });
 
+  // Bloc 126/B: the dash above is no longer written into the component for
+  // Bronze; it is what a league without a price renders. Bronze is still the
+  // only one without, so the row above is unchanged — but the day the admin
+  // fills the field in, the price appears here with no code change, which is
+  // the whole point of giving Bronze a field.
+  it("prints the Bronze price like any other once one has been entered", () => {
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <GemsReferenceTable
+          parameters={{
+            ...defaultGemParameters,
+            gemPrice: { ...defaultGemParameters.gemPrice, bronze: 2000 },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const cells = screen.getByTestId("gems-tile-cost").querySelectorAll("td");
+    expect(cells[0].textContent).toBe("2 000");
+    expect(cells[1].textContent).toBe("3 000");
+  });
+
   it("shows the real per-cell gem image (skill x league) with its confirmed percentage value", () => {
     renderReference();
     const striker = screen.getByTestId("gems-tile-striker");

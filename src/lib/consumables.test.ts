@@ -30,21 +30,33 @@ describe("defaultConsumableCatalog", () => {
   it("gives every row a non-empty image path, FR name and FR description", () => {
     for (const row of allRows()) {
       expect(row.image).toMatch(/^\/consumables\//);
-      expect(row.name_fr.trim()).not.toBe("");
-      expect(row.description_fr.trim()).not.toBe("");
+      expect(row.name.fr?.trim()).not.toBe("");
+      expect(row.description.fr?.trim()).not.toBe("");
     }
   });
 
   it("gives every row an English name and description too — AGENTS.md: all visible text goes through i18n", () => {
     for (const row of allRows()) {
-      expect(row.name_en.trim()).not.toBe("");
-      expect(row.description_en.trim()).not.toBe("");
+      expect(row.name.en?.trim()).not.toBe("");
+      expect(row.description.en?.trim()).not.toBe("");
+    }
+  });
+
+  // Bloc 127: the shipped list is the one the porteur de projet gave, in the
+  // two languages he gave it in — DE/ES/TR are **absent**, never invented and
+  // never blank. A visitor in those languages reads the English text
+  // (localizedText's fallback), which is a translation that is missing rather
+  // than one that says nothing (Bloc 126/D).
+  it("Bloc127: ships FR and EN only, with no language written blank", () => {
+    for (const row of allRows()) {
+      expect(Object.keys(row.name), row.name.fr).toEqual(["fr", "en"]);
+      expect(Object.keys(row.description), row.name.fr).toEqual(["fr", "en"]);
     }
   });
 
   it("includes the items with a still-unconfirmed cost, left blank rather than invented", () => {
     const unconfirmed = allRows().filter((row) => row.cost === "");
-    const names = unconfirmed.map((row) => row.name_fr);
+    const names = unconfirmed.map((row) => row.name.fr);
     expect(names).toEqual(
       expect.arrayContaining([
         "Renommer votre ville",
@@ -66,7 +78,7 @@ describe("defaultConsumableCatalog", () => {
 
   it("Bloc48/B: sorts the advisors and equipment chests/urns/jars/crates into their own tables", () => {
     const nameIn = (category: (typeof consumableCategories)[number]) =>
-      defaultConsumableCatalog[category].map((row) => row.name_fr);
+      defaultConsumableCatalog[category].map((row) => row.name.fr);
     expect(nameIn("advisors")).toContain("Commandant");
     expect(nameIn("equipment")).toContain("Coffre");
     expect(nameIn("equipment")).toContain("Urne divine ×10");
@@ -75,14 +87,14 @@ describe("defaultConsumableCatalog", () => {
   // Bloc 48/E: the 3 HP potions move from Inventaire to Expédition.
   it("Bloc48/E: places the 3 HP potions in the expedition table", () => {
     const expeditionNames = defaultConsumableCatalog.expedition.map(
-      (row) => row.name_fr,
+      (row) => row.name.fr,
     );
     for (const potion of consumablePotionNames)
       expect(expeditionNames).toContain(potion);
     for (const category of consumableCategories) {
       if (category === "expedition") continue;
       const names = defaultConsumableCatalog[category].map(
-        (row) => row.name_fr,
+        (row) => row.name.fr,
       );
       for (const potion of consumablePotionNames)
         expect(names).not.toContain(potion);

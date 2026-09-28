@@ -19,6 +19,7 @@ const { tx, $transaction } = vi.hoisted(() => {
 vi.mock("../lib/prisma", () => ({ prisma: { $transaction } }));
 
 import {
+  localizedField,
   numericString,
   saveReferenceTable,
   stringField,
@@ -26,7 +27,7 @@ import {
 
 const base = {
   key: "combat-equipment",
-  target: "Équipements de Combat",
+  target: "combat-equipment" as const,
   columns: ["rarity", "set_name"],
   rows: [{ rarity: "Légendaire", set_name: "Spirit Fyra" }],
   userId: "user-1",
@@ -93,8 +94,12 @@ describe("saveReferenceTable", () => {
     const entry = tx.auditLog.create.mock.calls[0][0].data;
     expect(entry.action).toBe("update");
     expect(entry.diff).toEqual({ before: previous, after: base.rows });
-    expect(entry.message).toContain(base.actorName);
-    expect(entry.message).toContain(base.target);
+    // Bloc 116/C: the key is the target's slug plus the action, so an
+    // existing table reads as an update and a first save as a create.
+    expect(entry.messageKey).toBe("combat-equipment.update");
+    expect(JSON.parse(entry.messageParams)).toEqual({
+      actor: base.actorName,
+    });
   });
 
   it("aborts the whole save when the audit entry fails", async () => {
@@ -158,5 +163,40 @@ describe("numericString", () => {
   it("rejects a negative or non-numeric value", () => {
     expect(() => numericString("-1")).toThrow("invalid number");
     expect(() => numericString("abc")).toThrow("invalid number");
+  });
+});
+
+describe("Bloc 127 : localizedField", () => {
+  it("garde chaque langue du site, telle qu'elle a été envoyée", () => {
+    expect(
+      localizedField({ fr: "Commandant", en: "Commander", de: "Kommandant" }),
+    ).toEqual({ fr: "Commandant", en: "Commander", de: "Kommandant" });
+    // Rien d'envoyé, rien de stocké : un champ absent de la charge utile n'est
+    // pas une erreur, c'est une ligne dont personne n'a encore parlé.
+    expect(localizedField(undefined)).toEqual({});
+    expect(localizedField({})).toEqual({});
+  });
+
+  it("laisse absente une langue blanche, plutôt que de la stocker vide", () => {
+    // Bloc 126/D : `""` est une traduction qui existe et ne dit rien, sur
+    // laquelle le repli public s'arrête.
+    expect(localizedField({ fr: "Commandant", en: "", de: "   " })).toEqual({
+      fr: "Commandant",
+    });
+  });
+
+  it("ignore une langue que le site ne publie pas", () => {
+    expect(localizedField({ fr: "Oui", jp: "はい" })).toEqual({ fr: "Oui" });
+  });
+
+  it("refuse ce qui n'est pas un objet de chaînes", () => {
+    // Strict comme `numericString`, pour la même raison : la route rend un 400
+    // plutôt qu'un demi-enregistrement.
+    for (const invalid of ["Commandant", 12, [], null])
+      expect(() => localizedField(invalid)).toThrow("invalid localized field");
+    expect(() => localizedField({ fr: 12 })).toThrow("invalid localized field");
+    expect(() => localizedField({ fr: null })).toThrow(
+      "invalid localized field",
+    );
   });
 });

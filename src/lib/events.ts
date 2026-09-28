@@ -1,28 +1,35 @@
 import { leagues, type League } from "./player-settings";
+import type { LocalizedField } from "./localized-field";
 
 // Bloc 60: each tier is 2 free-text fields (Objectif, Récompense) — same
 // principle as the Classement reference's tier rewards (cdc), never
 // structured into sub-fields since the unit/composition varies too much
 // from one event to another (troops vs. gold, single reward vs. a mix of
 // gold/sapphires/reskill/speedup/season currency).
-// Bloc 60 review (Codex PR #81): same fr/en-per-field pattern as
-// ConsumableRow's name_fr/name_en (Bloc 43/44-review C) — AGENTS.md
-// requires every user-visible string to go through next-intl or, for
-// admin-editable editorial content, a per-locale field with an English
-// fallback. A single shared string would show French text verbatim to
-// en/de/es/tr visitors.
+// Bloc 60 review (Codex PR #81): the reason AGENTS.md gives for never
+// storing one shared string here — a single field would show French text
+// verbatim to en/de/es/tr visitors.
+// Bloc 127 (PR 3/3) : la paire FR/EN que ce raisonnement avait produite
+// devient un champ par langue. Elle tenait deux langues sur les cinq du
+// site : un visiteur allemand lisait l'anglais faute de place pour son
+// allemand, et l'éditeur qui lui offrait un onglet DE écrivait en réalité
+// dans la colonne anglaise (Bloc 125 §9).
+//
+// Les objets vides ci-dessous sont partagés par toutes les copies faites
+// d'un `{ ...emptyEventTierRow }`. C'est sans danger tant que rien ne
+// modifie un `LocalizedField` sur place : le socle
+// (`withLocalizedFieldLocale`, `localizedFieldToStore`) en rend toujours un
+// neuf. Le jour où ce ne serait plus vrai, il faudrait une fabrique, comme
+// `freshEmptyCatalog` a dû en devenir une pour les tableaux (régression du
+// Bloc 58).
 export type EventTierRow = {
-  objective_fr: string;
-  objective_en: string;
-  reward_fr: string;
-  reward_en: string;
+  objective: LocalizedField;
+  reward: LocalizedField;
 };
 
 export const emptyEventTierRow: EventTierRow = {
-  objective_fr: "",
-  objective_en: "",
-  reward_fr: "",
-  reward_en: "",
+  objective: {},
+  reward: {},
 };
 
 // Bloc 77/B: events chain back-to-back with no gaps within a season (the
@@ -79,21 +86,30 @@ export function eventTextColorVar(color: EventColor): string {
 }
 
 // Bloc 77/A: Description is admin free text at the event level (distinct
-// from each tier's own Objectif/Récompense) — same fr/en-per-field
-// convention as EventTierRow above, for the same AGENTS.md reason.
+// from each tier's own Objectif/Récompense) — same per-language convention
+// as EventTierRow above, for the same AGENTS.md reason.
+//
+// Bloc 127 (PR 3/3) — le **nom** : il était une chaîne unique, donc le même
+// texte pour les cinq langues, et c'est le point que le porteur du projet a
+// tranché le 17/09/2026 (« corrigé comme les trois autres champs »). Il
+// devient un `LocalizedField` **simple**, pas une surcharge comme le nom
+// d'un templier : vérifié, `messages/*.json` ne porte aucun nom
+// d'événement (`game.*` n'a que skills, templars, leagues, families,
+// rarities, slots, weapon-types, stats — les événements n'y sont pas, et
+// pour cause : ils sont créés et nommés en administration, ligue par
+// ligue). Il n'y a donc aucun défaut traduit à surcharger — le nom
+// n'existe que si un administrateur l'a écrit.
 export type EventRow = {
-  name: string;
-  description_fr: string;
-  description_en: string;
+  name: LocalizedField;
+  description: LocalizedField;
   duration: EventDuration;
   color: EventColor;
   tiers: EventTierRow[];
 };
 
 export const emptyEventRow: EventRow = {
-  name: "",
-  description_fr: "",
-  description_en: "",
+  name: {},
+  description: {},
   duration: eventDurations[0],
   color: eventColors[0],
   tiers: [],
@@ -134,6 +150,17 @@ export type EventsLeagueData = {
 // whole event list itself, not just which tiers/rewards apply. No data is
 // ever shared between leagues.
 export type EventsCatalog = Record<League, EventsLeagueData>;
+
+// Bloc 108/F, signalé et NON corrigé dans ce bloc. Ce catalogue est indexé
+// par la ligue de base, et ce qu'il porte est saisonnier — la durée de saison
+// varie déjà d'une ligue à l'autre (Bronze court sur 21 jours). Or une
+// division est précisément une partition de l'échelle saisonnière : si le
+// studio donne à Argent 2 et Argent 1 des listes d'événements ou des durées
+// distinctes, cette structure ne peut pas les exprimer, et il faudra une clé
+// par entrée d'échelle plutôt que par ligue. Rien ne dit aujourd'hui que ce
+// sera le cas — à revoir quand la séparation sera observable en jeu
+// (07/10/2026). Le référentiel Progression, lui, ne dépend que du niveau et
+// de la ligue de base : voir la note dans src/lib/level-up.ts.
 
 // Bloc 77 review (Codex PR #95): events chain back-to-back with no gaps, so
 // a league whose events add up to more than its own season length would

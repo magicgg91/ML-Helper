@@ -54,7 +54,7 @@ Ce que ça veut dire concrètement :
 
 - **Jamais de formule libre éditable en admin** — uniquement des paramètres numériques nommés, quelle que soit la complexité du calculateur
 - **Formules jamais exposées côté public** — seuls les résultats sont visibles, jamais l'expression du calcul
-- Formatage des grands nombres : compact par palier k/M/G/T/P (seuils exacts en section 3.3 du cahier des charges)
+- Formatage des grands nombres : compact par palier k/M/G/T/P/E/Z/Y (seuils exacts en section 3.3 du cahier des charges — échelle étendue au-delà de P le 18/09/2026, voir la note de révision qui y figure)
 - Arrondi entier pour les quantités absolues (or, troupes, coûts) ; décimales conservées pour les pourcentages
 - Toute donnée encore marquée "non confirmé"/"hypothèse" dans le cahier des charges reste éditable en admin avec sa valeur actuelle par défaut — ne bloque pas la livraison de la fonctionnalité
 

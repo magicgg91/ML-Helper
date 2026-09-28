@@ -2,6 +2,12 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import EditToolPage from "./[id]/page";
 
+// Bloc 127 (PR 2/3) : l'écran Templiers édite cinq langues et reçoit donc de
+// la page celles que Configuration a éteintes. Ce test-ci vérifie le câblage
+// des écrans, pas la base : le lecteur de langues est simulé comme les autres.
+vi.mock("@/lib/locale-settings", () => ({
+  hiddenPublicLocales: async () => [],
+}));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
 }));
@@ -12,12 +18,9 @@ vi.mock("@/lib/admin-formulas-server", () => ({
 vi.mock("@/lib/templars-presentation-server", () => ({
   getTemplarPresentation: async () => ({}),
 }));
-vi.mock("@/components/named-parameters-editor", () => ({
-  TemplarParametersEditor: ({ backHref }: { backHref: string }) => (
-    <a className="editor-back-action" href={backHref}>
-      back
-    </a>
-  ),
+// Bloc 119: the screens that are nothing but named numbers moved to their own
+// module when they were rewritten on the refonte's components.
+vi.mock("@/components/admin-tool-editors", () => ({
   CityParametersEditor: () => null,
   DemoAttackTroopsEditor: () => null,
   GemParametersEditor: ({ backHref }: { backHref: string }) => (
@@ -27,9 +30,13 @@ vi.mock("@/components/named-parameters-editor", () => ({
   ),
   XpGainRateEditor: () => null,
 }));
-vi.mock("@/components/templars-presentation-editor", () => ({
-  TemplarsPresentationEditor: () => (
-    <div data-testid="templars-presentation-editor" />
+// Bloc 119: the cost formula and the presentation catalog are one screen with
+// one save, so there is a single component to stand in for.
+vi.mock("@/components/admin-templars-editor", () => ({
+  TemplarsEditor: ({ backHref }: { backHref: string }) => (
+    <a className="editor-back-action" href={backHref}>
+      back
+    </a>
   ),
 }));
 
@@ -81,23 +88,6 @@ describe("Bloc35 7.1, updated Bloc 50: EditToolPage's contextual back link for t
       "href",
       "/admin/referentiels",
     );
-  });
-});
-
-// Bloc 66/B: the presentation catalog editor shares this same edit point,
-// rendered alongside the cost-formula editor rather than at its own route.
-describe("Bloc66/B: EditToolPage also renders the Templiers presentation editor", () => {
-  it("renders both the formula editor and the presentation editor on the templars edit point", async () => {
-    render(
-      await EditToolPage({
-        params: Promise.resolve({ id: "templars" }),
-        searchParams: Promise.resolve({}),
-      }),
-    );
-    expect(screen.getByText("back")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("templars-presentation-editor"),
-    ).toBeInTheDocument();
   });
 });
 

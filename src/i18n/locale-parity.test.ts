@@ -2,6 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { fallbackLocale, getAvailableLocales } from "./config";
+import {
+  adminLocales,
+  isAdminMessageKey,
+  launchLocales,
+} from "@/lib/translations";
 
 type Messages = Record<string, unknown>;
 
@@ -31,16 +36,32 @@ async function readLocale(locale: string): Promise<Messages> {
 // notice. 12 keys had drifted that way, 11 of them on screens users actually
 // see. This test is the guard that was absent: it reads the files directly,
 // deliberately bypassing the fallback merge that hides the gap.
+/**
+ * Bloc 118: the admin's own interface text is deliberately not in five
+ * languages — it is the one exception to the rule above, and it is now the
+ * whole admin rather than the audit log alone.
+ *
+ * src/proxy.ts clamps every /admin and /login request to English or French,
+ * so a de/es/tr sentence in `admin`, `login` or `roles` could never be
+ * rendered. Bloc 116/C exempted `admin.logs.` on exactly that reasoning and
+ * left the other 440 admin keys in five languages; this bloc finishes the
+ * job. Parity for these namespaces is EN/FR, asserted on its own below and
+ * in admin-locale-scope.test.ts; the rule for the public site is unchanged
+ * and still strict.
+ */
+
 describe("locale key parity", () => {
   it("gives every locale exactly the same keys as the fallback locale", async () => {
     const locales = await getAvailableLocales();
-    const reference = leafKeys(await readLocale(fallbackLocale));
+    const publicKeys = (messages: Messages) =>
+      leafKeys(messages).filter((key) => !isAdminMessageKey(key));
+    const reference = publicKeys(await readLocale(fallbackLocale));
     const referenceKeys = new Set(reference);
 
     const drift: Record<string, { missing: string[]; extra: string[] }> = {};
     for (const locale of locales) {
       if (locale === fallbackLocale) continue;
-      const keys = new Set(leafKeys(await readLocale(locale)));
+      const keys = new Set(publicKeys(await readLocale(locale)));
       const missing = reference.filter((key) => !keys.has(key));
       const extra = [...keys].filter((key) => !referenceKeys.has(key)).sort();
       if (missing.length || extra.length) drift[locale] = { missing, extra };
@@ -51,8 +72,38 @@ describe("locale key parity", () => {
     expect(drift).toEqual({});
   });
 
-  it("covers all 5 shipped locales", async () => {
-    expect(await getAvailableLocales()).toEqual(["de", "en", "es", "fr", "tr"]);
+  // The exemption above is not a hole: the admin's own parity is checked
+  // here, and the three locales that cannot render it must not carry it.
+  it("keeps the admin's interface text in English and French, and only those", async () => {
+    const carriers: Record<string, string[]> = {};
+    for (const locale of await getAvailableLocales()) {
+      const keys = leafKeys(await readLocale(locale)).filter(isAdminMessageKey);
+      if (keys.length) carriers[locale] = keys;
+    }
+    expect(Object.keys(carriers).sort()).toEqual([...adminLocales].sort());
+    expect(carriers.fr, "French and English have drifted apart").toEqual(
+      carriers.en,
+    );
+    // A guard against the exemption swallowing the admin whole: the keys it
+    // covers must still be there, in both languages.
+    expect(
+      carriers.en.some((key) => key.startsWith("admin.logs.messages.")),
+      "the audit sentences are gone",
+    ).toBe(true);
+    expect(
+      carriers.en.some((key) => key.startsWith("login.")),
+      "the sign-in page is gone",
+    ).toBe(true);
+  });
+
+  // Bloc 120: the shipped set is no longer written down anywhere, so this
+  // asserts the invariant instead of the inventory — the files on disk and
+  // the list the app routes on are the same set, and the two the site is
+  // built around are in it.
+  it("routes on exactly the locales the translation files define", async () => {
+    expect(await getAvailableLocales()).toEqual([...launchLocales].sort());
+    expect([...launchLocales]).toContain(fallbackLocale);
+    expect([...launchLocales]).toContain("fr");
   });
 
   it("has no empty or whitespace-only translation", async () => {

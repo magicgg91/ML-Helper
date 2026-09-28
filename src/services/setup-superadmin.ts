@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { auditMessage } from "../lib/audit-message";
+import { auditMessage, auditMessageColumns } from "../lib/audit-message";
 import {
   defaultEnglishLegalNotice,
   defaultFrenchLegalNotice,
@@ -51,7 +51,7 @@ export async function createInitialSuperAdmin(input: unknown) {
       data: {
         userId: user.id,
         actorRole: "super_admin",
-        message: auditMessage(user.username, "setup", ""),
+        ...auditMessageColumns(auditMessage("setup", { actor: user.username })),
         action: "setup",
         entityType: "user",
         entityId: user.id,

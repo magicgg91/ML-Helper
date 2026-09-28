@@ -36,72 +36,59 @@ describe("ReferenceCatalogGrid (Bloc 38/O)", () => {
       expect(document.querySelector(`img[src='${src}']`)).toBeInTheDocument();
   });
 
-  it("falls back to the placeholder category icon if the real image fails to load", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
-      </NextIntlClientProvider>,
-    );
-    const image = document.querySelector<HTMLImageElement>(
-      "img[src='/referentials/referential-fight.webp']",
-    )!;
-    fireEvent.error(image);
-    expect(
-      document.querySelector("img[src='/category-combat.svg']"),
-    ).toBeInTheDocument();
-    expect(
-      document.querySelector("img[src='/referentials/referential-fight.webp']"),
-    ).not.toBeInTheDocument();
-  });
+  // Bloc 104: what a failed illustration degrades to. It used to be a second
+  // <img>, pointing at the placeholder icons this catalog carried before the
+  // illustrations existed — files deleted long ago, so the "fallback" was one
+  // broken image behind another, and its mere presence in the props cost the
+  // homepage five 404s (React preloads any <img> it finds in the RSC payload,
+  // rendered or not). It degrades to nothing now: the tile keeps its square
+  // box and its title, and asks the network for nothing more.
+  //
+  // Covered on three references rather than one because each got its
+  // illustration in a different bloc (Boutique at 51, Événements at 62/H) and
+  // each was verified separately at the time.
+  it.each([
+    ["combat-equipment", "/referentials/referential-fight.webp", false],
+    ["shop", "/referentials/referential-shop.webp", false],
+    ["events", "/referentials/referential-events.webp", true],
+  ])(
+    "Bloc104: %s degrades to an empty image box, requesting no replacement",
+    (slug, src, needsEvents) => {
+      render(
+        <NextIntlClientProvider locale="fr" messages={frMessages}>
+          <ReferenceCatalogGrid
+            locale="fr"
+            t={t}
+            active={
+              needsEvents
+                ? { ...defaultCalculatorAvailability, events: true }
+                : defaultCalculatorAvailability
+            }
+          />
+        </NextIntlClientProvider>,
+      );
+      const image = document.querySelector<HTMLImageElement>(
+        `img[src='${src}']`,
+      )!;
+      expect(image).toBeInTheDocument();
+      const box = image.closest(".tool-category-image")!;
 
-  // Bloc 51: Boutique's illustration was just deposited — same graceful
-  // GameImage fallback as the other 5 references, verified independently
-  // since it has its own real image and its own fallback icon.
-  it("falls back to the placeholder category icon for Boutique if its real image fails to load", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid locale="fr" t={t} active={defaultCalculatorAvailability} />
-      </NextIntlClientProvider>,
-    );
-    const image = document.querySelector<HTMLImageElement>(
-      "img[src='/referentials/referential-shop.webp']",
-    )!;
-    fireEvent.error(image);
-    expect(
-      document.querySelector("img[src='/category-references.svg']"),
-    ).toBeInTheDocument();
-    expect(
-      document.querySelector("img[src='/referentials/referential-shop.webp']"),
-    ).not.toBeInTheDocument();
-  });
+      fireEvent.error(image);
 
-  // Bloc 62/H: Events' own illustration, deposited after the other 6 —
-  // same GameImage fallback treatment, verified with Events active since
-  // it ships hidden by default.
-  it("Bloc62/H: shows the real illustration for Events, with a graceful fallback if it's missing", () => {
-    render(
-      <NextIntlClientProvider locale="fr" messages={frMessages}>
-        <ReferenceCatalogGrid
-          locale="fr"
-          t={t}
-          active={{ ...defaultCalculatorAvailability, events: true }}
-        />
-      </NextIntlClientProvider>,
-    );
-    const image = document.querySelector<HTMLImageElement>(
-      "img[src='/referentials/referential-events.webp']",
-    )!;
-    expect(image).toBeInTheDocument();
-    fireEvent.error(image);
-    expect(
-      document.querySelector("img[src='/category-combat.svg']"),
-    ).toBeInTheDocument();
-    expect(
-      document.querySelector(
-        "img[src='/referentials/referential-events.webp']",
-      ),
-    ).not.toBeInTheDocument();
-  });
+      expect(
+        document.querySelector(`img[src='${src}']`),
+      ).not.toBeInTheDocument();
+      // No second <img> takes its place — that is the whole point.
+      expect(box.querySelector("img")).toBeNull();
+      // The box itself stays, so the grid does not reflow around the gap,
+      // and the card still names the reference it links to.
+      expect(box).toBeInTheDocument();
+      expect(box.closest("a")).toHaveAttribute(
+        "href",
+        expect.stringContaining(slug),
+      );
+    },
+  );
 
   // Bloc 64/A: tiles ordered by the displayed label, in the visitor's
   // locale — the catalog declares Combat/Expédition/Équipements... in its

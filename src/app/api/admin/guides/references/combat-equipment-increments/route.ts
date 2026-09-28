@@ -1,7 +1,11 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { referenceKeys } from "@/lib/reference-equipment-server";
-import { equipmentSkillLabels, parseEquipmentStarIncrements } from "@/lib/equipment";
+import {
+  equipmentSkillLabels,
+  parseEquipmentStarIncrements,
+} from "@/lib/equipment";
 import { saveReferenceTable } from "@/services/reference-table-admin";
 
 // Bloc 75/C: mirrors expedition-equipment-increments/route.ts exactly — a
@@ -18,12 +22,13 @@ export async function PUT(request: Request) {
   const increments = parseEquipmentStarIncrements(raw[0]);
   await saveReferenceTable({
     key: referenceKeys.combatIncrements,
-    target: "les incréments par étoile des Équipements de Combat",
+    target: "combat-equipment-increments",
     columns: [...equipmentSkillLabels],
     rows: [increments],
     userId: session.user.id,
     actorRole: session.user.role,
     actorName: session.user.name ?? session.user.id,
   });
+  await revalidateContent("references", "combat-equipment");
   return NextResponse.json(increments);
 }

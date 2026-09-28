@@ -6,6 +6,12 @@ export type LevelUpParameters = {
   // the admin — AGENTS.md requires unconfirmed data to stay editable with a
   // default value. Bloc 98/A: {0, 0} is that default, and it is what marks a
   // league as not yet confirmed (see hasLevelUpTroopsFormula below).
+  // Bloc 108/F, vérifié : rien ici ne dépend d'une division. Une troupe par
+  // niveau est fonction du niveau et de la ligue de base, la courbe d'XP et le
+  // cycle de coffres sont universels, et aucun paramètre de ce référentiel
+  // n'est saisonnier. La séparation en divisions du Classement ne demande donc
+  // aucun changement de ce côté. (Événement, lui, est saisonnier — voir la
+  // note dans src/lib/events.ts.)
   troops: Record<League, { coefficient: number; ratio: number }>;
   maxLevel: number;
   columnSize: number;
@@ -23,7 +29,13 @@ export const defaultLevelUpParameters: LevelUpParameters = {
     diamond: { coefficient: 32.2028, ratio: 1.245 },
     legend: { coefficient: 32.2028, ratio: 1.245 },
   },
-  maxLevel: 150,
+  // Bloc 63/B: 200 is the highest level reachable in game. The six troop
+  // formulas and the XP curve are already valid over the whole span (Blocs 98
+  // and 107), so this only widens what is rendered — no new game data.
+  maxLevel: 200,
+  // A page is two columns of 30 on a wide screen; on a narrow one it is a
+  // single column, so columnSize doubles as the page size there (Bloc 63/A,
+  // level-up-reference.tsx).
   columnSize: 30,
   pageSize: 60,
   chestInterval: 10,
@@ -91,8 +103,8 @@ export function parseLevelUpParameters(value: unknown): LevelUpParameters {
   const raw = value as Partial<LevelUpParameters>;
   return {
     xp: {
-      base: Number(raw.xp?.base ?? 50),
-      ratio: Number(raw.xp?.ratio ?? 1.3),
+      base: Number(raw.xp?.base ?? defaultLevelUpParameters.xp.base),
+      ratio: Number(raw.xp?.ratio ?? defaultLevelUpParameters.xp.ratio),
     },
     troops: Object.fromEntries(
       leagues.map((league) => [
@@ -109,10 +121,16 @@ export function parseLevelUpParameters(value: unknown): LevelUpParameters {
         },
       ]),
     ) as LevelUpParameters["troops"],
-    maxLevel: Number(raw.maxLevel ?? 150),
-    columnSize: Number(raw.columnSize ?? 30),
-    pageSize: Number(raw.pageSize ?? 60),
-    chestInterval: Number(raw.chestInterval ?? 10),
+    // Bloc 63/B: the fallbacks read from defaultLevelUpParameters rather
+    // than repeating its numbers. They used to be literals, so raising
+    // maxLevel above meant raising it here too — a second source of truth for
+    // the same value, and silently stale if only one moved.
+    maxLevel: Number(raw.maxLevel ?? defaultLevelUpParameters.maxLevel),
+    columnSize: Number(raw.columnSize ?? defaultLevelUpParameters.columnSize),
+    pageSize: Number(raw.pageSize ?? defaultLevelUpParameters.pageSize),
+    chestInterval: Number(
+      raw.chestInterval ?? defaultLevelUpParameters.chestInterval,
+    ),
   };
 }
 
@@ -127,8 +145,40 @@ export function levelUpTroopsAt(
   return formula.coefficient * formula.ratio ** level;
 }
 
+/**
+ * The XP needed to LEAVE `level` — the cost of the level -> level+1 step.
+ * This is the game's own formula, and the primitive the table is built from;
+ * what the table shows per row is levelUpXpToReach below.
+ */
 export function xpAt(level: number, parameters = defaultLevelUpParameters) {
   return Math.round(parameters.xp.base * parameters.xp.ratio ** (level - 1));
+}
+
+/**
+ * The XP needed to REACH `level` — the cost of the level-1 -> level step, and
+ * `null` at level 1, which nobody pays to arrive at.
+ *
+ * Bloc 107/B: the Progression table used to put xpAt(N) on row N, i.e. the
+ * cost of leaving that level. The values were right and the labelling was
+ * inverted: a player reading "niveau 101 : 12,4T" pays 9,54T to get there, and
+ * 12,4T only to leave for 102. Reading a row as the price of reaching it is
+ * how these tables are read in game, so the column is shifted one row down
+ * rather than recomputed — the arithmetic never moved.
+ *
+ * XP is universal (no league enters into it), and the table renders this one
+ * column for every league, so this shift covers the whole reference at once.
+ *
+ * The prototype is authoritative (AGENTS.md), and it still puts xpAt(n) on row
+ * n, so this is a deliberate departure from it: recorded as an approved
+ * evolution in docs/cahier-des-charges-ml-helper.md §7.1 and flagged at the
+ * prototype's own xpAt.
+ */
+export function levelUpXpToReach(
+  level: number,
+  parameters = defaultLevelUpParameters,
+): number | null {
+  if (level <= 1) return null;
+  return xpAt(level - 1, parameters);
 }
 
 export function levelUpChestAt(

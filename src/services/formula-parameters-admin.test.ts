@@ -26,7 +26,7 @@ const input = {
   userId: "user-1",
   actorRole: "tools_manager",
   actorName: "Alice",
-  target: "Gain d’XP",
+  target: "xp-gain-rate" as const,
 };
 
 // Bloc 93/M6: the formula write path carries the same transactional
@@ -79,8 +79,13 @@ describe("saveFormulaParameters", () => {
     expect(entry.entityType).toBe("formula");
     expect(entry.entityId).toBe("formula-1");
     expect(entry.diff).toEqual({ before: { base: 5 }, after: { base: 10 } });
-    expect(entry.message).toContain(input.actorName);
-    expect(entry.message).toContain(input.target);
+    // Bloc 116/C: the entry stores the sentence's key and its values, not a
+    // French string — parameters are only ever updated, so the key is the
+    // target's slug plus "update".
+    expect(entry.messageKey).toBe("xp-gain-rate.update");
+    expect(JSON.parse(entry.messageParams)).toEqual({
+      actor: input.actorName,
+    });
   });
 
   it("diffs against null when no parameters were stored yet", async () => {

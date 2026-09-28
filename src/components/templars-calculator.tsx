@@ -158,7 +158,6 @@ export function TemplarsCalculator({
         href={referenceHref("templars")}
         title={references(`catalog.${reference.slug}`)}
         image={reference.image}
-        fallbackImage={reference.fallbackImage}
         label={crossReference("toReference")}
       />
     </div>

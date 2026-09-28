@@ -17,6 +17,19 @@ type NumberStepperProps = {
   min?: number;
   max?: number;
   step?: number;
+  /**
+   * Bloc 123 : à false, le champ perd ses boutons − / + et garde tout le
+   * reste — le brouillon de saisie et le bornage à la validation. La matrice
+   * mobile en a besoin : à cette largeur les boutons mangeaient le chiffre,
+   * mais un champ nu laissait passer « -10 » et mangeait le séparateur
+   * décimal, `min`/`max` ne contraignant pas ce qu'on tape (revue Codex).
+   */
+  buttons?: boolean;
+  /**
+   * Le clavier mobile à ouvrir. « numeric » n'offre pas de séparateur décimal
+   * sur iOS, donc un champ dont le pas est fractionnaire demande « decimal ».
+   */
+  inputMode?: "numeric" | "decimal";
 };
 
 export function NumberStepper({
@@ -27,6 +40,8 @@ export function NumberStepper({
   min = Number.NEGATIVE_INFINITY,
   max = Number.POSITIVE_INFINITY,
   step = 1,
+  buttons = true,
+  inputMode,
 }: NumberStepperProps) {
   const t = useTranslations("common");
   const clamp = (candidate: number) =>
@@ -66,16 +81,21 @@ export function NumberStepper({
   const displayValue = draft ?? String(value);
 
   return (
-    <div className="num-stepper number-stepper">
-      <button
-        type="button"
-        aria-label={t("decrease", { label })}
-        onClick={() => commit(value - step)}
-      >
-        −
-      </button>
+    <div
+      className={`num-stepper number-stepper${buttons ? "" : " number-stepper-plain"}`}
+    >
+      {buttons && (
+        <button
+          type="button"
+          aria-label={t("decrease", { label })}
+          onClick={() => commit(value - step)}
+        >
+          −
+        </button>
+      )}
       <input
         aria-label={label}
+        inputMode={inputMode}
         type="number"
         value={displayValue}
         min={Number.isFinite(min) ? min : undefined}
@@ -90,13 +110,15 @@ export function NumberStepper({
         onFocus={selectOnFocus}
         onBlur={(event) => commit(Number(event.target.value) || 0)}
       />
-      <button
-        type="button"
-        aria-label={t("increase", { label })}
-        onClick={() => commit(value + step)}
-      >
-        +
-      </button>
+      {buttons && (
+        <button
+          type="button"
+          aria-label={t("increase", { label })}
+          onClick={() => commit(value + step)}
+        >
+          +
+        </button>
+      )}
     </div>
   );
 }

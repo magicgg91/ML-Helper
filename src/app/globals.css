@@ -8,10 +8,64 @@
      same navy/anthracite hue (220°) and saturation, lightness nudged up
      ~4.5 points on bg/bg-panel/bg-panel-raised/border/surface-muted below.
      Contrast against --text stays well above WCAG AA (12.9:1/11.7:1). */
-  --bg: #1b2029;
-  --bg-panel: #222833;
-  --bg-panel-raised: #29303d;
-  --border: #343c4a;
+  /* ------------------------------------------------------------------
+     Bloc 129 §1.2 — les 21 jetons des pages publiques.
+
+     Ils remplacent la rampe anthracite bleutée des Blocs 34/F et 91 : le
+     neutre penche maintenant vers le violet de l'accent (teinte ~246-250
+     en sombre, ~220-225 en clair, au lieu de ~215 partout). Les noms sont
+     ceux du tableau du brief, à la lettre, pour qu'on puisse lire le §1.2
+     et le retrouver ici ligne pour ligne.
+
+     Les anciens noms (--bg-panel, --text-dim, --surface-muted…) restent
+     définis, mais comme des alias de ceux-ci. C'est volontaire : ce qui
+     n'est pas réécrit par ce bloc — l'intérieur des outils et des
+     référentiels, hors périmètre — suit la nouvelle palette sans qu'on
+     touche à son balisage, au lieu de garder l'ancienne et de jurer avec
+     le reste de la page.
+
+     Les couleurs qui portent du sens de jeu (--gold, --rarity-*, --xp-*,
+     --rank-*, --tool-*) ne sont PAS retouchées. Seul leur contraste sur
+     les nouveaux fonds est revérifié (color-palette.test.ts). */
+  --bg: #14131a;
+  --surface: #1d1c26;
+  --sunk: #18171f;
+  --raised: #2a2740;
+  --border: #2f2d3b;
+  --strong: #3d3a4c;
+  --divider: #2a2835;
+  --dashed: #4b4859;
+  --field: #17161e;
+  --kbd: #26242f;
+  --footer: #100f15;
+  --text2: #d6d3e2;
+  --text3: #bab6c8;
+  --muted: #9d99ae;
+  --accent-soft: #241d3c;
+  --accent-border: #43366b;
+  --accent-solid: #a386ee;
+  --on-accent: #15121f;
+  --ph: #262432;
+  /* --text et --accent ferment la liste des 21, définis plus bas avec
+     leur historique : --text avec les autres encres, --accent sur
+     --violet (le test de palette vérifie qu'il n'attrape jamais l'or). */
+  /* Les anciens noms, désormais alias. --bg-panel-raised suit --raised :
+     en thème clair le §1.2 le veut blanc pur, ce que color-palette.test.ts
+     interdisait jusqu'ici pour toute surface — la règle vaut toujours pour
+     la page et les cartes, pas pour l'élément surélevé (onglet actif). */
+  --bg-panel: var(--surface);
+  --bg-panel-raised: var(--raised);
+  /* Bloc 129 §1.2, la seule exception à la palette : la carte « Commence
+     ici » (guide Bien débuter) garde ses couleurs propres dans les deux
+     thèmes. Définies une fois ici, sans contre-partie dans le bloc clair —
+     même procédé que --event-* plus bas : ce sont des couleurs fixes, pas
+     un accent qui doit s'adapter au thème. */
+  --start-here-bg: #2b1d4f;
+  --start-here-art: #3a2a66;
+  --start-here-badge: #e7c878;
+  --start-here-badge-ink: #2b1d4f;
+  --start-here-title: #ffffff;
+  --start-here-text: #d9d2ea;
   /* Reserved for genuinely Legendary game data (rarity badges, item
      highlights) — never a generic interface accent. Use --accent /
      --accent-strong (violet) for buttons, links, focus states, hover. */
@@ -33,7 +87,12 @@
      on --bg, --bg-panel and --bg-panel-raised. */
   --emerald-text: #63a892;
   --ember: #c05a3e;
-  --violet: #8b6bb8;
+  /* Bloc 129 §1.2 : --accent vaut #B8A0F5 en thème sombre. Il continue de
+     pointer sur --violet (règle de palette : l'accent est violet, jamais
+     l'or), donc c'est --violet qui prend la valeur du brief.
+     --violet-bright, qui porte --accent-strong (survol, état fort), reste
+     plus clair que lui. */
+  --violet: #b8a0f5;
   --violet-bright: #c9a8ec;
   /* Bloc 80/F, Bloc 81/B review: the event color picker's own fixed
      palette (5 base hues x 2 shades = 10 options) — deliberately NOT the
@@ -74,12 +133,17 @@
   --event-text-amber: #facc15;
   --event-text-ember: #fca5a5;
   --event-text-sapphire: #93c5fd;
-  --text: #e9e4d8;
+  /* Bloc 129 §1.2 : l'encre principale, désormais très légèrement
+     violacée elle aussi (elle était crème, #e9e4d8). */
+  --text: #edebf4;
   /* Bloc 92/A11y (H2): lightened from #9299a6 so secondary/dim text clears
      WCAG AA (4.5:1) on the game-tinted tile surfaces it lands on (gems league
      headers, templars stats, Boutique descriptions) — it was 4.04–4.49:1
-     there. Still greyer than --text on the plain backgrounds. */
-  --text-dim: #9ea4b0;
+     there. Still greyer than --text on the plain backgrounds.
+     Bloc 129 §1.2 : ce rôle s'appelle --muted dans le brief, et c'est lui
+     qui porte la valeur ; --text-dim reste comme alias pour tout ce qui
+     n'est pas réécrit par ce bloc. */
+  --text-dim: var(--muted);
   /* Bloc 91/M8: raised from #5c6472 (WCAG ~2.5:1, failed AA). Codex review: the
      value must clear 4.5:1 on the DARKEST surface it lands on — the raised
      panel (#29303d) behind .login-card small — not just the page bg/panels, so
@@ -97,24 +161,105 @@
   --summary-total: #f08a65;
   --background: var(--bg);
   --foreground: var(--text);
-  --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
-  --surface-muted: #2f3541;
+  /* Bloc 129 : la surface sourde suit --kbd, le jeton du §1.2 qui joue ce
+     rôle-là (fond discret posé sur la carte). */
+  --surface-muted: var(--kbd);
   --accent: var(--violet);
   --accent-strong: var(--violet-bright);
-  --muted: var(--text-dim);
   --success: var(--emerald-bright);
   /* Bloc 78/C: see .star-rating's own comment below — dark theme's
      --foreground was already fine here, so this just points at it. */
   --star-white: var(--foreground);
+  /* Bloc 112: Classement's range tiles. One color per RESULT — distinct from
+     the per-range band shades, which also vary with a range's position inside
+     its movement group. It paints the badge, the target league's name and the
+     bar segment, so it must clear 4.5:1 as text on the tinted tile: these are
+     the light-on-dark reads, the light theme below carries the dark ones, and
+     responsive-styles.test.ts measures both against every band shade.
+     --rank-strong-ink is what sits ON that color inside the badge. */
+  --rank-promotion: #7cc79d;
+  --rank-stay: #8bb4e4;
+  --rank-relegation: #e79a62;
+  --rank-strong-ink: #1b2029;
+  /* The player's own marker and bubble. Fixed to this one hue, never a band
+     shade, so "where you are" can never be confused with a range's color. */
+  --rank-player: #e0805f;
+  --rank-player-ink: #1b2029;
+  /* Bloc 113: the Villes tool's tiles. A gain is green — as a value, and as
+     the multiplier badge's fill with --tool-gain-ink on it. The highlight is
+     the violet reserved for a headline result and an N-city total; the green
+     surface is for a tile that is itself a gain. The three share colors name
+     where a production comes from, and are read beside their own legend. */
+  --tool-gain: #7cc79d;
+  --tool-gain-ink: #1b2029;
+  --tool-highlight-bg: #322a4a;
+  --tool-highlight-border: #4a3d6b;
+  --tool-green-bg: #24352b;
+  --tool-green-border: #35513f;
+  --tool-base: #c9a8ec;
+  --tool-temple: #8b6bb8;
+  --tool-stuff: #e0bb63;
+  /* Bloc 114/C: the ink of a value on the violet highlight tile, stronger
+     than --accent-strong because that tile is where the one answer sits. */
+  --tool-highlight-ink: #e3d0fa;
+  /* A result tile that is deliberately NOT the answer: neutral fill, so the
+     violet one beside it stays the thing the eye lands on. */
+  --tool-neutral-bg: #2f3541;
+  /* Bloc 114/B: the five steps of the XP scale. A step is a frame, a heavily
+     muted fill of the same hue, and the ink of its rate. They are read as an
+     ordered ramp, never alone: every tile states its own rate in words, so
+     the color adds emphasis rather than carrying the meaning. Measured at
+     >= 4.5:1 for every text on every step, in both themes. */
+  --xp-s0-bg: #2b2228;
+  --xp-s0-border: #6e4348;
+  --xp-s0-ink: #dfa5a5;
+  --xp-s50-bg: #34242a;
+  --xp-s50-border: #8f4a4a;
+  --xp-s50-ink: #e8adad;
+  --xp-s100-bg: #3d262c;
+  --xp-s100-border: #b8474a;
+  --xp-s100-ink: #f0b5b5;
+  --xp-s150-bg: #47272e;
+  --xp-s150-border: #d4484c;
+  --xp-s150-ink: #f6bcbc;
+  --xp-s200-bg: #512930;
+  --xp-s200-border: #f05a5e;
+  --xp-s200-ink: #fcc4c4;
+  /* The two small texts that sit on all five steps at once, so each is
+     picked for the worst of the five. */
+  --xp-caption: #b6a6ab;
+  --xp-range-ink: #f2eef0;
+  /* Bloc 114/A.1: the "coming soon" chip. */
+  --soon-bg: #4a3c22;
+  --soon-ink: #f3e0b4;
   color-scheme: dark;
 }
 
 :root[data-theme="light"] {
-  --bg: #e4e7eb;
-  --bg-panel: #f0f2f5;
-  --bg-panel-raised: #f6f7f9;
-  --border: #c5cad2;
+  /* Bloc 129 §1.2 — les mêmes 21 jetons, versant clair. Même ordre que le
+     tableau du brief et que le bloc sombre ci-dessus. */
+  --bg: #e5e7ec;
+  --surface: #f2f3f6;
+  --sunk: #e9ebf0;
+  --raised: #ffffff;
+  --border: #d3d6dd;
+  --strong: #c9cdd5;
+  --divider: #dee0e6;
+  --dashed: #b8bdc8;
+  --field: #fafafb;
+  --kbd: #edeef2;
+  --footer: #dcdfe6;
+  --text2: #2e3240;
+  --text3: #3a3f4b;
+  --muted: #4f5563;
+  --accent-soft: #ede7f8;
+  --accent-border: #d6c9f0;
+  --accent-solid: #5b2db0;
+  --on-accent: #ffffff;
+  --ph: #dcdee4;
+  --bg-panel: var(--surface);
+  --bg-panel-raised: var(--raised);
   --gold: #9b6f1e;
   --gold-bright: #704b0e;
   --amber: #8f5c14;
@@ -129,12 +274,15 @@
      and panels (--emerald itself is only 4.49:1 as text on --bg here). */
   --emerald-text: #2f6b57;
   --ember: #a7432e;
-  --violet: #75549d;
+  /* Bloc 129 §1.2 : accent clair = #5B2DB0, porté par --violet (cf. le
+     bloc sombre). --violet-bright reste le violet fort du survol. */
+  --violet: #5b2db0;
   --violet-bright: #5b21b6;
-  --text: #20242b;
+  --text: #17151f;
   /* Bloc 91/M8: darkened from #626976 (WCAG ~4.05:1) / #858b95 (~2.5:1) so
-     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim. */
-  --text-dim: #5b6270;
+     both clear 4.5:1 on the light panels/tiles; faint stays lighter than dim.
+     Bloc 129 §1.2 : la valeur vit sur --muted, --text-dim en est l'alias. */
+  --text-dim: var(--muted);
   /* Bloc 92/A11y (L2): darkened from #666d78 (4.21:1 on --bg, under AA) so
      .total-box small and other faint text clear 4.5:1 on the light page bg;
      stays lighter than --text-dim, per the tier ordering. */
@@ -155,12 +303,10 @@
   --summary-total: #8f3210;
   --background: var(--bg);
   --foreground: var(--text);
-  --surface: var(--bg-panel);
   --surface-raised: var(--bg-panel-raised);
-  --surface-muted: #d9dde3;
+  --surface-muted: var(--kbd);
   --accent: var(--violet);
   --accent-strong: var(--violet-bright);
-  --muted: var(--text-dim);
   --success: var(--emerald-bright);
   /* Bloc 78/C: --foreground (--text, #20242b) reads as near-black for the
      small filled star icons specifically, even though every other label
@@ -168,6 +314,49 @@
      "muted but legible" grey, ~4.9:1 against --surface) instead of
      inventing a new literal or touching --foreground itself. */
   --star-white: var(--text-dim);
+  /* Bloc 112, light theme: the dark reads of the same three results. Verified
+     at 4.83 / 4.93 / 4.56 against the lightest tile any band shade produces —
+     promotion is 3 points darker than the brief's #2f6a4c, which measured
+     4.27 there and would have missed AA. */
+  --rank-promotion: #2c6146;
+  --rank-stay: #34568a;
+  --rank-relegation: #8a4a1c;
+  --rank-strong-ink: #ffffff;
+  --rank-player: #a3341f;
+  --rank-player-ink: #ffffff;
+  /* Bloc 113, light theme: the brief's own values. White on --tool-gain
+     measures 6.5:1 for the badge, and the gain color reads 5.8:1 on a card,
+     5.5:1 on the green surface and 4.6:1 on the violet highlight. */
+  --tool-gain: #256a47;
+  --tool-gain-ink: #ffffff;
+  --tool-highlight-bg: #ddd3f5;
+  --tool-highlight-border: #b9a6e8;
+  --tool-green-bg: #e2efe7;
+  --tool-green-border: #b7d6c3;
+  --tool-base: #5b21b6;
+  --tool-temple: #a78bea;
+  --tool-stuff: #d9a441;
+  --tool-highlight-ink: #3b1480;
+  --tool-neutral-bg: #e3e5ea;
+  --xp-s0-bg: #fdf3f3;
+  --xp-s0-border: #f0a8a8;
+  --xp-s0-ink: #9b3b3b;
+  --xp-s50-bg: #fbe5e5;
+  --xp-s50-border: #e06666;
+  --xp-s50-ink: #a82626;
+  --xp-s100-bg: #f8d6d6;
+  --xp-s100-border: #dc2626;
+  --xp-s100-ink: #9f1515;
+  --xp-s150-bg: #f1c6c6;
+  --xp-s150-border: #a11a1a;
+  --xp-s150-ink: #7a1010;
+  --xp-s200-bg: #e8b9b9;
+  --xp-s200-border: #5c0f0f;
+  --xp-s200-ink: #4a0b0b;
+  --xp-caption: #4b5060;
+  --xp-range-ink: #1f2230;
+  --soon-bg: #f3e6c8;
+  --soon-ink: #6b4a0f;
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -181,17 +370,51 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, sans-serif);
+  /* Bloc 129 §4 : le voile ambiant écrivait les deux couleurs en dur
+     (l'ancien --violet #8b6bb8 et l'ancien --emerald #4a9179), donc il
+     gardait la teinte d'avant la refonte et ne suivait pas le thème. Il
+     passe par les jetons ; à 6 % il reste un voile, pas une couleur. */
   background-image:
     radial-gradient(
       ellipse at top left,
-      rgb(139 107 184 / 6%),
+      color-mix(in srgb, var(--accent) 6%, transparent),
       transparent 50%
     ),
     radial-gradient(
       ellipse at bottom right,
-      rgb(74 145 121 / 6%),
+      color-mix(in srgb, var(--success) 6%, transparent),
       transparent 50%
     );
+  /* Bloc 105: the violet glow is pushed 10rem down the page, so the very top
+     edge is nothing but --bg — one flat colour, equal to what theme-color
+     declares to the browser (src/lib/theme-color.ts). It used to be a
+     gradient there, measuring #212431 at the left edge and fading to #1b2029
+     past mid-width, dithered pixel by pixel.
+
+     Bloc 106 — CORRECTION. This was done to stop iOS 27 frosting the
+     status-bar strip over the page, on the theory that WebKit frosts it when
+     it cannot sample one solid colour at the top edge. It did not work: the
+     blur is an Apple system bug hitting every PWA on the device, ours
+     included, and no markup of ours reaches it. See src/lib/theme-color.ts
+     for the full record and for what would justify reopening it.
+
+     The offset stays because a top edge that matches the declared theme-color
+     is a coherent thing to hold on any platform, and the change costs nothing
+     visible — the glow is 6% alpha and simply starts under the header. It is
+     no longer a fix for a known defect, so if it ever gets in the way of a
+     design change, it can go: revert this and the spec that guards it.
+
+     The layer is translated, not resized, so the glow keeps its shape and
+     only starts lower. It still tiles (the initial `repeat`), and that is
+     harmless only because this gradient reaches `transparent` well before its
+     own bottom edge, so the tile wrapping into the cleared band paints
+     nothing — checked by removing the offset and watching
+     globals-top-edge.spec.ts go red, then by measuring the band with the
+     offset in place. Change the colour stops and that reasoning stops
+     holding; the spec measures painted pixels, so it will say so. */
+  background-position:
+    0 10rem,
+    0 0;
   min-height: 100vh;
 }
 main {
@@ -207,9 +430,24 @@ h1 {
 a {
   color: inherit;
 }
-button,
-input,
-select {
+/* Bloc 125 §2: the admin is excluded here, and says the same thing for
+   itself inside a cascade layer (src/app/admin/admin.css).
+   This declaration is unlayered, and unlayered CSS beats every cascade layer
+   whatever the specificity — so inside .admin-shell it was silently
+   flattening the font-size and font-weight of every button, which the
+   refonte writes as Tailwind utilities (@layer utilities). Measured before
+   the fix: "Enregistrer" came out 14px/400 where its classes ask for
+   14px/600, and a 12px/600 segmented option came out 14px/400.
+
+   The exclusion is wrapped in `:where()`, which contributes nothing to
+   specificity, so this reset stays at 0-0-1 exactly as it was. Codex review
+   (PR #149): written as a bare `:not()` it weighed 0-1-2 and started beating
+   the component rules below it, which are 0-1-1 — measured on /fr/tools:
+   a league button went from 12.48px to 16px, and a stepper button from
+   15px monospace to 12.48px sans. */
+button:where(:not(.admin-shell button)),
+input:where(:not(.admin-shell input)),
+select:where(:not(.admin-shell select)) {
   font: inherit;
 }
 /* Bloc 92/A11y (L1): one consistent keyboard focus indicator for every
@@ -225,34 +463,70 @@ select {
 .public-shell {
   min-height: 100vh;
 }
-.public-header,
-.public-footer {
-  width: min(74rem, calc(100% - 2rem));
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
+/* Bloc 129 §1.3 : 1200 px de large au plus, centré. Le pied de page ne
+   partage plus cette règle : il porte son propre fond sur toute la largeur
+   et range son contenu en quatre colonnes (§2.2). */
 .public-header {
   position: relative;
   z-index: 30;
-  min-height: 4.5rem;
+  width: min(75rem, calc(100% - 2rem));
+  /* §2.1 : 88 px. */
+  min-height: 5.5rem;
+  margin: 0 auto;
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
   border-bottom: 1px solid var(--border);
 }
+/* Bloc 129 §2.1 : 440 px de large au plus, 44 px de haut, une loupe à
+   gauche et le rappel de la touche « / » à droite. */
 .site-search {
   position: relative;
   flex: 1 1 14rem;
-  max-width: 22rem;
+  max-width: 27.5rem;
+}
+.site-search-label {
+  position: relative;
+  display: block;
+}
+.site-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.site-search-shortcut {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--strong);
+  border-radius: 0.35rem;
+  background: var(--kbd);
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  transform: translateY(-50%);
 }
 .site-search-label input {
   width: 100%;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
+  height: 2.75rem;
+  /* De la place pour la loupe à gauche et pour la touche à droite. */
+  padding: 0 2.6rem 0 2.5rem;
+  border: 1px solid var(--strong);
+  /* Bloc 133 §D : le même rayon que les commandes de l'en-tête. La pilule
+     était le dernier point resté ouvert des Blocs 129 et 132 — le champ
+     était la seule chose ronde d'une rangée de rectangles. */
+  border-radius: var(--header-control-radius);
+  background: var(--field);
   color: var(--text);
+  /* §1.1 : la recherche quitte la police à chasse fixe. */
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.9rem;
 }
 .site-search-label input::placeholder {
   color: var(--text-dim);
@@ -307,57 +581,245 @@ select {
 .public-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  /* Bloc 132 §1 : 8 px entre les boutons, ici comme dans la navigation. */
+  gap: 0.5rem;
 }
-.public-nav {
-  display: flex;
-  align-items: center;
+/* Bloc 132 §3 : la recherche et la navigation vivent dans le même parent.
+   Sur desktop il s'efface (`display: contents`) et ses deux enfants
+   retrouvent leur place dans la rangée ; sur mobile il devient le panneau
+   déroulant qui les contient. Un seul balisage pour les deux tailles, donc
+   un seul champ de recherche dans la page — dupliquer le champ aurait
+   dupliqué son état et ses résultats. */
+.public-header-panel {
+  display: contents;
 }
-.public-nav-toggle {
+/* Le bouton à icône propre au mobile : le menu. Bloc 141 : la loupe a été
+   retirée — elle ouvrait le même panneau, dont la recherche est le premier
+   élément. */
+.public-header-icon {
   display: none;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: var(--tap-target);
+  height: var(--tap-target);
   place-items: center;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
-  color: var(--text-dim);
+  border: 1px solid var(--strong);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text2);
   cursor: pointer;
-  font-size: 1rem;
 }
-.public-nav-toggle:hover {
+.public-header-icon:hover {
   border-color: var(--accent);
-  color: var(--accent-strong);
+  color: var(--accent);
+}
+/* Menu ouvert : le bouton porte l'état actif, comme une entrée courante. */
+.public-header[data-open="true"] .public-header-menu {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .public-header-nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 .public-header a,
 .public-footer a {
   text-decoration: none;
 }
-/* Bloc 91/M7: the footer's site-section links. */
-.public-footer-nav {
+/* Bloc 129 §2.2 : le pied de page passe d'une rangée de liens (Bloc 91/M7)
+   à quatre colonnes — la marque et ce que fait le site, puis Outils,
+   Référentiels et Aide. La ligne du bas porte le copyright et les mentions
+   légales. */
+.public-footer {
+  margin-top: 4rem;
+  padding: 3rem 0 1.5rem;
+  border-top: 1px solid var(--strong);
+  background: var(--footer);
+}
+.public-footer-grid,
+.public-footer-bottom {
+  width: min(75rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+.public-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+}
+.public-footer-brand-col {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+  max-width: 32rem;
+}
+.public-footer-brand {
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.public-footer-lead {
+  margin: 0;
+  color: var(--text3);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.public-footer-note {
+  margin: 0;
+  /* --text-faint tombe sous 4.5:1 sur le fond du pied de page en thème
+     clair (4.40:1) ; --muted y tient (5.60:1). */
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.public-footer-col-title {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.public-footer-col ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.public-footer-col a {
+  color: var(--text3);
+  font-size: 0.9rem;
+}
+.public-footer-col a:hover {
+  color: var(--accent);
+}
+.public-footer-bottom {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
 }
-.public-footer-nav a:hover {
-  color: var(--accent-strong);
+.public-footer-bottom a {
+  color: var(--muted);
 }
+.public-footer-bottom a:hover {
+  color: var(--accent);
+}
+@media (max-width: 60rem) {
+  .public-footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .public-footer-brand-col {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 34rem) {
+  .public-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Bloc 129 §2.3 : le fil d'Ariane, sur toutes les pages sauf l'accueil. */
+.breadcrumb {
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+.breadcrumb-separator {
+  color: var(--border);
+}
+.breadcrumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
+/* Bloc 129 §2 : l'en-tête de page — titre, description d'une ligne, action. */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.page-header-copy {
+  max-width: 52rem;
+}
+.page-header h1 {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 44 px sur les pages d'index. */
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.page-header-lead {
+  margin: 0.75rem 0 0;
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+.page-header-action {
+  flex: none;
+}
+@media (max-width: 48rem) {
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+/* Bloc 132 §2 : « Signaler une erreur » passe par le bouton partagé — cette
+   classe ne porte plus que l'icône et la taille propres au lien. */
+.report-error-link {
+  gap: 0.45rem;
+  font-size: 0.875rem;
+}
+/* Bloc 132 §1 : la marque seule. Le sous-titre « Compagnon Million Lords »
+   du Bloc 129 §2.1 disparaît — il répétait ce que dit le chapô de
+   l'accueil, et la ligne qu'il occupait servait mieux à poser le nom à sa
+   taille de maquette (30 px). */
 .brand {
-  color: var(--accent-strong);
-  font-size: 1.2rem;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  display: block;
+  line-height: 1.15;
+}
+.brand-name {
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 .public-main {
-  width: min(74rem, calc(100% - 2rem));
+  width: min(75rem, calc(100% - 2rem));
   min-height: 38vh;
   margin: 2rem auto 5rem;
   padding: 0;
@@ -373,13 +835,13 @@ select {
    smaller) font-size clamp — `.public-main > h1` (a class + a type
    selector) outranks a lone class selector, so only their `white-space:
    nowrap` was actually landing, on text sized for this rule's huge
-   clamp(2.25rem, 6vw, 4.8rem) instead. Excluding them here is what
-   Bloc 33/35's narrower clamps needed all along to actually apply.
-   Bloc 53/D: same exclusion for /guides and /referentiels' own smaller
-   titles, added below. */
-.hero h1,
-.public-main > h1:not(.tools-page-title):not(.reference-page-title):not(.guides-page-title):not(.referentiels-page-title),
-.guide-shell h1 {
+   clamp(2.25rem, 6vw, 4.8rem) instead.
+
+   Bloc 129 : les quatre exclusions tombent avec les classes qu'elles
+   visaient — plus aucun titre ne les porte, les pages d'index passant par
+   l'en-tête de page commun (§2). Reste .hero h1, seul à être encore rendu
+   par ce sélecteur. */
+.hero h1 {
   max-width: 15ch;
   margin: 0.25rem 0 1rem;
   font-size: clamp(2.25rem, 6vw, 4.8rem);
@@ -426,9 +888,10 @@ select {
   gap: 0.65rem;
   margin-top: 1rem;
 }
+/* Bloc 129 §3.5 : .guide-shell quitte ce groupe — l'article d'un guide
+   n'est plus une carte posée sur la page, c'est la colonne de lecture. */
 .public-card,
-.empty-state,
-.guide-shell {
+.empty-state {
   padding: 0.9rem 1rem;
   border: 1px solid var(--border);
   border-radius: 1rem;
@@ -453,60 +916,154 @@ select {
   color: var(--muted);
 }
 
-main.public-main.contact-page {
-  max-width: 34rem;
-  text-align: center;
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.6 — Contact.
+
+   La page passe d'une colonne centrée de 34 rem à deux colonnes : les trois
+   motifs à gauche, le formulaire à droite. Le titre perd son dégradé et son
+   surtitre (§1.1, §3.6).
+   --------------------------------------------------------------------- */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 27.5rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
 }
 .contact-page h1 {
-  max-width: none;
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  line-height: 1.15;
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 44 px, comme les autres pages d'index. */
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
 }
-.contact-page .eyebrow,
-.contact-page .lead {
-  margin-left: auto;
-  margin-right: auto;
+.contact-lead {
+  max-width: 34rem;
+  margin: 1rem 0 0;
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.65;
 }
-.contact-page .contact-form {
-  text-align: left;
-  padding: 1.5rem;
+.contact-reasons {
+  display: grid;
+  gap: 1.25rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.contact-reasons li {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  color: var(--text3);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.contact-reasons svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--accent);
+}
+.contact-reasons p {
+  margin: 0;
+}
+.contact-reason-title {
+  color: var(--text);
+  font-weight: 600;
+}
+.contact-form {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.75rem;
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--surface);
-  box-shadow: 0 0.8rem 2.5rem rgb(37 44 39 / 7%);
-}
-
-.contact-form {
-  display: grid;
-  gap: 1rem;
-  max-width: 32rem;
-  margin: 1.5rem auto 0;
 }
 .contact-form label {
   display: grid;
   gap: 0.4rem;
-  color: var(--muted);
+  color: var(--text3);
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
 }
-.contact-form textarea {
-  min-height: 8rem;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 0.55rem;
-  background: var(--surface-raised);
-  color: var(--foreground);
-  resize: vertical;
+/* §3.6 : l'objet en pastilles, dans un groupe qui porte son nom. */
+.contact-subjects {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.contact-subjects legend {
+  padding: 0;
+  color: var(--text3);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.contact-subject-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.contact-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 .contact-form input,
-.contact-form select {
-  padding: 0 0.7rem;
+.contact-form textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--strong);
+  border-radius: 0.6rem;
+  background: var(--field);
+  color: var(--text);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.9rem;
+}
+.contact-form textarea {
+  min-height: 9rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: var(--muted);
+}
+.contact-privacy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 .contact-form button {
   justify-self: start;
 }
-
+.contact-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+@media (max-width: 62rem) {
+  .contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+@media (max-width: 34rem) {
+  .contact-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .player-settings {
+  /* La largeur de la colonne d'en-têtes de la matrice, que la rangée des
+     templiers reprend pour s'aligner dessus. Déclarée sur le panneau plutôt
+     que sur `:root` : elle n'a de sens qu'ici, et le premier `:root` du
+     fichier appartient aux jetons de l'en-tête public (un test l'y attend). */
+  --player-matrix-head: 10.625rem;
+  /* Bloc 140 : la hauteur des champs compacts du bandeau déplié — ceux de la
+     matrice et ceux des templiers, qui se lisent côte à côte sur le même
+     écran. Un jeton plutôt que la même valeur écrite à deux endroits : c'est
+     l'égalité qui est la propriété voulue, pas le chiffre. */
+  --player-field-h: 2rem;
   width: min(74rem, calc(100% - 2rem));
   margin: 1rem auto 0;
   border: 1px solid var(--border);
@@ -515,37 +1072,23 @@ main.public-main.contact-page {
   box-shadow: 0 0.8rem 2.5rem rgb(37 44 39 / 7%);
   overflow: hidden;
 }
-.player-settings > details > summary,
-.settings-section > summary {
+.player-settings > details > summary {
+  padding: 1rem 1.2rem;
   cursor: pointer;
   list-style: none;
   font-weight: 800;
 }
-.player-settings > details > summary::-webkit-details-marker,
-.settings-section > summary::-webkit-details-marker {
+.player-settings > details > summary::-webkit-details-marker {
   display: none;
-}
-.player-settings > details > summary {
-  padding: 1rem 1.2rem;
-}
-.settings-section > summary::before {
-  content: "▸";
-  margin-right: 0.55rem;
-  color: var(--accent);
-}
-.settings-section[open] > summary::before {
-  content: "▾";
 }
 .player-settings summary small {
   color: var(--muted);
   font-weight: 500;
 }
-#player-settings-title + small {
-  margin-left: 0.6rem;
-}
 .player-summary-row1 {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
 }
 /* The disclosure arrow lives on the title itself, not as a 3rd flex item
@@ -559,162 +1102,104 @@ main.public-main.contact-page {
 .player-settings > details[open] > summary #player-settings-title::before {
   content: "▾";
 }
-.player-summary-line2 {
-  display: block;
-  margin-top: 0.4rem;
-  padding-left: 1.1rem;
-  color: var(--muted);
-  font-weight: 500;
-  font-family: var(--font-mono, monospace);
+/* Bloc 123 §1 : à droite de l'en-tête, la pastille de ligue puis le niveau,
+   les VP et les templiers. Les VP passent par formatGameNumber (k/M/G/T),
+   plus par la notation compacte d'Intl qui écrivait « Md » en français. */
+.player-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.player-league-pill {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 0.78rem;
-  line-height: 1.6;
-  white-space: normal;
-  overflow-x: visible;
+  font-weight: 700;
+  white-space: nowrap;
 }
-/* Always 2 rows of 5 skills, regardless of viewport width — not just below
-   the mobile/tablet breakpoint. */
-.player-summary-skill-group {
-  display: block;
-  white-space: normal;
+/* Bloc 123 §1 : les dix statistiques en étiquettes, cinq par rangée et à
+   colonnes égales. Elles disent l'état sans rien ouvrir ; une fois le
+   panneau ouvert, la ligne Total du tableau les remplace à la même place. */
+.player-stat-chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.7rem;
 }
-.player-summary-line2 .sk-name {
+.player-settings > details[open] .player-stat-chips {
+  display: none;
+}
+.player-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.125rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  font-weight: 500;
+}
+.player-chip-name {
   color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
-.player-summary-line2 .sk-value {
-  color: var(--summary-total);
+.player-chip-total {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
-.sk-breakdown {
-  color: var(--text-faint);
+.player-chip-breakdown {
+  margin-left: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
-/* Component color coding shared between the input sections (Équipement /
-   Points / Temple clan) and the collapsed summary breakdown — same
-   component, same color, in both places. */
-.component-equipment {
+/* Component color coding shared between the matrix rows (Équipement /
+   Points / Temple clan), the collapsed chips and the Total — same
+   component, same color, wherever it is read. */
+.component-equipment,
+.tone-equipment {
   color: var(--emerald-bright);
 }
-.component-points {
+.component-points,
+.tone-points {
   color: var(--accent-strong);
 }
-.component-temple {
+.component-temple,
+.tone-temple {
   color: var(--sapphire-bright);
 }
-.settings-section-equipment > summary {
-  color: var(--emerald-bright);
-}
-.settings-section-points > summary {
-  color: var(--accent-strong);
-}
-.settings-section-temple > summary {
-  color: var(--sapphire-bright);
+.component-total {
+  color: var(--summary-total);
 }
 .player-settings-body {
   padding: 0 1.2rem 1.2rem;
 }
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 0.8rem;
-}
-.settings-grid-primary {
-  padding: 1rem 0;
-  border-top: 1px solid var(--border);
-}
-/* Bloc 71/D, desktop: League/Level/VP now share a single row — a 5:2:3
-   column grid (50%/20%/30% of the row) replacing Bloc 69/D's "League
-   spans alone, Level/VP split 25% each below it". VP's own unit-input
-   (below) further splits that 30% 2:1 internally, so the NumberStepper
-   itself lands at 20% of the full row and the unit select at 10%. */
-.settings-grid-primary {
-  grid-template-columns: 5fr 2fr 3fr;
-}
-.settings-grid-primary .unit-input {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-}
-/* Bloc 68/H+I, mobile only: every .settings-grid section (equipment
-   skills, skill points, templars, clan temple) goes from 1 to 2 columns
-   (I). Within .settings-grid-primary specifically, its first child — the
-   league LeagueButtons group since Bloc 68/F — spans both columns on its
-   own full-width row, leaving Level and VP as the 2nd/3rd children to
-   share the row below (H). Depends on the JSX keeping League first,
-   Level second, VP third. */
-@media (max-width: 900px) {
-  .settings-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .settings-grid-primary > :first-child {
-    grid-column: 1 / -1;
-  }
-  /* Give the VP column extra width (vs. an even 1fr/1fr split) to offset
-     its unit select, and shrink that select, so the two NumberSteppers
-     (Level's, which has no unit select, and VP's) end up close to the
-     same width instead of VP's looking squeezed. Bloc 69/D: Level's own
-     share is reduced a further 10% (5fr -> 4.5fr) and handed to VP
-     (7fr -> 7.5fr), keeping the 12fr total. */
-  .settings-grid-primary {
-    grid-template-columns: minmax(0, 4.5fr) minmax(0, 7.5fr);
-  }
-  .settings-grid-primary .unit-input {
-    grid-template-columns: minmax(0, 1fr) 3.1rem;
-  }
-  .settings-grid-primary .unit-input select {
-    padding: 0 0.3rem;
-  }
-}
-.settings-grid label {
-  display: grid;
-  align-content: start;
-  gap: 0.4rem;
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-/* Bloc 69/D: same label look as the Level/VP fields (.settings-grid
-   label above), for the league field's own title — a plain <div>/<span>
-   since LeagueButtons renders a role="group" div, not a <label>. */
-.settings-grid-league-field {
-  display: grid;
-  gap: 0.4rem;
-}
-/* Bloc 73/A review fix: the 50% column (Bloc 71/D) was mathematically
-   correct but the buttons themselves never grew to fill it — flex:0 0
-   auto left up to ~180px of dead space after the last button, reading
-   as "not actually 50%" to the eye. Same no-truncation equal-width
-   technique as Bloc 69/E (min-width: max-content, not 0, so a button
-   never shrinks below its own label while flex-grow: 1 spreads the
-   column's full width across all 6). */
-.settings-grid-league-field .family-buttons button {
-  flex: 1 1 0;
-  min-width: max-content;
-}
-.settings-grid-league-label {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-.settings-grid label > span {
-  display: flex;
-  justify-content: space-between;
-}
-.settings-grid output,
-.points-summary strong {
-  color: var(--success);
-}
-.points-summary strong.stat-highlight,
-.settings-grid output.stat-highlight {
-  color: var(--accent-strong);
-}
-select,
-input {
+
+/* Bloc 131/C : l'administration est exclue ici comme elle l'est déjà plus
+   haut (Bloc 125 §2, même motif `:where(:not(.admin-shell …))`). Cette
+   déclaration-ci n'avait pas reçu l'exclusion, et elle n'est dans aucune
+   couche : elle battait donc toutes les classes utilitaires de la refonte,
+   qui vivent dans `@layer utilities`.
+
+   `:where()` ne pèse rien : la règle reste à 0-0-1, exactement comme avant. */
+select:where(:not(.admin-shell select)),
+input:where(:not(.admin-shell input)) {
   min-height: 2.55rem;
   border: 1px solid var(--border);
   border-radius: 0.55rem;
   background: var(--surface-raised);
   color: var(--foreground);
 }
-select {
+select:where(:not(.admin-shell select)) {
   padding: 0 0.7rem;
 }
+/* Le champ numéroté − / valeur / + que partagent tous les calculateurs. */
 .number-stepper {
   display: grid;
   grid-template-columns: 2.45rem minmax(0, 1fr) 2.45rem;
@@ -731,7 +1216,7 @@ select {
   appearance: none;
 }
 .number-stepper button,
-.points-summary button {
+.player-points-reset {
   border: 1px solid var(--border);
   background: var(--surface-muted);
   color: var(--foreground);
@@ -750,32 +1235,381 @@ select {
   grid-template-columns: minmax(0, 1fr) 4.5rem;
   gap: 0.45rem;
 }
-.settings-section {
+
+/* Bloc 123 §2.1 : l'échelon, le niveau et les VP sur une seule ligne. Le
+   sélecteur prend la moitié de la rangée, comme la ligue seule avant lui. */
+.player-general {
+  display: grid;
+  grid-template-columns: 5fr 2fr 3fr;
+  gap: 0.8rem;
+  padding: 1rem 0;
   border-top: 1px solid var(--border);
 }
-.settings-section > summary {
-  padding: 1rem 0;
-}
-.settings-section-body {
-  padding-bottom: 1rem;
-}
-.settings-help {
-  margin: 0 0 0.8rem;
+.player-general label {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
   color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
-.points-summary {
+.player-field-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.player-rung-field {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+}
+.player-rung-buttons {
+  margin: 0;
+}
+/* Bloc 139/A : deux rangées, et des colonnes égales.
+
+   Les dix échelons d'une échelle scindée tenaient sur une seule ligne en
+   `flex: nowrap` : elle débordait et coupait le dernier bouton. Le nombre de
+   colonnes est la moitié du nombre d'échelons, calculé par le composant
+   (`--rung-columns`) parce que la feuille de style ne sait pas combien
+   l'administration en a publié — dix échelons donnent 5 × 2, six en donnent
+   3 × 2, et le jour où ce nombre change la rangée suit sans retouche.
+
+   Sélecteur en deux classes pour battre `.family-buttons`, déclaré plus bas
+   dans ce fichier : à égalité de spécificité, c'est le dernier qui gagne. */
+.player-rung-field .player-rung-buttons {
+  display: grid;
+  grid-template-columns: repeat(var(--rung-columns, 5), minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.player-rung-field .player-rung-buttons button {
+  min-width: 0;
+  white-space: normal;
+  /* Revue Codex (PR #165) : `white-space: normal` ne coupe qu'aux espaces, et
+     rien ne borne la longueur d'un nom libre d'échelon — ni l'écran d'édition
+     ni la route. Un nom d'un seul tenant sortait donc de son bouton (mesuré :
+     222 px de débordement à 1440, et à 390 px, où le groupe n'est plus un
+     conteneur de défilement, la page elle-même partait de 10 px sur le côté).
+     La colonne étant bornée à `1fr`, c'est au texte de céder. Même parade que
+     `.player-matrix-mobile-name` plus bas dans ce fichier. */
+  overflow-wrap: anywhere;
+}
+.player-general .unit-input {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+/* Bloc 123 §2.2 : les templiers, au-dessus du tableau et hors des stats. La
+   colonne de gauche a la largeur de la colonne d'en-têtes de la matrice, pour
+   que les deux blocs s'alignent. */
+.player-templars {
+  display: grid;
+  grid-template-columns: var(--player-matrix-head) minmax(0, 1fr);
+  align-items: start;
+  gap: 0.8rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--border);
+}
+.player-templars-head {
+  display: grid;
+  gap: 0.15rem;
+}
+.player-templars-fields {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.player-templars-fields label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.player-templar-short {
+  display: none;
+}
+
+/* Bloc 123 §2.3 : la matrice. Un vrai tableau, à colonnes fixes — chaque case
+   se lit par son en-tête de ligne (la source) et son en-tête de colonne (la
+   compétence), ce qu'une grille de <div> ne donne pas. */
+.player-matrix,
+.player-matrix-mobile {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.player-matrix thead td,
+.player-matrix th[scope="row"] {
+  width: var(--player-matrix-head);
+}
+.player-matrix th[scope="col"] {
+  padding: 0.4rem 0.3rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+.player-matrix th[scope="row"] {
+  padding: 0.5rem 0.6rem 0.5rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+.player-matrix-row-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.player-matrix-row-equipment .player-matrix-row-title {
+  color: var(--emerald-bright);
+}
+.player-matrix-row-points .player-matrix-row-title {
+  color: var(--accent-strong);
+}
+.player-matrix-row-temple .player-matrix-row-title {
+  color: var(--sapphire-bright);
+}
+.player-matrix-row-note {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1.2rem;
-  margin-bottom: 1rem;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.player-matrix td {
+  padding: 0.25rem 0.15rem;
+  vertical-align: top;
+}
+/* Bloc 139/B : des boutons plus étroits, et la place rendue au chiffre.
+
+   Le stepper est disposé par `.num-stepper` — flex, boutons à `flex: 0 0
+   40px` (Bloc 92/L4) — et non par les colonnes de grille de
+   `.number-stepper`, déclarées plus haut mais inertes puisqu'une règle
+   postérieure repasse le conteneur en flex. Mesuré au navigateur avant ce
+   bloc : dans une cellule de 93 px, 40 + 13 + 40, et « 20 » était coupé.
+
+   24 px est le minimum de cible de la WCAG 2.2 (2.5.8, niveau AA) ; la
+   hauteur reste à 32 px. Le champ passe de 13 à 45 px. */
+.player-matrix .num-stepper button {
+  flex: 0 0 1.5rem;
+}
+.player-matrix .num-stepper input,
+.player-matrix .num-stepper button {
+  padding: 0;
   font-size: 0.8rem;
 }
-.points-summary button {
-  padding: 0.45rem 0.7rem;
+/* Bloc 140 : une seule hauteur pour les deux zones de saisie du bandeau.
+
+   Les champs des templiers retombaient sur la hauteur que le site donne à
+   tout `input` public (`min-height: 2.55rem`, soit 40,8 px), quand ceux de la
+   matrice, juste en dessous, portent leur propre hauteur compacte — mesuré au
+   navigateur à 1440 px : 40,8 contre 32, l'écart que l'on voit à l'œil.
+
+   Le sélecteur écarte la forme sans boutons (`number-stepper-plain`), qui est
+   celle du mobile : là, templiers et matrice partagent déjà `.number-stepper-plain`
+   et donc déjà la même hauteur (40 px, mesurée). Une règle qui n'exclurait pas
+   cette forme l'emporterait sur elle par spécificité et rapetisserait les deux
+   champs mobiles — en rognant au passage leur cible tactile. */
+.player-templars-fields .num-stepper:not(.number-stepper-plain) input,
+.player-templars-fields .num-stepper:not(.number-stepper-plain) button,
+.player-matrix .num-stepper input,
+.player-matrix .num-stepper button {
+  min-height: var(--player-field-h);
+}
+.player-matrix-percent {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  text-align: right;
+}
+.player-matrix-empty {
+  display: block;
+  padding: 0.35rem 0;
+  border: 1px dashed var(--border);
   border-radius: 0.45rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+.player-points-budget {
+  font-family: var(--font-mono, monospace);
+}
+.player-points-reset {
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.45rem;
+  font-size: 0.72rem;
+}
+/* La ligne Total, séparée du reste par un filet : c'est le même chiffre que
+   les étiquettes du panneau replié, à la même place à l'écran. */
+.player-matrix-row-total th[scope="row"],
+.player-matrix-row-total td {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.player-matrix-row-total {
+  font-weight: 700;
+}
+/* La couleur est posée sur les cellules, pas héritée de la ligne : une
+   déclaration plus haut dans ce fichier donne `color: var(--text)` à tout
+   `td`, et une valeur héritée perd toujours contre une déclaration portée par
+   l'élément lui-même. Mesuré au navigateur : la ligne Total sortait en
+   #17151f, le brun ne s'appliquait pas. */
+.player-matrix-row-total th[scope="row"],
+.player-matrix-row-total td {
+  color: var(--summary-total);
+  font-family: var(--font-mono, monospace);
+  text-align: center;
+}
+.player-matrix-row-total th[scope="row"] {
+  font-family: inherit;
+  text-align: left;
+}
+
+/* Bloc 123 §4 : le mobile transpose la matrice — une ligne par compétence,
+   trois colonnes de saisie, et le total contre le nom de la compétence plutôt
+   que sur une ligne à part qu'il faudrait aller chercher. */
+.player-matrix-mobile thead td,
+.player-matrix-mobile th[scope="row"] {
+  width: 5.75rem;
+}
+.player-matrix-mobile th[scope="col"] {
+  padding: 0.3rem 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+.player-matrix-mobile th[scope="row"] {
+  padding: 0.3rem 0.4rem 0.3rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+.player-matrix-mobile-name {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  /* Ceinture et bretelles : même une abréviation inattendue reste dans sa
+     colonne plutôt que de passer sous le champ voisin. */
+  overflow-wrap: anywhere;
+}
+.player-matrix-mobile-total {
+  display: block;
+  color: var(--summary-total);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+}
+.player-matrix-mobile td {
+  padding: 0.2rem 0.15rem;
+  vertical-align: top;
+}
+/* Un champ simple, sans boutons − / + : à cette largeur ils mangeaient le
+   chiffre, et un tap sur le champ ouvre le clavier de toute façon. Il garde la
+   mécanique du stepper (brouillon, bornage), donc aussi ses flèches natives
+   masquées — voir `.number-stepper input`. */
+.number-stepper-plain {
+  grid-template-columns: minmax(0, 1fr);
+}
+.number-stepper-plain input {
+  min-height: 2.5rem;
+  border-radius: 0.55rem;
+}
+.player-points-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  /* Replié : les mêmes dix étiquettes, en tuiles — l'abréviation au-dessus du
+     total, et pas de décomposition, qui ne tiendrait pas dans 70 px. */
+  .player-stat-chips {
+    gap: 0.3rem;
+  }
+  .player-stat-chip {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.2rem;
+  }
+  .player-chip-name {
+    font-size: 0.6875rem;
+  }
+  .player-chip-total {
+    font-size: 0.84rem;
+  }
+  .player-chip-breakdown {
+    display: none;
+  }
+  .player-summary-row1 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+  /* Niveau et VP se partagent une rangée, le sélecteur prend la sienne. */
+  .player-general {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .player-rung-field {
+    grid-column: 1 / -1;
+  }
+  .player-rung-field .player-rung-buttons {
+    gap: 0.3rem;
+  }
+  .player-rung-field .player-rung-buttons button {
+    height: 2.375rem;
+    padding: 0 0.2rem;
+    font-size: 0.75rem;
+  }
+  /* Le sélecteur d'unité des VP, rétréci pour que le champ garde sa place. */
+  .player-general .unit-input {
+    grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .player-general .unit-input select {
+    padding: 0 0.3rem;
+  }
+  /* Bloc 139/E : les deux champs de la rangée, rééquilibrés.
+
+     Le champ des VP tombait à 16 px — un caractère coupé — coincé entre ses
+     boutons de 40 px et le sélecteur d'unité, pendant que celui du niveau en
+     gardait 72 pour y écrire au plus trois chiffres. Les deux maigrissent :
+     des boutons de 32 px des deux côtés, et la rangée partagée 4:6 au lieu de
+     moitié-moitié, parce que les VP portent une unité en plus.
+
+     Les boutons gardent leurs 44 px de haut (la cible tactile que le site se
+     donne depuis le Bloc 132 §3) ; 32 px de large reste au-dessus du minimum
+     de 24 px de la WCAG 2.2 (2.5.8, AA). */
+  .player-general {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  }
+  .player-general .num-stepper button {
+    flex: 0 0 2rem;
+  }
+  /* Zones tactiles : 44 px de haut sur les deux champs de la rangée. */
+  .player-general .num-stepper input,
+  .player-general .num-stepper button {
+    min-height: var(--tap-target);
+  }
+  .player-templars {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  .player-templars-fields {
+    gap: 0.3rem;
+  }
+  .player-templar-long {
+    display: none;
+  }
+  .player-templar-short {
+    display: block;
+    text-align: center;
+  }
 }
 .city-calculators {
   margin-top: 2rem;
@@ -805,7 +1639,7 @@ select {
    where a title tooltip never shows at all.
    Bloc 62/J: colored instead of muted grey, plus a colored asterisk (::before)
    — shared treatment with .tool-unavailable below and the référentiels
-   switcher's inactive teaser (.reference-switcher .tool-unavailable). */
+   switcher's inactive teaser (.selection-tab .tool-unavailable). */
 .tab-coming-soon {
   color: var(--amber-bright);
   font-weight: 600;
@@ -886,6 +1720,13 @@ select {
 .calculator-fields-inline .family-buttons {
   margin: 0;
 }
+/* Bloc 114/B: XP Gain Rate has a single parameter, so the shared "share the
+   row equally" rule above hands the whole card to one counter. It is capped
+   at the width the other tools' counters end up with; on a phone the rule
+   below turns every counter into a row of its own anyway. */
+.xp-vp-field {
+  max-width: 22rem;
+}
 /* min-width: max-content (not 0) is the point — flex-basis: 0 alone lets
    a button shrink past its own label, truncating it; pinning the floor
    to the label's own natural width keeps every button's text whole while
@@ -917,101 +1758,14 @@ select {
 .city-maxlevel-gold-field .unit-input {
   grid-template-columns: minmax(0, 1fr) 3.15rem;
 }
-/* Bloc 88 → Bloc 89: Demo Attack Troops result tile — a grey Boutique-style
-   tile (same --surface-muted background as .consumable-tile) sitting below the
-   full-width league block. Bloc 89 retouches: the tile spans only 50% of the
-   width on desktop (Bloc 89/A); its three parts — the still-editable
-   target-city-level field and the two result values — share it in equal thirds
-   (Bloc 89/D); each result value now sits in its own nested mini-tile, a
-   slightly lighter grey than the main tile with its content centered
-   (Bloc 89/B-C). Mobile keeps the Bloc 88/F stack: the city-level field on its
-   own line, the two mini-tiles together on the next line. */
-.demo-attack-tile {
-  display: flex;
-  align-items: stretch;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.6rem;
-  background: var(--surface-muted);
-}
-.demo-attack-tile-level {
+/* Bloc 114/C: the Demo Attack Troops result. The grey half-width tile of
+   Bloc 88/89 is gone — it held an input (the target-city level) among the
+   figures that input drives, and gave the answer a third of a half of the
+   page. The level moved into the parameters card, and the two figures are
+   ordinary tiles: neutral for the wall it has to get through, violet for the
+   troops it takes, which is the one number this tool exists to give. */
+.demo-attack-level-field {
   min-width: 0;
-}
-.demo-attack-tile-results {
-  display: flex;
-  gap: 1rem;
-}
-.demo-attack-tile-results > .total-box {
-  flex: 1 1 0;
-}
-/* Bloc 89/B-C: each result value in its own nested mini-tile — a slightly
-   lighter grey than the main tile (white mixed into --surface-muted so it
-   lightens in both light and dark themes), with its label and value centered.
-   The base .total-box border/background are overridden here. */
-.demo-attack-inner-tile.total-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-  min-width: 0;
-  padding: 0.55rem 0.75rem;
-  border: none;
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--surface-muted), #fff 14%);
-  text-align: center;
-}
-/* Bloc 92/A11y (M1 residual): the mini-tile lightens its background, where
-   even the AA-safe --emerald-text (tuned for the darker --bg/panels) stays at
-   ~2.9:1. In dark theme only, the "troupes max" value gets a lighter mint that
-   clears 4.5:1 on this specific lightened surface; light theme keeps
-   --emerald-text (already ≥4.5:1 on the light mini-tile). */
-:root:not([data-theme="light"]) .demo-attack-inner-tile .value.emerald,
-:root[data-theme="dark"] .demo-attack-inner-tile .value.emerald {
-  color: #98dcbd;
-}
-.demo-attack-inner-tile .label {
-  margin-bottom: 0;
-}
-.demo-attack-tile-empty {
-  flex: 1 1 auto;
-  margin: 0;
-}
-/* Bloc 89/A + /D: on desktop the tile is half-width, and its three parts —
-   the city-level field and the two mini-tiles (lifted out of their flex
-   wrapper with display:contents so they become direct grid items of the tile)
-   — each take an equal third. A 3-column grid with minmax(0, 1fr) tracks gives
-   truly equal thirds regardless of each part's own content width, which plain
-   flex (grow from a 0 basis) does not: the number stepper and the value labels
-   have different min-content sizes, so flex biased the widths. */
-@media (min-width: 901px) {
-  .demo-attack-tile {
-    width: 50%;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: stretch;
-  }
-  .demo-attack-tile-results {
-    display: contents;
-  }
-  /* Codex review (PR #106): in the first-visit empty state (no league yet)
-     the grid holds only the city-level field and the prompt, so the prompt
-     would auto-place into column 2 and leave column 3 empty (flex:1 is inert
-     under grid). Span it across both result columns instead, while the three
-     equal columns still apply once the two result mini-tiles exist. */
-  .demo-attack-tile-empty {
-    grid-column: 2 / -1;
-  }
-}
-/* Bloc 88/F: mobile keeps the league buttons' 2x3 grid (league-buttons-grid,
-   unchanged) and stacks the tile — the city-level field on its own line,
-   then the two result mini-tiles together on the next line. */
-@media (max-width: 900px) {
-  .demo-attack-tile {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 .calculator-field {
   display: grid;
@@ -1064,114 +1818,6 @@ select {
   border: 1px dashed var(--border);
   border-radius: 0.7rem;
   color: var(--muted);
-}
-/* Bloc 62/E, F: sits directly above .ranking-scale, standing in for the
-   removed "Échelle visuelle" title — a compact inline label+value instead
-   of a full .total-box card, so the total reads as part of that zone's
-   own header rather than a separate results block. */
-.ranking-scale-total {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  margin: 0.5rem 0.5rem 0;
-}
-.ranking-scale-total .label {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-.ranking-scale-total .value {
-  color: var(--accent-strong);
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-.ranking-scale {
-  position: relative;
-  height: 9.5rem;
-  margin: 1rem 0.5rem 2.5rem;
-  padding: 0 0.5rem;
-}
-.ranking-scale-axis {
-  position: absolute;
-  left: 0.5rem;
-  right: 0.5rem;
-  top: 3.5rem;
-  height: 2px;
-  background: var(--border);
-}
-.ranking-scale-tick {
-  position: absolute;
-  top: 3.15rem;
-  width: 1px;
-  height: 0.85rem;
-  background: var(--text-faint);
-  opacity: 0.35;
-}
-.ranking-scale-tick-label {
-  position: absolute;
-  top: 4.1rem;
-  transform: translateX(-50%);
-  color: var(--text-faint);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.56rem;
-  opacity: 0.6;
-}
-.ranking-scale-segment {
-  position: absolute;
-  top: 3rem;
-  height: 0.9rem;
-  border-radius: 0.2rem;
-  border-inline: 1px solid var(--bg-panel);
-}
-.ranking-scale-marker {
-  position: absolute;
-  top: 3.5rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  white-space: nowrap;
-  text-align: center;
-  font-family: var(--font-mono, monospace);
-}
-.ranking-scale-label {
-  position: absolute;
-}
-.ranking-scale-label-above {
-  bottom: 2.1rem;
-}
-.ranking-scale-label-below {
-  top: 2.1rem;
-}
-.ranking-scale-range {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent-strong);
-}
-.ranking-scale-target {
-  font-size: 0.6rem;
-  color: var(--emerald-bright);
-}
-.ranking-scale-player-line {
-  position: absolute;
-  top: 2.4rem;
-  bottom: 2.4rem;
-  width: 2px;
-  background: var(--ember);
-  transform: translateX(-50%);
-  z-index: 3;
-}
-.ranking-scale-player-line::after {
-  content: attr(data-pct);
-  position: absolute;
-  top: -1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--ember);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.62rem;
-  font-weight: 700;
-  white-space: nowrap;
 }
 .ranking-table-wrap {
   overflow-x: auto;
@@ -2131,33 +2777,53 @@ select {
     align-items: flex-start;
     flex-direction: column;
   }
-  .public-nav-toggle {
+  /* ----------------------------------------------------------------------
+     Bloc 132 §3 — l'en-tête mobile : une seule ligne de 64 px.
+     Avant, la marque et son sous-titre prenaient la première ligne, les
+     boutons la deuxième et la recherche la troisième.
+     -------------------------------------------------------------------- */
+  .public-header {
+    flex-wrap: nowrap;
+    min-height: 4rem;
+    gap: 0.5rem;
+  }
+  .brand-name {
+    font-size: 1.375rem;
+  }
+  .public-header-icon {
     display: inline-grid;
   }
-  .site-search {
-    order: 3;
-    flex-basis: 100%;
-    max-width: none;
-  }
-  .public-header-nav {
+  /* Le panneau : la recherche et la navigation, déroulées sous la barre. */
+  .public-header-panel {
     display: none;
     position: absolute;
     top: 100%;
     right: 0;
     left: 0;
     flex-direction: column;
-    align-items: stretch;
     gap: 0.5rem;
-    margin-top: 0.3rem;
     padding: 0.9rem 1rem;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
+    background: var(--surface);
+    box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
   }
-  .public-header-nav[data-open="true"] {
+  .public-header[data-open="true"] .public-header-panel {
     display: flex;
   }
-  .public-header-nav a {
-    text-align: center;
+  .public-header-panel .site-search {
+    flex: none;
+    max-width: none;
+  }
+  /* §3 : le champ passe à 48 px, et à 16 px de texte — en dessous, iOS
+     zoome sur le champ au focus et décale toute la page. */
+  .public-header-panel .site-search-label input {
+    height: 3rem;
+    font-size: 1rem;
+  }
+  .public-header-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
   }
   .player-settings summary small {
     padding-left: 1.1rem;
@@ -2192,8 +2858,13 @@ h1 {
   -webkit-background-clip: text;
   background-clip: text;
 }
-input,
-select,
+/* Bloc 131/C : les deux sélecteurs d'élément nu excluent l'admin, comme les
+   deux règles plus haut. L'admin réserve la chasse fixe aux heures, aux
+   identifiants et aux codes de langue (Bloc 119 §1) ; admin.css le disait
+   déjà pour `.admin-control`, cette exclusion le dit pour tous les autres.
+   Les cinq sélecteurs de classe qui suivent ne concernent que le public. */
+input:where(:not(.admin-shell input)),
+select:where(:not(.admin-shell select)),
 .total-box .value,
 .result-highlight strong,
 .budget-result-main strong,
@@ -2204,14 +2875,31 @@ select,
 .player-settings {
   width: min(74rem, calc(100% - 2rem));
 }
+/* Bloc 132 §1 : les quatre entrées de navigation, la langue et le thème
+   partagent une seule forme — rectangle à coins arrondis de 10 px, 40 px de
+   haut, 16 px de padding. Les pilules du Bloc 129 disparaissent partout sauf
+   sur le champ de recherche, qui garde la sienne (point non validé).
+   `--header-control-*` nomme cette forme une fois : trois sélecteurs la
+   lisent, et une retouche de maquette ne se fait qu'ici. */
+:root {
+  --header-control-h: 2.5rem;
+  --header-control-radius: 0.625rem;
+  --header-control-pad: 1rem;
+  /* Bloc 132 §3 : 44 px, le minimum tactile que le prompt impose sur
+     mobile (et la recommandation WCAG 2.5.5 niveau AAA). */
+  --tap-target: 2.75rem;
+}
 .public-header-nav a {
-  padding: 0.5rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  height: var(--header-control-h);
+  padding: 0 var(--header-control-pad);
+  border: 1px solid var(--strong);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text2);
+  font-size: 0.875rem;
+  font-weight: 600;
   transition:
     border-color 150ms ease,
     color 150ms ease,
@@ -2219,31 +2907,31 @@ select,
 }
 .public-header-nav a:hover {
   border-color: var(--accent);
-  background: var(--bg-panel);
-  color: var(--accent-strong);
+  color: var(--accent);
 }
+/* §2.1 (Bloc 129), inchangé : l'entrée active porte le fond tendre de
+   l'accent, son contour et sa couleur. */
 .public-header-nav a[aria-current="page"] {
-  border-color: var(--accent-strong);
-  background: var(--bg-panel);
-  color: var(--accent-strong);
-  font-weight: 800;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .theme-toggle {
   display: inline-grid;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: var(--header-control-h);
+  height: var(--header-control-h);
   place-items: center;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
-  color: var(--text-dim);
+  border: 1px solid var(--strong);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text2);
   cursor: pointer;
   font-size: 1rem;
 }
 .theme-toggle:hover {
   border-color: var(--accent);
-  color: var(--accent-strong);
+  color: var(--accent);
 }
 .calculator-card,
 .player-settings > details,
@@ -2570,7 +3258,6 @@ td,
 .lead,
 .calculator-card > p,
 .calculator-field,
-.settings-grid label,
 .public-footer,
 .stuff-empty {
   color: var(--text-dim);
@@ -2578,100 +3265,6 @@ td,
 button:disabled,
 [aria-disabled="true"] {
   color: var(--text-faint);
-}
-
-.category-nav {
-  display: flex;
-  width: min(74rem, calc(100% - 2rem));
-  margin: 1rem auto 0;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-/* Bloc 41/C: the référentiels switcher (same category-nav/category-btn
-   structure as the /tools banner, Bloc 40/A) sat right against the tables/
-   tiles below it with no breathing room — scoped to .reference-switcher
-   only, not .category-nav generally, so the /tools banner is untouched. */
-.reference-switcher {
-  margin-bottom: 1.5rem;
-}
-.category-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-width: 100px;
-  padding: 9px 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-panel);
-  color: var(--text-faint);
-  cursor: pointer;
-  font-family: var(--font-sans, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  text-align: center;
-}
-.category-btn:hover {
-  color: var(--text);
-}
-.category-btn[aria-current="page"] {
-  border-color: var(--accent);
-  background: var(--bg-panel-raised);
-  color: var(--accent-strong);
-}
-.category-btn:disabled,
-.category-btn[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-/* Bloc 94 (Codex PR #119): a category with every calculator disabled still has
-   a routable page. It must stay recognisable as the current one — at 0.5 the
-   accent border above is too faint to serve as the page's only visible marker,
-   now that the tool <h1> is sr-only and the breadcrumb is gone. Still dimmer
-   than an enabled tab, so it continues to read as unavailable. */
-.category-btn:disabled[aria-current="page"] {
-  opacity: 0.85;
-  border-color: var(--accent);
-  color: var(--accent-strong);
-}
-/* Bloc 62/I: caps the référentiels switcher at 4 per row on desktop — 7
-   references (Events made it the first to exceed 4) wrapped unevenly
-   under the shared .category-nav flex-wrap; scoped to .reference-switcher
-   only, so the /tools banner (Bloc 40/A, still exactly 4 categories) keeps
-   its flex-wrap unchanged. Comes textually before the mobile override
-   below, which still wins there at equal specificity — untouched, already
-   correct. */
-.reference-switcher {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-/* Bloc 62/I: an inactive reference still gets a slot in the switcher (an
-   internal teaser for visitors already on the site — unlike Bloc 60's
-   search/sitemap discovery hiding, unrelated and unchanged) but isn't a
-   real link: .category-btn-unavailable overrides the plain opacity-dimmed
-   [aria-disabled] look above with the same colored asterisk + colored
-   label treatment as .tool-unavailable/.tab-coming-soon. */
-.category-btn-unavailable {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  opacity: 1;
-}
-.category-btn-unavailable .category-btn-label {
-  color: var(--text-faint);
-}
-@media (max-width: 42rem) {
-  /* A real 2-per-row grid instead of flex-wrap, which packed the 3 short
-     labels (Villes/Combat/Classement) onto row 1 and left the longer
-     "Compétences" stretched alone on row 2. */
-  .category-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .category-btn {
-    min-width: 0;
-  }
 }
 
 .guide-filter-nav {
@@ -3035,11 +3628,10 @@ body > main h1 {
   border-radius: 999px;
   cursor: pointer;
 }
+/* Bloc 125 §3: the grid is placed by the popover that carries it (a portal,
+   on --z-popover), so it no longer positions or stacks itself. What is left
+   here is what it looks like, which is unchanged. */
 .events-color-picker-options {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  left: 0;
-  z-index: 5;
   display: grid;
   grid-template-columns: repeat(5, 1.6rem);
   gap: 0.35rem;
@@ -3048,6 +3640,13 @@ body > main h1 {
   border-radius: 0.5rem;
   background: var(--bg-panel-raised);
   box-shadow: 0 0.5rem 1.2rem rgb(0 0 0 / 20%);
+}
+/* Bloc 125 §6: the swatch of an admin event row — a 14 px dot among fields,
+   not a control the size of a button beside them. */
+.events-color-picker-toggle-compact {
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
 }
 .events-color-picker-option {
   width: 1.6rem;
@@ -3164,8 +3763,8 @@ body > main h1 {
     justify-content: flex-start;
   }
 }
-/* Bloc 77/D: the season timeline — same visual principle as .ranking-scale
-   (Bloc 62/F) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
+/* Bloc 77/D: the season timeline — same visual principle as the 100%->0%
+   ranking scale (Bloc 62/F, removed at Bloc 112) but its own scoped classes (Blocs 38/Q, 40/B, 41/E, 53/B, C,
    76/A all fought width/style regressions from reusing another feature's
    classes here): no percentile ticks or player-position line, since this
    isn't a 0–100% rank scale — segments are sized by cumulative event
@@ -3313,18 +3912,20 @@ body > main h1 {
 /* Bloc 35/10.4: every select and numeric-value field across admin editors
    (Templiers, Combat, Expedition, Gems, Ranking, …) gets its content
    centered — free-text fields (set names, …) are untouched. */
-main.admin-main select,
-main.admin-main input[type="number"] {
+/* Bloc 119: keyed on the class, not on `main` — the admin's <main> is the
+   shell's now, and each screen's container below it is a div. */
+.admin-main select,
+.admin-main input[type="number"] {
   text-align: center;
   text-align-last: center;
 }
 /* Bloc 38/P: no browser increment/decrement arrows on any admin numeric
    field (tools and references alike) — keyboard entry only. */
-main.admin-main input[type="number"] {
+.admin-main input[type="number"] {
   appearance: textfield;
 }
-main.admin-main input[type="number"]::-webkit-inner-spin-button,
-main.admin-main input[type="number"]::-webkit-outer-spin-button {
+.admin-main input[type="number"]::-webkit-inner-spin-button,
+.admin-main input[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
 }
@@ -3563,46 +4164,22 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   white-space: nowrap;
   border: 0;
 }
-.locale-toggle {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.locale-toggle button {
-  padding: 0.35rem 0.7rem;
-  border: 0;
-  background: var(--bg-panel-raised);
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-.locale-toggle button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.locale-toggle button + button {
-  border-left: 1px solid var(--border);
-}
-.locale-toggle button:hover {
-  color: var(--accent-strong);
-}
-.locale-toggle button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--bg);
-}
-/* Bloc 47/A: the public locale switcher — a real <select> styled to match
-   the same pill shape/palette as .locale-toggle above (admin-only now),
-   compact enough for 5 languages instead of 2. */
+/* Bloc 47/A: the public locale switcher — a real <select> styled as a pill,
+   compact enough for 5 languages instead of 2. (Bloc 125 §2 removed
+   `.locale-toggle`, which styled the admin's own EN/FR pair: it is a
+   segmented control in the admin layer now, and nothing else read it.) */
 .locale-select {
   position: relative;
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-panel-raised);
+  /* Bloc 132 §1 : la même forme que les entrées de navigation et le thème. */
+  height: var(--header-control-h);
+  border: 1px solid var(--strong);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+}
+.locale-select:hover {
+  border-color: var(--accent);
 }
 /* Bloc 48/C: the native <select> was replaced by a custom ARIA listbox
    (see src/components/locale-toggle.tsx) so its open direction is always
@@ -3611,14 +4188,15 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  height: 100%;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--header-control-radius);
   background: transparent;
-  padding: 0.35rem 0.9rem;
-  color: var(--text-dim);
+  padding: 0 var(--header-control-pad);
+  color: var(--text2);
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 .locale-select-trigger:disabled {
   cursor: not-allowed;
@@ -3626,7 +4204,7 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 }
 .locale-select-trigger:hover,
 .locale-select-trigger:focus-visible {
-  color: var(--accent-strong);
+  color: var(--accent);
 }
 .locale-select-chevron {
   color: inherit;
@@ -3662,55 +4240,31 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .locale-listbox-option[aria-selected="true"] {
   color: var(--accent-strong);
 }
-.admin-account {
-  position: relative;
-}
-.admin-account summary {
-  color: var(--text-dim);
-  cursor: pointer;
-}
-.admin-account-menu {
-  position: absolute;
-  z-index: 20;
-  right: 0;
-  top: calc(100% + 0.5rem);
-  width: min(22rem, calc(100vw - 2rem));
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-panel-raised);
-  box-shadow: 0 1rem 2rem rgb(0 0 0 / 25%);
-}
-.admin-account-menu form {
-  display: grid;
-  gap: 0.65rem;
-}
-.admin-account-menu label {
-  display: grid;
-  gap: 0.25rem;
-  color: var(--text-dim);
-}
-.admin-account-menu .secondary-action {
-  width: 100%;
-  margin-top: 0.75rem;
-}
-.totp-settings {
-  display: grid;
-  gap: 0.65rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-.totp-qr {
-  width: 12rem;
-  height: 12rem;
-  padding: 0.35rem;
-  border-radius: 0.5rem;
-  background: #fff;
-}
-.totp-secret {
-  overflow-wrap: anywhere;
-  color: var(--text);
+/* Bloc 132 §3, suite du bloc mobile plus haut : ces trois règles doivent
+   venir APRÈS les bases qu'elles remplacent. Les bases de
+   `.public-header-nav a`, `.theme-toggle` et `.locale-select` sont écrites
+   plus bas dans le fichier que la media query de l'en-tête, et à
+   spécificité égale c'est la dernière qui gagne — media query ou pas. Même
+   piège que le Bloc 25 avait relevé sur la navigation des catégories,
+   signalé dans ce fichier. */
+@media (max-width: 42rem) {
+  .public-header-nav a {
+    /* §3 : 52 px, style actif/inactif identique au desktop. */
+    height: 3.25rem;
+    justify-content: center;
+  }
+  /* La langue et le thème rejoignent la cible tactile des deux icônes. */
+  .locale-select {
+    height: var(--tap-target);
+  }
+  .locale-select-trigger {
+    gap: 0.15rem;
+    padding: 0 0.6rem;
+  }
+  .theme-toggle {
+    width: var(--tap-target);
+    height: var(--tap-target);
+  }
 }
 .login-shell {
   display: grid;
@@ -3870,63 +4424,465 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .guide-markdown-workspace .w-md-editor-preview .wmde-markdown {
   font-family: var(--font-sans, sans-serif);
 }
-.guide-list-card {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 0;
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.2 à §3.4 — les trois index.
+
+   Les cartes de guides (.guide-list-*) sont remplacées : le §3.4 veut une
+   carte mise en avant pleine largeur et une grille de deux colonnes avec
+   l'illustration à gauche, là où l'ancienne grille empilait une image 16/9
+   au-dessus du texte.
+   --------------------------------------------------------------------- */
+
+/* §3.2 : le titre de l'index et l'encart des paramètres du joueur. */
+.index-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21.25rem;
+  gap: 2rem;
+  align-items: start;
+}
+.index-note {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 0.9rem;
+  background: var(--accent-soft);
+  color: var(--text2);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+@media (max-width: 62rem) {
+  .index-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* §3.2 : la carte d'une catégorie liste ses outils. Le lien de catégorie
+   couvre l'image et le titre ; chaque outil porte le sien. */
+.tool-category-head {
+  display: block;
   color: inherit;
   text-decoration: none;
-  transition:
-    border-color 200ms ease,
-    transform 200ms ease,
-    box-shadow 200ms ease;
 }
-.guide-list-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-4px);
-  box-shadow: 0 1.2rem 2.5rem rgb(37 44 39 / 14%);
+/* ------------------------------------------------------------------------
+   Bloc 132 §6 puis Bloc 133 §A — l'index Outils.
+
+   Le Bloc 129 y mettait la grille de quatre cartes de l'accueil avec la
+   liste des outils glissée dedans : quatre colonnes étroites pour des
+   listes de longueurs très différentes. Le Bloc 132 a empilé les
+   catégories sur toute la largeur pour rendre la place aux outils ; à
+   l'usage les cartes étaient trop hautes et leurs images trop petites pour
+   ce qu'elles occupaient.
+
+   Le §A range les quatre cartes en 2×2 : l'image à 240 px tient debout à
+   gauche, les outils s'alignent en rangées à droite, et quatre d'entre
+   elles occupent à peu près la hauteur de l'image.
+   --------------------------------------------------------------------- */
+.tool-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
-.guide-list-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+.tool-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--bg-panel-raised), var(--bg-panel));
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
 }
-.guide-list-cover {
+.tool-section[data-disabled] {
+  opacity: 0.48;
+  filter: grayscale(0.8);
+}
+/* L'image est carrée et ne se laisse pas comprimer par une liste plus
+   haute qu'elle ; elle se centre sur la carte plutôt que de rester en
+   haut, où une carte à un seul outil la laissait flotter. */
+.tool-section-thumb-link,
+.tool-section > .tool-section-thumb {
+  flex: none;
+  align-self: center;
+}
+.tool-section-thumb {
+  position: relative;
+  display: block;
+  width: 15rem;
+  height: 15rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--ph);
+}
+.tool-section-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 300ms ease;
 }
-.guide-list-card:hover .guide-list-cover {
-  transform: scale(1.05);
-}
-.guide-list-badge {
-  position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg) 65%, transparent);
-  backdrop-filter: blur(4px);
-  color: var(--accent-strong);
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.guide-list-copy {
+.tool-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* Sans lui, une description longue élargit la colonne au lieu d'être
+     coupée, et la carte déborde de sa moitié de grille. */
   min-width: 0;
-  padding: 1rem 1.1rem 1.2rem;
+  flex: 1;
 }
-.guide-list-cta {
-  display: inline-block;
-  margin-top: 0.25rem;
+.tool-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.tool-section-head:hover .tool-section-name {
+  color: var(--accent);
+}
+.tool-section-name {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
   color: var(--text);
-  font-size: 0.82rem;
+  font-family: var(--font-serif, serif);
+  font-size: 1.375rem;
+  letter-spacing: 0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Les outils : une rangée par outil, sur toute la largeur de la colonne. */
+.tool-section-tools {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tool-section-tools a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 3.125rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--header-control-radius);
+  background: var(--field);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.tool-section-tools a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Préfixe `tool-entry-` et non `tool-tile-` : cette dernière famille est
+   déjà prise plus bas par les tuiles de résultat des calculateurs, qui
+   n'ont rien à voir avec ces raccourcis de navigation. */
+.tool-entry-copy {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.tool-entry-name {
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  /* Interlignes serrés des deux côtés : c'est ce qui tient la rangée à
+     50 px avec son nom ET sa description, sans rogner le rembourrage. */
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Une seule ligne : la rangée fait 50 px, et deux lignes de description la
+   feraient grandir pour la seule carte qui en a une longue. */
+.tool-entry-description {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tool-entry-arrow {
+  flex: none;
+  color: var(--accent);
+}
+/* §6 : sur mobile, la carte garde son allure — grande image carrée, nom,
+   puis les outils en lignes de 48 px, sans description. */
+@media (max-width: 62rem) {
+  /* Deux cartes côte à côte demandent plus que la largeur d'une tablette :
+     en dessous, elles reprennent la pile du Bloc 132. */
+  .tool-sections {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+}
+@media (max-width: 48rem) {
+  .tool-section {
+    flex-wrap: wrap;
+    column-gap: 0.75rem;
+    row-gap: 0.75rem;
+    padding: 0 1rem 0.75rem;
+  }
+  /* L'image reprend toute la largeur de la carte, rembourrage compris. */
+  .tool-section-thumb-link,
+  .tool-section > .tool-section-thumb {
+    flex-basis: 100%;
+    align-self: stretch;
+    margin: 0 -1rem;
+  }
+  .tool-section-thumb {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tool-section-body {
+    flex-basis: 100%;
+    gap: 0.5rem;
+  }
+  .tool-section-tools {
+    gap: 0;
+  }
+  .tool-section-tools li + li {
+    border-top: 1px solid var(--divider);
+  }
+  .tool-section-tools a {
+    min-height: 3rem;
+    padding: 0.5rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text3);
+  }
+  .tool-entry-description {
+    display: none;
+  }
+}
+/* §3.3 : la description d'une ligne sous le nom d'un référentiel. */
+.reference-card-description {
+  margin: 0.35rem 0 0;
+  color: var(--text3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+/* §3.3 : la 8e case, « Il manque un référentiel ? ». */
+.reference-suggestion-card {
+  display: grid;
+  gap: 0.5rem;
+  align-content: center;
+  padding: 1.5rem;
+  border: 1px dashed var(--dashed);
+  border-radius: 0.9rem;
+  color: var(--text3);
+  text-align: center;
+  text-decoration: none;
+}
+.reference-suggestion-card:hover {
+  border-color: var(--accent);
+}
+.reference-suggestion-plus {
+  color: var(--accent);
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.reference-suggestion-title {
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.05rem;
+  /* La case est étroite et le titre centré : sans équilibrage, la coupure
+     tombe sur la dernière ponctuation et laisse le « ? » seul sur sa
+     ligne. Les messages FR s'écrivent avec une espace ordinaire avant la
+     ponctuation double partout dans le projet — on répartit le titre ici
+     plutôt que d'introduire une espace insécable dans cette seule chaîne. */
+  text-wrap: balance;
+}
+.reference-suggestion-text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.reference-suggestion-cta {
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+/* §3.4 : la carte mise en avant, pleine largeur.
+   Bloc 132 §9 : cliquable en entier, comme les autres cartes de la page —
+   le titre porte le lien et le recouvre. Elle n'a pas de second lien à
+   protéger (pas de pastille « Outil »), donc pas de z-index à poser. */
+.guide-featured {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18.75rem minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.guide-featured-media,
+.guide-card-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* §3.4 : illustration carrée — 300 px sur la carte mise en avant,
+     220 px sur les autres. */
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+  background: var(--ph);
+}
+.guide-featured-media img,
+.guide-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-featured-copy {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+.guide-featured-badge {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.guide-featured-copy h3 {
+  margin: 0;
+  font-family: var(--font-serif, serif);
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+.guide-featured:hover {
+  border-color: var(--accent);
+}
+.guide-featured-copy h3 a,
+.guide-card-copy h3 a {
+  color: var(--text);
+  text-decoration: none;
+}
+/* Bloc 132 §9 : le même recouvrement que sur .guide-card plus bas. */
+.guide-featured-copy h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.guide-featured-copy h3 a:hover,
+.guide-card-copy h3 a:hover {
+  color: var(--accent);
+}
+.guide-featured-copy p {
+  margin: 0;
+  max-width: 44rem;
+  color: var(--text3);
+  line-height: 1.65;
+}
+/* §3.4 : les autres guides, deux colonnes. */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.guide-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 13.75rem minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+}
+.guide-card:hover {
+  border-color: var(--accent);
+}
+/* Le titre couvre toute la carte, pour garder la grande cible de clic
+   qu'offrait la carte-lien d'avant : la pastille « Outil » est un second
+   lien, et on n'en imbrique pas deux. */
+.guide-card-copy h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.guide-card-tool {
+  position: relative;
+  z-index: 1;
+}
+.guide-card-copy {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  min-width: 0;
+}
+.guide-card-badge {
+  justify-self: start;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--sunk);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.guide-card-copy h3 {
+  margin: 0;
+  font-family: var(--font-serif, serif);
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+.guide-card-copy p {
+  margin: 0;
+  color: var(--text3);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.guide-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+.guide-card-cta {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.guide-card-tool {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+.guide-card-tool:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+@media (max-width: 62rem) {
+  .guide-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide-featured {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 34rem) {
+  .guide-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 @media (max-width: 760px) {
   .editor-action-bar {
@@ -4102,125 +5058,538 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 /* Bloc 34/D: a short intro sentence replaces the carousel/hero — the tool
    category grid below is the actual point of the homepage and should stay
    visible without scrolling. */
-.home-intro {
-  max-width: 46rem;
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.1 — l'accueil.
+
+   Le bloc qui précédait (.home-intro, .home-tools h2 en dégradé, la grille
+   de six cartes de guides) est remplacé : hero sur deux colonnes, sections
+   Simuler / Consulter / Apprendre avec leur lien « voir tout », et le
+   bandeau de signalement. Le dégradé violet des grands titres disparaît au
+   passage (§1.1) : ils sont en accent uni.
+   --------------------------------------------------------------------- */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 25rem;
+  gap: 3rem;
+  align-items: start;
+  /* Bloc 134 : plus de rembourrage vertical ici. Il s'ajoutait à la marge
+     de la première section — deux mécanismes pour un seul écart — et la
+     hauteur du hero suit désormais son contenu, sans plancher. */
 }
-/* Bloc 91/E5: the page's real <h1>. Kept at the intro sentence's own type
-   scale (a lead line, not a banner) so promoting the homepage to a proper
-   heading hierarchy doesn't change the visual weight of this block — only a
-   touch more emphasis and a small gap above the descriptive sentence. */
-.home-intro h1 {
-  margin: 0 0 0.4rem;
-  color: var(--text);
-  font-size: clamp(1.35rem, 1.6vw + 1rem, 1.75rem);
-  font-weight: 600;
-  line-height: 1.4;
+.home-hero-copy h1 {
+  margin: 0.5rem 0 1rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 54 px sur l'accueil, le plus grand titre du site. */
+  font-size: clamp(2.25rem, 5vw, 3.375rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
-.home-intro p {
+.home-hero-intro {
+  max-width: 34rem;
   margin: 0;
+  color: var(--text2);
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+/* Bloc 132 §2 : un seul style de bouton pour tout le site public — le
+   composant Button (src/components/button.tsx) n'émet que ces classes.
+   Le rayon de 10 px est celui de l'en-tête (§1) : la même forme partout,
+   sauf le champ de recherche, laissé en pilule. */
+.button-primary,
+.button-secondary,
+.button-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: var(--header-control-radius);
+  font-family: var(--font-sans, sans-serif);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+}
+/* Principal et secondaire : 48 px de haut, la hauteur d'une action de page. */
+.button-primary,
+.button-secondary {
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.button-primary {
+  background: var(--accent-solid);
+  color: var(--on-accent);
+}
+.button-primary:hover {
+  background: var(--accent);
+}
+/* Secondaire : exactement une entrée inactive de l'en-tête, en plus grand.
+   Le contour violet du Bloc 129 laisse la place au contour gris. */
+.button-secondary {
+  border-color: var(--strong);
+  background: var(--field);
+  color: var(--text2);
+  font-weight: 600;
+}
+.button-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* Sélection : un choix dans un groupe. Plus bas (44 px) que les deux
+   au-dessus, parce qu'il en tient plusieurs sur une ligne. */
+.button-toggle {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border-color: var(--strong);
+  background: var(--field);
+  color: var(--text2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.button-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.button-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+/* Bloc 142 : « 11 outils · 7 référentiels · 5 guides » est le repère de
+   confiance d'un visiteur qui arrive — combien le site couvre. En 13,6 px
+   gris `--muted`, il passait après tout le reste du hero.
+
+   Chaque compteur entier — nombre et nom — passe en pastille, et pas une
+   pastille de plus : c'est celle du Bloc 133/C, reprise par sa classe
+   `.tool-count-badge`. Le fond `--accent-soft`, la couleur `--accent`, le
+   rayon de 6 px et la chasse fixe viennent donc de sa règle, écrite une
+   seule fois ; la classe ci-dessous ne fait que la mettre à l'échelle du
+   hero.
+
+   Le point médian qui séparait les compteurs a disparu avec ce changement :
+   trois pastilles se délimitent d'elles-mêmes, et un séparateur entre elles
+   n'aurait plus rien à séparer. Il réglait aussi, au passage, le défaut
+   relevé en revue — une ligne qui s'ouvrait sur « · » quand les compteurs
+   passaient à la ligne ; sans séparateur, le cas n'existe plus.
+
+   Taille retenue : 18 px (1,125 rem), un cran au-dessus des 17 px du
+   premier jet — « un peu plus grosse » — et exactement la taille de
+   l'introduction du hero juste au-dessus, avec laquelle la ligne s'aligne.
+
+   Contrastes mesurés : 7,13:1 en sombre et 7,11:1 en clair (`--accent` sur
+   `--accent-soft`). AA texte normal tenu des deux côtés, sans s'appuyer sur
+   la dérogation « grand texte ».
+
+   La hiérarchie des titres ne bouge pas : le H1 reste à 36-54 px (§1.1). */
+.home-hero-counters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* La mise à l'échelle, et rien d'autre : tout le reste de l'apparence vient
+   de `.tool-count-badge`, que cette classe accompagne sans la remplacer.
+
+   La hauteur fixe de la pastille d'origine cède au rembourrage : elle tenait
+   un chiffre seul, celle-ci tient une phrase et doit pouvoir grandir avec
+   elle — « 11 herramientas » en espagnol, « 11 Werkzeuge » en allemand.
+
+   Le sélecteur porte son conteneur exprès. À classe unique, il pèserait le
+   même poids que `.tool-count-badge`, écrite plus bas dans ce fichier :
+   c'est elle qui l'emporterait, et la pastille resterait à ses 12 px
+   d'origine. Mesuré au navigateur avant correction — 12 px au lieu de 18.
+   Deux classes passent devant, quel que soit l'ordre des règles. */
+.home-hero-counters .home-hero-count-badge {
+  height: auto;
+  min-width: 0;
+  padding: 0.35rem 0.7rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.home-hero-panel {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.home-hero-panel h2 {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.home-hero-panel ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-hero-panel a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.6rem;
   color: var(--text);
-  font-size: clamp(1.15rem, 1.4vw + 1rem, 1.5rem);
+  text-decoration: none;
+}
+.home-hero-panel a:hover {
+  background: var(--sunk);
+}
+.home-hero-thumb {
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--ph);
+}
+.home-hero-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-hero-entry-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.home-hero-entry-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.home-hero-entry-type {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+@media (max-width: 62rem) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+/* ------------------------------------------------------------------------
+   Bloc 134 — le rythme vertical de l'accueil.
+
+   Chaque bloc portait sa propre marge haute, et le hero un rembourrage de
+   51 px en plus : entre le hero et la première section, deux mécanismes
+   s'ajoutaient pour 141 px de vide. Un seul les remplace — le `gap` de la
+   colonne — et les marges qu'il doublait sont retirées de leurs règles
+   plutôt que neutralisées ici : deux mécanismes dont l'un est annulé
+   restent deux mécanismes, et c'est comme ça que l'écart avait dérivé.
+
+   Les quatre écarts de la page sont nommés ici et nulle part ailleurs : on
+   les règle sur ces quatre lignes, pas sur cinq sélecteurs.
+   --------------------------------------------------------------------- */
+:root {
+  --space-section: 3.5rem;
+  --space-page-top: 2.5rem;
+  --space-page-bottom: 4rem;
+  --space-section-head: 1.5rem;
+}
+@media (max-width: 48rem) {
+  :root {
+    --space-section: 2.25rem;
+    --space-page-top: 1.5rem;
+    --space-page-bottom: 2.5rem;
+    --space-section-head: 1.25rem;
+  }
+}
+/* La colonne de la page : le `gap` est le seul espace entre ses blocs.
+   Les deux classes plutôt qu'une — `.public-main` pose la marge de toutes
+   les pages, et à spécificité égale ce serait l'ordre du fichier qui
+   trancherait (Bloc 25). */
+.public-main.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section);
+  margin-top: var(--space-page-top);
+  margin-bottom: var(--space-page-bottom);
+}
+/* Les grilles de cartes portent leur propre marge haute, qui s'ajouterait
+   au `gap` de la section. Elles servent aussi ailleurs, avec leur rythme à
+   elles : on la retire donc ici, et avec deux classes pour passer devant
+   `.tool-category-grid`, écrite plus loin dans le fichier. */
+.home-page .home-section > * {
+  margin-top: 0;
+}
+/* Le pied de page apporte 64 px de marge haute sur tout le site. Adjacente
+   à celle de la page, les deux fusionnent au plus grand des deux : l'écart
+   valait 64 px quelle que soit la largeur, y compris là où l'accueil en
+   demande 40. Après l'accueil, `--space-page-bottom` décide seul ; les
+   autres pages gardent la marge du pied. */
+.home-page + .public-footer {
+  margin-top: 0;
+}
+/* La section suit la même règle que la page : une colonne, un seul écart
+   entre le titre et son contenu. */
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section-head);
+}
+.home-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.home-section-head h2 {
+  margin: 0.35rem 0 0.75rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 34 px pour les H2 de section — sous le H1 de la page. */
+  font-size: clamp(1.6rem, 3vw, 2.125rem);
+  line-height: 1.1;
+}
+.home-section-lead {
+  max-width: 46rem;
+  margin: 0;
+  color: var(--text3);
+  line-height: 1.7;
+}
+/* Bloc 132 §2 : « Tous les … » est un bouton secondaire sur mobile et un
+   lien texte sur desktop. Le balisage porte donc `button-secondary`, et
+   c'est le desktop qui le déshabille — une seule définition du bouton,
+   celle du §2, plutôt qu'une copie de ses couleurs dans une media query.
+   D'où l'unique `min-width` du fichier : la règle décrit ce que le desktop
+   retire, pas ce que le mobile ajoute. */
+.home-section-all {
+  flex: none;
+  white-space: nowrap;
+}
+@media (min-width: 48.0625rem) {
+  .home-section-all {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .home-section-all:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+}
+@media (max-width: 48rem) {
+  .home-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+/* Bloc 132 §5 : sur mobile, « Explorer les outils » prend toute la largeur
+   et les deux actions secondaires se partagent la ligne suivante. La grille
+   dit l'intention mieux qu'un flex-wrap, qui ne garantissait ni la coupure
+   ni l'égalité des deux. */
+@media (max-width: 34rem) {
+  .home-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-hero-actions > :first-child {
+    grid-column: 1 / -1;
+  }
+  /* §5 : sur l'accueil, la carte d'un référentiel se réduit à son image et
+     son nom. La description reste sur l'index, où elle aide à choisir. */
+  .home-references .reference-card-description {
+    display: none;
+  }
+}
+/* §3.1, section Apprendre : la carte « Commence ici » et la liste. */
+.home-learn {
+  display: grid;
+  grid-template-columns: 30rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.home-learn[data-featured="no"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* §1.2 : la seule carte qui garde ses couleurs dans les deux thèmes. */
+.start-here-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background: var(--start-here-bg);
+  color: var(--start-here-text);
+  text-decoration: none;
+}
+.start-here-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* Pas un carré : à 480 px de large, la carte deviendrait deux fois plus
+     haute que la liste qu'elle côtoie. Le carré du §1.3 vaut pour les
+     illustrations de catégorie, pas pour la couverture d'un guide. */
+  aspect-ratio: 4 / 3;
+  border-radius: 0.75rem;
+  background: var(--start-here-art);
+}
+.start-here-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.start-here-copy {
+  display: grid;
+  gap: 0.6rem;
+}
+.start-here-badge {
+  justify-self: start;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--start-here-badge);
+  color: var(--start-here-badge-ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.start-here-title {
+  color: var(--start-here-title);
+  font-family: var(--font-serif, serif);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+.start-here-excerpt {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.start-here-cta {
+  color: var(--start-here-badge);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.home-guide-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.home-guide-list a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.home-guide-list a:hover {
+  border-color: var(--accent);
+}
+.home-guide-thumb {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--ph);
+}
+.home-guide-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-guide-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.home-guide-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1rem;
+}
+.home-guide-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.home-guide-arrow {
+  margin-left: auto;
+  color: var(--accent);
+}
+@media (max-width: 62rem) {
+  .home-learn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* §1.3 : l'emplacement d'une illustration absente. */
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* §3.1 : le bandeau « Une valeur a changé en jeu ? ». */
+.report-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 1rem;
+  background: var(--accent-soft);
+}
+.report-banner h2 {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: 1.5rem;
+}
+.report-banner p {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--text2);
   line-height: 1.6;
 }
 
-/* Bloc 33/A: the homepage's tool categories intro, directly above the
-   reused .tool-category-grid (1-click access, no /tools detour). Bloc
-   34/E: the guides/référentiels section below reuses the exact same
-   header treatment. */
-/* Bloc 38/I: .home-tools sits right below the intro sentence, which
-   already carries its own spacing — halved from .home-guides' unchanged
-   clamp so the gap above the tool grid isn't excessive. */
-.home-tools {
-  margin-top: clamp(1.5rem, 4vw, 3.5rem);
-}
-/* Bloc 50 Group3: .home-references sits between Outils and Guides now that
-   the combined section is split in three — same larger gap .home-guides
-   already used above the (formerly combined) block. */
-.home-references,
-.home-guides {
-  margin-top: clamp(3rem, 8vw, 7rem);
-}
-/* Bloc 68/D: matches the violet gradient h1 these same title+phrase pairs
-   already render as on /tools, /referentiels and /guides (the "Prototype
-   visual language" h1 rule above, ~line 1471: a gradient clipped to the
-   text) — the homepage reuses the exact same title text but as an h2,
-   which never inherited that rule and hardcoded var(--text) instead. */
-.home-tools h2,
-.home-references h2,
-.home-guides h2 {
-  margin: 0.4rem 0 1rem;
-  background: linear-gradient(110deg, var(--accent-strong), var(--accent));
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  font-size: clamp(1.8rem, 4vw, 3.2rem);
-  line-height: 1.08;
-}
-.home-tools > p:not(.eyebrow),
-.home-references > p:not(.eyebrow),
-.home-guides > p:not(.eyebrow) {
-  max-width: 46rem;
-  color: var(--text-dim);
-  line-height: 1.7;
-}
-.home-guides .card-grid {
-  margin: 2rem 0;
-}
-/* Bloc 50 Group3: the homepage guides teaser now shows up to 6 cards (was
-   3) — same auto-fit-with-computed-floor technique as .tool-category-grid
-   below, sized for 3 columns instead of 4 (2 gaps at .card-grid's own
-   0.65rem gap, not 1rem), so it caps at 3 cols/2 rows instead of growing
-   past 3 columns on a wide viewport. */
-.home-guides-grid {
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(max(18rem, calc((100% - 2 * 0.65rem) / 3)), 1fr)
-  );
-}
-@media (max-width: 42rem) {
-  .home-guides-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
-/* Bloc 33/F: shrinks before it wraps, so the shorter subtitle stays on one
-   line at any viewport width instead of breaking onto 2 at narrow ones. */
-.tools-page-title {
-  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 35/1.3: same one-line treatment for the reference page titles, which
-   run a bit longer ("Équipements d'Expédition") than the tools subtitle. */
-.reference-page-title {
-  font-size: clamp(1rem, 1vw + 4.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 53/D: /guides and /referentiels get the same smaller-title + intro
-   sentence treatment /tools got in Bloc 38/K, reusing the homepage's own
-   Guides/Référentiels section copy (Home.guidesTitle/guidesDescription and
-   Home.referentielsTitle/referentielsDescription) instead of the short
-   index-page title these pages showed before. */
-.guides-page-title,
-.referentiels-page-title {
-  font-size: clamp(1.15rem, 1vw + 5.5vw, 2rem);
-  white-space: nowrap;
-}
-
-/* Bloc 84: on real mobile widths, the clamp()'s font-size floor still left
-   .tools-page-title/.referentiels-page-title's own titles ("Décide avec
-   les bons chiffres", "Retrouve les données clés") too wide for the
-   viewport — nowrap then visually truncated the text instead of wrapping
-   it. Must come after both rules above in source order: same specificity,
-   so an earlier media-query override loses the cascade to a later
-   unconditional rule even while its own condition is active. */
-@media (max-width: 900px) {
-  .tools-page-title,
-  .referentiels-page-title {
-    white-space: normal;
-  }
-}
+/* Bloc 129 §3.2/§3.9 : .tools-page-title et .reference-page-title ont
+   disparu avec les titres qu'elles habillaient — les quatre pages d'index
+   et les pages référentiel passent par l'en-tête de page commun (§2), dont
+   le titre a sa propre taille (§1.1). Idem pour .guides-page-title et
+   .referentiels-page-title plus bas. */
 
 /* Bloc 38/N: 4 columns max per row (5 references wrap 4+1), not a variable
    count based on how many tiles there are — each column's floor is either
@@ -4234,8 +5603,8 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   margin-top: 2rem;
 }
 @media (max-width: 42rem) {
-  /* Bloc 25 found and fixed this exact cascade-order bug for
-     .category-nav: the responsive override must come textually AFTER the
+  /* Bloc 25 found and fixed this exact cascade-order bug for the category
+     nav: the responsive override must come textually AFTER the
      unconditional base rule above, or the base rule wins the cascade at
      equal specificity regardless of whether the media query matches. The
      old override lived earlier in the file (before the base rule) and was
@@ -4277,16 +5646,40 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .tool-category-copy h2 {
   margin: 0;
   color: var(--text);
-  font-size: 1.12rem;
+  /* Bloc 132 §5 : 19 px, sur les cartes d'outils comme de référentiels —
+     la recette demande « la même carte » des deux côtés. */
+  font-size: 1.1875rem;
 }
 .tool-count {
   color: var(--accent-strong);
   font-family: var(--font-mono, monospace);
   font-size: 0.78rem;
 }
+/* Bloc 132 §10 : sur mobile, la carte d'un référentiel se resserre — image
+   carrée, nom en 15 px, description sur une seule ligne. Deux cartes par
+   rangée à cette largeur : le nom en 19 px y prenait deux lignes sur la
+   moitié du catalogue, et la carte grandissait pour rien.
+
+   Écrit APRÈS `.tool-category-copy h2` juste au-dessus, et non dans la
+   media query des grilles plus haut dans le fichier : à spécificité égale
+   c'est la dernière règle qui gagne, media query ou pas. Ici le sélecteur
+   est de toute façon plus spécifique, mais la place reste celle qui se
+   relit sans avoir à le vérifier. */
+@media (max-width: 42rem) {
+  .reference-category-card .tool-category-copy h2 {
+    font-size: 0.9375rem;
+  }
+  .reference-category-card .reference-card-description {
+    overflow: hidden;
+    /* Une ligne, coupée net : sur deux colonnes de téléphone, une
+       description de deux lignes double la hauteur d'une carte sur deux. */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
 /* Bloc 62/J: colored instead of muted grey, plus a colored asterisk — same
-   treatment as .tab-coming-soon above and the référentiels switcher's
-   inactive teaser below (.reference-switcher .category-btn-unavailable). */
+   treatment as .tab-coming-soon, which Bloc 132 §8 made the single badge of
+   both selection banners (.selection-tab .tab-coming-soon). */
 .tool-unavailable {
   color: var(--amber-bright);
   font-size: 0.85rem;
@@ -4405,6 +5798,12 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
   font-variant-numeric: tabular-nums;
 }
 
+/* Bloc 63/A+C: this width is also declared as narrowViewportMaxWidth in
+   src/components/use-narrow-viewport.ts, because Progression has to KNOW
+   which arrangement is on screen — how many levels a page holds is not
+   something a stylesheet can decide — and Templiers collapses its two
+   columns into one table rather than stacking them. A test pins the two
+   declarations to the same number (responsive-styles.test.ts). */
 @media (max-width: 900px) {
   .level-up-tables,
   .split-reference-tables {
@@ -4444,4 +5843,1578 @@ main.admin-main input[type="number"]::-webkit-outer-spin-button {
 .not-found-links a:hover {
   border-color: var(--accent-strong);
   background: color-mix(in srgb, var(--accent-strong) 12%, transparent);
+}
+
+/* Bloc 109: the Classement league/division picker, once an admin has switched
+   on more rungs than the row it shipped with can hold. The row SPLIT is
+   computed in TypeScript (src/lib/league-button-rows.ts) because it differs
+   between widths and is not a uniform column count — 3+3+2+2 at ten buttons
+   on a narrow screen is not something a grid can be asked for. All this rule
+   does is stack the rows the component emitted and let each row share its
+   width equally. The field keeps its 50%: that comes from
+   .ranking-league-field above and nothing here touches it. */
+.family-buttons.league-buttons-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow-x: visible;
+}
+.league-button-row {
+  display: flex;
+  gap: 0.35rem;
+  /* Codex review (PR #136): wrapping, not nowrap. The group this replaces has
+     wrapped since the Bloc 73/C review for one reason — a button keeps
+     min-width: max-content so its label is never truncated, and the admin can
+     type a name of any length, so a row that cannot fit must fold rather than
+     spill out of the card. Bloc 69/F's standing rule (no league group ever
+     overflows, at any width) depends on it. When the labels do fit, which is
+     the normal case, the row is exactly the split leagueButtonRows asked
+     for. */
+  flex-wrap: wrap;
+}
+.league-button-row > button {
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+/* ---------------------------------------------------------------------------
+   Bloc 112: Classement's "Plages de classement" section.
+
+   What it replaces: the estimated-players tile (the last range's upper bound
+   already is that number), the single 100%->0% scale (every tile carries its
+   own bar now) and the League Lock tile (a chip in the header now). Nothing
+   here computes anything — the ranges, ranks, rewards and the player's own
+   percentage all arrive already calculated.
+   --------------------------------------------------------------------------- */
+
+/* Heading on the left, the header's chips on the right; on a phone they drop
+   under the heading, left aligned. The League Lock is always one of them; the
+   estimated player count joins it only when no range tile ends on that number
+   (Codex review, PR #139). */
+.ranking-ranges-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.ranking-ranges-header .calculator-heading {
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .ranking-ranges-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.ranking-header-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+@media (max-width: 900px) {
+  .ranking-header-chip {
+    padding: 6px 12px;
+  }
+}
+.ranking-header-chip-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ranking-header-chip-value {
+  color: var(--accent-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+/* The line icons size themselves to their own text unless told otherwise. */
+.ranking-icon {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+.ranking-header-chip > .ranking-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--muted);
+}
+
+.ranking-range-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ranking-range-tile {
+  position: relative;
+  /* Clips the accent bar to the tile's own rounded corners. */
+  overflow: hidden;
+  border-radius: 12px;
+  /* The band shade — computed per range, set inline by the component — in its
+     two diluted forms. The strong color below is the result's, not the
+     range's: two Maintien ranges wear different shades but the same blue. */
+  border: 1px solid color-mix(in srgb, var(--band-color) 28%, var(--bg));
+  background: color-mix(in srgb, var(--band-color) 12%, var(--bg));
+}
+.ranking-range-promotion {
+  --rank-strong: var(--rank-promotion);
+}
+.ranking-range-stay {
+  --rank-strong: var(--rank-stay);
+}
+.ranking-range-relegation {
+  --rank-strong: var(--rank-relegation);
+}
+.ranking-range-accent {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 6px;
+  background: var(--band-color);
+}
+
+/* Desktop: one row, three groups — what the range leads to, where it sits,
+   what it pays. The rewards' track grows past its 260px floor rather than
+   letting three 116px tiles (Bronze through Or grant all three) spill over
+   the middle group. */
+@media (min-width: 901px) {
+  .ranking-range-tile {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr) minmax(260px, auto);
+    gap: 28px;
+    align-items: center;
+    padding: 12px 16px 12px 30px;
+  }
+  .ranking-range-position {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .ranking-range-position-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+
+/* Mobile: four rows. The two position wrappers go display:contents so their
+   children become grid items of the tile itself — that is what lets the
+   percentile sit beside the result on row 1 while the ranks sit beside the
+   rewards on row 2, without a second copy of the markup. */
+@media (max-width: 900px) {
+  .ranking-range-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    grid-template-areas:
+      "result percentile"
+      "ranks rewards"
+      "bar bar"
+      "bubble bubble";
+    gap: 10px;
+    padding: 12px 12px 12px 18px;
+  }
+  .ranking-range-position,
+  .ranking-range-position-top {
+    display: contents;
+  }
+  .ranking-range-result {
+    grid-area: result;
+  }
+  .ranking-range-percentile {
+    grid-area: percentile;
+    justify-self: end;
+    align-self: center;
+  }
+  .ranking-range-ranks {
+    grid-area: ranks;
+  }
+  .ranking-range-rewards {
+    grid-area: rewards;
+    /* Three mini-tiles do not fit beside the ranks on a 393px screen, so they
+       fold within their own column instead of pushing the tile off the page. */
+    flex-wrap: wrap;
+  }
+  .ranking-range-bar {
+    grid-area: bar;
+  }
+  .ranking-player-bubble {
+    grid-area: bubble;
+    justify-self: start;
+  }
+  .ranking-range-accent {
+    width: 5px;
+  }
+}
+
+.ranking-range-result {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.ranking-range-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--rank-strong);
+  color: var(--rank-strong-ink);
+}
+.ranking-range-badge > .ranking-icon {
+  width: 20px;
+  height: 20px;
+}
+.ranking-range-result-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ranking-range-verb {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-range-league {
+  color: var(--rank-strong);
+  font-size: 20px;
+  font-weight: 600;
+  /* An admin can type a free name of any length; it wraps rather than pushing
+     the tile wider (the standing Bloc 69/F rule, applied here). */
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .ranking-range-badge {
+    width: 34px;
+    height: 34px;
+  }
+  .ranking-range-badge > .ranking-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .ranking-range-verb {
+    font-size: 12px;
+  }
+  .ranking-range-league {
+    font-size: 17px;
+  }
+}
+
+.ranking-range-ranks {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.ranking-range-ranks-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-range-ranks-value {
+  color: var(--accent-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 24px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ranking-range-percentile {
+  color: var(--text-dim);
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .ranking-range-ranks-label {
+    font-size: 12px;
+  }
+  .ranking-range-ranks-value {
+    font-size: 21px;
+  }
+  .ranking-range-percentile {
+    font-size: 14px;
+  }
+}
+
+/* The ladder from best (left) to worst (right), with this range's slice on
+   it. Decorative: the percentile and the player's position are both written
+   out as text on the tile. */
+.ranking-range-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.ranking-range-bar-segment {
+  position: absolute;
+  inset-block: 0;
+  /* The top range is 1% wide and would otherwise be a hairline. */
+  min-width: 5px;
+  border-radius: 999px;
+  background: var(--rank-strong);
+}
+.ranking-range-bar-player {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  /* Centred on the percentage rather than starting at it, so the line marks
+     the value itself. */
+  transform: translateX(-50%);
+  background: var(--rank-player);
+}
+.ranking-player-bubble {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rank-player);
+  color: var(--rank-player-ink);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Only the rewards a range actually grants. */
+.ranking-range-rewards {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ranking-reward-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 116px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-panel-raised) 60%, transparent);
+}
+.ranking-reward-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 13px;
+}
+.ranking-reward-value {
+  color: var(--foreground);
+  font-family: var(--font-mono, monospace);
+  font-size: 18px;
+  font-weight: 700;
+}
+@media (max-width: 900px) {
+  .ranking-reward-tile {
+    width: 84px;
+    padding: 6px 10px;
+  }
+  .ranking-reward-label {
+    font-size: 12px;
+  }
+  .ranking-reward-value {
+    font-size: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Bloc 113: the Villes tool, as tiles.
+
+   Four sub-tabs that each used to lay their results out their own way now
+   share one vocabulary: a summary block of tiles, a per-city breakdown table
+   and a share bar. Nothing here computes anything — every figure arrives
+   already calculated, as it did before the redesign.
+   --------------------------------------------------------------------------- */
+
+/* Heading on the left, a grey chip recalling the parameters on the right. */
+.tool-summary-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.tool-summary-header .calculator-heading {
+  margin: 0;
+}
+.tool-recall {
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* One row of equal tiles, however many there are. */
+.tool-tiles {
+  display: flex;
+  gap: 0.6rem;
+}
+.tool-tiles > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.tool-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: var(--bg);
+}
+/* Bloc 113/A.7: the violet is a headline result or an N-city total, never
+   decoration — exactly one tile per sub-tab may wear it. */
+.tool-tile-highlight {
+  border-color: var(--tool-highlight-border);
+  background: var(--tool-highlight-bg);
+}
+.tool-tile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.tool-tile-label {
+  min-width: 0;
+}
+/* The badge is pushed to the title's far end, on that same line. */
+.tool-tile-head > .tool-badge {
+  margin-left: auto;
+}
+.tool-tile-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.6rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.tool-tile-unit {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.tool-badge {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--tool-gain);
+  color: var(--tool-gain-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* Bloc 113/A.8: an absolute figure is violet, a gain is green, and a source
+   that produces nothing is greyed with an em dash in place of its gap. */
+.tool-value-violet {
+  color: var(--accent-strong);
+}
+.tool-value-green {
+  color: var(--tool-gain);
+}
+.tool-value-muted {
+  color: var(--text-dim);
+}
+.tool-icon {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  /* --amber, not --gold: the palette rule reserves --gold for genuinely
+     Legendary game data (color-palette.test.ts enforces it), and --amber is
+     the currency-adjacent accent Bloc 42/C introduced for exactly this. */
+  color: var(--amber);
+}
+/* Bloc 114/A.1: the chip a not-yet-built tool wears. A filled pill, not the
+   asterisked sentence a switched-off tool gets (.tab-coming-soon above): one
+   is a promise, the other a warning, and they should not look alike. */
+.tab-soon-pill {
+  margin-left: 0.45rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--soon-bg);
+  color: var(--soon-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* Bloc 114/C: a tile whose label and value share one line. Used where a tile
+   stands alone on its row, which would otherwise leave the value stranded
+   under a short label across the full width. */
+.tool-tile-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.tool-tile-row .tool-tile-head {
+  min-width: 0;
+}
+.tool-tile-row .tool-tile-value {
+  flex: none;
+  font-size: 2.4rem;
+}
+/* The one answer of the sub-tab, on the tile reserved for it. */
+.tool-tile-highlight.tool-tile-row .tool-tile-value {
+  color: var(--tool-highlight-ink);
+}
+.tool-tile-row:not(.tool-tile-highlight) {
+  background: var(--tool-neutral-bg);
+}
+.tool-tile-row:not(.tool-tile-highlight) .tool-tile-value {
+  color: var(--accent-strong);
+}
+
+/* Bloc 114/B: the two XP columns, side by side — "what I gain by attacking"
+   against "what they gain by attacking me", at one glance and one VP. */
+.xp-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.xp-column-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+.xp-tiles {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.xp-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  /* 3px, so the frame reads as the tile's own step rather than as a border. */
+  border: 3px solid var(--xp-tile-border);
+  border-radius: 12px;
+  background: var(--xp-tile-bg);
+  padding: 0.6rem 0.85rem;
+  /* WCAG 2.5.5: the row is tall enough to be a comfortable touch target even
+     though nothing in it is interactive. */
+  min-height: 44px;
+}
+.xp-tile-rate,
+.xp-tile-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0;
+  min-width: 0;
+}
+.xp-tile-range {
+  align-items: flex-end;
+  text-align: right;
+}
+.xp-tile-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: var(--xp-tile-ink);
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.xp-tile-figure small {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.xp-tile-who,
+.xp-tile-caption {
+  color: var(--xp-caption);
+  font-size: 0.8125rem;
+}
+.xp-tile-value {
+  color: var(--xp-range-ink);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+/* Each step names its own three colors once; everything above reads them
+   through the same three variables, so a step is one block to change. */
+.xp-tile-s0 {
+  --xp-tile-bg: var(--xp-s0-bg);
+  --xp-tile-border: var(--xp-s0-border);
+  --xp-tile-ink: var(--xp-s0-ink);
+}
+.xp-tile-s50 {
+  --xp-tile-bg: var(--xp-s50-bg);
+  --xp-tile-border: var(--xp-s50-border);
+  --xp-tile-ink: var(--xp-s50-ink);
+}
+.xp-tile-s100 {
+  --xp-tile-bg: var(--xp-s100-bg);
+  --xp-tile-border: var(--xp-s100-border);
+  --xp-tile-ink: var(--xp-s100-ink);
+}
+.xp-tile-s150 {
+  --xp-tile-bg: var(--xp-s150-bg);
+  --xp-tile-border: var(--xp-s150-border);
+  --xp-tile-ink: var(--xp-s150-ink);
+}
+.xp-tile-s200 {
+  --xp-tile-bg: var(--xp-s200-bg);
+  --xp-tile-border: var(--xp-s200-border);
+  --xp-tile-ink: var(--xp-s200-ink);
+}
+
+/* Armée on the left, Or on the right — the order this bloc fixes everywhere. */
+.tool-breakdowns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+.tool-breakdown-title {
+  margin-bottom: 0.8rem;
+}
+.tool-breakdown-title small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.tool-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.3rem;
+}
+.tool-table th,
+.tool-table td {
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+}
+.tool-table thead th {
+  padding-block: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tool-table tbody th,
+.tool-table tfoot th {
+  border-radius: 0.6rem 0 0 0.6rem;
+  background: var(--surface-muted);
+  font-weight: 400;
+}
+.tool-table tbody td,
+.tool-table tfoot td {
+  background: var(--surface-muted);
+}
+.tool-table tbody tr td:last-child,
+.tool-table tfoot tr td:last-child {
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+/* Numbers right-aligned under their own header, in the monospace face every
+   figure on this site uses. */
+.tool-table .tool-cell {
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+}
+.tool-table thead th.tool-cell {
+  font-family: inherit;
+}
+.tool-row-total th,
+.tool-row-total td {
+  font-weight: 700;
+}
+/* Bloc 113/A.7 : la ligne des N villes, la seule ligne violette du tableau.
+
+   Bloc 132 §7 : elle ne l'était plus. Le Bloc 129 a donné un fond à toutes
+   les cellules du corps et du pied (`.tool-table tfoot th`, deux types et
+   une classe), plus spécifique que le `.tool-row-grand th` d'ici : la teinte
+   de la ligne ne sortait tout simplement pas, pas plus que sa graisse. D'où
+   le `.tool-table` en tête de chaque sélecteur ci-dessous — il ne décore
+   rien, il remet ces règles au-dessus de celles du pied.
+
+   Elle reprend au passage les jetons d'accent du Bloc 129, ceux qui portent
+   déjà l'état actif partout ailleurs, au lieu des --tool-highlight-*.
+
+   Contour et filet sont peints en ombre intérieure et non en bordure : une
+   bordure élargirait les cellules et décalerait le libellé vers la droite
+   par rapport aux lignes du dessus, alors que la largeur des colonnes reste
+   commune à tout le tableau.
+
+   La ligne entière passe en accent, tons compris : le « + » de la colonne
+   d'écart porte déjà le sens que son vert redisait. */
+.tool-table .tool-row-grand th,
+.tool-table .tool-row-grand td {
+  background: var(--accent-soft);
+  box-shadow:
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+/* Le filet de 4 px ferme la ligne à gauche, le contour à droite. */
+.tool-table .tool-row-grand th {
+  box-shadow:
+    inset 4px 0 0 var(--accent),
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
+}
+.tool-table .tool-row-grand td:last-child {
+  box-shadow:
+    inset -1px 0 0 var(--accent-border),
+    inset 0 1px 0 var(--accent-border),
+    inset 0 -1px 0 var(--accent-border);
+}
+
+/* Where a production comes from. Decorative: the table above says the same. */
+.tool-shares {
+  margin-top: 0.9rem;
+}
+.tool-share-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.tool-share-slice {
+  height: 100%;
+}
+.tool-share-base,
+span.tool-share-dot.tool-share-base {
+  background: var(--tool-base);
+}
+.tool-share-temple,
+span.tool-share-dot.tool-share-temple {
+  background: var(--tool-temple);
+}
+.tool-share-stuff,
+span.tool-share-dot.tool-share-stuff {
+  background: var(--tool-stuff);
+}
+.tool-share-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.tool-share-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.tool-share-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 3px;
+}
+
+/* Bloc 113/D+E: a tile that is itself a gain sits on its own green surface. */
+.tool-tiles-reskill .tool-tile,
+.tool-reward-card .tool-tile {
+  border-color: var(--tool-green-border);
+  background: var(--tool-green-bg);
+}
+
+/* Bloc 113/B: the two levels read as one range, with the target picked out. */
+.city-level-range {
+  display: flex;
+  flex: 2 1 0;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.city-level-range .calculator-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.city-level-arrow {
+  padding-bottom: 0.55rem;
+  color: var(--muted);
+}
+.city-level-target .number-stepper {
+  border-color: var(--accent-strong);
+}
+.city-level-target .number-stepper input {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+/* Bloc 113/E: two self-contained cards, side by side. */
+.tool-reward-cards {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.tool-reward-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tool-reward-fields {
+  /* Bloc 132 §7 : 16 px entre la ligne de saisie et le résultat. La carte
+     est un bloc simple, ses deux moitiés se touchaient — on lisait le
+     bonus comme la suite du formulaire plutôt que comme sa réponse. */
+  margin-bottom: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (max-width: 900px) {
+  /* Bloc 113/A.10: tiles two to a row, and the headline one across both. */
+  .tool-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tool-tile-wide {
+    grid-column: 1 / -1;
+  }
+  .tool-tile-value {
+    font-size: 1.35rem;
+  }
+  .tool-breakdowns,
+  .tool-reward-cards,
+  .tool-reward-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Bloc 113/D: the two reskill tiles go one under the other — their
+     labels name a skill and do not fit half a phone. */
+  .tool-tiles-reskill {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Each counter on its own line: its label on the left, the stepper right. */
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  /* The counter keeps a readable width but stays shrinkable: `0 0 auto`
+     sized it from the <input>'s own intrinsic width (~316px), which pushed
+     the whole page 21px wide at 393px. */
+  .city-calculators .calculator-fields-inline .number-stepper {
+    flex: 0 1 11rem;
+    min-width: 0;
+  }
+  .city-calculators .calculator-fields-inline .unit-input {
+    flex: 0 1 15rem;
+    min-width: 0;
+  }
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field)
+    > span,
+  .city-calculators
+    .calculator-fields-inline
+    .calculator-field:not(.calculator-league-field)
+    > .calculator-field-label {
+    min-width: 0;
+  }
+  .city-level-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* The arrow only reads as one between two side-by-side counters. */
+  .city-level-arrow {
+    display: none;
+  }
+  .tool-table th,
+  .tool-table td {
+    padding: 0.5rem 0.55rem;
+  }
+  /* A source name may take two lines rather than push the table wider.
+     break-word, not anywhere: anywhere lets the column shrink below its
+     longest word, which cut "Temple" in half at 393px. */
+  .tool-table tbody th,
+  .tool-table tfoot th {
+    overflow-wrap: break-word;
+  }
+  /* Bloc 114/A.1: the Combat sub-tabs wrap 2 per row as a real grid. The four
+     labels have very different lengths, so flex-wrap left the longest one
+     alone and stretched on its own line — the same fix .tool-category-grid
+     and the Outils category nav already carry. */
+  .city-calculators nav.calculator-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Bloc 114/B: the two columns stack — attacker first, then target. Five
+     tiles side by side in half a phone would wrap every range onto 3 lines. */
+  .xp-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .xp-tile-figure {
+    font-size: 1.375rem;
+  }
+  .xp-tile-value {
+    font-size: 1.1875rem;
+  }
+  /* Bloc 114/C: the result tiles keep label-left/value-right, at the size the
+     rest of the phone layout uses. */
+  .tool-tile-row .tool-tile-value {
+    font-size: 1.75rem;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.5 — la page d'un guide.
+   --------------------------------------------------------------------- */
+.guide-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21.25rem;
+  gap: 2.5rem;
+  align-items: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.guide-header h1 {
+  margin: 0.5rem 0 1rem;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  /* §1.1 : 48 px, et plus le dégradé violet (§1.1 le supprime). */
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.guide-lead {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+/* §3.5 : les métadonnées en pastilles, sans émoji et sans barre à gauche. */
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text3);
+  font-size: 0.8rem;
+}
+.guide-header-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  /* §3.5 : illustration carrée de 340 px. */
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  background: var(--ph);
+}
+.guide-header-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-body {
+  display: grid;
+  grid-template-columns: 16.25rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+  padding-top: 2rem;
+}
+.guide-aside {
+  position: sticky;
+  top: 2rem;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+}
+.guide-toc {
+  width: 100%;
+}
+.guide-toc-title {
+  margin: 0 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.guide-toc ul {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-toc a {
+  display: block;
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 2px solid var(--divider);
+  color: var(--text3);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.guide-toc a:hover {
+  color: var(--accent);
+}
+/* §3.5 : la section en cours, surlignée par sa bordure gauche. */
+.guide-toc a[aria-current="location"] {
+  border-left-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.guide-shell {
+  /* §3.5 : la largeur de lecture. */
+  max-width: 46.25rem;
+}
+.guide-shell .markdown-content {
+  color: var(--text2);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.guide-shell .markdown-content h2 {
+  margin: 2.5rem 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.75rem;
+  line-height: 1.2;
+  scroll-margin-top: 2rem;
+}
+.guide-shell .markdown-content h3 {
+  margin: 2rem 0 0.75rem;
+  color: var(--text);
+  font-size: 1.2rem;
+  scroll-margin-top: 2rem;
+}
+/* §3.5 : l'encadré « À retenir ». */
+.guide-callout {
+  margin: 1.75rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 0.9rem;
+  background: var(--accent-soft);
+}
+.guide-callout > * {
+  margin: 0;
+}
+.guide-callout > * + * {
+  margin-top: 0.6rem;
+}
+.guide-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.guide-callout-title::before {
+  content: "★";
+  font-size: 0.9rem;
+}
+/* §3.5 : les illustrations, avec leur légende. */
+.guide-figure {
+  margin: 2rem 0;
+}
+.guide-figure-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--ph);
+}
+.guide-figure-media img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+.guide-figure figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+/* §3.5 : « Continuer avec ». */
+.guide-continue {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.guide-continue h2 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.35rem;
+}
+.guide-continue ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-continue a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.guide-continue a:hover {
+  border-color: var(--accent);
+}
+.guide-continue-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--ph);
+}
+.guide-continue-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guide-continue-copy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.guide-continue-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.guide-continue-arrow {
+  margin-left: auto;
+  color: var(--accent);
+}
+@media (max-width: 62rem) {
+  .guide-header,
+  .guide-body,
+  .guide-continue ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide-body {
+    gap: 2rem;
+  }
+  .guide-aside {
+    position: static;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.7 — les mentions légales.
+   --------------------------------------------------------------------- */
+.legal-header {
+  margin-bottom: 2rem;
+}
+.legal-header h1 {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-serif, serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+}
+.legal-updated {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.legal-body {
+  display: grid;
+  grid-template-columns: 16.25rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+.legal-content {
+  /* §3.7 : même largeur de lecture que les guides, texte à 16 px. */
+  max-width: 46.25rem;
+}
+.legal-content .markdown-content {
+  color: var(--text2);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+/* §3.7 : une bordure sépare les sections. */
+.legal-content .markdown-content h2 {
+  margin: 2.5rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.5rem;
+  line-height: 1.25;
+  scroll-margin-top: 2rem;
+}
+.legal-content .markdown-content h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+/* §3.7 : les champs encore à compléter, surlignés aux couleurs de l'accent
+   plutôt qu'au jaune par défaut du <mark>. Le surlignage suit le motif du
+   texte, donc il s'éteint tout seul quand le vrai texte est saisi. */
+.legal-placeholder {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.3rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+@media (max-width: 62rem) {
+  .legal-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Bloc 129 §3.8 et §3.9 — les gabarits outil et référentiel.
+   --------------------------------------------------------------------- */
+.tool-page-head,
+.further-reading {
+  /* Bloc 139/D bis : la même largeur que tout le reste de la colonne — 74rem,
+     celle de `.public-main`, du bandeau des paramètres du joueur et des deux
+     bandeaux de sélection alignés au point D. Ces deux blocs-ci étaient restés
+     à 75rem, donc leur texte commençait 8 px à gauche du bord des cartes qui
+     les encadrent (mesuré à 1440 px : 1200 contre 1184). Largeur seule : la
+     marge, et avec elle la hauteur de la colonne, ne bouge pas. */
+  width: min(74rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+.tool-page-head {
+  margin-top: 2rem;
+}
+/* ------------------------------------------------------------------------
+   Bloc 132 §8 — le bandeau de sélection.
+
+   Une seule forme pour les deux rangées qui disent dans quelle section on
+   se trouve : les catégories d'outils et les référentiels. Elles faisaient
+   la même chose avec deux mises en forme écrites séparément — l'une dans
+   une carte, l'autre sans, des rayons et des espacements proches mais
+   jamais égaux. Le composant est partagé (selection-banner.tsx), le style
+   l'est donc aussi, et il n'y a plus qu'un endroit à retoucher.
+
+   Le nombre de colonnes vient du composant (--selection-columns) : c'est
+   la seule chose qui distingue les deux bandeaux, 4 catégories contre 7
+   référentiels.
+   --------------------------------------------------------------------- */
+.selection-banner {
+  /* Bloc 139/D : 74rem, la largeur de `.public-main` et du bandeau des
+     paramètres du joueur — le bandeau était à 75rem, donc 16 px plus large
+     que le panneau au-dessus et que le contenu en dessous (mesuré à 1440 px :
+     1200 contre 1184). Les deux bandeaux, catégories et référentiels,
+     partagent ce composant, donc cette largeur. */
+  width: min(74rem, calc(100% - 2rem));
+  margin: 1.5rem auto 0;
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+/* La bande creuse, dans laquelle les onglets flottent. */
+.selection-banner-band {
+  display: grid;
+  grid-template-columns: repeat(var(--selection-columns), minmax(0, 1fr));
+  gap: 0.375rem;
+  padding: 0.375rem;
+  border-radius: 0.75rem;
+  background: var(--sunk);
+}
+.selection-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.625rem;
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.selection-tab:hover:not([aria-disabled]):not(:disabled) {
+  color: var(--accent);
+}
+/* L'onglet ouvert : la surface surélevée du §1.2, contour et texte accent. */
+.selection-tab[aria-current="page"] {
+  border-color: var(--accent);
+  background: var(--raised);
+  color: var(--accent);
+}
+/* Une entrée sans page reste lisible — elle porte déjà sa mention ambrée,
+   et l'estomper la rendrait illisible par-dessus. */
+.selection-tab:disabled,
+.selection-tab[aria-disabled="true"] {
+  color: var(--text3);
+  cursor: not-allowed;
+}
+.selection-tab-thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  background: var(--ph);
+}
+.selection-tab-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Bloc 133 §C : nom et pastille forment un groupe, collés l'un à l'autre.
+   Avant, la pastille était un troisième enfant de l'onglet et le `gap` de
+   l'onglet l'éloignait du nom qu'elle compte. */
+.selection-tab-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.selection-tab-label {
+  min-width: 0;
+}
+/* Bloc 133 §C : le nombre d'outils, en pastille. Elle ne change pas avec
+   l'état de l'onglet — c'est un décompte, pas un état, et le faire varier
+   ferait croire à une seconde information. */
+.tool-count-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  padding: 0 0.375rem;
+  border-radius: 0.375rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 500;
+  /* Le chiffre est centré dans la pastille, pas posé sur sa ligne de base. */
+  line-height: 1;
+}
+/* La mention « Bientôt » passe sous le libellé plutôt que de pousser
+   l'onglet voisin (Bloc 62/J : toujours visible, pas seulement au survol —
+   sur tactile, une infobulle ne s'affiche jamais). */
+.selection-tab .tab-coming-soon {
+  display: block;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+/* §8 : la rangée des outils de la catégorie devient sa propre carte, sous
+   le bandeau — onglets à parts égales sur toute la largeur, l'actif
+   souligné d'un filet de 3 px. */
+.selection-banner + main .calculator-tabs,
+.selection-banner ~ main .calculator-tabs {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem 0.625rem 0;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.selection-banner ~ main .calculator-tabs button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+.selection-banner ~ main .calculator-tabs button:hover:not(:disabled) {
+  color: var(--accent);
+}
+.selection-banner ~ main .calculator-tabs button[aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+}
+/* Bloc 133 §B : sur mobile, les deux bandeaux passent en grille de deux
+   colonnes.
+
+   Le §8 les faisait défiler horizontalement dans la bande. À l'usage, une
+   partie des choix reste simplement hors de l'écran : rien ne dit qu'il y
+   en a d'autres à droite, et sur la page d'un référentiel, quatre des sept
+   entrées ne se voyaient pas. Deux colonnes montrent tout d'un coup —
+   quatre catégories en 2×2, sept référentiels sur quatre rangées, la
+   dernière case vide.
+
+   La rangée des outils de la catégorie suit la même règle. */
+@media (max-width: 48rem) {
+  .selection-banner {
+    padding: 0.5rem;
+    border-radius: 0.875rem;
+  }
+  .selection-banner-band {
+    /* Deux colonnes quel que soit --selection-columns : le nombre du
+       desktop (4 ou 7) n'a plus cours ici. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Toutes les rangées à la hauteur de la plus haute : un libellé sur
+       deux lignes ne doit pas faire un onglet plus grand que ses voisins.
+       Les onglets s'étirent ensuite dans leur case (`stretch` par défaut),
+       donc ils ont tous exactement la même taille. */
+    grid-auto-rows: 1fr;
+    gap: 0.375rem;
+    padding: 0.3125rem;
+    border-radius: 0.625rem;
+  }
+  .selection-tab {
+    /* Contenu calé à gauche : centré, chaque onglet plaçait son libellé à
+       un endroit différent selon sa longueur, et la colonne n'avait plus de
+       bord commun à suivre. Les onglets, eux, gardent la même taille. */
+    justify-content: flex-start;
+    min-height: 2.75rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.5rem;
+    text-align: left;
+  }
+  .selection-tab-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .selection-tab-label {
+    font-size: 0.875rem;
+  }
+  .selection-banner ~ main .calculator-tabs {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Bloc 133 §C : l'onglet qui porte une pastille se resserre, pour que le
+     nom et son chiffre tiennent sur une ligne dans une demi-largeur
+     d'écran. Le plus long, « Compétences », est ce qui fixe ces valeurs. */
+  .selection-tab-counted {
+    gap: 0.375rem;
+    padding: 0.375rem 0.5rem;
+  }
+  .selection-tab-counted .selection-tab-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .selection-tab-counted .selection-tab-title {
+    gap: 0.375rem;
+  }
+  .selection-tab-counted .selection-tab-label {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    /* La pastille garde sa place, c'est le nom qui cède — un chiffre coupé
+       ne veut rien dire, un nom abrégé se devine. */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+/* Bloc 133 §C : sous 375 px, « Compétences » et sa pastille ne tiennent
+   plus dans une demi-largeur. Mesuré : le nom veut 82 px, il en avait 81 à
+   375 px et 77 à 360 px. Le rembourrage et l'écart au nom rendent 6 px, la
+   vignette réduite 4 de plus — le §C prévoyait la seconde, elle ne
+   suffisait pas seule.
+
+   Ces deux blocs sont écrits après celui de 48 rem : à spécificité égale
+   c'est la dernière règle du fichier qui gagne, media query ou pas. */
+@media (max-width: 23.4375rem) {
+  .selection-tab-counted {
+    padding: 0.375rem 0.375rem;
+  }
+  .selection-tab-counted .selection-tab-title {
+    gap: 0.25rem;
+  }
+}
+@media (max-width: 22.5rem) {
+  .selection-tab-counted .selection-tab-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+/* §3.8 : « Aller plus loin ». */
+.further-reading {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.further-reading h2 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-family: var(--font-serif, serif);
+  font-size: 1.35rem;
+}
+.further-reading ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.further-reading a {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+.further-reading a:hover {
+  border-color: var(--accent);
+}
+.further-reading-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+@media (max-width: 48rem) {
+  .further-reading ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

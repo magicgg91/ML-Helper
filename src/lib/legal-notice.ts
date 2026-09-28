@@ -132,3 +132,77 @@ export const defaultLegalNoticeContent = {
   fr: defaultFrenchLegalNotice,
   en: defaultEnglishLegalNotice,
 };
+
+/**
+ * Bloc 119: the fields of the legal notice that are still blanks.
+ *
+ * The default notice ships with bracketed placeholders the site owner has to
+ * fill in — the publisher's name, the host's address — plus one bracketed
+ * note to revisit if cookies are ever added. Until they are replaced, they
+ * are printed to the public as-is, so three screens count them: the sidebar's
+ * amber badge, the dashboard's "à traiter" block and the alert banner of the
+ * Pages légales screen.
+ *
+ * The regex lives here, once, rather than in each of those three. Its markers
+ * are read off the shipped content rather than invented: the French notice
+ * says "À COMPLÉTER" and "À AJUSTER", the English one "TO BE COMPLETED" and
+ * "TO BE ADJUSTED", and a test pins the two lists to each other so a
+ * translation that coins a third wording is caught rather than silently
+ * counted as zero.
+ */
+const placeholderMarkers = [
+  "À COMPLÉTER",
+  "TO BE COMPLETED",
+  "À AJUSTER",
+  "TO BE ADJUSTED",
+];
+
+/**
+ * The pattern itself, as a fresh RegExp.
+ *
+ * A new one per call on purpose: a shared global regex carries `lastIndex`
+ * between calls and would skip half the matches on the second caller to ask —
+ * and there are three (the badge, the dashboard, the screen's own banner),
+ * plus the preview's highlighter.
+ */
+export function legalNoticePlaceholderPattern(): RegExp {
+  return new RegExp(
+    `\\[[^\\]]*(?:${placeholderMarkers.join("|")})[^\\]]*\\]`,
+    "gi",
+  );
+}
+
+/**
+ * Every placeholder of a notice, in the order it appears — the list the alert
+ * banner shows and the first of which its "Aller au premier" button targets.
+ */
+export function legalNoticePlaceholders(content: string): string[] {
+  return content.match(legalNoticePlaceholderPattern()) ?? [];
+}
+
+/** How many fields are left to fill in — 0 when the notice is complete. */
+export function countLegalNoticePlaceholders(content: string): number {
+  return legalNoticePlaceholders(content).length;
+}
+
+/**
+ * Bloc 129 §3.7 : le titre du document et le reste, séparés.
+ *
+ * La page rend le titre elle-même — avec la date de mise à jour sous lui —
+ * et le corps dans sa colonne de lecture. Sans cette séparation, le `#` du
+ * markdown ferait un second H1 au milieu du contenu.
+ *
+ * Un document sans titre en tête est rendu tel quel : la page utilise alors
+ * son propre libellé.
+ */
+export function splitLeadingHeading(markdown: string): {
+  title?: string;
+  body: string;
+} {
+  const match = /^\s*#\s+(.+?)\s*(?:\n|$)/.exec(markdown);
+  if (!match) return { body: markdown };
+  return {
+    title: match[1]!.trim(),
+    body: markdown.slice(match[0].length).replace(/^\s*\n/, ""),
+  };
+}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { prisma } from "@/lib/prisma";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 export async function GET() {
   if (!(await authorizedSession("logs.view"))) return forbiddenResponse();
   return NextResponse.json(
@@ -31,10 +31,11 @@ export async function DELETE(request: Request) {
         action: "purge",
         entityType: "audit_log",
         entityId: "date_range",
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          "purge",
-          `${result.count} entrées du journal`,
+        ...auditMessageColumns(
+          auditMessage("logs.purge", {
+            actor: session.user.name ?? session.user.id,
+            count: result.count,
+          }),
         ),
         diff: {
           after: {

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { launchLocales } from "./lib/translations";
+import { adminLocales, launchLocales } from "./lib/translations";
 import { routing } from "./i18n/routing";
 import { trackingConnectOrigin } from "./lib/tracking";
 
@@ -13,31 +13,49 @@ const locales = routing.locales as readonly string[];
 const defaultLocale = routing.defaultLocale;
 // Bloc 47/C review: the admin chrome only offers EN/FR, and admin routes are
 // deliberately NOT locale-prefixed (Bloc 91/E1) — a visitor who picked
-// ES/DE/TR publicly still sees the admin UI in EN.
-const adminLocales = ["en", "fr"];
+// ES/DE/TR publicly still sees the admin UI in EN. Bloc 118: the list moved
+// to lib/translations.ts, next to the namespaces it governs, so this clamp
+// and the EN/FR-only message files can no longer drift apart.
 const mutationMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 // Bloc 47/B: picks the best-matching supported locale out of an
 // Accept-Language header (e.g. "de-DE,de;q=0.9,en;q=0.8"), or null when
 // nothing in the header is one of the supported locales (or it's absent).
+//
+// Bloc 120 review (Codex, PR #145): the tag's region is no longer thrown away
+// before the comparison. It used to be — "pt-BR" became "pt" — which was
+// harmless while the locale list was hand-written and held two-letter codes
+// only. Now that the list is whatever messages/ contains, a `pt-br.json` file
+// would have been routable at /pt-br/… and yet never negotiated: "pt-BR" was
+// reduced to "pt", which is not in the list, and a Brazilian visitor landed in
+// French with their own translation sitting right there.
 export function matchAcceptLanguage(header: string | null): string | null {
   if (!header) return null;
+  const launched = launchLocales as readonly string[];
+  const language = (tag: string) => tag.split("-")[0];
   const preferred = header
     .split(",")
     .map((part) => {
       const [tag, qPart] = part.trim().split(";q=");
       return {
-        tag: tag?.trim().split("-")[0]?.toLowerCase() ?? "",
+        tag: tag?.trim().toLowerCase() ?? "",
         q: qPart ? Number(qPart) : 1,
       };
     })
     .filter((entry) => entry.tag && Number.isFinite(entry.q))
     .sort((a, b) => b.q - a.q);
-  return (
-    preferred.find((entry) =>
-      (launchLocales as readonly string[]).includes(entry.tag),
-    )?.tag ?? null
-  );
+  for (const { tag } of preferred) {
+    // The exact tag first, so "pt-BR" takes pt-br.json over pt.json…
+    if (launched.includes(tag)) return tag;
+    // …then anything sharing its language, which covers both directions: a
+    // browser asking for "pt-BR" when only pt.json exists, and one asking for
+    // plain "pt" when only pt-br.json does.
+    const related = launched.find(
+      (locale) => language(locale) === language(tag),
+    );
+    if (related) return related;
+  }
+  return null;
 }
 
 // Kept for backward compatibility with existing callers/tests: the matched
@@ -60,6 +78,10 @@ function makeNonce(): string {
 function contentSecurityPolicy(nonce: string): string {
   const dev = process.env.NODE_ENV !== "production";
   const scriptSrc = [
+    // Gardé exprès, bien que `strict-dynamic` le neutralise — Firefox le dit
+    // dans la console (« 'self' ignoré à l'intérieur de script-src »). C'est
+    // le repli des navigateurs qui n'implémentent pas `strict-dynamic` : sans
+    // lui, eux ne chargeraient plus aucun script du site.
     "'self'",
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
@@ -171,7 +193,9 @@ export function proxy(request: NextRequest) {
       cookieLocale ??
       matchAcceptLanguage(request.headers.get("accept-language"));
     const adminLocale =
-      detected && adminLocales.includes(detected) ? detected : "en";
+      detected && (adminLocales as readonly string[]).includes(detected)
+        ? detected
+        : "en";
     return renderWithLocale(request, adminLocale);
   }
 

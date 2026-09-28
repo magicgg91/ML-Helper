@@ -6,8 +6,8 @@
     "increase": "Increase {label}",
     "select-league": "Choose a league to calculate.",
     "language": "Language",
-    "theme-light": "Enable light mode",
-    "theme-dark": "Enable dark mode",
+    "theme-light": "Switch to light theme",
+    "theme-dark": "Switch to dark theme",
     "star-count": "{level} stars",
     "duration-hours": "{hours}h"
   },
@@ -42,6 +42,13 @@
       "prosperous": "Gold",
       "recruiter": "Recruiter",
       "rusher": "Speed"
+    },
+    "templars-short": {
+      "striker": "Atk",
+      "guardian": "Def",
+      "prosperous": "Gold",
+      "recruiter": "Rec",
+      "rusher": "Spd"
     },
     "leagues": {
       "bronze": "Bronze",
@@ -112,8 +119,6 @@
     }
   },
   "tools": {
-    "title": "Make decisions with the right numbers",
-    "subtitle": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
     "cities": "Cities",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -121,7 +126,9 @@
     "ranking": "Ranking",
     "skills": "Skills",
     "count": "{count, plural, =0 {No tool available} one {# tool available} other {# tools available}}",
+    "count-short": "{count, plural, =0 {No tool} one {# tool} other {# tools}}",
     "comingSoon": "Coming soon",
+    "comingSoonShort": "Soon",
     "unavailable": "Currently unavailable",
     "navigation-label": "Tool categories",
     "city-tabs": "City tools",
@@ -134,25 +141,30 @@
       "combat": "Combat tools for Million Lords: XP gain rate, demo attack troops for both attacker and target, and enemy troops to plan every assault.",
       "ranking": "Estimate your ranking progress in Million Lords: your current rank and the victory points you need to reach the rank you are aiming for.",
       "skills": "Optimise your gear and skills in Million Lords: combat and expedition equipment, gems and templars, merge costs included."
-    }
+    },
+    "index-title": "Tools",
+    "index-intro": "Decide with the right numbers: explore costs, production, ranking and skills with simulators built to prepare every decision.",
+    "settings-note": "Fill in your player settings once: every tool picks them up.",
+    "further-reading": "Go further",
+    "kind": "Tool",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Player settings",
-    "summary": "{league} · Level {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
-    "league": "League",
+    "summary": "Lvl {level} · {vp} VP · {templarTotal, plural, one {# templar} other {# templars}}",
+    "rung": "League or division",
     "league-undefined": "League not set",
     "player-level": "Player level",
     "player-vp": "Player VP",
     "vp-unit": "VP unit",
     "equipment-skills": {
-      "title": "Skills with equipment",
+      "title": "Equipment",
       "field": "{skill} with equipment"
     },
     "skill-points": {
-      "title": "Skill point distribution",
-      "available": "Available",
-      "allocated": "Allocated",
-      "remaining": "Remaining",
+      "title": "Points",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} points allocated out of {available} available",
       "reset": "Reset",
       "field": "{skill} points"
     },
@@ -161,9 +173,12 @@
       "field": "{templar} templars"
     },
     "clan-temple": {
-      "title": "Temple bonus (clan)",
-      "help": "Enter only the clan's Templar contribution (e.g. 260 for Speed). The confirmed per-stat temple base is added automatically to the displayed total.",
+      "title": "Temple (clan)",
       "field": "{templar} Temple"
+    },
+    "matrix": {
+      "caption": "Skills by source: equipment, points and temple",
+      "total": "Total"
     }
   },
   "city-cost": {
@@ -174,17 +189,26 @@
       "start-level": "Starting level",
       "target-level": "Target level"
     },
-    "start": "Start",
-    "target": "Target",
-    "wall": "Wall",
-    "gold-hour": "Gold/h",
-    "army-hour": "Army/h",
+    "total": "Total",
+    "recall": "{count, plural, one {# city} other {# cities}} · {league} · level {start} → {target}",
+    "cost-total": "Cost",
     "gold-unit": "gold",
-    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
-    "cost-total": "Total cost",
-    "vp-gained": "Total VP gained",
-    "gold-transition": "Gold/h before → after",
-    "army-transition": "Army/h before → after"
+    "wall": "Wall",
+    "vp-gained": "VP gained",
+    "army-hour": "Army / h",
+    "gold-hour": "Gold / h",
+    "per-city": "per city",
+    "columns": {
+      "source": "Source",
+      "level": "Lv. {level}",
+      "gap": "Gap"
+    },
+    "total-per-city": "Total / city",
+    "total-all": "{count, plural, one {Total # city} other {Total # cities}}",
+    "base": "Base",
+    "temple": "Temple",
+    "equipment": "Equipment",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Maximum Reachable Level",
@@ -195,15 +219,16 @@
       "available-gold": "Available gold",
       "gold-unit": "Available gold unit"
     },
-    "wall": "Wall",
-    "gold-hour": "Gold/h",
-    "army-hour": "Army/h",
-    "total-cities": "{count, plural, one {Total for # city} other {Total for # cities}}",
-    "reachable-level": "Reachable target level",
+    "total": "Total",
+    "recall": "{count, plural, one {# city} other {# cities}} · {league} · level {level} · {gold} gold available",
+    "reachable-level": "Max level",
+    "levels-gained": "+{count}",
     "remaining-gold": "Remaining gold",
-    "vp-gained": "Total VP gained",
-    "gold-transition": "Gold/h before → after",
-    "army-transition": "Army/h before → after"
+    "gold-unit": "gold",
+    "vp-gained": "VP gained",
+    "army-hour": "Army / h",
+    "gold-hour": "Gold / h",
+    "none": "—"
   },
   "city-production": {
     "name": "Production",
@@ -212,44 +237,50 @@
       "city-count": "Number of cities",
       "average-level": "Average city level"
     },
-    "per-city-base": "Per city — base",
+    "total": "Total",
+    "recall": "{count, plural, one {# city} other {# cities}} · {league} · average level {level}",
+    "army-hour": "Army / h",
+    "gold-hour": "Gold / h",
     "vp": "VP",
-    "wall": "Wall",
-    "gold-hour": "Gold/h",
-    "army-hour": "Army/h",
-    "gold-total": "💰 Gold — Total production",
-    "troops-total": "⚔️ Troops — Total production",
+    "per-city": "per city",
+    "columns": {
+      "source": "Source",
+      "production": "Production",
+      "share": "Share"
+    },
+    "total-per-city": "Total / city",
+    "total-all-level": "{count, plural, one {Total # city at level {level}} other {Total # cities at level {level}}}",
     "base": "Base",
-    "equipment": "Equipment",
     "temple": "Temple",
-    "vp-total": "Total VP",
+    "equipment": "Equipment",
+    "none": "—",
     "full-production": {
       "title": "Full-production reskill",
-      "note": "Simulation with all {points} available points invested, calculated from base production.",
-      "gold": "Gold with full Prosperity",
-      "troops": "Troops with full Recruiter"
+      "note": "{points} points invested in full · calculated from base production",
+      "army": "Army with full Recruiter",
+      "gold": "Gold with full Prosperity"
     }
   },
   "city-rewards": {
     "name": "Production Rewards",
+    "army": {
+      "title": "Army",
+      "base": "Base army production",
+      "base-unit": "Army production unit",
+      "hours": "Hours received",
+      "bonus": "Army bonus obtained"
+    },
     "gold": {
       "title": "Gold",
       "base": "Base gold production",
       "base-unit": "Gold production unit",
-      "hours": "Gold hours received",
+      "hours": "Hours received",
       "bonus": "Gold bonus obtained"
     },
-    "troops": {
-      "title": "Troops",
-      "base": "Base troops production",
-      "base-unit": "Troops production unit",
-      "hours": "Troop hours received",
-      "bonus": "Troop bonus obtained"
-    }
+    "bonus-short": "Bonus obtained"
   },
   "xp-gain-rate": {
     "name": "XP Gain Rate",
-    "mode-label": "XP calculation mode",
     "modes": {
       "attacker": "I am the attacker",
       "target": "I am the target"
@@ -258,9 +289,11 @@
       "my-vp": "My VP",
       "unit": "VP unit"
     },
-    "columns": {
-      "rate": "XP gain rate",
-      "opponent-vp": "Opponent VP range"
+    "of-xp": "of XP",
+    "opponent-vp": "Opponent VP",
+    "xp-for": {
+      "attacker": "for me",
+      "target": "for the attacker"
     }
   },
   "demo-attack-troops": {
@@ -271,41 +304,42 @@
       "league": "Attacker league"
     },
     "wall": "Target walls",
-    "maximum": "Maximum troops"
+    "maximum": "Maximum troops",
+    "result": "Result",
+    "recall": "{league} attacker · level {level} city",
+    "recall-short": "{league} attacker"
   },
   "ranking": {
     "name": "Ranking",
     "fields": {
-      "league": "League",
       "percentage": "Your current percentage",
-      "rank": "Your current rank"
+      "rank": "Your current rank",
+      "entry": "League / Division"
     },
     "undefined": "To be defined in the administration",
     "total-players": "Estimated number of players",
     "errors": {
-      "select-league": "Choose a league to calculate.",
+      "select-league": "Pick a league or division to calculate.",
       "positive-percentage": "Enter a percentage greater than 0 to calculate.",
-      "missing-bands": "Thresholds and rewards must be defined in the administration for the {league} league."
+      "missing-bands": "Thresholds and rewards to be set in the admin for {entry}."
     },
     "ranking-ranges": "Ranking ranges",
-    "columns": {
-      "range": "Range",
-      "rank": "Range rank",
-      "target-league": "Target league",
-      "reward": "Reward"
+    "tile": {
+      "ranks": "Ranks",
+      "sapphires": "Sapphires",
+      "speedups": "Speedups",
+      "gems": "Gems"
     },
     "movements": {
-      "promotion": "Promotion to {league}",
-      "stay": "Stay in {league}",
-      "relegation": "Relegation to {league}"
+      "promotion": "Promotion",
+      "stay": "Stay",
+      "relegation": "Relegation"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# sapphire} other {# sapphires}}",
-      "speedups": "{count} speedup",
-      "gems": "{count, plural, one {# gem} other {# gems}}"
-    },
-    "scale-label": "Ranking scale from 100% to 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "league-lock": "League lock",
+    "league-lock-none": "None — not enough rungs below",
+    "percentile-top": "Top {value}%",
+    "percentile-range": "{from} → {to}%",
+    "player-position": "You · {percentage}%"
   },
   "stuff-simulator": {
     "name": "Combat Equipment",
@@ -437,11 +471,12 @@
     "menu": "Menu",
     "main": "Main navigation",
     "footer": "Footer",
-    "home": "Home"
+    "home": "Home",
+    "breadcrumb": "Breadcrumb"
   },
   "search": {
     "label": "Search the site",
-    "placeholder": "Search",
+    "placeholder": "Search for a tool, a reference, a guide…",
     "results-label": "Search results",
     "no-results": "No results.",
     "types": {
@@ -464,39 +499,70 @@
     },
     "meta": {
       "siteTitle": "ML-Helper — Million Lords tools and guides"
-    }
+    },
+    "report-error": "Report an error",
+    "image-placeholder": "Illustration",
+    "legal-updated": "Last updated: {date}"
   },
   "contact": {
-    "eyebrow": "Contact",
-    "title": "Contact ML-Helper",
+    "title": "Contact",
     "lead": "A data error to report, an improvement idea, or a question? Write to us, we read everything.",
-    "email": "Email",
+    "email": "Your email",
     "subject": "Subject",
-    "choose-subject": "— Choose —",
     "subjects": {
-      "data-error": "Report a data error",
-      "improvement-suggestion": "Improvement suggestion",
-      "technical-bug": "Technical issue / bug",
+      "data-error": "Data error",
+      "improvement-suggestion": "Improvement idea",
+      "question": "Question",
       "other": "Other"
     },
     "message": "Message",
     "submit": "Send",
     "success": "Message sent, thank you!",
     "error-invalid": "Check the form fields and try again.",
-    "error-not-configured": "Email sending isn't configured right now, please try again later."
+    "error-not-configured": "Email sending isn't configured right now, please try again later.",
+    "page-field": "Page concerned",
+    "page-placeholder": "Optional — e.g. Cities › City cost",
+    "privacy": "Your email is only used to reply to you. It is neither published nor shared.",
+    "placeholders": {
+      "data-error": "Which value is shown, and which do you see in game?",
+      "improvement-suggestion": "Describe your idea in a few lines.",
+      "question": "Ask your question.",
+      "other": "Your message."
+    },
+    "reasons": {
+      "data-error-title": "A value is wrong",
+      "data-error-text": "Give the page, the value shown and the one you see in game: we fix it faster.",
+      "idea-title": "An idea for a tool or a guide",
+      "idea-text": "Tell us which decision you would like to prepare better.",
+      "question-title": "A question",
+      "question-text": "About a tool, a calculation or the site in general."
+    }
   },
   "Home": {
-    "h1": "Million Lords tools and guides",
-    "intro": "ML Helper brings together the community's tools and references to help you plan every decision in Million Lords.",
-    "toolsEyebrow": "Simulate",
+    "h1": "Tools and guides for Million Lords",
+    "intro": "Simulators, reference tables and community guides to prepare every decision, from your first city to Legend.",
     "toolsTitle": "Make decisions with the right numbers",
-    "toolsDescription": "Explore costs, production, ranking, skills and equipment with tools designed to prepare every decision.",
-    "guidesEyebrow": "Learn",
+    "toolsDescription": "Costs, production, ranking, skills and equipment: simulators to prepare every decision.",
     "guidesTitle": "Sharpen your strategy",
-    "guidesDescription": "Browse community guides to understand game mechanics and progress with confidence.",
-    "referentielsEyebrow": "Consult",
+    "guidesDescription": "Community guides to understand the game's mechanics and progress more calmly.",
     "referentielsTitle": "Find the exact numbers",
-    "referentielsDescription": "Browse the community's reference tables for the game's exact costs, stats and thresholds."
+    "referentielsDescription": "The game's exact costs, stats and tiers: equipment, gems, templars, shop…",
+    "explore-tools": "Explore the tools",
+    "explore-references": "Browse the reference tables",
+    "start-guide": "Start here",
+    "count-tools": "{count, plural, one {# tool} other {# tools}}",
+    "count-references": "{count, plural, one {# reference} other {# references}}",
+    "count-guides": "{count, plural, one {# guide} other {# guides}}",
+    "highlights": "Highlights",
+    "entry-tool": "Tool · {category}",
+    "entry-reference": "Reference",
+    "entry-guide": "Guide",
+    "all-tools": "All tools",
+    "all-references": "All references",
+    "all-guides": "All guides",
+    "start-here": "Start here",
+    "banner-title": "A value changed in game?",
+    "banner-text": "The data changes with every update. Report a discrepancy or suggest an improvement: we read everything."
   },
   "ToolsPage": {
     "eyebrow": "Tools",
@@ -518,11 +584,9 @@
     "references": "Reference tables"
   },
   "guides": {
-    "eyebrow": "Guides and data",
     "title": "Guides",
     "sections": {
-      "guides": "Guides",
-      "references": "Reference tables"
+      "guides": "Guides"
     },
     "filters": {
       "guides-label": "Filter guides by category",
@@ -543,11 +607,19 @@
     "no-results": "No guide matches these filters.",
     "detail": {
       "eyebrow": "Guide in {category}",
-      "not-translated": "This guide has not been translated into this language yet."
-    }
+      "not-translated": "This guide has not been translated into this language yet.",
+      "toc": "Contents",
+      "intro": "Introduction",
+      "reading-time": "Read: ~{minutes} min",
+      "callout": "Key point",
+      "continue": "Continue with",
+      "kind": "Guide"
+    },
+    "index-intro": "Sharpen your strategy: community guides to understand the game's mechanics and progress more calmly.",
+    "tool-pill": "Tool: {name}",
+    "start-here": "Start here"
   },
   "references": {
-    "eyebrow": "Reference tables",
     "title": "Reference tables",
     "filters": {
       "label": "Reference table filters",
@@ -615,7 +687,16 @@
       "gems": "Every gem in Million Lords: bonus per skill and per league, slots and the merge cost in sapphires, with multi-skill optimisation.",
       "shop": "Million Lords shop reference: consumables and community-verified data to help you spend at the right moment.",
       "events": "Million Lords events reference: community-verified data and rewards to help you prepare for every event."
-    }
+    },
+    "index-intro": "Find the key data: the game's exact costs, stats and tiers, from equipment to gems and templars, all the way to the shop's consumables.",
+    "missing-title": "A reference missing?",
+    "missing-text": "Tell us which data you would like to find here.",
+    "missing-cta": "Suggest",
+    "catalog-short": {
+      "combat-equipment": "Combat equip.",
+      "expedition-equipment": "Expedition equip."
+    },
+    "nav-label": "Reference navigation"
   },
   "combat-equipment": {
     "name": "Combat Equipment",
@@ -681,18 +762,42 @@
     "error-disabled": "Account disabled, contact the administrator."
   },
   "admin": {
+    "editor": {
+      "all-saved": "All changes saved",
+      "breadcrumb": "Breadcrumb",
+      "cancel": "Cancel",
+      "formula": "Formula",
+      "language-to-create": "{language} — to create",
+      "leave-warning": "Some changes are not saved. Leaving this page will lose them.",
+      "move-down-of": "Move {name} down",
+      "move-up-of": "Move {name} up",
+      "not-a-number": "A number is expected",
+      "remove-of": "Delete {name}",
+      "save": "Save",
+      "to-fill-in": "To fill in",
+      "unsaved": "Unsaved changes",
+      "saving": "Saving…",
+      "saved": "Changes saved.",
+      "error": "Save failed (HTTP {status}).",
+      "server-error": "Could not reach the server.",
+      "language-tab": "{language}"
+    },
     "title": "Administration",
-    "view-site": "View site",
+    "view-site": "View the public site",
     "navigation-label": "Administration navigation",
     "navigation": {
       "dashboard": "Dashboard",
       "tools": "Tools",
       "referentiels": "References",
       "guides": "Guides",
-      "content": "Terms of use",
+      "content": "Legal pages",
       "users": "Users",
       "logs": "History",
-      "config": "Configuration"
+      "config": "Configuration",
+      "group-content": "Content",
+      "group-access": "Access",
+      "group-site": "Site",
+      "legal-to-do": "{count, plural, =1 {# field to fill in} other {# fields to fill in}}"
     },
     "account": {
       "change-password": "Change my password",
@@ -716,8 +821,17 @@
         "disabled": "Two-factor authentication disabled.",
         "invalid": "The authentication code is invalid or expired.",
         "setup-error": "Unable to start two-factor authentication setup.",
-        "disable-error": "The password or authentication code is invalid."
-      }
+        "disable-error": "The password or authentication code is invalid.",
+        "status-on": "On",
+        "status-off": "Off",
+        "disable-confirm": "Two-factor authentication will be turned off on your account. You can turn it back on at any time.",
+        "your-password": "Your password"
+      },
+      "title": "My account",
+      "menu": "{username}’s account",
+      "password-hint": "12 characters minimum.",
+      "confirm-password": "Confirm the new password",
+      "password-mismatch": "The new password and its confirmation do not match."
     },
     "dashboard": {
       "eyebrow": "Overview",
@@ -732,11 +846,24 @@
       "users": "Users",
       "users-summary": "{active} active / {total} total",
       "recent-actions": "Latest actions",
-      "user": "User",
-      "role": "Role",
-      "message": "Message",
-      "date": "Date",
-      "empty": "No action recorded."
+      "empty": "No action recorded.",
+      "all-visible": "All visible",
+      "hidden-count": "{count, plural, =1 {# hidden} other {# hidden}}",
+      "all-published": "All published",
+      "drafts-count": "{count, plural, =1 {# draft} other {# drafts}}",
+      "all-active": "All active",
+      "inactive-count": "{count, plural, =1 {# disabled} other {# disabled}}",
+      "todo": "To handle",
+      "todo-legal": "Legal notice: {count, plural, =1 {# field to fill in} other {# fields to fill in}}",
+      "todo-legal-others": "Also to fill in in {locales}.",
+      "todo-legal-action": "Fill in",
+      "todo-guides": "{language}: {count, plural, =1 {# guide without a translation} other {# guides without a translation}}",
+      "todo-guides-hidden": "This language is hidden from the public site.",
+      "todo-guides-action": "Open the guides",
+      "see-all": "The full history",
+      "repeat": "×{count}",
+      "times-label": "Times of the {count} actions",
+      "card-ratio": "{active} / {total}"
     },
     "setup": {
       "eyebrow": "Initial setup",
@@ -753,58 +880,55 @@
     "guides": {
       "eyebrow": "Editorial content",
       "title": "Guides",
-      "new": "New",
       "new-title": "New guide",
-      "edit-title": "Edit guide",
       "empty": "No guide created.",
       "columns": {
-        "title": "Title",
-        "author": "Author",
-        "created": "Created",
-        "updated": "Last edited",
-        "languages": "Languages",
         "status": "Status",
         "actions": "Actions"
       },
-      "language-written": "{locale} written",
-      "language-missing": "{locale} not translated",
       "no-results": "No result for this filter.",
       "statuses": {
         "draft": "Draft",
         "pending_review": "Pending review",
         "published": "Published"
       },
-      "disabled-tooltip": "Disabled and hidden from the public site",
       "status-label": "Status of {title}",
-      "edit": "Edit",
-      "enable": "Enable",
-      "disable": "Disable",
       "delete": "Delete",
-      "confirm-delete": "Permanently delete the guide “{title}”?",
       "status-forbidden": "Your role does not allow this status change.",
       "status-saved": "Status saved.",
-      "visibility-error": "Unable to change visibility.",
-      "enabled": "Guide enabled.",
-      "disabled": "Guide disabled.",
       "delete-forbidden": "Your role does not allow deleting this guide.",
-      "deleted": "Guide permanently deleted."
+      "deleted": "Guide permanently deleted.",
+      "search-label": "Search for a guide",
+      "search-placeholder": "Guide title…",
+      "filter-label": "Status",
+      "filter-all": "All",
+      "filter-published": "Published",
+      "filter-drafts": "Drafts",
+      "filter-missing": "Missing a translation",
+      "table-caption": "Site guides",
+      "columns-guide": "Guide",
+      "columns-translations": "Translations",
+      "columns-modified": "Modified",
+      "byline": "{author} · created on {date}",
+      "translation-edit": "Edit the {language} version of {title}",
+      "translation-create": "Create the {language} version of {title}",
+      "modify": "Edit",
+      "more-actions": "More actions for {title}",
+      "view-on-site": "View on the site",
+      "publish": "Publish",
+      "unpublish": "Move back to draft",
+      "delete-confirm-title": "Delete this guide?",
+      "delete-confirm-body": "“{title}” will be permanently deleted, in every language. This cannot be undone.",
+      "translation-written": "{language}: version written",
+      "translation-missing": "{language}: not translated yet"
     },
     "referentiels": {
       "eyebrow": "Reference data",
       "title": "References",
       "columns": {
         "title": "Title",
-        "status": "Status",
         "actions": "Actions"
       },
-      "statuses": {
-        "active": "Enabled",
-        "inactive": "Disabled"
-      },
-      "reference-combat": "Edit Combat Equipment",
-      "reference-expedition": "Edit Expedition Equipment",
-      "reference-level-up": "Edit Level Up",
-      "reference-consommables": "Edit the Shop",
       "references": {
         "combat-equipment": "Combat Equipment",
         "expedition-equipment": "Expedition Equipment",
@@ -814,24 +938,25 @@
         "consommables": "Shop",
         "events": "Events"
       },
-      "disabled-tooltip": "Disabled and hidden from the public site",
-      "edit": "Edit",
-      "enable": "Enable",
-      "disable": "Disable",
       "visibility-error": "Unable to change visibility.",
       "enabled": "Reference table enabled.",
       "disabled": "Reference table disabled.",
       "no-results": "No reference table found.",
-      "reference-events": "Edit Events"
+      "search-label": "Search for a reference table",
+      "search-placeholder": "Reference table name…",
+      "table-caption": "Site reference tables",
+      "columns-used-by": "Used by the tool",
+      "columns-visible": "Visible on the site",
+      "used-by-none": "—",
+      "visibility-of": "Visibility of {reference}",
+      "modify": "Edit"
     },
     "guide-editor": {
       "language-label": "Guide language",
       "title": "Title ({locale})",
       "excerpt": "Summary ({locale})",
       "content": "Markdown content ({locale})",
-      "preview": "Live preview",
       "categories-label": "Guide categories",
-      "categories-summary": "Guide categories ({count, plural, one {# selected} other {# selected}})",
       "categories": {
         "debuter": "Getting started & progressing",
         "combat": "Combat & conquest",
@@ -842,29 +967,45 @@
         "evenements": "Events & ranking",
         "clan": "Clan & collective strategy"
       },
-      "cover-image": "Representative image URL",
+      "cover-image": "Cover image",
       "cover-image-placeholder": "https://example.com/guide-cover.jpg",
       "cover-image-preview": "Representative image preview",
-      "save": "Save",
       "submit-review": "Submit for review",
       "publish": "Publish",
-      "unpublish": "Unpublish as draft",
       "saving": "Saving…",
       "missing-title": "Enter an EN or FR title before saving.",
       "missing-category": "Select at least one category before saving.",
       "duplicate-slug": "A guide already uses this title/slug.",
       "invalid": "The guide contains invalid or incomplete fields.",
       "status-forbidden": "Guide saved, but your role does not allow this status change.",
-      "saved": "Guide saved."
+      "saved": "Guide saved.",
+      "new-title": "New guide",
+      "to-create": "to create",
+      "mode-label": "Editor view",
+      "mode-write": "Write",
+      "mode-split": "Side by side",
+      "mode-preview": "Preview",
+      "excerpt-help": "Shown in the guides list.",
+      "publication": "Publication",
+      "author": "Author",
+      "created-at": "Created on",
+      "updated-at": "Updated on",
+      "view-on-site": "View on the site",
+      "back-to-draft": "Back to draft",
+      "no-cover-image": "No image",
+      "cover-image-url": "Image URL",
+      "status": {
+        "draft": "Draft",
+        "pending_review": "In review",
+        "published": "Published"
+      },
+      "language-hidden": "hidden on the site"
     },
     "tools": {
       "eyebrow": "Functional content",
       "title": "Tools",
-      "edit-ranking": "Edit ranking thresholds",
       "columns": {
         "tool": "Tool",
-        "category": "Category",
-        "status": "Status",
         "action": "Action"
       },
       "category-values": {
@@ -875,31 +1016,65 @@
       },
       "active": "Enabled",
       "inactive": "Disabled",
-      "enable": "Enable",
-      "disable": "Disable",
-      "disabled-tooltip": "Disabled — unavailable on the public site",
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
       "state-saved": "{tool} is now {state}.",
       "server-error": "Unable to reach the server. Try again later.",
-      "name": "Name",
       "edit": "Edit",
       "city-parameters": "Shared City parameters",
-      "ranking-editor": "Ranking thresholds",
-      "templar-parameters": "Templar cost parameters",
-      "xp-gain-rate-editor": "XP gain rate tiers",
-      "demo-attack-troops-editor": "Demo attack percentages",
-      "gems-editor": "Gem parameters"
+      "search-label": "Search for a tool",
+      "search-placeholder": "Tool name…",
+      "filter-label": "Category",
+      "filter-all": "All",
+      "table-caption": "Site tools, grouped by category",
+      "columns-source": "Parameter source",
+      "columns-visible": "Visible on the site",
+      "source-own": "The tool's own parameters",
+      "source-shared": "Parameters shared by {count} tools",
+      "source-reference": "{name} reference table",
+      "source-none": "No parameters",
+      "open": "Open",
+      "nothing-to-edit": "Nothing to edit",
+      "visibility-of": "Visibility of {tool}",
+      "no-results": "No tool matches this search.",
+      "source-configuration": "Configuration › Leagues and divisions"
+    },
+    "leagues": {
+      "section": "Leagues and divisions",
+      "intro": "The ladder read by the Ranking tool, by Player settings, and — through their base league — by every other tool.",
+      "summary": "{count, plural, one {# league/division} other {# leagues/divisions}} · {active, plural, one {# active} other {# active}}",
+      "validation": "Fix the highlighted fields before saving.",
+      "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
+      "duplicate-error": "Two entries share the same identifier.",
+      "entry-league": "Base league",
+      "entry-no-league": "None",
+      "entry-division": "Division",
+      "entry-untitled": "Unnamed entry",
+      "entry-name-error": "Pick a base league, or type a free name in at least one language.",
+      "entry-league-field": "{entry} (rung {position}) base league",
+      "entry-division-field": "{entry} (rung {position}) division",
+      "entry-active-field": "{entry} (rung {position}) active publicly",
+      "add-entry": "Add a league or division",
+      "remove-entry-label": "Remove entry",
+      "remove-entry-confirm": "Remove this entry and all its bands?",
+      "move-up": "Move {entry} up",
+      "move-down": "Move {entry} down",
+      "entries-label": "Leagues and divisions",
+      "band-count": "{count, plural, =0 {no band} one {# band} other {# bands}}",
+      "entry-position": "Entry {position} of {total}",
+      "entry-actions": "More actions for {entry}",
+      "entry-public": "Publicly visible",
+      "entry-private": "Hidden",
+      "languages-label": "Free name in",
+      "language-hidden": "{language} hidden on the site",
+      "entry-name": "Free name ({language})",
+      "entry-name-field": "{entry} (rung {position}) free name {language}"
     },
     "ranking": {
-      "title": "Ranking",
-      "description": "Edit each range individually. Bronze and Gold may remain empty until their data is confirmed.",
       "add": "Add range",
       "threshold": "Threshold (%)",
       "target": "Target league",
       "movement": "Movement",
-      "reward": "Reward",
-      "action": "Action",
       "remove": "Delete",
       "row-label": "{league} row {row} {field}",
       "unconfirmed-option": "Not confirmed",
@@ -914,28 +1089,23 @@
         "gems": "Gems"
       },
       "range-error": "A value between 0 and 100 is required.",
-      "pairing-error": "Movement and target league must be confirmed together.",
+      "pairing-error": "Movement and target must be confirmed together.",
       "integer-error": "A whole number is required.",
-      "required": "This field is required.",
       "empty": "No confirmed range.",
-      "save": "Save ranking",
-      "validation": "Fix the highlighted fields before saving.",
-      "saving": "Saving…",
-      "save-error": "Save failed (HTTP {status}).",
-      "saved": "Configuration saved.",
-      "server-error": "Unable to reach the server. Try again later."
+      "row-actions": "Action",
+      "top": "Top",
+      "band-name": "Band {row} of {entry}",
+      "band-count": "{count, plural, =0 {no band} one {# band} other {# bands}}",
+      "save-blocked": "{count, plural, one {Cannot save: one field to fix.} other {Cannot save: # fields to fix.}} {where}: {message}",
+      "bands-section": "End-of-season bands",
+      "rungs-label": "League or division",
+      "rung-untitled": "Unnamed entry",
+      "rung-hidden": "hidden",
+      "no-rung": "No league or division exists yet.",
+      "bands-caption": "End-of-season bands for {entry}",
+      "ignored-rungs": "{count, plural, one {One rung was deleted in Configuration meanwhile: its bands were not saved.} other {# rungs were deleted in Configuration meanwhile: their bands were not saved.}} The list has been reloaded."
     },
     "references": {
-      "eyebrow": "Game data",
-      "title": "Reference tables",
-      "combat-detail": "180 editable rows",
-      "expedition-detail": "120 editable rows",
-      "templars-detail": "20 exact editable costs",
-      "page-title": "Reference table — {name}",
-      "combat-description": "All 180 rows and every value can be edited individually. Only enter an unknown value after confirming it in game.",
-      "expedition-description": "Expedition equipment detail",
-      "expedition-increments-description": "Per-star increments for the Expedition Equipment stats",
-      "templars-description": "Every exact level cost can be edited individually.",
       "columns": {
         "set-name": "Set name",
         "family": "Family",
@@ -943,52 +1113,36 @@
         "slot-name": "Slot name",
         "value": "Value {number} (%)",
         "type-value": "Type value (%)",
-        "secondary-value": "Secondary value (%)",
-        "level": "Reached level",
-        "level-cost": "Level cost"
+        "secondary-value": "Secondary value (%)"
       },
       "row-label": "Row {row} {field}",
       "expedition-row-label": "Expedition row {row} {field}",
-      "templar-level-label": "Templar level {level}",
-      "templar-cost-label": "Templar level {level} cost",
-      "save": "Save entire table",
-      "save-all": "Save the whole page",
       "required": "This field is required.",
-      "number": "Enter a valid numeric value.",
+      "required-fallback": "Every item needs a name and a description in French or English — the other languages are optional.",
       "minimum": "The minimum value is {min}.",
-      "validation": "Fix the highlighted fields before saving.",
       "saving": "Saving…",
-      "save-error": "Save failed (HTTP {status}).",
       "save-all-error": "Failed to save one or more tables on this page.",
       "saved": "Reference table saved.",
       "server-error": "Unable to reach the server. Check the connection and try again.",
-      "all": "All",
       "filters": {
         "skill": "Skill"
       },
       "consumables-intro-title": "Intro",
-      "consumables-intro-language-label": "Text language",
-      "consumables-table-title": "Items",
       "consumables-columns": {
         "image": "Image path",
         "name": "Name",
         "description": "Description",
-        "cost": "Cost (Sapphires)"
+        "cost": "Cost (Sapphires)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Add ({category})",
       "confirm-remove": "Permanently delete this item?",
-      "category-row-label": "{category} — row {row} {field}",
-      "add": "Add an item",
       "remove": "Remove",
-      "move-up": "Move up",
-      "move-down": "Move down",
       "actions": "Actions",
       "empty": "No items yet.",
       "events-league-label": "League",
-      "events-language-label": "Text language",
       "events-season-duration-label": "Season duration (days)",
       "events-season-overrun": "The events' combined duration ({total}) exceeds the season duration ({season}).",
-      "events-table-title": "Event list",
       "add-event": "Add an event",
       "events-columns": {
         "name": "Name",
@@ -1015,41 +1169,67 @@
       "add-tier": "Add a tier",
       "events-tiers-summary": "Tiers ({count})",
       "event-row-label": "{field} of event {row}",
-      "events-position-aria": "Position {row}",
       "tier-row-label": "{field} of tier {row} of {event}",
-      "templars-presentation-title": "Presentation",
-      "templars-presentation-language-label": "Text language",
-      "templars-columns": {
-        "image": "Image path",
-        "name": "Name",
-        "description": "Description",
-        "temple-base": "Temple base",
-        "bonus": "Bonus (%)"
-      },
       "secondary-row": "Metric",
-      "secondary-label-language": "Metric language",
-      "row-merge-cost": "Merge",
-      "row-gem-slots": "Gems",
       "row-destruction": "Dismantle",
-      "combat-secondary-description": "Pouciel (merge, dismantle) and gem slots, per rarity.",
-      "expedition-secondary-description": "Terradust (merge, dismantle), per rarity.",
-      "combat-increments-description": "Per-star increments for the Combat Equipment skills"
+      "texts-in": "Text in",
+      "language-hidden": "{language} hidden on the site",
+      "item-count": "{count, plural, =0 {no item} one {# item} other {# items}}",
+      "item-unnamed": "Unnamed item",
+      "item-panel": "Selected item",
+      "description-to-write": "Description to write",
+      "sapphires": "sapphires",
+      "cost-unconfirmed": "Cost to confirm",
+      "events-season-title": "Season",
+      "events-of-league": "Events — {league}",
+      "event-unnamed": "Unnamed event",
+      "tier-count": "{count, plural, =0 {no tier} one {# tier} other {# tiers}}",
+      "tiers-empty": "No tier yet.",
+      "events-season-overrun-of": "{league}: the events add up to {total}, which is longer than the season ({season}).",
+      "used-by-tool": "Used by the {tool} tool",
+      "global-parameters": "Global parameters",
+      "labels-in": "Labels in",
+      "star-increments": "Per-star increments",
+      "secondary-row-label": "Label of indicator {row}",
+      "sets-section": "Sets",
+      "search-set": "Search for a set",
+      "filter-unconfirmed": "Values to confirm",
+      "set-count": "{count, plural, =0 {no set} one {# set} other {# sets}}",
+      "set-unnamed": "Unnamed set",
+      "slot-count": "{count, plural, =0 {no slot} one {# slot} other {# slots}}",
+      "unconfirmed-count": "{count, plural, one {# value to confirm} other {# values to confirm}}",
+      "set-inconsistent": "Inconsistent set",
+      "set-inconsistent-help": "This set's rows do not share a family or a rarity: edit them row by row, and the set becomes editable as a whole again.",
+      "edit-set": "Edit the {set} set",
+      "show-more-sets": "Show more sets",
+      "unknown-value-warning": "Only fill in an unknown value once it is confirmed in game.",
+      "tier-name": "Tier {row} of {event}"
     },
     "common": {
-      "back": "Back"
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Confirm",
+      "hidden": "Hidden",
+      "modified": "Modified",
+      "more-actions": "More actions",
+      "visible": "Visible",
+      "read-only": "Read-only"
     },
     "parameters": {
-      "save": "Save parameters",
-      "saving": "Saving…",
-      "saved": "Parameters saved.",
-      "error": "Save failed (HTTP {status}).",
-      "server-error": "Unable to reach the server.",
       "league": "League",
       "coefficient": "Coefficient",
+      "troops-hint": "The leagues’ ratios differ by a few thousandths: a wrong value stays invisible at the first levels and is close to 10% off by level 60. The last two columns make that gap visible straight away.",
       "ratio": "Ratio",
       "xp-base": "XP base",
       "xp-ratio": "XP ratio",
-      "unconfirmed": "Troop formula not confirmed"
+      "unconfirmed": "Troop formula not confirmed",
+      "xp-section": "XP",
+      "troops-section": "Troops per league",
+      "troops-formula": "troops(level) = coefficient × ratio^level",
+      "troops-from-level-2": "From level 2 onwards.",
+      "at-level-60": "Level 60",
+      "gap-vs-bronze": "Gap vs Bronze",
+      "gap-value": "{gap}%"
     },
     "city-parameters": {
       "progression": "Progression parameters",
@@ -1059,40 +1239,81 @@
       "gold": "Gold multiplier",
       "vp": {
         "base": "VP base",
-        "ratio": "VP ratio"
+        "ratio": "VP ratio",
+        "title": "VP"
       },
       "walls": {
         "base": "Walls base",
-        "ratio": "Walls ratio"
+        "ratio": "Walls ratio",
+        "title": "Walls"
       },
       "cost": {
         "base": "Cost base",
-        "ratio": "Cost ratio"
-      }
+        "ratio": "Cost ratio",
+        "title": "Cost"
+      },
+      "used-by": "Used by {count} tools",
+      "progression-help": "Each curve follows value(level) = base × ratio^(level − 1)."
     },
     "templar-parameters": {
       "formula": "Cost(n) = round(base × ratio^(n-1))",
       "base": "Base",
-      "ratio": "Ratio"
+      "ratio": "Ratio",
+      "shared-with-reference": "Templars reference",
+      "cost-section": "Cost",
+      "preview": "Preview of the first five levels",
+      "level": "Level {level}",
+      "presentation-section": "Presentation",
+      "presentation-help": "What the site shows for each Templar. The numbers do not depend on the language.",
+      "texts-in": "Text in",
+      "language-hidden": "{language} hidden on the site",
+      "columns": {
+        "image": "Image",
+        "name": "Name",
+        "description": "Description",
+        "temple-base": "Temple base",
+        "bonus": "Bonus (%)"
+      },
+      "no-image": "No image",
+      "change-image": "Change the image",
+      "image-of": "Image path of {name}",
+      "name-of": "Name of {name}",
+      "description-of": "Description of {name}",
+      "description-to-write": "Description to write",
+      "temple-base-of": "Temple base of {name}",
+      "bonus-of": "Bonus of {name}",
+      "preview-levels": "Preview — cost of levels {first} to {last}"
     },
     "xp-gain-rate": {
       "formula": "XP gain rate = f(target VP / attacker VP ratio)",
       "tier": "Tier",
-      "upper-bound": "Upper bound (%)",
       "upper-bound-field": "Tier {tier} upper bound",
       "rate": "XP rate (%)",
-      "rate-field": "Tier {tier} XP rate"
+      "rate-field": "Tier {tier} XP rate",
+      "tiers": "Tiers",
+      "from": "From (%)",
+      "up-to": "Up to (%)",
+      "preview": "Preview",
+      "no-upper-bound": "No upper bound",
+      "not-increasing": "The thresholds are not strictly increasing: check the tiers before saving."
     },
     "demo-attack-troops": {
       "formula": "MaxTroops = (X% / 100) × Walls(target city level)",
-      "percentage": "X (% of walls)"
+      "percentage": "X (% of walls)",
+      "per-league": "Percentage per league",
+      "league": "League",
+      "preview": "Preview"
     },
     "gems": {
       "formula": "Gem value = base value (per skill and per league)",
       "value": "Base value per skill and per league",
       "value-field": "{skill} · {league}",
       "price": "Gem purchase price per league (in sapphires)",
-      "price-field": "{league} price"
+      "price-field": "{league} price",
+      "skill": "Skill",
+      "price-help": "Bronze has no purchase price in the game: leave the field empty for as long as that stays true.",
+      "sapphires": "sapphires",
+      "price-row": "Price (sapphires)"
     },
     "users": {
       "title": "Admin users",
@@ -1101,7 +1322,6 @@
       "password": "Password",
       "role": "Role",
       "delete": "Delete",
-      "save": "Save",
       "created": "User created",
       "saved": "User saved",
       "password-too-short": "The new password must contain at least 12 characters.",
@@ -1113,7 +1333,34 @@
       "activate": "Enable",
       "deactivate": "Disable",
       "activated": "User enabled",
-      "deactivated": "User disabled"
+      "deactivated": "User disabled",
+      "eyebrow": "Access",
+      "new": "New user",
+      "new-panel-description": "The account is active as soon as it is created.",
+      "generate": "Generate",
+      "generated": "Password generated — copy it before closing the panel.",
+      "password-hint": "12 characters minimum.",
+      "table-caption": "Administration accounts",
+      "columns-user": "User",
+      "columns-role": "Role",
+      "columns-status": "Status",
+      "columns-actions": "Actions",
+      "you": "(you)",
+      "visibility-of": "Status of {username}",
+      "change-password": "Password",
+      "change-password-title": "Change {username}'s password",
+      "change-password-confirm": "Change the password",
+      "more-actions": "More actions for {username}",
+      "delete-title": "Delete this account?",
+      "delete-body": "The account “{username}” will be permanently deleted. Its history is kept.",
+      "deleted": "User deleted",
+      "self-protected": "You cannot change your own account here.",
+      "role-writes": "Can edit: {sections}.",
+      "role-reads": "Reads: {sections}.",
+      "role-read-only": "Read-only: {sections}.",
+      "no-results": "No user.",
+      "show-password": "Show the password",
+      "hide-password": "Hide the password"
     },
     "logs": {
       "title": "Change history",
@@ -1123,29 +1370,163 @@
       "date": "Date",
       "start": "Start date",
       "end": "End date",
-      "purge": "Purge range",
-      "purged": "History purged",
+      "entries-summary": "{count} entries",
       "error": "Unable to purge history",
       "filter-user": "User",
       "filter-message": "Word in message",
-      "filter-apply": "Filter",
       "filter-reset": "Reset",
       "no-results": "No entry matches the filters.",
-      "pagination": "History pagination",
-      "previous": "Previous",
-      "next": "Next",
-      "page-summary": "Page {page} / {total}"
+      "messages": {
+        "city-parameters": {
+          "update": "{actor} updated the parameters shared by the Cities tools"
+        },
+        "combat-equipment-increments": {
+          "create": "{actor} created the per-star increments of Combat Equipment",
+          "update": "{actor} updated the per-star increments of Combat Equipment"
+        },
+        "combat-equipment-secondary": {
+          "create": "{actor} created the Pouciel (merging, gems, scrapping) of Combat Equipment",
+          "update": "{actor} updated the Pouciel (merging, gems, scrapping) of Combat Equipment"
+        },
+        "combat-equipment": {
+          "create": "{actor} created the Combat Equipment reference",
+          "update": "{actor} updated the Combat Equipment reference"
+        },
+        "consumables": {
+          "create": "{actor} created the Shop reference",
+          "update": "{actor} updated the Shop reference"
+        },
+        "demo-attack-troops": {
+          "update": "{actor} updated the demo-attack percentages"
+        },
+        "events": {
+          "create": "{actor} created the Events reference",
+          "update": "{actor} updated the Events reference"
+        },
+        "expedition-equipment-increments": {
+          "create": "{actor} created the per-star increments of Expedition Equipment",
+          "update": "{actor} updated the per-star increments of Expedition Equipment"
+        },
+        "expedition-equipment-secondary": {
+          "create": "{actor} created the Terradust (merging, scrapping) of Expedition Equipment",
+          "update": "{actor} updated the Terradust (merging, scrapping) of Expedition Equipment"
+        },
+        "expedition-equipment": {
+          "create": "{actor} created the Expedition Equipment reference",
+          "update": "{actor} updated the Expedition Equipment reference"
+        },
+        "gems": {
+          "update": "{actor} updated the Gems parameters"
+        },
+        "guide": {
+          "activate": "{actor} activated guide {title}",
+          "create": "{actor} created guide {title}",
+          "deactivate": "{actor} deactivated guide {title}",
+          "delete": "{actor} deleted guide {title}",
+          "publish": "{actor} published guide {title}",
+          "submit_review": "{actor} submitted guide {title} for review",
+          "unpublish": "{actor} unpublished guide {title}",
+          "update": "{actor} updated guide {title}",
+          "update_status": "{actor} changed the status of guide {title}"
+        },
+        "legal-notice": {
+          "update": "{actor} updated the legal notice"
+        },
+        "level-up": {
+          "update": "{actor} updated the Progression reference parameters"
+        },
+        "locale": {
+          "activate": "{actor} activated the {locale} language",
+          "deactivate": "{actor} deactivated the {locale} language"
+        },
+        "logs": {
+          "purge": "{actor} purged {count, plural, one {# journal entry} other {# journal entries}}"
+        },
+        "ranking": {
+          "update": "{actor} updated the ranking thresholds"
+        },
+        "reference": {
+          "activate": "{actor} activated the {slug} reference",
+          "deactivate": "{actor} deactivated the {slug} reference",
+          "describe": "{actor} described the {slug} reference"
+        },
+        "setup": "{actor} created the first Super Admin account",
+        "templars-reference": {
+          "create": "{actor} created the Templars reference presentation",
+          "update": "{actor} updated the Templars reference presentation"
+        },
+        "templars": {
+          "update": "{actor} updated the Templars parameters"
+        },
+        "tool": {
+          "activate": "{actor} activated tool {slug}",
+          "deactivate": "{actor} deactivated tool {slug}",
+          "describe": "{actor} described the {slug} tool"
+        },
+        "totp": {
+          "activate": "{actor} enabled two-factor authentication on their account",
+          "deactivate": "{actor} disabled two-factor authentication on their account"
+        },
+        "tracking": {
+          "delete": "{actor} removed the visit-tracking URL",
+          "update": "{actor} updated the visit-tracking URL"
+        },
+        "user": {
+          "activate": "{actor} activated user {username}",
+          "change_password": "{actor} changed their own account password",
+          "create": "{actor} created user {username}",
+          "deactivate": "{actor} deactivated user {username}",
+          "delete": "{actor} deleted user {username}",
+          "update": "{actor} updated user {username}"
+        },
+        "xp-gain-rate": {
+          "update": "{actor} updated the XP gain rate tiers"
+        },
+        "highlights": {
+          "update": "{actor} changed the homepage highlights"
+        },
+        "leagues": {
+          "update": "{actor} updated the leagues and divisions"
+        }
+      },
+      "eyebrow": "Access",
+      "filters-label": "History filters",
+      "filter-user-all": "All users",
+      "filter-message-placeholder": "A word from the message…",
+      "day-actions": "{count, plural, =1 {# action} other {# actions}}",
+      "column-time": "Time",
+      "load-more": "Load more",
+      "purge-title": "Purge the log",
+      "purge-description": "Permanently deletes the entries of a period. Super Admin only.",
+      "purge-open": "Purge the period…",
+      "purge-confirm-title": "Purge this period?",
+      "purge-confirm-body": "{count, plural, =0 {No entry falls in this period.} =1 {# entry will be permanently deleted.} other {# entries will be permanently deleted.}}",
+      "purge-confirm-action": "Purge",
+      "purge-invalid-range": "The end date must come after the start date.",
+      "purged-count": "{count, plural, =1 {# entry deleted.} other {# entries deleted.}}"
     },
     "content": {
       "eyebrow": "Institutional page",
       "title": "Legal notice",
-      "language-label": "Content language",
       "field": "Markdown",
-      "preview": "Live preview",
       "save": "Save",
       "saving": "Saving…",
       "saved": "Legal notice saved.",
-      "error": "Unable to save the legal notice."
+      "error": "Unable to save the legal notice.",
+      "page-title": "Legal pages",
+      "unsaved": "Unsaved changes",
+      "all-saved": "Everything is saved",
+      "view-on-site": "View on the site",
+      "languages-label": "Content language",
+      "to-create": "to create",
+      "todo-banner": "{count, plural, =1 {# field is still to fill in.} other {# fields are still to fill in.}}",
+      "todo-goto-first": "Go to the first one",
+      "mode-write": "Write",
+      "mode-split": "Side by side",
+      "mode-preview": "Preview",
+      "mode-label": "Editor display",
+      "todo-list-label": "Fields to fill in",
+      "language-hidden": "hidden on the site"
     },
     "forbidden": {
       "eyebrow": "Error 403",
@@ -1158,15 +1539,10 @@
       "title": "Site configuration",
       "intro": "Enable or disable each language's visibility on the public site. The translation files stay untouched. English and French are always active.",
       "columns": {
-        "language": "Language",
-        "status": "Status",
-        "action": "Action"
+        "language": "Language"
       },
       "active": "Enabled",
       "inactive": "Disabled",
-      "enable": "Enable",
-      "disable": "Disable",
-      "locked-tooltip": "Base language — always active",
       "saving": "Saving…",
       "save-error": "Save failed (HTTP {status}).",
       "state-saved": "{language} is now {state}.",
@@ -1179,6 +1555,7 @@
         "tr": "Türkçe"
       },
       "languages-section": "Languages",
+      "languages-summary": "{count} active out of {total}",
       "tracking": {
         "section": "Visit tracking",
         "intro": "Loads an analytics script on every page, public and admin alike. Leave the field empty to load nothing at all.",
@@ -1195,8 +1572,56 @@
         "website-id-label": "Site identifier",
         "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
         "website-id-hint": "Added to the tag as `data-website-id`. Leave empty if your tool does not ask for one.",
-        "invalid-website-id": "That identifier contains characters that do not belong in one."
+        "invalid-website-id": "That identifier contains characters that do not belong in one.",
+        "script-active": "Script active",
+        "script-inactive": "No script"
+      },
+      "columns-translated": "Translated guides",
+      "columns-public": "On the public site",
+      "visibility-of": "Visibility of {language} on the public site",
+      "always-active": "Always active",
+      "no-guides": "No guide",
+      "highlights": {
+        "section": "Homepage highlights",
+        "slot": "Slot {position}",
+        "none": "— None —",
+        "orphan": "Missing target ({slug})",
+        "intro": "Pick up to five guides, tools or reference tables to feature on the homepage, in the order they will appear. With no selection the homepage keeps its default list; an empty selection hides the panel.",
+        "empty": "Nothing selected. The homepage shows its default list.",
+        "empty-hidden": "An empty selection is saved: the homepage panel is hidden.",
+        "count": "{count} / {max} selected",
+        "save": "Save the selection",
+        "saved": "Selection saved.",
+        "kinds": {
+          "tool": "Tool",
+          "reference": "Reference table",
+          "guide": "Guide"
+        },
+        "saving": "Saving…",
+        "save-error": "Save failed (HTTP {status}).",
+        "server-error": "Could not reach the server. Try again later."
       }
+    },
+    "open-menu": "Open the menu",
+    "theme": {
+      "to-dark": "Switch to the dark theme",
+      "to-light": "Switch to the light theme"
+    },
+    "descriptions": {
+      "title": "Description of {name}",
+      "subtitle": "One line, shown under the title on the public site.",
+      "languages-label": "Text in",
+      "language-hidden": "{language}: hidden on the site",
+      "field": "Description ({language})",
+      "placeholder": "What this tool lets you work out, in one sentence.",
+      "counter": "{count} / {max} characters",
+      "leave-title": "Leave without saving?",
+      "leave-body": "Are you sure you want to leave without saving your changes?",
+      "leave-confirm": "Leave without saving",
+      "open": "Describe {name}",
+      "locale-written": "{language}: description written",
+      "locale-missing": "{language}: description to write",
+      "column": "Description"
     }
   },
   "roles": {
@@ -1211,5 +1636,14 @@
     "title": "Page not found",
     "description": "This page doesn’t exist or has moved. Here is where to go next:",
     "home": "Home"
+  },
+  "footer": {
+    "lead": "Community tools, references and guides to prepare every decision in Million Lords.",
+    "note": "Unofficial community site, unaffiliated with the game's publisher.",
+    "help": "Help",
+    "start-here": "Start here",
+    "all-guides": "All guides",
+    "all-references": "All references",
+    "copyright": "© {year} ML-Helper"
   }
 }

@@ -1,7 +1,8 @@
+import { revalidateContent } from "@/lib/revalidate-content";
 import { NextResponse } from "next/server";
 import { authorizedSession, forbiddenResponse } from "@/auth/api-authorization";
 import { canPerformGuideAction } from "@/auth/guide-actions";
-import { auditMessage } from "@/lib/audit-message";
+import { auditMessage, auditMessageColumns } from "@/lib/audit-message";
 import { prisma } from "@/lib/prisma";
 import { localizedText } from "@/lib/translations";
 import { isUniqueConflict, updateGuide } from "@/services/guides";
@@ -24,6 +25,7 @@ export async function PATCH(
       id,
       await request.json(),
     );
+    await revalidateContent("guides", guide.slug);
     return NextResponse.json({ id: guide.id });
   } catch (error) {
     return NextResponse.json(
@@ -57,20 +59,21 @@ export async function DELETE(
         action: "delete",
         entityType: "guide",
         entityId: id,
-        message: auditMessage(
-          session.user.name ?? session.user.id,
-          "delete",
-          `le guide ${localizedText(before.title, "fr") || before.slug}`,
+        ...auditMessageColumns(
+          auditMessage("guide.delete", {
+            actor: session.user.name ?? session.user.id,
+            title: localizedText(before.title, "fr") || before.slug,
+          }),
         ),
         diff: {
           before: {
             slug: before.slug,
             status: before.status,
-            active: before.active,
           },
         },
       },
     });
   });
+  await revalidateContent("guides", before.slug);
   return NextResponse.json({ deleted: true });
 }

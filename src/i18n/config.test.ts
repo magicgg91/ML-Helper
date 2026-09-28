@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import { getAvailableLocales, mergeMessages } from "./config";
+import { launchLocales } from "@/lib/translations";
 
 describe("static translation configuration", () => {
   it("discovers locales from translation filenames", async () => {
     // Bloc 44: DE/ES/TR activated alongside FR/EN — this reads the
     // filesystem directly (messages/*.json), so no other code change was
     // needed to make them discoverable.
-    await expect(getAvailableLocales()).resolves.toEqual([
-      "de",
-      "en",
-      "es",
-      "fr",
-      "tr",
-    ]);
+    // Bloc 120: and what it discovers is now what the app routes on, which is
+    // the assertion worth making — naming today's five would freeze the list
+    // this bloc exists to stop freezing.
+    await expect(getAvailableLocales()).resolves.toEqual(
+      [...launchLocales].sort(),
+    );
   });
 
   // CI fix: this test used to assert on a key that happened to be missing

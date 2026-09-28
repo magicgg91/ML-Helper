@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   formatExactNumber,
@@ -48,6 +49,42 @@ describe("formatGameNumber", () => {
 
   it("keeps the sign on negatives", () => {
     expect(formatGameNumber(-1500)).toBe("-1.5k");
+  });
+
+  // Bloc 63/B, Codex review (PR #134): the set of suffixes is a product rule,
+  // not an implementation detail — the review flagged E/Z/Y precisely because
+  // the code had grown a scale the specification did not have. The owner then
+  // revised the specification (18/09/2026), so rather than pin a list twice,
+  // this reads the rule and checks the code against it. Drift either way
+  // fails here.
+  it("uses exactly the suffixes the product rules declare, in order", () => {
+    const declared = /compact par palier ([kMGTPEZY/]+)/
+      .exec(readFileSync("AGENTS.md", "utf8"))![1]
+      .split("/");
+    expect(declared[0]).toBe("k");
+    // Each suffix rules its own decade: k at 1e3, M at 1e6, and so on up.
+    declared.forEach((suffix, index) => {
+      expect(formatGameNumber(1.5 * 10 ** (3 * (index + 1)))).toBe(
+        `1.5${suffix}`,
+      );
+    });
+    // And nothing exists past the last one — the decade above it stays on it.
+    const top = declared.at(-1)!;
+    expect(formatGameNumber(1.5 * 10 ** (3 * declared.length + 3))).toMatch(
+      new RegExp(`${top}$`),
+    );
+  });
+
+  // The two figures that made the owner extend the scale, now readable.
+  it("keeps level 200's figures compact, which is why E/Z/Y were added", () => {
+    expect(formatGameNumber(32.2028 * 1.245 ** 200)).toBe("348.15E");
+    expect(formatGameNumber(Math.round(50 * 1.3 ** 198))).toBe("1.82Y");
+    // The cahier des charges' own promise, across every decade the site can
+    // reach: a small number and a suffix, never a ten-digit "1818669406.06P".
+    for (let exponent = 0; exponent <= 26; exponent += 1)
+      expect(formatGameNumber(1.5 * 10 ** exponent), `1.5e${exponent}`).toMatch(
+        /^\d{1,3}(\.\d{1,2})?[kMGTPEZY]?$/,
+      );
   });
 });
 

@@ -16,10 +16,8 @@ function emptyCatalog(): ConsumableCatalog {
 
 const introRow = {
   image: "/consumables/sapphires.webp",
-  name_fr: "Saphirs",
-  name_en: "Sapphires",
-  description_fr: "Description intro FR",
-  description_en: "Description intro EN",
+  name: { fr: "Saphirs", en: "Sapphires" },
+  description: { fr: "Description intro FR", en: "Description intro EN" },
   cost: "",
 };
 
@@ -29,20 +27,16 @@ const catalog: ConsumableCatalog = {
   equipment: [
     {
       image: "/consumables/mighty-jar.webp",
-      name_fr: "Jarre divine ×10",
-      name_en: "Divine Jar ×10",
-      description_fr: "Description FR",
-      description_en: "Description EN",
+      name: { fr: "Jarre divine ×10", en: "Divine Jar ×10" },
+      description: { fr: "Description FR", en: "Description EN" },
       cost: "10500",
     },
   ],
   inventory: [
     {
       image: "/consumables/city-rename.webp",
-      name_fr: "Renommer votre ville",
-      name_en: "Rename Your City",
-      description_fr: "Description FR 2",
-      description_en: "Description EN 2",
+      name: { fr: "Renommer votre ville", en: "Rename Your City" },
+      description: { fr: "Description FR 2", en: "Description EN 2" },
       cost: "",
     },
   ],
@@ -146,19 +140,66 @@ describe("ConsumablesReferenceTable", () => {
   it("falls back to French text when the English translation is still empty", () => {
     const catalogMissingEn: ConsumableCatalog = {
       ...emptyCatalog(),
-      equipment: [{ ...catalog.equipment[0], name_en: "", description_en: "" }],
+      equipment: [
+        {
+          ...catalog.equipment[0],
+          // Une langue non traduite est **absente** du champ, jamais `""` :
+          // c'est ce qui laisse le repli fonctionner (Bloc 126/D).
+          name: { fr: catalog.equipment[0].name.fr },
+          description: { fr: catalog.equipment[0].description.fr },
+        },
+      ],
     };
     render(<ConsumablesReferenceTable catalog={catalogMissingEn} />, "en");
     expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
   });
 
-  // Bloc 47/D review: item name/description have no de/es/tr fields at
-  // all, so a non-fr/non-en visitor always hits the fallback — it must
-  // land on English (the universal safety net), never French.
+  // Bloc 47/D review: a visitor whose language an item has no text for lands
+  // on English (the universal safety net), never French.
   it("Bloc47/D: shows the English name/description to a DE visitor, never the French one", () => {
     render(<ConsumablesReferenceTable catalog={catalog} />, "de");
     expect(screen.getByText("Divine Jar ×10")).toBeInTheDocument();
     expect(screen.queryByText("Jarre divine ×10")).not.toBeInTheDocument();
+  });
+
+  // Bloc 127 (PR 1/3): what the pair could not do at all — a German visitor
+  // reading German. Before this bloc the model held one French field and one
+  // for everybody else, so this text had nowhere to live.
+  it("Bloc127: shows a German visitor the German text when the item has one", () => {
+    const withGerman: ConsumableCatalog = {
+      ...emptyCatalog(),
+      equipment: [
+        {
+          ...catalog.equipment[0],
+          name: { ...catalog.equipment[0].name, de: "Göttlicher Krug ×10" },
+          description: {
+            ...catalog.equipment[0].description,
+            de: "Beschreibung DE",
+          },
+        },
+      ],
+    };
+    render(<ConsumablesReferenceTable catalog={withGerman} />, "de");
+    expect(screen.getByText("Göttlicher Krug ×10")).toBeInTheDocument();
+    expect(screen.getByText("Beschreibung DE")).toBeInTheDocument();
+    // …et les deux autres langues restent à leur place.
+    expect(screen.queryByText("Divine Jar ×10")).not.toBeInTheDocument();
+    cleanup();
+    render(<ConsumablesReferenceTable catalog={withGerman} />, "en");
+    expect(screen.getByText("Divine Jar ×10")).toBeInTheDocument();
+    cleanup();
+    render(<ConsumablesReferenceTable catalog={withGerman} />, "fr");
+    expect(screen.getByText("Jarre divine ×10")).toBeInTheDocument();
+  });
+
+  // Une langue qu'aucun objet ne porte lit l'anglais, jamais un vide : ce que
+  // le site promet pour toute traduction manquante (AGENTS.md).
+  it("Bloc127: serves every launch language something to read", () => {
+    for (const locale of ["es", "tr"]) {
+      cleanup();
+      render(<ConsumablesReferenceTable catalog={catalog} />, locale);
+      expect(screen.getByText("Divine Jar ×10"), locale).toBeInTheDocument();
+    }
   });
 
   // Bloc 48/B: category is no longer a column — it's now which of the 4
@@ -345,10 +386,11 @@ describe("ConsumablesReferenceTable", () => {
       equipment: [
         {
           image: "/consumables/mighty-jar.webp",
-          name_fr: "Jarre **divine**",
-          name_en: "Divine Jar",
-          description_fr: "Contient des **objets rares**",
-          description_en: "Contains rare items",
+          name: { fr: "Jarre **divine**", en: "Divine Jar" },
+          description: {
+            fr: "Contient des **objets rares**",
+            en: "Contains rare items",
+          },
           cost: "10500",
         },
       ],

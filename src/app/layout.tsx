@@ -1,37 +1,82 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Cinzel, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { siteUrl } from "@/lib/site-url";
+import { themeBackground } from "@/lib/theme-color";
 import { getTrackingSettings } from "@/lib/site-settings";
 import { ogLocale, titleTemplate } from "@/lib/page-metadata";
 import "./globals.css";
 
 // Bloc 91/M1: self-host the display fonts through next/font instead of the
-// render-blocking Google Fonts @import globals.css used to carry. next/font
-// downloads the files at build time, serves them same-origin (one fewer CSP
-// domain, no third-party request — simpler on the RGPD front), preloads them
-// and applies an automatic size-adjust fallback. Only the weights the CSS
-// actually uses are requested. Each family is exposed as a CSS custom property
-// (--font-sans/-serif/-mono) that globals.css references.
-const fontSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+// render-blocking Google Fonts @import globals.css used to carry — served
+// same-origin (one fewer CSP domain, no third-party request — simpler on the
+// RGPD front), preloaded, with an automatic size-adjust fallback. Each family
+// is exposed as a CSS custom property (--font-sans/-serif/-mono) that
+// globals.css references.
+//
+// Bloc 116/A: `local`, not `google`. next/font/google self-hosts what it
+// serves, but it DOWNLOADS the files from Google at build time and at every
+// `next dev` start — a network call in the critical path of the build. That
+// call failed twice in one morning in CI (PR #140's Docker image job, then
+// PR #141's e2e web server), both times with
+// `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`. The
+// files now live in ./fonts (see its README for which subset and how to add a
+// weight), so a build reads them off disk and no network can take it down.
+const fontSans = localFont({
+  src: [
+    { path: "./fonts/ibm-plex-sans-400-latin.woff2", weight: "400" },
+    { path: "./fonts/ibm-plex-sans-500-latin.woff2", weight: "500" },
+    { path: "./fonts/ibm-plex-sans-600-latin.woff2", weight: "600" },
+  ],
   variable: "--font-sans",
   display: "swap",
 });
-const fontSerif = Cinzel({
-  subsets: ["latin"],
-  weight: ["600", "700"],
+const fontSerif = localFont({
+  src: [
+    { path: "./fonts/cinzel-600-latin.woff2", weight: "600" },
+    { path: "./fonts/cinzel-700-latin.woff2", weight: "700" },
+  ],
   variable: "--font-serif",
   display: "swap",
+  // Cinzel is a serif, so its size-adjust donor is the serif of the two
+  // next/font/local offers (the default is Arial).
+  adjustFontFallback: "Times New Roman",
 });
-const fontMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const fontMono = localFont({
+  src: [
+    { path: "./fonts/jetbrains-mono-400-latin.woff2", weight: "400" },
+    { path: "./fonts/jetbrains-mono-500-latin.woff2", weight: "500" },
+    { path: "./fonts/jetbrains-mono-600-latin.woff2", weight: "600" },
+  ],
   variable: "--font-mono",
   display: "swap",
+  // next/font/local only offers Arial or Times New Roman as the metric donor,
+  // and neither is monospaced: adjusting a proportional font to JetBrains
+  // Mono's metrics would misalign every column of figures during the swap.
+  // A real monospace stack is the better trade here — the mono text is short
+  // numbers in tiles and tables, where the cell grid matters more than a few
+  // pixels of reflow.
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+  /**
+   * La seule famille qu'on ne précharge pas.
+   *
+   * `preload` vaut `true` par défaut et porte sur toute la famille : les huit
+   * fichiers des trois familles (176 Ko) étaient donc téléchargés sur chaque
+   * page. Mesuré au navigateur sur un build de production : les quatre écrans
+   * d'outils n'utilisent que deux fontes (sans 400, serif 700), Configuration
+   * trois, et la chasse fixe n'apparaît que sur six pages sur douze — et
+   * jamais dans le premier texte lu : elle est réservée aux heures, aux
+   * identifiants, aux codes de langue et aux nombres en tuiles (Bloc 119 §1).
+   * Elle arrive donc par la feuille de style quand une page en a besoin, un
+   * aller-retour plus tard, ce que `display: swap` couvre déjà.
+   *
+   * Les deux autres familles restent préchargées : sans et serif servent le
+   * texte courant et les titres de toutes les pages mesurées.
+   */
+  preload: false,
 });
 
 // Bloc 42/J: the previous "ML-Helper Admin" / "administration" default
@@ -116,15 +161,43 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Bloc 33/B: sets data-theme before first paint, so a first-time
             visitor sees their OS preference immediately instead of a flash
             of dark followed by a correction. Kept in sync with ThemeToggle's
-            own localStorage-then-matchMedia fallback. localStorage access is
-            isolated in its own try/catch (it can throw in private-browsing
-            or storage-restricted contexts) so a denial there still falls
-            through to the matchMedia read instead of silently keeping the
-            CSS dark default. */}
+            own localStorage-then-matchMedia fallback.
+            localStorage access is isolated in its own try/catch (it can
+            throw in private-browsing or storage-restricted contexts) so a
+            denial there still falls through to the matchMedia read instead
+            of silently keeping the CSS dark default.
+            Bloc 103: it also CREATES and fills <meta name="theme-color">,
+            the colour the browser paints AROUND the page — the address-bar
+            area on Android Chrome, the window chrome on desktop, an
+            installed app's status-bar strip. It is set here, before the
+            first paint, so a visitor who saved the light theme never gets a
+            dark strip over a light page while React hydrates.
+            Bloc 106: this was originally introduced to fix an iOS 27 blur
+            over that strip, and it did not — that blur is an Apple system
+            bug affecting every PWA on the device. src/lib/theme-color.ts
+            carries the full record; the tag stays because declaring it is
+            right on its own terms.
+
+            The tag is created here rather than server-rendered through
+            metadata, and that is deliberate. A tag React owns is one React
+            re-inserts at hydration: since this script rewrites the colour
+            for a saved light theme, React answered with a SECOND
+            theme-color tag holding the stale dark value, and a duplicate
+            leaves the browser reading whichever comes first.
+            suppressHydrationWarning does not help — React 19 hoists <meta>
+            as a resource rather than hydrating it in place. One owner, then,
+            and it has to be this script: it runs before the first paint, so
+            the strip is right from the first frame instead of being
+            corrected afterwards.
+
+            This is the inline twin of applyThemeColor
+            (src/lib/theme-color.ts), which ThemeToggle uses for later
+            changes; both colours are interpolated from that one module, so
+            the twins cannot drift apart. */}
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
-            __html: `(function(){var saved=null;try{saved=localStorage.getItem("mlhelper_theme");}catch(e){}var theme=saved==="light"||saved==="dark"?saved:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=theme;})();`,
+            __html: `(function(){var saved=null;try{saved=localStorage.getItem("mlhelper_theme");}catch(e){}var theme=saved==="light"||saved==="dark"?saved:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=theme;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.setAttribute("name","theme-color");document.head.appendChild(m);}m.setAttribute("content",theme==="light"?${JSON.stringify(themeBackground.light)}:${JSON.stringify(themeBackground.dark)});})();`,
           }}
         />
       </head>

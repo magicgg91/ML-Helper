@@ -1,44 +1,164 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   calculateRanking,
+  rankBandShades,
   rankCategoryShade,
-  type RankingBand,
-  type RankingConfig,
-  type RankingLeague,
-  type RankMovement,
+  type RankingRange,
 } from "../lib/ranking";
-import { NumberStepper } from "./number-stepper";
-import { LeagueButtons } from "./league-select";
-import { useSyncedLeague } from "./use-synced-league";
+import {
+  activeLadder,
+  baseLeagueOf,
+  findLeagueRung,
+  leagueLockFor,
+  seasonRewardTypes,
+  type LeagueLadder,
+  type LeagueRung,
+  type SeasonBand,
+  type SeasonRewardType,
+} from "../lib/leagues";
+import { leagueButtonRows, sliceIntoRows } from "../lib/league-button-rows";
+import { leagueRungLabel } from "./league-rung-label";
 
 type Translator = ReturnType<typeof useTranslations>;
+import { NumberStepper } from "./number-stepper";
+import {
+  LeagueLockIcon,
+  RankMovementIcon,
+  RankRewardIcon,
+} from "./ranking-icons";
+import { useNarrowViewport } from "./use-narrow-viewport";
+import { usePlayerSettings } from "./use-player-settings";
 
-function targetLabel(band: RankingBand, t: Translator, game: Translator) {
-  if (!band.movement || !band.league) return t("undefined");
-  return t(`movements.${band.movement}`, {
-    league: game(`leagues.${band.league}`),
-  });
+/**
+ * Bloc 112: what a range leads to, as two separate pieces — the movement verb
+ * and the league it points at. The tile styles and sizes them differently, so
+ * they can no longer be one sentence as they were up to Bloc 110.
+ *
+ * Resolved against the ACTIVE ladder only (Codex review, PR #135): a band may
+ * point at a rung an admin has prepared but not switched on, and naming it
+ * here would put a future division on the public page — the very thing the
+ * active flag exists to prevent. A target the admin has since deleted is as
+ * unknown as one never set, and both read "to be defined" rather than leaking
+ * a raw id, with no verb in front of it.
+ */
+function rangeTarget(
+  band: SeasonBand,
+  entries: LeagueLadder,
+  t: Translator,
+  game: Translator,
+  locale: string,
+): { verb: string | null; league: string } {
+  const target = band.target ? findLeagueRung(entries, band.target) : undefined;
+  if (!band.movement || !target) return { verb: null, league: t("undefined") };
+  return {
+    verb: t(`movements.${band.movement}`),
+    league: leagueRungLabel(target, game, locale),
+  };
 }
 
-function rewardLabel(band: RankingBand, t: Translator) {
-  if (!band.rewards.length) return t("undefined");
-  return band.rewards
-    .map((item) => t(`reward-types.${item.type}`, { count: item.quantity }))
-    .join(", ");
+function rewardQuantity(band: SeasonBand, type: SeasonRewardType) {
+  return band.rewards.find((item) => item.type === type)?.quantity ?? 0;
 }
 
-export function RankingCalculator({ config }: { config: RankingConfig }) {
+/**
+ * Bloc 110/C: the color both the scale segment and the interval tile use.
+ *
+ * Both sides read the same list at the same index, so they cannot drift.
+ * An index past its end cannot happen — the list is built from these very
+ * bands — and the fallback keeps a color rather than an unset custom property
+ * if that ever stopped being true.
+ */
+function bandShade(shades: string[], index: number) {
+  return shades[index] ?? rankCategoryShade("stay", 0);
+}
+
+/** The color a segment and its tile share, as a CSS custom property. */
+function bandColorStyle(color: string) {
+  // React's CSSProperties has no room for custom properties, hence the cast —
+  // it is the standard way to set one inline and stays fully typed otherwise.
+  return { "--band-color": color } as CSSProperties;
+}
+
+export function RankingCalculator({ ladder }: { ladder: LeagueLadder }) {
   const locale = useLocale();
   const t = useTranslations("ranking");
   const game = useTranslations("game");
-  const [league, setLeague] = useSyncedLeague();
+  // Bloc 108/C+G: only active entries reach the public page, in the order an
+  // admin gave them — however many there are. Nothing here counts on six.
+  const entries = activeLadder(ladder);
+  const settings = usePlayerSettings();
+  const [manualEntry, setManualEntry] = useState("");
+  // Bloc 108/E: the player's own division wins, because it is the precise
+  // answer.
+  const ofLeague = settings.league
+    ? entries.filter((entry) => entry.league === settings.league)
+    : [];
+  const fromSettings =
+    // The stored division must still belong to the league the player is in
+    // (Codex review, PR #135): an admin can move an entry to another base
+    // league while its id — which is what was persisted — stays the same, and
+    // the calculator would then quietly show another league's bands.
+    //
+    // Bloc 135 §4 : la comparaison passe par `baseLeagueOf`, le seul chemin
+    // nommé d'une division vers sa ligue de base. La règle était écrite ici en
+    // clair, et c'est celle dont tous les autres outils dépendent sans la
+    // dire — la nommer une fois est ce qui la rend vérifiable.
+    //
+    // Revue Codex (PR #173) : `?? ""` ramène les deux formes à la même, comme
+    // `selectedRungOf` le fait déjà. Un échelon « libre » n'a pas de ligue de
+    // base — `baseLeagueOf` rend `null` — mais c'est une chaîne vide qui est
+    // stockée pour lui : la comparaison stricte échouait, et l'échelon choisi
+    // par le joueur dans Paramètres n'était pas retrouvé ici.
+    (settings.division &&
+    (baseLeagueOf(ladder, settings.division) ?? "") === settings.league
+      ? findLeagueRung(entries, settings.division)?.id
+      : undefined) ??
+    // Without one, a league that still has a single rung resolves on its own;
+    // a league already split into divisions does not, and the player picks —
+    // guessing which half of their league they are in would invent data.
+    (ofLeague.length === 1 ? ofLeague[0].id : undefined);
+  const entryId = manualEntry || fromSettings || "";
+  const entry = entries.find((item) => item.id === entryId);
+  const bands = entry?.bands ?? [];
+  const lock = entry ? leagueLockFor(ladder, entry.id) : null;
   const [percentage, setPercentage] = useState(1);
   const [rank, setRank] = useState(10);
-  const bands = league ? config[league] : [];
   const result = calculateRanking(bands, percentage, rank);
+  // Bloc 110/C: computed once, from the bands, and handed to both the scale
+  // and the tiles — see rankBandShades.
+  const shades = rankBandShades(bands);
+  // Codex review (PR #139): whether the deduced population is readable from
+  // the tiles at all. Only a range reaching 100% ends on it, so if none of
+  // the RENDERED ranges does, the figure needs showing on its own.
+  // Carries the number rather than a flag, so the rendering below needs no
+  // non-null assertion to get at it.
+  const totalOffScreen =
+    result.total !== null &&
+    !result.ranges.some((range) => range.threshold === 100)
+      ? Math.ceil(result.total)
+      : null;
+  // Bloc 109: how many buttons each row carries. The split depends on a width
+  // only the browser knows — the same server-renders-wide, client-corrects
+  // trade-off useNarrowViewport carries for the reference tables.
+  const narrow = useNarrowViewport();
+  const buttonRows = leagueButtonRows(entries.length, narrow);
+  // Bloc 110/1: a phone always gets the two fixed columns, at any count, so
+  // it always uses the row markup; desktop only splits once the single row
+  // it has always had stops fitting, above six.
+  const splitRows = narrow || buttonRows.length > 1;
+  const entryButton = (item: LeagueRung) => (
+    <button
+      key={item.id}
+      type="button"
+      aria-pressed={item.id === entryId}
+      onClick={() => setManualEntry(item.id)}
+    >
+      {leagueRungLabel(item, game, locale)}
+    </button>
+  );
 
   return (
     <div className="calculator-stack ranking-calculator">
@@ -55,16 +175,38 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
             above the buttons, fixed at 50% of the row, instead of the
             inline label. The 2 numeric fields keep Bloc 64/G's inline
             style; mobile is unaffected (it already stacks title-above via
-            .ranking-fields' own mobile rule, independent of this class). */}
+            .ranking-fields' own mobile rule, independent of this class).
+            Bloc 108/A: the buttons are built from the ladder rather than the
+            fixed league enum, so a division added in the admin appears here
+            with no code change.
+            Bloc 109: and since that count is now whatever an admin switched
+            on, the picker lays them over as many rows as it takes — see
+            leagueButtonRows. On desktop at six or fewer the markup below is
+            byte for byte what it was, so the layout it has always had is
+            untouched.
+            Bloc 110/1: mobile is now always two fixed columns instead — three
+            to a row broke the page width once real division names were in
+            play. */}
         <div className="ranking-fields">
           <div className="calculator-field ranking-league-field">
-            <span className="ranking-field-label">{t("fields.league")}</span>
-            <LeagueButtons
-              label={t("fields.league")}
-              value={league}
-              onChange={setLeague}
-              className="league-buttons-grid"
-            />
+            <span className="ranking-field-label">{t("fields.entry")}</span>
+            <div
+              className={
+                splitRows
+                  ? "family-buttons league-buttons-grid league-buttons-rows"
+                  : "family-buttons league-buttons-grid"
+              }
+              role="group"
+              aria-label={t("fields.entry")}
+            >
+              {splitRows
+                ? sliceIntoRows(entries, buttonRows).map((row) => (
+                    <div className="league-button-row" key={row[0].id}>
+                      {row.map(entryButton)}
+                    </div>
+                  ))
+                : entries.map(entryButton)}
+            </div>
           </div>
           <label className="calculator-field ranking-inline-field ranking-number-field">
             <span className="ranking-field-label">
@@ -91,83 +233,96 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
         </div>
       </section>
       <section className="calculator-card">
-        {/* Bloc 62/E, F: renamed (no more "(déduit)" qualifier) and moved
-            off its own dedicated block — this line now sits directly atop
-            the visual-scale zone, standing in for the removed "Échelle
-            visuelle" title, instead of occupying separate space of its
-            own. */}
         {/* Bloc 92/H1: a permanently-mounted live region around the whole
-            result area — the total and the ranges table — so the recomputed
-            values are announced. The placeholders drop their own role="status"
-            (Codex PR #116): nesting it inside this live region can
-            double-announce; this wrapper already covers them. */}
+            result area — the header and the range tiles — so the recomputed
+            values are announced. The placeholders drop their own
+            role="status" (Codex PR #116): nesting it inside this live region
+            can double-announce; this wrapper already covers them. */}
         <div aria-live="polite">
-          <div className="ranking-scale-total">
-            <span className="label">{t("total-players")}</span>
-            <strong className="value" data-testid="ranking-total">
-              {result.total === null
-                ? "—"
-                : Math.ceil(result.total).toLocaleString(locale)}
-            </strong>
-          </div>
-          {!league ? (
+          {/* Bloc 112: the section's own header. The heading used to sit
+              inside the ranges branch; it is above the branch now so that the
+              League Lock beside it survives the states where there are no
+              ranges to show — an entry whose thresholds are not filled in yet
+              still has a lock, and Bloc 108/D has shown it there since.
+              Bloc 112 also removed what used to head this zone: the estimated
+              player count (the last range's upper bound already says it) and
+              the single 100%->0% scale (every tile carries its own bar now). */}
+          {entry ? (
+            <div className="ranking-ranges-header">
+              <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
+              {/* Codex review (PR #139): the estimated player count was
+                  removed because the last range ends on it — but that only
+                  holds for a range reaching 100%, and calculateRanking says
+                  so itself: every other range floors at its own percentage.
+                  isSavableLeagueLadder allows a ladder stopping short of
+                  100, and a small enough population can drop the 100% range
+                  even from a ladder that has one. In both cases the figure is
+                  nowhere else on the page, so it comes back — as a chip, and
+                  only then, so nothing redundant is ever redrawn. */}
+              {totalOffScreen !== null ? (
+                <p className="ranking-header-chip ranking-chip-total">
+                  <span className="ranking-header-chip-label">
+                    {t("total-players")}
+                  </span>
+                  <strong
+                    className="ranking-header-chip-value"
+                    data-testid="ranking-total"
+                  >
+                    {totalOffScreen.toLocaleString(locale)}
+                  </strong>
+                </p>
+              ) : null}
+              {/* Bloc 108/D: the rung the player cannot fall below this
+                  season. Computed, never typed in by an admin. Bloc 112
+                  shrank it from a tile to this chip. */}
+              <p className="ranking-header-chip ranking-chip-lock">
+                <LeagueLockIcon />
+                <span className="ranking-header-chip-label">
+                  {t("league-lock")}
+                </span>
+                <strong
+                  className="ranking-header-chip-value"
+                  data-testid="ranking-league-lock"
+                >
+                  {lock
+                    ? leagueRungLabel(lock, game, locale)
+                    : t("league-lock-none")}
+                </strong>
+              </p>
+            </div>
+          ) : null}
+          {!entry ? (
             <p className="ranking-placeholder">{t("errors.select-league")}</p>
           ) : percentage <= 0 ? (
             <p className="ranking-placeholder">
               {t("errors.positive-percentage")}
             </p>
           ) : bands.length === 0 ? (
+            // Bloc 108/C: an active entry whose thresholds aren't filled in
+            // yet says so, exactly as the Progression reference does for a
+            // league whose formula isn't confirmed. It is NOT hidden —
+            // active/inactive is the only thing that decides visibility.
             <p className="ranking-placeholder">
               {t("errors.missing-bands", {
-                league: game(`leagues.${league}`),
+                entry: leagueRungLabel(entry, game, locale),
               })}
             </p>
           ) : (
-            <>
-              <RankingScale bands={bands} percentage={percentage} />
-              <h2 className="calculator-heading">{t("ranking-ranges")}</h2>
-              <div className="ranking-table-wrap">
-                <table className="ranking-table">
-                  <thead>
-                    <tr>
-                      <th>{t("columns.range")}</th>
-                      <th>{t("columns.rank")}</th>
-                      <th>{t("columns.target-league")}</th>
-                      <th>{t("columns.reward")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {result.ranges.map((range) => (
-                      <tr key={range.threshold}>
-                        <td>
-                          {range.threshold}–{range.rangeStart}%
-                        </td>
-                        <td>
-                          {range.rankEnd.toLocaleString(locale)} –{" "}
-                          {range.rankStart.toLocaleString(locale)}
-                        </td>
-                        <td
-                          className={
-                            !range.movement || !range.league
-                              ? "ranking-unknown"
-                              : ""
-                          }
-                        >
-                          {targetLabel(range, t, game)}
-                        </td>
-                        <td
-                          className={
-                            !range.rewards.length ? "ranking-unknown" : ""
-                          }
-                        >
-                          {rewardLabel(range, t)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+            <ul className="ranking-range-tiles">
+              {result.ranges.map((range) => (
+                // Keyed on bandIndex, not on the threshold: two bands can
+                // share a threshold (Codex review, PR #137), and a duplicate
+                // React key would let one tile reuse the other's DOM node.
+                <RankingRangeTile
+                  key={range.bandIndex}
+                  range={range}
+                  color={bandShade(shades, range.bandIndex)}
+                  entries={entries}
+                  percentage={percentage}
+                  narrow={narrow}
+                />
+              ))}
+            </ul>
           )}
         </div>
       </section>
@@ -175,91 +330,132 @@ export function RankingCalculator({ config }: { config: RankingConfig }) {
   );
 }
 
-function RankingScale({
-  bands,
+/**
+ * Bloc 112: one range of the ladder, as a tile.
+ *
+ * Everything it shows is already computed — the range, its ranks, its
+ * rewards, the player's own percentage — so this only lays them out. Three
+ * groups, side by side on a desktop row and stacked on a phone: what the
+ * range leads to, where it sits (ranks, percentile, and its slice of the
+ * ladder as a bar), and what it pays.
+ *
+ * Only the rewards this range actually grants are drawn, which reverses Bloc
+ * 108/H's rule on purpose: that rule existed because a SENTENCE that silently
+ * dropped an absent reward read as though the tool did not track it. A named
+ * mini-tile cannot read that way — what is absent is absent, and the leagues
+ * that grant a single reward no longer carry two empty slots.
+ */
+function RankingRangeTile({
+  range,
+  color,
+  entries,
   percentage,
+  narrow,
 }: {
-  bands: RankingConfig[RankingLeague];
+  range: RankingRange;
+  color: string;
+  entries: LeagueLadder;
   percentage: number;
+  narrow: boolean;
 }) {
   const t = useTranslations("ranking");
   const game = useTranslations("game");
   const locale = useLocale();
-  const sorted = [...bands].sort((a, b) => a.threshold - b.threshold);
-  const categoryCounters: Record<RankMovement, number> = {
-    promotion: 0,
-    stay: 0,
-    relegation: 0,
-  };
-  const playerLeft = 100 - percentage;
+  const { verb, league } = rangeTarget(range, entries, t, game, locale);
+  // The movement decides the strong color of this tile's badge, league name
+  // and bar segment — fixed per movement, unlike the band shade, which also
+  // varies with the range's position inside its movement group.
+  const movement = range.movement ?? "stay";
+  // Bloc 112: the percentile the range covers. The first one has no lower
+  // bound to name, so it reads as a "top N%" instead of a span.
+  const percentile =
+    range.rangeStart === 0
+      ? t("percentile-top", { value: range.threshold })
+      : t("percentile-range", { from: range.rangeStart, to: range.threshold });
+  // The player sits in exactly one range: the bounds are half-open at the
+  // bottom, so a percentage landing exactly on a threshold belongs to the
+  // better of the two ranges that share it, never to both.
+  const playerHere =
+    percentage > range.rangeStart && percentage <= range.threshold;
+  const playerLabel = t("player-position", {
+    percentage: percentage.toLocaleString(locale, { maximumFractionDigits: 2 }),
+  });
+  const playerBubble = (
+    <span className="ranking-player-bubble">{playerLabel}</span>
+  );
+  const rewards = seasonRewardTypes
+    .map((type) => ({ type, quantity: rewardQuantity(range, type) }))
+    .filter((reward) => reward.quantity > 0);
   return (
-    <div className="ranking-scale" aria-label={t("scale-label")}>
-      <div className="ranking-scale-axis" />
-      {Array.from({ length: 11 }, (_, index) => {
-        const value = index * 10;
-        const left = 100 - value;
-        return (
-          <div key={value}>
-            <span className="ranking-scale-tick" style={{ left: `${left}%` }} />
-            <span
-              className="ranking-scale-tick-label"
-              style={{ left: `${left}%` }}
-            >
-              {value}%
+    <li
+      className={`ranking-range-tile ranking-range-${movement}`}
+      style={bandColorStyle(color)}
+    >
+      <span className="ranking-range-accent" aria-hidden="true" />
+      <div className="ranking-range-result">
+        <span className="ranking-range-badge" aria-hidden="true">
+          <RankMovementIcon movement={range.movement} />
+        </span>
+        <span className="ranking-range-result-text">
+          {verb ? <span className="ranking-range-verb">{verb}</span> : null}
+          <span
+            className={
+              verb
+                ? "ranking-range-league"
+                : "ranking-range-league ranking-unknown"
+            }
+          >
+            {league}
+          </span>
+        </span>
+      </div>
+      <div className="ranking-range-position">
+        <div className="ranking-range-position-top">
+          <span className="ranking-range-ranks">
+            <span className="ranking-range-ranks-label">{t("tile.ranks")}</span>
+            <span className="ranking-range-ranks-value">
+              {range.rankStart.toLocaleString(locale)} –{" "}
+              {range.rankEnd.toLocaleString(locale)}
             </span>
-          </div>
-        );
-      })}
-      {sorted.map((band, index) => {
-        const start = index === 0 ? 0 : sorted[index - 1].threshold;
-        const left = 100 - band.threshold;
-        const width = band.threshold - start;
-        const category = band.movement ?? "stay";
-        const color = rankCategoryShade(category, categoryCounters[category]);
-        categoryCounters[category] += 1;
-        const side = index % 2 === 0 ? "above" : "below";
-        return (
-          <div key={band.threshold}>
-            <div
-              className="ranking-scale-segment"
-              style={{
-                left: `${left}%`,
-                width: `${width}%`,
-                background: `${color}CC`,
-              }}
-              title={t("segment-tooltip", {
-                threshold: band.threshold,
-                start,
-                target: targetLabel(band, t, game),
-                reward: rewardLabel(band, t),
-              })}
+            {/* One bubble, not two hidden by CSS: it is the player's position
+                written out, and a screen reader must not read it twice. */}
+            {playerHere && !narrow ? playerBubble : null}
+          </span>
+          <span className="ranking-range-percentile">{percentile}</span>
+        </div>
+        {/* The bar restates the percentile and the player's position, both of
+            which are already on the tile as text, so it is decorative. */}
+        <div className="ranking-range-bar" aria-hidden="true">
+          <span
+            className="ranking-range-bar-segment"
+            style={{
+              left: `${range.rangeStart}%`,
+              width: `${range.threshold - range.rangeStart}%`,
+            }}
+          />
+          {playerHere ? (
+            <span
+              className="ranking-range-bar-player"
+              data-testid="ranking-player-marker"
+              style={{ left: `${percentage}%` }}
             />
-            <div
-              className="ranking-scale-marker"
-              style={{ left: `${left + width / 2}%` }}
-            >
-              <div
-                className={`ranking-scale-label ranking-scale-label-${side}`}
-              >
-                <div className="ranking-scale-range">
-                  {band.threshold}–{start}%
-                </div>
-                <div className="ranking-scale-target">
-                  {targetLabel(band, t, game)}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-      {percentage > 0 && percentage <= 100 ? (
-        <div
-          className="ranking-scale-player-line"
-          data-testid="ranking-scale-player-line"
-          style={{ left: `${playerLeft}%` }}
-          data-pct={`${percentage.toLocaleString(locale, { maximumFractionDigits: 2 })}%`}
-        />
-      ) : null}
-    </div>
+          ) : null}
+        </div>
+        {playerHere && narrow ? playerBubble : null}
+      </div>
+      <div className="ranking-range-rewards">
+        {rewards.map((reward) => (
+          <span className="ranking-reward-tile" key={reward.type}>
+            <span className="ranking-reward-label">
+              <RankRewardIcon type={reward.type} />
+              {t(`tile.${reward.type}`)}
+            </span>
+            <span className="ranking-reward-value">
+              {reward.quantity.toLocaleString(locale)}
+            </span>
+          </span>
+        ))}
+      </div>
+    </li>
   );
 }

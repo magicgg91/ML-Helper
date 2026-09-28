@@ -6,8 +6,8 @@
     "increase": "Augmenter {label}",
     "select-league": "Choisis une ligue pour calculer.",
     "language": "Langue",
-    "theme-light": "Activer le mode clair",
-    "theme-dark": "Activer le mode sombre",
+    "theme-light": "Passer en thème clair",
+    "theme-dark": "Passer en thème sombre",
     "star-count": "{level} étoiles",
     "duration-hours": "{hours}h"
   },
@@ -42,6 +42,13 @@
       "prosperous": "Or",
       "recruiter": "Recruteur",
       "rusher": "Vitesse"
+    },
+    "templars-short": {
+      "striker": "Atq",
+      "guardian": "Def",
+      "prosperous": "Or",
+      "recruiter": "Rec",
+      "rusher": "Vit"
     },
     "leagues": {
       "bronze": "Bronze",
@@ -112,8 +119,6 @@
     }
   },
   "tools": {
-    "title": "Décide avec les bons chiffres",
-    "subtitle": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
     "cities": "Villes",
     "combat": "Combat",
     "combat-simulator": "Combat",
@@ -121,7 +126,9 @@
     "ranking": "Classement",
     "skills": "Compétences",
     "count": "{count, plural, =0 {Aucun outil disponible} one {# outil disponible} other {# outils disponibles}}",
+    "count-short": "{count, plural, =0 {Aucun outil} one {# outil} other {# outils}}",
     "comingSoon": "Bientôt disponible",
+    "comingSoonShort": "Bientôt",
     "unavailable": "Indisponible actuellement",
     "navigation-label": "Catégories d’outils",
     "city-tabs": "Outils Villes",
@@ -134,25 +141,30 @@
       "combat": "Outils de combat pour Million Lords : taux de gain d'XP, troupes en attaque démo côté attaquant et cible, et troupes ennemies pour préparer chaque assaut.",
       "ranking": "Estime ta progression au classement de Million Lords : ton rang actuel et les points de victoire nécessaires pour atteindre le rang que tu vises.",
       "skills": "Optimise ton équipement et tes compétences dans Million Lords : équipements de combat et d'expédition, gemmes et templiers, coûts de fusion inclus."
-    }
+    },
+    "index-title": "Outils",
+    "index-intro": "Décide avec les bons chiffres : explore les coûts, la production, le classement et les compétences avec des simulateurs conçus pour préparer chaque décision.",
+    "settings-note": "Renseigne tes paramètres du joueur une seule fois : ils sont repris par tous les outils.",
+    "further-reading": "Aller plus loin",
+    "kind": "Outil",
+    "kind-guide": "Guide"
   },
   "player-settings": {
     "title": "Paramètres du joueur",
-    "summary": "{league} · Niveau {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
-    "league": "Ligue",
+    "summary": "Niv. {level} · {vp} VP · {templarTotal, plural, one {# templier} other {# templiers}}",
+    "rung": "Ligue ou division",
     "league-undefined": "Ligue non définie",
     "player-level": "Niveau du joueur",
     "player-vp": "VP du joueur",
     "vp-unit": "Unité des VP",
     "equipment-skills": {
-      "title": "Compétences avec équipement",
+      "title": "Équipement",
       "field": "{skill} avec équipement"
     },
     "skill-points": {
-      "title": "Distribution des points",
-      "available": "Disponibles",
-      "allocated": "Alloués",
-      "remaining": "Restants",
+      "title": "Points",
+      "budget": "{allocated} / {available}",
+      "budget-label": "{allocated} points alloués sur {available} disponibles",
       "reset": "Réinitialiser",
       "field": "Points {skill}"
     },
@@ -161,9 +173,12 @@
       "field": "Templiers {templar}"
     },
     "clan-temple": {
-      "title": "Bonus de temple (clan)",
-      "help": "Saisis uniquement la contribution des Templiers du clan (ex : 260 pour Vitesse). La base de temple confirmée par statistique s’ajoute automatiquement au total affiché.",
+      "title": "Temple (clan)",
       "field": "Temple {templar}"
+    },
+    "matrix": {
+      "caption": "Compétences par source : équipement, points et temple",
+      "total": "Total"
     }
   },
   "city-cost": {
@@ -174,17 +189,26 @@
       "start-level": "Niveau de départ",
       "target-level": "Niveau cible"
     },
-    "start": "Départ",
-    "target": "Cible",
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
+    "total": "Total",
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {start} → {target}",
+    "cost-total": "Coût",
     "gold-unit": "or",
-    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
-    "cost-total": "Coût total",
-    "vp-gained": "VP total gagné",
-    "gold-transition": "Or/h avant → après",
-    "army-transition": "Armée/h avant → après"
+    "wall": "Mur",
+    "vp-gained": "VP gagnés",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
+    "per-city": "par ville",
+    "columns": {
+      "source": "Source",
+      "level": "Niv. {level}",
+      "gap": "Écart"
+    },
+    "total-per-city": "Total / ville",
+    "total-all": "{count, plural, one {Total # ville} other {Total # villes}}",
+    "base": "Base",
+    "temple": "Temple",
+    "equipment": "Stuff",
+    "none": "—"
   },
   "city-max-level": {
     "name": "Niveau Max Atteignable",
@@ -195,15 +219,16 @@
       "available-gold": "Or disponible",
       "gold-unit": "Unité de l’or disponible"
     },
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
-    "total-cities": "{count, plural, one {Total pour # ville} other {Total pour # villes}}",
-    "reachable-level": "Niveau cible atteignable",
+    "total": "Total",
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau {level} · {gold} d’or disponible",
+    "reachable-level": "Niveau max",
+    "levels-gained": "+{count}",
     "remaining-gold": "Or restant",
-    "vp-gained": "VP total gagné",
-    "gold-transition": "Or/h avant → après",
-    "army-transition": "Armée/h avant → après"
+    "gold-unit": "or",
+    "vp-gained": "VP gagnés",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
+    "none": "—"
   },
   "city-production": {
     "name": "Production",
@@ -212,44 +237,50 @@
       "city-count": "Nombre de villes",
       "average-level": "Niveau moyen des villes"
     },
-    "per-city-base": "Par ville — base",
+    "total": "Total",
+    "recall": "{count, plural, one {# ville} other {# villes}} · {league} · niveau moyen {level}",
+    "army-hour": "Armée / h",
+    "gold-hour": "Or / h",
     "vp": "VP",
-    "wall": "Mur",
-    "gold-hour": "Or/h",
-    "army-hour": "Armée/h",
-    "gold-total": "💰 Or — Production totale",
-    "troops-total": "⚔️ Troupes — Production totale",
+    "per-city": "par ville",
+    "columns": {
+      "source": "Source",
+      "production": "Production",
+      "share": "Part"
+    },
+    "total-per-city": "Total / ville",
+    "total-all-level": "{count, plural, one {Total # ville niveau {level}} other {Total # villes niveau {level}}}",
     "base": "Base",
-    "equipment": "Stuff",
     "temple": "Temple",
-    "vp-total": "VP total",
+    "equipment": "Stuff",
+    "none": "—",
     "full-production": {
       "title": "Si reskill full-prod",
-      "note": "Simulation avec les {points} points disponibles investis intégralement, calculée sur la production de base.",
-      "gold": "Or si full Prospérité",
-      "troops": "Troupes si full Recruteur"
+      "note": "{points} points investis intégralement · calculé sur la production de base",
+      "army": "Armée si full Recruteur",
+      "gold": "Or si full Prospérité"
     }
   },
   "city-rewards": {
     "name": "Récompenses de Production",
+    "army": {
+      "title": "Armée",
+      "base": "Production d’armée de base",
+      "base-unit": "Unité de production d’armée",
+      "hours": "Heures reçues",
+      "bonus": "Bonus armée obtenu"
+    },
     "gold": {
       "title": "Or",
       "base": "Production d’or de base",
       "base-unit": "Unité de production d’or",
-      "hours": "Heures Or reçues",
-      "bonus": "Bonus Or obtenu"
+      "hours": "Heures reçues",
+      "bonus": "Bonus or obtenu"
     },
-    "troops": {
-      "title": "Troupes",
-      "base": "Production de troupes de base",
-      "base-unit": "Unité de production de troupes",
-      "hours": "Heures Troupes reçues",
-      "bonus": "Bonus Troupes obtenu"
-    }
+    "bonus-short": "Bonus obtenu"
   },
   "xp-gain-rate": {
     "name": "Taux de gain d’XP",
-    "mode-label": "Mode de calcul d’XP",
     "modes": {
       "attacker": "Je suis l’attaquant",
       "target": "Je suis la cible"
@@ -258,9 +289,11 @@
       "my-vp": "Ma VP",
       "unit": "Unité de VP"
     },
-    "columns": {
-      "rate": "Taux de gain d’XP",
-      "opponent-vp": "Plage de VP adverse"
+    "of-xp": "d’XP",
+    "opponent-vp": "VP adverse",
+    "xp-for": {
+      "attacker": "pour moi",
+      "target": "pour l’attaquant"
     }
   },
   "demo-attack-troops": {
@@ -271,41 +304,42 @@
       "league": "Ligue de l’attaquant"
     },
     "wall": "Remparts de la cible",
-    "maximum": "Troupes maximum"
+    "maximum": "Troupes maximum",
+    "result": "Résultat",
+    "recall": "Attaquant {league} · ville niveau {level}",
+    "recall-short": "Attaquant {league}"
   },
   "ranking": {
     "name": "Classement",
     "fields": {
-      "league": "Ligue",
       "percentage": "Ton pourcentage actuel",
-      "rank": "Ton rang actuel"
+      "rank": "Ton rang actuel",
+      "entry": "Ligue / Division"
     },
     "undefined": "À définir dans l’administration",
     "total-players": "Nombre estimé de joueurs",
     "errors": {
-      "select-league": "Choisis une ligue pour calculer.",
+      "select-league": "Choisis une ligue ou une division pour calculer.",
       "positive-percentage": "Saisis un pourcentage supérieur à 0 pour calculer.",
-      "missing-bands": "Seuils et récompenses à définir dans l’administration pour la ligue {league}."
+      "missing-bands": "Seuils et récompenses à définir dans l’administration pour {entry}."
     },
     "ranking-ranges": "Plages de classement",
-    "columns": {
-      "range": "Plage",
-      "rank": "Rang de plage",
-      "target-league": "Ligue cible",
-      "reward": "Récompense"
+    "tile": {
+      "ranks": "Rangs",
+      "sapphires": "Saphirs",
+      "speedups": "Speedups",
+      "gems": "Gemmes"
     },
     "movements": {
-      "promotion": "Montée {league}",
-      "stay": "Maintien {league}",
-      "relegation": "Descente {league}"
+      "promotion": "Montée",
+      "stay": "Maintien",
+      "relegation": "Descente"
     },
-    "reward-types": {
-      "sapphires": "{count, plural, one {# saphir} other {# saphirs}}",
-      "speedups": "{count} speedup",
-      "gems": "{count, plural, one {# gemme} other {# gemmes}}"
-    },
-    "scale-label": "Échelle de classement de 100% à 0%",
-    "segment-tooltip": "{threshold}–{start}% · {target} · {reward}"
+    "league-lock": "Ligue verrou",
+    "league-lock-none": "Aucune — pas assez de paliers en dessous",
+    "percentile-top": "Top {value} %",
+    "percentile-range": "{from} → {to} %",
+    "player-position": "Vous · {percentage} %"
   },
   "stuff-simulator": {
     "name": "Équipement de Combat",
@@ -437,11 +471,12 @@
     "menu": "Menu",
     "main": "Navigation principale",
     "footer": "Pied de page",
-    "home": "Accueil"
+    "home": "Accueil",
+    "breadcrumb": "Fil d'Ariane"
   },
   "search": {
     "label": "Rechercher sur le site",
-    "placeholder": "Rechercher",
+    "placeholder": "Rechercher un outil, un référentiel, un guide…",
     "results-label": "Résultats de recherche",
     "no-results": "Aucun résultat.",
     "types": {
@@ -464,39 +499,70 @@
     },
     "meta": {
       "siteTitle": "ML-Helper — Outils et guides Million Lords"
-    }
+    },
+    "report-error": "Signaler une erreur",
+    "image-placeholder": "Illustration",
+    "legal-updated": "Dernière mise à jour : {date}"
   },
   "contact": {
-    "eyebrow": "Contact",
-    "title": "Contacter ML-Helper",
+    "title": "Contact",
     "lead": "Une erreur à signaler, une idée d’amélioration ou une question ? Écris-nous, on lit tout.",
-    "email": "Email",
+    "email": "Ton email",
     "subject": "Objet",
-    "choose-subject": "— Choisir —",
     "subjects": {
-      "data-error": "Signaler une erreur de donnée",
-      "improvement-suggestion": "Suggestion d’amélioration",
-      "technical-bug": "Problème technique / bug",
+      "data-error": "Erreur dans les données",
+      "improvement-suggestion": "Idée d'amélioration",
+      "question": "Question",
       "other": "Autre"
     },
     "message": "Message",
     "submit": "Envoyer",
     "success": "Message envoyé, merci !",
     "error-invalid": "Vérifie les champs du formulaire et réessaie.",
-    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard."
+    "error-not-configured": "L’envoi d’emails n’est pas configuré pour le moment, réessaie plus tard.",
+    "page-field": "Page concernée",
+    "page-placeholder": "Facultatif — ex. Villes › Coût de ville",
+    "privacy": "Ton email sert uniquement à te répondre. Il n'est ni publié ni partagé.",
+    "placeholders": {
+      "data-error": "Quelle valeur est affichée, et laquelle vois-tu en jeu ?",
+      "improvement-suggestion": "Décris ton idée en quelques lignes.",
+      "question": "Pose ta question.",
+      "other": "Ton message."
+    },
+    "reasons": {
+      "data-error-title": "Une donnée est fausse",
+      "data-error-text": "Indique la page, la valeur affichée et celle que tu vois en jeu : on corrige plus vite.",
+      "idea-title": "Une idée d'outil ou de guide",
+      "idea-text": "Dis-nous quelle décision de jeu tu aimerais mieux préparer.",
+      "question-title": "Une question",
+      "question-text": "Sur un outil, un calcul ou le site en général."
+    }
   },
   "Home": {
-    "h1": "Outils et guides Million Lords",
-    "intro": "ML Helper réunit les outils et référentiels de la communauté pour préparer chaque décision de jeu sur Million Lords.",
-    "toolsEyebrow": "Simuler",
+    "h1": "Outils et guides pour Million Lords",
+    "intro": "Simulateurs, tableaux de référence et guides de la communauté pour préparer chaque décision de jeu, de ta première ville jusqu'en Légende.",
     "toolsTitle": "Décide avec les bons chiffres",
-    "toolsDescription": "Explore les coûts, la production, le classement, les compétences et les équipements grâce à des outils conçus pour préparer chaque décision.",
-    "guidesEyebrow": "Apprendre",
+    "toolsDescription": "Coûts, production, classement, compétences et équipements : des simulateurs pour préparer chaque décision.",
     "guidesTitle": "Affûte ta stratégie",
-    "guidesDescription": "Retrouve les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
-    "referentielsEyebrow": "Consulter",
+    "guidesDescription": "Les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
     "referentielsTitle": "Retrouve les données clés",
-    "referentielsDescription": "Retrouve les tableaux de référence pour connaître les coûts, statistiques et paliers exacts du jeu, aussi bien pour les équipements, les gemmes ou bien les templiers que pour les consommables de la boutique."
+    "referentielsDescription": "Les coûts, statistiques et paliers exacts du jeu : équipements, gemmes, templiers, boutique…",
+    "explore-tools": "Explorer les outils",
+    "explore-references": "Consulter les référentiels",
+    "start-guide": "Bien débuter",
+    "count-tools": "{count, plural, one {# outil} other {# outils}}",
+    "count-references": "{count, plural, one {# référentiel} other {# référentiels}}",
+    "count-guides": "{count, plural, one {# guide} other {# guides}}",
+    "highlights": "Mis en avant",
+    "entry-tool": "Outil · {category}",
+    "entry-reference": "Référentiel",
+    "entry-guide": "Guide",
+    "all-tools": "Tous les outils",
+    "all-references": "Tous les référentiels",
+    "all-guides": "Tous les guides",
+    "start-here": "Commence ici",
+    "banner-title": "Une valeur a changé en jeu ?",
+    "banner-text": "Les données évoluent à chaque mise à jour. Signale un écart ou propose une amélioration : on lit tout."
   },
   "ToolsPage": {
     "eyebrow": "Outils",
@@ -518,11 +584,9 @@
     "references": "Référentiels"
   },
   "guides": {
-    "eyebrow": "Guides et données",
     "title": "Guides",
     "sections": {
-      "guides": "Guides",
-      "references": "Référentiels"
+      "guides": "Guides"
     },
     "filters": {
       "guides-label": "Filtrer les guides par catégorie",
@@ -543,11 +607,19 @@
     "no-results": "Aucun guide ne correspond à ces filtres.",
     "detail": {
       "eyebrow": "Guide · {category}",
-      "not-translated": "Ce guide n’est pas encore traduit dans cette langue."
-    }
+      "not-translated": "Ce guide n’est pas encore traduit dans cette langue.",
+      "toc": "Sommaire",
+      "intro": "Introduction",
+      "reading-time": "Lecture : ~{minutes} min",
+      "callout": "À retenir",
+      "continue": "Continuer avec",
+      "kind": "Guide"
+    },
+    "index-intro": "Affûte ta stratégie : les guides de la communauté pour comprendre les mécaniques du jeu et progresser plus sereinement.",
+    "tool-pill": "Outil : {name}",
+    "start-here": "Commence ici"
   },
   "references": {
-    "eyebrow": "Référentiels",
     "title": "Référentiels",
     "filters": {
       "label": "Filtres du référentiel",
@@ -615,7 +687,16 @@
       "gems": "Toutes les gemmes de Million Lords : bonus par compétence et par ligue, emplacements et coût de fusion en saphirs, avec optimisation multi-compétences.",
       "shop": "Référentiel de la boutique de Million Lords : consommables et données vérifiées par la communauté pour dépenser au bon moment.",
       "events": "Référentiel des événements de Million Lords : données et récompenses vérifiées par la communauté pour préparer chaque événement."
-    }
+    },
+    "index-intro": "Retrouve les données clés : coûts, statistiques et paliers exacts du jeu, des équipements aux gemmes et templiers, jusqu'aux consommables de la boutique.",
+    "missing-title": "Il manque un référentiel ?",
+    "missing-text": "Dis-nous quelles données tu aimerais retrouver ici.",
+    "missing-cta": "Proposer",
+    "catalog-short": {
+      "combat-equipment": "Équip. de combat",
+      "expedition-equipment": "Équip. d'expédition"
+    },
+    "nav-label": "Navigation entre référentiels"
   },
   "combat-equipment": {
     "name": "Équipements de Combat",
@@ -681,18 +762,42 @@
     "error-disabled": "Compte désactivé, contacter l’administrateur."
   },
   "admin": {
+    "editor": {
+      "all-saved": "Tout est enregistré",
+      "breadcrumb": "Fil d’Ariane",
+      "cancel": "Annuler",
+      "formula": "Formule",
+      "language-to-create": "{language} — à créer",
+      "leave-warning": "Des modifications ne sont pas enregistrées. Quitter cette page les perdra.",
+      "move-down-of": "Descendre {name}",
+      "move-up-of": "Monter {name}",
+      "not-a-number": "Nombre attendu",
+      "remove-of": "Supprimer {name}",
+      "save": "Enregistrer",
+      "to-fill-in": "À renseigner",
+      "unsaved": "Modifications non enregistrées",
+      "saving": "Enregistrement…",
+      "saved": "Modifications enregistrées.",
+      "error": "Échec de l’enregistrement (HTTP {status}).",
+      "server-error": "Impossible de joindre le serveur.",
+      "language-tab": "{language}"
+    },
     "title": "Administration",
-    "view-site": "Voir le site",
+    "view-site": "Voir le site public",
     "navigation-label": "Navigation administration",
     "navigation": {
       "dashboard": "Tableau de bord",
       "tools": "Outils",
       "referentiels": "Référentiels",
       "guides": "Guides",
-      "content": "Conditions d’utilisation",
+      "content": "Pages légales",
       "users": "Utilisateurs",
       "logs": "Historique",
-      "config": "Configuration"
+      "config": "Configuration",
+      "group-content": "Contenu",
+      "group-access": "Accès",
+      "group-site": "Site",
+      "legal-to-do": "{count, plural, =1 {# champ à compléter} other {# champs à compléter}}"
     },
     "account": {
       "change-password": "Changer mon mot de passe",
@@ -716,8 +821,17 @@
         "disabled": "Authentification à deux facteurs désactivée.",
         "invalid": "Le code d’authentification est invalide ou expiré.",
         "setup-error": "Impossible de démarrer la configuration de l’authentification à deux facteurs.",
-        "disable-error": "Le mot de passe ou le code d’authentification est invalide."
-      }
+        "disable-error": "Le mot de passe ou le code d’authentification est invalide.",
+        "status-on": "Activée",
+        "status-off": "Désactivée",
+        "disable-confirm": "L’authentification à deux facteurs sera désactivée sur ton compte. Tu pourras la réactiver à tout moment.",
+        "your-password": "Ton mot de passe"
+      },
+      "title": "Mon compte",
+      "menu": "Compte de {username}",
+      "password-hint": "12 caractères au minimum.",
+      "confirm-password": "Confirmation du nouveau mot de passe",
+      "password-mismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas."
     },
     "dashboard": {
       "eyebrow": "Vue d’ensemble",
@@ -732,11 +846,24 @@
       "users": "Utilisateurs",
       "users-summary": "{active} actifs / {total} au total",
       "recent-actions": "Dernières actions",
-      "user": "Utilisateur",
-      "role": "Rôle",
-      "message": "Message",
-      "date": "Date",
-      "empty": "Aucune action enregistrée."
+      "empty": "Aucune action enregistrée.",
+      "all-visible": "Tous visibles",
+      "hidden-count": "{count, plural, =1 {# masqué} other {# masqués}}",
+      "all-published": "Tous publiés",
+      "drafts-count": "{count, plural, =1 {# brouillon} other {# brouillons}}",
+      "all-active": "Tous actifs",
+      "inactive-count": "{count, plural, =1 {# désactivé} other {# désactivés}}",
+      "todo": "À traiter",
+      "todo-legal": "Mentions légales : {count, plural, =1 {# champ à compléter} other {# champs à compléter}}",
+      "todo-legal-others": "Aussi à compléter en {locales}.",
+      "todo-legal-action": "Compléter",
+      "todo-guides": "{language} : {count, plural, =1 {# guide sans traduction} other {# guides sans traduction}}",
+      "todo-guides-hidden": "Langue masquée sur le site public.",
+      "todo-guides-action": "Ouvrir les guides",
+      "see-all": "Tout l’historique",
+      "repeat": "×{count}",
+      "times-label": "Heures des {count} actions",
+      "card-ratio": "{active} / {total}"
     },
     "setup": {
       "eyebrow": "Configuration initiale",
@@ -753,58 +880,55 @@
     "guides": {
       "eyebrow": "Contenu éditorial",
       "title": "Guides",
-      "new": "Nouveau",
       "new-title": "Nouveau guide",
-      "edit-title": "Éditer le guide",
       "empty": "Aucun guide créé.",
       "columns": {
-        "title": "Titre",
-        "author": "Auteur",
-        "created": "Créé le",
-        "updated": "Dernière édition",
-        "languages": "Langues",
         "status": "Statut",
         "actions": "Actions"
       },
-      "language-written": "{locale} rédigé",
-      "language-missing": "{locale} non traduit",
       "no-results": "Aucun résultat pour ce filtre.",
       "statuses": {
         "draft": "Brouillon",
         "pending_review": "En review",
         "published": "Publié"
       },
-      "disabled-tooltip": "Désactivé et invisible côté public",
       "status-label": "Statut de {title}",
-      "edit": "Éditer",
-      "enable": "Activer",
-      "disable": "Désactiver",
       "delete": "Supprimer",
-      "confirm-delete": "Supprimer définitivement le guide « {title} » ?",
       "status-forbidden": "Ton rôle ne permet pas ce changement de statut.",
       "status-saved": "Statut enregistré.",
-      "visibility-error": "Impossible de modifier la visibilité.",
-      "enabled": "Guide activé.",
-      "disabled": "Guide désactivé.",
       "delete-forbidden": "Ton rôle ne permet pas de supprimer ce guide.",
-      "deleted": "Guide supprimé définitivement."
+      "deleted": "Guide supprimé définitivement.",
+      "search-label": "Rechercher un guide",
+      "search-placeholder": "Titre du guide…",
+      "filter-label": "Statut",
+      "filter-all": "Tous",
+      "filter-published": "Publiés",
+      "filter-drafts": "Brouillons",
+      "filter-missing": "Traduction manquante",
+      "table-caption": "Guides du site",
+      "columns-guide": "Guide",
+      "columns-translations": "Traductions",
+      "columns-modified": "Modifié",
+      "byline": "{author} · créé le {date}",
+      "translation-edit": "Modifier la version {language} de {title}",
+      "translation-create": "Créer la version {language} de {title}",
+      "modify": "Modifier",
+      "more-actions": "Autres actions pour {title}",
+      "view-on-site": "Voir sur le site",
+      "publish": "Publier",
+      "unpublish": "Repasser en brouillon",
+      "delete-confirm-title": "Supprimer ce guide ?",
+      "delete-confirm-body": "« {title} » sera supprimé définitivement, dans toutes ses langues. Cette action est irréversible.",
+      "translation-written": "{language} : version écrite",
+      "translation-missing": "{language} : pas encore traduit"
     },
     "referentiels": {
       "eyebrow": "Données de référence",
       "title": "Référentiels",
       "columns": {
         "title": "Titre",
-        "status": "Statut",
         "actions": "Actions"
       },
-      "statuses": {
-        "active": "Actif",
-        "inactive": "Inactif"
-      },
-      "reference-combat": "Éditer les Équipements de Combat",
-      "reference-expedition": "Éditer les Équipements d’Expédition",
-      "reference-level-up": "Éditer Progression",
-      "reference-consommables": "Éditer la Boutique",
       "references": {
         "combat-equipment": "Équipements de Combat",
         "expedition-equipment": "Équipements d’Expédition",
@@ -814,24 +938,25 @@
         "consommables": "Boutique",
         "events": "Événements"
       },
-      "disabled-tooltip": "Désactivé et invisible côté public",
-      "edit": "Éditer",
-      "enable": "Activer",
-      "disable": "Désactiver",
       "visibility-error": "Impossible de modifier la visibilité.",
       "enabled": "Référentiel activé.",
       "disabled": "Référentiel désactivé.",
       "no-results": "Aucun référentiel.",
-      "reference-events": "Éditer les Événements"
+      "search-label": "Rechercher un référentiel",
+      "search-placeholder": "Nom du référentiel…",
+      "table-caption": "Référentiels du site",
+      "columns-used-by": "Utilisé par l’outil",
+      "columns-visible": "Visible sur le site",
+      "used-by-none": "—",
+      "visibility-of": "Visibilité de {reference}",
+      "modify": "Modifier"
     },
     "guide-editor": {
       "language-label": "Langue du guide",
       "title": "Titre ({locale})",
       "excerpt": "Résumé ({locale})",
       "content": "Contenu Markdown ({locale})",
-      "preview": "Aperçu en direct",
       "categories-label": "Catégories du guide",
-      "categories-summary": "Catégories du guide ({count, plural, one {# sélectionnée} other {# sélectionnées}})",
       "categories": {
         "debuter": "Débuter & progresser",
         "combat": "Combat & conquête",
@@ -842,29 +967,45 @@
         "evenements": "Événements & classement",
         "clan": "Clan & stratégie collective"
       },
-      "cover-image": "URL de l’image représentative",
+      "cover-image": "Image représentative",
       "cover-image-placeholder": "https://exemple.fr/image-guide.jpg",
       "cover-image-preview": "Aperçu de l’image représentative",
-      "save": "Enregistrer",
       "submit-review": "Soumettre en review",
       "publish": "Publier",
-      "unpublish": "Dépublier en brouillon",
       "saving": "Enregistrement…",
       "missing-title": "Saisis un titre FR ou EN avant d’enregistrer.",
       "missing-category": "Sélectionne au moins une catégorie avant d’enregistrer.",
       "duplicate-slug": "Un guide utilise déjà ce titre/slug.",
       "invalid": "Le guide contient des champs invalides ou incomplets.",
       "status-forbidden": "Guide enregistré, mais ton rôle ne permet pas ce changement de statut.",
-      "saved": "Guide enregistré."
+      "saved": "Guide enregistré.",
+      "new-title": "Nouveau guide",
+      "to-create": "à créer",
+      "mode-label": "Affichage de l’éditeur",
+      "mode-write": "Écrire",
+      "mode-split": "Côte à côte",
+      "mode-preview": "Aperçu",
+      "excerpt-help": "Affiché dans la liste des guides.",
+      "publication": "Publication",
+      "author": "Auteur",
+      "created-at": "Créé le",
+      "updated-at": "Modifié le",
+      "view-on-site": "Voir sur le site",
+      "back-to-draft": "Repasser en brouillon",
+      "no-cover-image": "Aucune image",
+      "cover-image-url": "URL de l’image",
+      "status": {
+        "draft": "Brouillon",
+        "pending_review": "En relecture",
+        "published": "Publié"
+      },
+      "language-hidden": "masquée sur le site"
     },
     "tools": {
       "eyebrow": "Contenu fonctionnel",
       "title": "Outils",
-      "edit-ranking": "Éditer les seuils du classement",
       "columns": {
         "tool": "Outil",
-        "category": "Catégorie",
-        "status": "Statut",
         "action": "Action"
       },
       "category-values": {
@@ -875,31 +1016,65 @@
       },
       "active": "Actif",
       "inactive": "Inactif",
-      "enable": "Activer",
-      "disable": "Désactiver",
-      "disabled-tooltip": "Désactivé — inaccessible côté public",
       "saving": "Enregistrement…",
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "state-saved": "{tool} est maintenant {state}.",
       "server-error": "Impossible de joindre le serveur. Réessaie plus tard.",
-      "name": "Nom",
       "edit": "Modifier",
       "city-parameters": "Paramètres Villes partagés",
-      "ranking-editor": "Seuils du classement",
-      "templar-parameters": "Paramètres de coût des Templiers",
-      "xp-gain-rate-editor": "Paliers du taux de gain d’XP",
-      "demo-attack-troops-editor": "Pourcentages d’attaque démo",
-      "gems-editor": "Paramètres des Gemmes"
+      "search-label": "Rechercher un outil",
+      "search-placeholder": "Nom de l’outil…",
+      "filter-label": "Catégorie",
+      "filter-all": "Toutes",
+      "table-caption": "Outils du site, groupés par catégorie",
+      "columns-source": "Source des paramètres",
+      "columns-visible": "Visible sur le site",
+      "source-own": "Paramètres de l’outil",
+      "source-shared": "Paramètres partagés par {count} outils",
+      "source-reference": "Référentiel {name}",
+      "source-none": "Aucun paramètre",
+      "open": "Ouvrir",
+      "nothing-to-edit": "Rien à modifier",
+      "visibility-of": "Visibilité de {tool}",
+      "no-results": "Aucun outil ne correspond à cette recherche.",
+      "source-configuration": "Configuration › Ligues et divisions"
+    },
+    "leagues": {
+      "section": "Ligues et divisions",
+      "intro": "L’échelle que lisent le Classement, les Paramètres joueur, et tous les autres outils par leur ligue de base.",
+      "summary": "{count, plural, one {# ligue/division} other {# ligues/divisions}} · {active, plural, one {# active} other {# actives}}",
+      "validation": "Corrige les champs signalés avant l’enregistrement.",
+      "save-blocked": "{count, plural, one {Enregistrement impossible : un champ à corriger.} other {Enregistrement impossible : # champs à corriger.}} {where} : {message}",
+      "duplicate-error": "Deux entrées portent le même identifiant.",
+      "entry-league": "Ligue de base",
+      "entry-no-league": "Aucune",
+      "entry-division": "Division",
+      "entry-untitled": "Entrée sans nom",
+      "entry-name-error": "Choisis une ligue de base, ou saisis un nom libre dans au moins une langue.",
+      "entry-league-field": "{entry} (rang {position}) ligue de base",
+      "entry-division-field": "{entry} (rang {position}) division",
+      "entry-active-field": "{entry} (rang {position}) active publiquement",
+      "add-entry": "Ajouter une ligue ou une division",
+      "remove-entry-label": "Supprimer l’entrée",
+      "remove-entry-confirm": "Supprimer cette entrée et toutes ses plages ?",
+      "move-up": "Monter {entry}",
+      "move-down": "Descendre {entry}",
+      "entries-label": "Ligues et divisions",
+      "band-count": "{count, plural, =0 {aucune plage} one {# plage} other {# plages}}",
+      "entry-position": "Entrée {position} sur {total}",
+      "entry-actions": "Autres actions pour {entry}",
+      "entry-public": "Visible publiquement",
+      "entry-private": "Masquée",
+      "languages-label": "Nom libre en",
+      "language-hidden": "{language} masquée sur le site",
+      "entry-name": "Nom libre ({language})",
+      "entry-name-field": "{entry} (rang {position}) nom libre {language}"
     },
     "ranking": {
-      "title": "Classement",
-      "description": "Édite chaque plage individuellement. Bronze et Or peuvent rester sans ligne tant que leurs données ne sont pas confirmées.",
       "add": "Ajouter une plage",
       "threshold": "Seuil (%)",
       "target": "Ligue cible",
       "movement": "Mouvement",
-      "reward": "Récompense",
-      "action": "Action",
       "remove": "Supprimer",
       "row-label": "{league} ligne {row} {field}",
       "unconfirmed-option": "Non confirmé",
@@ -914,28 +1089,23 @@
         "gems": "Gemmes"
       },
       "range-error": "Entre 0 et 100 requis.",
-      "pairing-error": "Mouvement et ligue cible doivent être confirmés ensemble.",
+      "pairing-error": "Mouvement et cible doivent être confirmés ensemble.",
       "integer-error": "Nombre entier requis.",
-      "required": "Ce champ est obligatoire.",
       "empty": "Aucune plage confirmée.",
-      "save": "Enregistrer le classement",
-      "validation": "Corrige les champs signalés avant l’enregistrement.",
-      "saving": "Enregistrement…",
-      "save-error": "Échec de l’enregistrement (HTTP {status}).",
-      "saved": "Configuration enregistrée.",
-      "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
+      "row-actions": "Action",
+      "top": "Top",
+      "band-name": "Plage {row} de {entry}",
+      "band-count": "{count, plural, =0 {aucune plage} one {# plage} other {# plages}}",
+      "save-blocked": "{count, plural, one {Enregistrement impossible : un champ à corriger.} other {Enregistrement impossible : # champs à corriger.}} {where} : {message}",
+      "bands-section": "Plages de fin de saison",
+      "rungs-label": "Ligue ou division",
+      "rung-untitled": "Entrée sans nom",
+      "rung-hidden": "masquée",
+      "no-rung": "Aucune ligue ni division n’existe encore.",
+      "bands-caption": "Plages de fin de saison de {entry}",
+      "ignored-rungs": "{count, plural, one {Un échelon a été supprimé dans Configuration entre-temps : ses plages n’ont pas été enregistrées.} other {# échelons ont été supprimés dans Configuration entre-temps : leurs plages n’ont pas été enregistrées.}} La liste a été rechargée."
     },
     "references": {
-      "eyebrow": "Données du jeu",
-      "title": "Référentiels",
-      "combat-detail": "180 lignes éditables",
-      "expedition-detail": "120 lignes éditables",
-      "templars-detail": "20 coûts exacts éditables",
-      "page-title": "Référentiel — {name}",
-      "combat-description": "Les 180 lignes et chaque valeur sont éditables individuellement. Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
-      "expedition-description": "Détail des équipements d’expédition",
-      "expedition-increments-description": "Incréments par étoile des statistiques d’Équipements d’Expédition",
-      "templars-description": "Tous les coûts de niveau de la table exacte sont éditables individuellement.",
       "columns": {
         "set-name": "Nom du set",
         "family": "Famille",
@@ -943,52 +1113,36 @@
         "slot-name": "Nom d’emplacement",
         "value": "Valeur {number} (%)",
         "type-value": "Valeur type (%)",
-        "secondary-value": "Valeur secondaire (%)",
-        "level": "Niveau atteint",
-        "level-cost": "Coût du niveau"
+        "secondary-value": "Valeur secondaire (%)"
       },
       "row-label": "Ligne {row} {field}",
       "expedition-row-label": "Expédition ligne {row} {field}",
-      "templar-level-label": "Niveau Templier {level}",
-      "templar-cost-label": "Coût Templier niveau {level}",
-      "save": "Enregistrer toute la table",
-      "save-all": "Enregistrer toute la page",
       "required": "Ce champ est obligatoire.",
-      "number": "Saisis une valeur numérique valide.",
+      "required-fallback": "Chaque objet doit avoir un nom et une description en français ou en anglais — les autres langues sont facultatives.",
       "minimum": "La valeur minimale est {min}.",
-      "validation": "Corrige les champs signalés avant l’enregistrement.",
       "saving": "Enregistrement…",
-      "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "save-all-error": "Échec de l’enregistrement d’un ou plusieurs tableaux de cette page.",
       "saved": "Référentiel enregistré.",
       "server-error": "Impossible de joindre le serveur. Vérifie la connexion puis réessaie.",
-      "all": "Tous",
       "filters": {
         "skill": "Compétence"
       },
       "consumables-intro-title": "Intro",
-      "consumables-intro-language-label": "Langue du texte",
-      "consumables-table-title": "Objets",
       "consumables-columns": {
         "image": "Chemin de l’image",
         "name": "Nom",
         "description": "Description",
-        "cost": "Coût (Saphirs)"
+        "cost": "Coût (Saphirs)",
+        "description-markdown": "Description · Markdown"
       },
       "add-category": "Ajouter ({category})",
       "confirm-remove": "Supprimer définitivement cet objet ?",
-      "category-row-label": "{category} — ligne {row} {field}",
-      "add": "Ajouter un objet",
       "remove": "Supprimer",
-      "move-up": "Monter",
-      "move-down": "Descendre",
       "actions": "Actions",
       "empty": "Aucun objet pour l’instant.",
       "events-league-label": "Ligue",
-      "events-language-label": "Langue du texte",
       "events-season-duration-label": "Durée de la saison (jours)",
       "events-season-overrun": "La durée cumulée des événements ({total}) dépasse la durée de la saison ({season}).",
-      "events-table-title": "Liste des événements",
       "add-event": "Ajouter un événement",
       "events-columns": {
         "name": "Nom",
@@ -1015,41 +1169,67 @@
       "add-tier": "Ajouter un palier",
       "events-tiers-summary": "Paliers ({count})",
       "event-row-label": "{field} de l’événement {row}",
-      "events-position-aria": "Position {row}",
       "tier-row-label": "{field} du palier {row} de {event}",
-      "templars-presentation-title": "Présentation",
-      "templars-presentation-language-label": "Langue du texte",
-      "templars-columns": {
-        "image": "Chemin de l’image",
-        "name": "Nom",
-        "description": "Description",
-        "temple-base": "Base Temple",
-        "bonus": "Bonus (%)"
-      },
       "secondary-row": "Indicateur",
-      "secondary-label-language": "Langue de l’indicateur",
-      "row-merge-cost": "Fusion",
-      "row-gem-slots": "Gemmes",
       "row-destruction": "Destruction",
-      "combat-secondary-description": "Pouciel (fusion, destruction) et emplacements de gemmes, par rareté.",
-      "expedition-secondary-description": "Terradust (fusion, destruction), par rareté.",
-      "combat-increments-description": "Incréments par étoile des compétences d’Équipements de Combat"
+      "texts-in": "Textes en",
+      "language-hidden": "{language} masquée sur le site",
+      "item-count": "{count, plural, =0 {aucun objet} one {# objet} other {# objets}}",
+      "item-unnamed": "Objet sans nom",
+      "item-panel": "Objet sélectionné",
+      "description-to-write": "Description à rédiger",
+      "sapphires": "saphirs",
+      "cost-unconfirmed": "Coût à confirmer",
+      "events-season-title": "Saison",
+      "events-of-league": "Événements — {league}",
+      "event-unnamed": "Événement sans nom",
+      "tier-count": "{count, plural, =0 {aucun palier} one {# palier} other {# paliers}}",
+      "tiers-empty": "Aucun palier pour l’instant.",
+      "events-season-overrun-of": "{league} : la durée cumulée des événements ({total}) dépasse la durée de la saison ({season}).",
+      "used-by-tool": "Utilisé par l’outil {tool}",
+      "global-parameters": "Paramètres globaux",
+      "labels-in": "Libellés en",
+      "star-increments": "Incréments par étoile",
+      "secondary-row-label": "Libellé de l’indicateur {row}",
+      "sets-section": "Sets",
+      "search-set": "Rechercher un set",
+      "filter-unconfirmed": "Valeurs à confirmer",
+      "set-count": "{count, plural, =0 {aucun set} one {# set} other {# sets}}",
+      "set-unnamed": "Set sans nom",
+      "slot-count": "{count, plural, =0 {aucun emplacement} one {# emplacement} other {# emplacements}}",
+      "unconfirmed-count": "{count, plural, one {# valeur à confirmer} other {# valeurs à confirmer}}",
+      "set-inconsistent": "Set incohérent",
+      "set-inconsistent-help": "Les lignes de ce set n’ont pas la même famille ou la même rareté : édite-les ligne par ligne, puis le set redeviendra modifiable d’un bloc.",
+      "edit-set": "Modifier le set {set}",
+      "show-more-sets": "Afficher plus de sets",
+      "unknown-value-warning": "Ne renseigne une valeur inconnue qu’après confirmation en jeu.",
+      "tier-name": "Palier {row} de {event}"
     },
     "common": {
-      "back": "Retour"
+      "cancel": "Annuler",
+      "close": "Fermer",
+      "confirm": "Confirmer",
+      "hidden": "Masqué",
+      "modified": "Modifié",
+      "more-actions": "Autres actions",
+      "visible": "Visible",
+      "read-only": "Lecture seule"
     },
     "parameters": {
-      "save": "Enregistrer les paramètres",
-      "saving": "Enregistrement…",
-      "saved": "Paramètres enregistrés.",
-      "error": "Échec de l’enregistrement (HTTP {status}).",
-      "server-error": "Impossible de joindre le serveur.",
       "league": "Ligue",
       "coefficient": "Coefficient",
+      "troops-hint": "Les ratios des ligues ne se distinguent que de quelques millièmes : une valeur erronée reste invisible aux premiers niveaux et approche 10 % d’écart au niveau 60. Les deux dernières colonnes rendent cet écart visible tout de suite.",
       "ratio": "Ratio",
       "xp-base": "Base XP",
       "xp-ratio": "Ratio XP",
-      "unconfirmed": "Formule de troupes non confirmée"
+      "unconfirmed": "Formule de troupes non confirmée",
+      "xp-section": "XP",
+      "troops-section": "Troupes par ligue",
+      "troops-formula": "troupes(niveau) = coefficient × ratio^niveau",
+      "troops-from-level-2": "À partir du niveau 2.",
+      "at-level-60": "Niveau 60",
+      "gap-vs-bronze": "Écart vs Bronze",
+      "gap-value": "{gap} %"
     },
     "city-parameters": {
       "progression": "Paramètres de progression",
@@ -1059,40 +1239,81 @@
       "gold": "Multiplicateur Or",
       "vp": {
         "base": "Base VP",
-        "ratio": "Ratio VP"
+        "ratio": "Ratio VP",
+        "title": "VP"
       },
       "walls": {
         "base": "Base Remparts",
-        "ratio": "Ratio Remparts"
+        "ratio": "Ratio Remparts",
+        "title": "Remparts"
       },
       "cost": {
         "base": "Base Coût",
-        "ratio": "Ratio Coût"
-      }
+        "ratio": "Ratio Coût",
+        "title": "Coût"
+      },
+      "used-by": "Utilisé par {count} outils",
+      "progression-help": "Chaque courbe suit la forme valeur(niveau) = base × ratio^(niveau − 1)."
     },
     "templar-parameters": {
       "formula": "Coût(n) = arrondi(base × ratio^(n-1))",
       "base": "Base",
-      "ratio": "Ratio"
+      "ratio": "Ratio",
+      "shared-with-reference": "Référentiel Templiers",
+      "cost-section": "Coût",
+      "preview": "Aperçu des cinq premiers niveaux",
+      "level": "Niveau {level}",
+      "presentation-section": "Présentation",
+      "presentation-help": "Ce que le site affiche pour chaque Templier. Les nombres ne dépendent pas de la langue.",
+      "texts-in": "Textes en",
+      "language-hidden": "{language} masquée sur le site",
+      "columns": {
+        "image": "Image",
+        "name": "Nom",
+        "description": "Description",
+        "temple-base": "Base temple",
+        "bonus": "Bonus (%)"
+      },
+      "no-image": "Aucune image",
+      "change-image": "Changer l’image",
+      "image-of": "Chemin de l’image de {name}",
+      "name-of": "Nom de {name}",
+      "description-of": "Description de {name}",
+      "description-to-write": "Description à rédiger",
+      "temple-base-of": "Base temple de {name}",
+      "bonus-of": "Bonus de {name}",
+      "preview-levels": "Aperçu — coût des niveaux {first} à {last}"
     },
     "xp-gain-rate": {
       "formula": "Taux de gain d’XP = f(ratio VP cible / VP attaquant)",
       "tier": "Palier",
-      "upper-bound": "Seuil haut (%)",
       "upper-bound-field": "Seuil haut du palier {tier}",
       "rate": "Taux XP (%)",
-      "rate-field": "Taux XP du palier {tier}"
+      "rate-field": "Taux XP du palier {tier}",
+      "tiers": "Paliers",
+      "from": "À partir de (%)",
+      "up-to": "Jusqu’à (%)",
+      "preview": "Aperçu",
+      "no-upper-bound": "Sans limite haute",
+      "not-increasing": "Les seuils ne sont pas strictement croissants : vérifie les paliers avant d’enregistrer."
     },
     "demo-attack-troops": {
       "formula": "TroupesMax = (X % / 100) × Remparts(niveau de la ville visée)",
-      "percentage": "X (% des remparts)"
+      "percentage": "X (% des remparts)",
+      "per-league": "Pourcentage par ligue",
+      "league": "Ligue",
+      "preview": "Aperçu"
     },
     "gems": {
       "formula": "Valeur de gemme = valeur de base (par compétence et par ligue)",
       "value": "Valeur de base par compétence et par ligue",
       "value-field": "{skill} · {league}",
       "price": "Prix d’achat des gemmes par ligue (en saphirs)",
-      "price-field": "Prix {league}"
+      "price-field": "Prix {league}",
+      "skill": "Compétence",
+      "price-help": "Le Bronze n’a pas de prix d’achat dans le jeu : laissez le champ vide tant que c’est le cas.",
+      "sapphires": "saphirs",
+      "price-row": "Prix (saphirs)"
     },
     "users": {
       "title": "Utilisateurs administrateurs",
@@ -1101,7 +1322,6 @@
       "password": "Mot de passe",
       "role": "Rôle",
       "delete": "Supprimer",
-      "save": "Enregistrer",
       "created": "Utilisateur créé",
       "saved": "Utilisateur enregistré",
       "password-too-short": "Le nouveau mot de passe doit contenir au moins 12 caractères.",
@@ -1113,7 +1333,34 @@
       "activate": "Activer",
       "deactivate": "Désactiver",
       "activated": "Utilisateur activé",
-      "deactivated": "Utilisateur désactivé"
+      "deactivated": "Utilisateur désactivé",
+      "eyebrow": "Accès",
+      "new": "Nouvel utilisateur",
+      "new-panel-description": "Le compte est actif dès sa création.",
+      "generate": "Générer",
+      "generated": "Mot de passe généré — copie-le avant de fermer le panneau.",
+      "password-hint": "12 caractères au minimum.",
+      "table-caption": "Comptes d’administration",
+      "columns-user": "Utilisateur",
+      "columns-role": "Rôle",
+      "columns-status": "Statut",
+      "columns-actions": "Actions",
+      "you": "(toi)",
+      "visibility-of": "Statut de {username}",
+      "change-password": "Mot de passe",
+      "change-password-title": "Changer le mot de passe de {username}",
+      "change-password-confirm": "Changer le mot de passe",
+      "more-actions": "Autres actions pour {username}",
+      "delete-title": "Supprimer ce compte ?",
+      "delete-body": "Le compte « {username} » sera supprimé définitivement. Son historique est conservé.",
+      "deleted": "Utilisateur supprimé",
+      "self-protected": "Tu ne peux pas modifier ton propre compte ici.",
+      "role-writes": "Peut modifier : {sections}.",
+      "role-reads": "Consulte : {sections}.",
+      "role-read-only": "Lecture seule : {sections}.",
+      "no-results": "Aucun utilisateur.",
+      "show-password": "Afficher le mot de passe",
+      "hide-password": "Masquer le mot de passe"
     },
     "logs": {
       "title": "Historique des actions",
@@ -1123,29 +1370,163 @@
       "date": "Date",
       "start": "Date de début",
       "end": "Date de fin",
-      "purge": "Purger la plage",
-      "purged": "Historique purgé",
+      "entries-summary": "{count} entrées",
       "error": "Impossible de purger l’historique",
       "filter-user": "Utilisateur",
       "filter-message": "Mot dans le message",
-      "filter-apply": "Filtrer",
       "filter-reset": "Réinitialiser",
       "no-results": "Aucune entrée ne correspond aux filtres.",
-      "pagination": "Pagination de l’historique",
-      "previous": "Précédent",
-      "next": "Suivant",
-      "page-summary": "Page {page} / {total}"
+      "messages": {
+        "city-parameters": {
+          "update": "{actor} a modifié les paramètres partagés des outils Villes"
+        },
+        "combat-equipment-increments": {
+          "create": "{actor} a créé les incréments par étoile des Équipements de Combat",
+          "update": "{actor} a modifié les incréments par étoile des Équipements de Combat"
+        },
+        "combat-equipment-secondary": {
+          "create": "{actor} a créé le Pouciel (fusion, gemmes, destruction) des Équipements de Combat",
+          "update": "{actor} a modifié le Pouciel (fusion, gemmes, destruction) des Équipements de Combat"
+        },
+        "combat-equipment": {
+          "create": "{actor} a créé le référentiel Équipements de Combat",
+          "update": "{actor} a modifié le référentiel Équipements de Combat"
+        },
+        "consumables": {
+          "create": "{actor} a créé le référentiel Boutique",
+          "update": "{actor} a modifié le référentiel Boutique"
+        },
+        "demo-attack-troops": {
+          "update": "{actor} a modifié les pourcentages d’attaque démo"
+        },
+        "events": {
+          "create": "{actor} a créé le référentiel Événements",
+          "update": "{actor} a modifié le référentiel Événements"
+        },
+        "expedition-equipment-increments": {
+          "create": "{actor} a créé les incréments par étoile des Équipements d’Expédition",
+          "update": "{actor} a modifié les incréments par étoile des Équipements d’Expédition"
+        },
+        "expedition-equipment-secondary": {
+          "create": "{actor} a créé le Terradust (fusion, destruction) des Équipements d’Expédition",
+          "update": "{actor} a modifié le Terradust (fusion, destruction) des Équipements d’Expédition"
+        },
+        "expedition-equipment": {
+          "create": "{actor} a créé le référentiel Équipements d’Expédition",
+          "update": "{actor} a modifié le référentiel Équipements d’Expédition"
+        },
+        "gems": {
+          "update": "{actor} a modifié les paramètres des Gemmes"
+        },
+        "guide": {
+          "activate": "{actor} a activé le guide {title}",
+          "create": "{actor} a créé le guide {title}",
+          "deactivate": "{actor} a désactivé le guide {title}",
+          "delete": "{actor} a supprimé le guide {title}",
+          "publish": "{actor} a publié le guide {title}",
+          "submit_review": "{actor} a soumis en validation le guide {title}",
+          "unpublish": "{actor} a dépublié le guide {title}",
+          "update": "{actor} a modifié le guide {title}",
+          "update_status": "{actor} a changé le statut du guide {title}"
+        },
+        "legal-notice": {
+          "update": "{actor} a modifié les mentions légales"
+        },
+        "level-up": {
+          "update": "{actor} a modifié les paramètres du référentiel Progression"
+        },
+        "locale": {
+          "activate": "{actor} a activé la langue {locale}",
+          "deactivate": "{actor} a désactivé la langue {locale}"
+        },
+        "logs": {
+          "purge": "{actor} a purgé {count, plural, one {# entrée} other {# entrées}} du journal"
+        },
+        "ranking": {
+          "update": "{actor} a modifié les seuils du classement"
+        },
+        "reference": {
+          "activate": "{actor} a activé le référentiel {slug}",
+          "deactivate": "{actor} a désactivé le référentiel {slug}",
+          "describe": "{actor} a décrit le référentiel {slug}"
+        },
+        "setup": "{actor} a créé le premier compte Super Admin",
+        "templars-reference": {
+          "create": "{actor} a créé la présentation du référentiel Templiers",
+          "update": "{actor} a modifié la présentation du référentiel Templiers"
+        },
+        "templars": {
+          "update": "{actor} a modifié les paramètres des Templiers"
+        },
+        "tool": {
+          "activate": "{actor} a activé l’outil {slug}",
+          "deactivate": "{actor} a désactivé l’outil {slug}",
+          "describe": "{actor} a décrit l’outil {slug}"
+        },
+        "totp": {
+          "activate": "{actor} a activé l’authentification à deux facteurs de son compte",
+          "deactivate": "{actor} a désactivé l’authentification à deux facteurs de son compte"
+        },
+        "tracking": {
+          "delete": "{actor} a supprimé l’URL de suivi des visites",
+          "update": "{actor} a modifié l’URL de suivi des visites"
+        },
+        "user": {
+          "activate": "{actor} a activé l’utilisateur {username}",
+          "change_password": "{actor} a changé le mot de passe de son compte",
+          "create": "{actor} a créé l’utilisateur {username}",
+          "deactivate": "{actor} a désactivé l’utilisateur {username}",
+          "delete": "{actor} a supprimé l’utilisateur {username}",
+          "update": "{actor} a modifié l’utilisateur {username}"
+        },
+        "xp-gain-rate": {
+          "update": "{actor} a modifié les paliers du taux de gain d’XP"
+        },
+        "highlights": {
+          "update": "{actor} a modifié la sélection « Mis en avant » de l’accueil"
+        },
+        "leagues": {
+          "update": "{actor} a modifié les ligues et les divisions"
+        }
+      },
+      "eyebrow": "Accès",
+      "filters-label": "Filtres de l’historique",
+      "filter-user-all": "Tous les utilisateurs",
+      "filter-message-placeholder": "Un mot du message…",
+      "day-actions": "{count, plural, =1 {# action} other {# actions}}",
+      "column-time": "Heure",
+      "load-more": "Charger plus",
+      "purge-title": "Purge du journal",
+      "purge-description": "Supprime définitivement les entrées d’une période. Réservé au Super Admin.",
+      "purge-open": "Purger la période…",
+      "purge-confirm-title": "Purger cette période ?",
+      "purge-confirm-body": "{count, plural, =0 {Aucune entrée n’est concernée par cette période.} =1 {# entrée sera supprimée définitivement.} other {# entrées seront supprimées définitivement.}}",
+      "purge-confirm-action": "Purger",
+      "purge-invalid-range": "La date de fin doit être postérieure à la date de début.",
+      "purged-count": "{count, plural, =1 {# entrée supprimée.} other {# entrées supprimées.}}"
     },
     "content": {
       "eyebrow": "Page institutionnelle",
       "title": "Mentions légales",
-      "language-label": "Langue du contenu",
       "field": "Markdown",
-      "preview": "Aperçu en direct",
       "save": "Enregistrer",
       "saving": "Enregistrement…",
       "saved": "Mentions légales enregistrées.",
-      "error": "Impossible d’enregistrer les mentions légales."
+      "error": "Impossible d’enregistrer les mentions légales.",
+      "page-title": "Pages légales",
+      "unsaved": "Modifications non enregistrées",
+      "all-saved": "Tout est enregistré",
+      "view-on-site": "Voir sur le site",
+      "languages-label": "Langue du contenu",
+      "to-create": "à créer",
+      "todo-banner": "{count, plural, =1 {# champ reste à compléter.} other {# champs restent à compléter.}}",
+      "todo-goto-first": "Aller au premier",
+      "mode-write": "Écrire",
+      "mode-split": "Côte à côte",
+      "mode-preview": "Aperçu",
+      "mode-label": "Affichage de l’éditeur",
+      "todo-list-label": "Champs à compléter",
+      "language-hidden": "masquée sur le site"
     },
     "forbidden": {
       "eyebrow": "Erreur 403",
@@ -1158,15 +1539,10 @@
       "title": "Configuration du site",
       "intro": "Active ou désactive la visibilité de chaque langue sur le site public. Les fichiers de traduction restent inchangés. L’anglais et le français sont toujours actifs.",
       "columns": {
-        "language": "Langue",
-        "status": "Statut",
-        "action": "Action"
+        "language": "Langue"
       },
       "active": "Active",
       "inactive": "Inactive",
-      "enable": "Activer",
-      "disable": "Désactiver",
-      "locked-tooltip": "Langue de base — toujours active",
       "saving": "Enregistrement…",
       "save-error": "Échec de l’enregistrement (HTTP {status}).",
       "state-saved": "{language} est maintenant {state}.",
@@ -1179,6 +1555,7 @@
         "tr": "Türkçe"
       },
       "languages-section": "Langues",
+      "languages-summary": "{count} actives sur {total}",
       "tracking": {
         "section": "Suivi des visites",
         "intro": "Charge un script de mesure d'audience sur toutes les pages, publiques comme admin. Laisse le champ vide pour ne rien charger du tout.",
@@ -1195,8 +1572,56 @@
         "website-id-label": "Identifiant du site",
         "website-id-placeholder": "25931871-50b0-4123-a327-09f9c60cff18",
         "website-id-hint": "Ajouté sur la balise en `data-website-id`. Laisse vide si ton outil n'en demande pas.",
-        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place."
+        "invalid-website-id": "Cet identifiant contient des caractères qui n'y ont pas leur place.",
+        "script-active": "Script actif",
+        "script-inactive": "Aucun script"
+      },
+      "columns-translated": "Guides traduits",
+      "columns-public": "Sur le site public",
+      "visibility-of": "Visibilité de {language} sur le site public",
+      "always-active": "Toujours active",
+      "no-guides": "Aucun guide",
+      "highlights": {
+        "section": "Mis en avant sur l’accueil",
+        "slot": "Emplacement {position}",
+        "none": "— Aucun —",
+        "orphan": "Cible disparue ({slug})",
+        "intro": "Choisis jusqu’à cinq guides, outils ou référentiels à mettre en avant sur l’accueil, dans l’ordre où ils s’afficheront. Sans sélection, l’accueil garde sa liste par défaut ; une sélection vide masque le panneau.",
+        "empty": "Aucune entrée sélectionnée. L’accueil affiche sa liste par défaut.",
+        "empty-hidden": "Sélection vide enregistrée : le panneau est masqué sur l’accueil.",
+        "count": "{count} / {max} sélectionnés",
+        "save": "Enregistrer la sélection",
+        "saved": "Sélection enregistrée.",
+        "kinds": {
+          "tool": "Outil",
+          "reference": "Référentiel",
+          "guide": "Guide"
+        },
+        "saving": "Enregistrement…",
+        "save-error": "Échec de l’enregistrement (HTTP {status}).",
+        "server-error": "Impossible de joindre le serveur. Réessaie plus tard."
       }
+    },
+    "open-menu": "Ouvrir le menu",
+    "theme": {
+      "to-dark": "Passer en thème sombre",
+      "to-light": "Passer en thème clair"
+    },
+    "descriptions": {
+      "title": "Description de {name}",
+      "subtitle": "Une ligne, affichée sous le titre sur le site public.",
+      "languages-label": "Texte en",
+      "language-hidden": "{language} : masquée sur le site",
+      "field": "Description ({language})",
+      "placeholder": "Ce que cet outil permet de faire, en une phrase.",
+      "counter": "{count} / {max} caractères",
+      "leave-title": "Quitter sans enregistrer ?",
+      "leave-body": "Es-tu sûr de vouloir quitter sans enregistrer les modifications ?",
+      "leave-confirm": "Quitter sans enregistrer",
+      "open": "Décrire {name}",
+      "locale-written": "{language} : description écrite",
+      "locale-missing": "{language} : description à écrire",
+      "column": "Description"
     }
   },
   "roles": {
@@ -1211,5 +1636,14 @@
     "title": "Page introuvable",
     "description": "Cette page n’existe pas ou a été déplacée. Voici par où continuer :",
     "home": "Accueil"
+  },
+  "footer": {
+    "lead": "Outils, référentiels et guides de la communauté pour préparer chaque décision sur Million Lords.",
+    "note": "Site communautaire non officiel, sans lien avec l'éditeur du jeu.",
+    "help": "Aide",
+    "start-here": "Bien débuter",
+    "all-guides": "Tous les guides",
+    "all-references": "Tous les référentiels",
+    "copyright": "© {year} ML-Helper"
   }
 }

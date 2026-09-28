@@ -1,6 +1,6 @@
 "use client";
 
-import { pickFrEn } from "../lib/translations";
+import { localizedText } from "../lib/translations";
 import { useLocale, useTranslations } from "next-intl";
 import { LeagueButtons } from "./league-select";
 import { useSyncedLeague } from "./use-synced-league";
@@ -12,10 +12,18 @@ import {
   type EventsCatalog,
 } from "../lib/events";
 
-// Bloc 60 review (Codex PR #81): same fr/en fallback as Consommables'
-// pickLocaleText (Bloc44-review/C) — fr visitors get the French text (or
-// English if it's the only one filled in), every other locale gets English
-// (or French as a last resort), never a raw missing string.
+// Bloc 60 review (Codex PR #81): never a raw missing string — a visitor
+// always reads something.
+// Bloc 127 (PR 3/3) : `localizedText` remplace `pickFrEn`, et la règle ne
+// change que par ce qu'elle sait désormais servir : la langue du visiteur
+// d'abord, l'anglais ensuite, le français en dernier recours. Avant, seul le
+// français avait son champ et toutes les autres langues lisaient l'anglais.
+// Le repli est bien le **standard** ici : contrairement aux libellés de
+// métrique des équipements (Bloc 76/B, non-repli délibéré), rien de ce que
+// cet écran affiche n'a de traduction par défaut derrière lui — un nom, une
+// description, un objectif et une récompense n'existent que si un
+// administrateur les a écrits. Sans repli, un visiteur allemand lirait du
+// vide, pas une traduction qui l'attendait.
 // Bloc 77/D: the season timeline — same visual principle as Classement's
 // "échelle visuelle" (RankingScale, Bloc 62/F): a horizontal bar with one
 // proportionally-sized, alternating-label segment per item. Segments here
@@ -41,6 +49,9 @@ function EventTimeline({
 }) {
   const common = useTranslations("common");
   const t = useTranslations("references.events");
+  // Bloc 127 (PR 3/3) : le nom d'un événement se lit dans la langue du
+  // visiteur, ici comme dans la tuile plus bas.
+  const locale = useLocale();
   if (events.length === 0 || seasonDurationDays <= 0) return null;
   const totalHours = seasonDurationDays * 24;
   const segments = events.reduce<{
@@ -122,7 +133,7 @@ function EventTimeline({
                 width: `${width}%`,
                 background: shade,
               }}
-              title={`${event.name} — ${common("duration-hours", { hours: event.duration })}`}
+              title={`${localizedText(event.name, locale)} — ${common("duration-hours", { hours: event.duration })}`}
               data-testid={`events-timeline-segment-${index}`}
             />
             <div
@@ -149,7 +160,7 @@ function EventTimeline({
                   className="events-timeline-name"
                   style={{ color: eventTextColorVar(event.color) }}
                 >
-                  {event.name}
+                  {localizedText(event.name, locale)}
                 </div>
               </div>
             </div>
@@ -202,14 +213,10 @@ function EventTile({
   locale: string;
 }) {
   const common = useTranslations("common");
-  const description = pickFrEn(
-    event.description_fr,
-    event.description_en,
-    locale,
-  );
+  const description = localizedText(event.description, locale);
   const lastTier = event.tiers[event.tiers.length - 1];
   const finalObjective = lastTier
-    ? pickFrEn(lastTier.objective_fr, lastTier.objective_en, locale)
+    ? localizedText(lastTier.objective, locale)
     : null;
   return (
     <details className="events-tile">
@@ -224,7 +231,7 @@ function EventTile({
             className="events-tile-name"
             style={{ color: eventTextColorVar(event.color) }}
           >
-            {event.name}
+            {localizedText(event.name, locale)}
           </strong>
           <div className="events-tile-badges">
             {finalObjective && (
@@ -262,10 +269,8 @@ function EventTile({
             <tbody>
               {event.tiers.map((tier, index) => (
                 <tr key={index}>
-                  <td>
-                    {pickFrEn(tier.objective_fr, tier.objective_en, locale)}
-                  </td>
-                  <td>{pickFrEn(tier.reward_fr, tier.reward_en, locale)}</td>
+                  <td>{localizedText(tier.objective, locale)}</td>
+                  <td>{localizedText(tier.reward, locale)}</td>
                 </tr>
               ))}
             </tbody>

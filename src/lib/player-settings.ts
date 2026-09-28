@@ -145,8 +145,21 @@ export const templeBase: NumberMap<TemplarKey> = {
 export type PlayerSettings = {
   level: number;
   league: LeagueSelection;
+  /**
+   * Bloc 108/E: the id of the ranking ladder entry the player sits on, when
+   * their league is split into divisions. Deliberately separate from `league`
+   * above: that one is the enum every other tool reads (Gemmes, Équipement,
+   * Templiers, Boutique) and is untouched by divisions. Empty when the player
+   * has not picked one, or when their league has no division configured.
+   */
+  division: string;
   vp: number;
-  vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000;
+  /**
+   * Bloc 123 : l'unité dans laquelle le joueur saisit ses VP. Le téra rejoint
+   * la liste avec le correctif d'affichage — l'échelle du site est k/M/G/T
+   * (AGENTS.md), et le champ s'arrêtait au giga.
+   */
+  vpUnit: 1 | 1_000 | 1_000_000 | 1_000_000_000 | 1_000_000_000_000;
   equipmentSkills: NumberMap<SkillKey>;
   skillPoints: NumberMap<SkillKey>;
   templars: NumberMap<TemplarKey>;
@@ -156,6 +169,7 @@ export type PlayerSettings = {
 export const defaultPlayerSettings = (): PlayerSettings => ({
   level: 1,
   league: "",
+  division: "",
   vp: 0,
   vpUnit: 1_000_000,
   equipmentSkills: emptySkills(),

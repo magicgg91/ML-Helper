@@ -41,6 +41,10 @@ export function isReferenceCalculatorSlug(slug: string): boolean {
 export function adminToolEditHref(slug: string): string | undefined {
   if (cityToolSlugs.includes(slug as (typeof cityToolSlugs)[number]))
     return "/admin/tools/city-parameters";
+  // Bloc 137 : le Classement a de nouveau son écran — les seuils et récompenses
+  // de fin de saison, c'est-à-dire le classement lui-même. Le Bloc 135 les
+  // avait emportés dans Configuration avec la liste des ligues et des
+  // divisions ; seule cette liste y appartenait.
   if (slug === "ranking") return "/admin/tools/ranking";
   if (slug === "templars") return "/admin/tools/templars";
   // Bloc 35/7.1, updated Bloc 50: carries provenance through the URL, so the

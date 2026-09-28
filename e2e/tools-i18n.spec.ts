@@ -17,12 +17,14 @@ test("renders every tool category in French and English", async ({ page }) => {
   await page.goto("/tools");
   await selectLanguage(page, "fr");
   await expect(page.getByRole("heading", { name: "Villes" })).toBeVisible();
+  // Bloc 133 §C : le décompte est une pastille contre le nom — le chiffre se
+  // voit, la phrase entière est le texte masqué qui le lit.
   await expect(
     page
       .getByRole("heading", { name: "Combat" })
       .locator("..")
-      .getByText("2 outils disponibles"),
-  ).toBeVisible();
+      .locator(".tool-count-badge"),
+  ).toHaveText("22 outils");
 
   await selectLanguage(page, "en");
   await expect(page.getByRole("heading", { name: "Cities" })).toBeVisible();
@@ -30,8 +32,8 @@ test("renders every tool category in French and English", async ({ page }) => {
     page
       .getByRole("heading", { name: "Combat" })
       .locator("..")
-      .getByText("2 tools available"),
-  ).toBeVisible();
+      .locator(".tool-count-badge"),
+  ).toHaveText("22 tools");
 
   await page.goto("/tools/combat");
   await expect(page.getByRole("tab", { name: "XP Gain Rate" })).toBeVisible();
@@ -50,9 +52,14 @@ test("renders every tool category in French and English", async ({ page }) => {
   await expect(page.getByText("Paramètres du joueur")).toBeVisible();
 
   await page.goto("/tools/classement");
-  await expect(page.getByText("Ton rang actuel")).toBeVisible();
+  // Bloc 129 §3.8 : la page porte maintenant un en-tête dont la description
+  // reprend les mots de l'outil — la recherche est donc limitée au contenu,
+  // sous l'en-tête, sinon elle trouve les deux.
+  await expect(page.locator("main").getByText("Ton rang actuel")).toBeVisible();
   await selectLanguage(page, "en");
-  await expect(page.getByText("Your current rank")).toBeVisible();
+  await expect(
+    page.locator("main").getByText("Your current rank"),
+  ).toBeVisible();
 
   await page.goto("/tools/competences");
   await expect(

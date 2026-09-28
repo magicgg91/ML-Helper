@@ -2,13 +2,87 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import messages from "../../messages/fr.json";
-import { defaultTemplarParameters } from "../lib/templar-parameters";
+import deMessages from "../../messages/de.json";
+import {
+  defaultTemplarParameters,
+  templarLevelCost,
+} from "../lib/templar-parameters";
 import { defaultTemplarPresentationCatalog } from "../lib/templars-presentation";
 import { templarKeys } from "../lib/player-settings";
 import { skillColor } from "../lib/game-images";
+import { mockViewport } from "../test/viewport";
 import { TemplarsReferenceTable } from "./templars-reference";
 
 afterEach(cleanup);
+
+// Bloc 63/C: split in two, the columns stack on a narrow screen (globals.css,
+// ≤900px) and a second header row lands in the middle of what the reader is
+// scrolling straight down. 20 rows never needed splitting at that width.
+describe("Bloc 63/C: Templars costs read as one table on a narrow screen", () => {
+  let viewport: ReturnType<typeof mockViewport>;
+  afterEach(() => viewport.restore());
+
+  it("puts all 20 levels in a single table, in order, with no pagination", () => {
+    viewport = mockViewport(true);
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={defaultTemplarPresentationCatalog}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getAllByRole("table")).toHaveLength(1);
+    // 20 levels and the one header row they now share.
+    expect(screen.getAllByRole("row")).toHaveLength(21);
+    expect(
+      [...document.querySelectorAll("tbody tr td:first-child")].map((cell) =>
+        Number(cell.textContent),
+      ),
+    ).toEqual(Array.from({ length: 20 }, (_, index) => index + 1));
+    expect(document.querySelector(".pagination")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Suivant" })).toBeNull();
+  });
+
+  // The level a row carries used to be computed from its position inside its
+  // column (columnIndex * 10 + i), which only held for the 2x10 split. Level
+  // 11 opening the second column on desktop is where that arithmetic mattered.
+  it("keeps every row's level and running total right in both layouts", () => {
+    for (const narrow of [true, false]) {
+      cleanup();
+      viewport = mockViewport(narrow);
+      render(
+        <NextIntlClientProvider locale="fr" messages={messages}>
+          <TemplarsReferenceTable
+            parameters={defaultTemplarParameters}
+            presentation={defaultTemplarPresentationCatalog}
+          />
+        </NextIntlClientProvider>,
+      );
+      const eleventh = [...document.querySelectorAll("tbody tr")].find(
+        (row) => row.querySelector("td")?.textContent === "11",
+      )!;
+      const cells = eleventh.querySelectorAll("td");
+      expect(
+        cells[0],
+        `niveau, ${narrow ? "mobile" : "desktop"}`,
+      ).toHaveTextContent("11");
+      // Cumulative is the sum of levels 1..11, so a row that lost track of its
+      // own index would show a neighbour's total here.
+      const costs = Array.from({ length: 11 }, (_, index) =>
+        templarLevelCost(index + 1, defaultTemplarParameters),
+      );
+      const total = costs.reduce((sum, item) => sum + item, 0);
+      // Compared without separators: the French grouping character is a
+      // narrow no-break space, which jest-dom's whitespace normalisation and
+      // toLocaleString do not spell the same way.
+      const digits = (text: string) => text.replace(/[\s\u202f\u00a0]/g, "");
+      expect(digits(cells[2].textContent!)).toBe(String(Math.round(total)));
+      viewport.restore();
+    }
+  });
+});
+
 describe("TemplarsReferenceTable", () => {
   // Bloc 64/E: the 20 levels are split over 2 side-by-side tables of 10,
   // so the header row is counted twice — 22 rows for 20 levels.
@@ -186,7 +260,13 @@ describe("TemplarsReferenceTable", () => {
         />
       </NextIntlClientProvider>,
     );
-    for (const competence of ["Attaque", "Défense", "Or", "Recruteur", "Vitesse"])
+    for (const competence of [
+      "Attaque",
+      "Défense",
+      "Or",
+      "Recruteur",
+      "Vitesse",
+    ])
       expect(
         screen.getByRole("heading", { name: `Templier ${competence}` }),
       ).toBeInTheDocument();
@@ -324,5 +404,58 @@ describe("TemplarsReferenceTable", () => {
       '[data-testid="templars-tile-striker"]',
     )!;
     expect(strikerTile.firstElementChild).toHaveClass("templars-tile-image");
+  });
+});
+
+/**
+ * Bloc 127 (PR 2/3) : le nom d'une tuile est une **surcharge** du nom de
+ * compétence, déjà traduit dans les cinq langues (`game.templars.*`).
+ *
+ * La paire FR/EN d'avant ce bloc ne savait pas distinguer « allemand » de
+ * « pas français » : un visiteur allemand lisait la surcharge anglaise. La
+ * lecture est donc stricte — la langue du visiteur, sinon son propre nom de
+ * compétence traduit, jamais la surcharge d'une autre langue.
+ */
+describe("Bloc 127 : le nom d'une tuile de templier", () => {
+  const withName = (name: Record<string, string>) => ({
+    ...defaultTemplarPresentationCatalog,
+    striker: { ...defaultTemplarPresentationCatalog.striker, name },
+  });
+
+  /** La tuile du templier d'attaque, telle qu'un visiteur allemand la voit. */
+  const strikerTile = (presentation = defaultTemplarPresentationCatalog) => {
+    render(
+      <NextIntlClientProvider locale="de" messages={deMessages}>
+        <TemplarsReferenceTable
+          parameters={defaultTemplarParameters}
+          presentation={presentation}
+        />
+      </NextIntlClientProvider>,
+    );
+    return screen.getByTestId("templars-tile-striker");
+  };
+
+  it("montre le nom de compétence traduit quand rien n'est surchargé", () => {
+    // Le titre de la tuile porte le nom ; l'image le reprend en texte
+    // alternatif, donc les deux doivent dire la même chose.
+    const tile = strikerTile();
+    expect(tile.textContent).toContain("Angriff");
+    expect(tile.querySelector("img")).toHaveAttribute("alt", "Angriff");
+  });
+
+  it("montre la surcharge de la langue du visiteur", () => {
+    const tile = strikerTile(withName({ de: "Angriff (Klan)" }));
+    expect(tile.textContent).toContain("Angriff (Klan)");
+    expect(tile.querySelector("img")).toHaveAttribute("alt", "Angriff (Klan)");
+  });
+
+  it("ne laisse pas la surcharge d'une autre langue atteindre ce visiteur", () => {
+    // Ce que le Bloc 76/B a corrigé pour les libellés d'équipement, tenu ici
+    // aussi : le visiteur allemand a sa propre traduction, elle passe avant la
+    // surcharge écrite pour quelqu'un d'autre.
+    const tile = strikerTile(withName({ en: "Striker", fr: "Frappeur" }));
+    expect(tile.textContent).toContain("Angriff");
+    expect(tile.textContent).not.toContain("Striker");
+    expect(tile.textContent).not.toContain("Frappeur");
   });
 });

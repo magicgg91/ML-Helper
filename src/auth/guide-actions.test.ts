@@ -4,7 +4,6 @@ import { canPerformGuideAction, type GuideAction } from "./guide-actions";
 const actions: GuideAction[] = [
   "create",
   "edit",
-  "toggle",
   "submit_review",
   "publish",
   "delete",
@@ -16,8 +15,10 @@ describe("guide action permissions", () => {
       expect(canPerformGuideAction(role, action)).toBe(true);
   });
 
-  it("limits guide managers to authoring, review submission and visibility", () => {
-    for (const action of ["create", "edit", "toggle", "submit_review"] as const)
+  it("limits guide managers to authoring and review submission", () => {
+    // Bloc 119: "toggle" left this list with the ⏻ button — what a guides
+    // manager may not do is publish, and that has not changed.
+    for (const action of ["create", "edit", "submit_review"] as const)
       expect(canPerformGuideAction("guides_manager", action)).toBe(true);
     expect(canPerformGuideAction("guides_manager", "publish")).toBe(false);
     expect(canPerformGuideAction("guides_manager", "delete")).toBe(false);

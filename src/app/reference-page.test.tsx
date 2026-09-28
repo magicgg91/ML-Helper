@@ -23,6 +23,14 @@ vi.mock("next-intl/server", () => ({
   },
 }));
 vi.mock("next/server", () => ({ connection: async () => undefined }));
+// Bloc 129 §3.9 : la page lit la description du référentiel en base
+// (Bloc 130). Aucune n'est écrite par défaut ici — ni en production à la
+// livraison — et la ligne de description n'est alors pas rendue. Mutable
+// pour que les tests de métadonnées couvrent aussi le cas renseigné.
+const stored = vi.hoisted(() => ({ value: {} as Record<string, string> }));
+vi.mock("@/lib/tool-descriptions-server", () => ({
+  getPublicDescriptions: async () => stored.value,
+}));
 vi.mock("@/lib/calculators-server", () => ({
   getCalculatorAvailability: vi.fn(async () => ({
     "combat-equipment": true,
@@ -88,7 +96,10 @@ vi.mock("@/lib/templars-presentation-server", () => ({
   getTemplarPresentation: async () => ({}),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  stored.value = {};
+});
 
 // Bloc 42/J: same requirement as every other public page — real
 // description, hreflang alternates for the 5 launched locales.
@@ -112,10 +123,36 @@ describe("ReferencePage metadata (Bloc 42/J)", () => {
       "https://ml-helper.com/fr/referentiels/combat-equipment",
     );
   });
+
+  // Bloc 129, relevé en revue : la page affiche la description éditée en
+  // base, la fiche doit dire la même chose. Une clé i18n figée ici faisait
+  // diverger la page de son extrait de recherche et de sa carte Open Graph
+  // dès la première édition.
+  it("décrit la fiche avec la description enregistrée en base", async () => {
+    stored.value = { "combat-equipment": "Toutes les pièces, par set." };
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ locale: "fr", slug: "combat-equipment" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).toBe("Toutes les pièces, par set.");
+    expect(metadata.openGraph?.description).toBe("Toutes les pièces, par set.");
+  });
+
+  it("retombe sur la description statique quand l'enregistrement est vide", async () => {
+    stored.value = { "combat-equipment": "" };
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ locale: "fr", slug: "combat-equipment" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(metadata.description).toBe("descriptions.combat-equipment");
+  });
 });
 
 describe("ReferencePage", () => {
-  it("Bloc35 1.3: gives the title a one-line class, same treatment as the tools page", async () => {
+  // Bloc 129 §3.9 : le titre passe dans l'en-tête de page commun (§2) et
+  // perd la classe qui le forçait sur une ligne. Ce qui compte reste le
+  // même : un seul H1, qui nomme le référentiel.
+  it("Bloc129/§3.9: nomme le référentiel dans l'en-tête de page", async () => {
     render(
       await ReferencePage({
         params: Promise.resolve({ locale: "fr", slug: "expedition-equipment" }),
@@ -124,8 +161,9 @@ describe("ReferencePage", () => {
     );
     const heading = screen.getByRole("heading", {
       name: "Équipements d’Expédition",
+      level: 1,
     });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc 67: renamed from "Level Up" — the slug/URL stay unchanged
@@ -139,7 +177,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("level-up-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Progression" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   it("Bloc36/A: routes the new 'gems' slug to GemsReferenceTable, the 5th reference actually built", async () => {
@@ -151,7 +189,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("gems-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Gemmes" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc 48/F: renamed Consommables -> Boutique, URL /consommables ->
@@ -165,7 +203,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("consumables-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Boutique" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc60: the 7th reference, routed the same way as every other one.
@@ -178,7 +216,7 @@ describe("ReferencePage", () => {
     );
     expect(screen.getByTestId("events-table")).toBeInTheDocument();
     const heading = screen.getByRole("heading", { name: "Événements" });
-    expect(heading).toHaveClass("reference-page-title");
+    expect(heading.closest(".page-header")).not.toBeNull();
   });
 
   // Bloc60: ships inactive by default — invisible on the public site until

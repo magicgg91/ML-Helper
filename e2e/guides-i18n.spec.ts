@@ -17,22 +17,21 @@ async function switchLocale(page: Page, locale: "en" | "fr") {
 // Bloc 50/1b: the reference catalog moved off the guides hub onto its own
 // /referentiels root (src/app/(public)/referentiels/page.tsx). Bloc 52/A:
 // the index title was the short "Référentiels", not "Tous les
-// référentiels". Bloc 53/D: that short title was replaced by the
-// homepage's own référentiels intro title ("Retrouve les données clés"),
-// same treatment /tools got in Bloc 38/K — the <title> metadata still says
-// "Référentiels" (see referentiels-page.test.tsx). Bloc 52/B: the switcher
-// nav is scoped to a specific reference's page — the index already shows
-// every reference as an illustrated tile, so it must NOT repeat there.
+// référentiels". Bloc 53/D avait remplacé ce titre court par celui de la
+// section Référentiels de l'accueil ; le Bloc 129 §3.3 le lui rend, avec sa
+// propre introduction à côté. Bloc 52/B: the switcher nav is scoped to a
+// specific reference's page — the index already shows every reference as an
+// illustrated tile, so it must NOT repeat there.
 test("shows every reference table on the référentiels hub", async ({
   page,
 }) => {
   await page.goto("/referentiels");
   await switchLocale(page, "fr");
   await expect(
-    page.getByRole("heading", { name: "Retrouve les données clés", level: 1 }),
+    page.getByRole("heading", { name: "Référentiels", level: 1 }),
   ).toBeVisible();
   await expect(
-    page.getByRole("navigation", { name: /référentiels/i }),
+    page.getByRole("navigation", { name: "Navigation entre référentiels" }),
   ).not.toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Équipements de Combat" }),
@@ -43,7 +42,7 @@ test("shows every reference table on the référentiels hub", async ({
 
   await switchLocale(page, "en");
   await expect(
-    page.getByRole("heading", { name: "Find the exact numbers", level: 1 }),
+    page.getByRole("heading", { name: "Reference tables", level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Combat Equipment" }),
@@ -57,13 +56,15 @@ test("shows the reference switcher nav only on a specific reference's page, neve
   page,
 }) => {
   await page.goto("/referentiels");
+  // Bloc 129 §2.2 : la rangée porte un nom à elle. Le pied de page titre
+  // aussi une colonne « Référentiels », qui est un autre repère.
   await expect(
-    page.getByRole("navigation", { name: "Référentiels" }),
+    page.getByRole("navigation", { name: "Navigation entre référentiels" }),
   ).not.toBeVisible();
 
   await page.goto("/referentiels/combat-equipment");
   await expect(
-    page.getByRole("navigation", { name: "Référentiels" }),
+    page.getByRole("navigation", { name: "Navigation entre référentiels" }),
   ).toBeVisible();
 });
 
@@ -75,15 +76,19 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   const search = page.getByRole("searchbox", {
     name: "Rechercher sur le site",
   });
+  // Bloc 129 §2.2 : le pied de page mène lui aussi à des référentiels, et
+  // porte donc les mêmes libellés — les résultats se cherchent dans la
+  // liste de la recherche, pas dans la page entière.
+  const results = page.locator(".site-search-results");
 
   await search.fill("visible");
   await expect(
-    page.getByRole("link", { name: /Guide visible/ }),
+    results.getByRole("link", { name: /Guide visible/ }),
   ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
 
   await search.fill("équipements de combat");
   await expect(
-    page.getByRole("link", { name: /Équipements de Combat/ }),
+    results.getByRole("link", { name: /Équipements de Combat/ }),
   ).toHaveAttribute("href", new RegExp("/referentiels/combat-equipment$"));
 
   // Bloc 36/A: "gemmes" now matches both the Gems tool and its new
@@ -91,7 +96,7 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   // accessible name ("Outil Gemmes") to keep testing the tool match here.
   await search.fill("gemmes");
   await expect(
-    page.getByRole("link", { name: "Outil Gemmes" }),
+    results.getByRole("link", { name: "Outil Gemmes" }),
   ).toHaveAttribute("href", new RegExp("/tools/competences$"));
 
   await search.fill("introuvable");
@@ -103,7 +108,7 @@ test("finds a guide, a reference table and a tool from the site-wide search on a
   });
   await searchEn.fill("visible");
   await expect(
-    page.getByRole("link", { name: /Visible guide/ }),
+    results.getByRole("link", { name: /Visible guide/ }),
   ).toHaveAttribute("href", new RegExp("/guides/guide-visible$"));
 });
 
