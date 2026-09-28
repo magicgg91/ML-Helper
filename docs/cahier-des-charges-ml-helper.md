@@ -1624,10 +1624,17 @@ Points_totaux = (niveau − 1) × points_par_niveau(ligue)   [2 pour Diamant/Lé
 Bonus_Prospérité_full = Points_totaux × 3%   (taux Prospérité, pas de plafond)
 Bonus_Recruteur_full = Points_totaux × 3%    (taux Recruteur, pas de plafond)
 
-Or_si_full_prosperité = Prod_or_base × (1 + Bonus_Prospérité_full / 100)
-Troupes_si_full_recruteur = Prod_troupes_base × (1 + Bonus_Recruteur_full / 100)
+Or_si_full_prosperité = Prod_or_base × (1 + (Équipement_Prospérité + Temple_Prospérité + Bonus_Prospérité_full) / 100)
+Troupes_si_full_recruteur = Prod_troupes_base × (1 + (Équipement_Recruteur + Temple_Recruteur + Bonus_Recruteur_full) / 100)
 ```
-Calculé à partir de la **production de base** des villes (pas perso/temple), cohérent avec la logique déjà établie pour les Récompenses.
+
+**🔄 Révision du 28/09/2026 (Bloc 115), confirmée par le joueur — remplace la règle précédente.** Le calcul comptait auparavant la **seule production de base** (« pas perso/temple »), par analogie avec les Récompenses. Cette analogie était une extrapolation, jamais confirmée pour ce calcul en particulier : le joueur a tranché, l'équipement **et** le temple restent comptés, le temple tel que saisi dans Paramètres joueur. Sans eux, un joueur à 602 % d'équipement Recruteur voyait sa simulation de reskill complet annoncer **moins** que sa production courante (8,25 G contre 8,72 G) — un reskill affiché comme une perte.
+
+Le full-prod emprunte donc la **même décomposition que la production normale** (`bonusBreakdown`), avec l'équipement augmenté du pourcentage de tout le budget de points. Une seule formule sert les deux colonnes ; un écart entre elles est structurellement impossible.
+
+Toujours **sans plafond**, et il n'y en a aucun à écarter : Prospérité et Recruteur ont `cap: null`. C'est une **simulation** — elle ne lit ni ne modifie les points réellement investis, ni les Paramètres joueur.
+
+⚠️ La règle des **Récompenses de Production** (section 7.1) n'est pas touchée : elle reste sur la production de base, comme confirmé séparément par le joueur.
 
 #### Système de répartition des points de compétence — ✅ implémenté dans les Paramètres du joueur
 

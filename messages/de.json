@@ -256,7 +256,7 @@
     "none": "—",
     "full-production": {
       "title": "Voll-Produktions-Reskill",
-      "note": "{points} Punkte vollständig investiert · berechnet ausgehend von der Basisproduktion",
+      "note": "{points} Punkte vollständig investiert",
       "army": "Armee mit vollem Rekrutierer",
       "gold": "Gold mit vollem Wohlstand"
     }

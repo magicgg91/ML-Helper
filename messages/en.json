@@ -256,7 +256,7 @@
     "none": "—",
     "full-production": {
       "title": "Full-production reskill",
-      "note": "{points} points invested in full · calculated from base production",
+      "note": "{points} points invested in full",
       "army": "Army with full Recruiter",
       "gold": "Gold with full Prosperity"
     }

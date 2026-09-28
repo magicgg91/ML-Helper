@@ -256,7 +256,7 @@
     "none": "—",
     "full-production": {
       "title": "Tam üretim yeniden dağıtımı",
-      "note": "{points} puanın tamamı yatırıldı · taban üretim üzerinden hesaplandı",
+      "note": "{points} puanın tamamı yatırıldı",
       "army": "Tam Askere Alan ile ordu",
       "gold": "Tam Refah ile altın"
     }
