@@ -211,3 +211,91 @@ describe("Bloc 134 — le bas de page", () => {
     expect(rule(".public-footer")).toMatch(/margin-top: 4rem/);
   });
 });
+
+/**
+ * Bloc 142/B — les compteurs du hero.
+ *
+ * Le choix se documente ici plutôt que dans la seule PR : ce qui le
+ * défait n'est pas une valeur discutable mais un retour au gris de
+ * service, qui rendrait la ligne à nouveau invisible.
+ */
+describe("Bloc 142 — les compteurs du hero", () => {
+  /**
+   * La pastille est celle du Bloc 133/C, reprise par sa classe. Cette règle
+   * ne doit donc porter que la mise à l'échelle : si elle se met à
+   * redéclarer le fond, la couleur ou le rayon, la recette existe en deux
+   * endroits et les deux divergeront.
+   */
+  /**
+   * La règle du hero doit peser plus lourd que celle qu'elle ajuste. À
+   * classe unique elle pesait pareil, et `.tool-count-badge` — écrite plus
+   * bas dans le fichier — l'emportait : la pastille restait à 12 px. Une
+   * règle plus faible se lit juste et ne rend rien.
+   */
+  it("passe devant la règle d'origine, quel que soit l'ordre des règles", () => {
+    expect(
+      beats(".home-hero-counters .home-hero-count-badge", ".tool-count-badge"),
+    ).toBe(true);
+  });
+
+  it("ne fait que mettre la pastille du Bloc 133 à l'échelle du hero", () => {
+    const body = rule(".home-hero-counters .home-hero-count-badge")!;
+    expect(body).toMatch(/font-size: 1\.125rem/);
+    expect(body).toMatch(/font-weight: 600/);
+    for (const borrowed of ["background", "color", "border-radius", "font-family"])
+      expect(declares(body, borrowed), borrowed).toBe(false);
+  });
+
+  /** Et la recette, elle, reste écrite une fois — là où le Bloc 133 l'a mise. */
+  it("laisse la recette de la pastille à sa règle d'origine", () => {
+    const origin = rule(".tool-count-badge")!;
+    expect(origin).toMatch(/background: var\(--accent-soft\)/);
+    expect(origin).toMatch(/color: var\(--accent\)/);
+    expect(origin).toMatch(/border-radius: 0\.375rem/);
+    expect(origin).toMatch(/font-family: var\(--font-mono/);
+  });
+
+  /**
+   * La pastille porte toute l'apparence : la liste qui la contient ne
+   * déclare plus ni couleur ni police, sans quoi deux règles décideraient de
+   * la même chose.
+   */
+  it("laisse toute l'apparence à la pastille", () => {
+    const body = rule(".home-hero-counters")!;
+    for (const owned of ["color", "font"])
+      expect(declares(body, owned), owned).toBe(false);
+  });
+
+  /**
+   * §1.1 : la chasse fixe était déjà le traitement des compteurs, et c'est
+   * aussi celui de `.tool-count`. Le Bloc 142 la garde — la reprendre ici
+   * évite qu'un futur passage en police de texte la fasse disparaître.
+   */
+  /**
+   * Revue Codex sur la PR : à 390 px, les compteurs passaient sur deux
+   * lignes et la seconde s'ouvrait sur le séparateur — « · 2 guides ». En
+   * pastilles, le séparateur n'a plus lieu d'être : trois pastilles se
+   * délimitent d'elles-mêmes. Qu'il ne revienne pas est donc à la fois une
+   * règle de style et la fermeture de ce défaut.
+   */
+  it("ne remet pas de séparateur entre les pastilles", () => {
+    expect(bodiesFor(".home-hero-counters li + li::before")).toHaveLength(0);
+    expect(
+      bodiesFor(".home-hero-counters li:not(:last-child)::after"),
+    ).toHaveLength(0);
+  });
+
+  /**
+   * La contrainte que le bloc pose explicitement : le H1 reste le plus
+   * grand titre de la page. Sa borne basse (36 px) doit dépasser les
+   * compteurs (17 px).
+   */
+  it("laisse le H1 plus grand que les compteurs, à toute largeur", () => {
+    const h1 = rule(".home-hero-copy h1")!;
+    const min = h1.match(/font-size: clamp\((\d+(?:\.\d+)?)rem/)?.[1];
+    const counters = rule(".home-hero-counters .home-hero-count-badge")!.match(
+      /font-size: (\d+(?:\.\d+)?)rem/,
+    )?.[1];
+    expect(Number(min)).toBeGreaterThan(Number(counters));
+  });
+});

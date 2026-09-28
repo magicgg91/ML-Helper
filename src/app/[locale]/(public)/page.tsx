@@ -161,7 +161,6 @@ export default async function HomePage() {
       {/* Bloc 91/M4: WebSite + Organization structured data for the home page. */}
       <JsonLd data={websiteJsonLd(locale)} />
       <HomeHero
-        eyebrow={t("eyebrow")}
         title={t("h1")}
         intro={t("intro")}
         actions={[
@@ -182,7 +181,6 @@ export default async function HomePage() {
       <section className="home-section home-tools">
         <div className="home-section-head">
           <div>
-            <p className="eyebrow">{t("toolsEyebrow")}</p>
             <h2>{t("toolsTitle")}</h2>
             <p className="home-section-lead">{t("toolsDescription")}</p>
           </div>
@@ -198,7 +196,6 @@ export default async function HomePage() {
       <section className="home-section home-references">
         <div className="home-section-head">
           <div>
-            <p className="eyebrow">{t("referentielsEyebrow")}</p>
             <h2>{t("referentielsTitle")}</h2>
             <p className="home-section-lead">{t("referentielsDescription")}</p>
           </div>
@@ -224,7 +221,6 @@ export default async function HomePage() {
       <section className="home-section home-guides">
         <div className="home-section-head">
           <div>
-            <p className="eyebrow">{t("guidesEyebrow")}</p>
             <h2>{t("guidesTitle")}</h2>
             <p className="home-section-lead">{t("guidesDescription")}</p>
           </div>
