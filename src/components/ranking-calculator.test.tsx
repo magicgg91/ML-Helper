@@ -638,6 +638,55 @@ describe("Bloc 108, revue Codex", () => {
       within(leagueGroup()).getByRole("button", { name: "Platine 1" }),
     ).toHaveAttribute("aria-pressed", "false");
   });
+
+  // Revue Codex (PR #173) : un échelon « libre » n'a pas de ligue de base, et
+  // Paramètres joueur persiste `league: ""` pour lui. `baseLeagueOf` rend
+  // `null` : sans ramener les deux à la même forme, la comparaison stricte
+  // échouait et l'échelon choisi n'était pas retrouvé — aucune entrée
+  // sélectionnée, alors que le joueur en avait bien désigné une.
+  it("restores a stored rung that has no base league", () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        // Ce que le panneau écrit pour un échelon libre : pas de ligue, et
+        // l'identifiant de l'échelon en division.
+        league: "",
+        division: "studio-cup",
+        equipmentSkills: {},
+      }),
+    );
+    // Deux échelons libres : la sélection ne peut donc pas venir du repli
+    // « une seule entrée dans la ligue », qui ne se déclenche jamais sans
+    // ligue. Seule la division stockée peut la désigner.
+    const free: LeagueLadder = [
+      {
+        id: "studio-cup",
+        league: null,
+        division: "",
+        name: { fr: "Coupe du studio" },
+        position: 0,
+        active: true,
+        bands: [],
+      },
+      {
+        id: "invitational",
+        league: null,
+        division: "",
+        name: { fr: "Invitation" },
+        position: 1,
+        active: true,
+        bands: [],
+      },
+    ];
+    renderLadder(free);
+    expect(
+      within(leagueGroup()).getByRole("button", { name: "Coupe du studio" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(leagueGroup()).getByRole("button", { name: "Invitation" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
 });
 
 /** A ladder of `count` active rungs, named so each button is distinguishable. */

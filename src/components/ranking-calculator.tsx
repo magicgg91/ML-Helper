@@ -106,8 +106,14 @@ export function RankingCalculator({ ladder }: { ladder: LeagueLadder }) {
     // nommé d'une division vers sa ligue de base. La règle était écrite ici en
     // clair, et c'est celle dont tous les autres outils dépendent sans la
     // dire — la nommer une fois est ce qui la rend vérifiable.
+    //
+    // Revue Codex (PR #173) : `?? ""` ramène les deux formes à la même, comme
+    // `selectedRungOf` le fait déjà. Un échelon « libre » n'a pas de ligue de
+    // base — `baseLeagueOf` rend `null` — mais c'est une chaîne vide qui est
+    // stockée pour lui : la comparaison stricte échouait, et l'échelon choisi
+    // par le joueur dans Paramètres n'était pas retrouvé ici.
     (settings.division &&
-    baseLeagueOf(ladder, settings.division) === settings.league
+    (baseLeagueOf(ladder, settings.division) ?? "") === settings.league
       ? findLeagueRung(entries, settings.division)?.id
       : undefined) ??
     // Without one, a league that still has a single rung resolves on its own;
