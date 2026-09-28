@@ -254,6 +254,27 @@ describe("AdminHighlightsPanel", () => {
   });
 
   /**
+   * Revue Codex (PR #172) : et l'écran suit ce qui est parti. Le serveur
+   * reçoit la sélection tassée ; si les champs gardaient leur trou,
+   * « Emplacement 4 » continuerait d'afficher une entrée que l'accueil place
+   * en deuxième position. `router.refresh()` ne le corrige pas : il ne
+   * remonte pas un composant client.
+   */
+  it("tasse aussi les champs après un enregistrement réussi", async () => {
+    renderPanel();
+    pick(0, "tool:city-cost");
+    pick(3, "guide:clan");
+    expect(chosen()[1]).toBe("— Aucun —");
+    expect(chosen()[3]).toContain("Le clan");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Enregistrer la sélection" }),
+    );
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+    await waitFor(() => expect(chosen()[1]).toContain("Le clan"));
+    expect(chosen()[3]).toBe("— Aucun —");
+  });
+
+  /**
    * Un trou au milieu n'est pas un état à enregistrer : les entrées choisies
    * partent dans leur ordre, sans la place vide qui les sépare à l'écran.
    */

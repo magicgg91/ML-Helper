@@ -115,6 +115,18 @@ export function AdminHighlightsPanel({
       if (response.ok) {
         setConfigured(true);
         setSaved(selected);
+        // Revue Codex (PR #172) : le serveur reçoit la sélection **tassée**,
+        // et l'écran doit montrer la même chose. Sans cette ligne, un trou
+        // laissé au milieu survit à l'enregistrement : « Emplacement 4 »
+        // continue d'afficher une entrée que l'accueil place en deuxième
+        // position. `router.refresh()` ne le corrige pas — il ne remonte pas
+        // un composant client, donc son état local reste tel quel.
+        setSlots(
+          Array.from(
+            { length: maxHomeHighlights },
+            (_, index) => selected[index] ?? null,
+          ),
+        );
         // Revue Codex (PR #156), même raison que pour les langues : « n / 5
         // sélectionnés » vient du serveur.
         router.refresh();
