@@ -7,7 +7,7 @@ import { useState } from "react";
 import { formatAdminDate } from "@/lib/admin-dates";
 import { guideCategories, type GuideCategory } from "@/lib/guide-categories";
 import {
-  markdownRehypePlugins,
+  guideRehypePlugins,
   markdownRemarkPluginsWithBreaks,
 } from "@/lib/markdown-plugins";
 import { type LaunchLocale } from "@/lib/translations";
@@ -100,6 +100,11 @@ export function GuideEditor({
 }) {
   const t = useTranslations("admin.guide-editor");
   const editor = useTranslations("admin.editor");
+  // Revue Codex (PR #173) : les deux libellés du §3.5, pris dans les mêmes
+  // espaces que la page publique — un plugin rehype n'a pas accès aux
+  // traductions, donc ils lui sont passés déjà traduits.
+  const guides = useTranslations("guides");
+  const publicT = useTranslations("Public");
   const locale = useLocale();
   const [id, setId] = useState(initial.id);
   const [contentLocale, setContentLocale] =
@@ -254,8 +259,19 @@ export function GuideEditor({
             // notice, and the same plugins the public guide page runs — a
             // preview that renders differently from the page is not a
             // preview.
+            //
+            // Revue Codex (PR #173) : le pipeline de base ne tenait pas cette
+            // promesse depuis le Bloc 129 §3.5. La page publique passe par
+            // `guideRehypePlugins` ; l'aperçu rendait donc une citation
+            // ordinaire là où l'article publié montre l'encadré « À retenir »,
+            // le texte brut du marqueur d'illustration là où il montre une
+            // figure, et une hiérarchie de titres différente faute de
+            // renumérotation et d'ancres.
             remarkPlugins={markdownRemarkPluginsWithBreaks}
-            rehypePlugins={markdownRehypePlugins}
+            rehypePlugins={guideRehypePlugins({
+              callout: guides("detail.callout"),
+              illustration: publicT("image-placeholder"),
+            })}
           />
         </div>
 

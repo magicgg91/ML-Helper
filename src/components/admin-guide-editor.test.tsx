@@ -248,4 +248,41 @@ describe("Bloc 119: the guide editor", () => {
     const preview = document.querySelector(".w-md-editor-preview");
     expect(preview?.querySelectorAll("br")).toHaveLength(1);
   });
+
+  // Revue Codex (PR #173) : le test ci-dessus portait déjà ce nom, mais
+  // l'aperçu tournait sur le pipeline de base alors que la page publique passe
+  // par `guideRehypePlugins` depuis le Bloc 129 §3.5. Les trois blocs du §3.5
+  // sont donc vérifiés ici, dans l'aperçu, comme `guide-markdown-blocks.test`
+  // les vérifie sur la page.
+  it("renders the §3.5 guide blocks in the preview, as the public page does", () => {
+    renderEditor(
+      {},
+      draft({
+        translations: launchRecord((locale) => ({
+          title: locale === "fr" ? "Premiers pas" : "",
+          excerpt: "",
+          // Un titre écrit trop profond : le pipeline de base le laisserait
+          // en <h3> et sans ancre, celui du guide le remonte en <h2> et
+          // l'ancre. C'est ce qui distingue les deux.
+          content:
+            locale === "fr"
+              ? "### Un titre\n\n> [!retenir]\n> Le point clé.\n\n[ILLUSTRATION — la carte du monde]"
+              : "",
+        })) as GuideDraft["translations"],
+      }),
+    );
+    const preview = document.querySelector(".w-md-editor-preview")!;
+    // L'encadré « À retenir », et non une citation ordinaire.
+    expect(preview.querySelector(".guide-callout")).not.toBeNull();
+    expect(preview.textContent).toContain("À retenir");
+    // La figure, et non le texte brut du marqueur.
+    expect(preview.querySelector("figure")).not.toBeNull();
+    expect(preview.textContent).toContain("la carte du monde");
+    // La renumérotation : un corps qui ouvre trop profond est remonté en <h2>
+    // (voir `rehypeShiftHeadings`), et il porte son ancre.
+    expect(preview.querySelector("h3")).toBeNull();
+    const heading = preview.querySelector("h2");
+    expect(heading?.textContent).toBe("Un titre");
+    expect(heading?.getAttribute("id")).toBeTruthy();
+  });
 });
