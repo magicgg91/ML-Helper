@@ -612,15 +612,20 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // grille qu'elles partageaient. Ce qui reste à tenir sur mobile est la
   // rangée générale — Niveau et VP côte à côte, le sélecteur d'échelon sur sa
   // propre rangée pleine largeur.
-  it("Bloc123: on mobile, Level and VP share a row and the rung picker takes one of its own", () => {
+  //
+  // Bloc 144 §4 : la rangée est passée en flex (voir plus bas), donc ce qui la
+  // fait retourner à la ligne sur mobile n'est plus `grid-column` mais une
+  // base de 100 %. Le résultat visé n'a pas bougé d'un pixel.
+  it("Bloc144: on mobile, Level and VP share a row and the rung picker takes one of its own", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
+    expect(mediaBlock).toMatch(/\.player-general\s*{\s*\n\s*flex-wrap: wrap;/);
     expect(mediaBlock).toMatch(
-      /\.player-general\s*{\s*\n\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+      /\.player-rung-field\s*{\s*\n\s*flex: 1 1 100%;/,
     );
     expect(mediaBlock).toMatch(
-      /\.player-rung-field\s*{\s*\n\s*grid-column: 1 \/ -1;/,
+      /\.player-numbers\s*{\s*\n\s*grid-template-columns: minmax\(0, 4fr\) minmax\(0, 6fr\);/,
     );
   });
 
@@ -630,37 +635,50 @@ describe("Bloc 68: shared mobile filter/league-button grid modifiers", () => {
   // NumberSteppers end up close to the same width. Bloc 69/D: Level's own
   // share is reduced a further 10% (5fr -> 4.5fr), handed to VP (7fr ->
   // 7.5fr).
-  it("Bloc123: shrinks the VP unit select on mobile, so the field keeps its place", () => {
+  // Bloc 144 §4 : les colonnes de la rangée VP sont désormais portées par la
+  // rangée elle-même (`.player-vp-field`), le conteneur `.unit-input` s'étant
+  // effacé en `display: contents` — mais l'unité garde la même largeur réduite
+  // sur mobile, pour la même raison.
+  it("Bloc144: shrinks the VP unit select on mobile, so the field keeps its place", () => {
     const mediaBlock = css.match(
       /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
     )?.[0];
     expect(mediaBlock).toMatch(
-      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
+      /\.player-vp-field\s*{\s*\n\s*grid-template-columns: minmax\(0, 1fr\) 3\.1rem;/,
     );
     expect(mediaBlock).toMatch(
       /\.player-general \.unit-input select\s*{\s*\n\s*padding: 0 0\.3rem;/,
     );
+    // Et la réserve laissée vide sur la rangée Niveau disparaît : à cette
+    // largeur le libellé repasse au-dessus du champ, qui prend toute la place.
+    expect(mediaBlock).toMatch(
+      /\.player-unit-spacer\s*{\s*\n\s*display: none;/,
+    );
   });
 
-  // Bloc 71/D, desktop: League/Level/VP now share a single row (reversing
-  // Bloc 69/D's "League spans alone, Level/VP split 25% each below it") —
-  // a 5:2:3 column grid (50%/20%/30%), with VP's own unit-input split 2:1
-  // internally so its NumberStepper lands at 20% of the row and the unit
-  // select at 10%.
-  it("Bloc123: keeps the 5:2:3 desktop split on the general row (rung/level/VP)", () => {
+  /*
+    Bloc 144 §4 — la rangée générale, désormais en flex alignée par le bas.
+
+    Elle remplace la grille 5:2:3 du Bloc 71/D : les échelons prennent la
+    place restante, et le niveau et les VP forment à droite une colonne de
+    deux rangées. L'alignement demandé (les quatre bords au pixel) tient à
+    `flex-end` et à l'égalité des hauteurs de rangée, pas aux proportions —
+    d'où ce qui est épinglé ici. La mesure, elle, est en e2e.
+  */
+  it("Bloc144: lays the general row out in flex, bottom-aligned, with a right-hand column", () => {
     const desktopRuleIndex = css.indexOf(
-      "  grid-template-columns: 5fr 2fr 3fr;",
+      ".player-general {\n  display: flex;\n  align-items: flex-end;",
     );
-    const desktopUnitInputIndex = css.indexOf(
-      ".player-general .unit-input {\n  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);\n}",
+    const numbersIndex = css.indexOf(
+      ".player-numbers {\n  flex: 0 1 23.75rem;\n  display: grid;\n  gap: var(--player-row-gap);\n}",
     );
     const mediaQueryIndex = css.indexOf("@media (max-width: 900px) {");
     expect(desktopRuleIndex).toBeGreaterThan(-1);
-    expect(desktopUnitInputIndex).toBeGreaterThan(-1);
+    expect(numbersIndex).toBeGreaterThan(-1);
     // Both rules must sit before the mobile media query, i.e. apply
     // unconditionally (desktop included), not just under it.
     expect(desktopRuleIndex).toBeLessThan(mediaQueryIndex);
-    expect(desktopUnitInputIndex).toBeLessThan(mediaQueryIndex);
+    expect(numbersIndex).toBeLessThan(mediaQueryIndex);
     // Et la grille des anciennes sections repliables n'est plus nulle part.
     expect(css).not.toMatch(/\.settings-grid/);
   });
@@ -904,14 +922,47 @@ describe("Bloc 71/C: league button text is never bold", () => {
 // Bloc 71/D: League/Level/VP now share one row on desktop, replacing Bloc
 // 68's "25% each for Level/VP" (which didn't put League on that row at
 // all) — a 50/20/20/10 split (League/Level/VP-number/VP-unit).
-describe("Bloc 71/D: Player Settings League/Level/VP share one row (50/20/20/10)", () => {
-  it("splits the desktop row 5:2:3 (rung 50%, Level 20%, VP-as-a-whole 30%)", () => {
-    expect(css).toMatch(/grid-template-columns: 5fr 2fr 3fr;/);
+//
+// Bloc 144 §4 remplace ce partage par une colonne de droite de largeur fixe,
+// dont les deux rangées font la hauteur et l'écart des rangées de boutons :
+// c'est cette égalité-là qui aligne, et c'est elle qui est épinglée.
+describe("Bloc 144 §4: Player Settings League/Level/VP share one row, edge to edge", () => {
+  it("gives the row's height and gap a name, so the two sides cannot drift apart", () => {
+    expect(css).toMatch(/--player-row-h: 2\.25rem;/);
+    expect(css).toMatch(/--player-row-gap: 0\.375rem;/);
+    // Les deux rangées de boutons et les deux rangées de champs lisent le
+    // MÊME écart : une valeur écrite deux fois pourrait diverger.
+    for (const rule of [
+      /\.player-rung-field\s*{[\s\S]*?gap: var\(--player-row-gap\);/,
+      /\.player-rung-field \.player-rung-buttons\s*{[\s\S]*?gap: var\(--player-row-gap\);/,
+      /\.player-numbers\s*{[\s\S]*?gap: var\(--player-row-gap\);/,
+    ])
+      expect(css).toMatch(rule);
   });
 
-  it("splits VP's own unit-input 2:1, landing its NumberStepper at 20% of the row and the unit select at 10%", () => {
+  it("gives a rung button and a Niveau/VP field the same 36px height", () => {
     expect(css).toMatch(
-      /\.player-general \.unit-input\s*{\s*\n\s*grid-template-columns: minmax\(0, 2fr\) minmax\(0, 1fr\);/,
+      /\.player-rung-field \.player-rung-buttons button\s*{[\s\S]*?height: var\(--player-row-h\);/,
+    );
+    expect(css).toMatch(
+      /\.player-general select,\s*\n\s*\.player-general \.num-stepper input,\s*\n\s*\.player-general \.num-stepper button\s*{\s*\n\s*min-height: var\(--player-row-h\);/,
+    );
+    // Les boutons − / + font 36 px de large, comme demandé au §4.
+    expect(css).toMatch(
+      /\.player-general \.num-stepper button\s*{\s*\n\s*flex: 0 0 var\(--player-row-h\);/,
+    );
+  });
+
+  it("reserves the unit select's width on the Niveau row, so both steppers match", () => {
+    expect(css).toMatch(/--player-unit-w: 4\.5rem;/);
+    expect(css).toMatch(
+      /\.player-numbers label\s*{\s*\n\s*grid-template-columns:\s*\n\s*var\(--player-field-name-w\)\s*\n\s*minmax\(0, 1fr\)\s*\n\s*var\(--player-unit-w\);/,
+    );
+    // Le conteneur du champ VP s'efface : son stepper et son sélecteur
+    // deviennent les 2e et 3e colonnes de la rangée, aux mêmes largeurs que
+    // celles de la rangée Niveau.
+    expect(css).toMatch(
+      /\.player-general \.unit-input\s*{\s*\n\s*display: contents;/,
     );
   });
 
@@ -1592,5 +1643,131 @@ describe("Bloc 139: matrix field proportions, and the band's column width", () =
     expect(banner).toMatch(/margin: 1\.5rem auto 0;/);
     expect(banner).toMatch(/padding: 0\.625rem;/);
     expect(banner).not.toMatch(/(^|\n)\s*(height|min-height|max-height):/);
+  });
+});
+
+/**
+ * Bloc 144 — l'interrupteur « Temples », sa pastille, les « = X% » barrés, le
+ * bouton-icône de remise à zéro et le libellé « Templiers » recentré.
+ *
+ * Ce qui est épinglé ici, ce sont les propriétés qu'une retouche pourrait
+ * casser sans que rien d'autre ne bronche : l'absence de couleur en dur, la
+ * course de la pastille déduite du rail (et non recopiée), et le fait que la
+ * variante compacte du mobile ne redonne QUE des dimensions.
+ */
+describe("Bloc 144: the Temples switch, its pill and the reset button", () => {
+  /** Le corps d'une règle, par son sélecteur exact. */
+  const ruleOf = (selector: string) =>
+    css.match(
+      new RegExp(
+        `${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*{([\\s\\S]*?)\\n}`,
+      ),
+    )?.[1];
+
+  it("n'écrit aucune couleur en dur : tout passe par un jeton", () => {
+    const selectors = [
+      ".player-switch",
+      ".player-switch-knob",
+      ".player-switch-check",
+      ".player-switch-text",
+      ".player-switch-text-on",
+      ".player-temples-off-pill",
+      ".player-matrix-percent-ignored",
+      ".player-points-reset",
+      ".player-points-allocated",
+    ];
+    for (const selector of selectors) {
+      const rule = ruleOf(selector);
+      expect(rule, selector).toBeDefined();
+      // Les ombres restent en rgb() neutre, l'idiome déjà en place sur ce
+      // fichier (.player-settings) ; ce qui est interdit, c'est l'hex.
+      expect(rule, selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    }
+  });
+
+  it("allume le rail en accent, l'éteint en muted, et pose la pastille sur --on-accent", () => {
+    expect(ruleOf(".player-switch")).toMatch(/background: var\(--muted\);/);
+    expect(css).toMatch(
+      /\.player-switch\[aria-checked="true"\]\s*{\s*\n\s*background: var\(--accent\);/,
+    );
+    expect(ruleOf(".player-switch-knob")).toMatch(
+      /background: var\(--on-accent\);/,
+    );
+    expect(ruleOf(".player-switch-check")).toMatch(/color: var\(--accent\);/);
+    expect(ruleOf(".player-switch-text")).toMatch(/color: var\(--muted\);/);
+    expect(ruleOf(".player-switch-text-on")).toMatch(/color: var\(--accent\);/);
+  });
+
+  it("déduit la course de la pastille des dimensions du rail, au lieu de la recopier", () => {
+    expect(css).toMatch(
+      /\.player-switch\[aria-checked="true"\] \.player-switch-knob\s*{\s*\n\s*transform: translateX\(\s*\n\s*calc\(var\(--switch-w\) - var\(--switch-knob\) - 2 \* var\(--switch-pad\)\)\s*\n\s*\);/,
+    );
+    // 38 × 22, pastille de 18 — les mesures de la maquette.
+    const rail = ruleOf(".player-switch");
+    expect(rail).toMatch(/--switch-w: 2\.375rem;/);
+    expect(rail).toMatch(/--switch-h: 1\.375rem;/);
+    expect(rail).toMatch(/--switch-knob: 1\.125rem;/);
+  });
+
+  it("rapetisse l'interrupteur du mobile en ne redonnant que ses dimensions", () => {
+    const mediaBlock = css.match(
+      /@media \(max-width: 900px\) {([\s\S]*?)\n}\n(?!@media)/,
+    )?.[0];
+    const compact = mediaBlock?.match(
+      /\.player-matrix-mobile \.player-switch\s*{([\s\S]*?)\n  }/,
+    )?.[1];
+    expect(compact).toBeDefined();
+    // Ni couleur, ni transform : une variante de taille, et rien d'autre.
+    expect(compact).not.toMatch(/background|color|transform/);
+    expect(compact).toMatch(/--switch-w:/);
+    expect(compact).toMatch(/--switch-knob:/);
+  });
+
+  it("garde une cible de 24 px et coupe l'animation quand elle est refusée", () => {
+    expect(ruleOf(".player-switch-field")).toMatch(/min-height: 1\.5rem;/);
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) {\s*\n\s*\.player-switch,\s*\n\s*\.player-switch-knob\s*{\s*\n\s*transition: none;/,
+    );
+  });
+
+  it("donne à la pastille « Temples exclus » la forme de sa voisine et la couleur d'un état éteint", () => {
+    const pill = ruleOf(".player-temples-off-pill");
+    expect(pill).toMatch(/background: var\(--state-off-bg\);/);
+    expect(pill).toMatch(/color: var\(--state-off-ink\);/);
+    // Même rayon et même graisse que la pastille de ligue : c'est la couleur
+    // qui les distingue, pas la forme.
+    expect(pill).toMatch(/border-radius: 999px;/);
+    expect(pill).toMatch(/font-weight: 700;/);
+  });
+
+  it("barre le « = X% » non compté, sans l'effacer", () => {
+    const ignored = ruleOf(".player-matrix-percent-ignored");
+    expect(ignored).toMatch(/text-decoration: line-through;/);
+    expect(ignored).toMatch(/color: var\(--muted\);/);
+    expect(ignored).not.toMatch(/display: none|visibility: hidden|opacity: 0/);
+  });
+
+  it("fait de la remise à zéro un rond de 26 px, éteint quand il n'y a rien à remettre", () => {
+    const reset = ruleOf(".player-points-reset");
+    expect(reset).toMatch(/width: 1\.625rem;/);
+    expect(reset).toMatch(/height: 1\.625rem;/);
+    expect(reset).toMatch(/border-radius: 999px;/);
+    expect(reset).toMatch(/background: var\(--accent-soft\);/);
+    expect(reset).toMatch(/border: 1px solid var\(--accent-border\);/);
+    expect(reset).toMatch(/color: var\(--accent\);/);
+    expect(ruleOf(".player-points-reset:disabled")).toMatch(
+      /cursor: not-allowed;/,
+    );
+    // Il ne partage plus l'habillage des boutons − / + du stepper.
+    expect(css).not.toMatch(
+      /\.number-stepper button,\s*\n\.player-points-reset\s*{/,
+    );
+  });
+
+  it("centre « Templiers » sur la hauteur d'un champ, par alignement bas", () => {
+    expect(ruleOf(".player-templars")).toMatch(/align-items: end;/);
+    const head = ruleOf(".player-templars-head");
+    expect(head).toMatch(/align-items: center;/);
+    expect(head).toMatch(/min-height: var\(--player-field-h\);/);
   });
 });

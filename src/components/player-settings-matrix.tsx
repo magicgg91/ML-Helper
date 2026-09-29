@@ -41,13 +41,32 @@ export type MatrixCell = {
   onChange: (value: number) => void;
   /** Le « = X% » sous le champ, déjà formaté. Absent sur la ligne Équipement. */
   percent?: string;
+  /**
+   * Bloc 144 : le « = X% » est affiché mais ne compte pas — il sort barré et
+   * en couleur discrète. C'est le cas de la ligne Temples quand le joueur a
+   * éteint l'interrupteur : la valeur reste lisible (c'est ce qu'il a saisi,
+   * et ce qu'il retrouvera en le rallumant), seul son statut change.
+   */
+  percentIgnored?: boolean;
 };
 
 export type MatrixRow = {
   key: "equipment" | "points" | "temple";
   title: string;
-  /** Ce qui accompagne le titre dans l'en-tête de ligne (budget, aide…). */
+  /**
+   * Ce qui accompagne le titre dans l'en-tête de ligne (budget, aide…).
+   * Desktop seulement : le mobile transpose la matrice et n'a plus
+   * d'en-tête de ligne où le poser — c'est au panneau de le replacer.
+   */
   note?: ReactNode;
+  /**
+   * Bloc 144 : une commande qui appartient à la ligne, rendue sous son titre
+   * dans les DEUX présentations — en-tête de ligne sur desktop, en-tête de
+   * colonne sur mobile. C'est ce qui distingue `control` de `note` ci-dessus :
+   * l'interrupteur des temples doit suivre sa ligne partout où elle est
+   * rendue, sans quoi le mobile perdrait le seul moyen de la rallumer.
+   */
+  control?: ReactNode;
   /** Une entrée par colonne, dans l'ordre des colonnes. */
   cells: (MatrixCell | null)[];
 };
@@ -59,6 +78,18 @@ type MatrixProps = {
   caption: string;
   totalLabel: string;
 };
+
+/**
+ * Les classes du « = X% » d'une case : la couleur de sa ligne, ou le
+ * traitement « non compté » qui la remplace. Une seule fonction pour les deux
+ * présentations, sans quoi le desktop et le mobile pourraient barrer l'un sans
+ * l'autre.
+ */
+function percentClass(rowKey: MatrixRow["key"], cell: MatrixCell): string {
+  return cell.percentIgnored
+    ? "player-matrix-percent player-matrix-percent-ignored"
+    : `player-matrix-percent tone-${rowKey}`;
+}
 
 /** La case d'une ligne qui ne concerne pas cette compétence. */
 function NotApplicable() {
@@ -133,6 +164,7 @@ export function PlayerSettingsMatrix({
             <th scope="row">
               <span className="player-matrix-row-title">{row.title}</span>
               {row.note}
+              {row.control}
             </th>
             {row.cells.map((cell, index) => (
               <td key={columns[index].key}>
@@ -141,7 +173,7 @@ export function PlayerSettingsMatrix({
                     <MatrixField buttons cell={cell} />
                     {cell.percent !== undefined && (
                       <output
-                        className={`player-matrix-percent tone-${row.key}`}
+                        className={percentClass(row.key, cell)}
                         data-percent={`${row.key}-${columns[index].key}`}
                       >
                         = {cell.percent}%
@@ -187,6 +219,7 @@ export function PlayerSettingsMatrixMobile({
           {rows.map((row) => (
             <th className={`tone-${row.key}`} key={row.key} scope="col">
               {row.title}
+              {row.control}
             </th>
           ))}
         </tr>
@@ -221,7 +254,7 @@ export function PlayerSettingsMatrixMobile({
                       <MatrixField buttons={false} cell={cell} />
                       {cell.percent !== undefined && (
                         <output
-                          className={`player-matrix-percent tone-${row.key}`}
+                          className={percentClass(row.key, cell)}
                           data-percent={`${row.key}-${column.key}`}
                         >
                           = {cell.percent}%

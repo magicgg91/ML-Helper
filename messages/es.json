@@ -155,7 +155,9 @@
     "rung": "Liga o división",
     "league-undefined": "Liga no definida",
     "player-level": "Nivel del jugador",
+    "player-level-short": "Nivel",
     "player-vp": "VP del jugador",
+    "player-vp-short": "VP",
     "vp-unit": "Unidad de VP",
     "equipment-skills": {
       "title": "Equipo",
@@ -163,9 +165,9 @@
     },
     "skill-points": {
       "title": "Puntos",
-      "budget": "{allocated} / {available}",
+      "budget": "<strong>{allocated}</strong> / {available}",
       "budget-label": "{allocated} puntos asignados de {available} disponibles",
-      "reset": "Restablecer",
+      "reset": "Restablecer los puntos",
       "field": "Puntos de {skill}"
     },
     "templars": {
@@ -173,8 +175,12 @@
       "field": "{templar} templarios"
     },
     "clan-temple": {
-      "title": "Templo (clan)",
-      "field": "Templo de {templar}"
+      "title": "Templos",
+      "field": "Templo de {templar}",
+      "switch": "Incluir los templos en los cálculos",
+      "included": "Incluidos",
+      "excluded": "Excluidos",
+      "excluded-pill": "Templos excluidos"
     },
     "matrix": {
       "caption": "Habilidades por fuente: equipo, puntos y templo",

@@ -164,6 +164,19 @@ export type PlayerSettings = {
   skillPoints: NumberMap<SkillKey>;
   templars: NumberMap<TemplarKey>;
   clanTemple: NumberMap<TemplarKey>;
+  /**
+   * Bloc 144 : le joueur compte-t-il ses temples dans les calculs ?
+   *
+   * Un seul drapeau, rangé avec les autres paramètres du joueur, donc partagé
+   * par tous les outils qui lisent le bandeau : l'éteindre dans la Production
+   * l'éteint dans le Coût de ville. Vrai par défaut — c'est l'état que le site
+   * a toujours eu, et une sauvegarde d'avant ce bloc n'en porte rien.
+   *
+   * Il ne touche pas aux valeurs saisies : `clanTemple` garde ce que le joueur
+   * a tapé pendant que les temples étaient exclus, et le réactiver le lui rend
+   * tel quel.
+   */
+  includeTemples: boolean;
 };
 
 export const defaultPlayerSettings = (): PlayerSettings => ({
@@ -176,6 +189,7 @@ export const defaultPlayerSettings = (): PlayerSettings => ({
   skillPoints: emptySkills(),
   templars: emptyTemplars(),
   clanTemple: emptyTemplars(),
+  includeTemples: true,
 });
 
 export function availableSkillPoints(
@@ -296,14 +310,29 @@ export function combinedSkillPercent(
   return cap === undefined ? total : Math.min(total, cap);
 }
 
-// The clan-temple field only holds the clan's Templar contribution;
-// the confirmed per-skill temple base (cdc section 7.1) is added
-// automatically to get the actual temple bonus for that skill.
+/**
+ * La contribution de temple d'une compétence, telle que les calculs doivent la
+ * compter.
+ *
+ * Le champ « Temples » ne porte que la contribution du clan ; la base de temple
+ * confirmée par compétence (cdc section 7.1) s'y ajoute automatiquement.
+ *
+ * Bloc 144 : et c'est ICI, en un seul endroit, que l'interrupteur « Temples »
+ * s'applique — zéro quand le joueur les exclut. La fonction prend donc les
+ * paramètres plutôt que la seule carte `clanTemple` : changer sa signature a
+ * fait remonter au compilateur chacun de ses appelants, ce qu'une lecture du
+ * drapeau ajoutée outil par outil n'aurait pas garanti.
+ *
+ * Pour afficher ce que vaudraient les temples s'ils comptaient — le « = X% »
+ * barré du bandeau — on l'appelle avec `includeTemples: true` explicite plutôt
+ * que d'entretenir une seconde formule à côté.
+ */
 export function templePercent(
   key: TemplarKey,
-  clanTemple: NumberMap<TemplarKey>,
+  settings: Pick<PlayerSettings, "clanTemple" | "includeTemples">,
 ): number {
-  return templeBase[key] + clanTemple[key];
+  if (!settings.includeTemples) return 0;
+  return templeBase[key] + settings.clanTemple[key];
 }
 
 export type TempleSkillBreakdown = {
@@ -320,12 +349,16 @@ export function templeSkillBreakdown(
   key: TemplarKey,
   settings: Pick<
     PlayerSettings,
-    "equipmentSkills" | "skillPoints" | "clanTemple" | "league"
+    | "equipmentSkills"
+    | "skillPoints"
+    | "clanTemple"
+    | "league"
+    | "includeTemples"
   >,
 ): TempleSkillBreakdown {
   const equipment = settings.equipmentSkills[key];
   const points = skillPercent(key, settings.skillPoints, settings.league);
-  const temple = templePercent(key, settings.clanTemple);
+  const temple = templePercent(key, settings);
   const rawTotal = equipment + points + temple;
   const cap = skillCapForLeague(key, settings.league);
   return {
