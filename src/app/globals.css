@@ -233,6 +233,13 @@
   /* Bloc 114/A.1: the "coming soon" chip. */
   --soon-bg: #4a3c22;
   --soon-ink: #f3e0b4;
+  /* Bloc 144 : la pastille d'un réglage éteint — « Temples exclus ». Un
+     signal d'état non bloquant, exactement la famille ambre que le site
+     public réserve déjà à ce registre, d'où l'alias plutôt qu'un hex de
+     plus : les deux pastilles ne peuvent pas diverger. Un nom à elle parce
+     que « soon » nomme une promesse, pas un état. */
+  --state-off-bg: var(--soon-bg);
+  --state-off-ink: var(--soon-ink);
   color-scheme: dark;
 }
 
@@ -357,6 +364,8 @@
   --xp-range-ink: #1f2230;
   --soon-bg: #f3e6c8;
   --soon-ink: #6b4a0f;
+  --state-off-bg: var(--soon-bg);
+  --state-off-ink: var(--soon-ink);
   color-scheme: light;
 }
 :root[data-theme="light"] body {
@@ -1064,6 +1073,17 @@ select:where(:not(.admin-shell select)) {
      écran. Un jeton plutôt que la même valeur écrite à deux endroits : c'est
      l'égalité qui est la propriété voulue, pas le chiffre. */
   --player-field-h: 2rem;
+  /* Bloc 144 §4 : la rangée des paramètres généraux. Une hauteur et un
+     écart, lus par les boutons de ligue, les deux steppers et le sélecteur
+     d'unité — c'est leur ÉGALITÉ qui aligne au pixel les deux rangées de
+     ligues sur les deux champs, pas les chiffres pris un à un. */
+  --player-row-h: 2.25rem;
+  --player-row-gap: 0.375rem;
+  /* La largeur du sélecteur d'unité des VP, réservée vide sur la rangée
+     Niveau pour que les deux steppers fassent exactement la même largeur. */
+  --player-unit-w: 4.5rem;
+  /* La colonne des libellés « Niveau » / « VP », posés devant leur champ. */
+  --player-field-name-w: 3.25rem;
   width: min(74rem, calc(100% - 2rem));
   margin: 1rem auto 0;
   border: 1px solid var(--border);
@@ -1109,6 +1129,17 @@ select:where(:not(.admin-shell select)) {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+/* Bloc 144 : la pastille d'un réglage éteint, juste avant celle de la ligue.
+   Même forme que sa voisine — c'est la couleur qui les distingue. */
+.player-temples-off-pill {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--state-off-bg);
+  color: var(--state-off-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 .player-league-pill {
   padding: 0.15rem 0.6rem;
@@ -1215,8 +1246,7 @@ select:where(:not(.admin-shell select)) {
 .number-stepper input::-webkit-outer-spin-button {
   appearance: none;
 }
-.number-stepper button,
-.player-points-reset {
+.number-stepper button {
   border: 1px solid var(--border);
   background: var(--surface-muted);
   color: var(--foreground);
@@ -1236,11 +1266,18 @@ select:where(:not(.admin-shell select)) {
   gap: 0.45rem;
 }
 
-/* Bloc 123 §2.1 : l'échelon, le niveau et les VP sur une seule ligne. Le
-   sélecteur prend la moitié de la rangée, comme la ligue seule avant lui. */
+/* Bloc 123 §2.1 : l'échelon, le niveau et les VP sur une seule ligne.
+
+   Bloc 144 §4 : en flex plutôt qu'en grille, et alignés par le bas. Les
+   échelons occupent la place restante ; le niveau et les VP forment à droite
+   une colonne de deux rangées de la même hauteur et du même écart que les
+   deux rangées de boutons. Aligner par le BAS est ce qui fait tomber les
+   quatre bords au pixel : la colonne de gauche porte en plus son libellé
+   au-dessus, donc elle est plus haute, et c'est son dernier bouton qui doit
+   finir à la hauteur du champ VP. */
 .player-general {
-  display: grid;
-  grid-template-columns: 5fr 2fr 3fr;
+  display: flex;
+  align-items: flex-end;
   gap: 0.8rem;
   padding: 1rem 0;
   border-top: 1px solid var(--border);
@@ -1259,12 +1296,43 @@ select:where(:not(.admin-shell select)) {
   font-weight: 700;
 }
 .player-rung-field {
+  flex: 1;
   display: grid;
   align-content: start;
-  gap: 0.4rem;
+  /* §4 : 6 px entre le libellé et la grille, et rien de plus. */
+  gap: var(--player-row-gap);
 }
-.player-rung-buttons {
-  margin: 0;
+/* La colonne de droite. Elle peut rétrécir (`0 1`) plutôt que d'écraser les
+   boutons de ligue sur un écran juste au-dessus du seuil mobile. */
+.player-numbers {
+  flex: 0 1 23.75rem;
+  display: grid;
+  gap: var(--player-row-gap);
+}
+.player-numbers label {
+  grid-template-columns:
+    var(--player-field-name-w)
+    minmax(0, 1fr)
+    var(--player-unit-w);
+  align-items: center;
+  gap: 0.45rem;
+  height: var(--player-row-h);
+}
+.player-field-name {
+  white-space: nowrap;
+}
+/* La rangée Niveau n'a pas d'unité à choisir : sa troisième colonne reste
+   vide, et les deux steppers gardent la même largeur. */
+.player-unit-spacer {
+  display: block;
+}
+.player-general select,
+.player-general .num-stepper input,
+.player-general .num-stepper button {
+  min-height: var(--player-row-h);
+}
+.player-general .num-stepper button {
+  flex: 0 0 var(--player-row-h);
 }
 /* Bloc 139/A : deux rangées, et des colonnes égales.
 
@@ -1280,9 +1348,25 @@ select:where(:not(.admin-shell select)) {
 .player-rung-field .player-rung-buttons {
   display: grid;
   grid-template-columns: repeat(var(--rung-columns, 5), minmax(0, 1fr));
-  gap: 0.35rem;
+  gap: var(--player-row-gap);
+  /* Bloc 144 §4 : la marge et la réserve de défilement de `.family-buttons`
+     (1rem verticale, 0,2rem sous la grille) sont remises à zéro ICI et non
+     sur `.player-rung-buttons` seule, qui les perdait : à égalité de
+     spécificité c'est la dernière déclaration qui gagne, et `.family-buttons`
+     est écrite plus bas dans ce fichier. Mesuré au navigateur : 19 px de
+     décalage entre la première rangée de boutons et le champ Niveau, soit
+     exactement ces 16 + 3,2 px. La grille ne défile pas sur elle-même
+     (Bloc 139/A), donc la réserve n'a plus d'objet. */
+  margin: 0;
+  padding-bottom: 0;
 }
 .player-rung-field .player-rung-buttons button {
+  /* Bloc 144 §4 : 36 px de haut, la hauteur d'une rangée des paramètres
+     généraux — c'est elle qui aligne les deux rangées de boutons sur les
+     champs Niveau et VP à leur droite. */
+  height: var(--player-row-h);
+  min-height: var(--player-row-h);
+  padding: 0 0.35rem;
   min-width: 0;
   white-space: normal;
   /* Revue Codex (PR #165) : `white-space: normal` ne coupe qu'aux espaces, et
@@ -1294,8 +1378,10 @@ select:where(:not(.admin-shell select)) {
      `.player-matrix-mobile-name` plus bas dans ce fichier. */
   overflow-wrap: anywhere;
 }
+/* Bloc 144 §4 : le stepper et le sélecteur occupent les deux dernières
+   colonnes de la rangée VP, aux mêmes largeurs que la rangée Niveau. */
 .player-general .unit-input {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  display: contents;
 }
 
 /* Bloc 123 §2.2 : les templiers, au-dessus du tableau et hors des stats. La
@@ -1304,14 +1390,21 @@ select:where(:not(.admin-shell select)) {
 .player-templars {
   display: grid;
   grid-template-columns: var(--player-matrix-head) minmax(0, 1fr);
-  align-items: start;
+  /* Bloc 144 §2 : le libellé « Templiers » centré sur la hauteur des champs,
+     pas sur celle de la colonne entière — celle-ci porte en plus le nom de
+     chaque templier au-dessus de son champ. Aligner par le BAS y suffit : la
+     tête fait exactement la hauteur d'un champ, donc son bas contre le bas
+     des champs la centre dessus, et ce sans écrire nulle part la hauteur du
+     nom qui les surmonte. */
+  align-items: end;
   gap: 0.8rem;
   padding: 1rem 0 0;
   border-top: 1px solid var(--border);
 }
 .player-templars-head {
-  display: grid;
-  gap: 0.15rem;
+  display: flex;
+  align-items: center;
+  min-height: var(--player-field-h);
 }
 .player-templars-fields {
   display: grid;
@@ -1380,6 +1473,85 @@ select:where(:not(.admin-shell select)) {
   font-weight: 500;
   line-height: 1.4;
 }
+/* Bloc 144 §1 — l'interrupteur « Temples ».
+
+   Le rail porte ses dimensions en variables : la course de la pastille s'en
+   déduit (largeur − pastille − deux fois la marge), si bien que la variante
+   compacte du mobile plus bas n'a que trois nombres à redonner, et jamais un
+   `translateX` à recalculer à la main.
+
+   Les couleurs sont celles du site : `--accent` allumé, `--muted` éteint, et
+   la pastille sur `--on-accent` — l'encre que la palette destine à ce qui se
+   pose sur l'accent. Elle est blanche en thème clair, celle de la maquette,
+   et sombre en thème sombre, où une pastille blanche sur un violet clair
+   tomberait à 1,5:1 (mesuré) au lieu des 3:1 que demande la WCAG 1.4.11 pour
+   un élément d'interface. */
+.player-switch-field {
+  display: inline-flex;
+  align-items: center;
+  /* 24 px : la cible minimale de la WCAG 2.2 (2.5.8). Le rail en fait 22 ;
+     c'est le label qui est cliquable, et c'est lui qu'on mesure. */
+  min-height: 1.5rem;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+}
+.player-switch {
+  --switch-w: 2.375rem;
+  --switch-h: 1.375rem;
+  --switch-knob: 1.125rem;
+  --switch-pad: 0.125rem;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  width: var(--switch-w);
+  height: var(--switch-h);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--muted);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 25%);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.player-switch[aria-checked="true"] {
+  background: var(--accent);
+}
+.player-switch-knob {
+  display: grid;
+  place-items: center;
+  width: var(--switch-knob);
+  height: var(--switch-knob);
+  margin-left: var(--switch-pad);
+  border-radius: 999px;
+  background: var(--on-accent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  transition: transform 0.2s ease;
+}
+.player-switch[aria-checked="true"] .player-switch-knob {
+  transform: translateX(
+    calc(var(--switch-w) - var(--switch-knob) - 2 * var(--switch-pad))
+  );
+}
+.player-switch-check {
+  width: 0.625rem;
+  height: 0.625rem;
+  color: var(--accent);
+}
+.player-switch-text {
+  color: var(--muted);
+  font-size: 0.78125rem;
+  font-weight: 600;
+}
+.player-switch-text-on {
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-switch,
+  .player-switch-knob {
+    transition: none;
+  }
+}
 .player-matrix td {
   padding: 0.25rem 0.15rem;
   vertical-align: top;
@@ -1427,6 +1599,13 @@ select:where(:not(.admin-shell select)) {
   font-size: 0.7rem;
   text-align: right;
 }
+/* Bloc 144 : un « = X% » affiché mais non compté. La valeur reste lisible —
+   c'est la saisie du joueur, qu'il retrouvera en rallumant l'interrupteur —
+   et c'est son statut qui change. */
+.player-matrix-percent-ignored {
+  color: var(--muted);
+  text-decoration: line-through;
+}
 .player-matrix-empty {
   display: block;
   padding: 0.35rem 0;
@@ -1435,13 +1614,41 @@ select:where(:not(.admin-shell select)) {
   color: var(--text-dim);
   text-align: center;
 }
+/* Bloc 144 §3 : le compteur « alloués / disponibles », en mono 12 px, dont
+   seul le nombre alloué ressort. */
 .player-points-budget {
   font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
 }
+.player-points-allocated {
+  color: var(--accent);
+  font-weight: 700;
+}
+/* Bloc 144 §3 : la remise à zéro devient un bouton-icône rond de 26 px, collé
+   au compteur. Le mot qu'il portait vit désormais dans son `aria-label` et son
+   infobulle — l'icône seule ne dirait rien à qui ne voit pas. */
 .player-points-reset {
-  padding: 0.2rem 0.45rem;
-  border-radius: 0.45rem;
-  font-size: 0.72rem;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+}
+.player-points-reset:disabled {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+.player-points-reset-icon {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 /* La ligne Total, séparée du reste par un filet : c'est le même chiffre que
    les étiquettes du panneau replié, à la même place à l'écran. */
@@ -1552,24 +1759,50 @@ select:where(:not(.admin-shell select)) {
     align-items: flex-start;
     gap: 0.35rem;
   }
-  /* Niveau et VP se partagent une rangée, le sélecteur prend la sienne. */
+  /* Niveau et VP se partagent une rangée, les échelons prennent la leur.
+     Bloc 144 §4 : la rangée est passée en flex sur desktop ; ici elle
+     retourne à la ligne, et les deux libellés repassent au-dessus de leur
+     champ — 52 px de libellé devant un stepper ne tiennent pas dans 390. */
   .player-general {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-wrap: wrap;
   }
   .player-rung-field {
-    grid-column: 1 / -1;
+    flex: 1 1 100%;
   }
   .player-rung-field .player-rung-buttons {
     gap: 0.3rem;
   }
   .player-rung-field .player-rung-buttons button {
     height: 2.375rem;
+    min-height: 2.375rem;
     padding: 0 0.2rem;
     font-size: 0.75rem;
   }
+  .player-numbers {
+    flex: 1 1 100%;
+    align-items: end;
+    gap: 0.8rem;
+  }
+  .player-numbers label {
+    height: auto;
+    gap: 0.4rem 0.45rem;
+  }
+  .player-field-name {
+    grid-column: 1 / -1;
+  }
+  /* Deux classes, pour battre `.player-numbers label` déclarée plus haut :
+     à 0-1-1 elle l'emporterait sur un sélecteur de classe seule, et le champ
+     retomberait dans la colonne de 52 px du libellé — mesuré au navigateur,
+     il n'en restait que les boutons − / +. */
+  .player-numbers .player-level-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
   /* Le sélecteur d'unité des VP, rétréci pour que le champ garde sa place. */
-  .player-general .unit-input {
+  .player-numbers .player-vp-field {
     grid-template-columns: minmax(0, 1fr) 3.1rem;
+  }
+  .player-unit-spacer {
+    display: none;
   }
   .player-general .unit-input select {
     padding: 0 0.3rem;
@@ -1585,13 +1818,15 @@ select:where(:not(.admin-shell select)) {
      Les boutons gardent leurs 44 px de haut (la cible tactile que le site se
      donne depuis le Bloc 132 §3) ; 32 px de large reste au-dessus du minimum
      de 24 px de la WCAG 2.2 (2.5.8, AA). */
-  .player-general {
+  .player-numbers {
     grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
   }
   .player-general .num-stepper button {
     flex: 0 0 2rem;
   }
-  /* Zones tactiles : 44 px de haut sur les deux champs de la rangée. */
+  /* Zones tactiles : 44 px de haut sur les deux champs de la rangée, et sur
+     le sélecteur d'unité qui partage la rangée des VP. */
+  .player-general select,
   .player-general .num-stepper input,
   .player-general .num-stepper button {
     min-height: var(--tap-target);
@@ -1609,6 +1844,24 @@ select:where(:not(.admin-shell select)) {
   .player-templar-short {
     display: block;
     text-align: center;
+  }
+  /* Bloc 144 §1 : le même interrupteur, sous l'en-tête de colonne « Temples »
+     de la matrice transposée. Trois nombres suffisent à le rapetisser — la
+     course de la pastille se recalcule toute seule. Le mot passe sous le rail
+     plutôt que de pousser la colonne : elle fait 76 px à 390. */
+  .player-matrix-mobile .player-switch-field {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem 0.35rem;
+    margin-top: 0.2rem;
+  }
+  .player-matrix-mobile .player-switch {
+    --switch-w: 2rem;
+    --switch-h: 1.125rem;
+    --switch-knob: 0.875rem;
+  }
+  .player-matrix-mobile .player-switch-text {
+    font-size: 0.6875rem;
   }
 }
 .city-calculators {

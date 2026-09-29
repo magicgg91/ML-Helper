@@ -155,7 +155,9 @@
     "rung": "Ligue ou division",
     "league-undefined": "Ligue non définie",
     "player-level": "Niveau du joueur",
+    "player-level-short": "Niveau",
     "player-vp": "VP du joueur",
+    "player-vp-short": "VP",
     "vp-unit": "Unité des VP",
     "equipment-skills": {
       "title": "Équipement",
@@ -163,9 +165,9 @@
     },
     "skill-points": {
       "title": "Points",
-      "budget": "{allocated} / {available}",
+      "budget": "<strong>{allocated}</strong> / {available}",
       "budget-label": "{allocated} points alloués sur {available} disponibles",
-      "reset": "Réinitialiser",
+      "reset": "Réinitialiser les points",
       "field": "Points {skill}"
     },
     "templars": {
@@ -173,8 +175,12 @@
       "field": "Templiers {templar}"
     },
     "clan-temple": {
-      "title": "Temple (clan)",
-      "field": "Temple {templar}"
+      "title": "Temples",
+      "field": "Temple {templar}",
+      "switch": "Inclure les temples dans les calculs",
+      "included": "Inclus",
+      "excluded": "Exclus",
+      "excluded-pill": "Temples exclus"
     },
     "matrix": {
       "caption": "Compétences par source : équipement, points et temple",

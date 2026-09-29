@@ -155,7 +155,9 @@
     "rung": "Lig veya bölüm",
     "league-undefined": "Lig belirlenmedi",
     "player-level": "Oyuncu seviyesi",
+    "player-level-short": "Seviye",
     "player-vp": "Oyuncu VP'si",
+    "player-vp-short": "VP",
     "vp-unit": "VP birimi",
     "equipment-skills": {
       "title": "Ekipman",
@@ -163,9 +165,9 @@
     },
     "skill-points": {
       "title": "Puanlar",
-      "budget": "{allocated} / {available}",
+      "budget": "<strong>{allocated}</strong> / {available}",
       "budget-label": "{available} puandan {allocated} tanesi dağıtıldı",
-      "reset": "Sıfırla",
+      "reset": "Puanları sıfırla",
       "field": "{skill} puanları"
     },
     "templars": {
@@ -173,8 +175,12 @@
       "field": "{templar} tapınak şövalyesi"
     },
     "clan-temple": {
-      "title": "Tapınak (klan)",
-      "field": "{templar} Tapınağı"
+      "title": "Tapınaklar",
+      "field": "{templar} Tapınağı",
+      "switch": "Tapınakları hesaplamalara dahil et",
+      "included": "Dahil",
+      "excluded": "Hariç",
+      "excluded-pill": "Tapınaklar hariç"
     },
     "matrix": {
       "caption": "Kaynağa göre yetenekler: ekipman, puanlar ve tapınak",

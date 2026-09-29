@@ -552,3 +552,78 @@ describe("Bloc 119: admin tokens", () => {
     expect(adminCss).not.toMatch(/^:root\s*\{[^}]*--admin-/m);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Bloc 144 — les couleurs de l'interrupteur « Temples », de sa pastille et du
+// bouton de remise à zéro. Aucune n'est nouvelle : ce sont les jetons du site,
+// et ce bloc vérifie qu'ils se tiennent aux paires où il les pose.
+// ---------------------------------------------------------------------------
+describe("Bloc 144: player-settings switch, pill and reset", () => {
+  const themes: [string, string][] = [
+    ["dark", darkBlock],
+    ["light", lightBlock],
+  ];
+
+  it("donne à la pastille « Temples exclus » le couple ambre du site, sans nouvel hex", () => {
+    for (const [name, block] of themes) {
+      // Un alias, pas une copie : les deux pastilles ambre du site ne peuvent
+      // pas diverger.
+      expect(block, name).toMatch(/--state-off-bg:\s*var\(--soon-bg\);/);
+      expect(block, name).toMatch(/--state-off-ink:\s*var\(--soon-ink\);/);
+      expect(
+        contrastRatio(
+          extractHex(block, "state-off-ink"),
+          extractHex(block, "state-off-bg"),
+        ),
+        `state-off-ink vs --state-off-bg (${name})`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("garde « Inclus », « Exclus » et le compteur au-dessus du seuil AA, sur la surface du bandeau", () => {
+    for (const [name, block] of themes) {
+      // « Inclus » et le nombre alloué du compteur.
+      expect(
+        contrastRatio(
+          extractHex(block, "accent"),
+          extractHex(block, "surface"),
+        ),
+        `accent vs --surface (${name})`,
+      ).toBeGreaterThanOrEqual(4.5);
+      // « Exclus » et les « = X% » barrés.
+      expect(
+        contrastRatio(extractHex(block, "muted"), extractHex(block, "surface")),
+        `muted vs --surface (${name})`,
+      ).toBeGreaterThanOrEqual(4.5);
+      // L'icône du bouton de remise à zéro, sur sa pastille.
+      expect(
+        contrastRatio(
+          extractHex(block, "accent"),
+          extractHex(block, "accent-soft"),
+        ),
+        `accent vs --accent-soft (${name})`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  /*
+    La pastille du rail n'est pas du texte : le seuil qui la concerne est celui
+    des éléments d'interface, 3:1 (WCAG 1.4.11). C'est ce seuil qui interdit la
+    pastille blanche de la maquette en thème sombre — blanc sur le violet clair
+    de --accent y mesure 1,5:1. --on-accent est l'encre que la palette destine
+    à ce qui se pose sur l'accent, et elle EST blanche en thème clair.
+  */
+  it("détache la pastille du rail dans les deux thèmes et dans les deux états", () => {
+    for (const [name, block] of themes) {
+      for (const rail of ["accent", "muted"]) {
+        expect(
+          contrastRatio(
+            extractHex(block, "on-accent"),
+            extractHex(block, rail),
+          ),
+          `on-accent vs --${rail} (${name})`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+});

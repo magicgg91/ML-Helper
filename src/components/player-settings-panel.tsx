@@ -28,6 +28,7 @@ import {
   type MatrixColumn,
   type MatrixRow,
 } from "./player-settings-matrix";
+import { PointsReset, TempleSwitch } from "./player-settings-controls";
 import {
   allocateSkillPoints,
   allocatedSkillPoints,
@@ -54,7 +55,14 @@ export const playerSettingsChangedEvent = "mlhelper:player-settings-changed";
 // v1 stored the clan-temple field as the full temple total (base + clan
 // contribution); v2 stores only the clan contribution and adds the
 // confirmed base automatically. Bump this and extend the migration below
-// whenever the persisted shape changes again.
+// whenever the persisted shape changes in a way a default cannot absorb.
+//
+// Bloc 144 : `includeTemples` s'ajoute SANS bump. Un champ nouveau dont
+// l'absence a une réponse juste (vrai) n'a pas de migration à écrire, et en
+// bumper la version en aurait déclenché une fausse : la migration ci-dessous
+// est bornée à `< 2` — et l'était par `< currentSettingsVersion`, ce qui
+// aurait resoustrait la base de temple à toutes les sauvegardes v2 le jour où
+// ce nombre bougerait. La borne est désormais écrite en clair.
 const currentSettingsVersion = 2;
 
 function isTemplarKey(key: SkillKey): key is TemplarKey {
@@ -78,7 +86,7 @@ export function safePlayerSettings(raw: string): PlayerSettings {
     ) as Partial<PlayerSettings> & { v?: number };
     if (!("equipmentSkills" in saved)) return fallback;
     const clanTemple = { ...fallback.clanTemple, ...saved.clanTemple };
-    if ((storedVersion ?? 1) < currentSettingsVersion && saved.clanTemple) {
+    if ((storedVersion ?? 1) < 2 && saved.clanTemple) {
       for (const key of templarKeys) {
         clanTemple[key] = Math.max(0, clanTemple[key] - templeBase[key]);
       }
@@ -97,6 +105,12 @@ export function safePlayerSettings(raw: string): PlayerSettings {
       // rather than trust whatever JSON.parse produced.
       division: typeof saved.division === "string" ? saved.division : "",
       clanTemple,
+      // Bloc 144 : même prudence que pour `division` ci-dessus. Une sauvegarde
+      // d'avant ce bloc n'a pas la clé, et une sauvegarde abîmée peut porter
+      // n'importe quoi ; dans les deux cas la réponse est « les temples
+      // comptent », l'état que le site a toujours eu.
+      includeTemples:
+        typeof saved.includeTemples === "boolean" ? saved.includeTemples : true,
     };
   } catch {
     return fallback;
@@ -299,6 +313,20 @@ export function PlayerSettingsPanel({
       };
     });
 
+  /**
+   * Bloc 144 : l'interrupteur des temples. Il n'écrit QUE son propre drapeau —
+   * les valeurs de la ligne Temples restent telles que le joueur les a
+   * saisies, et il les retrouve intactes en le rallumant.
+   */
+  const setIncludeTemples = (includeTemples: boolean) =>
+    setSettings((current) => ({ ...current, includeTemples }));
+
+  const resetSkillPoints = () =>
+    setSettings((current) => ({
+      ...current,
+      skillPoints: defaultPlayerSettings().skillPoints,
+    }));
+
   const setSkillPoints = (key: SkillKey, value: number) =>
     setSettings((current) => ({
       ...current,
@@ -316,6 +344,33 @@ export function PlayerSettingsPanel({
     isTemplarKey(key) ? templeSkillBreakdown(key, settings) : null;
   const totalOf = (key: SkillKey) =>
     breakdownOf(key)?.total ?? combinedSkillPercent(key, settings);
+
+  /**
+   * Le compteur « alloués / disponibles », partagé par l'en-tête de la ligne
+   * Points (desktop) et par la barre qui le remplace une fois la matrice
+   * transposée (mobile).
+   *
+   * Bloc 144 : le nombre alloué ressort en accent. D'où `t.rich` plutôt que
+   * `t` — la barre oblique qui sépare les deux nombres reste ainsi dans le
+   * fichier de traduction, au lieu de passer en dur dans le JSX.
+   */
+  const pointsBudget = (
+    <span className="player-points-budget">
+      <span aria-hidden="true">
+        {t.rich("skill-points.budget", {
+          allocated,
+          available,
+          strong: (chunks) => (
+            <strong className="player-points-allocated">{chunks}</strong>
+          ),
+        })}
+      </span>
+      {/* « 0 / 210 » ne dit rien à qui l'entend plutôt que de le voir. */}
+      <span className="sr-only">
+        {t("skill-points.budget-label", { allocated, available })}
+      </span>
+    </span>
+  );
 
   const columns: MatrixColumn[] = skillKeys.map((key) => ({
     key,
@@ -346,27 +401,12 @@ export function PlayerSettingsPanel({
       title: t("skill-points.title"),
       note: (
         <span className="player-matrix-row-note">
-          <span className="player-points-budget">
-            <span aria-hidden="true">
-              {t("skill-points.budget", { allocated, available })}
-            </span>
-            {/* « 0 / 210 » ne dit rien à qui l'entend plutôt que de le voir. */}
-            <span className="sr-only">
-              {t("skill-points.budget-label", { allocated, available })}
-            </span>
-          </span>
-          <button
-            className="player-points-reset"
-            onClick={() =>
-              setSettings((current) => ({
-                ...current,
-                skillPoints: defaultPlayerSettings().skillPoints,
-              }))
-            }
-            type="button"
-          >
-            {t("skill-points.reset")}
-          </button>
+          {pointsBudget}
+          <PointsReset
+            disabled={allocated === 0}
+            label={t("skill-points.reset")}
+            onReset={resetSkillPoints}
+          />
         </span>
       ),
       cells: skillKeys.map((key) => ({
@@ -383,6 +423,15 @@ export function PlayerSettingsPanel({
     {
       key: "temple",
       title: t("clan-temple.title"),
+      control: (
+        <TempleSwitch
+          checked={settings.includeTemples}
+          label={t("clan-temple.switch")}
+          offLabel={t("clan-temple.excluded")}
+          onChange={setIncludeTemples}
+          onLabel={t("clan-temple.included")}
+        />
+      ),
       cells: skillKeys.map((key) =>
         isTemplarKey(key)
           ? ({
@@ -397,7 +446,17 @@ export function PlayerSettingsPanel({
                   ...current,
                   clanTemple: { ...current.clanTemple, [key]: value },
                 })),
-              percent: format(templePercent(key, settings.clanTemple)),
+              /*
+                Bloc 144 : ce que valent les temples, temples comptés — donc
+                `includeTemples: true` écrit ici en clair, et non une seconde
+                formule tenue à côté. Exclus, le chiffre reste affiché (c'est
+                la saisie du joueur) mais sort barré, `percentIgnored`
+                ci-dessous.
+              */
+              percent: format(
+                templePercent(key, { ...settings, includeTemples: true }),
+              ),
+              percentIgnored: !settings.includeTemples,
             } satisfies MatrixCell)
           : null,
       ),
@@ -411,6 +470,14 @@ export function PlayerSettingsPanel({
           <div className="player-summary-row1">
             <span id="player-settings-title">{t("title")}</span>
             <span className="player-summary-meta">
+              {/* Bloc 144 : replié comme déplié, la seule chose qui dit d'un
+                  coup d'œil que les totaux affichés ne comptent pas les
+                  temples. Elle précède la pastille de ligue. */}
+              {!settings.includeTemples && (
+                <span className="player-temples-off-pill">
+                  {t("clan-temple.excluded-pill")}
+                </span>
+              )}
               <span className="player-league-pill">
                 {selectedRung
                   ? leagueRungLabel(selectedRung, game, locale)
@@ -445,10 +512,18 @@ export function PlayerSettingsPanel({
                       <span className="component-points">
                         {format(breakdown.points)}
                       </span>
-                      {" + "}
-                      <span className="component-temple">
-                        {format(breakdown.temple)}
-                      </span>
+                      {/* Bloc 144 : temples exclus, la décomposition n'a plus
+                          que deux termes — un « + 0 » laisserait croire que
+                          le temple est à zéro, quand il n'est simplement pas
+                          compté. */}
+                      {settings.includeTemples && (
+                        <>
+                          {" + "}
+                          <span className="component-temple">
+                            {format(breakdown.temple)}
+                          </span>
+                        </>
+                      )}
                     </span>
                   )}
                 </span>
@@ -493,47 +568,65 @@ export function PlayerSettingsPanel({
                 ))}
               </div>
             </div>
-            <label className="player-level-field">
-              {t("player-level")}
-              <NumberStepper
-                label={t("player-level")}
-                min={1}
-                onChange={setLevel}
-                value={settings.level}
-              />
-            </label>
-            <label className="player-vp-field">
-              {t("player-vp")}
-              <div className="unit-input">
+            {/* Bloc 144 §4 : les deux champs forment une colonne à eux, de
+                deux rangées de la même hauteur et du même écart que les deux
+                rangées de boutons d'échelon — c'est ce qui les aligne. Leur
+                libellé passe devant le champ plutôt qu'au-dessus (il repasse
+                au-dessus sur mobile, où la place manque). */}
+            <div className="player-numbers">
+              <label className="player-level-field">
+                {/* Le libellé court tient dans la colonne de 52 px du §4 ;
+                    le nom entier reste celui du champ, porté par son
+                    `aria-label` — d'où l'aria-hidden, pour ne pas le faire
+                    lire deux fois. Même parti pris que les templiers. */}
+                <span aria-hidden="true" className="player-field-name">
+                  {t("player-level-short")}
+                </span>
                 <NumberStepper
-                  label={t("player-vp")}
-                  min={0}
-                  onChange={(value) =>
-                    setSettings((current) => ({ ...current, vp: value }))
-                  }
-                  step={0.1}
-                  value={settings.vp}
+                  label={t("player-level")}
+                  min={1}
+                  onChange={setLevel}
+                  value={settings.level}
                 />
-                <select
-                  aria-label={t("vp-unit")}
-                  onChange={(event) =>
-                    setSettings((current) => ({
-                      ...current,
-                      vpUnit: Number(
-                        event.target.value,
-                      ) as PlayerSettings["vpUnit"],
-                    }))
-                  }
-                  value={settings.vpUnit}
-                >
-                  <option value={1}>×1</option>
-                  <option value={1_000}>k</option>
-                  <option value={1_000_000}>M</option>
-                  <option value={1_000_000_000}>G</option>
-                  <option value={1_000_000_000_000}>T</option>
-                </select>
-              </div>
-            </label>
+                {/* La place du sélecteur d'unité, laissée vide : sans elle,
+                    le stepper du niveau serait plus large que celui des VP. */}
+                <span aria-hidden="true" className="player-unit-spacer" />
+              </label>
+              <label className="player-vp-field">
+                <span aria-hidden="true" className="player-field-name">
+                  {t("player-vp-short")}
+                </span>
+                <div className="unit-input">
+                  <NumberStepper
+                    label={t("player-vp")}
+                    min={0}
+                    onChange={(value) =>
+                      setSettings((current) => ({ ...current, vp: value }))
+                    }
+                    step={0.1}
+                    value={settings.vp}
+                  />
+                  <select
+                    aria-label={t("vp-unit")}
+                    onChange={(event) =>
+                      setSettings((current) => ({
+                        ...current,
+                        vpUnit: Number(
+                          event.target.value,
+                        ) as PlayerSettings["vpUnit"],
+                      }))
+                    }
+                    value={settings.vpUnit}
+                  >
+                    <option value={1}>×1</option>
+                    <option value={1_000}>k</option>
+                    <option value={1_000_000}>M</option>
+                    <option value={1_000_000_000}>G</option>
+                    <option value={1_000_000_000_000}>T</option>
+                  </select>
+                </div>
+              </label>
+            </div>
           </div>
 
           <div className="player-templars">
@@ -584,26 +677,12 @@ export function PlayerSettingsPanel({
               {/* Le budget de points et sa remise à zéro quittent l'en-tête de
                   ligne, qui n'existe plus une fois la matrice transposée. */}
               <div className="player-points-bar">
-                <span className="player-points-budget">
-                  <span aria-hidden="true">
-                    {t("skill-points.budget", { allocated, available })}
-                  </span>
-                  <span className="sr-only">
-                    {t("skill-points.budget-label", { allocated, available })}
-                  </span>
-                </span>
-                <button
-                  className="player-points-reset"
-                  onClick={() =>
-                    setSettings((current) => ({
-                      ...current,
-                      skillPoints: defaultPlayerSettings().skillPoints,
-                    }))
-                  }
-                  type="button"
-                >
-                  {t("skill-points.reset")}
-                </button>
+                {pointsBudget}
+                <PointsReset
+                  disabled={allocated === 0}
+                  label={t("skill-points.reset")}
+                  onReset={resetSkillPoints}
+                />
               </div>
               <PlayerSettingsMatrixMobile
                 caption={t("matrix.caption")}

@@ -7,6 +7,7 @@ import {
   emptyTemplars,
   skillCapForLeague,
   skillPercent,
+  templarKeys,
   templeBase,
   templePercent,
   templeSkillBreakdown,
@@ -155,11 +156,64 @@ describe("combinedSkillPercent", () => {
 describe("templePercent", () => {
   it("adds the confirmed temple base to the clan's Templar contribution", () => {
     const clanTemple = { ...emptyTemplars(), rusher: 260 };
-    expect(templePercent("rusher", clanTemple)).toBe(templeBase.rusher + 260);
+    expect(templePercent("rusher", { clanTemple, includeTemples: true })).toBe(
+      templeBase.rusher + 260,
+    );
   });
 
   it("still returns the temple base alone when no clan contribution is entered", () => {
-    expect(templePercent("striker", emptyTemplars())).toBe(templeBase.striker);
+    expect(
+      templePercent("striker", {
+        clanTemple: emptyTemplars(),
+        includeTemples: true,
+      }),
+    ).toBe(templeBase.striker);
+  });
+
+  /**
+   * Bloc 144 : l'interrupteur « Temples ». La règle vit ICI et nulle part
+   * ailleurs — base de temple ET contribution du clan tombent ensemble, pour
+   * les cinq compétences concernées, sans qu'aucun outil n'ait à le savoir.
+   */
+  describe("temples exclus", () => {
+    const clanTemple = {
+      striker: 53.5,
+      guardian: 52.25,
+      prosperous: 99.5,
+      recruiter: 105,
+      rusher: 216,
+    };
+
+    it("renvoie zéro pour chacune des cinq compétences de temple", () => {
+      for (const key of templarKeys) {
+        expect(
+          templePercent(key, { clanTemple, includeTemples: false }),
+          key,
+        ).toBe(0);
+      }
+    });
+
+    it("rend exactement la même valeur qu'avant une fois réactivé", () => {
+      for (const key of templarKeys) {
+        expect(
+          templePercent(key, { clanTemple, includeTemples: true }),
+          key,
+        ).toBe(templeBase[key] + clanTemple[key]);
+      }
+    });
+
+    // La base de temple est le piège : elle s'ajoute automatiquement, donc une
+    // exclusion qui ne retirerait que la contribution du clan laisserait 20 à
+    // 50 % en place sans que rien ne le montre.
+    it("retire aussi la base de temple, pas seulement la part du clan", () => {
+      expect(
+        templePercent("rusher", {
+          clanTemple: emptyTemplars(),
+          includeTemples: false,
+        }),
+      ).toBe(0);
+      expect(templeBase.rusher).toBeGreaterThan(0);
+    });
   });
 });
 
@@ -179,6 +233,7 @@ describe("templeSkillBreakdown", () => {
       skillPoints,
       clanTemple,
       league: "gold",
+      includeTemples: true,
     });
     expect(breakdown.equipment).toBe(12);
     expect(breakdown.points).toBe(skillPercent("striker", skillPoints, "gold"));
@@ -197,8 +252,62 @@ describe("templeSkillBreakdown", () => {
       skillPoints: emptySkills(),
       clanTemple: emptyTemplars(),
       league: "gold",
+      includeTemples: true,
     });
     expect(skillCapForLeague("striker", "gold")).toBeUndefined();
     expect(breakdown.total).toBe(500 + templeBase.striker);
+  });
+
+  // Bloc 144 : la décomposition suit l'interrupteur sans le lire elle-même —
+  // elle passe par templePercent, donc il n'y a qu'un endroit à changer le
+  // jour où la règle bouge.
+  it("Bloc144: met la part de temple à zéro et la retire du total, temples exclus", () => {
+    const settings = {
+      equipmentSkills: { ...emptySkills(), striker: 527 },
+      skillPoints: emptySkills(),
+      clanTemple: { ...emptyTemplars(), striker: 53.5 },
+      league: "diamond" as const,
+    };
+    const included = templeSkillBreakdown("striker", {
+      ...settings,
+      includeTemples: true,
+    });
+    const excluded = templeSkillBreakdown("striker", {
+      ...settings,
+      includeTemples: false,
+    });
+
+    expect(included.temple).toBe(templeBase.striker + 53.5);
+    expect(excluded.temple).toBe(0);
+    // Équipement et points sont intouchés : seul le troisième terme tombe.
+    expect(excluded.equipment).toBe(included.equipment);
+    expect(excluded.points).toBe(included.points);
+    expect(excluded.total).toBe(included.total - included.temple);
+  });
+
+  /*
+    Une compétence sans temple ne doit rien voir changer : c'est la moitié du
+    tableau (Bravoure, Charognard, Intrépide, Récupération, Recycleur). Elles
+    ne passent pas par templeSkillBreakdown mais par combinedSkillPercent, qui
+    ne reçoit même pas le drapeau — l'indifférence est structurelle, et le
+    compilateur la tient. Ce test le constate côté valeur.
+  */
+  it("Bloc144: les compétences hors temple valent équipement + points, quoi qu'il arrive", () => {
+    const shared = {
+      equipmentSkills: { ...emptySkills(), scavenger: 246 },
+      skillPoints: allocateSkillPoints(
+        emptySkills(),
+        "striker",
+        5,
+        20,
+        "diamond",
+      ),
+      league: "diamond" as const,
+    };
+    expect(combinedSkillPercent("scavenger", shared)).toBe(
+      shared.equipmentSkills.scavenger +
+        skillPercent("scavenger", shared.skillPoints, shared.league),
+    );
+    expect(templarKeys).not.toContain("scavenger");
   });
 });

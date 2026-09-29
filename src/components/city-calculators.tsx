@@ -119,8 +119,8 @@ function CostCalculator({
   const start = cityStatsAt(startLevel, league || "bronze", parameters);
   const target = cityStatsAt(targetLevel, league || "bronze", parameters);
   const cost = cityUpgradeCost(startLevel, targetLevel, parameters);
-  const prosperousTemple = templePercent("prosperous", settings.clanTemple);
-  const recruiterTemple = templePercent("recruiter", settings.clanTemple);
+  const prosperousTemple = templePercent("prosperous", settings);
+  const recruiterTemple = templePercent("recruiter", settings);
   const goldStart = bonusBreakdown(
     start.gold,
     settings.equipmentSkills.prosperous,
@@ -410,8 +410,8 @@ function MaxLevelCalculator({
   );
   const start = cityStatsAt(startLevel, league || "bronze", parameters);
   const target = cityStatsAt(result.level, league || "bronze", parameters);
-  const prosperousTemple = templePercent("prosperous", settings.clanTemple);
-  const recruiterTemple = templePercent("recruiter", settings.clanTemple);
+  const prosperousTemple = templePercent("prosperous", settings);
+  const recruiterTemple = templePercent("recruiter", settings);
   const goldBonus =
     1 + (settings.equipmentSkills.prosperous + prosperousTemple) / 100;
   const armyBonus =
@@ -557,8 +557,8 @@ function ProductionCalculator({
           league: league || "bronze",
           prosperousEquipment: settings.equipmentSkills.prosperous,
           recruiterEquipment: settings.equipmentSkills.recruiter,
-          prosperousTemple: templePercent("prosperous", settings.clanTemple),
-          recruiterTemple: templePercent("recruiter", settings.clanTemple),
+          prosperousTemple: templePercent("prosperous", settings),
+          recruiterTemple: templePercent("recruiter", settings),
         },
         parameters,
       ),
@@ -570,12 +570,12 @@ function ProductionCalculator({
   const goldPerCity = bonusBreakdown(
     result.perCity.gold,
     settings.equipmentSkills.prosperous,
-    templePercent("prosperous", settings.clanTemple),
+    templePercent("prosperous", settings),
   );
   const armyPerCity = bonusBreakdown(
     result.perCity.army,
     settings.equipmentSkills.recruiter,
-    templePercent("recruiter", settings.clanTemple),
+    templePercent("recruiter", settings),
   );
 
   const table = (

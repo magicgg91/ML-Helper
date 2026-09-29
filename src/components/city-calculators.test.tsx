@@ -918,3 +918,157 @@ describe("Bloc 117: the Villes headings lose what the chip already says", () => 
     }
   });
 });
+
+/**
+ * Bloc 144 — les outils Villes suivent l'interrupteur « Temples ».
+ *
+ * Trois des quatre sous-onglets lisent la contribution de temple ; le
+ * quatrième (Récompenses) ne lit rien du bandeau, et ce cas-là le dit aussi
+ * plutôt que de l'omettre en silence.
+ *
+ * Le profil est choisi pour être vérifiable de tête, à partir des paramètres
+ * par défaut (vp 20 × 1,115 ; Légende : or ×10, armée ×3) :
+ *   Prospérité  = 10 % d'équipement + 30 % de base de temple + 20 % de clan
+ *   Recruteur   =  0 % d'équipement + 30 % de base de temple +  0 % de clan
+ */
+describe("Bloc 144: les Villes comptent les temples, ou non", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  const show = (includeTemples: boolean) => {
+    const settings = defaultPlayerSettings();
+    settings.league = "legend";
+    settings.level = 11; // (11 − 1) × 2 = 20 points en Légende
+    settings.equipmentSkills.prosperous = 10;
+    settings.clanTemple.prosperous = 20;
+    settings.includeTemples = includeTemples;
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({ ...settings, v: 2 }),
+    );
+    render(
+      <NextIntlClientProvider locale="fr" messages={messages}>
+        <CityCalculators />
+      </NextIntlClientProvider>,
+    );
+  };
+
+  it("Coût de ville : la ligne Temple tombe à zéro, et le total avec elle", () => {
+    show(true);
+    expect(startColumn("city-cost-gold-table")).toEqual({
+      Base: "200",
+      Temple: "100",
+      Stuff: "20",
+      "Total / ville": "320",
+    });
+    cleanup();
+
+    show(false);
+    expect(startColumn("city-cost-gold-table")).toEqual({
+      Base: "200",
+      // La base de temple (30 %) tombe elle aussi, pas seulement le clan.
+      Temple: "0",
+      Stuff: "20",
+      "Total / ville": "220",
+    });
+    // L'armée n'a que sa base de temple : elle revient exactement à sa base.
+    expect(startColumn("city-cost-army-table")).toEqual({
+      Base: "60",
+      Temple: "0",
+      Stuff: "0",
+      "Total / ville": "60",
+    });
+  });
+
+  it("Niveau max atteignable : les gains suivent, le rapport de croissance non", () => {
+    // 1 ville, niveau 1 → 2 (10 d'or). Or : 200 → 223 ; armée : 60 → 66,9.
+    const setUp = () => {
+      fireEvent.click(
+        screen.getByRole("tab", { name: "Niveau Max Atteignable" }),
+      );
+      fireEvent.change(
+        screen.getByRole("spinbutton", { name: "Or disponible" }),
+        { target: { value: "0.01" } },
+      );
+    };
+
+    show(true);
+    setUp();
+    expect(screen.getByTestId("max-level-result")).toHaveTextContent("2");
+    // Or × 1,6 : (223 − 200) × 1,6 = 36,8 → 37 (arrondi entier, AGENTS.md).
+    // Armée × 1,3 : 6,9 × 1,3 = 8,97 → 9.
+    expect(screen.getByTestId("city-max-level-gold")).toHaveTextContent("+37");
+    expect(screen.getByTestId("city-max-level-army")).toHaveTextContent("+9");
+    cleanup();
+
+    show(false);
+    setUp();
+    // Or × 1,1 : 23 × 1,1 = 25,3 → 25. Armée × 1 : 6,9 → 7.
+    expect(screen.getByTestId("city-max-level-gold")).toHaveTextContent("+25");
+    expect(screen.getByTestId("city-max-level-army")).toHaveTextContent("+7");
+  });
+
+  it("Production : totaux et « Si reskill full-prod » comptent les temples, ou non", () => {
+    show(true);
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    expect(screen.getByTestId("city-production-gold")).toHaveTextContent(
+      "320/h",
+    );
+    expect(screen.getByTestId("city-production-army")).toHaveTextContent(
+      "78/h",
+    );
+    // 20 points × 3 % = 60 % de plus d'équipement, temple inchangé.
+    expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
+      "440/h",
+    );
+    expect(screen.getByTestId("full-production-army")).toHaveTextContent(
+      "114/h",
+    );
+    cleanup();
+
+    show(false);
+    fireEvent.click(screen.getByRole("tab", { name: "Production" }));
+    expect(screen.getByTestId("city-production-gold")).toHaveTextContent(
+      "220/h",
+    );
+    expect(screen.getByTestId("city-production-army")).toHaveTextContent(
+      "60/h",
+    );
+    expect(startColumn("city-production-gold-table").Temple).toBe("0");
+    // La simulation suit la production normale, ici comme ailleurs (Bloc 115).
+    expect(screen.getByTestId("full-production-gold")).toHaveTextContent(
+      "340/h",
+    );
+    expect(screen.getByTestId("full-production-army")).toHaveTextContent(
+      "96/h",
+    );
+  });
+
+  /*
+    Récompenses de Production ne lit RIEN du bandeau : sa production de base
+    est saisie à la main (Bloc 18). L'interrupteur ne doit donc rien y changer
+    — et ce cas le vérifie plutôt que de le supposer.
+  */
+  it("Récompenses : ne lit pas le bandeau, donc l'interrupteur n'y change rien", () => {
+    const reward = () => {
+      fireEvent.click(
+        screen.getByRole("tab", { name: "Récompenses de Production" }),
+      );
+      fireEvent.change(
+        screen.getByRole("spinbutton", { name: "Production d’or de base" }),
+        { target: { value: "100" } },
+      );
+      fireEvent.change(
+        screen.getByRole("spinbutton", { name: "Heures reçues — Or" }),
+        { target: { value: "24" } },
+      );
+      return screen.getByTestId("city-rewards-gold").textContent;
+    };
+
+    show(true);
+    const withTemples = reward();
+    cleanup();
+    show(false);
+    expect(reward()).toBe(withTemples);
+  });
+});

@@ -747,11 +747,14 @@ describe("Bloc 123: the matrix", () => {
       "Recycleur",
       "Vitesse",
     ]);
+    // Bloc 144 : le titre de la ligne, et lui seul — l'en-tête porte aussi le
+    // budget de points et, sur la ligne Temples, l'interrupteur.
     expect(
-      [...table.querySelectorAll('tbody th[scope="row"]')].map((cell) =>
-        cell.textContent?.slice(0, 11),
+      [...table.querySelectorAll('tbody th[scope="row"]')].map(
+        (cell) =>
+          (cell.querySelector(".player-matrix-row-title") ?? cell).textContent,
       ),
-    ).toEqual(["Équipement", "Points0 / 0", "Temple (cla", "Total"]);
+    ).toEqual(["Équipement", "Points", "Temples", "Total"]);
   });
 
   it("says the same total as the collapsed chip, for every skill", () => {
@@ -817,7 +820,9 @@ describe("Bloc 123: the matrix", () => {
     expect(budget.querySelector(".sr-only")).toHaveTextContent(
       "3 points alloués sur 30 disponibles",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Réinitialiser les points" }),
+    );
     expect(screen.getByLabelText("Points Attaque")).toHaveValue(0);
   });
 });
@@ -885,11 +890,13 @@ describe("Bloc 123: the narrow layout", () => {
     panel();
     expect(document.querySelector(".player-matrix")).toBeNull();
     const table = document.querySelector(".player-matrix-mobile")!;
+    // Bloc 144 : le titre est le premier nœud de l'en-tête ; l'interrupteur
+    // des temples le suit dans la même cellule.
     expect(
       [...table.querySelectorAll('thead th[scope="col"]')].map(
-        (cell) => cell.textContent,
+        (cell) => cell.firstChild?.textContent,
       ),
-    ).toEqual(["Équipement", "Points", "Temple (clan)"]);
+    ).toEqual(["Équipement", "Points", "Temples"]);
     expect(table.querySelectorAll('tbody th[scope="row"]')).toHaveLength(10);
   });
 
@@ -989,7 +996,9 @@ describe("Bloc 123: the narrow layout", () => {
       ) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      within(bar as HTMLElement).getByRole("button", { name: "Réinitialiser" }),
+      within(bar as HTMLElement).getByRole("button", {
+        name: "Réinitialiser les points",
+      }),
     ).not.toBeNull();
   });
 });
@@ -1083,5 +1092,262 @@ describe("Bloc 139: the expanded panel's layout", () => {
     } finally {
       viewport.restore();
     }
+  });
+});
+
+/**
+ * Bloc 144 — l'interrupteur « Temples ».
+ *
+ * Ce qu'il faut tenir tient en une phrase : il change ce qui est COMPTÉ, pas
+ * ce qui est SAISI. Les cas ci-dessous sont écrits autour de cette distinction
+ * — l'un vérifie que les totaux tombent, l'autre que rien n'a été effacé en
+ * chemin et qu'un chiffre tapé temples éteints s'applique au rallumage.
+ */
+describe("Bloc 144: l'interrupteur Temples", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  /** Un joueur avec de l'équipement Attaque et une contribution de clan. */
+  const profile = {
+    ...defaultPlayerSettings(),
+    level: 98,
+    league: "diamond" as const,
+    equipmentSkills: {
+      ...defaultPlayerSettings().equipmentSkills,
+      striker: 527,
+    },
+    clanTemple: { ...defaultPlayerSettings().clanTemple, striker: 53.5 },
+    v: 2,
+  };
+  const store = (settings: Record<string, unknown>) =>
+    window.localStorage.setItem(playerStorageKey, JSON.stringify(settings));
+
+  const templeSwitch = () =>
+    screen.getByRole("switch", {
+      name: "Inclure les temples dans les calculs",
+    });
+  const switchText = () => document.querySelector(".player-switch-text");
+  const offPill = () => document.querySelector(".player-temples-off-pill");
+
+  it("compte les temples par défaut, et l'écrit à côté du rail", () => {
+    panel();
+    expect(templeSwitch()).toHaveAttribute("aria-checked", "true");
+    expect(switchText()).toHaveTextContent("Inclus");
+    expect(offPill()).toBeNull();
+  });
+
+  /*
+    L'accessibilité clavier ne tient pas à du code à nous : c'est un <button>,
+    donc Espace et Entrée l'activent nativement. Ce cas garde cette propriété —
+    un <div onClick> passerait tous les autres tests de ce fichier. La frappe
+    elle-même est vérifiée au navigateur (e2e/bloc-144-temples.spec.ts) : jsdom
+    n'implémente pas l'activation par défaut d'un bouton.
+  */
+  it("est un vrai bouton, pas une div habillée en interrupteur", () => {
+    panel();
+    expect(templeSwitch().tagName).toBe("BUTTON");
+    expect(templeSwitch()).toHaveAttribute("type", "button");
+    // Le mot à droite est cliquable lui aussi : le label enveloppe les deux.
+    expect(switchText()!.closest("label")).toContainElement(templeSwitch());
+  });
+
+  it("annonce son état, affiche la pastille et barre les pourcentages une fois éteint", async () => {
+    store(profile);
+    panel();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Temple Attaque")).toHaveValue(53.5),
+    );
+
+    fireEvent.click(templeSwitch());
+
+    expect(templeSwitch()).toHaveAttribute("aria-checked", "false");
+    expect(switchText()).toHaveTextContent("Exclus");
+    expect(offPill()).toHaveTextContent("Temples exclus");
+    // La pastille vit dans l'en-tête, donc elle se voit replié comme déplié.
+    expect(offPill()!.closest("summary")).not.toBeNull();
+    // Le « = X% » reste lisible — c'est la saisie du joueur — et sort barré.
+    const percent = percentOf("temple", "striker")!;
+    expect(percent).toHaveTextContent("73,5%");
+    expect(percent.className).toContain("player-matrix-percent-ignored");
+  });
+
+  it("retire la part de temple des totaux, et la rend telle quelle au rallumage", async () => {
+    store(profile);
+    panel();
+    // 527 d'équipement + (20 de base + 53,5 de clan) = 600,5.
+    await waitFor(() => expect(chip("striker")).toHaveTextContent("600,5%"));
+
+    fireEvent.click(templeSwitch());
+    expect(chip("striker")).toHaveTextContent("527%");
+    // La décomposition n'a plus que deux termes : « + 0 » laisserait croire
+    // que le temple vaut zéro, quand il n'est simplement pas compté.
+    expect(
+      chip("striker")!.querySelector(".player-chip-breakdown")!.textContent,
+    ).toBe("527 + 0");
+
+    fireEvent.click(templeSwitch());
+    expect(chip("striker")).toHaveTextContent("600,5%");
+  });
+
+  it("laisse les champs Temples pleinement modifiables, et applique au rallumage ce qui y a été tapé", async () => {
+    store(profile);
+    panel();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Temple Attaque")).toHaveValue(53.5),
+    );
+    fireEvent.click(templeSwitch());
+
+    const field = screen.getByLabelText("Temple Attaque");
+    expect(field).not.toBeDisabled();
+    expect(field).not.toHaveAttribute("readonly");
+    // Les steppers − / + répondent aussi, pas seulement la frappe.
+    expect(
+      screen.getByRole("button", { name: "Augmenter Temple Attaque" }),
+    ).toBeEnabled();
+
+    fireEvent.change(field, { target: { value: "100" } });
+    fireEvent.blur(field);
+    expect(field).toHaveValue(100);
+    // Toujours pas compté tant que l'interrupteur est éteint…
+    expect(chip("striker")).toHaveTextContent("527%");
+    // …et compté dès qu'il se rallume : 527 + 20 + 100.
+    fireEvent.click(templeSwitch());
+    expect(chip("striker")).toHaveTextContent("647%");
+  });
+
+  it("laisse intactes les compétences qu'aucun temple ne touche", async () => {
+    store({
+      ...profile,
+      equipmentSkills: { ...profile.equipmentSkills, scavenger: 246 },
+    });
+    panel();
+    await waitFor(() => expect(chip("scavenger")).toHaveTextContent("246%"));
+    fireEvent.click(templeSwitch());
+    expect(chip("scavenger")).toHaveTextContent("246%");
+  });
+
+  it("garde son état d'un outil à l'autre, par le même stockage que le reste", async () => {
+    panel();
+    await waitFor(() =>
+      expect(window.localStorage.getItem(playerStorageKey)).not.toBeNull(),
+    );
+    fireEvent.click(templeSwitch());
+    await waitFor(() =>
+      expect(
+        safePlayerSettings(window.localStorage.getItem(playerStorageKey)!)
+          .includeTemples,
+      ).toBe(false),
+    );
+    // Un autre montage — c'est ce que fait un changement d'outil — le relit.
+    cleanup();
+    panel();
+    await waitFor(() =>
+      expect(templeSwitch()).toHaveAttribute("aria-checked", "false"),
+    );
+  });
+
+  /*
+    Une sauvegarde d'avant ce bloc n'a pas la clé, et une sauvegarde abîmée
+    peut porter n'importe quoi. Dans les deux cas la réponse est « les temples
+    comptent » — jamais un bandeau qui démarre en silence sans eux.
+  */
+  it("répond « comptés » à une sauvegarde qui ne dit rien, ou qui dit n'importe quoi", () => {
+    const withoutKey: Record<string, unknown> = { ...defaultPlayerSettings() };
+    delete withoutKey.includeTemples;
+    expect(
+      safePlayerSettings(JSON.stringify({ ...withoutKey, v: 2 }))
+        .includeTemples,
+    ).toBe(true);
+    expect(
+      safePlayerSettings(
+        JSON.stringify({ ...defaultPlayerSettings(), includeTemples: "non" }),
+      ).includeTemples,
+    ).toBe(true);
+    // Et un « false » explicite est respecté, lui.
+    expect(
+      safePlayerSettings(
+        JSON.stringify({ ...defaultPlayerSettings(), includeTemples: false }),
+      ).includeTemples,
+    ).toBe(false);
+  });
+
+  // Le même interrupteur doit exister dans la vue transposée, sous l'en-tête
+  // de colonne « Temples » — sans lui, le mobile n'aurait aucun moyen de les
+  // rallumer.
+  it("existe aussi dans la matrice transposée du mobile", () => {
+    const viewport = mockViewport(true);
+    try {
+      panel();
+      expect(document.querySelector(".player-matrix-mobile")).not.toBeNull();
+      const control = templeSwitch();
+      expect(control.closest(".player-matrix-mobile")).not.toBeNull();
+      expect(control.closest('th[scope="col"]')).not.toBeNull();
+      fireEvent.click(control);
+      expect(control).toHaveAttribute("aria-checked", "false");
+      expect(offPill()).toHaveTextContent("Temples exclus");
+    } finally {
+      viewport.restore();
+    }
+  });
+});
+
+/** Bloc 144 §3 — la remise à zéro des points. */
+describe("Bloc 144: le bouton Réinitialiser", () => {
+  beforeEach(() => window.localStorage.clear());
+  afterEach(cleanup);
+
+  const resetButton = () =>
+    screen.getByRole("button", { name: "Réinitialiser les points" });
+
+  it("porte son libellé en nom accessible et en infobulle, l'icône ne disant rien", () => {
+    panel();
+    expect(resetButton()).toHaveAttribute("title", "Réinitialiser les points");
+    expect(resetButton().querySelector("svg")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+  });
+
+  it("est éteint tant qu'aucun point n'est alloué, et s'allume dès qu'il y en a un", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({ ...defaultPlayerSettings(), level: 31, league: "gold" }),
+    );
+    panel();
+    await waitFor(() =>
+      expect(document.querySelector(".player-points-budget")).toHaveTextContent(
+        "0 / 30",
+      ),
+    );
+    expect(resetButton()).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Points Attaque"), {
+      target: { value: "3" },
+    });
+    expect(resetButton()).toBeEnabled();
+    fireEvent.click(resetButton());
+    expect(screen.getByLabelText("Points Attaque")).toHaveValue(0);
+    expect(resetButton()).toBeDisabled();
+  });
+
+  it("fait ressortir le nombre alloué, sans sortir la barre oblique du fichier de traduction", async () => {
+    window.localStorage.setItem(
+      playerStorageKey,
+      JSON.stringify({
+        ...defaultPlayerSettings(),
+        level: 31,
+        league: "gold",
+        skillPoints: { ...defaultPlayerSettings().skillPoints, striker: 3 },
+      }),
+    );
+    panel();
+    const budget = document.querySelector(".player-points-budget")!;
+    await waitFor(() => expect(budget).toHaveTextContent("3 / 30"));
+    expect(budget.querySelector(".player-points-allocated")).toHaveTextContent(
+      "3",
+    );
+    expect(
+      budget.querySelector(".player-points-allocated")!.textContent,
+    ).not.toContain("/");
   });
 });
