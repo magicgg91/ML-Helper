@@ -5,6 +5,12 @@ import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { resetE2eDatabase } from "../prisma/e2e-seed";
+import {
+  desktopWidths,
+  expectRankingTilesFit,
+  phoneWidths,
+  rewardCounts,
+} from "./ranking-tile-layout";
 
 // Bloc 121: this file is retryable again, which it was not from Bloc 116/B
 // until here.
@@ -2719,6 +2725,118 @@ test("Bloc 137: the ranking lives on the tool's screen, the list in Configuratio
     .click();
   await expect(page.getByRole("radiogroup")).toHaveCount(before);
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+});
+
+/**
+ * Bloc 145 — le Prestige, de l'écran d'administration à la page publique.
+ *
+ * Les tests unitaires tiennent l'analyse, la route et le rendu chacun de leur
+ * côté. Celui-ci est le seul à prouver l'aller-retour réel : une plage tapée
+ * « 150-200 » part en base par la route, en revient par l'analyseur, et se lit
+ * « 150–200 » sur la page publique, tiret demi-cadratin compris.
+ *
+ * Il tient aussi le refus que ce bloc demande de ne pas résoudre en silence :
+ * une plage sur un seuil qui n'est pas 1 % bloque l'enregistrement, et la
+ * saisie reste à l'écran — ni convertie, ni effacée.
+ */
+test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/tools/ranking");
+  const rungs = page.getByRole("group", {
+    name: /Ligue ou division|League or division/,
+  });
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  const before = await page.getByRole("radiogroup").count();
+  const lastThreshold = () => page.getByLabel(/ligne \d+ Seuil/).last();
+  const lastPrestige = () => page.getByLabel(/ligne \d+ Prestige/).last();
+  const lastQuantity = (reward: string) =>
+    page.getByLabel(new RegExp(`ligne \\d+ ${reward}`)).last();
+  const save = () =>
+    page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+
+  // Deux plages ajoutées plutôt que trouvées : ce scénario ne doit pas dépendre
+  // de ce que la base semée donne à Bronze.
+  await page.getByRole("button", { name: "Ajouter une plage" }).click();
+  // Le champ part vide — « non renseigné », et non zéro.
+  await expect(lastPrestige()).toHaveValue("");
+  await lastThreshold().fill("1");
+  await lastPrestige().fill("150-200");
+  // Bloc 146 : les trois quantités en plus, pour que la tuile publique porte
+  // QUATRE mini-tuiles. C'est le seul cas qu'une base semée ne sait pas
+  // montrer — `defaultLeagueLadder` n'a pas de Prestige — et c'est celui où la
+  // mise en page mobile avait le moins de place.
+  await lastQuantity("Saphirs").fill("100");
+  await lastQuantity("Speedups").fill("7");
+  await lastQuantity("Gemmes").fill("6");
+
+  await page.getByRole("button", { name: "Ajouter une plage" }).click();
+  await lastThreshold().fill("6");
+  await lastPrestige().fill("0");
+  await save();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+
+  // --- Le refus : la même plage sur un seuil qui ne l'accepte pas.
+  await lastPrestige().fill("150-200");
+  await save();
+  await expect(page.getByRole("status")).toContainText(
+    "Une plage n’est acceptée que sur le seuil 1 %.",
+  );
+  // Rien n'est converti ni effacé : la saisie est toujours là, montrée en faute.
+  await expect(lastPrestige()).toHaveValue("150-200");
+  await expect(lastPrestige()).toBeFocused();
+  await lastPrestige().fill("0");
+  await save();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+
+  // --- Et la page publique les lit, telles qu'elles ont été écrites.
+  await page.goto("/tools/classement");
+  const group = page.locator(".ranking-calculator").getByRole("group");
+  await group.getByRole("button", { name: "Bronze", exact: true }).click();
+  const prestige = page.locator(".ranking-range-tile .ranking-reward-tile", {
+    hasText: "Prestige",
+  });
+  await expect(prestige).toHaveCount(2);
+  // Tiret demi-cadratin, celui que le rendu pose — pas le trait d'union tapé.
+  await expect(prestige.nth(0).locator(".ranking-reward-value")).toHaveText(
+    "150\u2013200",
+  );
+  // Zéro est une valeur du Prestige : sa tuile existe.
+  await expect(prestige.nth(1).locator(".ranking-reward-value")).toHaveText(
+    "0",
+  );
+
+  // --- Bloc 146 : et la tuile à quatre mini-tuiles tient, du téléphone au
+  // bureau. La même mesure que e2e/bloc-146-ranking-tiles.spec.ts, qui couvre
+  // une et trois récompenses sur la base semée ; quatre ne s'obtient qu'ici.
+  for (const width of [...phoneWidths, ...desktopWidths]) {
+    await page.setViewportSize({ width, height: 1600 });
+    const tiles = await expectRankingTilesFit(page, `Bronze / ${width}px`);
+    expect(
+      rewardCounts(tiles),
+      `Bronze / ${width}px : la plage à quatre récompenses est bien là`,
+    ).toContain(4);
+  }
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  // --- Remise en état : cette suite tourne en série sur une seule base.
+  await page.goto("/admin/tools/ranking");
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  for (let removed = 0; removed < 2; removed += 1)
+    await page
+      .getByRole("button", { name: /^Supprimer Plage \d+ de Bronze$/ })
+      .last()
+      .click();
+  await expect(page.getByRole("radiogroup")).toHaveCount(before);
+  await save();
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 

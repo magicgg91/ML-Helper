@@ -6236,13 +6236,41 @@ body > main h1 {
 }
 
 /* Desktop: one row, three groups — what the range leads to, where it sits,
-   what it pays. The rewards' track grows past its 260px floor rather than
-   letting three 116px tiles (Bronze through Or grant all three) spill over
-   the middle group. */
+   what it pays.
+
+   Bloc 146 — la colonne du milieu ne descend plus sous son contenu minimal, et
+   celle des récompenses n'a plus de plancher.
+
+   Le Bloc 112 écrivait `minmax(0, 1fr) minmax(260px, auto)` : la troisième
+   piste n'est pas flexible, donc la grille la sert — jusqu'à son contenu
+   maximal — AVANT de donner au `1fr` ce qui reste. Quatre mini-tuiles
+   réclament 4 × 116 + 3 × 8 = 488 px, et son plancher de 260 px s'appliquait
+   même à une tuile qui n'en portait qu'une seule. Mesuré à 901 px, où la tuile
+   n'offre que 776 px de contenu : la colonne des rangs tombait à 0 px à quatre
+   récompenses (la valeur des rangs mordait de 100 à 185 px sur les
+   mini-tuiles), à 51 px à trois et à 137 px à une — elle en demande 251.
+
+   `min-content` comme plancher du milieu renverse l'ordre de service : la
+   colonne des rangs prend d'abord ce qu'il lui faut, les récompenses prennent
+   le reste et se replient si elles ne tiennent pas (`flex-wrap` sur
+   `.ranking-range-rewards`, hors média puisque le téléphone l'avait déjà).
+   Dès que la place suffit, le `1fr` reprend exactement la taille qu'il avait.
+
+   Et le plancher de 260 px disparaît, parce qu'il faisait partie de la cause :
+   il réservait 260 px à une tuile qui n'en portait qu'une de 116 px, et c'est
+   ce qui faisait déborder de 63 px la valeur des rangs d'une plage à une seule
+   récompense à 901 px. Trois minimums — 230 + 251 + 260 — plus les gouttières
+   demandaient 797 px là où la tuile en offre 776 : l'un des trois devait
+   céder. Celui du nom de ligue a été essayé et rejeté, mesure à l'appui : à
+   901 px il tombait à 119 px et « À définir dans l'administration » s'y
+   coupait en « l'admin / istratio / n ». C'est donc la réserve des récompenses
+   qui cède — la seule des trois qui ne portait aucun texte. Conséquence
+   assumée : une plage à une ou deux récompenses voit son centile et sa barre
+   s'étendre vers la droite, à toutes les largeurs de bureau. */
 @media (min-width: 901px) {
   .ranking-range-tile {
     display: grid;
-    grid-template-columns: 230px minmax(0, 1fr) minmax(260px, auto);
+    grid-template-columns: 230px minmax(min-content, 1fr) minmax(0, auto);
     gap: 28px;
     align-items: center;
     padding: 12px 16px 12px 30px;
@@ -6261,17 +6289,35 @@ body > main h1 {
   }
 }
 
-/* Mobile: four rows. The two position wrappers go display:contents so their
+/* Mobile: five rows. The two position wrappers go display:contents so their
    children become grid items of the tile itself — that is what lets the
-   percentile sit beside the result on row 1 while the ranks sit beside the
-   rewards on row 2, without a second copy of the markup. */
+   percentile sit beside the result on row 1, without a second copy of the
+   markup.
+
+   Bloc 146 — les récompenses ont une rangée à elles, à n'importe quel nombre
+   de mini-tuiles. Le Bloc 112 les plaçait à côté des rangs, dans une deuxième
+   colonne en `minmax(0, auto)` : une piste non flexible, donc servie AVANT le
+   `1fr` et jusqu'à son contenu maximal — 3 × 84 + 2 × 8 = 268 px. La tuile
+   n'offre que 211 px de contenu à 320 px, 251 à 360, 284 à 393 et 321 à
+   430 : la première colonne tombait à 0, 0, 6 et 43 px. Tout ce qu'elle
+   portait y passait — la valeur des rangs est `nowrap`, elle mordait de 77 à
+   176 px sur les mini-tuiles ; le nom de ligue est `overflow-wrap: anywhere`,
+   il se coupait lettre par lettre sur 5 à 8 lignes.
+
+   Ces deux-là ne pouvaient donc jamais tenir côte à côte sur un téléphone :
+   le Bloc 145 l'avait constaté à quatre mini-tuiles et leur avait donné une
+   rangée dans ce seul cas ; la mesure dit que c'était déjà faux à trois. La
+   règle vaut pour tous, et son exception disparaît. */
 @media (max-width: 900px) {
   .ranking-range-tile {
     display: grid;
+    /* La deuxième colonne ne porte plus que le centile, une chaîne courte et
+       insécable : ce qu'elle prend, la première peut le céder. */
     grid-template-columns: minmax(0, 1fr) minmax(0, auto);
     grid-template-areas:
       "result percentile"
-      "ranks rewards"
+      "ranks ranks"
+      "rewards rewards"
       "bar bar"
       "bubble bubble";
     gap: 10px;
@@ -6293,10 +6339,10 @@ body > main h1 {
     grid-area: ranks;
   }
   .ranking-range-rewards {
+    /* Leur rangée fait toute la largeur de la tuile, ce qui suffit à trois
+       mini-tuiles dès 360 px ; en dessous elles se replient (`flex-wrap`, posé
+       hors média depuis le Bloc 146). */
     grid-area: rewards;
-    /* Three mini-tiles do not fit beside the ranks on a 393px screen, so they
-       fold within their own column instead of pushing the tile off the page. */
-    flex-wrap: wrap;
   }
   .ranking-range-bar {
     grid-area: bar;
@@ -6445,13 +6491,34 @@ body > main h1 {
 .ranking-range-rewards {
   display: flex;
   justify-content: flex-end;
+  /* Bloc 146 : elles se replient plutôt que de pousser la tuile hors de
+     l'écran — sur un téléphone depuis le Bloc 112, et sur un bureau étroit
+     depuis que la colonne des rangs passe avant elles. */
+  flex-wrap: wrap;
   gap: 8px;
 }
 .ranking-reward-tile {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 116px;
+  /*
+    Bloc 146 — une largeur PLANCHER, plus une largeur fixe.
+
+    Le Bloc 112 posait 116 px (84 sur téléphone) pour que trois mini-tuiles
+    tiennent côte à côte. Mais le libellé ne se coupe pas : chacun de ces
+    quatre mots est un mot unique dans les cinq langues, et il débordait dès
+    qu'il dépassait la place laissée par l'icône. Mesuré au rendu :
+    « Beschleunigungen » demande 107 px de texte quand la tuile de 116 px n'en
+    offre que 74 (dépassement de 33 px), « Aceleraciones » 82 px (8 px) ; sur
+    téléphone, où la tuile n'offre que 47 px, dix des vingt libellés
+    débordaient, de 1 px (« Gemmes ») à 52 px (« Beschleunigungen »).
+
+    La tuile fait donc au moins ce qu'elle faisait, et davantage si son contenu
+    le demande. C'est exactement ce que le Bloc 145 avait concédé à la seule
+    tuile du Prestige, dont la valeur peut être une plage ; la mesure dit que
+    les libellés le demandaient déjà. Son exception disparaît avec sa cause.
+  */
+  min-width: 116px;
   padding: 8px 12px;
   border-radius: 8px;
   background: color-mix(in srgb, var(--bg-panel-raised) 60%, transparent);
@@ -6471,7 +6538,7 @@ body > main h1 {
 }
 @media (max-width: 900px) {
   .ranking-reward-tile {
-    width: 84px;
+    min-width: 84px;
     padding: 6px 10px;
   }
   .ranking-reward-label {

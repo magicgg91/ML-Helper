@@ -29,7 +29,9 @@ import { cn } from "@/lib/utils";
 
 export type NumberFieldWidth = "s" | "m" | "l";
 
-const widthClasses: Record<NumberFieldWidth, string> = {
+/** Bloc 145 : partagé avec `TextField`, pour que les deux champs de
+    l'administration aient exactement les mêmes largeurs. */
+export const widthClasses: Record<NumberFieldWidth, string> = {
   s: "w-[72px]",
   m: "w-[92px]",
   l: "w-[120px]",

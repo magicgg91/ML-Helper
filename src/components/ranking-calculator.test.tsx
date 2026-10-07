@@ -1354,3 +1354,135 @@ describe("Bloc 135 §2 — le nom libre, au-delà de FR et EN", () => {
     ]);
   });
 });
+
+/**
+ * Bloc 145 — la mini-tuile Prestige.
+ *
+ * Elle se lit comme ses trois voisines, à deux différences près : elle peut
+ * porter une plage, et elle s'affiche à zéro. Zéro est une information — « ce
+ * seuil donne 0 Prestige » — là où une quantité à zéro a toujours voulu dire
+ * « rien à cette place ».
+ */
+describe("Bloc 145 : le Prestige sur la page publique", () => {
+  afterEach(cleanup);
+
+  const ladderWith = (bands: LeagueRung["bands"]): LeagueLadder => [
+    {
+      id: "bronze",
+      league: "bronze",
+      division: "",
+      name: {},
+      position: 0,
+      active: true,
+      bands,
+    },
+  ];
+
+  const show = (bands: LeagueRung["bands"], locale: "fr" | "en" = "fr") => {
+    render(
+      <NextIntlClientProvider
+        locale={locale}
+        messages={locale === "fr" ? frMessages : enMessages}
+      >
+        <RankingCalculator ladder={ladderWith(bands)} />
+      </NextIntlClientProvider>,
+    );
+    selectLeague(locale === "fr" ? "Bronze" : "Bronze");
+  };
+
+  const band = (
+    threshold: number,
+    rewards: LeagueRung["bands"][number]["rewards"],
+  ) => ({ threshold, movement: "stay" as const, target: "bronze", rewards });
+
+  it("montre le Prestige après les trois quantités, en dernier", () => {
+    show([
+      band(1, [
+        { type: "gems", quantity: 6 },
+        { type: "prestige", min: 150, max: 200 },
+      ]),
+    ]);
+    expect(rewardsOf(0)).toEqual([
+      ["Gemmes", "6"],
+      ["Prestige", "150–200"],
+    ]);
+  });
+
+  it("écrit une valeur fixe sans tiret", () => {
+    show([band(1, [{ type: "prestige", min: 150, max: 150 }])]);
+    expect(rewardsOf(0)).toEqual([["Prestige", "150"]]);
+  });
+
+  // La distinction que tout ce bloc tient : absent ≠ zéro.
+  it("masque la tuile quand le Prestige est absent, et la montre à zéro", () => {
+    show([
+      band(1, [{ type: "prestige", min: 0, max: 0 }]),
+      band(100, [{ type: "gems", quantity: 1 }]),
+    ]);
+    expect(rewardsOf(0)).toEqual([["Prestige", "0"]]);
+    expect(rewardsOf(1)).toEqual([["Gemmes", "1"]]);
+  });
+
+  it("n'affiche aucune tuile sur une plage qui n'accorde rien", () => {
+    show([band(1, [])]);
+    expect(rewardsOf(0)).toEqual([]);
+  });
+
+  /*
+    Les deux bornes passent par la langue de la page, comme les rangs juste
+    au-dessus dans la même tuile : un séparateur de milliers français n'est pas
+    celui de l'anglais, et les écrire bruts les rendrait identiques partout.
+  */
+  it("écrit les deux bornes dans la langue de la page", () => {
+    const rows = [band(1, [{ type: "prestige", min: 1500, max: 2000 }])];
+    show(rows);
+    const french = rewardsOf(0)[0][1];
+    cleanup();
+    show(rows, "en");
+    const english = rewardsOf(0)[0][1];
+
+    expect(french).toBe(
+      `${(1500).toLocaleString("fr")}–${(2000).toLocaleString("fr")}`,
+    );
+    expect(english).toBe(
+      `${(1500).toLocaleString("en")}–${(2000).toLocaleString("en")}`,
+    );
+    // Et les deux ne se ressemblent pas : c'est ce qui prouve que la langue
+    // est bien lue plutôt qu'un `String()` déguisé.
+    expect(french).not.toBe(english);
+  });
+
+  /*
+    Chaque mini-tuile dit de quelle récompense elle parle.
+
+    Bloc 145 : la feuille de style le lisait, pour donner au seul Prestige la
+    largeur que sa plage demandait. Bloc 146 : cette largeur est devenue la
+    règle de toutes les mini-tuiles, donc plus aucun sélecteur ne vise ce
+    type-là — mais l'attribut reste le seul endroit du DOM qui nomme la
+    récompense sans passer par un libellé traduit, et c'est par lui que la
+    mesure de bout en bout désigne la mini-tuile en défaut
+    (e2e/ranking-tile-layout.ts).
+  */
+  it("marque chaque tuile de son type", () => {
+    show([
+      band(1, [
+        { type: "gems", quantity: 6 },
+        { type: "prestige", min: 150, max: 200 },
+      ]),
+    ]);
+    expect(
+      [...bandTiles()[0].querySelectorAll(".ranking-reward-tile")].map((tile) =>
+        tile.getAttribute("data-reward"),
+      ),
+    ).toEqual(["gems", "prestige"]);
+  });
+
+  it("nomme la tuile dans chaque langue du site", () => {
+    const rows = [band(1, [{ type: "prestige", min: 7, max: 7 }])];
+    show(rows);
+    expect(rewardsOf(0)[0][0]).toBe("Prestige");
+    cleanup();
+    show(rows, "en");
+    expect(rewardsOf(0)[0][0]).toBe("Prestige");
+  });
+});

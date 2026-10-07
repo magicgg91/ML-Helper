@@ -14,6 +14,10 @@
 /coverage
 /prisma/*.db
 /prisma/*.db-journal
+# Bloc 145 : ce que `playwright test` laisse derrière lui (au minimum
+# `.last-run.json`, et les traces d'un échec). Jamais à committer.
+/test-results
+/playwright-report
 
 # next.js
 /.next/

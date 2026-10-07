@@ -45,8 +45,15 @@ export function RankRewardIcon({ type }: { type: SeasonRewardType }) {
         </>
       ) : type === "speedups" ? (
         <path d="M13 2L3 14h9l-1 8 10-12h-9z" />
-      ) : (
+      ) : type === "gems" ? (
         <path d="M12 2l8 10-8 10-8-10z" />
+      ) : (
+        // Bloc 145 : le Prestige — une couronne, dans le même trait géométrique
+        // que ses trois voisines.
+        <>
+          <path d="M3 7l5 4 4-7 4 7 5-4-2 11H5z" />
+          <path d="M5 21h14" />
+        </>
       )}
     </svg>
   );

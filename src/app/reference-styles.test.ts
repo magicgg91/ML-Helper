@@ -1771,3 +1771,64 @@ describe("Bloc 144: the Temples switch, its pill and the reset button", () => {
     expect(head).toMatch(/min-height: var\(--player-field-h\);/);
   });
 });
+
+/**
+ * Bloc 145 — la quatrième mini-tuile du Classement, puis Bloc 146.
+ *
+ * Le Bloc 145 avait concédé deux exceptions au Prestige, mesurées à 393 px :
+ * une rangée à part dès la QUATRIÈME mini-tuile, et une largeur libre pour la
+ * seule tuile dont la valeur peut être une plage (« 1 500–2 000 » se coupait
+ * au milieu du tiret).
+ *
+ * Le Bloc 146 a étendu la mesure à 320, 360, 393, 430 px puis à 901 → 1 440 px,
+ * dans les cinq langues : trois mini-tuiles ne tenaient pas davantage que
+ * quatre à côté des rangs, et dix des vingt libellés débordaient d'une tuile à
+ * largeur fixe. Les deux exceptions ont donc été remplacées par la règle
+ * générale dont elles étaient le cas particulier — une rangée pour les
+ * récompenses quel qu'en soit le nombre, une largeur plancher pour toutes les
+ * mini-tuiles. Ce qui est épinglé ici, c'est qu'aucune des deux ne revienne.
+ */
+describe("Bloc 145/146: the reward mini-tiles", () => {
+  const mobileBlocks =
+    css.match(/@media \(max-width: 900px\) {[\s\S]*?\n}/g) ?? [];
+  const inMobile = (pattern: RegExp) =>
+    mobileBlocks.some((block) => pattern.test(block));
+
+  it("donne une rangée à part aux récompenses, quel qu'en soit le nombre", () => {
+    // Plus aucune exception par nombre de mini-tuiles. La grille elle-même est
+    // épinglée dans responsive-styles.test.ts ; ce qui compte ici, c'est
+    // qu'aucune règle ne vienne rétablir la rangée partagée pour un nombre
+    // donné — c'était celle du Bloc 145, et elle a disparu.
+    expect(css).not.toMatch(/:has\(\.ranking-reward-tile/);
+    expect(inMobile(/\.ranking-range-rewards {[^}]*?grid-area: rewards;/)).toBe(
+      true,
+    );
+    // Et le repli vaut pour les deux médias, donc il est posé hors média.
+    expect(css).toMatch(
+      /\.ranking-range-rewards {\s*\n\s*display: flex;[\s\S]*?flex-wrap: wrap;/,
+    );
+  });
+
+  it("donne aux mini-tuiles une largeur plancher, et non une largeur fixe", () => {
+    // Le `min-` est tout le correctif : une tuile ne rétrécit jamais sous la
+    // largeur du Bloc 112, et s'élargit quand son libellé ou sa valeur le
+    // demandent. Une largeur fixe les ferait déborder de nouveau.
+    expect(css).toMatch(/\.ranking-reward-tile {[\s\S]*?min-width: 116px;/);
+    expect(inMobile(/\.ranking-reward-tile {\s*\n\s*min-width: 84px;/)).toBe(
+      true,
+    );
+    expect(css).not.toMatch(/\.ranking-reward-tile {[^}]*[^-]width: 116px;/);
+    expect(inMobile(/\.ranking-reward-tile {[^}]*[^-]width: 84px;/)).toBe(
+      false,
+    );
+  });
+
+  it("n'habille plus le Prestige autrement que ses voisines", () => {
+    // Le Bloc 145 lui donnait sa propre largeur et son propre `nowrap` ; la
+    // règle générale les lui donne maintenant comme aux trois autres, donc
+    // aucune règle ne le vise plus. L'attribut `data-reward` reste sur chaque
+    // mini-tuile : c'est par lui que la mesure de bout en bout nomme celle qui
+    // échoue (e2e/ranking-tile-layout.ts).
+    expect(css).not.toMatch(/\[data-reward="prestige"\]/);
+  });
+});

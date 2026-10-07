@@ -3,13 +3,19 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
+  formatPrestigeInput,
   orderedLadder,
+  parsePrestigeInput,
+  prestigeOf,
+  prestigeRangeAllowed,
   seasonMovements,
-  seasonRewardTypes,
+  seasonQuantityRewardTypes,
   type LeagueLadder,
   type LeagueRung,
   type SeasonBand,
   type SeasonMovement,
+  type SeasonQuantityRewardType,
+  type SeasonReward,
   type SeasonRewardType,
 } from "@/lib/leagues";
 import { cn } from "@/lib/utils";
@@ -19,6 +25,7 @@ import { adminLeagueChipClass } from "./admin-league-chip";
 import { EditorHeader } from "./admin-editor-header";
 import { EditorSection } from "./admin-editor-section";
 import { NumberField } from "./admin-number-field";
+import { TextField } from "./admin-text-field";
 import { RowActions } from "./admin-row-actions";
 import { leagueRungLabel } from "./league-rung-label";
 import { useEditorForm } from "./use-editor-form";
@@ -54,8 +61,13 @@ type BandRow = Record<SeasonRewardType, string> & {
 type BandsDraft = Record<string, BandRow[]>;
 
 function toRow(band: SeasonBand): BandRow {
-  const quantity = (type: SeasonRewardType) =>
-    String(band.rewards.find((item) => item.type === type)?.quantity ?? 0);
+  const quantity = (type: SeasonQuantityRewardType) =>
+    String(
+      band.rewards.find(
+        (item): item is Extract<SeasonReward, { quantity: number }> =>
+          item.type === type,
+      )?.quantity ?? 0,
+    );
   return {
     threshold: String(band.threshold),
     movement: band.movement ?? "",
@@ -63,6 +75,9 @@ function toRow(band: SeasonBand): BandRow {
     sapphires: quantity("sapphires"),
     speedups: quantity("speedups"),
     gems: quantity("gems"),
+    // Bloc 145 : vide quand le Prestige n'est pas renseigné — et non « 0 »,
+    // qui est une valeur réelle de ce champ et pas une absence.
+    prestige: formatPrestigeInput(prestigeOf(band)),
   };
 }
 
@@ -83,14 +98,29 @@ function serialise(draft: BandsDraft): Record<string, SeasonBand[]> {
   return Object.fromEntries(
     Object.entries(draft).map(([rungId, rows]) => [
       rungId,
-      rows.map((row) => ({
-        threshold: Number(row.threshold),
-        movement: (row.movement || null) as SeasonMovement | null,
-        target: row.target || null,
-        rewards: seasonRewardTypes
+      rows.map((row) => {
+        const threshold = Number(row.threshold);
+        const rewards: SeasonReward[] = seasonQuantityRewardTypes
           .map((type) => ({ type, quantity: Number(row[type]) }))
-          .filter((item) => item.quantity > 0),
-      })),
+          .filter((item) => item.quantity > 0);
+        /*
+          Bloc 145 : le Prestige n'est ajouté que s'il est renseigné ET lisible.
+          Un refus ne passe jamais par ici — `findProblems` bloque
+          l'enregistrement avant — mais cette fonction doit rester totale, et
+          ne rien écrire est la seule issue qui n'invente pas de valeur.
+        */
+        const prestige = parsePrestigeInput(row.prestige, {
+          allowRange: prestigeRangeAllowed(threshold),
+        });
+        if (prestige.ok && prestige.value)
+          rewards.push({ type: "prestige", ...prestige.value });
+        return {
+          threshold,
+          movement: (row.movement || null) as SeasonMovement | null,
+          target: row.target || null,
+          rewards,
+        };
+      }),
     ]),
   );
 }
@@ -230,7 +260,7 @@ export function AdminRankingEditor({
             message: t("pairing-error"),
             where: where(t("movement")),
           });
-        for (const type of seasonRewardTypes) {
+        for (const type of seasonQuantityRewardTypes) {
           const quantity = Number(row[type]);
           if (
             row[type].trim() === "" ||
@@ -244,6 +274,26 @@ export function AdminRankingEditor({
               where: where(t(`reward-types.${type}`)),
             });
         }
+        /*
+          Bloc 145 : le Prestige a sa propre grammaire — vide, entier, ou plage
+          sur le seuil 1 %. La même fonction que la route, pour que l'écran ne
+          puisse jamais accepter ce que la route refuse.
+
+          Le seuil lu ici est celui du brouillon, pas celui qui est stocké :
+          changer une ligne de 1 % à 6 % pendant qu'elle porte « 150-200 » la
+          met en faute à l'instant, plutôt que de convertir ou d'effacer la
+          saisie dans le dos de qui l'a tapée.
+        */
+        const prestige = parsePrestigeInput(row.prestige, {
+          allowRange: prestigeRangeAllowed(threshold),
+        });
+        if (!prestige.ok)
+          found.push({
+            rungId: rung.id,
+            field: { kind: "reward", row: index, type: "prestige" },
+            message: t(`prestige-errors.${prestige.error}`),
+            where: where(t("reward-types.prestige")),
+          });
       });
     }
     return found;
@@ -429,6 +479,9 @@ export function AdminRankingEditor({
                         sapphires: "0",
                         speedups: "0",
                         gems: "0",
+                        // Vide, pas « 0 » : une plage neuve n'a pas de
+                        // Prestige connu, et 0 en serait un.
+                        prestige: "",
                       },
                     ])
                   }
@@ -459,7 +512,12 @@ export function AdminRankingEditor({
                         <th className="admin-column-head px-3 py-2 text-left text-admin-dim">
                           {t("target")}
                         </th>
-                        {seasonRewardTypes.map((type) => (
+                        {/* Bloc 145 : les trois quantités, puis le Prestige.
+                            Les deux listes sont écrites séparément ici et dans
+                            le corps du tableau, dans le même ordre : une seule
+                            boucle devrait choisir son champ en son milieu, et
+                            un `<td>` nommé vaut mieux qu'un ternaire. */}
+                        {seasonQuantityRewardTypes.map((type) => (
                           <th
                             key={type}
                             className="admin-column-head px-3 py-2 text-right text-admin-dim"
@@ -467,6 +525,9 @@ export function AdminRankingEditor({
                             {t(`reward-types.${type}`)}
                           </th>
                         ))}
+                        <th className="admin-column-head px-3 py-2 text-right text-admin-dim">
+                          {t("reward-types.prestige")}
+                        </th>
                         <th className="admin-column-head px-3 py-2 text-right text-admin-dim">
                           {t("row-actions")}
                         </th>
@@ -611,7 +672,7 @@ export function AdminRankingEditor({
                                 ))}
                               </select>
                             </td>
-                            {seasonRewardTypes.map((type) => (
+                            {seasonQuantityRewardTypes.map((type) => (
                               <td key={type} className="px-3 text-right">
                                 <NumberField
                                   label={rowLabel(t(`reward-types.${type}`))}
@@ -645,6 +706,49 @@ export function AdminRankingEditor({
                                 />
                               </td>
                             ))}
+                            <td className="px-3 text-right">
+                              <TextField
+                                label={rowLabel(t("reward-types.prestige"))}
+                                hideLabel
+                                /* Un cran plus large que les trois quantités :
+                                   mesuré au navigateur, « 150-200 » tient dans
+                                   92 px mais la mention « À renseigner » que
+                                   l'administration pose sur un champ vide y
+                                   est coupée — et un champ Prestige est vide
+                                   tant qu'il n'est pas confirmé, donc c'est
+                                   l'état qu'on voit le plus souvent. */
+                                width="l"
+                                /* Le clavier numérique n'offre pas de tiret :
+                                   il ne convient qu'aux lignes où une plage
+                                   est refusée de toute façon. */
+                                inputMode={
+                                  prestigeRangeAllowed(Number(row.threshold))
+                                    ? "text"
+                                    : "numeric"
+                                }
+                                invalid={Boolean(
+                                  problemOn({
+                                    kind: "reward",
+                                    row: index,
+                                    type: "prestige",
+                                  }),
+                                )}
+                                invalidMessage={problemOn({
+                                  kind: "reward",
+                                  row: index,
+                                  type: "prestige",
+                                })}
+                                fieldRef={captureFirstInvalid({
+                                  kind: "reward",
+                                  row: index,
+                                  type: "prestige",
+                                })}
+                                value={row.prestige}
+                                onChange={(next) =>
+                                  setRow(index, { prestige: next })
+                                }
+                              />
+                            </td>
                             <td className="px-3">
                               <RowActions
                                 // La plage, pas l'un de ses champs (même raison

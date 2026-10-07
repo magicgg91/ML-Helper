@@ -100,18 +100,32 @@ describe("public responsive styles", () => {
   });
 
   // Bloc 112: the range tiles' two layouts. Desktop is one row of three
-  // groups; a phone is four rows, which only works because the two position
+  // groups; a phone is five rows, which only works because the two position
   // wrappers go display:contents there — that is what lets the percentile sit
-  // beside the result while the ranks sit beside the rewards, from one set of
-  // markup rather than two.
-  it("lays a Classement range tile out as one desktop row and four mobile rows", () => {
+  // beside the result, from one set of markup rather than two.
+  //
+  // Bloc 146 : les récompenses ont leur propre rangée, à n'importe quel nombre
+  // de mini-tuiles. Les mettre à côté des rangs laissait la colonne des rangs
+  // à 0 px sur un téléphone — la piste `minmax(0, auto)` des récompenses est
+  // servie avant le `1fr` et demande 268 px, là où la tuile en offre 211 à
+  // 320 px. Le détail de la mesure est dans la feuille de style et le défaut
+  // lui-même est tenu par e2e/bloc-146-ranking-tiles.spec.ts ; ici on retient
+  // qu'il n'y a plus de rangée partagée à rendre possible.
+  it("lays a Classement range tile out as one desktop row and five mobile rows", () => {
     const desktop = css.match(
       new RegExp(
         `@media \\(min-width: ${narrowViewportMaxWidth + 1}px\\) \\{\\s*\\.ranking-range-tile \\{([\\s\\S]*?)\\n  \\}`,
       ),
     )?.[1];
     expect(desktop, "the desktop tile rule").toBeDefined();
-    expect(desktop).toMatch(/grid-template-columns: 230px minmax\(0, 1fr\)/);
+    // Bloc 146 : le `1fr` du milieu ne descend plus sous son contenu minimal,
+    // et la piste des récompenses n'a plus de plancher. Sans le premier, cette
+    // piste — non flexible — était servie la première et la colonne des rangs
+    // tombait à 0 px dès 901 px ; sans le second, les trois minimums ne
+    // tenaient pas dans la tuile et c'est le nom de ligue qui payait.
+    expect(desktop).toMatch(
+      /grid-template-columns: 230px minmax\(min-content, 1fr\) minmax\(0, auto\);/,
+    );
 
     const mobile = css.match(
       new RegExp(
@@ -120,9 +134,15 @@ describe("public responsive styles", () => {
     )?.[1];
     expect(mobile, "the mobile tile rule").toBeDefined();
     expect(mobile).toMatch(/"result percentile"/);
-    expect(mobile).toMatch(/"ranks rewards"/);
+    expect(mobile).toMatch(/"ranks ranks"/);
+    expect(mobile).toMatch(/"rewards rewards"/);
     expect(mobile).toMatch(/"bar bar"/);
     expect(mobile).toMatch(/"bubble bubble"/);
+    expect(mobile).not.toMatch(/"ranks rewards"/);
+    // Et aucune exception ne la rétablit pour un nombre de mini-tuiles donné :
+    // c'est ce que le Bloc 145 avait fait pour quatre, avant que la mesure ne
+    // montre que trois ne tenaient pas non plus.
+    expect(css).not.toMatch(/:has\(\.ranking-reward-tile/);
     expect(css).toMatch(
       /\.ranking-range-position,\s*\.ranking-range-position-top \{\s*display: contents;/,
     );

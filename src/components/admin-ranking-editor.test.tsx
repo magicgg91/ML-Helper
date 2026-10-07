@@ -378,3 +378,202 @@ describe("Bloc 137: an empty ladder", () => {
     ).toBeNull();
   });
 });
+
+/**
+ * Bloc 145 — le Prestige dans l'écran du Classement.
+ *
+ * Il n'est pas une quatrième quantité : son champ accepte « 150-200 » sur le
+ * seuil 1 %, zéro y est une valeur, et le vide veut dire « non renseigné ». Ce
+ * qui est tenu ici, c'est que l'écran refuse exactement ce que la route refuse,
+ * qu'il le dise à l'endroit fautif, et qu'il ne corrige jamais une saisie à la
+ * place de qui l'a tapée.
+ */
+describe("Bloc 145 : le Prestige", () => {
+  /** Une échelle dont la première plage est un seuil 1 % — le seul à accepter une plage. */
+  const withTopBand = (
+    prestige: { min: number; max: number } | null,
+    threshold = 1,
+  ): LeagueLadder => [
+    {
+      id: "bronze",
+      league: "bronze",
+      division: "",
+      name: {},
+      position: 0,
+      active: true,
+      bands: [
+        {
+          threshold,
+          movement: "promotion",
+          target: "silver",
+          rewards: [
+            { type: "sapphires", quantity: 300 },
+            ...(prestige ? [{ type: "prestige" as const, ...prestige }] : []),
+          ],
+        },
+      ],
+    },
+  ];
+
+  const prestigeField = (row = 1) =>
+    screen.getByLabelText(new RegExp(`ligne ${row} Prestige`));
+
+  it("ajoute une colonne Prestige après Gemmes", () => {
+    renderEditor();
+    const heads = [...document.querySelectorAll("thead th")].map(
+      (cell) => cell.textContent,
+    );
+    expect(heads).toEqual([
+      "Seuil (%)",
+      "Mouvement",
+      "Ligue cible",
+      "Saphirs",
+      "Speedups",
+      "Gemmes",
+      "Prestige",
+      "Action",
+    ]);
+  });
+
+  // Le champ accepte « 150-200 » : ce ne peut pas être un `type="number"`.
+  it("est une saisie texte, pas un champ numérique", () => {
+    renderEditor(withTopBand(null));
+    expect(prestigeField()).toHaveAttribute("type", "text");
+  });
+
+  /*
+    Le clavier numérique d'un téléphone n'offre pas de tiret. Il ne convient donc
+    qu'aux lignes où une plage serait refusée de toute façon — ailleurs, il
+    empêcherait de taper ce que le champ accepte.
+  */
+  it("n'ouvre le clavier numérique que là où une plage est refusée", () => {
+    renderEditor(withTopBand(null, 1));
+    expect(prestigeField()).toHaveAttribute("inputmode", "text");
+    cleanup();
+    renderEditor(withTopBand(null, 6));
+    expect(prestigeField()).toHaveAttribute("inputmode", "numeric");
+  });
+
+  it("part vide quand le Prestige n'est pas renseigné, et non à zéro", () => {
+    renderEditor(withTopBand(null));
+    expect(prestigeField()).toHaveValue("");
+  });
+
+  it("montre une valeur fixe et une plage telles qu'elles sont stockées", () => {
+    renderEditor(withTopBand({ min: 150, max: 150 }));
+    expect(prestigeField()).toHaveValue("150");
+    cleanup();
+    renderEditor(withTopBand({ min: 150, max: 200 }));
+    expect(prestigeField()).toHaveValue("150-200");
+  });
+
+  it("une plage ajoutée part vide, pas à zéro", () => {
+    renderEditor(withTopBand(null));
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter une plage" }));
+    expect(prestigeField(2)).toHaveValue("");
+  });
+
+  it("envoie la valeur fixe, la plage, et rien quand le champ est vide", async () => {
+    const sent = async (value: string, ladder = withTopBand(null)) => {
+      const request = renderEditor(ladder);
+      fireEvent.change(prestigeField(), { target: { value } });
+      save();
+      await waitFor(() => expect(request).toHaveBeenCalled());
+      const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+      cleanup();
+      return body.bands.bronze[0].rewards;
+    };
+    expect(await sent("150")).toEqual([
+      { type: "sapphires", quantity: 300 },
+      { type: "prestige", min: 150, max: 150 },
+    ]);
+    expect(await sent("150-200")).toEqual([
+      { type: "sapphires", quantity: 300 },
+      { type: "prestige", min: 150, max: 200 },
+    ]);
+    // Zéro est une valeur, et part comme telle.
+    expect(await sent("0")).toEqual([
+      { type: "sapphires", quantity: 300 },
+      { type: "prestige", min: 0, max: 0 },
+    ]);
+    // Vide ne met rien : « non renseigné » n'est pas « zéro ».
+    expect(await sent("")).toEqual([{ type: "sapphires", quantity: 300 }]);
+  });
+
+  it("refuse une plage hors du seuil 1 %, et dit où", async () => {
+    const request = renderEditor(withTopBand(null, 6));
+    fireEvent.change(prestigeField(), { target: { value: "150-200" } });
+    save();
+    await waitFor(() =>
+      expect(banner()).toHaveTextContent(
+        "Bronze ligne 1 Prestige : Une plage n’est acceptée que sur le seuil 1 %.",
+      ),
+    );
+    expect(request).not.toHaveBeenCalled();
+    expect(prestigeField()).toHaveAttribute("aria-invalid", "true");
+    expect(prestigeField()).toHaveFocus();
+  });
+
+  it("nomme chaque refus par sa raison", async () => {
+    const refusal = async (value: string) => {
+      renderEditor(withTopBand(null));
+      fireEvent.change(prestigeField(), { target: { value } });
+      save();
+      await waitFor(() => expect(banner()).toHaveTextContent("Prestige :"));
+      const text = banner().textContent ?? "";
+      cleanup();
+      return text;
+    };
+    expect(await refusal("200-150")).toContain(
+      "La borne basse doit être inférieure ou égale à la borne haute.",
+    );
+    expect(await refusal("-5")).toContain(
+      "Une valeur négative n’est pas acceptée.",
+    );
+    expect(await refusal("1,5")).toContain("Nombre entier requis.");
+    expect(await refusal("abc")).toContain("Nombre entier requis.");
+    expect(await refusal("150-")).toContain(
+      "Plage incomplète : indiquez les deux bornes, ex. 150-200.",
+    );
+  });
+
+  /*
+    Le cas que ce bloc demande de ne pas résoudre en silence : une ligne porte
+    une plage, et son seuil quitte 1 %. Ni conversion vers la borne basse, ni
+    effacement — l'enregistrement est refusé, le champ est montré, et ce qui a
+    été tapé est toujours là.
+  */
+  it("bloque l'enregistrement quand le seuil quitte 1 %, sans toucher à la saisie", async () => {
+    const request = renderEditor(withTopBand({ min: 150, max: 200 }));
+    expect(prestigeField()).toHaveValue("150-200");
+    fireEvent.change(threshold(1), { target: { value: "6" } });
+    save();
+    await waitFor(() =>
+      expect(banner()).toHaveTextContent(
+        "Une plage n’est acceptée que sur le seuil 1 %.",
+      ),
+    );
+    expect(request).not.toHaveBeenCalled();
+    // La saisie est intacte : c'est au joueur de trancher, pas à l'écran.
+    expect(prestigeField()).toHaveValue("150-200");
+    expect(prestigeField()).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("redevient enregistrable dès que le seuil revient à 1 %", async () => {
+    const request = renderEditor(withTopBand({ min: 150, max: 200 }));
+    fireEvent.change(threshold(1), { target: { value: "6" } });
+    save();
+    await waitFor(() => expect(banner()).toHaveTextContent("Prestige"));
+    fireEvent.change(threshold(1), { target: { value: "1" } });
+    save();
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    expect(body.bands.bronze[0]).toMatchObject({
+      threshold: 1,
+      rewards: [
+        { type: "sapphires", quantity: 300 },
+        { type: "prestige", min: 150, max: 200 },
+      ],
+    });
+  });
+});

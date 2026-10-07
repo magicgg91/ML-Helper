@@ -7,7 +7,7 @@ import {
   leagueLadderKey,
   seasonMovements,
   readLeagueLadder,
-  seasonRewardTypes,
+  seasonQuantityRewardTypes,
   withLadderBands,
   type SeasonBand,
 } from "@/lib/leagues";
@@ -31,20 +31,37 @@ import { revalidateContent } from "@/lib/revalidate-content";
  * enregistrer un classement défairait un renommage ou un réordonnancement fait
  * dans Configuration entre-temps (voir `withLadderBands`).
  */
+/**
+ * Bloc 145 : deux formes de récompense, distinguées par leur type.
+ *
+ * Les trois quantités gardent la leur. Le Prestige porte deux bornes, et zéro
+ * y est une valeur réelle — ce qui décide s'il est renseigné est sa présence
+ * dans la liste, pas sa valeur.
+ *
+ * Ce que ce schéma ne peut pas dire, c'est qu'une plage n'appartient qu'au
+ * seuil 1 % : la règle a besoin du seuil de la ligne, donc elle vit sur la
+ * plage entière, dans `isSavableLeagueLadder` (voir `isSavablePrestige`).
+ */
+const rewardSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.enum(seasonQuantityRewardTypes),
+    // Revue Codex : entier et non négatif, à la frontière. Une récompense est
+    // une quantité absolue (AGENTS.md), et `isSavableLeagueLadder` ne vérifie
+    // que les seuils — un appelant qui contourne l'écran pouvait donc stocker
+    // `-3` ou `1.5` et les faire afficher au public.
+    quantity: z.number().int().nonnegative(),
+  }),
+  z.object({
+    type: z.literal("prestige"),
+    min: z.number().int().nonnegative(),
+    max: z.number().int().nonnegative(),
+  }),
+]);
 const bandSchema = z.object({
   threshold: z.number(),
   movement: z.enum(seasonMovements).nullable(),
   target: z.string().nullable(),
-  rewards: z.array(
-    z.object({
-      type: z.enum(seasonRewardTypes),
-      // Revue Codex : entier et non négatif, à la frontière. Une récompense est
-      // une quantité absolue (AGENTS.md), et `isSavableLeagueLadder` ne vérifie
-      // que les seuils — un appelant qui contourne l'écran pouvait donc stocker
-      // `-3` ou `1.5` et les faire afficher au public.
-      quantity: z.number().int().nonnegative(),
-    }),
-  ),
+  rewards: z.array(rewardSchema),
 });
 const payloadSchema = z.object({
   bands: z.record(z.string(), z.array(bandSchema)),
