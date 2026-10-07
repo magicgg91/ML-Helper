@@ -300,6 +300,55 @@ describe("PUT /api/admin/tools/ranking", () => {
       expect(upsert).not.toHaveBeenCalled();
     });
 
+    /*
+      Revue Codex (PR #176) : deux récompenses du même type sur une plage.
+
+      L'écran n'en envoie jamais deux ; un appelant qui le contourne le pouvait.
+      Et la seconde échappait à la règle du seuil, parce que la validation ne
+      regardait que la première : « 150 » puis « 150-200 » sur un seuil à 6 %
+      s'écrivait en base, ne s'affichait nulle part, et disparaissait au
+      prochain enregistrement de l'administration.
+    */
+    it("refuse deux Prestige sur une même plage", async () => {
+      const response = await put({
+        bands: {
+          bronze: [
+            {
+              threshold: 6,
+              movement: null,
+              target: null,
+              rewards: [
+                { type: "prestige", min: 150, max: 150 },
+                { type: "prestige", min: 150, max: 200 },
+              ],
+            },
+          ],
+        },
+      });
+      expect(response.status).toBe(400);
+      expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it("refuse aussi deux récompenses du même type quand les deux sont bonnes", async () => {
+      const response = await put({
+        bands: {
+          bronze: [
+            {
+              threshold: 6,
+              movement: null,
+              target: null,
+              rewards: [
+                { type: "gems", quantity: 4 },
+                { type: "gems", quantity: 9 },
+              ],
+            },
+          ],
+        },
+      });
+      expect(response.status).toBe(400);
+      expect(upsert).not.toHaveBeenCalled();
+    });
+
     // La forme d'avant ce bloc continue de passer : le Prestige est absent, et
     // la route ne le remplace par rien.
     it("laisse une plage sans Prestige telle quelle", async () => {

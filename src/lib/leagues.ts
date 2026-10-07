@@ -521,6 +521,35 @@ export function leagueRungId(rung: {
   return base || "entry";
 }
 
+/**
+ * Bloc 145, revue Codex : une plage ne porte qu'UNE récompense de chaque type.
+ *
+ * L'invariant était supposé partout et écrit nulle part. Tout ce qui lit les
+ * récompenses les cherche par `find` — l'affichage public, l'écran
+ * d'administration, `prestigeOf` — donc une seconde entrée du même type n'est
+ * jamais lue nulle part, et disparaît au premier enregistrement.
+ *
+ * Il est tenu à deux endroits, et les deux ont leur rôle. ICI, à la lecture, il
+ * NORMALISE : une ligne déjà stockée en double est ramenée à ce que le site en
+ * montre, sinon elle rendrait l'échelle non enregistrable et bloquerait
+ * l'administration sur un écran qui ne peut pas voir le doublon. Et plus bas,
+ * à l'écriture, `isSavableLeagueLadder` le REFUSE : c'est là que passe un
+ * appelant qui contourne l'écran, et le refuser l'empêche de glisser une
+ * valeur que la validation ne regarderait pas (un « 150 » suivi d'un
+ * « 150-200 » sur un seuil à 6 % passait, s'écrivait, ne s'affichait pas, et
+ * disparaissait ensuite — trois façons de perdre une donnée sans rien dire).
+ */
+function firstOfEachType(rewards: SeasonReward[]): SeasonReward[] {
+  const seen = new Set<SeasonRewardType>();
+  const kept: SeasonReward[] = [];
+  for (const reward of rewards) {
+    if (seen.has(reward.type)) continue;
+    seen.add(reward.type);
+    kept.push(reward);
+  }
+  return kept;
+}
+
 function parseBand(value: unknown): SeasonBand | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
@@ -541,9 +570,11 @@ function parseBand(value: unknown): SeasonBand | null {
   // qui connaisse tous les identifiants de l'échelle.
   const legacy = movement ? null : parseLegacyTarget(rawTarget);
   const rewards = Array.isArray(row.rewards)
-    ? row.rewards
-        .map(parseReward)
-        .filter((item): item is SeasonReward => item !== null)
+    ? firstOfEachType(
+        row.rewards
+          .map(parseReward)
+          .filter((item): item is SeasonReward => item !== null),
+      )
     : [];
   return {
     threshold,
@@ -802,6 +833,7 @@ export function isSavableLeagueLadder(ladder: LeagueLadder): boolean {
   for (const rung of ladder)
     for (const item of rung.bands) {
       if (item.threshold <= 0 || item.threshold > 100) return false;
+      if (!hasOneRewardPerType(item)) return false;
       if (!isSavablePrestige(item)) return false;
     }
   return true;
@@ -820,15 +852,26 @@ export function isSavableLeagueLadder(ladder: LeagueLadder): boolean {
  * d'être convertie ou effacée dans le dos de qui l'a tapée.
  */
 export function isSavablePrestige(band: SeasonBand): boolean {
-  const prestige = prestigeOf(band);
-  if (!prestige) return true;
-  if (
-    !Number.isSafeInteger(prestige.min) ||
-    !Number.isSafeInteger(prestige.max)
-  )
-    return false;
-  if (prestige.min < 0 || prestige.max < prestige.min) return false;
-  return prestige.min === prestige.max || prestigeRangeAllowed(band.threshold);
+  // Revue Codex : CHAQUE entrée de Prestige, pas la première. Ne regarder que
+  // celle que `prestigeOf` rend laissait la seconde échapper à la règle du
+  // seuil, dans l'état transitoire où le doublon n'est pas encore refusé.
+  return band.rewards.every(
+    (reward) =>
+      reward.type !== "prestige" ||
+      (Number.isSafeInteger(reward.min) &&
+        Number.isSafeInteger(reward.max) &&
+        reward.min >= 0 &&
+        reward.max >= reward.min &&
+        (reward.min === reward.max || prestigeRangeAllowed(band.threshold))),
+  );
+}
+
+/** Bloc 145, revue Codex : voir `firstOfEachType` — l'invariant, côté écriture. */
+export function hasOneRewardPerType(band: SeasonBand): boolean {
+  return (
+    new Set(band.rewards.map((reward) => reward.type)).size ===
+    band.rewards.length
+  );
 }
 
 /**

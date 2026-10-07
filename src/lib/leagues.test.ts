@@ -7,6 +7,7 @@ import {
   findLeagueRung,
   hasRungName,
   formatPrestigeInput,
+  hasOneRewardPerType,
   isSavableLeagueLadder,
   isSavablePrestige,
   leagueLockFor,
@@ -785,6 +786,109 @@ describe("Bloc 145 : le Prestige stocké", () => {
         ]),
       ),
     ).toBe(true);
+  });
+
+  /*
+    Revue Codex (PR #176) — deux récompenses du même type sur une plage.
+
+    L'écran n'en produit jamais deux, mais un appelant qui le contourne le
+    pouvait, et c'était un angle mort complet : `prestigeOf` ne rend que la
+    PREMIÈRE, donc la seconde échappait à la règle du seuil, s'écrivait en base,
+    ne s'affichait nulle part, et disparaissait au prochain enregistrement.
+
+    Reproduit avant correctif : « 150 » suivi de « 150-200 » sur un seuil à 6 %
+    donnait `isSavableLeagueLadder → true`.
+  */
+  describe("deux récompenses du même type", () => {
+    const twice = (threshold: number, rewards: unknown[]) =>
+      parseLeagueLadder([
+        {
+          id: "gold",
+          league: "gold",
+          division: "",
+          name: {},
+          position: 0,
+          active: true,
+          bands: [plain(threshold, rewards)],
+        },
+      ]);
+
+    it("sont refusées à l'écriture, même quand les deux valeurs sont bonnes", () => {
+      const ladder: LeagueLadder = [
+        {
+          id: "gold",
+          league: "gold",
+          division: "",
+          name: {},
+          position: 0,
+          active: true,
+          bands: [
+            {
+              threshold: 6,
+              movement: null,
+              target: null,
+              rewards: [
+                { type: "prestige", min: 150, max: 150 },
+                { type: "prestige", min: 7, max: 7 },
+              ],
+            },
+          ],
+        },
+      ];
+      expect(hasOneRewardPerType(ladder[0].bands[0])).toBe(false);
+      expect(isSavableLeagueLadder(ladder)).toBe(false);
+      // L'invariant vaut pour les quantités aussi, pas seulement le Prestige.
+      expect(
+        hasOneRewardPerType({
+          threshold: 6,
+          movement: null,
+          target: null,
+          rewards: [
+            { type: "gems", quantity: 1 },
+            { type: "gems", quantity: 2 },
+          ],
+        }),
+      ).toBe(false);
+    });
+
+    it("et chaque entrée de Prestige est jugée, pas seulement la première", () => {
+      expect(
+        isSavablePrestige({
+          threshold: 6,
+          movement: null,
+          target: null,
+          rewards: [
+            { type: "prestige", min: 150, max: 150 },
+            // Celle-ci est une plage, interdite sur un seuil à 6 %.
+            { type: "prestige", min: 150, max: 200 },
+          ],
+        }),
+      ).toBe(false);
+    });
+
+    /*
+      À la LECTURE, en revanche, le doublon est ramené à ce que le site en
+      montre : la première de chaque type. Sans cela, une ligne déjà stockée en
+      double rendrait l'échelle non enregistrable et bloquerait l'administration
+      sur un écran qui ne peut pas voir le doublon — il n'affiche qu'un champ.
+    */
+    it("sont ramenées à la première de chaque type à la lecture", () => {
+      const band = bandsIn(
+        twice(6, [
+          { type: "prestige", min: 150, max: 150 },
+          { type: "prestige", min: 150, max: 200 },
+          { type: "gems", quantity: 4 },
+          { type: "gems", quantity: 9 },
+        ]),
+        "gold",
+      )[0];
+      expect(band.rewards).toEqual([
+        { type: "prestige", min: 150, max: 150 },
+        { type: "gems", quantity: 4 },
+      ]);
+      // Et l'échelle ainsi lue est de nouveau enregistrable.
+      expect(isSavableLeagueLadder(twice(6, band.rewards))).toBe(true);
+    });
   });
 
   it("accepte une valeur fixe sur n'importe quel seuil", () => {
