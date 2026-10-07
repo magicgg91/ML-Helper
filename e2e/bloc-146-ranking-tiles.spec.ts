@@ -1,28 +1,40 @@
 import { expect, test } from "@playwright/test";
 import {
+  desktopWidths,
   expectRankingTilesFit,
   phoneWidths,
   rewardCounts,
 } from "./ranking-tile-layout";
 
 /**
- * Bloc 146 — les tuiles d'intervalle du Classement, mesurées sur un téléphone.
+ * Bloc 146 — les tuiles d'intervalle du Classement, mesurées sur un téléphone
+ * puis sur un bureau.
  *
- * Le défaut : à 393 px, « Rangs 11 – 60 » s'imprimait par-dessus les
- * mini-tuiles de récompense et le nom de ligue descendait en colonne, une
- * lettre par ligne. Une seule cause pour les deux — la rangée « rangs |
- * récompenses » du Bloc 112 donnait sa largeur maximale (3 × 84 + 2 × 8 =
- * 268 px) à la colonne des récompenses avant de servir le `1fr` des rangs, et
- * la tuile n'offre que 211 px de contenu à 320 px. La première colonne
- * mesurait 0 px à 320 et 360, 6 px à 393, 43 px à 430.
+ * Deux défauts, deux causes, un même symptôme : du texte imprimé sur ce qui
+ * se trouve à côté.
  *
- * Ce fichier parcourt les cinq langues parce que c'est le nom de ligue qui
- * remplit cette colonne, et qu'il n'a pas la même longueur partout. Les plus
- * larges mesurés au rendu, à 393 px : « Diamant » et « Légende » (67 px) en
- * français, « Platinum » et « Diamond » (71 px) en anglais, « Legende » et
- * « Diamant » (67 px) en allemand, « Diamante » (76 px) en espagnol,
- * « Efsane » et « Gümüş » (54 px) en turc. L'échelon Diamant les porte tous,
- * l'échelon Argent porte « Gümüş » — d'où les deux ouverts ici.
+ * 1. La colonne des rangs écrasée. La rangée « rangs | récompenses » du
+ *    Bloc 112 servait la colonne des récompenses — une piste non flexible, à
+ *    son contenu maximal — avant le `1fr` des rangs. Sur téléphone la
+ *    première colonne tombait à 0 px dès 320 px ; sur bureau, où la troisième
+ *    piste avait en plus un plancher de 260 px, elle tombait à 0 px à 901 px
+ *    et la valeur des rangs mordait jusqu'à 185 px sur les mini-tuiles.
+ *
+ * 2. Le libellé d'une mini-tuile plus large que sa tuile. Les quatre libellés
+ *    sont un mot unique dans les cinq langues, et la tuile avait une largeur
+ *    fixe : « Beschleunigungen » débordait de 52 px sur téléphone, 33 sur
+ *    bureau, et dix des vingt libellés débordaient d'au moins 1 px.
+ *
+ * Ce fichier parcourt les cinq langues parce que ce sont le nom de ligue et le
+ * libellé de récompense qui remplissent ces largeurs, et qu'ils n'ont pas la
+ * même longueur partout. Les plus larges mesurés au rendu à 393 px — nom de
+ * ligue : « Diamant »/« Légende » 67 px (fr), « Platinum »/« Diamond » 71 px
+ * (en), « Legende »/« Diamant » 67 px (de), « Diamante » 76 px (es),
+ * « Efsane »/« Gümüş » 54 px (tr) ; libellé : « Speedups » 54 px (fr),
+ * « Sapphires » 54 px (en), « Beschleunigungen » 99 px (de),
+ * « Aceleraciones » 76 px (es), « Hızlandırma » 65 px (tr). L'échelon Diamant
+ * porte les noms les plus longs, l'échelon Argent les trois récompenses —
+ * d'où les deux ouverts ici.
  *
  * Il n'écrit rien : l'échelle est celle que `defaultLeagueLadder` donne à une
  * base semée. Le cas à QUATRE mini-tuiles demande un Prestige, donc une
@@ -42,10 +54,10 @@ const rungs = [
 ];
 
 for (const locale of locales) {
-  test(`Bloc146: the ${locale.toUpperCase()} range tiles hold at every phone width`, async ({
+  test(`Bloc146: the ${locale.toUpperCase()} range tiles hold at every width`, async ({
     page,
   }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(120_000);
     await page.goto(`/${locale}/tools/classement`);
     const buttons = page
       .locator(".ranking-calculator")
@@ -56,7 +68,7 @@ for (const locale of locales) {
     for (const rung of rungs) {
       await buttons.nth(rung.index).click();
       await expect(page.locator(".ranking-range-tile").first()).toBeVisible();
-      for (const width of phoneWidths) {
+      for (const width of [...phoneWidths, ...desktopWidths]) {
         await page.setViewportSize({ width, height: 1600 });
         const tiles = await expectRankingTilesFit(
           page,

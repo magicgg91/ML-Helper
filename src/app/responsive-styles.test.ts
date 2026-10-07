@@ -118,7 +118,14 @@ describe("public responsive styles", () => {
       ),
     )?.[1];
     expect(desktop, "the desktop tile rule").toBeDefined();
-    expect(desktop).toMatch(/grid-template-columns: 230px minmax\(0, 1fr\)/);
+    // Bloc 146 : le `1fr` du milieu ne descend plus sous son contenu minimal,
+    // et la piste des récompenses n'a plus de plancher. Sans le premier, cette
+    // piste — non flexible — était servie la première et la colonne des rangs
+    // tombait à 0 px dès 901 px ; sans le second, les trois minimums ne
+    // tenaient pas dans la tuile et c'est le nom de ligue qui payait.
+    expect(desktop).toMatch(
+      /grid-template-columns: 230px minmax\(min-content, 1fr\) minmax\(0, auto\);/,
+    );
 
     const mobile = css.match(
       new RegExp(

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { resetE2eDatabase } from "../prisma/e2e-seed";
 import {
+  desktopWidths,
   expectRankingTilesFit,
   phoneWidths,
   rewardCounts,
@@ -2813,10 +2814,10 @@ test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
     "0",
   );
 
-  // --- Bloc 146 : et la tuile à quatre mini-tuiles tient sur un téléphone.
-  // La même mesure que e2e/bloc-146-ranking-tiles.spec.ts, qui couvre une et
-  // trois récompenses sur la base semée ; quatre ne s'obtient qu'ici.
-  for (const width of phoneWidths) {
+  // --- Bloc 146 : et la tuile à quatre mini-tuiles tient, du téléphone au
+  // bureau. La même mesure que e2e/bloc-146-ranking-tiles.spec.ts, qui couvre
+  // une et trois récompenses sur la base semée ; quatre ne s'obtient qu'ici.
+  for (const width of [...phoneWidths, ...desktopWidths]) {
     await page.setViewportSize({ width, height: 1600 });
     const tiles = await expectRankingTilesFit(page, `Bronze / ${width}px`);
     expect(

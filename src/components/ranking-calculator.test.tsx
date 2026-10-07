@@ -1453,11 +1453,17 @@ describe("Bloc 145 : le Prestige sur la page publique", () => {
   });
 
   /*
-    La feuille de style distingue le Prestige des trois quantités par cet
-    attribut — lui seul peut porter une plage, donc être plus large que sa
-    tuile à 393 px. Sans lui, la règle cesserait de s'appliquer sans bruit.
+    Chaque mini-tuile dit de quelle récompense elle parle.
+
+    Bloc 145 : la feuille de style le lisait, pour donner au seul Prestige la
+    largeur que sa plage demandait. Bloc 146 : cette largeur est devenue la
+    règle de toutes les mini-tuiles, donc plus aucun sélecteur ne vise ce
+    type-là — mais l'attribut reste le seul endroit du DOM qui nomme la
+    récompense sans passer par un libellé traduit, et c'est par lui que la
+    mesure de bout en bout désigne la mini-tuile en défaut
+    (e2e/ranking-tile-layout.ts).
   */
-  it("marque chaque tuile de son type, ce que la feuille de style lit", () => {
+  it("marque chaque tuile de son type", () => {
     show([
       band(1, [
         { type: "gems", quantity: 6 },
