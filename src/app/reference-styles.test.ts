@@ -1775,11 +1775,15 @@ describe("Bloc 144: the Temples switch, its pill and the reset button", () => {
 /**
  * Bloc 145 — la quatrième mini-tuile du Classement.
  *
- * Les deux règles ci-dessous viennent d'une mesure au navigateur à 393 px, pas
- * d'une intuition : la colonne des récompenses demande 4 × 84 + 3 × 8 = 360 px
- * quand la tuile n'en offre que 363, et « 1 500–2 000 » se coupait en deux au
- * milieu du tiret. Ce qui est épinglé, c'est qu'elles restent BORNÉES — à trois
- * récompenses et pour les trois quantités, rien ne change.
+ * Les règles ci-dessous viennent d'une mesure au navigateur à 393 px, pas d'une
+ * intuition : « 1 500–2 000 » se coupait en deux au milieu du tiret. Ce qui est
+ * épinglé, c'est que l'élargissement reste BORNÉ au Prestige — les trois
+ * quantités gardent leurs 84 px.
+ *
+ * Bloc 146 : la rangée à part, elle, n'est plus bornée à quatre. La même mesure
+ * étendue à 320, 360, 393 et 430 px a montré que trois mini-tuiles ne tenaient
+ * pas davantage à côté des rangs, et l'exception `:has(…:nth-child(4))` a
+ * laissé place à une règle unique.
  */
 describe("Bloc 145: the Prestige mini-tile", () => {
   const mobileBlocks =
@@ -1787,14 +1791,12 @@ describe("Bloc 145: the Prestige mini-tile", () => {
   const inMobile = (pattern: RegExp) =>
     mobileBlocks.some((block) => pattern.test(block));
 
-  it("ne donne une rangée à part aux récompenses qu'à partir de la quatrième", () => {
-    expect(
-      inMobile(
-        /\.ranking-range-tile:has\(\.ranking-reward-tile:nth-child\(4\)\) {\s*\n\s*grid-template-areas:\s*\n\s*"result percentile"\s*\n\s*"ranks ranks"\s*\n\s*"rewards rewards"/,
-      ),
-    ).toBe(true);
-    // La règle de base, celle des trois récompenses, est intacte : elles
-    // partagent toujours leur rangée avec les rangs.
+  it("donne une rangée à part aux récompenses, quel qu'en soit le nombre", () => {
+    // Bloc 146 : plus aucune exception par nombre de mini-tuiles. La grille
+    // elle-même est épinglée dans responsive-styles.test.ts ; ce qui compte
+    // ici, c'est qu'aucune règle ne vienne rétablir la rangée partagée pour un
+    // nombre donné — c'était celle du Bloc 145, et elle a disparu.
+    expect(css).not.toMatch(/:has\(\.ranking-reward-tile/);
     expect(
       inMobile(
         /\.ranking-range-rewards {\s*\n\s*grid-area: rewards;[\s\S]*?flex-wrap: wrap;/,

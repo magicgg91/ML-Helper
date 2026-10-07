@@ -5,6 +5,11 @@ import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { resetE2eDatabase } from "../prisma/e2e-seed";
+import {
+  expectRankingTilesFit,
+  phoneWidths,
+  rewardCounts,
+} from "./ranking-tile-layout";
 
 // Bloc 121: this file is retryable again, which it was not from Bloc 116/B
 // until here.
@@ -2752,6 +2757,8 @@ test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
   const before = await page.getByRole("radiogroup").count();
   const lastThreshold = () => page.getByLabel(/ligne \d+ Seuil/).last();
   const lastPrestige = () => page.getByLabel(/ligne \d+ Prestige/).last();
+  const lastQuantity = (reward: string) =>
+    page.getByLabel(new RegExp(`ligne \\d+ ${reward}`)).last();
   const save = () =>
     page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
@@ -2762,6 +2769,13 @@ test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
   await expect(lastPrestige()).toHaveValue("");
   await lastThreshold().fill("1");
   await lastPrestige().fill("150-200");
+  // Bloc 146 : les trois quantités en plus, pour que la tuile publique porte
+  // QUATRE mini-tuiles. C'est le seul cas qu'une base semée ne sait pas
+  // montrer — `defaultLeagueLadder` n'a pas de Prestige — et c'est celui où la
+  // mise en page mobile avait le moins de place.
+  await lastQuantity("Saphirs").fill("100");
+  await lastQuantity("Speedups").fill("7");
+  await lastQuantity("Gemmes").fill("6");
 
   await page.getByRole("button", { name: "Ajouter une plage" }).click();
   await lastThreshold().fill("6");
@@ -2798,6 +2812,19 @@ test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
   await expect(prestige.nth(1).locator(".ranking-reward-value")).toHaveText(
     "0",
   );
+
+  // --- Bloc 146 : et la tuile à quatre mini-tuiles tient sur un téléphone.
+  // La même mesure que e2e/bloc-146-ranking-tiles.spec.ts, qui couvre une et
+  // trois récompenses sur la base semée ; quatre ne s'obtient qu'ici.
+  for (const width of phoneWidths) {
+    await page.setViewportSize({ width, height: 1600 });
+    const tiles = await expectRankingTilesFit(page, `Bronze / ${width}px`);
+    expect(
+      rewardCounts(tiles),
+      `Bronze / ${width}px : la plage à quatre récompenses est bien là`,
+    ).toContain(4);
+  }
+  await page.setViewportSize({ width: 1280, height: 720 });
 
   // --- Remise en état : cette suite tourne en série sur une seule base.
   await page.goto("/admin/tools/ranking");

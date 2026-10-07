@@ -6261,17 +6261,35 @@ body > main h1 {
   }
 }
 
-/* Mobile: four rows. The two position wrappers go display:contents so their
+/* Mobile: five rows. The two position wrappers go display:contents so their
    children become grid items of the tile itself — that is what lets the
-   percentile sit beside the result on row 1 while the ranks sit beside the
-   rewards on row 2, without a second copy of the markup. */
+   percentile sit beside the result on row 1, without a second copy of the
+   markup.
+
+   Bloc 146 — les récompenses ont une rangée à elles, à n'importe quel nombre
+   de mini-tuiles. Le Bloc 112 les plaçait à côté des rangs, dans une deuxième
+   colonne en `minmax(0, auto)` : une piste non flexible, donc servie AVANT le
+   `1fr` et jusqu'à son contenu maximal — 3 × 84 + 2 × 8 = 268 px. La tuile
+   n'offre que 211 px de contenu à 320 px, 251 à 360, 284 à 393 et 321 à
+   430 : la première colonne tombait à 0, 0, 6 et 43 px. Tout ce qu'elle
+   portait y passait — la valeur des rangs est `nowrap`, elle mordait de 77 à
+   176 px sur les mini-tuiles ; le nom de ligue est `overflow-wrap: anywhere`,
+   il se coupait lettre par lettre sur 5 à 8 lignes.
+
+   Ces deux-là ne pouvaient donc jamais tenir côte à côte sur un téléphone :
+   le Bloc 145 l'avait constaté à quatre mini-tuiles et leur avait donné une
+   rangée dans ce seul cas ; la mesure dit que c'était déjà faux à trois. La
+   règle vaut pour tous, et son exception disparaît. */
 @media (max-width: 900px) {
   .ranking-range-tile {
     display: grid;
+    /* La deuxième colonne ne porte plus que le centile, une chaîne courte et
+       insécable : ce qu'elle prend, la première peut le céder. */
     grid-template-columns: minmax(0, 1fr) minmax(0, auto);
     grid-template-areas:
       "result percentile"
-      "ranks rewards"
+      "ranks ranks"
+      "rewards rewards"
       "bar bar"
       "bubble bubble";
     gap: 10px;
@@ -6294,25 +6312,10 @@ body > main h1 {
   }
   .ranking-range-rewards {
     grid-area: rewards;
-    /* Three mini-tiles do not fit beside the ranks on a 393px screen, so they
-       fold within their own column instead of pushing the tile off the page. */
+    /* Leur rangée fait toute la largeur de la tuile, ce qui suffit à trois
+       mini-tuiles dès 360 px ; en dessous elles se replient plutôt que de
+       pousser la tuile hors de l'écran. */
     flex-wrap: wrap;
-  }
-  /* Bloc 145 : à QUATRE mini-tuiles, replier ne suffit plus — elles ne tiennent
-     plus du tout à côté des rangs. Mesuré à 393 px : la colonne des récompenses
-     demande 4 × 84 + 3 × 8 = 360 px, celle des rangs en garde 85, et la tuile
-     n'offre que 363 px en tout — d'où le chevauchement observé dès que le
-     Prestige s'ajoute aux trois autres.
-
-     Elles prennent donc une rangée à elles, et SEULEMENT dans ce cas : à trois
-     récompenses, la mise en page du Bloc 112 ne bouge pas d'un pixel. */
-  .ranking-range-tile:has(.ranking-reward-tile:nth-child(4)) {
-    grid-template-areas:
-      "result percentile"
-      "ranks ranks"
-      "rewards rewards"
-      "bar bar"
-      "bubble bubble";
   }
   .ranking-range-bar {
     grid-area: bar;
