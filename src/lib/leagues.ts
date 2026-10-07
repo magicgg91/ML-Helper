@@ -43,10 +43,73 @@ import {
 export const seasonMovements = ["promotion", "stay", "relegation"] as const;
 export type SeasonMovement = (typeof seasonMovements)[number];
 
-export const seasonRewardTypes = ["sapphires", "speedups", "gems"] as const;
+/**
+ * Les récompenses comptées en quantité : un entier, et rien d'autre.
+ *
+ * Bloc 145 : séparées du Prestige, qui n'en est pas une — il peut valoir une
+ * plage. Tout ce qui boucle sur « les champs numériques » lit cette liste-ci ;
+ * `seasonRewardTypes` plus bas est la liste complète, dans l'ordre d'affichage.
+ */
+export const seasonQuantityRewardTypes = [
+  "sapphires",
+  "speedups",
+  "gems",
+] as const;
+export type SeasonQuantityRewardType =
+  (typeof seasonQuantityRewardTypes)[number];
+
+export const seasonRewardTypes = [
+  ...seasonQuantityRewardTypes,
+  "prestige",
+] as const;
 export type SeasonRewardType = (typeof seasonRewardTypes)[number];
 
-export type SeasonReward = { type: SeasonRewardType; quantity: number };
+/**
+ * Bloc 145 — le Prestige : une valeur fixe, ou une plage sur le seuil 1 %.
+ *
+ * Une valeur fixe est une plage dont les deux bornes sont égales. Deux champs
+ * plutôt qu'un `quantity` optionnel : la borne basse seule ne dit pas si la
+ * valeur est fixe, et un appelant qui l'oublierait afficherait « 150 » là où
+ * le jeu donne « 150-200 ».
+ */
+export type PrestigeRange = { min: number; max: number };
+
+/**
+ * Bloc 145 : une récompense est soit une quantité, soit le Prestige.
+ *
+ * Union discriminée plutôt qu'un `max` optionnel sur la forme existante : le
+ * Prestige ne se compte pas comme les trois autres (zéro y est une valeur
+ * réelle, une plage aussi), et c'est au compilateur de retrouver chaque
+ * endroit qui tenait pour acquis qu'une récompense a un `quantity`.
+ */
+export type SeasonQuantityReward = {
+  type: SeasonQuantityRewardType;
+  quantity: number;
+};
+export type SeasonPrestigeReward = { type: "prestige" } & PrestigeRange;
+export type SeasonReward = SeasonQuantityReward | SeasonPrestigeReward;
+
+/** Le Prestige de cette plage, ou `null` s'il n'est pas renseigné. */
+export function prestigeOf(band: SeasonBand): PrestigeRange | null {
+  const found = band.rewards.find(
+    (item): item is SeasonPrestigeReward => item.type === "prestige",
+  );
+  return found ? { min: found.min, max: found.max } : null;
+}
+
+/**
+ * Bloc 145 : le seuil sur lequel une plage de Prestige est acceptée.
+ *
+ * Nommé plutôt qu'écrit `=== 1` aux quatre endroits qui en dépendent (l'écran,
+ * la route, la validation, les tests) : c'est une règle de jeu, et une règle
+ * de jeu ne se recopie pas.
+ */
+export const prestigeRangeThreshold = 1;
+
+/** Si cette plage-ci accepte un Prestige en intervalle. */
+export function prestigeRangeAllowed(threshold: number): boolean {
+  return threshold === prestigeRangeThreshold;
+}
 
 // movement/target sont nuls pour un seuil dont l'existence est confirmée mais
 // pas la récompense (cf. Platine) — rendu « à définir » plutôt qu'inventé.
@@ -146,7 +209,10 @@ export function rungNameToStore(
   return localizedFieldToStore(form);
 }
 
-function reward(type: SeasonRewardType, quantity: number): SeasonReward {
+function reward(
+  type: SeasonQuantityRewardType,
+  quantity: number,
+): SeasonReward {
   return { type, quantity };
 }
 
@@ -252,11 +318,124 @@ function parseMovement(value: unknown): SeasonMovement | null {
 
 function parseReward(value: unknown): SeasonReward | null {
   if (!value || typeof value !== "object") return null;
-  const type = (value as { type?: unknown }).type;
-  const quantity = Number((value as { quantity?: unknown }).quantity);
-  if (!seasonRewardTypes.includes(type as SeasonRewardType)) return null;
+  const row = value as Record<string, unknown>;
+  const type = row.type;
+  /*
+    Bloc 145 : le Prestige se lit à part, et pour trois raisons.
+
+    Zéro y est une valeur réelle — « le seuil donne 0 Prestige » n'est pas la
+    même chose que « le Prestige n'est pas renseigné » — là où les trois
+    quantités ci-dessous traitent 0 comme une absence depuis toujours. Il porte
+    deux bornes au lieu d'une quantité. Et une plage stockée sur un seuil qui
+    n'est plus 1 % est LAISSÉE telle quelle ici : c'est `isSavableLeagueLadder`
+    qui la refuse, et l'écran qui la montre en faute. L'effacer à la lecture
+    perdrait la saisie sans rien dire, ce que ce bloc interdit explicitement.
+  */
+  if (type === "prestige") {
+    const min = Number(row.min);
+    const max = Number(row.max);
+    if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max)) return null;
+    if (min < 0 || max < min) return null;
+    return { type: "prestige", min, max };
+  }
+  const quantity = Number(row.quantity);
+  if (!seasonQuantityRewardTypes.includes(type as SeasonQuantityRewardType))
+    return null;
   if (!Number.isInteger(quantity) || quantity <= 0) return null;
-  return { type: type as SeasonRewardType, quantity };
+  return { type: type as SeasonQuantityRewardType, quantity };
+}
+
+/**
+ * Bloc 145 — ce qu'une saisie de Prestige vaut, ou pourquoi elle est refusée.
+ *
+ * Une seule fonction pour l'écran d'administration et pour la route : la
+ * validation côté client existe pour nommer le champ fautif et y poser le
+ * curseur, pas pour décider — si les deux divergeaient, l'écran accepterait ce
+ * que la route refuse, ou l'inverse.
+ */
+export type PrestigeInputError =
+  /** Ni entier, ni plage d'entiers : du texte, un décimal, un nombre démesuré. */
+  | "not-integer"
+  | "negative"
+  /** Une seule borne : « 150- ». */
+  | "incomplete-range"
+  /** La borne basse dépasse la haute : « 200-150 ». */
+  | "reversed-range"
+  /** Une plage sur un seuil qui n'est pas 1 %. */
+  | "range-not-allowed";
+
+export type PrestigeInputResult =
+  /** `null` = vide, c'est-à-dire non renseigné — jamais 0. */
+  | { ok: true; value: PrestigeRange | null }
+  | { ok: false; error: PrestigeInputError };
+
+/**
+ * Les trois tirets qu'un joueur peut taper ou coller : le trait d'union, le
+ * demi-cadratin et le cadratin. Les deux derniers arrivent d'un copier-coller
+ * depuis le jeu ou depuis un tableur qui « embellit » la frappe.
+ */
+const prestigeDashes = /[-\u2013\u2014]/;
+
+/** Un entier sans signe, la seule forme qu'une borne de Prestige accepte. */
+function prestigeBound(token: string): number | PrestigeInputError {
+  if (/^\d+$/.test(token)) {
+    const value = Number(token);
+    // Au-delà de l'entier sûr, le nombre lu n'est plus celui qui a été tapé :
+    // il se stockerait arrondi et s'afficherait faux.
+    return Number.isSafeInteger(value) ? value : "not-integer";
+  }
+  return "not-integer";
+}
+
+export function parsePrestigeInput(
+  raw: string,
+  { allowRange }: { allowRange: boolean },
+): PrestigeInputResult {
+  const text = raw.trim();
+  // Vide est un état réel : « non renseigné », distinct de 0.
+  if (text === "") return { ok: true, value: null };
+
+  const parts = text.split(prestigeDashes).map((part) => part.trim());
+  if (parts.length === 1) {
+    const value = prestigeBound(parts[0]!);
+    return typeof value === "number"
+      ? { ok: true, value: { min: value, max: value } }
+      : { ok: false, error: value };
+  }
+  if (parts.length > 2) return { ok: false, error: "not-integer" };
+
+  const [low, high] = parts as [string, string];
+  // Rien à gauche du tiret : ce n'est pas une plage, c'est un nombre négatif.
+  if (low === "")
+    return {
+      ok: false,
+      error: /^\d/.test(high) ? "negative" : "not-integer",
+    };
+  // Le refus le plus utile sur une ligne qui n'a pas droit aux plages est
+  // qu'elle n'y a pas droit — pas le détail de la plage qu'on y a écrite.
+  if (!allowRange) return { ok: false, error: "range-not-allowed" };
+  if (high === "") return { ok: false, error: "incomplete-range" };
+
+  const min = prestigeBound(low);
+  if (typeof min !== "number") return { ok: false, error: min };
+  const max = prestigeBound(high);
+  if (typeof max !== "number") return { ok: false, error: max };
+  if (min > max) return { ok: false, error: "reversed-range" };
+  // « 150-150 » est une valeur fixe : mêmes bornes, même enregistrement qu'un
+  // « 150 » tapé tel quel.
+  return { ok: true, value: { min, max } };
+}
+
+/**
+ * La saisie qui redonne ce Prestige — ce que l'écran d'administration remet
+ * dans son champ. Trait d'union simple : c'est ce qui se tape, et
+ * `parsePrestigeInput` le relit à l'identique.
+ */
+export function formatPrestigeInput(value: PrestigeRange | null): string {
+  if (!value) return "";
+  return value.min === value.max
+    ? String(value.min)
+    : `${value.min}-${value.max}`;
 }
 
 // Les lignes d'avant le Bloc 27 stockaient `target`/`reward` en phrases
@@ -279,7 +458,10 @@ const legacyLeagueNames: Record<string, League> = {
   légende: "legend",
   legende: "legend",
 };
-const legacyRewardPatterns: Array<[RegExp, SeasonRewardType]> = [
+// Bloc 145 : pas de motif pour le Prestige — les phrases françaises d'avant le
+// Bloc 27 sont antérieures à cette récompense, et en inventer une reviendrait à
+// lire une donnée qui n'a jamais été écrite.
+const legacyRewardPatterns: Array<[RegExp, SeasonQuantityRewardType]> = [
   [/(\d+)\s*saphirs?/i, "sapphires"],
   [/(\d+)\s*speedups?/i, "speedups"],
   [/(\d+)\s*gemmes?/i, "gems"],
@@ -618,9 +800,35 @@ export function isSavableLadderStructure(
 export function isSavableLeagueLadder(ladder: LeagueLadder): boolean {
   if (!isSavableLadderStructure(ladderStructure(ladder))) return false;
   for (const rung of ladder)
-    for (const item of rung.bands)
+    for (const item of rung.bands) {
       if (item.threshold <= 0 || item.threshold > 100) return false;
+      if (!isSavablePrestige(item)) return false;
+    }
   return true;
+}
+
+/**
+ * Bloc 145 : si le Prestige de cette plage peut être stocké tel quel.
+ *
+ * C'est ici que se referme la règle du seuil — une plage de Prestige
+ * n'appartient qu'au seuil 1 %. La vérification vit sur la plage entière et
+ * non sur la récompense seule, parce qu'elle a besoin du seuil : une plage
+ * reste une plage, c'est la ligne qui la porte qui décide si elle est permise.
+ *
+ * Changer le seuil d'une ligne qui porte un intervalle rend donc l'échelle non
+ * enregistrable, délibérément : la saisie reste à l'écran, en faute, au lieu
+ * d'être convertie ou effacée dans le dos de qui l'a tapée.
+ */
+export function isSavablePrestige(band: SeasonBand): boolean {
+  const prestige = prestigeOf(band);
+  if (!prestige) return true;
+  if (
+    !Number.isSafeInteger(prestige.min) ||
+    !Number.isSafeInteger(prestige.max)
+  )
+    return false;
+  if (prestige.min < 0 || prestige.max < prestige.min) return false;
+  return prestige.min === prestige.max || prestigeRangeAllowed(band.threshold);
 }
 
 /**

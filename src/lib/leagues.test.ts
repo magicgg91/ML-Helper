@@ -6,8 +6,12 @@ import {
   divisionsForLeague,
   findLeagueRung,
   hasRungName,
+  formatPrestigeInput,
   isSavableLeagueLadder,
+  isSavablePrestige,
   leagueLockFor,
+  parsePrestigeInput,
+  prestigeOf,
   leagueRungId,
   orderedLadder,
   parseLeagueLadder,
@@ -17,6 +21,7 @@ import {
   rungNameToStore,
   type LeagueLadder,
   type LeagueRung,
+  type SeasonBand,
 } from "./leagues";
 
 /** The bands of one entry of a parsed ladder, by id. */
@@ -521,5 +526,274 @@ describe("Bloc 135 §4 : baseLeagueOf", () => {
     expect(divisionsForLeague(ladder, "gold").map((rung) => rung.id)).toEqual([
       "gold-2",
     ]);
+  });
+});
+
+/**
+ * Bloc 145 — le Prestige.
+ *
+ * Il n'est pas une quatrième quantité : zéro y est une valeur réelle, et sur le
+ * seuil 1 % il peut valoir une plage. Les cas ci-dessous tiennent cette
+ * grammaire une fois pour l'écran et pour la route — c'est le même analyseur
+ * qui les sert, et c'est ce qui empêche l'un d'accepter ce que l'autre refuse.
+ */
+describe("Bloc 145 : la saisie du Prestige", () => {
+  const read = (raw: string, allowRange = true) =>
+    parsePrestigeInput(raw, { allowRange });
+  /** Le refus rendu, ou `null` si la saisie est passée. */
+  const refusal = (raw: string, allowRange = true) => {
+    const result = read(raw, allowRange);
+    return result.ok ? null : result.error;
+  };
+
+  describe("ce qui est accepté", () => {
+    it("lit une valeur fixe", () => {
+      expect(read("150")).toEqual({ ok: true, value: { min: 150, max: 150 } });
+    });
+
+    // Zéro est une valeur, pas une absence : c'est toute la différence que ce
+    // bloc demande de tenir.
+    it("lit zéro comme une valeur, et le vide comme une absence", () => {
+      expect(read("0")).toEqual({ ok: true, value: { min: 0, max: 0 } });
+      expect(read("")).toEqual({ ok: true, value: null });
+      expect(read("   ")).toEqual({ ok: true, value: null });
+    });
+
+    it("lit une plage sur le seuil qui l'autorise", () => {
+      expect(read("150-200")).toEqual({
+        ok: true,
+        value: { min: 150, max: 200 },
+      });
+    });
+
+    it("tolère les espaces autour du tiret", () => {
+      expect(read("150 - 200")).toEqual({
+        ok: true,
+        value: { min: 150, max: 200 },
+      });
+      expect(read("  150-200  ")).toEqual({
+        ok: true,
+        value: { min: 150, max: 200 },
+      });
+    });
+
+    // Un copier-coller depuis le jeu ou un tableur « embellit » le trait
+    // d'union : les deux autres tirets se lisent comme lui.
+    it("tolère le demi-cadratin et le cadratin", () => {
+      for (const dash of ["–", "—"])
+        expect(read(`150${dash}200`), dash).toEqual({
+          ok: true,
+          value: { min: 150, max: 200 },
+        });
+    });
+
+    it("ramène « 150-150 » à une valeur fixe", () => {
+      const fixed = read("150-150");
+      expect(fixed).toEqual({ ok: true, value: { min: 150, max: 150 } });
+      // Et c'est bien la forme d'une valeur fixe qui ressort du champ.
+      expect(formatPrestigeInput(fixed.ok ? fixed.value : null)).toBe("150");
+    });
+  });
+
+  describe("ce qui est refusé, et pourquoi", () => {
+    it("refuse une borne basse supérieure à la haute", () => {
+      expect(refusal("200-150")).toBe("reversed-range");
+    });
+
+    it("refuse une valeur négative", () => {
+      expect(refusal("-5")).toBe("negative");
+    });
+
+    it("refuse un décimal", () => {
+      expect(refusal("1.5")).toBe("not-integer");
+      expect(refusal("1,5")).toBe("not-integer");
+    });
+
+    it("refuse du texte", () => {
+      expect(refusal("abc")).toBe("not-integer");
+      expect(refusal("150 gemmes")).toBe("not-integer");
+      expect(refusal("1-2-3")).toBe("not-integer");
+    });
+
+    it("refuse une plage incomplète", () => {
+      expect(refusal("150-")).toBe("incomplete-range");
+    });
+
+    // Un entier au-delà du domaine sûr ne se relit pas tel qu'il a été tapé :
+    // il se stockerait arrondi et s'afficherait faux.
+    it("refuse un entier que le stockage ne rendrait pas intact", () => {
+      expect(refusal("99999999999999999999")).toBe("not-integer");
+    });
+
+    it("refuse une plage là où le seuil ne l'autorise pas", () => {
+      expect(refusal("150-200", false)).toBe("range-not-allowed");
+      // …et laisse passer la valeur fixe, qui n'a jamais été en cause.
+      expect(read("150", false)).toEqual({
+        ok: true,
+        value: { min: 150, max: 150 },
+      });
+    });
+
+    // Un nombre négatif n'est pas une plage : le dire « plage interdite » sur
+    // une ligne ordinaire enverrait chercher le problème au mauvais endroit.
+    it("appelle un négatif un négatif, même là où les plages sont refusées", () => {
+      expect(refusal("-5", false)).toBe("negative");
+    });
+  });
+
+  it("rend une saisie que l'analyseur relit à l'identique", () => {
+    for (const raw of ["", "0", "150", "150-200"]) {
+      const first = read(raw);
+      const text = formatPrestigeInput(first.ok ? first.value : null);
+      expect(read(text), raw).toEqual(first);
+    }
+  });
+});
+
+describe("Bloc 145 : le Prestige stocké", () => {
+  const ladderWith = (band: SeasonBand): LeagueLadder =>
+    parseLeagueLadder([
+      {
+        id: "gold",
+        league: "gold",
+        division: "",
+        name: {},
+        position: 0,
+        active: true,
+        bands: [band],
+      },
+    ]);
+  const bandOf = (band: SeasonBand) => bandsIn(ladderWith(band), "gold")[0];
+
+  const plain = (threshold: number, rewards: unknown[]) =>
+    ({
+      threshold,
+      movement: "stay",
+      target: "gold",
+      rewards,
+    }) as unknown as SeasonBand;
+
+  // La forme d'avant ce bloc : trois récompenses, pas de Prestige. Absent, et
+  // surtout pas zéro — l'un veut dire « non renseigné », l'autre « rien ».
+  it("lit une ligne d'avant le bloc comme un Prestige absent", () => {
+    const band = bandOf(plain(6, [{ type: "gems", quantity: 4 }]));
+    expect(prestigeOf(band)).toBeNull();
+    expect(band.rewards).toEqual([{ type: "gems", quantity: 4 }]);
+  });
+
+  it("lit une valeur fixe et une plage", () => {
+    expect(
+      prestigeOf(bandOf(plain(6, [{ type: "prestige", min: 150, max: 150 }]))),
+    ).toEqual({ min: 150, max: 150 });
+    expect(
+      prestigeOf(bandOf(plain(1, [{ type: "prestige", min: 150, max: 200 }]))),
+    ).toEqual({ min: 150, max: 200 });
+  });
+
+  it("garde un Prestige à zéro, là où une quantité à zéro disparaît", () => {
+    const band = bandOf(
+      plain(6, [
+        { type: "gems", quantity: 0 },
+        { type: "prestige", min: 0, max: 0 },
+      ]),
+    );
+    expect(prestigeOf(band)).toEqual({ min: 0, max: 0 });
+    expect(band.rewards).toEqual([{ type: "prestige", min: 0, max: 0 }]);
+  });
+
+  it("écarte un Prestige qui n'est pas une valeur", () => {
+    for (const broken of [
+      { type: "prestige", min: -1, max: 5 },
+      { type: "prestige", min: 5, max: 1 },
+      { type: "prestige", min: 1.5, max: 2 },
+      { type: "prestige" },
+    ])
+      expect(
+        prestigeOf(bandOf(plain(6, [broken]))),
+        JSON.stringify(broken),
+      ).toBeNull();
+  });
+
+  /*
+    Le cas que ce bloc demande explicitement de ne pas résoudre en silence : une
+    plage sur un seuil qui n'est plus 1 %. L'analyseur la GARDE — l'effacer
+    perdrait la saisie sans rien dire — et c'est la validation qui la refuse,
+    donc l'écran qui la montre en faute.
+  */
+  it("garde une plage dont le seuil a changé, et la refuse à l'enregistrement", () => {
+    const moved = ladderWith(
+      plain(6, [{ type: "prestige", min: 150, max: 200 }]),
+    );
+    expect(prestigeOf(bandsIn(moved, "gold")[0])).toEqual({
+      min: 150,
+      max: 200,
+    });
+    expect(isSavableLeagueLadder(moved)).toBe(false);
+  });
+
+  it("accepte cette même plage sur le seuil 1 %", () => {
+    const kept = ladderWith(
+      plain(1, [{ type: "prestige", min: 150, max: 200 }]),
+    );
+    expect(isSavableLeagueLadder(kept)).toBe(true);
+  });
+
+  /*
+    La règle s'applique LIGNE par ligne, pas échelon par échelon ni échelle par
+    échelle : plusieurs entrées peuvent avoir chacune leur seuil 1 %, et chacune
+    y a droit à sa plage. Une ligne qui n'est pas à 1 % dans la même entrée ne
+    la perd pas pour autant, et ne la gagne pas non plus.
+  */
+  it("décide par ligne, et non par échelon ni par échelle", () => {
+    const rungWith = (id: string, bands: unknown[]) => ({
+      id,
+      league: null,
+      division: "",
+      name: { fr: id },
+      position: 0,
+      active: true,
+      bands,
+    });
+    const range = { type: "prestige", min: 150, max: 200 };
+
+    // Deux échelons, chacun son seuil 1 % et sa plage : les deux sont valides.
+    expect(
+      isSavableLeagueLadder(
+        parseLeagueLadder([
+          rungWith("un", [plain(1, [range])]),
+          rungWith("deux", [plain(1, [range])]),
+        ]),
+      ),
+    ).toBe(true);
+
+    // Le même échelon, une ligne à 1 % avec sa plage et une à 6 % avec la
+    // sienne : c'est la seconde, et elle seule, qui rend l'échelle invalide.
+    expect(
+      isSavableLeagueLadder(
+        parseLeagueLadder([
+          rungWith("un", [plain(1, [range]), plain(6, [range])]),
+        ]),
+      ),
+    ).toBe(false);
+    expect(
+      isSavableLeagueLadder(
+        parseLeagueLadder([
+          rungWith("un", [
+            plain(1, [range]),
+            plain(6, [{ type: "prestige", min: 150, max: 150 }]),
+          ]),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepte une valeur fixe sur n'importe quel seuil", () => {
+    for (const threshold of [1, 6, 100])
+      expect(
+        isSavablePrestige(
+          bandOf(plain(threshold, [{ type: "prestige", min: 7, max: 7 }])),
+        ),
+        String(threshold),
+      ).toBe(true);
   });
 });

@@ -334,7 +334,8 @@
       "ranks": "Rangs",
       "sapphires": "Saphirs",
       "speedups": "Speedups",
-      "gems": "Gemmes"
+      "gems": "Gemmes",
+      "prestige": "Prestige"
     },
     "movements": {
       "promotion": "Montée",
@@ -1092,11 +1093,19 @@
       "reward-types": {
         "sapphires": "Saphirs",
         "speedups": "Speedups",
-        "gems": "Gemmes"
+        "gems": "Gemmes",
+        "prestige": "Prestige"
       },
       "range-error": "Entre 0 et 100 requis.",
       "pairing-error": "Mouvement et cible doivent être confirmés ensemble.",
       "integer-error": "Nombre entier requis.",
+      "prestige-errors": {
+        "not-integer": "Nombre entier requis.",
+        "negative": "Une valeur négative n’est pas acceptée.",
+        "incomplete-range": "Plage incomplète : indiquez les deux bornes, ex. 150-200.",
+        "reversed-range": "La borne basse doit être inférieure ou égale à la borne haute.",
+        "range-not-allowed": "Une plage n’est acceptée que sur le seuil 1 %."
+      },
       "empty": "Aucune plage confirmée.",
       "row-actions": "Action",
       "top": "Top",

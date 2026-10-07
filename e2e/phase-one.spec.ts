@@ -2722,6 +2722,96 @@ test("Bloc 137: the ranking lives on the tool's screen, the list in Configuratio
   await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
 });
 
+/**
+ * Bloc 145 — le Prestige, de l'écran d'administration à la page publique.
+ *
+ * Les tests unitaires tiennent l'analyse, la route et le rendu chacun de leur
+ * côté. Celui-ci est le seul à prouver l'aller-retour réel : une plage tapée
+ * « 150-200 » part en base par la route, en revient par l'analyseur, et se lit
+ * « 150–200 » sur la page publique, tiret demi-cadratin compris.
+ *
+ * Il tient aussi le refus que ce bloc demande de ne pas résoudre en silence :
+ * une plage sur un seuil qui n'est pas 1 % bloque l'enregistrement, et la
+ * saisie reste à l'écran — ni convertie, ni effacée.
+ */
+test("Bloc145: a Prestige range and a zero reach the public ranking", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/login");
+  await page.getByLabel(/Username|Identifiant/).fill("role-admin");
+  await page.getByLabel(/Password|Mot de passe/).fill("role-test-password");
+  await page.getByRole("button", { name: /Sign in|Se connecter/ }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+
+  await page.goto("/admin/tools/ranking");
+  const rungs = page.getByRole("group", {
+    name: /Ligue ou division|League or division/,
+  });
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  const before = await page.getByRole("radiogroup").count();
+  const lastThreshold = () => page.getByLabel(/ligne \d+ Seuil/).last();
+  const lastPrestige = () => page.getByLabel(/ligne \d+ Prestige/).last();
+  const save = () =>
+    page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+
+  // Deux plages ajoutées plutôt que trouvées : ce scénario ne doit pas dépendre
+  // de ce que la base semée donne à Bronze.
+  await page.getByRole("button", { name: "Ajouter une plage" }).click();
+  // Le champ part vide — « non renseigné », et non zéro.
+  await expect(lastPrestige()).toHaveValue("");
+  await lastThreshold().fill("1");
+  await lastPrestige().fill("150-200");
+
+  await page.getByRole("button", { name: "Ajouter une plage" }).click();
+  await lastThreshold().fill("6");
+  await lastPrestige().fill("0");
+  await save();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+
+  // --- Le refus : la même plage sur un seuil qui ne l'accepte pas.
+  await lastPrestige().fill("150-200");
+  await save();
+  await expect(page.getByRole("status")).toContainText(
+    "Une plage n’est acceptée que sur le seuil 1 %.",
+  );
+  // Rien n'est converti ni effacé : la saisie est toujours là, montrée en faute.
+  await expect(lastPrestige()).toHaveValue("150-200");
+  await expect(lastPrestige()).toBeFocused();
+  await lastPrestige().fill("0");
+  await save();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+
+  // --- Et la page publique les lit, telles qu'elles ont été écrites.
+  await page.goto("/tools/classement");
+  const group = page.locator(".ranking-calculator").getByRole("group");
+  await group.getByRole("button", { name: "Bronze", exact: true }).click();
+  const prestige = page.locator(".ranking-range-tile .ranking-reward-tile", {
+    hasText: "Prestige",
+  });
+  await expect(prestige).toHaveCount(2);
+  // Tiret demi-cadratin, celui que le rendu pose — pas le trait d'union tapé.
+  await expect(prestige.nth(0).locator(".ranking-reward-value")).toHaveText(
+    "150\u2013200",
+  );
+  // Zéro est une valeur du Prestige : sa tuile existe.
+  await expect(prestige.nth(1).locator(".ranking-reward-value")).toHaveText(
+    "0",
+  );
+
+  // --- Remise en état : cette suite tourne en série sur une seule base.
+  await page.goto("/admin/tools/ranking");
+  await rungs.getByRole("button", { name: "Bronze", exact: true }).click();
+  for (let removed = 0; removed < 2; removed += 1)
+    await page
+      .getByRole("button", { name: /^Supprimer Plage \d+ de Bronze$/ })
+      .last()
+      .click();
+  await expect(page.getByRole("radiogroup")).toHaveCount(before);
+  await save();
+  await expect(page.getByText("Modifications enregistrées.")).toBeVisible();
+});
+
 // Bloc 108/A+B+C+D+G: the whole point of the bloc, in one browser pass — an
 // admin creates a division that did not exist, orders it, switches it on, and
 // the public page picks it up with its League Lock computed. Unit tests drive

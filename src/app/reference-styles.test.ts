@@ -1771,3 +1771,61 @@ describe("Bloc 144: the Temples switch, its pill and the reset button", () => {
     expect(head).toMatch(/min-height: var\(--player-field-h\);/);
   });
 });
+
+/**
+ * Bloc 145 — la quatrième mini-tuile du Classement.
+ *
+ * Les deux règles ci-dessous viennent d'une mesure au navigateur à 393 px, pas
+ * d'une intuition : la colonne des récompenses demande 4 × 84 + 3 × 8 = 360 px
+ * quand la tuile n'en offre que 363, et « 1 500–2 000 » se coupait en deux au
+ * milieu du tiret. Ce qui est épinglé, c'est qu'elles restent BORNÉES — à trois
+ * récompenses et pour les trois quantités, rien ne change.
+ */
+describe("Bloc 145: the Prestige mini-tile", () => {
+  const mobileBlocks =
+    css.match(/@media \(max-width: 900px\) {[\s\S]*?\n}/g) ?? [];
+  const inMobile = (pattern: RegExp) =>
+    mobileBlocks.some((block) => pattern.test(block));
+
+  it("ne donne une rangée à part aux récompenses qu'à partir de la quatrième", () => {
+    expect(
+      inMobile(
+        /\.ranking-range-tile:has\(\.ranking-reward-tile:nth-child\(4\)\) {\s*\n\s*grid-template-areas:\s*\n\s*"result percentile"\s*\n\s*"ranks ranks"\s*\n\s*"rewards rewards"/,
+      ),
+    ).toBe(true);
+    // La règle de base, celle des trois récompenses, est intacte : elles
+    // partagent toujours leur rangée avec les rangs.
+    expect(
+      inMobile(
+        /\.ranking-range-rewards {\s*\n\s*grid-area: rewards;[\s\S]*?flex-wrap: wrap;/,
+      ),
+    ).toBe(true);
+  });
+
+  it("n'élargit que la tuile du Prestige, et laisse les trois quantités à 84 px", () => {
+    expect(inMobile(/\.ranking-reward-tile {\s*\n\s*width: 84px;/)).toBe(true);
+    expect(
+      inMobile(
+        /\.ranking-reward-tile\[data-reward="prestige"\] {\s*\n\s*width: auto;\s*\n\s*min-width: 84px;/,
+      ),
+    ).toBe(true);
+    // Et le « ne coupe pas au tiret » ne vaut que pour elle non plus.
+    expect(
+      inMobile(
+        /\.ranking-reward-tile\[data-reward="prestige"\] \.ranking-reward-value {\s*\n\s*white-space: nowrap;/,
+      ),
+    ).toBe(true);
+  });
+
+  // Aucune couleur n'est introduite par ce bloc : la tuile du Prestige porte
+  // exactement celles de ses trois voisines.
+  it("n'introduit aucune couleur propre au Prestige", () => {
+    const prestigeRules =
+      css.match(/\[data-reward="prestige"\][^{]*{[^}]*}/g) ?? [];
+    expect(prestigeRules.length).toBeGreaterThan(0);
+    for (const rule of prestigeRules) {
+      expect(rule, rule).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      expect(rule, rule).not.toMatch(/\bcolor:|\bbackground:/);
+    }
+  });
+});

@@ -13,10 +13,14 @@ import {
   baseLeagueOf,
   findLeagueRung,
   leagueLockFor,
-  seasonRewardTypes,
+  prestigeOf,
+  seasonQuantityRewardTypes,
   type LeagueLadder,
   type LeagueRung,
+  type PrestigeRange,
   type SeasonBand,
+  type SeasonQuantityRewardType,
+  type SeasonReward,
   type SeasonRewardType,
 } from "../lib/leagues";
 import { leagueButtonRows, sliceIntoRows } from "../lib/league-button-rows";
@@ -59,8 +63,27 @@ function rangeTarget(
   };
 }
 
-function rewardQuantity(band: SeasonBand, type: SeasonRewardType) {
-  return band.rewards.find((item) => item.type === type)?.quantity ?? 0;
+function rewardQuantity(band: SeasonBand, type: SeasonQuantityRewardType) {
+  return (
+    band.rewards.find(
+      (item): item is Extract<SeasonReward, { quantity: number }> =>
+        item.type === type,
+    )?.quantity ?? 0
+  );
+}
+
+/**
+ * Bloc 145 : le Prestige tel qu'il se lit — « 150 », ou « 150–200 ».
+ *
+ * Tiret demi-cadratin et pas de trait d'union : c'est un intervalle entre deux
+ * nombres, pas un mot composé. Les deux bornes passent par la langue de la
+ * page, comme les rangs juste au-dessus dans la même tuile.
+ */
+function prestigeText(value: PrestigeRange, locale: string): string {
+  const min = value.min.toLocaleString(locale);
+  return value.min === value.max
+    ? min
+    : `${min}\u2013${value.max.toLocaleString(locale)}`;
 }
 
 /**
@@ -383,9 +406,32 @@ function RankingRangeTile({
   const playerBubble = (
     <span className="ranking-player-bubble">{playerLabel}</span>
   );
-  const rewards = seasonRewardTypes
-    .map((type) => ({ type, quantity: rewardQuantity(range, type) }))
-    .filter((reward) => reward.quantity > 0);
+  /*
+    Bloc 145 — les récompenses de cette plage, dans l'ordre des tuiles.
+
+    Les trois quantités ne s'affichent qu'au-dessus de zéro : pour elles, zéro
+    a toujours voulu dire « rien à cette place ». Le Prestige, lui, s'affiche
+    dès qu'il est renseigné, zéro compris — « ce seuil donne 0 Prestige » est
+    une information, et son absence en est une autre.
+  */
+  const prestige = prestigeOf(range);
+  const rewards: { type: SeasonRewardType; value: string }[] = [
+    ...seasonQuantityRewardTypes
+      .map((type) => ({ type, quantity: rewardQuantity(range, type) }))
+      .filter((reward) => reward.quantity > 0)
+      .map((reward) => ({
+        type: reward.type as SeasonRewardType,
+        value: reward.quantity.toLocaleString(locale),
+      })),
+    ...(prestige
+      ? [
+          {
+            type: "prestige" as const,
+            value: prestigeText(prestige, locale),
+          },
+        ]
+      : []),
+  ];
   return (
     <li
       className={`ranking-range-tile ranking-range-${movement}`}
@@ -445,14 +491,19 @@ function RankingRangeTile({
       </div>
       <div className="ranking-range-rewards">
         {rewards.map((reward) => (
-          <span className="ranking-reward-tile" key={reward.type}>
+          <span
+            className="ranking-reward-tile"
+            // Bloc 145 : la feuille de style a besoin de distinguer le Prestige
+            // des trois quantités — lui seul peut porter une plage, donc être
+            // plus large que sa tuile.
+            data-reward={reward.type}
+            key={reward.type}
+          >
             <span className="ranking-reward-label">
               <RankRewardIcon type={reward.type} />
               {t(`tile.${reward.type}`)}
             </span>
-            <span className="ranking-reward-value">
-              {reward.quantity.toLocaleString(locale)}
-            </span>
+            <span className="ranking-reward-value">{reward.value}</span>
           </span>
         ))}
       </div>

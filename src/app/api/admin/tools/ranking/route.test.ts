@@ -239,6 +239,89 @@ describe("PUT /api/admin/tools/ranking", () => {
     expect(auditCreate).not.toHaveBeenCalled();
   });
 
+  /*
+    Bloc 145 — le Prestige à la frontière.
+
+    L'écran refuse déjà une plage hors du seuil 1 %, mais un appelant qui ne
+    passe pas par lui ne connaît pas cette règle : c'est ici qu'elle doit
+    tenir, et pas seulement dans le navigateur.
+  */
+  describe("Bloc 145 : le Prestige", () => {
+    const withPrestige = (threshold: number, min: number, max: number) => ({
+      bands: {
+        bronze: [
+          {
+            threshold,
+            movement: null,
+            target: null,
+            rewards: [{ type: "prestige", min, max }],
+          },
+        ],
+      },
+    });
+
+    it("accepte une plage sur le seuil 1 %", async () => {
+      const response = await put(withPrestige(1, 150, 200));
+      expect(response.status).toBe(200);
+      expect(written()[0].bands[0].rewards).toEqual([
+        { type: "prestige", min: 150, max: 200 },
+      ]);
+    });
+
+    it("refuse une plage sur tout autre seuil, sans rien écrire", async () => {
+      const response = await put(withPrestige(6, 150, 200));
+      expect(response.status).toBe(400);
+      expect(upsert).not.toHaveBeenCalled();
+      expect(auditCreate).not.toHaveBeenCalled();
+    });
+
+    it("accepte la valeur fixe correspondante sur ce même seuil", async () => {
+      const response = await put(withPrestige(6, 150, 150));
+      expect(response.status).toBe(200);
+      expect(written()[0].bands[0].rewards).toEqual([
+        { type: "prestige", min: 150, max: 150 },
+      ]);
+    });
+
+    // Zéro est une valeur du Prestige, et doit arriver en base comme telle —
+    // là où une quantité à zéro a toujours voulu dire « rien à cette place ».
+    it("écrit un Prestige à zéro", async () => {
+      const response = await put(withPrestige(6, 0, 0));
+      expect(response.status).toBe(200);
+      expect(written()[0].bands[0].rewards).toEqual([
+        { type: "prestige", min: 0, max: 0 },
+      ]);
+    });
+
+    it("refuse des bornes inversées ou négatives", async () => {
+      expect((await put(withPrestige(1, 200, 150))).status).toBe(400);
+      expect((await put(withPrestige(1, -1, 5))).status).toBe(400);
+      expect((await put(withPrestige(1, 1.5, 2))).status).toBe(400);
+      expect(upsert).not.toHaveBeenCalled();
+    });
+
+    // La forme d'avant ce bloc continue de passer : le Prestige est absent, et
+    // la route ne le remplace par rien.
+    it("laisse une plage sans Prestige telle quelle", async () => {
+      const response = await put({
+        bands: {
+          bronze: [
+            {
+              threshold: 6,
+              movement: null,
+              target: null,
+              rewards: [{ type: "gems", quantity: 4 }],
+            },
+          ],
+        },
+      });
+      expect(response.status).toBe(200);
+      expect(written()[0].bands[0].rewards).toEqual([
+        { type: "gems", quantity: 4 },
+      ]);
+    });
+  });
+
   it("logs who changed the ranking, and refreshes the public tools", async () => {
     await put({ bands: { bronze: [] } });
     expect(auditCreate).toHaveBeenCalledWith(

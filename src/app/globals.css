@@ -6298,6 +6298,22 @@ body > main h1 {
        fold within their own column instead of pushing the tile off the page. */
     flex-wrap: wrap;
   }
+  /* Bloc 145 : à QUATRE mini-tuiles, replier ne suffit plus — elles ne tiennent
+     plus du tout à côté des rangs. Mesuré à 393 px : la colonne des récompenses
+     demande 4 × 84 + 3 × 8 = 360 px, celle des rangs en garde 85, et la tuile
+     n'offre que 363 px en tout — d'où le chevauchement observé dès que le
+     Prestige s'ajoute aux trois autres.
+
+     Elles prennent donc une rangée à elles, et SEULEMENT dans ce cas : à trois
+     récompenses, la mise en page du Bloc 112 ne bouge pas d'un pixel. */
+  .ranking-range-tile:has(.ranking-reward-tile:nth-child(4)) {
+    grid-template-areas:
+      "result percentile"
+      "ranks ranks"
+      "rewards rewards"
+      "bar bar"
+      "bubble bubble";
+  }
   .ranking-range-bar {
     grid-area: bar;
   }
@@ -6473,6 +6489,17 @@ body > main h1 {
   .ranking-reward-tile {
     width: 84px;
     padding: 6px 10px;
+  }
+  /* Bloc 145 : le Prestige est la seule récompense dont la valeur peut être une
+     plage, donc la seule qui puisse dépasser 84 px. Sa tuile prend la largeur
+     qu'il lui faut — mesuré : « 1 500–2 000 » se coupait en deux au milieu du
+     tiret — et les trois autres gardent la leur au pixel près. */
+  .ranking-reward-tile[data-reward="prestige"] {
+    width: auto;
+    min-width: 84px;
+  }
+  .ranking-reward-tile[data-reward="prestige"] .ranking-reward-value {
+    white-space: nowrap;
   }
   .ranking-reward-label {
     font-size: 12px;
